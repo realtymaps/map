@@ -574,7 +574,7 @@ getQueueNeeds = () ->
       if !queueConfigs[subtaskList[0]?.queue_name]?.active
         # any task running on an inactive queue (or a queue without config) can be ignored without further processing
         continue
-      taskSteps = _.groupBy(subtaskList, 'step_num')
+      taskSteps = _.groupBy(subtaskList, 'task_step')
       steps = _.keys(taskSteps).sort()
       # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
       # anything from steps past that (in this task)
