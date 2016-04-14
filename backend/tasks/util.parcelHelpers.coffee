@@ -17,7 +17,7 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
 
   normalRows = parcelUtils.normalize {
     batch_id: subtask.batch_id
-    data_source_id: subtask.data_source_id
+    data_source_id: subtask.task_name
     rows
     fipsCode
   }

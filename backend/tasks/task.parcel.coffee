@@ -106,6 +106,8 @@ loadRawData = (subtask) -> Promise.try () ->
 
 normalizeData = (subtask) ->
   {fipsCode} = subtask.data
+  logger.debug subtask.data
+
   dataLoadHelpers.getNormalizeRows(subtask)
   .then (rows) ->
     return if !rows?.length
@@ -126,7 +128,7 @@ normalizeData = (subtask) ->
       .where
         batch_id: subtask.batch_id
         data_source_type: 'parcels'
-        data_source_id: subtask.data
+        data_source_id: subtask.task_name
 
 finalizeDataPrep = (subtask) ->
   tables.property.normParcel()
