@@ -1,51 +1,48 @@
 app = require '../../app.coffee'
+_ = require 'lodash'
 
-numeral = require 'numeral'
-casing = require 'case'
-moment = require 'moment'
+module.exports = app
 
+app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, $modal, rmapsPropertiesService, rmapsFormattersService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
+  $log = $log.spawn 'rmapsSmallDetailsCtrl'
+  $log.debug "rm_property_id: #{JSON.stringify $scope.model.rm_property_id}"
 
-module.exports =
-  app.controller 'rmapsMapSmallDetailsCtrl',($scope, $log, rmapsParcelEnums) ->
-    colorClasses = {}
-    colorClasses[rmapsParcelEnums.status.sold] = 'label-sold-property'
-    colorClasses[rmapsParcelEnums.status.pending] = 'label-pending-property'
-    colorClasses[rmapsParcelEnums.status.forSale] = 'label-sale-property'
-    colorClasses[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
+  _.extend $scope,
+    rmapsFormattersService.Common,
+    google: rmapsGoogleService
+    getMail: () ->
+      rmapsMailCampaignService.getMail $scope.model.rm_property_id
 
-    getPrice = (val) ->
-      String.orDash if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
+  $scope.tab = 'current'
 
-    getStatusClass = (status) ->
-      return colorClasses[status] || ''
+  $scope.formatters =
+    results: new rmapsResultsFormatterService scope: $scope
+    property: new rmapsPropertyFormatterService
 
-    getPriceLabel = (status) ->
-      if (status=='recently sold'||status=='not for sale')
-        'Sold'
-      else
-        'Asking'
+  _.merge @scope,
+    streetViewPanorama:
+      status: 'OK'
+    control: {}
 
-    formatHalfBaths = (numBaths) ->
-      if (numBaths > 0)
-        numBaths + ' Half Bath'
-      else
-        ''
+  $scope.previewLetter = (mail) ->
+    $modal.open
+      template: require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
+      controller: 'rmapsReviewPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          pdf: mail.lob.url
+          title: 'Mail Review'
 
-    #TODO: consider pointing everything to mdoel.. and then for modifiers use functions
-    $scope.street_address_num = String.orDash $scope.model.street_address_num
-    $scope.street_address_name = String.orDash $scope.model.street_address_name
-    $scope.beds_total = String.orDash $scope.model.bedrooms
-    $scope.baths_full = String.orDash $scope.model.baths_full
-    $scope.baths_half= formatHalfBaths String.orDash $scope.model.baths_half
-    $scope.baths_total= String.orDash $scope.model.baths_total
-    $scope.finished_sqft= String.orDash $scope.model.finished_sqft
-    $scope.price = getPrice $scope.model.price
-    $scope.priceLabel = getPriceLabel $scope.model.rm_status
-    $scope.assessed_value = getPrice $scope.model.assessed_value
-    $scope.year_built = if $scope.model.year_built then moment($scope.model.year_built).format('YYYY') else String.orDash $scope.model.year_built
-    $scope.acres = String.orDash $scope.model.acres
-    $scope.rm_status = String.orDash $scope.model.rm_status
-    $scope.owner_name = String.orDash $scope.model.owner_name
-    $scope.owner_name2 = $scope.model.owner_name2
+  getPropertyDetail = (propertyId) ->
+    $log.debug "Getting property detail for #{propertyId}"
 
-    $scope.statusClass = getStatusClass($scope.model.rm_status)
+    rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
+    .then (property) ->
+      $scope.selectedResult = property
+
+  getPropertyDetail $scope.model.rm_property_id
+
+  return
