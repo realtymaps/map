@@ -133,6 +133,7 @@ finalizeDataPrep = (subtask) ->
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
+    ids  = ids.map (id) -> id.rm_property_id
     # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
 
