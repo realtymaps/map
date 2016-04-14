@@ -3,5 +3,5 @@
 .modal-body(ng-show="modalBody")
   b {{modalBody}}
 .modal-footer
-  button.btn.btn-primary(type='button', ng-click='modalOk(); $event.stopPropagation()') OK
-  button.btn.btn-warning(type='button', ng-show="showCancelButton" ng-click='modalCancel(); $event.stopPropagation()') Cancel
+  button.btn.btn-primary(type='button', ng-click='(modalOk || $close)(); $event.stopPropagation()') OK
+  button.btn.btn-warning(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel

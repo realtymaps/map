@@ -1,6 +1,6 @@
 .layers-tools
   .desktop-only
-    button.toggle-active.btn.btn-transparent(popover-template="'LayersPopover'", popover-placement='right')
+    button.toggle-active.btn.btn-transparent(ng-attr-aria-expanded="{{layersOpen?'true':'false'}}" popover-template="'LayersPopover'", popover-placement='right' ng-click="layersOpen=!layersOpen")
       span.icon.icon-layers
 
   .mobile-only

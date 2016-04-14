@@ -4,20 +4,22 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-
     div(ng-if="isOpen" ng-controller="rmapsDrawNeighborhoodCtrl")
     button.btn.btn-transparent.dropdown-toggle.neighbour.nav-btn.toggle-active(
     dropdown-toggle
-    popover-placement="right"
+    popover-placement="bottom"
     popover="Neighborhoods"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter")
       span.icon.icon-neighbourhood
     .dropdown-menu.whiteblock.no-margin
       .fixed-header
         span
-          a(ui-sref="projectNeighborhoods({id: principal.getCurrentProfile().project_id})") {{neighbourhoods.length}} Neighborhoods
+          a(ng-show="neighbourhoods.length" ui-sref="projectNeighborhoods({id: principal.getCurrentProfile().project_id})") {{neighbourhoods.length}} Neighborhoods
+          span(ng-show="!neighbourhoods.length") No Neighborhoods
         span.results-btn(
           popover-placement="right"
           popover-trigger="mouseenter"
           popover="Add Neighborhood"
-          ng-click="Toggles.toggleIsNeighborhoodDraw()") New Neighborhood
+          ng-click="Toggles.toggleIsNeighborhoodDraw()")
             span.icon.icon-add_neighbourhood
+            span New Neighborhood
       .inner
         ul
           li(ng-repeat="model in neighbourhoods")
