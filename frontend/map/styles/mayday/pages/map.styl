@@ -27,8 +27,13 @@ body
     $fnMakeMapSettings()
     $fnMakeMapPinned()
 
-    margin-left 60px
-    >.btn-group
+    .dropdown-menu
+      @extends .fallDown
+
+    .desktop-only
+      margin-left 60px
+
+    >.btn-group.desktop-only
       width 420px
 
     .favorites

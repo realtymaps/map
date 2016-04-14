@@ -478,6 +478,8 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       if startedTransaction
         promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
         .then () ->
+          promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
+        .then () ->
           promiseQuery('COMMIT TRANSACTION')
         .then () ->
           tables.jobQueue.dataLoadHistory()

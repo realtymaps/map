@@ -81,7 +81,15 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     rmapsProjectsService.update project.project_id, _.pick project, 'archived'
 
   $scope.resetProject = (project) ->
-    if confirm 'Clear all filters, saved properties, and notes?'
+    return if !project.sandbox
+    $scope.modalTitle = "Are you sure?"
+    $scope.modalBody = "Sandbox will be cleared (pinned, favorites, notes and filters)"
+    $scope.showCancelButton = true
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+    modalInstance.result.then ->
       rmapsProjectsService.delete id: project.project_id
       .then () ->
         $window.location.reload()
