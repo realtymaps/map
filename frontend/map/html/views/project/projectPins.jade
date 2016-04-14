@@ -3,15 +3,17 @@
     .project-property-card.item.item-card.bordered(ng-repeat="property in pins")
       .row
         .col-xs-6
-          .prop-image
-            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-            img(ng-cloak ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-            img(ng-cloak ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+          .bordered
+            .prop-image
+              .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+              img(ng-cloak ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+              img(ng-cloak ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+
+            property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
 
         .col-xs-6
           .property-data
             property-attributes(property='property')
-            property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
 
           .project-card-notes
             .notes-title

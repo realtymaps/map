@@ -40,6 +40,14 @@
     border: solid $rm-border-line 1px;
 
   //
+  // Property Attributes
+  //
+  .prop-attrs
+    .prop-street
+      font-weight: 500;
+      font-size: 18px;
+
+  //
   // Inner panel
   //
   .inner
@@ -219,13 +227,24 @@
     padding: 10px;
 
   .btn-actions
-    position: absolute;
-    top: 0;
-    right: 0;
+    //position: absolute;
+    //top: 0;
+    //right: 0;
+    height: 40px;
 
     button
-      border: none;
-      background: transparent;
+      position relative
+      font-size 22px
+      color: $gray_medium
+      border none
+      border-right 1px solid $darker_white
+      background-color $dark_white
+      padding 0 0 0 6px
+      width 25%
+      float left
+      min-width 10px
+      &:last-child
+        border none
       //font-size: 19px;
 
       &.button-is-pin
@@ -245,6 +264,8 @@
   //
 
   .project-property-card
+    margin-bottom: 15px;
+
     .property-data
       padding: 0;
 
