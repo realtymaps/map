@@ -1,6 +1,6 @@
 include ../mixins/property/_propertyAttributes.jade
 
-div(ng-controller="rmapsSmallDetailsCtrl")
+.property-card(ng-controller="rmapsSmallDetailsCtrl")
   .property-img
     span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
     img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")

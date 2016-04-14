@@ -21,8 +21,8 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
         property: new rmapsPropertyFormatterService()
       }
 
-      $scope.property =
-        rm_property_id: $state.params?.id
+      # $scope.property =
+      #   rm_property_id: $state.params?.id
 
       $scope.zoomTo = ($event) ->
         $event.stopPropagation() if $event
