@@ -15,6 +15,9 @@ module.exports =
     notification: 'config_notification'
     dataSourceFields: 'config_data_source_fields'
     dataSourceLookups: 'config_data_source_lookups'
+    dataSourceDatabases: 'config_data_source_databases'
+    dataSourceObjects: 'config_data_source_objects'
+    dataSourceTables: 'config_data_source_tables'
   lookup:
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
