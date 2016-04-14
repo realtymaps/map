@@ -1,10 +1,11 @@
 #project-neighborhood-container
-  div(ng-repeat="neighbourhood in project.neighbourhoods")
-    a.map
-      span View Neighbourhood
-      img(src="/assets/test_map.jpg")
-    .data
-      h3 {{neighbourhood.name}}
-    button.btn.btn-link
-      i.fa.fa-trash-o
-      span Delete
+  .neighborhood.col-sm-6(ng-repeat="neighbourhood in project.neighbourhoods")
+    .item.item-border.item-card
+      a.map
+        span View Neighbourhood
+        img(src="/assets/test_map.jpg")
+      .data
+        h3 {{neighbourhood.name}}
+      button.btn.btn-link
+        i.fa.fa-trash-o
+        span Delete
