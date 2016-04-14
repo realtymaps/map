@@ -2,14 +2,35 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 
 template = require './_propertyButtons.jade'
-
-app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsEventConstants, $log) ->
-  $log.debug "Property Buttons directive: ", template
+#
+# USAGE:
+#
+#   The property and project should be passed in using directive attributes:
+#
+#      <property-buttons project="projectScopeVar" property="propertyScopeVar" ... ></property-buttons>
+#
+#   Or the JADE equivalent:
+#
+#      property-buttons(project="projectScopeVar" property="propertyScopeVar")
+#
+#   If a project is not defined, the currently selected project will be used
+#
+app.directive 'propertyButtons', (
+  $log
+  $rootScope,
+  $state,
+  rmapsEventConstants,
+  rmapsProfilesService,
+  rmapsPropertiesService,
+  rmapsPropertyFormatterService,
+  rmapsResultsFormatterService,
+) ->
+#  $log.debug "Property Buttons directive: ", template
   return {
     restrict: 'EA'
     scope:
-      property: '='
-      project: '=?'
+      propertyFn: '&property'
+      projectFn: '&?project'
       zoomClick: '&?'
       pinClick: '&?'
       favoriteClick: '&?'
@@ -21,8 +42,12 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
         property: new rmapsPropertyFormatterService()
       }
 
-      $scope.property =
-        rm_property_id: $state.params?.id
+      $scope.property = $scope.propertyFn()
+
+      if !$scope.projectFn
+        $scope.project = rmapsProfilesService.currentProfile
+      else
+        $scope.project = $scope.projectFn()
 
       $scope.zoomTo = ($event) ->
         $event.stopPropagation() if $event
