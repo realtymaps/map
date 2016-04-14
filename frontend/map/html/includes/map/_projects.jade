@@ -12,10 +12,11 @@ mixin projectsDropdown()
         a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
         span.results-btn(
           popover-placement="right"
-          popover-trigger="mouseenter"
+          popover-trigger="click mouseenter"
           popover="Add Project"
-          ng-click="addProject()") New Project
+          ng-click="addProject()")
             span.icon.icon-project
+            span New Project
       .inner
         ul
           li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )
@@ -26,11 +27,16 @@ mixin projectsDropdown()
                   h3(ng-show="project.sandbox") Sandbox
                   h3(ng-show="!project.sandbox") {{project.name}}
                   .row.subtitle
-                    span.col-md-8 {{project.totalProperties}}
+                    span.col-md-5 {{project.totalProperties}}
                       span(ng-show="project.totalProperties == 1") &#32;Property
                       span(ng-show="project.totalProperties != 1") &#32;Properties
-                      span(ng-show="project.archived == true") &#32;-- archived
+                      span(ng-show="project.archived == true") &#32;(archived)
                     span.col-md-4.text-right &#32;{{project.modified.format('MMM Do')}}
               span.actions
-                span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
-                span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")
+                span.action-button(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+                  span.action(ng-show="project.archived") Unarchive
+                  span.action(ng-show="!project.archived") Archive
+                  span.icon.icon-save_on_disk
+                span.action-button(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")
+                  span.action Reset
+                  span.icon.fa.fa-undo
