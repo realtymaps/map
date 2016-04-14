@@ -266,12 +266,17 @@
   .project-property-card
     margin-bottom: 15px;
 
+    .property-card-right
+      position: relative;
+      min-height: 350px;
+
     .property-data
       padding: 0;
 
     .project-card-notes
       font-size: 14px;
       margin-top: 15px;
+      margin-bottom: 60px;
 
       .notes-title
         a
@@ -283,6 +288,10 @@
 
     .note-input
       margin-top: 10px;
+      position: absolute;
+      bottom: 0;
+      right: 15px;
+      left: 15px;
 
     .input-group-addon:hover
       background-color: $light_blue;
