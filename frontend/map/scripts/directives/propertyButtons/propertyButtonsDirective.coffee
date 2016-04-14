@@ -29,8 +29,8 @@ app.directive 'propertyButtons', (
   return {
     restrict: 'EA'
     scope:
-      propertyFn: '&property'
-      projectFn: '&?project'
+      propertyParent: '=property'
+      projectParent: '=?project'
       zoomClick: '&?'
       pinClick: '&?'
       favoriteClick: '&?'
@@ -42,12 +42,22 @@ app.directive 'propertyButtons', (
         property: new rmapsPropertyFormatterService()
       }
 
-      $scope.property = $scope.propertyFn()
-
-      if !$scope.projectFn
-        $scope.project = rmapsProfilesService.currentProfile
+      # Copy the parent project so that it can't be accidently changed by directive code
+      if $scope.propertyParent
+        $scope.property = angular.copy($scope.propertyParent)
       else
-        $scope.project = $scope.projectFn()
+        $log.error("Property Buttons Directive is not passed a Property argument")
+
+      $scope.$watch "propertyParent", (newValue) ->
+        $scope.property = newValue
+
+      if !$scope.projectParent
+        $scope.project = angular.copy(rmapsProfilesService.currentProfile)
+      else
+        $scope.project = angular.copy($scope.projectParent)
+
+      $scope.$watch "projectParent", (newValue) ->
+        $scope.project = newValue
 
       $scope.zoomTo = ($event) ->
         $event.stopPropagation() if $event
