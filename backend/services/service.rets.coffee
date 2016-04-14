@@ -20,40 +20,51 @@ _applyOverrides = (mainData, overrideData) ->
         row[key] = value
   return mainData
 
-_syncColumnData = ({mlsId, databaseId, tableId}) ->
+_syncDataCacheImpls =
+  columns: (mlsConfig, databaseId, tableId) ->
+    retsHelpers.getColumnList(mlsConfig, databaseId, tableId)
+    .then (list) ->
+      tables.config.dataSourceFields()
+      .where
+        data_source_id: mlsConfig.id
+        data_source_type: 'mls'
+        data_list_type: "#{databaseId}/#{tableId}"
+      .delete()
+      .then () ->
+        Promise.map list, (columnInfo) ->
+          id =
+            SystemName: columnInfo.SystemName
+            data_source_id: mlsConfig.id
+            data_source_type: 'mls'
+            data_list_type: "#{databaseId}/#{tableId}"
+          sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceFields)
+      .then () ->
+        return list
+
+_syncDataCache = (ids) ->
+  [type, mlsId, otherIds...] = ids
   now = Date.now()  # save the timestamp of when we started the request
   mlsConfigService.getById(mlsId)
   .then ([mlsConfig]) ->
-    retsHelpers.getColumnList(mlsConfig, databaseId, tableId)
-  .then (list) ->
-    tables.config.dataSourceFields()
-    .where
-      data_source_id: mlsId
-      data_source_type: 'mls'
-      data_list_type: "#{databaseId}/#{tableId}"
-    .delete()
+    _syncDataCacheImpls[type](mlsConfig, otherIds...)
+  .then (data) ->
+    keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
     .then () ->
-      Promise.map list, (columnInfo) ->
-        id =
-          SystemName: columnInfo.SystemName
-          data_source_id: mlsId
-          data_source_type: 'mls'
-          data_list_type: "#{databaseId}/#{tableId}"
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceFields)
-    .then () ->
-      keystore.setValue("columns/#{mlsId}/#{databaseId}/#{tableId}", now, namespace: RETS_REFRESHES)
-    .then () ->
-      return list
-
+      return data
 
 
 getColumnList = (opts) ->
   {mlsId, databaseId, tableId, forceRefresh} = opts
   @logger.debug () -> "getColumnList(), mlsId=#{mlsId}, databaseId=#{databaseId}, tableId=#{tableId}, forceRefresh=#{forceRefresh}"
+  _getRetsMetadata({applyOverrides: true, ids: ['columns', mlsId, databaseId, tableId], forceRefresh})
+
+_getRetsMetadata = (opts) ->
+  {ids, forceRefresh, applyOverrides} = opts
+  [type, mlsId, otherIds...] = ids
   Promise.try () ->
     if forceRefresh
       return true
-    keystore.getValue("columns/#{mlsId}/#{databaseId}/#{tableId}", namespace: RETS_REFRESHES)
+    keystore.getValue(ids.join('/'), namespace: RETS_REFRESHES)
     .then (lastRefresh) ->
       if Date.now() - lastRefresh > SEVEN_DAYS_MILLIS
         return true
@@ -61,32 +72,20 @@ getColumnList = (opts) ->
         return false
   .then (doRefresh) ->
     if doRefresh
-      _syncColumnData(opts)
+      return _syncDataCache(ids)
     else
-      dataSource.getColumnList(mlsId, 'mls', "#{databaseId}/#{tableId}")
+      dataSource.getColumnList(mlsId, 'mls', otherIds.join('/'))
       .then (list) ->
         if !list?.length
-          return _syncColumnData(opts)
+          return _syncDataCache(ids)
         else
           return list
-
-
-
-  query = tables.config.dataSourceFields()
-  .select(
-    'MetadataEntryID',
-    'SystemName',
-    'ShortName',
-    'LongName',
-    'DataType',
-    'Interpretation',
-    'LookupName'
-  )
-  .where
-    data_source_id: dataSourceId
-    data_source_type: dataSourceType
-    data_list_type: dataListType
-  @custom(query)
+  .then (mainList) ->
+    if !applyOverrides
+      return mainList
+    dataSource.getColumnList(mlsId, 'mls', otherIds.join('/'), true)
+    .then (overrideList) ->
+      return _applyOverrides(mainList, overrideList)
 
 getLookupTypes = (dataSourceId, lookupId) ->
   @logger.debug () -> "getLookupTypes(), dataSourceId=#{dataSourceId}, lookupId=#{lookupId}"
