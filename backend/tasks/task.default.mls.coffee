@@ -52,7 +52,8 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.values, (id) ->
+    mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
   tables.property.listing()
