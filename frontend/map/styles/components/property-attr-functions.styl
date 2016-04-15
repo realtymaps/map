@@ -20,6 +20,13 @@ $fnPropertyStatus(colorProp)
     {colorProp} $rm_notforsale
 
 $fnMakePropertyAttr()
+  margin 0
+  padding 0
+  p
+    margin 0
+    padding 0
+    line-height 24px
+
   .property-img
     img
       max-width 100%
@@ -49,9 +56,11 @@ $fnMakePropertyAttr()
     $fnPropertyStatus(color)
 
   .property-attr
+    font-size 12px
     list-style none
     display inline-block
     margin 0
+    padding 0 10px
     ul.attr
       padding 0
       margin 5px -4px
@@ -60,13 +69,13 @@ $fnMakePropertyAttr()
         display inline-block
         border-right 1px solid $black
         border-bottom none
-        padding 10px
-        line-height 0
+        padding 0 5px
         &:last-child
           border none
 
   .title
-    margin 0 0 5px 0
+    margin 5px 0 0
+    padding 0 10px
     font-weight bold
     color: $dark_blue_darker
     &:hover
