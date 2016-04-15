@@ -1,8 +1,11 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory 'rmapsMapTogglesFactory', ($log) ->
+app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
   $log = $log.spawn 'map:rmapsMapTogglesFactory'
+
+  _fireLocationChange = (position) ->
+    $rootScope.$emit rmapsEventConstants.map.locationChange, position
 
   class MapToggles
     @currentToggles: null
@@ -11,7 +14,6 @@ app.factory 'rmapsMapTogglesFactory', ($log) ->
       $log.debug 'Contruct Map Toggles from JSON:', json
       @constructor.currentToggles = @
 
-      _locationCb = null
       @showResults = false
       @showDetails = false
       @showFilters = false
@@ -96,19 +98,15 @@ app.factory 'rmapsMapTogglesFactory', ($log) ->
           # let angular have a chance to attach the input box...
           document.getElementById('places-search-input')?.focus()
 
-      @setLocationCb = (cb) ->
-        _locationCb = cb
 
       @toggleLocation = () =>
         @isFetchingLocation = true
         navigator.geolocation.getCurrentPosition (location) =>
           @isFetchingLocation = false
-          _locationCb(location)
+          _fireLocationChange(location)
 
       @togglePreviousLocation = ->
-        _locationCb()
+        _fireLocationChange()
 
-      @setLocation = (location) ->
-        _locationCb?(location)
 
       @
