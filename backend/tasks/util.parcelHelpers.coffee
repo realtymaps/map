@@ -41,8 +41,8 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
         p.catch () ->
 
   Promise.all promises
-  .catch (err) ->
-    logger.maybeInvalidError err
+  .catch (error) ->
+    logger.maybeInvalidError {error}
 
 _finalizeUpdateListing = ({id, subtask}) ->
   #should not need owner promotion logic since it should have already been done
