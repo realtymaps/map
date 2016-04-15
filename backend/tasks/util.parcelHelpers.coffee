@@ -21,7 +21,6 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
     rows
     fipsCode
   }
-  invalidCtr = insertCtr = updateCtr = 0
 
   tablesPropName = 'norm'+tableName.toInitCaps()
 
@@ -35,20 +34,15 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
         p = if count == 0
           tables.property[tablesPropName]().raw parcelUtils.insertParcelStr {row, tableName, database}
           .then () ->
-            insertCtr++
         else
           tables.property[tablesPropName]().raw parcelUtils.updateParcelStr {row, tableName, database}
           .then () ->
-            updateCtr += count
 
         p.catch () ->
-          invalidCtr
 
   Promise.all promises
-  .then () ->
-    {insertCtr, updateCtr, invalidCtr}
   .catch (err) ->
-    logger.error JSON.stringify err
+    logger.maybeInvalidError err
 
 _finalizeUpdateListing = ({id, subtask}) ->
   #should not need owner promotion logic since it should have already been done

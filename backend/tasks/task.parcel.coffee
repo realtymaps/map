@@ -117,18 +117,6 @@ normalizeData = (subtask) ->
       rows
       fipsCode
     }
-    .then ({insertCtr, updateCtr, invalidCtr}) ->
-      logger.debug {insertCtr, updateCtr, invalidCtr}
-
-      tables.jobQueue.dataLoadHistory()
-      .update
-        inserted_rows: insertCtr
-        updated_rows: updateCtr
-        invalid_rows: invalidCtr
-      .where
-        batch_id: subtask.batch_id
-        data_source_type: 'parcels'
-        data_source_id: subtask.task_name
 
 finalizeDataPrep = (subtask) ->
   tables.property.normParcel()
