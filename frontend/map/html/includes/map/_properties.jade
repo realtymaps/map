@@ -18,11 +18,12 @@ include ../mixins/property/_propertyAttributes.jade
         ul.list
           li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
           ng-click="formatters.results.click(property,property);showDetails = !showDetails")
-            div.property-img
-              span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-              img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
-            +propertyAttributes('property')
-            property-buttons(property='property'
+            .property-card
+              div.property-img
+                span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+                img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+              +propertyAttributes('property')
+              property-buttons(property='property'
                               pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
                               favorite-click='formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()'
                               )

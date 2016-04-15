@@ -2,7 +2,7 @@ mixin propertyAttributes(propName)
   p.price(ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(#{propName}.price)}}
   div.property-attr
     ul.attr
-      li.bedrooms(ng-if="#{propName}.bedrooms") {{#{propName}.bedrooms}} beds
+      li.bedrooms(ng-if="#{propName}.bedrooms") {{#{propName}.bedrooms}} bed
       li.baths_total(ng-if="#{propName}.baths_total") {{#{propName}.baths_total}} bath
       li.finished_sqft(ng-if="#{propName}.finished_sqft") {{#{propName}.finished_sqft}} Sq Ft
       li.year_built(ng-if="#{propName}.year_built") {{formatters.property.getYear(#{propName}.year_built)}} built
