@@ -92,17 +92,36 @@ loadRawData = (subtask) -> Promise.try () ->
       # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
       # on whether this is a dump or an update)
       #TODO: the right way later
-      recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: {deletes, dataType: 'parcel'}, replace: true})
-      # finalizePrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeDataPrep", replace: true})
-      # activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes}, replace: true})
+      recordCountsPromise = jobQueue.queueSubsequentSubtask {
+        subtask
+        laterSubtaskName: "recordChangeCounts"
+        #rawDataType fixes lookup of rawtable for change counts
+        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel"}
+        replace: true
+      }
+      finalizePrepPromise = jobQueue.queueSubsequentSubtask {
+        subtask
+        laterSubtaskName: "finalizeDataPrep"
+        replace: true
+      }
+      activatePromise = jobQueue.queueSubsequentSubtask {
+        subtask, laterSubtaskName: "activateNewData"
+        manualData: {deletes}
+        replace: true
+      }
       #finalizePrepPromise, activatePromise #ADD TO JOIN
-      Promise.join recordCountsPromise, () ->
+      Promise.join recordCountsPromise, finalizePrepPromise, activatePromise,  () ->
         numRawRows
     .then (numRows) ->
       if numRows == 0
         return
       logger.debug("num rows to normalize: #{numRows}")
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData: {fipsCode}})
+      jobQueue.queueSubsequentPaginatedSubtask {
+        subtask, totalOrList: numRows
+        maxPage: NUM_ROWS_TO_PAGINATE
+        laterSubtaskName: "normalizeData"
+        mergeData: {fipsCode}
+      }
 
 normalizeData = (subtask) ->
   {fipsCode} = subtask.data

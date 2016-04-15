@@ -15,6 +15,7 @@ utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
 rets = require 'rets-client'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
+parcelUtils = require '../utils/util.parcel'
 
 
 DELETE =
@@ -24,7 +25,8 @@ DELETE =
 
 
 buildUniqueSubtaskName = (subtask, prefix) ->
-  parts = [subtask.batch_id, subtask.task_name, subtask.data.dataType]
+  dataType = subtask.data.rawDataType ? subtask.data.dataType
+  parts = [subtask.batch_id, subtask.task_name, dataType]
   if subtask.data.rawTableSuffix
     parts.push(subtask.data.rawTableSuffix)
   if prefix
@@ -269,6 +271,7 @@ getNormalizeRows = (subtask, rawSubid) ->
 normalizeData = (subtask, options) -> Promise.try () ->
   successes = []
   rawSubid = buildUniqueSubtaskName(subtask)
+
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   # get start time for "last updated" stamp
@@ -283,7 +286,14 @@ normalizeData = (subtask, options) -> Promise.try () ->
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
       .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
-      .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType, subtask.data.normalSubid)
+      .then (updateRow) ->
+        updateRecord {
+          updateRow
+          stats
+          diffExcludeKeys: validationInfo.diffExcludeKeys
+          dataType: subtask.data.dataType
+          subid: subtask.data.normalSubid
+        }
       .then (rm_property_id) ->
         successes.push(rm_property_id)
       #.then () ->
@@ -299,7 +309,17 @@ normalizeData = (subtask, options) -> Promise.try () ->
   .then () ->
     successes
 
-_updateRecord = (stats, diffExcludeKeys, dataType, subid, updateRow) -> Promise.try () ->
+_specialUpdates =
+  normParcel:
+    insert: ({row}) ->
+      tables.property.normParcel()
+      .raw parcelUtils.insertParcelStr {row, tableName: 'parcel', database: 'normalized'}
+
+    update: ({row}) ->
+      tables.property.normParcel()
+      .raw parcelUtils.updateParcelStr {row, tableName: 'parcel', database: 'normalized'}
+
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow}) -> Promise.try () ->
   Promise.delay(100)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
@@ -312,8 +332,11 @@ _updateRecord = (stats, diffExcludeKeys, dataType, subid, updateRow) -> Promise.
     if !result?.length
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
-      tables.property[dataType](subid: subid)
-      .insert(updateRow)
+      if !_specialUpdates[dataType]?
+        tables.property[dataType](subid: subid)
+        .insert(updateRow)
+      else
+        _specialUpdates[dataType].insert({subid, row: updateRow})
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
@@ -326,11 +349,15 @@ _updateRecord = (stats, diffExcludeKeys, dataType, subid, updateRow) -> Promise.
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
       updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
-      tables.property[dataType](subid: subid)
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
-      .update(updateRow)
+
+      if !_specialUpdates[dataType]?
+        tables.property[dataType](subid: subid)
+        .where
+          data_source_uuid: updateRow.data_source_uuid
+          data_source_id: updateRow.data_source_id
+        .update(updateRow)
+      else
+        !_specialUpdates[dataType].update({subid, row: updateRow})
   .then () ->
     updateRow.rm_property_id
 
@@ -639,4 +666,5 @@ module.exports = {
   DELETE
   refreshThreshold
   rollback
+  updateRecord
 }
