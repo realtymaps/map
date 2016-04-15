@@ -1,5 +1,6 @@
 config = require '../../common/config/commonConfig'
 base = require './service.properties.base.filterSummary'
+combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 sqlCluster = require '../utils/util.sql.manual.cluster'

@@ -31,12 +31,8 @@ main
     z-index 99
     .dropdown-menu
       @extends .slideFromTop
-      &.whiteblock
-        @extends .slideFromTop
       &.blueArrow
         @extends .fallDown
-
-
 
 @-moz-document url-prefix()
   .dropdown
@@ -485,6 +481,7 @@ p.required
     color $black
 
 .popover
+  @extends .font-museo-500
   color $black
   font-size 11px
   max-width none

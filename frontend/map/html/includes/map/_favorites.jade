@@ -4,15 +4,16 @@ include ../mixins/_circleNrMixin.jade
 span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" dropdown)
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
     dropdown-toggle
-    popover-placement="right"
+    popover-placement="bottom"
     popover="Favorite Properties"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter")
     i.icon.fa.fa-heart
 
   .dropdown-menu.whiteblock.no-margin
     .fixed-header
       span
-        a(ui-sref="projectFavorites({id: principal.getCurrentProfile().project_id})") {{favoriteTotal}} Favorite Properties
+        a(ng-show="favoriteTotal" ui-sref="projectFavorites({id: principal.getCurrentProfile().project_id})") {{favoriteTotal}} Favorite Properties
+        span(ng-show="!favoriteTotal") No Favorite Properties
     .inner
       ul
         li(ng-repeat="property in favoriteProperties")
@@ -23,6 +24,6 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="d
                 span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.rm_status}}
                 +propertyAttributes('property')
             span.actions
-              span.unpin(ng-click="formatters.results.clickFavoriteResultFromList(property); $event.stopPropagation()")
+              span.action-button(ng-click="formatters.results.clickFavoriteResultFromList(property); $event.stopPropagation()")
                 span.action Remove
                 i.fa.fa-heart

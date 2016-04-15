@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('service:filterSummary:base')
+logger = require('../config/logger').spawn('service:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
@@ -7,7 +7,7 @@ filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
 
-dbFn = tables.property.propertyDetails
+dbFn = tables.property.combined
 
 validators = validation.validators
 
@@ -58,7 +58,8 @@ transforms = do ->
   returnType: validators.string()
 
 _getDefaultQuery = ->
-  sqlHelpers.select(dbFn(), "filter", true, "distinct on (rm_property_id)")
+  # TODO: Will probably not work due to mls, county, tax rows
+  sqlHelpers.select(dbFn(), "filterCombined", true, "distinct on (rm_property_id)")
 
 _getResultCount = (validatedQuery) ->
   # obtain a count(*)-style select query
@@ -70,6 +71,8 @@ _getResultCount = (validatedQuery) ->
 _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
   logger.debug -> validatedQuery
 
+  # TODO: permissions
+
   {bounds, state} = validatedQuery
   {filters} = state
   return query if !filters?.status?.length
@@ -77,13 +80,16 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   query.limit(limit) if limit
   if bounds
-    sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geom_polys_raw", bounds)
+    query.orWhere ->
+      sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
+      # TODO: remove this line, it is a temp hack since no geometry data exists yet
+      query.whereNull('geometry_raw')
 
   if filters.status.length < statuses.length
-    sqlHelpers.whereIn(query, "#{dbFn.tableName}.rm_status", filters.status)
+    sqlHelpers.whereIn(query, "#{dbFn.tableName}.status", filters.status)
 
   sqlHelpers.between(query, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
-  sqlHelpers.between(query, "#{dbFn.tableName}.finished_sqft", filters.sqftMin, filters.sqftMax)
+  sqlHelpers.between(query, "#{dbFn.tableName}.sqft_finished", filters.sqftMin, filters.sqftMax)
   sqlHelpers.between(query, "#{dbFn.tableName}.acres", filters.acresMin, filters.acresMax)
 
   if filters.bedsMin
@@ -110,24 +116,25 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
       # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
       # since this is after the split, a space here will be an actual part of the search
       result.push chunk.replace(/(["-])/g, "[$1 ]?")
-    sqlHelpers.allPatternsInAnyColumn(query, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name2"])
+    sqlHelpers.allPatternsInAnyColumn(query, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name_2"])
 
   if filters.listedDaysMin
-    sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
+    query.where("days_on_market", ">=", filters.listedDaysMin)
   if filters.listedDaysMax
-    sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", "<=", filters.listedDaysMax)
+    query.where("days_on_market", "<=", filters.listedDaysMax)
 
+  # TODO: make this work with new json address field (example: {"lines":["3325 West Washington Boulevard","Unit 2","Chicago, IL"],"strength":51})
   # If full address available, include matched property in addition to other matches regardless of filters
-  filters.address = _.pick filters.address, filterAddress.keys
-  filters.address = _.omit filters.address, _.isEmpty
-  if _.keys(filters.address).length == filterAddress.keys.length
-    query.orWhere ->
-      for key, value of filters.address
-        if key == 'zip'
-          # Match 5-digit zip even if DB contains zip ext
-          @where("#{dbFn.tableName}.#{key}", "like", "#{value}%")
-        else
-          @where("#{dbFn.tableName}.#{key}", "=", value)
+  # filters.address = _.pick filters.address, filterAddress.keys
+  # filters.address = _.omit filters.address, _.isEmpty
+  # if _.keys(filters.address).length == filterAddress.keys.length
+  #   query.orWhere ->
+  #     for key, value of filters.address
+  #       if key == 'zip'
+  #         # Match 5-digit zip even if DB contains zip ext
+  #         @where("#{dbFn.tableName}.#{key}", "like", "#{value}%")
+  #       else
+  #         @where("#{dbFn.tableName}.#{key}", "=", value)
 
   query
 
