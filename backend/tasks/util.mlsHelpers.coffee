@@ -24,7 +24,7 @@ ONE_DAY_MILLISEC = 24*60*60*1000
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.refreshThreshold
+  dataLoadHelpers.refreshThreshold subtask,
     fullRefreshMilliSec: ONE_DAY_MILLISEC
     logDescription: 'task.mls'
   .then (refreshThreshold) ->
