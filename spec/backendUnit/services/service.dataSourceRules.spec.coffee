@@ -143,6 +143,7 @@ describe 'service.dataSourceRules.coffee', ->
       ]
 
     it 'should have valid getRules query', () ->
+      this.timeout(5000)
       svc.getRules(@query.data_source_id, @query.data_source_type, @query.data_type).then (queryResults) =>
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.calledWith(@query)).to.be.true

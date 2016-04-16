@@ -253,6 +253,6 @@ module.exports = {
   getPhotosObject
   getObjectList
   RetsError: rets.RetsError
-  RetsReplyError: rets.RetsServerError
+  RetsServerError: rets.RetsServerError
   RetsReplyError: rets.RetsReplyError
 }

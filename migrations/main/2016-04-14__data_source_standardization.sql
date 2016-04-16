@@ -2,11 +2,9 @@
 DROP INDEX "config_data_source_fields_SystemName_data_source_id_data_so_idx";
 CREATE UNIQUE INDEX ON config_data_source_fields ("SystemName", data_source_id, data_list_type);
 
--- don't need corelogic data slowing queries down
-DELETE FROM config_data_source_lookups WHERE data_source_id = 'corelogic';
 
+TRUNCATE config_data_source_lookups;
 -- adding data_source_type as an informational field to be consistent with config_data_source_fields
-ALTER TABLE config_data_source_lookups ADD COLUMN data_source_type TEXT;
-UPDATE config_data_source_lookups SET data_source_type = 'county';
-ALTER TABLE config_data_source_lookups ALTER COLUMN data_source_type SET NOT NULL;
-CREATE UNIQUE INDEX ON config_data_source_lookups ("LookupName", "LongValue", data_source_id);
+ALTER TABLE config_data_source_lookups ADD COLUMN data_source_type TEXT NOT NULL;
+ALTER TABLE config_data_source_lookups ADD COLUMN data_list_type TEXT NOT NULL;
+CREATE UNIQUE INDEX ON config_data_source_lookups ("LookupName", "Value", data_source_id, data_list_type);

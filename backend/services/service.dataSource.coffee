@@ -1,5 +1,4 @@
 _ = require 'lodash'
-logger = require('../config/logger').spawn('service:dataSource')
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 Promise = require 'bluebird'
@@ -33,8 +32,8 @@ class DataSourceService extends ServiceCrud
     return @custom(query)
 
 
-  getLookupTypes: (dataSourceId, lookupId) ->
-    @logger.debug () -> "getLookupTypes(), dataSourceId=#{dataSourceId}, lookupId=#{lookupId}"
+  getLookupTypes: (dataSourceId, dataListType, lookupId) ->
+    @logger.debug () -> "getLookupTypes(), dataSourceId=#{dataSourceId}, dataListType=#{dataListType}, lookupId=#{lookupId}"
     query = tables.config.dataSourceLookups()
     .select(
       'LookupName',
@@ -45,6 +44,7 @@ class DataSourceService extends ServiceCrud
     .where
       LookupName: lookupId
       data_source_id: dataSourceId
+      data_list_type: dataListType
     @custom(query)
 
   getDatabaseList: (dataSourceId) ->

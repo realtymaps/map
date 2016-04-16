@@ -8,7 +8,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 mlsConfigService = require './service.mls_config'
 moment = require 'moment'
-{PartiallyHandledError, isCausedBy} = require './errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 {validators, validateAndTransformRequest} = require '../utils/util.validation'
 
 RETS_REFRESHES = 'rets-refreshes'
@@ -22,7 +22,7 @@ _syncDataCache = (ids, saveCacheImpl) ->
   .catch (err) ->
     throw new PartiallyHandledError(err, "Can't get MLS config for #{mlsId}")
   .then ([mlsConfig]) ->
-    @logger.debug () -> "_syncDataCache(#{ids.join('/')}): attempting to acquire canonical data"
+    logger.debug () -> "_syncDataCache(#{ids.join('/')}): attempting to acquire canonical data"
     retsHelpers[type](mlsConfig, otherIds...)
   .then (data) ->
     if !data?.length
@@ -31,7 +31,7 @@ _syncDataCache = (ids, saveCacheImpl) ->
     .then () ->
       keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
     .then () ->
-      @logger.debug () -> "_syncDataCache(#{ids.join('/')}): data cached successfully"
+      logger.debug () -> "_syncDataCache(#{ids.join('/')}): data cached successfully"
       return data
 
 _getRetsMetadata = (opts) ->
@@ -39,13 +39,13 @@ _getRetsMetadata = (opts) ->
   [type, mlsId, otherIds...] = ids
   Promise.try () ->
     if forceRefresh
-      @logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): forced refresh"
+      logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): forced refresh"
       return true
     keystore.getValue(ids.join('/'), namespace: RETS_REFRESHES, defaultValue: 0)
     .then (lastRefresh) ->
       millisSinceLastRefresh = Date.now() - lastRefresh
       if millisSinceLastRefresh > SEVEN_DAYS_MILLIS
-        @logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
+        logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
         return true
       else
         return false
@@ -62,11 +62,11 @@ _getRetsMetadata = (opts) ->
           # if we were just automatically attempting the refresh, let it slide
           logger.warn(msg)
     else
-      @logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): using cached data"
+      logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): using cached data"
       dataSource[type](mlsId, otherIds.join('/'))
       .then (list) ->
         if !list?.length
-          @logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): no cached data found"
+          logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): no cached data found"
           _syncDataCache(ids, saveCacheImpl)
           .catch isCausedBy(retsHelpers.RetsError), (err) ->
             logger.error("Couldn't acquire canonical RETS data: #{ids.join('/')}")
@@ -76,7 +76,7 @@ _getRetsMetadata = (opts) ->
   .then (mainList) ->
     if !overrideKey
       return mainList
-    @logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): applying overrides based on #{overrideKey}"
+    logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): applying overrides based on #{overrideKey}"
     dataSource[type](mlsId, otherIds.join('/'), true)
     .then (overrideList) ->
       overrideMap = _.indexBy(overrideList, overrideKey)
@@ -89,7 +89,7 @@ _getRetsMetadata = (opts) ->
 
 getColumnList = (opts) ->
   {mlsId, databaseId, tableId, forceRefresh} = opts
-  @logger.debug () -> "getColumnList(), mlsId=#{mlsId}, databaseId=#{databaseId}, tableId=#{tableId}, forceRefresh=#{forceRefresh}"
+  logger.debug () -> "getColumnList(), mlsId=#{mlsId}, databaseId=#{databaseId}, tableId=#{tableId}, forceRefresh=#{forceRefresh}"
   saveCacheImpl = (list, mlsConfig, databaseId, tableId) ->
     tables.config.dataSourceFields()
     .where
@@ -107,25 +107,27 @@ getColumnList = (opts) ->
 
 getLookupTypes = (opts) ->
   {mlsId, databaseId, lookupId, forceRefresh} = opts
-  @logger.debug () -> "getLookupTypes(), mlsId=#{mlsId}, databaseId=#{databaseId}, lookupId=#{lookupId}, forceRefresh=#{forceRefresh}"
+  logger.debug () -> "getLookupTypes(), mlsId=#{mlsId}, databaseId=#{databaseId}, lookupId=#{lookupId}, forceRefresh=#{forceRefresh}"
   saveCacheImpl = (list, mlsConfig, databaseId, lookupId) ->
     tables.config.dataSourceLookups()
     .where
       data_source_id: mlsConfig.id
-      LookupName: "#{databaseId}/#{lookupId}"
+      data_list_type: databaseId
+      LookupName: lookupId
     .delete()
     .then () ->
       Promise.map list, (columnInfo) ->
         id =
           data_source_id: mlsConfig.id
-          LookupName: "#{databaseId}/#{lookupId}"
-          LongValue: columnInfo.LongValue
+          data_list_type: databaseId
+          LookupName: lookupId
+          Value: columnInfo.Value
         sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceLookups)
   _getRetsMetadata({saveCacheImpl, ids: ['getLookupTypes', mlsId, databaseId, lookupId], forceRefresh})
 
 getDatabaseList = (opts) ->
   {mlsId, forceRefresh} = opts
-  @logger.debug () -> "getDatabaseList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
+  logger.debug () -> "getDatabaseList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
   saveCacheImpl = (list, mlsConfig) ->
     tables.config.dataSourceDatabases()
     .where
@@ -141,7 +143,7 @@ getDatabaseList = (opts) ->
 
 getObjectList = (opts) ->
   {mlsId, forceRefresh} = opts
-  @logger.debug () -> "getObjectList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
+  logger.debug () -> "getObjectList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
   saveCacheImpl = (list, mlsConfig) ->
     tables.config.dataSourceObjects()
     .where
@@ -157,7 +159,7 @@ getObjectList = (opts) ->
 
 getTableList = (opts) ->
   {mlsId, databaseId, forceRefresh} = opts
-  @logger.debug () -> "getTableList(), mlsId=#{mlsId}, databaseId=#{databaseId}, forceRefresh=#{forceRefresh}"
+  logger.debug () -> "getTableList(), mlsId=#{mlsId}, databaseId=#{databaseId}, forceRefresh=#{forceRefresh}"
   saveCacheImpl = (list, mlsConfig, databaseId) ->
     tables.config.dataSourceTables()
     .where

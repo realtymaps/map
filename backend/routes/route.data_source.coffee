@@ -10,7 +10,7 @@ class DataSourceCrud extends RouteCrud
     @custom data, res
 
   getLookupTypes: (req, res) =>
-    data = @svc.getLookupTypes req.params.dataSourceId, req.params.lookupId
+    data = @svc.getLookupTypes req.params.dataSourceId, req.params.dataListType, req.params.lookupId
     @custom data, res
 
 

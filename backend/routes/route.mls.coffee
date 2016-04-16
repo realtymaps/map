@@ -1,5 +1,5 @@
-retsHelpers = require '../utils/util.retsService'
-retsService = require '../services/service.retsService'
+retsHelpers = require '../utils/util.retsHelpers'
+retsService = require '../services/service.rets'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('backend:routes:mls')
 mlsConfigService = require '../services/service.mls_config'
