@@ -1,7 +1,4 @@
-logger = require '../config/logger'
 dbs = require '../config/dbs'
-clone = require 'clone'
-knex = require 'knex'
 config = require '../config/config'
 
 
@@ -89,6 +86,13 @@ _setup = (baseObject) ->
       dbName = 'main'
       tableName = value
     baseObject[key] = do (dbName, tableName) ->
+      ###
+      subid explanation:
+      - some cases there are many table to serve the load of one domain
+      - example: there's not just 1 `tax` table, there's a lot of `tax_<fips>` tables
+      - subid allows having a collection of tables all serving 1 purpose (and with 1 entry in `tables`)
+      - major performance improvement to do that
+      ###
       buildTableName = (subid) -> "#{tableName}_#{subid}"
       query = (opts={}) ->
         db = dbs.get(dbName)
