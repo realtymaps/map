@@ -232,7 +232,7 @@ finalizeData = (subtask, id) ->
         # TODO: static data fields?
 
         # now that we have an ordered sales history, overwrite that into the tax record
-        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
+        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
         tax.subscriber_groups.mortgage = mortgageEntries
         lastSale = deedEntries.pop()
         if lastSale?
@@ -257,7 +257,7 @@ finalizeData = (subtask, id) ->
             .delete()
             .then () ->
               tables.property.combined(transaction: transaction)
-              .insert(listing)
+              .insert(tax)
 
 
 ###

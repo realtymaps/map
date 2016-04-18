@@ -1,7 +1,6 @@
 div.btn-actions
   button.favorite(ng-click="favorite($event)" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }")
-    i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(property)") &nbsp;
-    i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(property)") &nbsp;
+    i.fa.fa-heart(ng-class="{'fa-heart':formatters.property.isFavoriteResult(property), 'fa-heart-o':!formatters.property.isFavoriteResult(property)}") &nbsp;
     .button-help Favorite
 
   button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isSavedResult(property) }")

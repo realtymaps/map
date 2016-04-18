@@ -9,6 +9,7 @@ mod.constant 'rmapsEventConstants',
       createClick: 1
       dropdownToggled: 1
     map:
+      locationChange: 1
       results: 1
       center: 1
       centerOnProperty: 1

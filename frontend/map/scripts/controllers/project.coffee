@@ -92,15 +92,6 @@ app.controller 'rmapsProjectCtrl',
       .then () ->
         _.assign $scope.project, $scope.projectCopy
 
-  $scope.getPropertyDetail = (property) ->
-    rmapsPropertiesService.getProperties property.rm_property_id, 'detail'
-    .then (result) ->
-      $scope.propertyDetail = _.pairs result.data[0]
-      modalInstance = $modal.open
-        animation: true
-        scope: $scope
-        template: require('../../html/views/templates/modals/propertyDetail.jade')()
-
   $scope.loadProject = () ->
     # It is important to load property details before properties are added to scope to prevent template breaking
     toLoad = _.merge {}, project.properties_selected, project.favorites

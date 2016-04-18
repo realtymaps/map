@@ -17,7 +17,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
   _close =  ->
     return unless _map
     $log.debug 'closing popup'
-    _map.closePopup()
+    # _map.closePopup()
     _templateScope?.$destroy()
     _templateScope = null
     $timeout.cancel _timeoutPromise if _timeoutPromise

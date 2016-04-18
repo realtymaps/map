@@ -47,18 +47,6 @@ app.factory 'rmapsMapFactory',
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
-      _handleMoveToMyLocation = (position) ->
-        if position
-          position = position.coords
-        else
-          position = $scope.previousCenter
-
-        position.zoom = position.zoom ? rmapsZoomLevelService.getZoom($scope) ? 14
-        $scope.map.center = NgLeafletCenter position
-        $scope.$evalAsync()
-
-      if toggles?.setLocationCb?
-        toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
     class Map extends rmapsBaseMapFactory
@@ -76,6 +64,16 @@ app.factory 'rmapsMapFactory',
 
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
+
+        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) ->
+          if position
+            position = position.coords
+          else
+            position = $scope.previousCenter
+
+          position.zoom = position.zoom ? rmapsZoomLevelService.getZoom($scope) ? 14
+          $scope.map.center = NgLeafletCenter position
+          $scope.$evalAsync()
 
         #
         # Property Button events

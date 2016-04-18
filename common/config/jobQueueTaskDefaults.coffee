@@ -37,8 +37,8 @@ module.exports =
     hard_fail_timeouts: true
     hard_fail_after_retries: true
     hard_fail_zombies: true
-    warn_timeout_seconds: 600
-    kill_timeout_seconds: 750
+    warn_timeout_seconds: 3000
+    kill_timeout_seconds: 3600
     auto_enqueue: false
 
   subtask_storePhotosPrep:

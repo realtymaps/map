@@ -4,20 +4,22 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
  dropdown on-toggle="toggled(open)" auto-close="disabled")
   button.btn.btn-transparent.nav-btn.dropdown-toggle.notes.toggle-active(
     dropdown-toggle
-    popover-placement="right"
+    popover-placement="bottom"
     popover="Notes"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter")
     span.icon.icon-note
   .dropdown-menu.whiteblock.no-margin(ng-cloak)
     .fixed-header
       span
-        a(ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{map.markers.notes.length}} Notes
+        a(ng-show="map.markers.notes.length" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{map.markers.notes.length}} Notes
+        span(ng-show="!map.markers.notes.length") No Notes
       span.results-btn(
         popover-placement="right"
         popover-trigger="mouseenter"
         popover="Add Note"
-        ng-click="Toggles.enableNoteTap()") New Note
+        ng-click="Toggles.enableNoteTap()")
           span.icon.icon-add_note
+          span New Note
     .inner
       ul
         li(ng-repeat="note in map.markers.notes" ng-cloak)

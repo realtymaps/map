@@ -86,6 +86,14 @@ _rules =
       valid: () ->
         @input.fipsCode || (@input.stateCode && @input.county)
 
+    address:
+      alias: 'Address'
+      input: {}
+      type: name: 'address'
+      valid: () ->
+        @input.city && @input.state && (@input.zip || @input.zip9) &&
+          ((@input.streetName && @input.streetNum) || @input.streetFull)
+
   mls:
     listing:
       data_source_uuid:
@@ -107,13 +115,7 @@ _rules =
         type: name: 'datetime'
 
       address:
-        alias: 'Address'
-        input: {}
         group: 'general'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
       bedrooms:
         alias: 'Bedrooms'
@@ -184,7 +186,7 @@ _rules =
 
 
   county:
-    tax:
+    common:
       data_source_uuid:
         alias: 'Data Source UUID'
         required: true
@@ -193,14 +195,34 @@ _rules =
           @input.batchid
         type: name: 'data_source_uuid'
 
-      address:
-        alias: 'Address'
+      owner_name:
+        alias: 'Owner 1'
+        required: true
         input: {}
-        group: 'general'
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      owner_name_2:
+        alias: 'Owner 2'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      owner_address:
+        alias: "Owner's Address"
+        input: {}
         type: name: 'address'
         valid: () ->
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
+
+
+    tax:
+      address:
+        group: 'general'
 
       bedrooms:
         alias: 'Bedrooms'
@@ -219,31 +241,13 @@ _rules =
         type: name: 'integer'
 
       owner_name:
-        alias: 'Owner 1'
-        required: true
-        input: {}
         group: 'owner'
-        valid: () ->
-          @input.first && @input.last || @input.full
-        type: name: 'name'
 
       owner_name_2:
-        alias: 'Owner 2'
-        required: true
-        input: {}
         group: 'owner'
-        valid: () ->
-          @input.first && @input.last || @input.full
-        type: name: 'name'
 
       owner_address:
-        alias: "Owner's Address"
-        input: {}
         group: 'owner'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
       year_built:
         alias: 'Year Built or Age'
@@ -252,100 +256,36 @@ _rules =
         valid: () ->
           @input.year || @input.age
 
+    deed:
+      address:
+        group: 'deed'
+
+      owner_name:
+        group: 'owner'
+
+      owner_name_2:
+        group: 'owner'
+
+      owner_address:
+        group: 'owner'
+
       property_type:
         alias: 'Property Type'
         config:
           transformString: 'forceInitCaps'
 
-    deed:
-      data_source_uuid:
-        alias: 'Data Source UUID'
-        required: true
-        input: {}
-        valid: () ->
-          @input.batchid
-        type: name: 'data_source_uuid'
-
-      address:
-        alias: 'Address'
-        input: {}
-        group: 'deed'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
-
-      owner_name:
-        alias: 'Owner 1'
-        required: true
-        input: {}
-        group: 'owner'
-        valid: () ->
-          @input.first && @input.last
-        type: name: 'name'
-
-      owner_name_2:
-        alias: 'Owner 2'
-        required: true
-        input: {}
-        group: 'owner'
-        valid: () ->
-          @input.first && @input.last
-        type: name: 'name'
-
-      owner_address:
-        alias: "Owner's Address"
-        input: {}
-        group: 'owner'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
-
     mortgage:
-      data_source_uuid:
-        alias: 'Data Source UUID'
-        type: name: 'data_source_uuid'
-        required: true
-        input: {}
-        valid: () ->
-          @input.batchid
-
       address:
-        alias: 'Address'
-        input: {}
         group: 'mortgage'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
       owner_name:
-        alias: 'Owner 1'
-        required: true
-        input: {}
         group: 'mortgage'
-        valid: () ->
-          @input.first && @input.last
-        type: name: 'name'
 
       owner_name_2:
-        alias: 'Owner 2'
-        required: true
-        input: {}
         group: 'mortgage'
-        valid: () ->
-          @input.first && @input.last
-        type: name: 'name'
 
       owner_address:
-        alias: "Owner's Address"
-        input: {}
         group: 'mortgage'
-        type: name: 'address'
-        valid: () ->
-          @input.city && @input.state && (@input.zip || @input.zip9) &&
-            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
 # no lists currently have no base filters, but deed used to, so
 # we'll keep this around just in case something comes along that needs this)
@@ -395,7 +335,7 @@ _buildRule = (rule, defaults) ->
 getBaseRules = (dataSourceType, dataListType) ->
   if dataListType in _noBase
     return {}
-  _.merge _.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType][dataListType])
+  _.defaultsDeep(_.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType].common), _.cloneDeep(_rules[dataSourceType][dataListType]))
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]

@@ -59,6 +59,8 @@ analyzeValue = (value, fullJson=false) ->
 
 
 getSimpleDetails = (err) ->
+  if !err?.hasOwnProperty?
+    return JSON.stringify(err)
   if err.hasOwnProperty('isOperational') && err.name == 'error'  # means it's a knex error
     inspect = util.inspect(err, depth: null)
     return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields

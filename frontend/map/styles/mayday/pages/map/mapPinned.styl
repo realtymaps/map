@@ -1,5 +1,7 @@
 @import '../../../components/property-attr-functions'
 
+// TODO merge with mapUlDropdown.styl
+
 $fnMakeMapPinned()
   .pinned-list
     .fa
@@ -80,36 +82,4 @@ $fnMakeMapPinned()
           color c_gray
           font-size 12px
           font-weight bold
-    .actions
-      transform scale(1) !important
-      opacity 1 !important
-      text-align right
-      vertical-align middle
-      border 1px solid $transparent
-      border-radius 3px
-      @extends .global-transition
-      span.unpin
-        cursor pointer
-        float right
-        span.action
-          font-size 10px
-          line-height 30px
-          vertical-align top
-          opacity 0
-        span.icon
-          font-size 16px!important
-          color $black_30
-        i.fa
-          margin 8px
 
-      &:hover
-      &:focus
-        border 1px solid $black_10
-        border-radius 3px
-        background-color $white_50
-        color $rm-map-btn-icon-hover
-        span.unpin
-          span.action
-            opacity 1
-          span.icon
-            color $rm-map-btn-icon-hover

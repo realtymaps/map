@@ -106,7 +106,7 @@ class ServiceCrud extends BaseObject
     entity = _.omit entity, @idKeys
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    upsertQuery = sqlHelpers.buildUpsertBindings ids, entity, @dbFn.tableName
+    upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: entity, tableName: @dbFn.tableName
     @_wrapQuery (options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options
 
   delete: (entity, options = {}) ->

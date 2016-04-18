@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require "../config/logger"
+logger = require('../config/logger').spawn('service:filterSummary:base')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
@@ -68,6 +68,8 @@ _getResultCount = (validatedQuery) ->
   query
 
 _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
+  logger.debug -> validatedQuery
+
   {bounds, state} = validatedQuery
   {filters} = state
   return query if !filters?.status?.length

@@ -1,3 +1,5 @@
+// TODO merge with mapPinned.styl
+
 .dropdown.btn-group.add-project-list
   ul
     li
@@ -13,7 +15,9 @@ $fnMakeMapUlDropdown()
       border-top 1px solid $darker_white
       color $dark_blue
       font-size 12px
-      font-weight boldx
+      font-weight bold
+      padding 0 10px
+      min-height 45px
       display flex
       align-items center
       justify-content space-between
@@ -32,7 +36,7 @@ $fnMakeMapUlDropdown()
         &.disabled
           color $gray_lighter
         .icon
-          font-size 20px
+          font-size 18px
       .fa, .icon
         float left
         font-size 12px
@@ -72,6 +76,7 @@ $fnMakeMapUlDropdown()
                 span
                   font-size 10px
                   color $gray
+                  padding-top 4px
               span.icon
                 float left
                 font-size 18px
@@ -86,20 +91,45 @@ $fnMakeMapUlDropdown()
             span.actions
               opacity 1
               transform scale(1)
-    span.actions
+
+    .actions
+      border 1px solid $transparent
+      border-radius 3px
       width 20%
       float right
       opacity 0
-      transform scale(.2)
       @extends .global-transition
-      .icon
-        display inline-block
-        font-size 20px
-        padding 7px
-        float right
-        &.icon-remove
-          display none
 
-        &:hover
-        &:focus
-          color $light_blue
+      &:hover
+      &:focus
+        border-color $black_10
+        background-color $white_50
+        color $rm-map-btn-icon-hover
+        .action-button
+          .action
+            opacity 1
+          .icon, .fa
+            color $rm-map-btn-icon-hover
+
+      .action-button
+        cursor pointer
+        display flex
+        align-items center
+        justify-content space-around
+        padding 0 5px
+        .action
+          font-size 10px
+          line-height 30px
+          vertical-align top
+          opacity 0
+        .icon, .fa
+          font-size 16px!important
+          color $black_30
+          display inline-block
+          font-size 18px
+          float right
+          &:hover
+          &:focus
+            color $light_blue
+          &.icon-remove
+            display none

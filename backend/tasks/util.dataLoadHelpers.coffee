@@ -14,6 +14,7 @@ copyStream = require 'pg-copy-streams'
 utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
 rets = require 'rets-client'
+{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 
 
 DELETE =
@@ -122,21 +123,23 @@ recordChangeCounts = (subtask) -> Promise.try () ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask) -> Promise.try () ->
+activateNewData = (subtask, {propertyPropName, deletesPropName}) -> Promise.try () ->
+  propertyPropName ?= 'combined'
+  deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.get('main').transaction (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
-      activatePromise = tables.property.combined(transaction: transaction)
+      activatePromise = tables.property[propertyPropName](transaction: transaction)
       .where(data_source_id: subtask.task_name)
       .update(active: dbs.get('main').raw('NOT "active"'))
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
       # rm_property_id that has been updated in this batch
-      activatePromise = tables.property.combined(transaction: transaction, as: 'updater')
+      activatePromise = tables.property[propertyPropName](transaction: transaction, as: 'updater')
       .whereExists () ->
-        tables.property.combined(transaction: this)
+        tables.property[propertyPropName](transaction: this)
         .select(1)
         .where
           update_source: subtask.task_name
@@ -149,17 +152,17 @@ activateNewData = (subtask) -> Promise.try () ->
     activatePromise
     .then () ->
       # delete inactive rows
-      tables.property.combined(transaction: transaction)
+      tables.property[propertyPropName](transaction: transaction)
       .where
         data_source_id: subtask.task_name
         active: false
       .delete()
     .then () ->
       # delete rows marked explicitly for deletion
-      tables.property.combined(transaction: transaction, as: 'deleter')
+      tables.property[propertyPropName](transaction: transaction, as: 'deleter')
       .where(data_source_id: subtask.task_name)
       .whereExists () ->
-        tables.deletes.property(transaction: this)
+        tables.deletes[deletesPropName](transaction: this)
         .select(1)
         .where
           data_source_id: subtask.task_name
@@ -253,17 +256,19 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-
-# normalizes data from the raw data table into the permanent data table
-normalizeData = (subtask, options) -> Promise.try () ->
-  successes = []
-  rawSubid = buildUniqueSubtaskName(subtask)
+getNormalizeRows = (subtask, rawSubid) ->
+  rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
 
   logger.debug () -> rowsPromise.toString()
+  rowsPromise
 
+# normalizes data from the raw data table into the permanent data table
+normalizeData = (subtask, options) -> Promise.try () ->
+  successes = []
+  rawSubid = buildUniqueSubtaskName(subtask)
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   # get start time for "last updated" stamp
@@ -290,7 +295,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-  Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
+  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, startTimePromise, doNormalization)
   .then () ->
     successes
 
@@ -388,6 +393,100 @@ finalizeEntry = (entries) ->
   entry.update_source = entry.data_source_id
   entry
 
+_createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
+  if !_.isArray columns
+    columns = [columns]
+
+  promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+  .then () ->
+    tables.jobQueue.dataLoadHistory()
+    .where(raw_table_name: tableName)
+    .delete()
+  .then () ->
+    tables.jobQueue.dataLoadHistory()
+    .insert(dataLoadHistory)
+  .then () ->
+    promiseQuery('BEGIN TRANSACTION')
+  .then () ->
+    createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
+      table.increments('rm_raw_id').notNullable()
+      table.boolean('rm_valid')
+      table.text('rm_error_msg')
+      for fieldName in columns
+        table.text(fieldName)
+    promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
+
+_endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
+  if startedTransaction
+    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
+    .then () ->
+      promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
+    .then () ->
+      promiseQuery('COMMIT TRANSACTION')
+    .then () ->
+      tables.jobQueue.dataLoadHistory()
+      .where(raw_table_name: tableName)
+      .update(raw_rows: count)
+    .then () ->
+      return count
+  else
+    return count
+
+rollback = ({err, tableName, promiseQuery}) ->
+  logger.error("problem streaming to #{tableName}: #{err}")
+  promiseQuery('ROLLBACK TRANSACTION')
+  .then () ->
+    tables.jobQueue.dataLoadHistory()
+    .where(raw_table_name: tableName)
+    .delete()
+  .catch () ->
+    throw err
+  .then () ->
+    throw err
+
+manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns, strTranforms}) -> Promise.try () ->
+  isRoot = false
+  if _.isString columns or !_.isArray columns
+    isRoot = true
+    columns = [columns]
+
+  dbs.getPlainClient 'raw_temp', (promiseQuery) -> Promise.try () ->
+    startedTransaction = false
+    count = 0
+    _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
+    .then () -> Promise.try () -> new Promise (resolve, reject) ->
+      startedTransaction = true
+      promises = []
+
+      jsonStream.on 'error', (error) ->
+        reject error
+
+      jsonStream.on 'end', () ->
+        resolve Promise.all promises
+
+      jsonStream.on 'data', (jsonObj) ->
+        # logger.debug jsonObj, true
+        if isRoot
+          vals = ["'#{strTranforms jsonObj}'"]
+        else
+          vals = columns.map (col) ->
+            "'#{strTranforms[col](jsonObj[col])}'"
+
+        # logger.debug "columns!!!!!!!!!!!!!!!!!!"
+        # logger.debug columns, true
+        # logger.debug "vals!!!!!!!!!!!!!!!!!!!"
+        # logger.debug vals, true
+
+        colsStr = columns.join(',')
+        valsStr = vals.join(',')
+        promises.push promiseQuery("INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});")
+        count++
+
+    .catch (err) ->
+      rollback({err, tableName, promiseQuery})
+    .then () ->
+      _endRawTable({startedTransaction, count, tableName, promiseQuery})
+
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
@@ -419,25 +518,9 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
-              promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
-              .then () ->
-                tables.jobQueue.dataLoadHistory()
-                .where(raw_table_name: tableName)
-                .delete()
-              .then () ->
-                tables.jobQueue.dataLoadHistory()
-                .insert(dataLoadHistory)
-              .then () ->
-                promiseQuery('BEGIN TRANSACTION')
+              _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
               .then () ->
                 startedTransaction = true
-                createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
-                  table.increments('rm_raw_id').notNullable()
-                  table.boolean('rm_valid')
-                  table.text('rm_error_msg')
-                  for fieldName in columns
-                    table.text(fieldName)
-                promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
                 dbStream = streamQuery(copyStream.from(copyStart))
@@ -464,29 +547,9 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
           resolve(donePayload||0)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
-      logger.error("problem streaming to #{tableName}: #{err}")
-      promiseQuery('ROLLBACK TRANSACTION')
-      .then () ->
-        tables.jobQueue.dataLoadHistory()
-        .where(raw_table_name: tableName)
-        .delete()
-      .catch () ->
-        throw err
-      .then () ->
-        throw err
+      rollback({err, tableName, promiseQuery})
     .then (count) ->
-      if startedTransaction
-        promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
-        .then () ->
-          promiseQuery('COMMIT TRANSACTION')
-        .then () ->
-          tables.jobQueue.dataLoadHistory()
-          .where(raw_table_name: tableName)
-          .update(raw_rows: count)
-        .then () ->
-          return count
-      else
-        return count
+      _endRawTable({startedTransaction, count, tableName, promiseQuery})
 
 
 ensureNormalizedTable = (dataType, subid) ->
@@ -531,6 +594,7 @@ ensureNormalizedTable = (dataType, subid) ->
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')
+      else if dataType == 'deed'
         table.text('property_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS FIRST)")
@@ -539,6 +603,26 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
+refreshThreshold = (subtask, opts) ->
+  {fullRefreshMilliSec, logDescription} = opts
+
+  onMissingArgsFail
+    args: opts
+    required: Object.keys {fullRefreshMilliSec}
+
+  logDescription ?= ''
+
+  jobQueue.getLastTaskStartTime(subtask.task_name)
+  .then (lastSuccess) ->
+    now = new Date()
+    tempLogger = logger.spawn(logDescription + subtask.task_name)
+    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec || now.getDate() != lastSuccess.getDate()
+      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+      tempLogger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
+      return new Date(0)
+    else
+      tempLogger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
+      return lastSuccess
 
 module.exports = {
   buildUniqueSubtaskName
@@ -546,9 +630,13 @@ module.exports = {
   activateNewData
   getValidationInfo
   normalizeData
+  getNormalizeRows
   getValues
   finalizeEntry
   manageRawDataStream
+  manageRawJSONStream
   ensureNormalizedTable
   DELETE
+  refreshThreshold
+  rollback
 }

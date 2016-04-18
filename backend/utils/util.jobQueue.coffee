@@ -345,6 +345,7 @@ executeSubtask = (subtask, prefix) ->
       logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
       _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
     .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
+      logger.error("#{prefix} UNHANDLED ERROR!  Possible db problems.  subtask: #{subtask.name}")
       sendNotification
         subject: 'major db interaction problem'
         subtask: subtask
@@ -363,6 +364,7 @@ executeSubtask = (subtask, prefix) ->
     return subtaskPromise
 
 _handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
+  logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} error caught for subtask #{subtask.name}: #{JSON.stringify({errorType: status, hard, error: error.toString()})}"
   Promise.try () ->
     if hard
       logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
@@ -574,7 +576,7 @@ getQueueNeeds = () ->
       if !queueConfigs[subtaskList[0]?.queue_name]?.active
         # any task running on an inactive queue (or a queue without config) can be ignored without further processing
         continue
-      taskSteps = _.groupBy(subtaskList, 'step_num')
+      taskSteps = _.groupBy(subtaskList, 'task_step')
       steps = _.keys(taskSteps).sort()
       # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
       # anything from steps past that (in this task)
