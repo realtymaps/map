@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS postgis_topology;
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
--- CREATE EXTENSION postgis_tiger_geocoder; --already installed
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder; --already installed
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS tablefunc;
