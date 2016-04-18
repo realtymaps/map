@@ -322,7 +322,7 @@ executeSubtask = (subtask, prefix) ->
     .cancellable()
     .then () ->
       logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} finished subtask #{subtask.name}"
-      subtaskPromise = tables.jobQueue.currentSubtasks()
+      tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
