@@ -257,7 +257,7 @@ finalizeData = (subtask, id) ->
             .delete()
             .then () ->
               tables.property.combined(transaction: transaction)
-              .insert(listing)
+              .insert(tax)
 
 
 ###

@@ -233,7 +233,7 @@ buildQuery = ({knex, entity, orHash}) ->
 
 
 # Static function that produces an upsert query string given ids and entity of model.
-buildUpsertBindings = (idObj, entityObj, tableName) ->
+buildUpsertBindings = ({idObj, entityObj, tableName}) ->
   id = buildRawBindings(idObj, defaultNulls: true)
   entity = buildRawBindings(_.omit(entityObj, Object.keys(idObj)))
 
@@ -251,10 +251,16 @@ buildUpsertBindings = (idObj, entityObj, tableName) ->
   bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
 
 
-upsert = (idObj, entityObj, dbFn) -> Promise.try () ->
-  upsertBindings = buildUpsertBindings(idObj, entityObj, dbFn.tableName)
-  dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
+upsert = ({idObj, entityObj, dbFn, doWrapPromise}) ->
+  doWrapPromise ?= true
+  doUpsert = () ->
+    upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
+    dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
 
+  if doWrapPromise
+    return Promise.try () -> doUpsert()
+
+  doUpsert()
 
 module.exports = {
   between

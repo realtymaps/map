@@ -16,32 +16,43 @@ rewire = require('rewire')
 task = rewire('../../backend/tasks/' + argv.task)
 subtask = task.subtasks[argv.subtask]
 
-idsToSubtaskVals = (subtask, ids) ->
-  # console.log ids
-  subtask.data = _.extend {}, subtask.data,
-    values: ids
+if argv.debug
+  console.log argv
 
 getNextSubtask = (taskName) ->
-  taskName = taskName.split('_')[1]
-  console.log "Fake Pagenate: attempting to get #{taskName}"
+  console.log "fake get next subtask #{taskName}"
   task.subtasks[taskName]
-
-mockPagenate = (tansaction, subtask, ids, maxRowsToPage, taskName) ->
-  console.log "Fake Pagenate taskName: #{taskName}"
-  console.log "Fake Pagenate ids: #{ids}"
-  console.log "Fake Pagenate maxRowsToPage: #{maxRowsToPage}"
-
-  idsToSubtaskVals(subtask, ids)
-  getNextSubtask(taskName)(subtask)
 
 #mock jobQueue to call things directly
 task.__set__ 'jobQueue',
 
-  queueSubsequentSubtask: () ->
-    Promise.resolve()
+  queueSubsequentSubtask: ({subtask, laterSubtaskName, manualData, replace}) ->
+    subtasksToRun = 0
+    promises = []
+    if _.isArray manualData
+      for data in manualData
+        console.log "subtasksToRun: #{subtasksToRun}"
+        newSubtask = _.merge {}, subtask,
+          data: data
+        promises.push getNextSubtask(laterSubtaskName)(newSubtask)
 
-  queueSubsequentPaginatedSubtask: () ->
-    mockPagenate arguments...
+        subtasksToRun++
+
+        if subtasksToRun >= parseInt(argv.subtasksToRun)
+          break
+    Promise.all promises
+
+  queueSubsequentPaginatedSubtask: ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData}) ->
+    totalOrList = _.take totalOrList, maxPage
+
+    console.log "Fake Pagenate taskName: #{laterSubtaskName}"
+    console.log "Fake Pagenate totalOrList: #{totalOrList}"
+    console.log "Fake Pagenate maxPage: #{maxPage}"
+
+    subtask.data = _.merge {}, subtask.data, mergeData,
+      values: totalOrList
+
+    getNextSubtask(laterSubtaskName)(subtask)
 
 
 if !subtask

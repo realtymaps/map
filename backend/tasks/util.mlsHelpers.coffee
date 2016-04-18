@@ -24,16 +24,9 @@ ONE_DAY_MILLISEC = 24*60*60*1000
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  jobQueue.getLastTaskStartTime(subtask.task_name)
-  .then (lastSuccess) ->
-    now = new Date()
-    if now.getTime() - lastSuccess.getTime() > ONE_DAY_MILLISEC || now.getDate() != lastSuccess.getDate()
-      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.spawn('task:mls:'+subtask.task_name).debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
-      return new Date(0)
-    else
-      logger.spawn('task:mls:'+subtask.task_name).debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
-      return lastSuccess
+  dataLoadHelpers.refreshThreshold subtask,
+    fullRefreshMilliSec: ONE_DAY_MILLISEC
+    logDescription: 'task.mls'
   .then (refreshThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)
@@ -93,7 +86,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = (subtask, id) ->
+finalizeData = ({subtask, id, data_source_id}) ->
   listingsPromise = tables.property.listing()
   .select('*')
   .where(rm_property_id: id)
@@ -103,9 +96,12 @@ finalizeData = (subtask, id) ->
   .orderBy('deleted')
   .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
-  parcelsPromise = tables.property.parcel()
+
+  parcelsPromise = tables.property.normParcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+  .whereNull('deleted')
   .where(rm_property_id: id)
+
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
@@ -143,7 +139,7 @@ finalizeData = (subtask, id) ->
           tables.property.combined(transaction: transaction)
           .where
             rm_property_id: id
-            data_source_id: subtask.task_name
+            data_source_id: data_source_id || subtask.task_name
             active: false
           .delete()
           .then () ->
@@ -352,14 +348,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
 
   .catch (error) ->
-    logger.error 'storePhotos overall error'
-    if error.stack?
-      logger.error error
-      logger.error error.stack
-      throw SoftFail error.message
-
-    msg = "unkown error obj: #{JSON.stringify error}"
-    logger.error msg
+    msg = logger.maybeInvalidError {error, where: 'storePhotos'}
     throw SoftFail msg
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
