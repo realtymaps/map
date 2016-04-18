@@ -123,7 +123,7 @@ recordChangeCounts = (subtask) -> Promise.try () ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {propertyPropName, deletesPropName}) -> Promise.try () ->
+activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise.try () ->
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
