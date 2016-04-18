@@ -56,8 +56,6 @@ conninfo URL, or the specifier itself if it wasn't a conninfo URL
 dbsync installed either locally in the current working directory, or on the PATH.  If it can't find it, it uses npm to
 install dbsync at the current working directory.  It then exports a DBSYNC environment variable with the location of
 dbsync.
-* `./scripts/environmentNormalization/herokuCli` executes a heroku toolbelt command using `hk`, installing it first if
-needed. The syntax is `./scripts/environmentNormalization/herokuCli <herokuAppName> <herokuCommand> [other params]`.
 
 ## misc scripts
 * `./scripts/misc/cleanBower [moduleName]` clears the bower cache, removes dependencies, and then runs `bower install`.

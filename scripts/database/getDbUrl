@@ -39,11 +39,11 @@ else
     # as evaluated on the heroku app given after '@'
 
     INDIRECT="${VARIABLE_BASE}_URL"
-    DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
+    DIRECT=`heroku config:get ${INDIRECT} --app=$SOURCE_APP_NAME`
     if [[ "$DIRECT" == "" ]]
     then
-        INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
-        DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
+        INDIRECT=`heroku config:get ${VARIABLE_HOLDER} --app=$SOURCE_APP_NAME`
+        DIRECT=`heroku config:get ${INDIRECT} --app=$SOURCE_APP_NAME`
     fi
 fi
 
