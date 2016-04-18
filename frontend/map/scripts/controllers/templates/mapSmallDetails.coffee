@@ -1,51 +1,12 @@
 app = require '../../app.coffee'
+module.exports = app
 
-numeral = require 'numeral'
-casing = require 'case'
-moment = require 'moment'
+app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterService, rmapsPropertyFormatterService) ->
+  $log = $log.spawn 'rmapsSmallDetailsCtrl'
+  $log.debug "rm_property_id: #{JSON.stringify $scope.model.rm_property_id}"
 
+  $scope.formatters =
+    results: new rmapsResultsFormatterService scope: $scope
+    property: new rmapsPropertyFormatterService
 
-module.exports =
-  app.controller 'rmapsMapSmallDetailsCtrl',($scope, $log, rmapsParcelEnums) ->
-    colorClasses = {}
-    colorClasses[rmapsParcelEnums.status.sold] = 'label-sold-property'
-    colorClasses[rmapsParcelEnums.status.pending] = 'label-pending-property'
-    colorClasses[rmapsParcelEnums.status.forSale] = 'label-sale-property'
-    colorClasses[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
-
-    getPrice = (val) ->
-      String.orDash if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
-
-    getStatusClass = (status) ->
-      return colorClasses[status] || ''
-
-    getPriceLabel = (status) ->
-      if (status=='recently sold'||status=='not for sale')
-        'Sold'
-      else
-        'Asking'
-
-    formatHalfBaths = (numBaths) ->
-      if (numBaths > 0)
-        numBaths + ' Half Bath'
-      else
-        ''
-
-    #TODO: consider pointing everything to mdoel.. and then for modifiers use functions
-    $scope.street_address_num = String.orDash $scope.model.street_address_num
-    $scope.street_address_name = String.orDash $scope.model.street_address_name
-    $scope.beds_total = String.orDash $scope.model.bedrooms
-    $scope.baths_full = String.orDash $scope.model.baths_full
-    $scope.baths_half= formatHalfBaths String.orDash $scope.model.baths_half
-    $scope.baths_total= String.orDash $scope.model.baths_total
-    $scope.finished_sqft= String.orDash $scope.model.finished_sqft
-    $scope.price = getPrice $scope.model.price
-    $scope.priceLabel = getPriceLabel $scope.model.rm_status
-    $scope.assessed_value = getPrice $scope.model.assessed_value
-    $scope.year_built = if $scope.model.year_built then moment($scope.model.year_built).format('YYYY') else String.orDash $scope.model.year_built
-    $scope.acres = String.orDash $scope.model.acres
-    $scope.rm_status = String.orDash $scope.model.rm_status
-    $scope.owner_name = String.orDash $scope.model.owner_name
-    $scope.owner_name2 = $scope.model.owner_name2
-
-    $scope.statusClass = getStatusClass($scope.model.rm_status)
+  $scope.property = $scope.model

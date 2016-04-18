@@ -26,10 +26,10 @@ module.exports =
     tax: 'normalized.tax'
     deed: 'normalized.deed'
     mortgage: 'normalized.mortgage'
+    normParcel: 'normalized.parcel'
     combined: 'data_combined'
+    parcel: 'parcel'
     # the following are deprecated, so I'm not bothering to standardize their names
-    rootParcel: 'parcels'
-    parcel: 'mv_parcels'
     propertyDetails: 'mv_property_details'
   jobQueue:
     dataLoadHistory: 'jq_data_load_history'
@@ -69,6 +69,7 @@ module.exports =
   deletes:
     photos: 'delete_photos'
     property: 'data_combined_deletes'
+    parcel: 'parcel_deletes'
   temp: 'raw_temp.raw'
 
 

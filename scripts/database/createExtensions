@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
+if [[ $1 == '' ]]; then
+  echo 'db name required'
+  exit 201
+fi
+
 #https://realtymaps.atlassian.net/wiki/display/NDS/Database+Setup
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_topology;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION fuzzystrmatch;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_tiger_geocoder;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION pg_trgm;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION tablefunc;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS tablefunc;"

@@ -1,27 +1,11 @@
-.small-details.panel.panel-primary( ng-controller='rmapsMapSmallDetailsCtrl' ng-cloak)
-  .panel-heading(ng-class="statusClass") {{street_address_num}} {{street_address_name}}
-  .panel-body
-    table(class="table table-condensed table-hover")
-      tr
-        td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt 
-      tr
-        td {{priceLabel}} Price:
-        td {{price}}
-      tr
-        td Status:
-        td {{rm_status}}
-      tr
-        td Owner:
-        td {{owner_name}}
-          span(ng-if="owner_name2")
-            br/
-            | {{owner_name2}}
-      tr
-        td Year Built:
-        td {{year_built}}
-      tr
-        td Acres:
-        td {{acres}}
-      tr
-        td Assessed Value:
-        td {{assessed_value}}
+include ../mixins/property/_propertyAttributes.jade
+
+.property-card(ng-controller="rmapsSmallDetailsCtrl")
+  .property-img
+    span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+    img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+  +propertyAttributes('property')
+  property-buttons(property='property'
+                    pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
+                    favorite-click='formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()'
+                    )
