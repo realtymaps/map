@@ -251,16 +251,9 @@ buildUpsertBindings = ({idObj, entityObj, tableName}) ->
   bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
 
 
-upsert = ({idObj, entityObj, dbFn, doWrapPromise}) ->
-  doWrapPromise ?= true
-  doUpsert = () ->
-    upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
-    dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
-
-  if doWrapPromise
-    return Promise.try () -> doUpsert()
-
-  doUpsert()
+upsert = ({idObj, entityObj, dbFn}) ->
+  upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
+  dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
 
 module.exports = {
   between

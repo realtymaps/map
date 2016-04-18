@@ -150,6 +150,7 @@ describe 'service.dataSourceRules.coffee', ->
 
 
     it 'should have valid createRules query', () ->
+      this.timeout(5000)
       calledWithArgs = [
         [
           [

@@ -10,6 +10,7 @@ mlsConfigService = require './service.mls_config'
 moment = require 'moment'
 {PartiallyHandledError, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 {validators, validateAndTransformRequest} = require '../utils/util.validation'
+Promise = require 'bluebird'
 
 RETS_REFRESHES = 'rets-refreshes'
 SEVEN_DAYS_MILLIS = 7*24*60*60*1000
@@ -24,10 +25,10 @@ _syncDataCache = (ids, saveCacheImpl) ->
   .then ([mlsConfig]) ->
     logger.debug () -> "_syncDataCache(#{ids.join('/')}): attempting to acquire canonical data"
     retsHelpers[type](mlsConfig, otherIds...)
-  .then (data) ->
-    if !data?.length
-      throw new Error("No canonical RETS data returned: #{ids.join('/')}")
-    saveCacheImpl(data, mlsConfig, otherIds...)
+    .then (data) ->
+      if !data?.length
+        throw new Error("No canonical RETS data returned: #{ids.join('/')}")
+      saveCacheImpl(data, mlsConfig, otherIds...)
     .then () ->
       keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
     .then () ->
@@ -97,12 +98,12 @@ getColumnList = (opts) ->
       data_list_type: "#{databaseId}/#{tableId}"
     .delete()
     .then () ->
-      Promise.map list, (columnInfo) ->
-        id =
+      Promise.map list, (data) ->
+        idObj =
           data_source_id: mlsConfig.id
           data_list_type: "#{databaseId}/#{tableId}"
-          SystemName: columnInfo.SystemName
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceFields)
+          SystemName: data.SystemName
+        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceFields})
   _getRetsMetadata({saveCacheImpl, overrideKey: 'SystemName', ids: ['getColumnList', mlsId, databaseId, tableId], forceRefresh})
 
 getLookupTypes = (opts) ->
@@ -116,13 +117,13 @@ getLookupTypes = (opts) ->
       LookupName: lookupId
     .delete()
     .then () ->
-      Promise.map list, (columnInfo) ->
-        id =
+      Promise.map list, (data) ->
+        idObj =
           data_source_id: mlsConfig.id
           data_list_type: databaseId
           LookupName: lookupId
-          Value: columnInfo.Value
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceLookups)
+          Value: data.Value
+        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceLookups})
   _getRetsMetadata({saveCacheImpl, ids: ['getLookupTypes', mlsId, databaseId, lookupId], forceRefresh})
 
 getDatabaseList = (opts) ->
@@ -134,11 +135,11 @@ getDatabaseList = (opts) ->
       data_source_id: mlsConfig.id
     .delete()
     .then () ->
-      Promise.map list, (columnInfo) ->
-        id =
+      Promise.map list, (data) ->
+        idObj =
           data_source_id: mlsConfig.id
-          ResourceID: columnInfo.ResourceID
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceDatabases)
+          ResourceID: data.ResourceID
+        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceDatabases})
   _getRetsMetadata({saveCacheImpl, ids: ['getDatabaseList', mlsId], forceRefresh})
 
 getObjectList = (opts) ->
@@ -150,11 +151,11 @@ getObjectList = (opts) ->
       data_source_id: mlsConfig.id
     .delete()
     .then () ->
-      Promise.map list, (columnInfo) ->
-        id =
+      Promise.map list, (data) ->
+        idObj =
           data_source_id: mlsConfig.id
-          VisibleName: columnInfo.VisibleName
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceObjects)
+          VisibleName: data.VisibleName
+        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceObjects})
   _getRetsMetadata({saveCacheImpl, ids: ['getObjectList', mlsId], forceRefresh})
 
 getTableList = (opts) ->
@@ -167,12 +168,12 @@ getTableList = (opts) ->
       data_list_type: databaseId
     .delete()
     .then () ->
-      Promise.map list, (columnInfo) ->
+      Promise.map list, (data) ->
         id =
           data_source_id: mlsConfig.id
           data_list_type: databaseId
-          ClassName: columnInfo.ClassName
-        sqlHelpers.upsert(id, columnInfo, tables.config.dataSourceTables)
+          ClassName: data.ClassName
+        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceTables})
   _getRetsMetadata({saveCacheImpl, ids: ['getTableList', mlsId, databaseId], forceRefresh})
 
 

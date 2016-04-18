@@ -6,9 +6,11 @@ if [[ $1 == '' ]]; then
 fi
 
 #https://realtymaps.atlassian.net/wiki/display/NDS/Database+Setup
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;"
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
-psql -d "realtymaps_$1" -U superdev -c "CREATE EXTENSION IF NOT EXISTS tablefunc;"
+SQL_STR="CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS tablefunc;"
+
+psql -d "realtymaps_$1" -U superdev -c "$SQL_STR"
