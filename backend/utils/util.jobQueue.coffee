@@ -327,31 +327,12 @@ executeSubtask = (subtask, prefix) ->
       .update
         status: 'success'
         finished: dbs.get('main').raw('NOW()')
-    .then () ->
-      logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} subtask #{subtask.name} updated with success status"
-    if subtask.kill_timeout_seconds?
+    if subtask.kill_timeout_seconds
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
       .catch Promise.TimeoutError, (err) ->
         _handleSubtaskError({prefix, subtask, status: 'timeout', hard: subtask.hard_fail_timeouts, error: 'timeout'})
-    subtaskPromise = subtaskPromise
-    .catch SoftFail, (err) ->
-      _handleSubtaskError({prefix, subtask, status: 'soft fail', hard: false, error: err})
-    .catch HardFail, (err) ->
-      _handleSubtaskError({prefix, subtask, status: 'hard fail', hard: true, error: err})
-    .catch PartiallyHandledError, (err) ->
-      _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
-    .catch isUnhandled, (err) ->
-      logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
-      _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
-    .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
-      logger.error("#{prefix} UNHANDLED ERROR!  Possible db problems.  subtask: #{subtask.name}")
-      sendNotification
-        subject: 'major db interaction problem'
-        subtask: subtask
-        error: err
-      throw err
-    if subtask.warn_timeout_seconds?
+    if subtask.warn_timeout_seconds
       doNotification = () ->
         sendNotification
           subject: 'subtask: long run warning'
@@ -362,6 +343,24 @@ executeSubtask = (subtask, prefix) ->
       .finally () ->
         clearTimeout(warnTimeout)
     return subtaskPromise
+  .then () ->
+    logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} subtask #{subtask.name} updated with success status"
+  .catch SoftFail, (err) ->
+    _handleSubtaskError({prefix, subtask, status: 'soft fail', hard: false, error: err})
+  .catch HardFail, (err) ->
+    _handleSubtaskError({prefix, subtask, status: 'hard fail', hard: true, error: err})
+  .catch PartiallyHandledError, (err) ->
+    _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
+  .catch isUnhandled, (err) ->
+    logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
+    _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
+  .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
+    logger.error("#{prefix} Error caught while handling errors; major db problem likely!  subtask: #{subtask.name}")
+    sendNotification
+      subject: 'major db interaction problem'
+      subtask: subtask
+      error: err
+    throw err
 
 _handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
   logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} error caught for subtask #{subtask.name}: #{JSON.stringify({errorType: status, hard, error: error.toString()})}"
