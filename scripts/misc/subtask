@@ -62,6 +62,12 @@ if !subtask
 payload = if argv.subtaskStateJson then JSON.parse(argv.subtaskStateJson) else
   require('../../' + argv.subtaskStateFile)
 
+if argv.data
+  console.log("overriding data!")
+  console.log("================")
+  data = JSON.parse argv.data
+  _.extend payload.data, data
+  console.log(payload.data)
 
 console.log "executing: #{argv.subtask}"
 
