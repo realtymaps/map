@@ -1,6 +1,7 @@
 VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require '../../config/logger'
+analyzeValue = require '../../../common/utils/util.analyzeValue'
 
 # If the first argument passed is an Error object, a uuid reference will be logged along with the stack trace
 #   The uuid reference will also be appended to the message so the user will hopefully see it
@@ -10,7 +11,7 @@ class PartiallyHandledError extends VError
     @name = 'PartiallyHandledError'
     if @.jse_cause && !(@.jse_cause instanceof PartiallyHandledError)
       ref = uuid.v1() # timestamp-based uuid
-      logger.error "Error reference: #{ref}\nMessage: #{@message}\nStack: #{args[0].stack}"
+      logger.error "Error reference: #{ref}\nDetails: #{analyzeValue.getSimpleDetails(args[0])}"
       @message = @message + " (Error reference #{ref})"
 
 module.exports =

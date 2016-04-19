@@ -8,8 +8,6 @@ tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-NO_CLIENT_THROW = 'no client'
-
 twilioClientPromise = Promise.try () ->
   externalAccounts.getAccountInfo('twilio')
   .then (accountInfo) ->
@@ -18,8 +16,6 @@ twilioClientPromise = Promise.try () ->
   .catch (err) ->
     # make sure we know there wasn't twilio info available
     logger.warn 'Twilio login not found in environment.'
-    throw NO_CLIENT_THROW
-twilioClientPromise.catch () -> # noop
 
 getSmsOptions = (to, subject, number) ->
   to = '+1'+to if '+' not in to

@@ -1,8 +1,17 @@
 Promise = require 'bluebird'
 {basePath} = require '../globalSetup'
 sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
-auth = require "#{basePath}/utils/util.auth"
 require("chai").should()
+
+rewire = require 'rewire'
+auth = rewire "#{basePath}/utils/util.auth"
+
+auth.__set__ 'logger',
+  debug: () ->
+  info: () ->
+  warn: () ->
+  error: () ->
+
 
 describe 'util.auth', ->
 

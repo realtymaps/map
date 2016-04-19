@@ -8,7 +8,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 mlsConfigService = require './service.mls_config'
 moment = require 'moment'
-{PartiallyHandledError, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isCausedBy, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {validators, validateAndTransformRequest} = require '../utils/util.validation'
 Promise = require 'bluebird'
 
@@ -28,12 +28,13 @@ _syncDataCache = (ids, saveCacheImpl) ->
     .then (data) ->
       if !data?.length
         throw new Error("No canonical RETS data returned: #{ids.join('/')}")
+      logger.debug () -> "_syncDataCache(#{ids.join('/')}): canonical data acquired, caching"
       saveCacheImpl(data, mlsConfig, otherIds...)
-    .then () ->
-      keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
-    .then () ->
-      logger.debug () -> "_syncDataCache(#{ids.join('/')}): data cached successfully"
-      return data
+      .then () ->
+        keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
+      .then () ->
+        logger.debug () -> "_syncDataCache(#{ids.join('/')}): data cached successfully"
+        return data
 
 _getRetsMetadata = (opts) ->
   {ids, forceRefresh, overrideKey, saveCacheImpl} = opts
@@ -51,34 +52,39 @@ _getRetsMetadata = (opts) ->
       else
         return false
   .then (doRefresh) ->
-    if doRefresh
-      _syncDataCache(ids, saveCacheImpl)
-      .catch isCausedBy(retsHelpers.RetsError), (err) ->
-        msg = "Couldn't refresh RETS data cache: #{ids.join('/')}"
-        if forceRefresh
-          # if user requested a refresh, then make sure they know it failed
-          logger.error(msg)
+    if !doRefresh
+      return null
+    _syncDataCache(ids, saveCacheImpl)
+    .catch isCausedBy(retsHelpers.RetsError), (err) ->
+      msg = "Couldn't refresh RETS data cache: #{ids.join('/')}"
+      if forceRefresh
+        # if user requested a refresh, then make sure they know it failed
+        logger.error(msg)
+        throw err
+      else
+        logger.warn(msg)
+        return false
+  .then (canonicalData) ->
+    if canonicalData
+      return canonicalData
+    logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): using cached data"
+    dataSource[type](mlsId, otherIds..., getOverrides: false)
+    .then (list) ->
+      if !list?.length
+        logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): no cached data found"
+        if canonicalData == false  # means we already tried and failed to get canonical data
+          throw new Error("Couldn't acquire any RETS data: #{ids.join('/')}")
+        _syncDataCache(ids, saveCacheImpl)
+        .catch isCausedBy(retsHelpers.RetsError), (err) ->
+          logger.error("Couldn't acquire canonical RETS data: #{ids.join('/')}")
           throw err
-        else
-          # if we were just automatically attempting the refresh, let it slide
-          logger.warn(msg)
-    else
-      logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): using cached data"
-      dataSource[type](mlsId, otherIds.join('/'))
-      .then (list) ->
-        if !list?.length
-          logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): no cached data found"
-          _syncDataCache(ids, saveCacheImpl)
-          .catch isCausedBy(retsHelpers.RetsError), (err) ->
-            logger.error("Couldn't acquire canonical RETS data: #{ids.join('/')}")
-            throw err
-        else
-          return list
+      else
+        return list
   .then (mainList) ->
     if !overrideKey
       return mainList
     logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): applying overrides based on #{overrideKey}"
-    dataSource[type](mlsId, otherIds.join('/'), true)
+    dataSource[type](mlsId, otherIds..., getOverrides: true)
     .then (overrideList) ->
       overrideMap = _.indexBy(overrideList, overrideKey)
       for row in mainList
@@ -86,6 +92,8 @@ _getRetsMetadata = (opts) ->
           if value?
             row[key] = value
       return mainList
+  .catch isUnhandled, (err) ->
+    throw new PartiallyHandledError(err, "Error acquiring required RETS data: #{ids.join('/')}")
 
 
 getColumnList = (opts) ->
@@ -103,7 +111,7 @@ getColumnList = (opts) ->
           data_source_id: mlsConfig.id
           data_list_type: "#{databaseId}/#{tableId}"
           SystemName: data.SystemName
-        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceFields})
+        sqlHelpers.upsert({idObj, entityObj: _.extend({data_source_type: 'mls'}, data), dbFn: tables.config.dataSourceFields})
   _getRetsMetadata({saveCacheImpl, overrideKey: 'SystemName', ids: ['getColumnList', mlsId, databaseId, tableId], forceRefresh})
 
 getLookupTypes = (opts) ->
@@ -123,7 +131,7 @@ getLookupTypes = (opts) ->
           data_list_type: databaseId
           LookupName: lookupId
           Value: data.Value
-        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceLookups})
+        sqlHelpers.upsert({idObj, entityObj: _.extend({data_source_type: 'mls'}, data), dbFn: tables.config.dataSourceLookups})
   _getRetsMetadata({saveCacheImpl, ids: ['getLookupTypes', mlsId, databaseId, lookupId], forceRefresh})
 
 getDatabaseList = (opts) ->
@@ -169,7 +177,7 @@ getTableList = (opts) ->
     .delete()
     .then () ->
       Promise.map list, (data) ->
-        id =
+        idObj =
           data_source_id: mlsConfig.id
           data_list_type: databaseId
           ClassName: data.ClassName

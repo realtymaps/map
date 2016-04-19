@@ -26,7 +26,7 @@ describe 'service.dataSource.coffee', ->
       DataSourceServiceClass = svc.__get__('DataSourceService')
 
       # create service instance to test on
-      dataSourceTest = new DataSourceServiceClass @config_dataSourceFields.dbFn(), "MetadataEntryID"
+      dataSourceTest = new DataSourceServiceClass @config_dataSourceFields.dbFn(), "id"
 
       # reset module to this test instance
       @dataSourceSvc = dataSourceTest
@@ -43,10 +43,12 @@ describe 'service.dataSource.coffee', ->
     beforeEach ->
       @dsSqlMock = new SqlMock 'config', 'dataSourceFields',
         result: [
+          id: 1
           MetadataEntryID: 1
           LongName: 'a.long.name'
           SystemName: 'A Long Name'
         ,
+          id: 2
           MetadataEntryID: 2
           LongName: 'another.long.name'
           SystemName: 'Another Long Name'
@@ -61,7 +63,7 @@ describe 'service.dataSource.coffee', ->
 
 
     it 'should GET columns', (done) ->
-      svc.getColumnList(@query.data_source_id, @query.data_list_type).then (queryResults) =>
+      svc.getColumnList(@query.data_source_id, @query.data_list_type, getOverrides: false).then (queryResults) =>
         expect(@dsSqlMock.toString()).to.contain('"data_source_id" = \'blackknight\'')
         expect(@dsSqlMock.toString()).to.contain('"data_list_type" = \'tax\'')
         expect(@dsSqlMock.selectSpy.calledOnce).to.be.true

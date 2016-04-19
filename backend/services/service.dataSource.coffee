@@ -11,12 +11,14 @@ commonColumnFields = [
   'Interpretation',
   'LookupName'
 ]
-regularColumnFields = ['MetadataEntryID', 'SystemName'].concat(commonColumnFields)
+regularColumnFields = ['id', 'MetadataEntryID', 'SystemName'].concat(commonColumnFields)
 overrideColumnFields = ['overrides AS SystemName'].concat(commonColumnFields)
 
 class DataSourceService extends ServiceCrud
 
-  getColumnList: (dataSourceId, dataListType, getOverrides=false) ->
+  getColumnList: (dataSourceId, dataListType..., opts) ->
+    {getOverrides} = opts
+    dataListType = dataListType.join('/')
     @logger.debug () -> "getColumnList(), dataSourceId=#{dataSourceId}, dataListType=#{dataListType}, getOverrides=#{getOverrides}"
     query = tables.config.dataSourceFields()
     .select(if getOverrides then overrideColumnFields else regularColumnFields)
@@ -70,14 +72,14 @@ class DataSourceService extends ServiceCrud
       data_source_id: dataSourceId
     @custom(query)
 
-  getTableList: (dataSourceId) ->
+  getTableList: (dataSourceId, dataListType) ->
     @logger.debug () -> "getTableList(), dataSourceId=#{dataSourceId}"
     query = tables.config.dataSourceTables()
     .select(
       "ClassName",
       "StandardName",
       "VisibleName",
-      "ObjectVersion"
+      "TableVersion"
     )
     .where
       data_source_id: dataSourceId
@@ -86,4 +88,4 @@ class DataSourceService extends ServiceCrud
 
 
 module.exports = new DataSourceService tables.config.dataSourceFields,
-  idKey: "MetadataEntryID"
+  idKey: "id"
