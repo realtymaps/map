@@ -8,7 +8,7 @@ paymentMethodService = require '../services/service.paymentMethod'
 
 # routing, and restful auth for payment method operations
 handles = wrapHandleRoutes handles:
-  getDefaultSource: (req) ->  
+  getDefaultSource: (req) ->
     paymentMethodService.getDefaultSource req.session.userid
 
   replaceDefaultSource: (req) ->
