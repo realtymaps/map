@@ -1,5 +1,21 @@
 @import './avatar'
 
+.cc-modal-body
+  padding: 0
+
+  form
+    width: 50%
+    margin: auto
+
+.cc-form-buttons
+  margin: auto
+  text-align: center
+  
+  input
+    border: 0 !important
+    min-width: 80% !important
+    
+
 .user
   @extends .table-view
   .table .fa-caret-down, .table .fa-caret-up
@@ -8,6 +24,9 @@
     cursor pointer
 
   margin: auto
+
+  .inner
+    overflow: auto
 
   .list-group
     button
@@ -25,3 +44,31 @@
   .collapse-header
     border-bottom 1px solid $gray_lighter
 
+  .cc-details
+    margin: auto
+    padding: 0 0 15px 0
+
+    .row
+      margin: auto
+      padding: 0
+
+    .cc-buttons
+      padding-top: 30px
+    
+    h4
+      font-weight: 800
+      margin-bottom: 30px
+
+    img
+      width: 40px
+      height: auto
+
+    label
+      color: $gray_medium
+    
+    label, p
+      font-family: "museo_sans500"
+      font-size: 14px
+      font-weight: 600
+      line-height: 15px
+      padding: 0

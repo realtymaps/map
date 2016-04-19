@@ -44,7 +44,7 @@ imageStream = (object) ->
 
   retStream
 
-imagesHandle = (object, cb) ->
+imagesHandle = (object, cb, doThrowNoEvents = false) ->
   everSentData = false
   imageId = 0
 
@@ -70,7 +70,7 @@ imagesHandle = (object, cb) ->
     cb(null, payload)
 
   object.objectStream.on 'end', () ->
-    if !everSentData
+    if !everSentData and doThrowNoEvents
       cb(new Error 'No object events')
     cb(null, null, true)
 

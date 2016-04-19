@@ -101,6 +101,11 @@ StripeCustomers = (stripe) ->
     .then (customer) ->
       _.find customer?.sources?.data, 'id', customer?.default_source
 
+  replaceDefaultSource = (authUser, source) ->
+    stripe.customers.update authUser.stripe_customer_id, {source: source}
+    .then (customer) ->
+      _.find customer?.sources?.data, 'id', customer?.default_source
+
   charge = (opts, idempotency_key) ->
     _.defaults opts,
       currency: 'usd'
@@ -133,6 +138,7 @@ StripeCustomers = (stripe) ->
   create: create
   get: get
   getDefaultSource: getDefaultSource
+  replaceDefaultSource: replaceDefaultSource
   charge: charge
   capture: capture
   handleCreationError: handleCreationError

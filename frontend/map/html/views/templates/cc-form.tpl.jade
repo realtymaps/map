@@ -1,0 +1,104 @@
+//- loosly based on the credit-card form from onboarding
+form(role='form' name='ccForm')
+  .form-group.form-field
+    .label(for="name") Name on Card:
+      input.form-control(
+        tabindex=1
+        valid-method="'blur'"
+        name="name"
+        ng-model="card.name"
+        type='text'
+        validator="required,minlength=2")
+
+  .form-group.form-field(ng-class="card.submittalClass")
+    .label(for="card_number") Card Number:
+      input.card-number-input.form-control(
+        tabindex=2
+        ng-model="card.number"
+        name="card_number"
+        type="tel"
+        x-autocompletetype="cc-number"
+        autocompletetype="cc-number"
+        autocorrect="off"
+        spellcheck="off"
+        autocapitalize="off"
+        cc-number
+        cc-type="card.type"
+        cc-eager-type
+        placeholder="XXXX-XXXX-XXXX-XXXX")
+      span.card(
+        ng-show="ccForm.card_number.$ccEagerType && ccForm.card_number.$viewValue"
+        ng-class="card.getCardClass(ccForm.card_number.$ccEagerType)")
+      span(ng-show="ccForm.card_number.$invalid && ccForm.card_number.$viewValue")
+        label.control-label.has-error() Invalid
+      span(ng-show="card.doShowRequired(ccForm.card_number, ccForm)")
+        label.control-label.has-error() Required
+  .row
+    .col-md-6
+      .form-group.form-field(ng-class="view.submittalClass")
+        .label(for="card_exp_month") Exp Month:
+          input.form-control(
+            type="text"
+            name="card_exp_month"
+            tabindex=3
+            placeholder="MM"
+            ng-model="card.exp_month"
+            cc-exp-month)
+          span(ng-show="view.doShowRequired(ccForm.card_exp_month, ccForm)")
+            label.control-label.has-error() Required
+          span(ng-show="ccForm.card_exp_month.$invalid && ccForm.card_exp_month.$viewValue")
+            label.control-label.has-error() Invalid
+    .col-md-6
+      .form-group.form-field(ng-class="view.submittalClass")
+        .label(for="card_exp_year") Exp Year:
+          input.form-control(
+            tabindex=4
+            name="card_exp_year"
+            type='text'
+            placeholder="YYYY"
+            ng-model="card.exp_year"
+            cc-exp-year
+            full-year)
+          span(ng-show="ccForm.card_exp_month.$touched && ccForm.card_exp_year.$invalid && !ccForm.card_exp_year.$viewValue")
+            label.control-label.has-error() Required
+          span(ng-show="ccForm.card_exp_year.$invalid && ccForm.card_exp_year.$viewValue")
+            label.control-label.has-error() Invalid
+
+  .row
+    .col-md-6
+      .form-group.form-field(ng-class="view.submittalClass")
+        .label(for="card_cvc") Security Code:
+          input.form-control(
+            tabindex=5
+            ng-model="card.cvc"
+            type='text'
+            cc-cvc
+            cc-type="ccForm.card_number.$ccType"
+            placeholder="CVC"
+            name="card_cvc")
+          span(ng-show="view.doShowRequired(ccForm.card_cvc, ccForm)")
+            label.control-label.has-error() Required
+          span(ng-show="ccForm.card_cvc.$invalid && ccForm.card_cvc.$viewValue")
+            label.control-label.has-error() Invalid
+    .col-md-6
+      .form-group.form-field
+        .label Zip:
+          input.form-control(
+            tabindex=6
+            ng-model="card.address_zip"
+            name="zip"
+            type='text'
+            placeholder="XXXXX"
+            validator="required,zipcode")
+
+  .row.cc-form-buttons
+    .col-md-6
+      input.btn.btn-primary(
+        tabindex=7
+        value='Submit'
+        type='button'
+        ng-click="submitCC()"
+        validation-submit="ccForm"
+        ng-disabled="!ccForm.$valid")
+    .col-md-6
+      input.btn.btn-warning(tabindex=8 value="Cancel" type="button" ng-click="exitCC(false)")
