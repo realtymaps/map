@@ -7,6 +7,7 @@ dbs = require '../config/dbs'
 dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
+jobQueue = require '../utils/util.jobQueue'
 
 DELAY_MILLISECONDS = 100
 
@@ -14,35 +15,51 @@ DELAY_MILLISECONDS = 100
 saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
   database = 'normalized'
   tableName = 'parcel'
+  rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
 
-  normalRows = parcelUtils.normalize {
-    batch_id: subtask.batch_id
-    data_source_id: subtask.task_name
-    rows
-    fipsCode
-  }
+  jobQueue.getLastTaskStartTime(subtask.task_name, false)
+  .then (startTime) ->
 
-  tablesPropName = 'norm'+tableName.toInitCaps()
+    normalPayloads = parcelUtils.normalize {
+      batch_id: subtask.batch_id
+      data_source_id: subtask.task_name
+      rows
+      fipsCode
+      startTime
+    }
 
-  promises = for row in normalRows
-    do (row) ->
-      tables.property[tablesPropName]()
-      .where rm_property_id: row.rm_property_id
-      .count()
-      .then ([{count}]) ->
-        count = parseInt count
-        p = if count == 0
-          tables.property[tablesPropName]().raw parcelUtils.insertParcelStr {row, tableName, database}
+
+    tablesPropName = 'norm'+tableName.toInitCaps()
+
+    promises = for payload in normalPayloads
+      do (payload) ->
+        # logger.debug 'payload'
+        # logger.debug payload
+
+        {row, stats, error} =  payload
+        Promise.try () ->
+          if error
+            throw error
+
+          # logger.debug "calling updateRecord"
+          dataLoadHelpers.updateRecord {
+            stats
+            dataType: tablesPropName
+            updateRow: row
+          }
+        .then () ->
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: true, rm_error_msg: null)
           .then () ->
-        else
-          tables.property[tablesPropName]().raw parcelUtils.updateParcelStr {row, tableName, database}
-          .then () ->
+        .catch (err) ->
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: err.toString())
 
-        p.catch () ->
-
-  Promise.all promises
-  .catch (error) ->
-    logger.maybeInvalidError {error, where: 'saveToNormalDb'}
+    Promise.all promises
+    .catch (error) ->
+      logger.maybeInvalidError {error, where: 'saveToNormalDb'}
 
 _finalizeUpdateListing = ({id, subtask}) ->
   #should not need owner promotion logic since it should have already been done

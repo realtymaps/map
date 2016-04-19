@@ -2,8 +2,12 @@ include ../mixins/property/_propertyAttributes.jade
 
 .property-card(ng-controller="rmapsSmallDetailsCtrl")
   .property-img
+    img(ng-cloak ng-if="!property.photos.length" ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+    div(carousel ng-if="property.photos.length")
+      div(slide ng-repeat="photo in property.photos" index="slide.key")
+        img(ng-src="{{photo.url}}" style="margin:auto;")
+        .carousel-caption {{photo.caption}}
     span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-    img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
   +propertyAttributes('property')
   property-buttons(property='property'
                     pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
