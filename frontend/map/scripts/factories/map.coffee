@@ -46,7 +46,6 @@ app.factory 'rmapsMapFactory',
     $log = normal
 
     _initToggles = ($scope, toggles) ->
-      console.log "_initToggles(), toggles:\n#{JSON.stringify(toggles,null,2)}"
       return unless toggles?
       $scope.Toggles = toggles
 
@@ -96,7 +95,6 @@ app.factory 'rmapsMapFactory',
         leafletData.getMap('mainMap').then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
-            console.log "$watch 'Toggles.showPrices', newVal: #{newVal}"
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
 
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
@@ -169,9 +167,7 @@ app.factory 'rmapsMapFactory',
 
 
         @scope.refreshState = (overrideObj = {}) =>
-          console.log "\nrmapsMapFactory.@scope.refreshState(), overrideObj:\n#{JSON.stringify(overrideObj,null,2)}"
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
-          console.log "@mapState is now:\n#{JSON.stringify(@mapState,null,2)}"
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
@@ -219,8 +215,10 @@ app.factory 'rmapsMapFactory',
             property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
-          changeZoom: (increment) ->
+          changeZoom: (increment) =>
+            @scope.zoomLevelService.setPrevZoom self.map.getZoom()
             toBeZoom = self.map.getZoom() + increment
+            @scope.zoomLevelService.setCurrZoom toBeZoom
             self.map.setZoom(toBeZoom)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
@@ -233,7 +231,6 @@ app.factory 'rmapsMapFactory',
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       updateToggles: (map_toggles) =>
-        console.log "\nrmapsMapFactory.updateToggles()"
         @scope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
       clearBurdenLayers: () =>
@@ -274,7 +271,6 @@ app.factory 'rmapsMapFactory',
           })
 
       redraw: (cache = true) ->
-        console.log "rmapsMapFactory.redraw()"
         promise = null
         #consider renaming parcels to addresses as that is all they are used for now
         if @showClientSideParcels()
@@ -310,7 +306,6 @@ app.factory 'rmapsMapFactory',
 
 
       draw: (event, paths) =>
-        console.log "\nrmapsMapFactory.draw()"
         verboseLogger.debug 'draw'
         return if !@scope.map.isReady
         verboseLogger.debug 'isReady'
@@ -340,7 +335,6 @@ app.factory 'rmapsMapFactory',
         ret
 
       getMapStateObj: =>
-        console.log "\nrmapsMapFactory.getMapStateObj()"
         centerToSave = undefined
 
         try
@@ -353,7 +347,7 @@ app.factory 'rmapsMapFactory',
         catch
           #fallback to saftey and save a good center
           centerToSave = rmapsMainOptions.json.center
-        console.log "getMapStateObj(), @scope.Toggles:\n#{JSON.stringify(@scope.Toggles,null,2)}"
+
         stateObj =
           map_position:
             center: centerToSave
