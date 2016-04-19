@@ -6,6 +6,7 @@ _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_togg
 
 app.service 'rmapsCurrentProfilesService', ($http) ->
   setCurrent: (profile) ->
+    console.log "rmapsCurrentProfilesService.setCurrent(), profile:\n#{JSON.stringify(profile,null,2)}"
     $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
 
 app.service 'rmapsProfilesService', (
@@ -30,6 +31,7 @@ app.service 'rmapsProfilesService', (
   #
 
   _update = (profile) ->
+    console.log "rmapsProfilesService._update(), profile:\n#{JSON.stringify(profile,null,2)}"
     $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
   _current = (profile) ->
@@ -42,6 +44,8 @@ app.service 'rmapsProfilesService', (
     if oldProfile?
       _update(oldProfile)
       .then () ->
+        console.log "_setCurrent(), saved old profile:\n#{JSON.stringify(oldProfile,null,2)}"
+        console.log "_setCurrent(), loaded new profile:\n#{JSON.stringify(newProfile,null,2)}"
         _current newProfile
     else
       _current newProfile

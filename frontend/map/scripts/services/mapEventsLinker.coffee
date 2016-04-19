@@ -1,15 +1,14 @@
 caseing = require 'case'
 app = require '../app.coffee'
-_thisName = "MapEventsLinkerService"
 
-app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
-  $log = nemSimpleLogger.spawn("map:#{_thisName}")
+app.service "rmapsMapEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
+  $log = nemSimpleLogger.spawn("map:rmapsMapEventsLinkerService")
   leafletEvents = rmapsNgLeafletHelpersService.events
   _getMapIdEventStr = rmapsNgLeafletHelpersService.events.getMapIdEventStr
 
   _getArgs = (args, cb) ->
     unless cb
-      throw new Error("#{_thisName}._getArgs: cb is undefined")
+      throw new Error("rmapsMapEventsLinkerService._getArgs: cb is undefined")
     {leafletEvent, leafletObject, model, modelName, layerName} = args
     return unless model
     cb(leafletEvent, leafletObject, model, modelName, layerName)
@@ -40,7 +39,9 @@ app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHel
   _hookMap = (mapId, handler, originator, mapEvents) ->
     #return a array of unsubscibers if you want to early unsubscibe
     mapEvents.map (name) ->
+      console.log "\nrmapsMapEventsLinkerService._hookMap(), mapEvents name: #{name}"
       eventName = "leafletDirectiveMap.#{_getMapIdEventStr(mapId)}" + name
+      console.log "eventName: #{eventName}"
       $rootScope.$onRootScope eventName, (event, args) ->
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
 
