@@ -1,9 +1,9 @@
-.small-details.panel.panel-primary( ng-controller='rmapsMapSmallDetailsCtrl' ng-cloak)
-  .panel-heading(ng-class="statusClass") {{street_address_num}} {{street_address_name}}
+.panel.panel-primary(ng-cloak)
+  .panel-heading(ng-class="statusClass") {{model.street_address_num}} {{model.street_address_name}}
   .panel-body
     table(class="table table-condensed table-hover")
       tr
-        td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt
+        td(colspan="2") {{model.bedrooms}} Bed &nbsp; {{model.baths_total}} Bath &nbsp; {{model.finished_sqft}} SqFt
     table(class="table table-condensed table-hover" ng-repeat="mail in model.mailings")
       tr
         td Campaign Name
@@ -13,4 +13,7 @@
         td {{ mail.recipientType.toInitCaps() }}
       tr
         td Sent On
-        td {{ (mail.submitted | date:'MM/dd/yyyy') || 'never' }}
+        td {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'never' }}
+      tr
+        td(colspan=2)
+          img(ng-src="{{mail.lob.thumbnails[0].small}}")
