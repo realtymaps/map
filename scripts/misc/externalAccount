@@ -34,7 +34,7 @@ then
         fi
     done
 else
-    DB_TARGETS=`./scripts/environmentNormalization/herokuCli - apps | tr -s ' ' | cut -f 1 -d ' '`
+    DB_TARGETS=`heroku apps | tail -n +2`
 fi
 
 
