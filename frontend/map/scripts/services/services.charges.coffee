@@ -2,7 +2,8 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.charges
 
-app.service 'rmapsChargesService', ($http) ->
+app.service 'rmapsChargesService', ($http, $log) ->
+  $log = $log.spawn("payment:rmapsChargesService")
 
   get: (entity) ->
     $http.get apiBase.getHistory, entity

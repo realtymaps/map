@@ -38,6 +38,7 @@ formatParcel = (feature) ->
   #match the db attributes
   obj = _.mapKeys feature.properties, (val, key) ->
     key.toLowerCase()
+  obj.data_source_uuid = obj.parcelapn
   obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
   obj.geometry = feature.geometry
   obj.geometry.crs = crsFactory()
@@ -49,6 +50,8 @@ _trimmedPicks = [
   'street_address_num'
   'street_unit_num'
   'geometry'
+  'data_source_uuid'
+  'rm_raw_id'
 ]
 
 formatTrimmedParcel = (feature) ->
@@ -59,22 +62,35 @@ formatTrimmedParcel = (feature) ->
   _.pick feature, _trimmedPicks
 
 
-normalize = ({batch_id, rows, fipsCode, data_source_id}) ->
+normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
   stringRows = rows
-  for r in stringRows
-    do (r) ->
-      #feature is a string, make it a JSON obj
-      obj = formatTrimmedParcel JSON.parse r.feature
-      # logger.debug obj
 
-      if fipsCode
-        obj.fips_code = fipsCode
+  for row in stringRows
+    do (row) ->
+      ret = try
+        #feature is a string, make it a JSON obj
+        obj = formatTrimmedParcel JSON.parse row.feature
+        # logger.debug obj
 
-      _.extend obj, {
-        data_source_id
-        batch_id
-      }
-      obj
+        if fipsCode
+          obj.fips_code = fipsCode
+
+        _.extend obj, {
+          data_source_id
+          batch_id
+          rm_raw_id: row.rm_raw_id
+        }
+        row: obj
+      catch error
+        error: error
+
+      _.extend ret,
+        stats: {
+          data_source_id
+          batch_id
+          rm_raw_id: row.rm_raw_id
+          up_to_date: startTime
+        }
 
 _toReplace = 'REPLACE_ME'
 
@@ -85,7 +101,7 @@ _fixTableName = (database, tableName) ->
     tableName = normStr + tableName.toInitCaps()
   tableName
 
-_prepEntityForGeomReplace = ({row, tableName, database}) ->
+_prepEntityForGeomReplace = (row) ->
   # logger.debug val.geometry
   toReplaceWith = "st_geomfromgeojson( '#{JSON.stringify(row.geometry)}')"
   toReplaceWith = "ST_Multi(#{toReplaceWith})" if row.geometry.type == 'Polygon'
@@ -98,10 +114,10 @@ _prepEntityForGeomReplace = ({row, tableName, database}) ->
 
   {row, toReplaceWith}
 
-_insertOrUpdate = ({row, method, tableName, database}) ->
+_insertOrUpdate = (method, {row, tableName, database}) ->
   method ?= 'insert'
   tableName = _fixTableName database, tableName
-  {row, toReplaceWith} = _prepEntityForGeomReplace {row, tableName, database}
+  {row, toReplaceWith} = _prepEntityForGeomReplace row
 
   q = tables.property[tableName]()[method](row)
 
@@ -115,13 +131,9 @@ _insertOrUpdate = ({row, method, tableName, database}) ->
   raw
 
 
-insertParcelStr = (opts) ->
-  opts.method = 'insert'
-  _insertOrUpdate opts
+insertParcelStr = _insertOrUpdate.bind(null, 'insert')
 
-updateParcelStr = (opts) ->
-  opts.method = 'update'
-  _insertOrUpdate opts
+updateParcelStr = _insertOrUpdate.bind(null, 'update')
 
 upsertParcelSqlString = ({row, tableName, database}) ->
 

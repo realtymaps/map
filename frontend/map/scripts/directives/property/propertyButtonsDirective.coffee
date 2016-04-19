@@ -35,7 +35,7 @@ app.directive 'propertyButtons', (
       favoriteClick: '&?'
     templateUrl: './includes/directives/property/_propertyButtonsDirective.jade'
     controller: ($scope, $element, $attrs, $transclude) ->
-#      $log.debug "PROPERTY BUTTONS with property", $scope.property, "and project", $scope.project
+#      $log.debug "PROPERTY BUTTONS with property", $scope.propertyParent, "and project", $scope.projectParent
       $scope.formatters = {
         results: new rmapsResultsFormatterService  scope: $scope
         property: new rmapsPropertyFormatterService()
