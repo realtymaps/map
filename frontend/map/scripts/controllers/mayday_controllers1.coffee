@@ -9,11 +9,6 @@ module.exports = (app) ->
     $scope.isOpened = false
     $scope.status = isopen: false
 
-    rmapsPrincipalService.getIdentity()
-    .then (identity) ->
-      # setting user to $rootScope since this is where a reference to user is used in other parts of the app
-      $rootScope.user = identity.user
-
     $scope.toggleDropdown = ($event) ->
       $event.preventDefault()
       $event.stopPropagation()
