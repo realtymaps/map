@@ -14,6 +14,7 @@ commonColumnFields = [
 regularColumnFields = ['id', 'MetadataEntryID', 'SystemName'].concat(commonColumnFields)
 overrideColumnFields = ['overrides AS SystemName'].concat(commonColumnFields)
 
+
 class DataSourceService extends ServiceCrud
 
   getColumnList: (dataSourceId, dataListType..., opts) ->
