@@ -114,6 +114,7 @@ _setup = (baseObject) ->
           handler(query(fullOpts), trx)
       query.tableName = tableName
       query.buildTableName = buildTableName
+      query.dbName = dbName
       query.transaction = transaction
       query
 
