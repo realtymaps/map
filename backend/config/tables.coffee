@@ -109,6 +109,10 @@ _setup = (baseObject) ->
         ret.raw = db.raw.bind(db)
         ret
       transaction = (opts, handler) ->
+        if handler == undefined
+          # syntactic sugar to allow opts to be left out, but the handler to always be the last param
+          handler = opts
+          opts = undefined
         dbs.get(dbName).transaction (trx) ->
           fullOpts = _.extend({}, opts, {transaction: trx})
           handler(query(fullOpts), trx)
