@@ -10,7 +10,7 @@ UPDATE data_combined up
   cdn_photo=query.cdn_photo
   FROM
   (select s.data_source_id, s.data_source_uuid,
-        c.url
+        c.value->>'url'
         || '/api/photos/resize' || chr(63)
         || 'data_source_id=' || s.data_source_id
         || '&data_source_uuid=' || s.data_source_uuid cdn_photo
@@ -18,27 +18,7 @@ UPDATE data_combined up
           select data_source_id, data_source_uuid, pairs.value->>'url' url
           FROM data_combined, jsonb_each(data_combined.photos) pairs
           where pairs.key = '0') s
-          JOIN cdn_shards c on c.id = ascii(md5(regexp_replace(s.url, '^.+[/\\]', ''))) % 2
+          JOIN config_keystore c on (c.value->>'id')::int = ascii(md5(regexp_replace(s.url, '^.+[/\\]', ''))) % 2
+          AND c.namespace = 'cdn_shards' AND c.value->>'id' is not null
   ) query
 WHERE photos != '{}' AND up.data_source_id = query.data_source_id and up.data_source_uuid = query.data_source_uuid;
-
-
-CREATE OR REPLACE FUNCTION update_cdn_photo()
-  RETURNS TRIGGER AS $$
-BEGIN
-  NEW.cdn_photo=c.url || '/api/photos/resize' || chr(63) || 'data_source_id=' || NEW.data_source_id || '&data_source_uuid=' || NEW.data_source_uuid
-  from (
-    select pairs.value->>'url' url
-    FROM jsonb_each(NEW.photos) pairs
-    WHERE pairs.key = '0'
-  ) s
-  JOIN cdn_shards c on c.id = ascii(md5(regexp_replace(s.url, '^.+[/\\]', ''))) % 2;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql';
-
-
-CREATE TRIGGER update_cdn_photo_trigger
-BEFORE UPDATE ON data_combined
-FOR EACH ROW EXECUTE PROCEDURE update_cdn_photo();

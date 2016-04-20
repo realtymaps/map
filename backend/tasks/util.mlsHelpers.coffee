@@ -156,9 +156,9 @@ _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
 
   Promise.all [mlsConfigQuery, query]
 
-_updatePhotoUrl = (subtask, opts) -> Promise.try () ->
+_updatePhoto = (subtask, opts) -> Promise.try () ->
   if !opts
-    logger.debug 'GTFO: _updatePhotoUrl'
+    logger.debug 'GTFO: _updatePhoto'
     return
 
   onMissingArgsFail
@@ -180,27 +180,40 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
       key: newFileName
       url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
 
+
     obj.objectData = objectData if objectData
 
     jsonObjStr = JSON.stringify obj
 
     finePhotologger.debug jsonObjStr
 
-    query =
-      tables.property.listing()
-      .raw("""
-        UPDATE listing set
-        photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)
-        WHERE
-         data_source_id = '#{subtask.task_name}' AND
-         data_source_uuid = '#{data_source_uuid}' AND
-         photo_id = '#{photo_id}';
-        """
-      )
+    cdnPhotoStrPromise = Promise.resolve('')
+    if imageId == 0
+      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(_.extend {}, opts, data_source_id: subtask.task_name)
 
-    finePhotologger.debug query.toString()
-    query
-    .catch () ->
+    cdnPhotoStrPromise
+    .then (cdnPhotoStr) ->
+
+      if cdnPhotoStr
+        cdnPhotoStr = ',cdn_photo=' + cdnPhotoStr
+
+      query =
+        tables.property.listing()
+        .raw """
+          UPDATE listing set
+          photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)#{cdnPhotoStr}
+          WHERE
+           data_source_id = '#{subtask.task_name}' AND
+           data_source_uuid = '#{data_source_uuid}' AND
+           photo_id = '#{photo_id}';
+          """
+
+      finePhotologger.debug query.toString()
+      query
+
+    .catch (error) ->
+      logger.error error
+      logger.debug 'Handling error by enqueing photo to be deleted.'
       _enqueuePhotoToDelete obj.key, subtask.batch_id
 
 _enqueuePhotoToDelete = (key, batch_id) ->
@@ -345,7 +358,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
 
       savesPromise.then ([saves]) ->
         #filter/flatMap (remove nulls / GTFOS)
-        Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
+        Promise.all _.filter(saves).map _updatePhoto.bind(null, subtask)
 
   .catch (error) ->
     msg = logger.maybeInvalidError {error, where: 'storePhotos'}

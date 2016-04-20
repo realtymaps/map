@@ -1,8 +1,17 @@
-logger = require('../config/logger').spawn('util.mls.photos')
-# retsHelpers = require './util.retsHelpers'
 _ = require 'lodash'
 Archiver = require 'archiver'
 through = require 'through2'
+keystore = require '../services/service.keystore'
+{onMissingArgsFail} = require '../utils/errors/util.errors.args'
+logger = require('../config/logger').spawn('util.mls.photos')
+shardLogger = logger.spawn('shard')
+crypto = require("crypto")
+Promise = require 'bluebird'
+
+md5 = (data) ->
+  crypto.createHash('md5')
+  .update(data)
+  .digest('hex')
 
 _hasNoStar = (photoIds) ->
   JSON.stringify(photoIds).indexOf('*') == -1
@@ -103,10 +112,30 @@ hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
   uploadDate1? && uploadDate2? &&
     (new Date(uploadDate1)).getTime() == (new Date(uploadDate2)).getTime()
 
+
+getCndPhotoShard = (opts) -> Promise.try () ->
+  {newFileName, data_source_uuid, data_source_id} = onMissingArgsFail
+    args: opts
+    required: ['newFileName', 'data_source_id', 'data_source_uuid']
+
+  keystore.cache.getValuesMap('cdn_shards')
+  .then (cdnShards) ->
+    cdnShards = _.mapValues cdnShards
+    mod = md5(newFileName).charCodeAt(0) % 2
+
+    shard = _.find cdnShards, (s) ->
+      parseInt(s.id) == mod
+
+    if !shard?.url?
+      throw new Error('Shard must have a url')
+
+    "'#{shard.url}/api/photos/resize' || chr(63) || 'data_source_id=#{data_source_id}&data_source_uuid=#{data_source_uuid}'"
+
 module.exports = {
   isSingleImage
   imagesHandle
   imagesStream
   imageStream
   hasSameUploadDate
+  getCndPhotoShard
 }

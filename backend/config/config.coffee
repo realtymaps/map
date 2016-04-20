@@ -9,7 +9,7 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 base =
   S3_URL: 'https://s3.amazonaws.com'
-  EXT_AWS_PHOTO_ACCOUNT: process.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
+  EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
   COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
