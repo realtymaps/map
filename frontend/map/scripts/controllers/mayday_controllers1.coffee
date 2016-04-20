@@ -5,9 +5,14 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 module.exports = (app) ->
   ###Bootstrap UI controllers###
 
-  app.controller 'DropdownCtrl', ($scope) ->
+  app.controller 'DropdownCtrl', ($rootScope, $scope, rmapsPrincipalService) ->
     $scope.isOpened = false
     $scope.status = isopen: false
+
+    rmapsPrincipalService.getIdentity()
+    .then (identity) ->
+      # setting user to $rootScope since this is where a reference to user is used in other parts of the app
+      $rootScope.user = identity.user
 
     $scope.toggleDropdown = ($event) ->
       $event.preventDefault()

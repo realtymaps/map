@@ -1,8 +1,8 @@
 .collapse-header
   h2 Payment Method
-.row.collapse-header.cc-details
+.row.collapse-header.cc-details(ng-show="payment")
   h4 Card Info
-  .row(ng-cloak)
+  .row
     .col-md-1
       img(ng-src="assets/cc/{{payment.brand}}Icon.png")
     .col-md-5
