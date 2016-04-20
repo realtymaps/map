@@ -22,6 +22,7 @@ module.exports =
 
   user:           'user'
   userMLS:        '/userMLS'
+  userSubscription: '/userSubscription'
   userPaymentMethod: '/userPaymentMethod'
   userNotifications: '/userNotifications'
   userTeamMembers: '/userTeamMembers'
