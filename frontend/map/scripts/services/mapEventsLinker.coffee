@@ -1,15 +1,14 @@
 caseing = require 'case'
 app = require '../app.coffee'
-_thisName = "MapEventsLinkerService"
 
-app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
-  $log = nemSimpleLogger.spawn("map:#{_thisName}")
+app.service "rmapsMapEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
+  $log = nemSimpleLogger.spawn("map:rmapsMapEventsLinkerService")
   leafletEvents = rmapsNgLeafletHelpersService.events
   _getMapIdEventStr = rmapsNgLeafletHelpersService.events.getMapIdEventStr
 
   _getArgs = (args, cb) ->
     unless cb
-      throw new Error("#{_thisName}._getArgs: cb is undefined")
+      throw new Error("rmapsMapEventsLinkerService._getArgs: cb is undefined")
     {leafletEvent, leafletObject, model, modelName, layerName} = args
     return unless model
     cb(leafletEvent, leafletObject, model, modelName, layerName)

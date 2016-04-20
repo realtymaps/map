@@ -22,6 +22,7 @@ app.service 'rmapsFormattersService', ($log) ->
   _json =
     readable: (json) ->
       JSON.stringify(json).replace(/"/g,'').replace(/:/g,': ').replace(/,/g,', ').replace('{','').replace('}','')
+
   #public
   JSON: _json
   Common:
