@@ -1,5 +1,6 @@
 dbs = require '../config/dbs'
 config = require '../config/config'
+_ = require 'lodash'
 
 
 # setting on module.exports before processing to help with IDE autocomplete
@@ -107,8 +108,13 @@ _setup = (baseObject) ->
           ret = client.from(fullTableName)
         ret.raw = db.raw.bind(db)
         ret
+      transaction = (opts, handler) ->
+        dbs.get(dbName).transaction (trx) ->
+          fullOpts = _.extend({}, opts, {transaction: trx})
+          handler(query(fullOpts), trx)
       query.tableName = tableName
       query.buildTableName = buildTableName
+      query.transaction = transaction
       query
 
 _setup(module.exports)

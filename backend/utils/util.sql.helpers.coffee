@@ -259,9 +259,9 @@ buildUpsertBindings = ({idObj, entityObj, tableName}) ->
   bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
 
 
-upsert = ({idObj, entityObj, dbFn}) ->
+upsert = ({idObj, entityObj, dbFn, transaction}) ->
   upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
-  dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
+  dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
 
 module.exports = {
   between

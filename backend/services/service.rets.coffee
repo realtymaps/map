@@ -8,183 +8,197 @@ sqlHelpers = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 mlsConfigService = require './service.mls_config'
 moment = require 'moment'
-{PartiallyHandledError, isCausedBy, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
-{validators, validateAndTransformRequest} = require '../utils/util.validation'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+validation = require '../utils/util.validation'
 Promise = require 'bluebird'
 
 RETS_REFRESHES = 'rets-refreshes'
 SEVEN_DAYS_MILLIS = 7*24*60*60*1000
 
 
-_syncDataCache = (ids, saveCacheImpl) ->
-  [type, mlsId, otherIds...] = ids
+###
+  As a whole, this service is a layer in front of util.retsHelpers to cache the results of metadata requests in the db
+  and prevent making unnecessary requests to the RETS server (which is a big deal since some of them limit concurrent
+  logins).  getDataDump is the exception, as it pulls some data instead of metadata, and does no caching.
+###
+
+
+_decideIfRefreshNecessary = (opts) -> Promise.try () ->
+  {callName, mlsId, otherIds, forceRefresh} = opts
+  if forceRefresh
+    logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): forced refresh"
+    return true
+  keystore.getValue("#{callName}/#{mlsId}/#{otherIds.join('/')}", namespace: RETS_REFRESHES, defaultValue: 0)
+  .then (lastRefresh) ->
+    millisSinceLastRefresh = Date.now() - lastRefresh
+    if millisSinceLastRefresh > SEVEN_DAYS_MILLIS
+      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
+      return true
+    else
+      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): no refresh needed"
+      return false
+
+
+_cacheCanonicalData = (opts) ->
+  {callName, mlsId, otherIds, cacheSpecs, forceRefresh} = opts
   now = Date.now()  # save the timestamp of when we started the request
   mlsConfigService.getById(mlsId)
   .catch (err) ->
-    throw new PartiallyHandledError(err, "Can't get MLS config for #{mlsId}")
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Can't get MLS config for #{mlsId}")
   .then ([mlsConfig]) ->
-    logger.debug () -> "_syncDataCache(#{ids.join('/')}): attempting to acquire canonical data"
-    retsHelpers[type](mlsConfig, otherIds...)
+    logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): attempting to acquire canonical data"
+    retsHelpers[callName](mlsConfig, otherIds...)
     .then (data) ->
       if !data?.length
-        throw new Error("No canonical RETS data returned: #{ids.join('/')}")
-      logger.debug () -> "_syncDataCache(#{ids.join('/')}): canonical data acquired, caching"
-      saveCacheImpl(data, mlsConfig, otherIds...)
+        throw new Error("No canonical RETS data returned: #{callName}/#{mlsId}/#{otherIds.join('/')}")
+      logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): canonical data acquired, caching"
+      cacheSpecs.dbFn.transaction (query, transaction) ->
+        query
+        .where(cacheSpecs.datasetCriteria)
+        .delete()
+        .map list, (data) ->
+          idObj = _.clone(cacheSpecs.datasetCriteria)
+          idObj[cacheSpecs.rowKey] = data[cacheSpecs.rowKey]
+          entityObj = _.extend({}, data, cacheSpecs.extraEntityFields)
+          sqlHelpers.upsert({idObj, entityObj, dbFn: cacheSpecs.dbFn, transaction})
       .then () ->
-        keystore.setValue(ids.join('/'), now, namespace: RETS_REFRESHES)
+        keystore.setValue("#{callName}/#{mlsId}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
       .then () ->
-        logger.debug () -> "_syncDataCache(#{ids.join('/')}): data cached successfully"
+        logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): data cached successfully"
         return data
+  .catch errorHandlingUtils.isCausedBy(retsHelpers.RetsError), (err) ->
+    msg = "Couldn't refresh RETS data cache: #{callName}/#{mlsId}/#{otherIds.join('/')}"
+    if forceRefresh
+      # if user requested a refresh, then make sure they know it failed
+      logger.error(msg)
+      throw err
+    else
+      logger.warn(msg)
+      return null
+
+
+_getCachedData = (opts) -> Promise.try () ->
+  {callName, mlsId, otherIds} = opts
+  logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): using cached data"
+  dataSource[callName](mlsId, otherIds..., getOverrides: false)
+  .then (list) ->
+    if !list?.length
+      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): no cached data found"
+      throw new Error("Couldn't acquire any RETS data: #{callName}/#{mlsId}/#{otherIds.join('/')}")
+    else
+      return list
+
+
+_applyOverrides = (mainList, opts) ->
+  {callName, mlsId, otherIds, overrideKey} = opts
+  logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): applying overrides based on #{overrideKey}"
+  dataSource[callName](mlsId, otherIds..., getOverrides: true)
+  .then (overrideList) ->
+    overrideMap = _.indexBy(overrideList, overrideKey)
+    for row in mainList
+      for key,value of overrideMap[row[overrideKey]]
+        if value?
+          row[key] = value
+    return mainList
+
 
 _getRetsMetadata = (opts) ->
-  {ids, forceRefresh, overrideKey, saveCacheImpl} = opts
-  [type, mlsId, otherIds...] = ids
+  {callName, mlsId, otherIds, forceRefresh, overrideKey, cacheSpecs} = opts
   Promise.try () ->
-    if forceRefresh
-      logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): forced refresh"
-      return true
-    keystore.getValue(ids.join('/'), namespace: RETS_REFRESHES, defaultValue: 0)
-    .then (lastRefresh) ->
-      millisSinceLastRefresh = Date.now() - lastRefresh
-      if millisSinceLastRefresh > SEVEN_DAYS_MILLIS
-        logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
-        return true
-      else
-        return false
+    _decideIfRefreshNecessary(opts)
   .then (doRefresh) ->
     if !doRefresh
       return null
-    _syncDataCache(ids, saveCacheImpl)
-    .catch isCausedBy(retsHelpers.RetsError), (err) ->
-      msg = "Couldn't refresh RETS data cache: #{ids.join('/')}"
-      if forceRefresh
-        # if user requested a refresh, then make sure they know it failed
-        logger.error(msg)
-        throw err
-      else
-        logger.warn(msg)
-        return false
+    _cacheCanonicalData(opts)
   .then (canonicalData) ->
-    if canonicalData
+    if canonicalData?.length
       return canonicalData
-    logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): using cached data"
-    dataSource[type](mlsId, otherIds..., getOverrides: false)
-    .then (list) ->
-      if !list?.length
-        logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): no cached data found"
-        if canonicalData == false  # means we already tried and failed to get canonical data
-          throw new Error("Couldn't acquire any RETS data: #{ids.join('/')}")
-        _syncDataCache(ids, saveCacheImpl)
-        .catch isCausedBy(retsHelpers.RetsError), (err) ->
-          logger.error("Couldn't acquire canonical RETS data: #{ids.join('/')}")
-          throw err
-      else
-        return list
+    else
+      _getCachedData(opts)
   .then (mainList) ->
     if !overrideKey
       return mainList
-    logger.debug () -> "_getRetsMetadata(#{ids.join('/')}): applying overrides based on #{overrideKey}"
-    dataSource[type](mlsId, otherIds..., getOverrides: true)
-    .then (overrideList) ->
-      overrideMap = _.indexBy(overrideList, overrideKey)
-      for row in mainList
-        for key,value of overrideMap[row[overrideKey]]
-          if value?
-            row[key] = value
-      return mainList
-  .catch isUnhandled, (err) ->
-    throw new PartiallyHandledError(err, "Error acquiring required RETS data: #{ids.join('/')}")
+    else
+      _applyOverrides(mainList, opts)
+  .catch errorHandlingUtils.isUnhandled, (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Error acquiring required RETS data: #{callName}/#{mlsId}/#{otherIds.join('/')}")
 
 
+# gets metadata (data type, id for a code-to-readable-values map, etc) about the columns available for a given table in
+# a given db of a RETS server
 getColumnList = (opts) ->
   {mlsId, databaseId, tableId, forceRefresh} = opts
   logger.debug () -> "getColumnList(), mlsId=#{mlsId}, databaseId=#{databaseId}, tableId=#{tableId}, forceRefresh=#{forceRefresh}"
-  saveCacheImpl = (list, mlsConfig, databaseId, tableId) ->
-    tables.config.dataSourceFields()
-    .where
-      data_source_id: mlsConfig.id
+  cacheSpecs =
+    datasetCriteria:
+      data_source_id: mlsId
       data_list_type: "#{databaseId}/#{tableId}"
-    .delete()
-    .then () ->
-      Promise.map list, (data) ->
-        idObj =
-          data_source_id: mlsConfig.id
-          data_list_type: "#{databaseId}/#{tableId}"
-          SystemName: data.SystemName
-        sqlHelpers.upsert({idObj, entityObj: _.extend({data_source_type: 'mls'}, data), dbFn: tables.config.dataSourceFields})
-  _getRetsMetadata({saveCacheImpl, overrideKey: 'SystemName', ids: ['getColumnList', mlsId, databaseId, tableId], forceRefresh})
+    rowKey: 'SystemName'
+    extraEntityFields:
+      data_source_type: 'mls'
+    dbFn: tables.config.dataSourceFields
+  _getRetsMetadata({cacheSpecs, overrideKey: 'SystemName', callName: 'getColumnList', mlsId, otherIds: [databaseId, tableId], forceRefresh})
 
+
+# gets a list of code-to-readable-values mappings for a given database and mapping/lookup id on a RETS server, as would
+# be found in the metadata from getColumnList
 getLookupTypes = (opts) ->
   {mlsId, databaseId, lookupId, forceRefresh} = opts
   logger.debug () -> "getLookupTypes(), mlsId=#{mlsId}, databaseId=#{databaseId}, lookupId=#{lookupId}, forceRefresh=#{forceRefresh}"
-  saveCacheImpl = (list, mlsConfig, databaseId, lookupId) ->
-    tables.config.dataSourceLookups()
-    .where
-      data_source_id: mlsConfig.id
+  cacheSpecs =
+    datasetCriteria:
+      data_source_id: mlsId
       data_list_type: databaseId
       LookupName: lookupId
-    .delete()
-    .then () ->
-      Promise.map list, (data) ->
-        idObj =
-          data_source_id: mlsConfig.id
-          data_list_type: databaseId
-          LookupName: lookupId
-          Value: data.Value
-        sqlHelpers.upsert({idObj, entityObj: _.extend({data_source_type: 'mls'}, data), dbFn: tables.config.dataSourceLookups})
-  _getRetsMetadata({saveCacheImpl, ids: ['getLookupTypes', mlsId, databaseId, lookupId], forceRefresh})
+    rowKey: 'Value'
+    extraEntityFields:
+      data_source_type: 'mls'
+    dbFn: tables.config.dataSourceLookups
+  _getRetsMetadata({cacheSpecs, callName: 'getLookupTypes', mlsId, otherIds: [databaseId, lookupId], forceRefresh})
 
+
+# gets metadata about the databases available on a given RETS server
 getDatabaseList = (opts) ->
   {mlsId, forceRefresh} = opts
   logger.debug () -> "getDatabaseList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
-  saveCacheImpl = (list, mlsConfig) ->
-    tables.config.dataSourceDatabases()
-    .where
-      data_source_id: mlsConfig.id
-    .delete()
-    .then () ->
-      Promise.map list, (data) ->
-        idObj =
-          data_source_id: mlsConfig.id
-          ResourceID: data.ResourceID
-        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceDatabases})
-  _getRetsMetadata({saveCacheImpl, ids: ['getDatabaseList', mlsId], forceRefresh})
+  cacheSpecs =
+    datasetCriteria:
+      data_source_id: mlsId
+    rowKey: 'ResourceID'
+    dbFn: tables.config.dataSourceDatabases
+  _getRetsMetadata({cacheSpecs, callName: 'getDatabaseList', mlsId, otherIds: [], forceRefresh})
 
+
+# gets a list of the object (image/video) types available on a given RETS server -- an entity (listing, realtor, etc)
+# may have objects associated with it, and they must be requested by type
 getObjectList = (opts) ->
   {mlsId, forceRefresh} = opts
   logger.debug () -> "getObjectList(), mlsId=#{mlsId}, forceRefresh=#{forceRefresh}"
-  saveCacheImpl = (list, mlsConfig) ->
-    tables.config.dataSourceObjects()
-    .where
-      data_source_id: mlsConfig.id
-    .delete()
-    .then () ->
-      Promise.map list, (data) ->
-        idObj =
-          data_source_id: mlsConfig.id
-          VisibleName: data.VisibleName
-        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceObjects})
-  _getRetsMetadata({saveCacheImpl, ids: ['getObjectList', mlsId], forceRefresh})
+  cacheSpecs =
+    datasetCriteria:
+      data_source_id: mlsId
+    rowKey: 'VisibleName'
+    dbFn: tables.config.dataSourceObjects
+  _getRetsMetadata({cacheSpecs, callName: 'getObjectList', mlsId, otherIds: [], forceRefresh})
 
+
+# gets metadata about the tables available in a given database on a given RETS server
 getTableList = (opts) ->
   {mlsId, databaseId, forceRefresh} = opts
   logger.debug () -> "getTableList(), mlsId=#{mlsId}, databaseId=#{databaseId}, forceRefresh=#{forceRefresh}"
-  saveCacheImpl = (list, mlsConfig, databaseId) ->
-    tables.config.dataSourceTables()
-    .where
-      data_source_id: mlsConfig.id
+  cacheSpecs =
+    datasetCriteria:
+      data_source_id: mlsId
       data_list_type: databaseId
-    .delete()
-    .then () ->
-      Promise.map list, (data) ->
-        idObj =
-          data_source_id: mlsConfig.id
-          data_list_type: databaseId
-          ClassName: data.ClassName
-        sqlHelpers.upsert({idObj, entityObj: data, dbFn: tables.config.dataSourceTables})
-  _getRetsMetadata({saveCacheImpl, ids: ['getTableList', mlsId, databaseId], forceRefresh})
+    rowKey: 'ClassName'
+    dbFn: tables.config.dataSourceTables
+  _getRetsMetadata({cacheSpecs, callName: 'getTableList', mlsId, otherIds: [databaseId], forceRefresh})
 
 
+# this is the thing that's not like the others.  It gets some data from a RETS server based on a query, and returns it
+# as an array of row objects plus and array of column names as suitable for passing directly to a csv library we use.
+# The intent here is to allow us to get a sample of e.g. 1000 rows of data to look at when figuring out how to configure
+# a new MLS
 getDataDump = (mlsId, query) ->
   mlsConfigService.getById(mlsId)
   .then ([mlsConfig]) ->
@@ -195,8 +209,8 @@ getDataDump = (mlsId, query) ->
         404
     else
       validations =
-        limit: [validators.integer(min: 1), validators.defaults(defaultValue: 1000)]
-      validateAndTransformRequest(query, validations)
+        limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
+      validation.validateAndTransformRequest(query, validations)
       .then (result) ->
         retsHelpers.getDataStream(mlsConfig, result.limit)
       .then (retsStream) ->
@@ -228,6 +242,7 @@ getDataDump = (mlsId, query) ->
           options:
             columns: columns
             header: true
+
 
 module.exports = {
   getColumnList
