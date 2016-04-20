@@ -46,7 +46,6 @@ app.factory 'rmapSummaryResultsMutation',
   stampit.methods
 
     mutateSummary: () ->
-
       if @promise
         return @
 
@@ -64,7 +63,8 @@ app.factory 'rmapSummaryResultsMutation',
 
       if !@isAnyParcel()
         overlays?.parcels?.visible = false
-        Toggles.showPrices = true
+        if @scope.zoomLevelService.isFromPriceZoom()
+          Toggles.showPrices = true
         Toggles.showAddresses = false
         overlays?.parcelsAddresses?.visible = false
         @promise = $q.resolve()
@@ -98,7 +98,6 @@ app.factory 'rmapParcelResultsMutation',
       Toggles = @scope.Toggles
 
       overlays?.parcels?.visible = not @isBeyondCartoDb()
-      Toggles.showPrices = false
       Toggles.showAddresses = @isAddressParcel()
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
