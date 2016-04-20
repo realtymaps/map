@@ -5,7 +5,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 module.exports = (app) ->
   ###Bootstrap UI controllers###
 
-  app.controller 'DropdownCtrl', ($rootScope, $scope, rmapsPrincipalService) ->
+  app.controller 'DropdownCtrl', ($scope) ->
     $scope.isOpened = false
     $scope.status = isopen: false
 
