@@ -171,6 +171,13 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           batch_id: subtask.batch_id
           rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
       .delete()
+      .then () ->
+        # clean up after itself in the deletes table
+        tables.deletes[deletesPropName](transaction: transaction)
+        .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+        .delete()
 
 
 _getUsedInputFields = (validationDefinition) ->
