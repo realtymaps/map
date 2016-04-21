@@ -44,7 +44,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
         overrideSkipNames.push(taskName)
       # otherwise, rely on default ready-checking logic
   .then () ->
-    internals._withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+    internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
       tables.jobQueue.taskConfig(transaction: transaction)
       .select()
       .where(active: true)                  # only consider active tasks
@@ -310,7 +310,7 @@ executeSubtask = (subtask, prefix) ->
 getQueuedSubtask = (queueName) ->
   internals.getQueueLockId(queueName)
   .then (queueLockId) ->
-    internals._withDbLock queueLockId, (transaction) ->
+    internals.withDbLock queueLockId, (transaction) ->
       transaction
       .select('*')
       .from(transaction.raw('jq_get_next_subtask(?)', [queueName]))
@@ -324,7 +324,7 @@ getQueuedSubtask = (queueName) ->
 doMaintenance = () ->
   maintenanceLogger = logger.spawn("maintenance")
   maintenanceLogger.debug('Doing maintenance...')
-  internals._withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+  internals.withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->

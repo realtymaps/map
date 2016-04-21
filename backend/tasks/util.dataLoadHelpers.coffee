@@ -630,6 +630,8 @@ ensureNormalizedTable = (dataType, subid) ->
       if dataType == 'tax'
         table.integer('bedrooms')
         table.integer('baths_full')
+        table.integer('baths_half')
+        table.decimal('baths_total', 4, 1)
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')
