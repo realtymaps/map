@@ -215,8 +215,10 @@ app.factory 'rmapsMapFactory',
             property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
-          changeZoom: (increment) ->
+          changeZoom: (increment) =>
+            @scope.zoomLevelService.setPrevZoom self.map.getZoom()
             toBeZoom = self.map.getZoom() + increment
+            @scope.zoomLevelService.setCurrZoom toBeZoom
             self.map.setZoom(toBeZoom)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>

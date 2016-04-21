@@ -115,6 +115,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
 
       _.extend model,
         markerType: 'price'
+        riseOnHover: true
         icon:
           type: 'div'
           iconSize: [60, 30]
