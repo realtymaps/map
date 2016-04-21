@@ -2,7 +2,7 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('service:jobs')
 tables = require '../config/tables'
 crudService = require '../utils/crud/util.crud.service.helpers'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require './service.jobQueue'
 dbs = require '../config/dbs'
 
 

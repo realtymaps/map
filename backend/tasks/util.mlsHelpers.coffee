@@ -4,10 +4,10 @@ Promise = require 'bluebird'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('util.mlsHelpers')
 finePhotologger = logger.spawn('photos.fine')
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
-retsHelpers = require '../utils/util.retsHelpers'
+retsService = require '../services/service.rets'
 dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
@@ -32,7 +32,7 @@ loadUpdates = (subtask, options) ->
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsHelpers.getDataStream(mlsInfo, options?.limit, refreshThreshold)
+      retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
       .catch isCausedBy(rets.RetsReplyError), (error) ->
         if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
           throw SoftFail(error, "Transient RETS error; try again later")
@@ -287,7 +287,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     photoType = mlsConfig.listing_data.largestPhotoObject
     {photoRes} = mlsConfig.listing_data
 
-    retsHelpers.getPhotosObject {
+    retsService.getPhotosObject {
       serverInfo: mlsConfig
       databaseName: 'Property'
       photoIds
