@@ -14,7 +14,7 @@ RETS_REFRESHES = 'rets-refreshes'
 SEVEN_DAYS_MILLIS = 7*24*60*60*1000
 
 
-_decideIfRefreshNecessary = (opts) -> Promise.try () ->
+decideIfRefreshNecessary = (opts) -> Promise.try () ->
   {callName, mlsId, otherIds, forceRefresh} = opts
   if forceRefresh
     logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): forced refresh"
@@ -30,7 +30,7 @@ _decideIfRefreshNecessary = (opts) -> Promise.try () ->
       return false
 
 
-_cacheCanonicalData = (opts) ->
+cacheCanonicalData = (opts) ->
   {callName, mlsId, otherIds, cacheSpecs, forceRefresh} = opts
   now = Date.now()  # save the timestamp of when we started the request
   mlsConfigService.getById(mlsId)
@@ -38,13 +38,13 @@ _cacheCanonicalData = (opts) ->
     logger.error analyzeValue.getSimpleDetails(err)
     throw new UnhandledNamedError("Can't get MLS config for #{mlsId}: #{err.message || err}")
   .then ([mlsConfig]) ->
-    logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
+    logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
     retsService[callName](mlsConfig, otherIds...)
     .then (list) ->
       if !list?.length
-        logger.error "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): no canonical data returned"
+        logger.error "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): no canonical data returned"
         throw new UnhandledNamedError('RetsDataError', "No canonical data returned for #{mlsId}/#{callName}/#{otherIds.join('/')}")
-      logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
+      logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
       cacheSpecs.dbFn.transaction (query, transaction) ->
         query
         .where(cacheSpecs.datasetCriteria)
@@ -58,7 +58,7 @@ _cacheCanonicalData = (opts) ->
       .then () ->
         keystore.setValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
       .then () ->
-        logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): data cached successfully"
+        logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): data cached successfully"
         return list
   .catch errorHandlingUtils.isCausedBy(retsService.RetsError), (err) ->
     msg = "Problem making call to RETS server for #{mlsId}: #{err.message}"
@@ -73,7 +73,7 @@ _cacheCanonicalData = (opts) ->
     throw err
 
 
-_getCachedData = (opts) -> Promise.try () ->
+getCachedData = (opts) -> Promise.try () ->
   {callName, mlsId, otherIds} = opts
   logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): using cached data"
   dataSource[callName](mlsId, otherIds..., getOverrides: false)
@@ -85,7 +85,7 @@ _getCachedData = (opts) -> Promise.try () ->
       return list
 
 
-_applyOverrides = (mainList, opts) ->
+applyOverrides = (mainList, opts) ->
   {callName, mlsId, otherIds, overrideKey} = opts
   logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): applying overrides based on #{overrideKey}"
   dataSource[callName](mlsId, otherIds..., getOverrides: true)
@@ -98,31 +98,9 @@ _applyOverrides = (mainList, opts) ->
     return mainList
 
 
-getRetsMetadata = (opts) ->
-  {callName, mlsId, otherIds, forceRefresh, overrideKey, cacheSpecs} = opts
-  Promise.try () ->
-    _decideIfRefreshNecessary(opts)
-  .then (doRefresh) ->
-    if !doRefresh
-      return null
-    _cacheCanonicalData(opts)
-  .then (canonicalData) ->
-    if canonicalData?.length
-      return canonicalData
-    else
-      _getCachedData(opts)
-  .then (mainList) ->
-    if !overrideKey
-      return mainList
-    else
-      _applyOverrides(mainList, opts)
-  .catch (err) ->
-    msg = "Error acquiring required RETS data"
-    if !(err instanceof UnhandledNamedError)
-      msg += ": #{mlsId}/#{callName}/#{otherIds.join('/')}"
-    throw new errorHandlingUtils.PartiallyHandledError(err, msg)
-
-
 module.exports = {
-  getRetsMetadata
+  decideIfRefreshNecessary
+  cacheCanonicalData
+  getCachedData
+  applyOverrides
 }
