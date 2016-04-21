@@ -122,8 +122,16 @@ _rules =
         type: name: 'integer'
 
       baths_full:
-        alias: 'Baths Full'
+        alias: 'Baths (Full)'
         type: name: 'integer'
+
+      baths_half:
+        alias: 'Baths (Half)'
+        type: name: 'integer'
+
+      baths_total:
+        alias: 'Baths (Total)'
+        type: name: 'float'
 
       acres:
         alias: 'Acres'
@@ -229,8 +237,16 @@ _rules =
         type: name: 'integer'
 
       baths_full:
-        alias: 'Baths Full'
+        alias: 'Baths (Full)'
         type: name: 'integer'
+
+      baths_half:
+        alias: 'Baths (Half)'
+        type: name: 'integer'
+
+      baths_total:
+        alias: 'Baths (Total)'
+        type: name: 'float'
 
       acres:
         alias: 'Acres'
