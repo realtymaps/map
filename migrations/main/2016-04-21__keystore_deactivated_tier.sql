@@ -1,0 +1,1 @@
+insert into config_keystore (namespace, key, value) values ('plans', 'deactivated', '{ "maxLogins": 0, "price": 0.00, "interval": "month"}');

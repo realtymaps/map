@@ -22,18 +22,18 @@ createPlan = (stripe, planName, settings) ->
     interval: settings.interval
     metadata: settings
     name: planName
-    interval_count: PAYMENT_PLATFORM.INTERVAL_COUNT
-    currency: PAYMENT_PLATFORM.CURRENCY
+    interval_count: config.PAYMENT_PLATFORM.INTERVAL_COUNT
+    currency: config.PAYMENT_PLATFORM.CURRENCY
 
   if planName != 'free'
     _.extend plan,
-      trial_period_days: PAYMENT_PLATFORM.TRIAL_PERIOD_DAYS
+      trial_period_days: config.PAYMENT_PLATFORM.TRIAL_PERIOD_DAYS
 
   stripe.plans.create plan
   .catch (err) ->
     logger.error "CRITICAL ERROR: OUR PAYMENT PLATFORM IS NOT SETUP CORRECTLY"
     logger.error err, true
-    if PAYMENT_PLATFORM.LIVE_MODE
+    if config.PAYMENT_PLATFORM.LIVE_MODE
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'
     shutdown.exit(error: true)
@@ -42,6 +42,7 @@ createPlan = (stripe, planName, settings) ->
     created
 
 initializePlan = (stripe, planName, settings) ->
+  console.log "initializePlan(), planName:\n#{planName}\nsettings:\n#{JSON.stringify(settings,null,2)}"
   try
     logger.debug "Attempting to initialize plan: #{planName}"
     onMissingArgsFail args: settings, required: ['price', 'interval']

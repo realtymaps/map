@@ -4,3 +4,6 @@ module.exports = app
 app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log) ->
   $log = $log.spawn("map:userSubscription")
   console.log "$rootScope.user:\n#{JSON.stringify($rootScope.user, null, 2)}"
+
+  $scope.unsubscribe = () ->
+    console.log "unsubscribe()"
