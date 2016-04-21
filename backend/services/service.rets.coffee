@@ -51,6 +51,7 @@ _cacheCanonicalData = (opts) ->
     retsHelpers[callName](mlsConfig, otherIds...)
     .then (list) ->
       if !list?.length
+        logger.error "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): no canonical data returned"
         throw new UnhandledNamedError('RetsDataError', "No canonical data returned")
       logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
       cacheSpecs.dbFn.transaction (query, transaction) ->
@@ -85,7 +86,7 @@ _getCachedData = (opts) -> Promise.try () ->
   dataSource[callName](mlsId, otherIds..., getOverrides: false)
   .then (list) ->
     if !list?.length
-      logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): no cached data found"
+      logger.error "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): no cached data found"
       throw new UnhandledNamedError('RetsDataError', "No cached data found")
     else
       return list
