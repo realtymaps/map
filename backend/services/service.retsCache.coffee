@@ -50,7 +50,7 @@ getColumnList = (opts) ->
     extraEntityFields:
       data_source_type: 'mls'
     dbFn: tables.config.dataSourceFields
-  internals._getRetsMetadata({cacheSpecs, overrideKey: 'SystemName', callName: 'getColumnList', mlsId, otherIds: [databaseId, tableId], forceRefresh})
+  _getRetsMetadata({cacheSpecs, overrideKey: 'SystemName', callName: 'getColumnList', mlsId, otherIds: [databaseId, tableId], forceRefresh})
 
 
 # gets a list of code-to-readable-values mappings for a given database and mapping/lookup id on a RETS server, as would
@@ -66,7 +66,7 @@ getLookupTypes = (opts) ->
     extraEntityFields:
       data_source_type: 'mls'
     dbFn: tables.config.dataSourceLookups
-  internals._getRetsMetadata({cacheSpecs, callName: 'getLookupTypes', mlsId, otherIds: [databaseId, lookupId], forceRefresh})
+  _getRetsMetadata({cacheSpecs, callName: 'getLookupTypes', mlsId, otherIds: [databaseId, lookupId], forceRefresh})
 
 
 # gets metadata about the databases available on a given RETS server
@@ -77,7 +77,7 @@ getDatabaseList = (opts) ->
     datasetCriteria:
       data_source_id: mlsId
     dbFn: tables.config.dataSourceDatabases
-  internals._getRetsMetadata({cacheSpecs, callName: 'getDatabaseList', mlsId, otherIds: [], forceRefresh})
+  _getRetsMetadata({cacheSpecs, callName: 'getDatabaseList', mlsId, otherIds: [], forceRefresh})
 
 
 # gets a list of the object (image/video) types available on a given RETS server -- an entity (listing, realtor, etc)
@@ -89,7 +89,7 @@ getObjectList = (opts) ->
     datasetCriteria:
       data_source_id: mlsId
     dbFn: tables.config.dataSourceObjects
-  internals._getRetsMetadata({cacheSpecs, callName: 'getObjectList', mlsId, otherIds: [], forceRefresh})
+  _getRetsMetadata({cacheSpecs, callName: 'getObjectList', mlsId, otherIds: [], forceRefresh})
 
 
 # gets metadata about the tables available in a given database on a given RETS server
@@ -101,7 +101,7 @@ getTableList = (opts) ->
       data_source_id: mlsId
       data_list_type: databaseId
     dbFn: tables.config.dataSourceTables
-  internals._getRetsMetadata({cacheSpecs, callName: 'getTableList', mlsId, otherIds: [databaseId], forceRefresh})
+  _getRetsMetadata({cacheSpecs, callName: 'getTableList', mlsId, otherIds: [databaseId], forceRefresh})
 
 
 module.exports = {
