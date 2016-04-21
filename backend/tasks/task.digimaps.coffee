@@ -104,7 +104,7 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask
         laterSubtaskName: "recordChangeCounts"
         #rawDataType fixes lookup of rawtable for change counts
-        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel"}
+        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel", rawTableSuffix: fipsCode}
         replace: true
       }
       finalizePrepPromise = jobQueue.queueSubsequentSubtask {
