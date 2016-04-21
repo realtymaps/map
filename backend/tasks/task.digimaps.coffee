@@ -30,6 +30,10 @@ _filterImports = (subtask, imports) ->
     folderObjs = _.filter folderObjs, (o) ->
       o.moment.isAfter(moment(refreshThreshold).utc())
 
+
+    if subtask.data.fipsCodeLimit?
+      logger.debug "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
+      folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
     filteredImports: folderObjs.map (f) -> f.name
     refreshThreshold: refreshThreshold
 
@@ -57,11 +61,13 @@ loadRawData = (subtask) -> Promise.try () ->
   {fileName, refreshThreshold} = subtask.data
   fipsCode = String.numeric path.basename fileName
 
+  subtask.data.rawTableSuffix = fipsCode
+
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
     .then (jsonStream) ->
-      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask)) + '_' + fipsCode
+      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
         data_source_id: "#{subtask.task_name}_#{fileName}"
         data_source_type: 'parcel'
@@ -122,7 +128,7 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask, totalOrList: numRows
         maxPage: NUM_ROWS_TO_PAGINATE
         laterSubtaskName: "normalizeData"
-        mergeData: {fipsCode}
+        mergeData: {fipsCode, dataType: 'parcel', rawTableSuffix: fipsCode}
       }
 
 normalizeData = (subtask) ->
@@ -132,9 +138,7 @@ normalizeData = (subtask) ->
 
   logger.debug subtask.data
 
-  rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask) + '_' + fipsCode
-
-  dataLoadHelpers.getNormalizeRows(subtask, rawSubid)
+  dataLoadHelpers.getNormalizeRows(subtask, dataLoadHelpers.buildUniqueSubtaskName(subtask))
   .then (rows) ->
     return if !rows?.length
 
