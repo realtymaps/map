@@ -7,15 +7,14 @@ form.note(name="createEditNoteForm")
       label(for="title") Title
       input.form-control(
         placeholder="Type note title here."
-        type="text" 
+        type="text"
         name="title"
-        ng-model="model.title"
-        validator="required,minlength=2")
+        ng-model="model.title")
       label(for="text") Context
       textarea.form-control(cols="25" rows="10"
         placeholder="Fill in your note details here."
         name="text"
-        type="text" 
+        type="text"
         ng-model="model.text"
         validator="required,minlength=10")
 

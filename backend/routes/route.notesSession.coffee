@@ -12,7 +12,7 @@ bodyTransform =
   validators.object
     subValidateSeparate:
       geom_point_json: validators.geojson(toCrs:true)
-      text: validators.string(minLength: 10)
+      text: validators.string(minLength: 1)
       title: validators.string()
       rm_property_id: validators.string()
       project_id: validators.integer()
