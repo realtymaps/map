@@ -1,7 +1,7 @@
-retsHelpers = require '../utils/util.retsHelpers'
 retsService = require '../services/service.rets'
+retsCache = require '../services/service.retsCache'
 ExpressResponse = require '../utils/util.expressResponse'
-logger = require('../config/logger').spawn('backend:routes:mls')
+logger = require('../config/logger').spawn('routes:mls')
 mlsConfigService = require '../services/service.mls_config'
 mlsService = require '../services/service.mls'
 {validators, validateAndTransformRequest} = require '../utils/util.validation'
@@ -9,7 +9,7 @@ auth = require '../utils/util.auth'
 Promise = require 'bluebird'
 through2 = require 'through2'
 {handleRoute} =  require '../utils/util.route.helpers'
-{getQueryPhoto, getParamPhoto} = require '../utils/util.route.rets.helpers'
+internals = require './route.mls.internals'
 
 lookupMlsTransforms =
   params: validators.object isEmptyProtect: true
@@ -43,7 +43,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getDatabaseList(req.params)
+      retsCache.getDatabaseList(req.params)
       .then (list) ->
         next new ExpressResponse(list)
 
@@ -51,7 +51,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getObjectList(req.params)
+      retsCache.getObjectList(req.params)
       .then (list) ->
         next new ExpressResponse(list)
 
@@ -59,7 +59,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getTableList(req.params)
+      retsCache.getTableList(req.params)
       .then (list) ->
         next new ExpressResponse(list)
 
@@ -67,19 +67,19 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      getQueryPhoto({req, res, next})
+      internals.getQueryPhoto({req, res, next})
 
   getParamsPhotos:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      getParamPhoto({req, res, next})
+      internals.getParamPhoto({req, res, next})
 
   getColumnList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getColumnList(req.params)
+      retsCache.getColumnList(req.params)
       .then (list) ->
         next new ExpressResponse(list)
 
@@ -87,7 +87,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getDataDump(req.params.mlsId, req.query)
+      internals.getDataDump(req.params.mlsId, req.query)
       .then (csvPayload) ->
         resObj = new ExpressResponse(csvPayload)
         resObj.format = 'csv'
@@ -98,6 +98,6 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      retsService.getLookupTypes(req.params)
+      retsCache.getLookupTypes(req.params)
       .then (list) ->
         next new ExpressResponse(list)

@@ -1,5 +1,4 @@
 logger = require('../config/logger').spawn('util.mls.photos')
-# retsHelpers = require './util.retsHelpers'
 _ = require 'lodash'
 Archiver = require 'archiver'
 through = require 'through2'
