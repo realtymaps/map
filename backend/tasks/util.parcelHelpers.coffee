@@ -28,7 +28,6 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
       startTime
     }
 
-
     tablesPropName = 'norm'+tableName.toInitCaps()
 
     promises = for payload in normalPayloads
@@ -100,7 +99,7 @@ _finalizeNewParcel = ({parcels, id, subtask}) ->
       .where
         rm_property_id: id
         data_source_id: subtask.task_name
-        active: false
+        # active: false , #eventually this should be false, but for now this avoids collisions and updates legacy
       .delete()
       .then () ->
         tables.property.parcel(transaction: transaction)
