@@ -9,8 +9,9 @@ cluster = require 'cluster'
 memoize = require 'memoizee'
 config = require '../config/config'
 dbs = require '../config/dbs'
-
-
+jobQueueErrors = require '../utils/errors/util.error.jobQueue'
+TaskImplementation = require '../tasks/util.taskImplementation'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
@@ -47,6 +48,20 @@ checkTask = (transaction, batchId, taskName) ->
       # use undefined since the task_data could legitimately be null
       return undefined
     task?[0]?.data
+
+# TODO: should this be rewritten to use a query built by knex instead of a stored proc?
+getQueuedSubtask = (queueName) ->
+  getQueueLockId(queueName)
+  .then (queueLockId) ->
+    withDbLock queueLockId, (transaction) ->
+      transaction
+      .select('*')
+      .from(transaction.raw('jq_get_next_subtask(?)', [queueName]))
+      .then (results) ->
+        if !results?[0]?.id?
+          return null
+        else
+          return results[0]
 
 
 handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
@@ -229,6 +244,60 @@ runWorkerImpl = (queueName, prefix, quit) ->
         Promise.delay(30000) # poll again in 30 seconds
         .then nextIteration
 
+executeSubtask = (subtask, prefix) ->
+  tables.jobQueue.currentSubtasks()
+  .where(id: subtask.id)
+  .update
+    status: 'running'
+    started: dbs.get('main').raw('NOW()')
+  .then () ->
+    TaskImplementation.getTaskCode(subtask.task_name)
+  .then (taskImpl) ->
+    subtaskPromise = taskImpl.executeSubtask(subtask)
+    .cancellable()
+    .then () ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} finished subtask #{subtask.name}"
+      tables.jobQueue.currentSubtasks()
+      .where(id: subtask.id)
+      .update
+        status: 'success'
+        finished: dbs.get('main').raw('NOW()')
+    if subtask.kill_timeout_seconds
+      subtaskPromise = subtaskPromise
+      .timeout(subtask.kill_timeout_seconds*1000)
+      .catch Promise.TimeoutError, (err) ->
+        handleSubtaskError({prefix, subtask, status: 'timeout', hard: subtask.hard_fail_timeouts, error: 'timeout'})
+    if subtask.warn_timeout_seconds
+      doNotification = () ->
+        sendNotification
+          subject: 'subtask: long run warning'
+          subtask: subtask
+          error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
+      warnTimeout = setTimeout(doNotification, subtask.warn_timeout_seconds)
+      subtaskPromise = subtaskPromise
+      .finally () ->
+        clearTimeout(warnTimeout)
+    return subtaskPromise
+  .then () ->
+    logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} subtask #{subtask.name} updated with success status"
+  .catch jobQueueErrors.SoftFail, (err) ->
+    handleSubtaskError({prefix, subtask, status: 'soft fail', hard: false, error: err})
+  .catch jobQueueErrors.HardFail, (err) ->
+    handleSubtaskError({prefix, subtask, status: 'hard fail', hard: true, error: err})
+  .catch errorHandlingUtils.PartiallyHandledError, (err) ->
+    handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
+  .catch errorHandlingUtils.isUnhandled, (err) ->
+    logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
+    handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
+  .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
+    logger.error("#{prefix} Error caught while handling errors; major db problem likely!  subtask: #{subtask.name}")
+    sendNotification
+      subject: 'major db interaction problem'
+      subtask: subtask
+      error: err
+    throw err
+
+
 
 cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
 # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
@@ -275,4 +344,5 @@ module.exports = {
   updateTaskCounts
   runWorkerImpl
   cancelTaskImpl
+  executeSubtask
 }

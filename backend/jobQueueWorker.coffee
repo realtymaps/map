@@ -9,6 +9,10 @@ analyzeValue = require '../common/utils/util.analyzeValue'
 
 
 queueName = process.argv[2]
+if!queueName?
+  logger.error 'queueName must be defined!'
+  process.exit 202
+  
 quit = process.argv[3]?.toLowerCase() == 'quit'
 tables.jobQueue.queueConfig()
 .select('*')
