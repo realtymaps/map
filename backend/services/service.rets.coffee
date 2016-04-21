@@ -11,6 +11,7 @@ moment = require 'moment'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
 Promise = require 'bluebird'
+UnhandledNamedError = require '../utils/errors/util.error.unhandledNamed'
 
 RETS_REFRESHES = 'rets-refreshes'
 SEVEN_DAYS_MILLIS = 7*24*60*60*1000
@@ -26,16 +27,16 @@ SEVEN_DAYS_MILLIS = 7*24*60*60*1000
 _decideIfRefreshNecessary = (opts) -> Promise.try () ->
   {callName, mlsId, otherIds, forceRefresh} = opts
   if forceRefresh
-    logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): forced refresh"
+    logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): forced refresh"
     return true
-  keystore.getValue("#{callName}/#{mlsId}/#{otherIds.join('/')}", namespace: RETS_REFRESHES, defaultValue: 0)
+  keystore.getValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", namespace: RETS_REFRESHES, defaultValue: 0)
   .then (lastRefresh) ->
     millisSinceLastRefresh = Date.now() - lastRefresh
     if millisSinceLastRefresh > SEVEN_DAYS_MILLIS
-      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
+      logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): automatic refresh (last refreshed #{moment.duration(millisSinceLastRefresh).humanize()} ago)"
       return true
     else
-      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): no refresh needed"
+      logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): no refresh needed"
       return false
 
 
@@ -46,28 +47,29 @@ _cacheCanonicalData = (opts) ->
   .catch (err) ->
     throw new errorHandlingUtils.PartiallyHandledError(err, "Can't get MLS config for #{mlsId}")
   .then ([mlsConfig]) ->
-    logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): attempting to acquire canonical data"
+    logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
     retsHelpers[callName](mlsConfig, otherIds...)
-    .then (data) ->
-      if !data?.length
-        throw new Error("No canonical RETS data returned: #{callName}/#{mlsId}/#{otherIds.join('/')}")
-      logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): canonical data acquired, caching"
+    .then (list) ->
+      if !list?.length
+        throw new UnhandledNamedError('RetsDataError', "No canonical data returned")
+      logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
       cacheSpecs.dbFn.transaction (query, transaction) ->
         query
         .where(cacheSpecs.datasetCriteria)
         .delete()
-        .map list, (data) ->
-          idObj = _.clone(cacheSpecs.datasetCriteria)
-          idObj[cacheSpecs.rowKey] = data[cacheSpecs.rowKey]
-          entityObj = _.extend({}, data, cacheSpecs.extraEntityFields)
-          sqlHelpers.upsert({idObj, entityObj, dbFn: cacheSpecs.dbFn, transaction})
+        .then () ->
+          Promise.map list, (row) ->
+            entity = _.extend(row, cacheSpecs.datasetCriteria, cacheSpecs.extraEntityFields)
+            cacheSpecs.dbFn(transaction: transaction)
+            .insert(entity)
+          .all()
       .then () ->
-        keystore.setValue("#{callName}/#{mlsId}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
+        keystore.setValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
       .then () ->
-        logger.debug () -> "_cacheCanonicalData(#{callName}/#{mlsId}/#{otherIds.join('/')}): data cached successfully"
-        return data
+        logger.debug () -> "_cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): data cached successfully"
+        return list
   .catch errorHandlingUtils.isCausedBy(retsHelpers.RetsError), (err) ->
-    msg = "Couldn't refresh RETS data cache: #{callName}/#{mlsId}/#{otherIds.join('/')}"
+    msg = "Couldn't refresh RETS data cache: #{mlsId}/#{callName}/#{otherIds.join('/')}"
     if forceRefresh
       # if user requested a refresh, then make sure they know it failed
       logger.error(msg)
@@ -79,19 +81,19 @@ _cacheCanonicalData = (opts) ->
 
 _getCachedData = (opts) -> Promise.try () ->
   {callName, mlsId, otherIds} = opts
-  logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): using cached data"
+  logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): using cached data"
   dataSource[callName](mlsId, otherIds..., getOverrides: false)
   .then (list) ->
     if !list?.length
-      logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): no cached data found"
-      throw new Error("Couldn't acquire any RETS data: #{callName}/#{mlsId}/#{otherIds.join('/')}")
+      logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): no cached data found"
+      throw new UnhandledNamedError('RetsDataError', "No cached data found")
     else
       return list
 
 
 _applyOverrides = (mainList, opts) ->
   {callName, mlsId, otherIds, overrideKey} = opts
-  logger.debug () -> "_getRetsMetadata(#{callName}/#{mlsId}/#{otherIds.join('/')}): applying overrides based on #{overrideKey}"
+  logger.debug () -> "_getRetsMetadata(#{mlsId}/#{callName}/#{otherIds.join('/')}): applying overrides based on #{overrideKey}"
   dataSource[callName](mlsId, otherIds..., getOverrides: true)
   .then (overrideList) ->
     overrideMap = _.indexBy(overrideList, overrideKey)
@@ -121,7 +123,7 @@ _getRetsMetadata = (opts) ->
     else
       _applyOverrides(mainList, opts)
   .catch errorHandlingUtils.isUnhandled, (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, "Error acquiring required RETS data: #{callName}/#{mlsId}/#{otherIds.join('/')}")
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Error acquiring required RETS data: #{mlsId}/#{callName}/#{otherIds.join('/')}")
 
 
 # gets metadata (data type, id for a code-to-readable-values map, etc) about the columns available for a given table in
@@ -133,7 +135,6 @@ getColumnList = (opts) ->
     datasetCriteria:
       data_source_id: mlsId
       data_list_type: "#{databaseId}/#{tableId}"
-    rowKey: 'SystemName'
     extraEntityFields:
       data_source_type: 'mls'
     dbFn: tables.config.dataSourceFields
@@ -150,7 +151,6 @@ getLookupTypes = (opts) ->
       data_source_id: mlsId
       data_list_type: databaseId
       LookupName: lookupId
-    rowKey: 'Value'
     extraEntityFields:
       data_source_type: 'mls'
     dbFn: tables.config.dataSourceLookups
@@ -164,7 +164,6 @@ getDatabaseList = (opts) ->
   cacheSpecs =
     datasetCriteria:
       data_source_id: mlsId
-    rowKey: 'ResourceID'
     dbFn: tables.config.dataSourceDatabases
   _getRetsMetadata({cacheSpecs, callName: 'getDatabaseList', mlsId, otherIds: [], forceRefresh})
 
@@ -177,7 +176,6 @@ getObjectList = (opts) ->
   cacheSpecs =
     datasetCriteria:
       data_source_id: mlsId
-    rowKey: 'VisibleName'
     dbFn: tables.config.dataSourceObjects
   _getRetsMetadata({cacheSpecs, callName: 'getObjectList', mlsId, otherIds: [], forceRefresh})
 
@@ -190,7 +188,6 @@ getTableList = (opts) ->
     datasetCriteria:
       data_source_id: mlsId
       data_list_type: databaseId
-    rowKey: 'ClassName'
     dbFn: tables.config.dataSourceTables
   _getRetsMetadata({cacheSpecs, callName: 'getTableList', mlsId, otherIds: [databaseId], forceRefresh})
 
