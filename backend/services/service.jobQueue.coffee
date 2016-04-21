@@ -11,7 +11,6 @@ tables = require '../config/tables'
 cluster = require 'cluster'
 config = require '../config/config'
 keystore = require './service.keystore'
-errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 TaskImplementation = require '../tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
@@ -44,7 +43,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
         overrideSkipNames.push(taskName)
       # otherwise, rely on default ready-checking logic
   .then () ->
-    internals._withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+    internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
       tables.jobQueue.taskConfig(transaction: transaction)
       .select()
       .where(active: true)                  # only consider active tasks
@@ -225,6 +224,9 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
       .then () ->
         return 1
 
+cancelTask = internals.cancelTaskImpl
+
+
 cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
   logger.spawn("manual").debug("Canceling all tasks -- forget:#{forget}, status:#{status}, withPrejudice:#{withPrejudice}")
   tables.jobQueue.taskHistory()
@@ -232,7 +234,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
     current: true
   .whereNull('finished')
   .map (task) ->
-    cancelTaskImpl(task.name, status, withPrejudice)
+    cancelTask(task.name, status, withPrejudice)
     .then () ->
       if forget
         tables.jobQueue.taskHistory()
@@ -243,88 +245,18 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
         .delete()
 
 
-cancelTask = internals.cancelTaskImpl
-
-
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
-  cancelTaskImpl(taskName, 'canceled', withPrejudice)
+  cancelTask(taskName, 'canceled', withPrejudice)
   .then () ->
     queueManualTask(taskName, initiator)
-
-executeSubtask = (subtask, prefix) ->
-  tables.jobQueue.currentSubtasks()
-  .where(id: subtask.id)
-  .update
-    status: 'running'
-    started: dbs.get('main').raw('NOW()')
-  .then () ->
-    TaskImplementation.getTaskCode(subtask.task_name)
-  .then (taskImpl) ->
-    subtaskPromise = taskImpl.executeSubtask(subtask)
-    .cancellable()
-    .then () ->
-      logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} finished subtask #{subtask.name}"
-      tables.jobQueue.currentSubtasks()
-      .where(id: subtask.id)
-      .update
-        status: 'success'
-        finished: dbs.get('main').raw('NOW()')
-    if subtask.kill_timeout_seconds
-      subtaskPromise = subtaskPromise
-      .timeout(subtask.kill_timeout_seconds*1000)
-      .catch Promise.TimeoutError, (err) ->
-        internals.handleSubtaskError({prefix, subtask, status: 'timeout', hard: subtask.hard_fail_timeouts, error: 'timeout'})
-    if subtask.warn_timeout_seconds
-      doNotification = () ->
-        sendNotification
-          subject: 'subtask: long run warning'
-          subtask: subtask
-          error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
-      warnTimeout = setTimeout(doNotification, subtask.warn_timeout_seconds)
-      subtaskPromise = subtaskPromise
-      .finally () ->
-        clearTimeout(warnTimeout)
-    return subtaskPromise
-  .then () ->
-    logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} subtask #{subtask.name} updated with success status"
-  .catch jobQueueErrors.SoftFail, (err) ->
-    internals.handleSubtaskError({prefix, subtask, status: 'soft fail', hard: false, error: err})
-  .catch jobQueueErrors.HardFail, (err) ->
-    internals.handleSubtaskError({prefix, subtask, status: 'hard fail', hard: true, error: err})
-  .catch errorHandlingUtils.PartiallyHandledError, (err) ->
-    internals.handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
-  .catch errorHandlingUtils.isUnhandled, (err) ->
-    logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
-    internals.handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
-  .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
-    logger.error("#{prefix} Error caught while handling errors; major db problem likely!  subtask: #{subtask.name}")
-    sendNotification
-      subject: 'major db interaction problem'
-      subtask: subtask
-      error: err
-    throw err
-
-# TODO: should this be rewritten to use a query built by knex instead of a stored proc?
-getQueuedSubtask = (queueName) ->
-  internals.getQueueLockId(queueName)
-  .then (queueLockId) ->
-    internals._withDbLock queueLockId, (transaction) ->
-      transaction
-      .select('*')
-      .from(transaction.raw('jq_get_next_subtask(?)', [queueName]))
-      .then (results) ->
-        if !results?[0]?.id?
-          return null
-        else
-          return results[0]
 
 
 doMaintenance = () ->
   maintenanceLogger = logger.spawn("maintenance")
   maintenanceLogger.debug('Doing maintenance...')
-  internals._withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+  internals.withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
@@ -483,8 +415,6 @@ module.exports = {
   queueSubtask
   queueSubsequentSubtask
   cancelTask
-  executeSubtask
-  getQueuedSubtask
   doMaintenance
   sendNotification
   getQueueNeeds
@@ -494,4 +424,5 @@ module.exports = {
   runWorker
   getLastTaskStartTime
   cancelAllRunningTasks
+  executeSubtask: internals.executeSubtask
 }
