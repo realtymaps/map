@@ -6,7 +6,7 @@ validatorBuilder = require '../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
-logger = require('../config/logger').spawn('task')
+logger = require('../config/logger').spawn('dataLoadHelpers')
 sqlHelpers = require '../utils/util.sql.helpers'
 dbs = require '../config/dbs'
 {HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
@@ -47,6 +47,8 @@ _countInvalidRows = (subid, assignedFalse) ->
 
 
 recordChangeCounts = (subtask) -> Promise.try () ->
+  logger.debug subtask
+
   subid = buildUniqueSubtaskName(subtask)
   subset =
     data_source_id: subtask.task_name
@@ -126,6 +128,8 @@ recordChangeCounts = (subtask) -> Promise.try () ->
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
 activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise.try () ->
+  logger.debug subtask
+
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
@@ -418,6 +422,7 @@ finalizeEntry = (entries) ->
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
+  entry.actual_photo_count = Object.keys(entry.photos).length - 1#photo 0 and 1 are the same
   entry
 
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->

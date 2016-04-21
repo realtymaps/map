@@ -10,7 +10,7 @@ externalAccounts = require '../services/service.externalAccounts'
 parcelsFetch = require '../services/service.parcels.fetcher.digimaps'
 parcelHelpers = require './util.parcelHelpers'
 TaskImplementation = require './util.taskImplementation'
-logger = require('../config/logger.coffee').spawn('task.parcel')
+logger = require('../config/logger.coffee').spawn('task:digimaps')
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 
@@ -35,6 +35,8 @@ _filterImports = (subtask, imports) ->
 
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
+  logger.debug subtask
+
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.defineImports({creds})
@@ -50,7 +52,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
     jobQueue.queueSubsequentSubtask({ subtask, manualData: filteredImports, laterSubtaskName: 'loadRawData'})
 
 loadRawData = (subtask) -> Promise.try () ->
-  logger.debug subtask, true
+  logger.debug subtask
 
   {fileName, refreshThreshold} = subtask.data
   fipsCode = String.numeric path.basename fileName
@@ -79,7 +81,7 @@ loadRawData = (subtask) -> Promise.try () ->
       .catch (error) ->
         throw new SoftFail error.message
     .then (numRawRows) ->
-      deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+      deletes = if (new Date(refreshThreshold)).getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
       {numRawRows, deletes}
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'failed to load parcels data for update')
@@ -124,6 +126,8 @@ loadRawData = (subtask) -> Promise.try () ->
       }
 
 normalizeData = (subtask) ->
+  logger.debug subtask
+
   {fipsCode} = subtask.data
   logger.debug subtask.data
 
@@ -138,6 +142,8 @@ normalizeData = (subtask) ->
     }
 
 finalizeDataPrep = (subtask) ->
+  logger.debug subtask
+
   tables.property.normParcel()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
@@ -147,6 +153,8 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
+  logger.debug subtask
+
   Promise.map subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id)
   .then ->

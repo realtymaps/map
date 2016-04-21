@@ -133,6 +133,8 @@ finalizeData = (subtask, id) -> Promise.try () ->
 
 
 activateNewData = (subtask) ->
+  logger.debug subtask
+
   dataLoadHelpers.activateNewData subtask, {
     propertyPropName: 'parcel',
     deletesPropName: 'parcel'
