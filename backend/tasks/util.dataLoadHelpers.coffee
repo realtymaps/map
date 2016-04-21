@@ -1,6 +1,6 @@
 tables = require '../config/tables'
 Promise = require 'bluebird'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 validation = require '../utils/util.validation'
 validatorBuilder = require '../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'

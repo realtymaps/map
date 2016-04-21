@@ -1,6 +1,6 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:blackknight')

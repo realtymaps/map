@@ -1,6 +1,6 @@
 moment = require 'moment'
 
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require './service.jobQueue'
 keystore = require './service.keystore'
 logger = require('../config/logger').spawn('hirefire')
 config = require '../config/config'

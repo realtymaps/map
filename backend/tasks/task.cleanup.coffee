@@ -4,7 +4,7 @@ logger = require '../config/logger'
 config = require '../config/config'
 dbs = require '../config/dbs'
 TaskImplementation = require './util.taskImplementation'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 mlsHelpers = require './util.mlsHelpers'
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
