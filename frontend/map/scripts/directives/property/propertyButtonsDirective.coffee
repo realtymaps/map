@@ -1,7 +1,6 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
 
-template = require './_propertyButtons.jade'
 #
 # USAGE:
 #
@@ -34,7 +33,7 @@ app.directive 'propertyButtons', (
       zoomClick: '&?'
       pinClick: '&?'
       favoriteClick: '&?'
-    template: template()
+    templateUrl: './includes/directives/property/_propertyButtonsDirective.jade'
     controller: ($scope, $element, $attrs, $transclude) ->
 #      $log.debug "PROPERTY BUTTONS with property", $scope.propertyParent, "and project", $scope.projectParent
       $scope.formatters = {

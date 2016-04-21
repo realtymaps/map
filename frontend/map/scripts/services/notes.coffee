@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsNotesService', ($rootScope, $http, $log, rmapsEventConstants) ->
+app.service 'rmapsNotesService', ($rootScope, $http, $log, rmapsEventConstants, rmapsPrincipalService) ->
   $log = $log.spawn('rmapsNotesService')
 
   getPromise = null
@@ -18,6 +18,16 @@ app.service 'rmapsNotesService', ($rootScope, $http, $log, rmapsEventConstants) 
           data
       else
         getPromise
+
+    createFromText: (noteText, projectId, propertyId, geomPointJson) ->
+      note = {
+        text: noteText,
+        rm_property_id : propertyId
+        geom_point_json : geomPointJson
+        project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
+      }
+
+      return service.create(note)
 
     create: (entity) ->
       $http.post(backendRoutes.notesSession.apiBase, entity).then (response) ->

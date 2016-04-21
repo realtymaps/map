@@ -48,7 +48,7 @@ module.exports = app.config (
     return state
 
   appendTemplateProvider = (name, state) ->
-    if !state.template && !state.templateProvider
+    if !state.template && !state.templateProvider && !state.templateUrl
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
@@ -161,20 +161,45 @@ module.exports = app.config (
   buildState 'properties'
   buildModalState 'property', page: { title: 'Property Detail' }
   buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
-  buildState 'project',
+
+  #
+  # Project Dashboard and child pages
+  #
+
+  # Project base layout
+  buildState 'projectBase',
     projectParam: 'id',
+    abstract: true
+    controller: 'rmapsProjectCtrl',
+    template: "<div id='project-base-state' ui-view></div>"
     page: { title: 'Project', dynamicTitle: true },
     mobile: { modal: true },
     resolve:
-      currentProfile: ($stateParams, rmapsProjectsService, rmapsProfilesService) ->
+      currentProject: ($stateParams, rmapsProjectsService) ->
         return rmapsProjectsService.getProject $stateParams.id
-        .then (project) ->
-          return rmapsProfilesService.setCurrentProfileByProjectId $stateParams.id
-  buildChildState 'projectClients', 'project', projectParam: 'id', page: { title: 'My Clients' }, mobile: { modal: true }
-  buildChildState 'projectNotes', 'project', projectParam: 'id', page: { title: 'Notes' }, mobile: { modal: true }
-  buildChildState 'projectFavorites', 'project', projectParam: 'id', page: { title: 'Favorites' }, mobile: { modal: true }
-  buildChildState 'projectNeighbourhoods', 'project', projectParam: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }
-  buildChildState 'projectPins', 'project', projectParam: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }
+
+  # Project dashboard
+  buildChildState 'project', 'projectLayout',
+    projectParam: 'id',
+    page: { title: 'Project', dynamicTitle: true },
+    mobile: { modal: true },
+    controller: null,
+    templateUrl: './views/project.jade'
+
+  # Project child layout
+  buildChildState 'projectLayout', 'projectBase',
+    projectParam: 'id',
+    abstract: true,
+    controller: null,
+    templateUrl: './views/project/projectLayout.jade',
+
+  # Project child states
+  buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, mobile: { modal: true }, templateUrl: './views/project/projectClients.jade'
+  buildChildState 'projectNotes', 'projectLayout', projectParam: 'id', page: { title: 'Notes' }, mobile: { modal: true }, templateUrl: './views/project/projectNotes.jade'
+  buildChildState 'projectFavorites', 'projectLayout', projectParam: 'id', page: { title: 'Favorites' }, mobile: { modal: true }, templateUrl: './views/project/projectFavorites.jade'
+  buildChildState 'projectNeighbourhoods', 'projectLayout', projectParam: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }, templateUrl: './views/project/projectNeighbourhoods.jade'
+  buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }, templateUrl: './views/project/projectPins.jade'
+
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
