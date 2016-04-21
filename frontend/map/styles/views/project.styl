@@ -1,0 +1,380 @@
+@import "../animations.styl"
+
+// Project Dashboard
+
+#project-dashboard
+
+  $project-left-margin = 45px;
+  $project-gutter-width = 30px;
+  $project-widget-width = 160px;
+  $project-widget-width-active = $project-widget-width + 2;
+  $project-widget-height = 100px;
+  $project-widgets-width = $project-widget-width;
+  $project-content-width = $project-widgets-width;
+
+  a:focus, a:hover
+    text-decoration none
+
+  background-color: $gray_lightest
+  padding-left: 0;
+  padding-right: 0;
+
+  .project-header
+    background-color: white
+    padding-left: 45px;
+    padding-bottom: 10px;
+
+    .pageTitle
+      display: inline-block;
+
+    .btn
+      font-size: 12px;
+      padding: 3px;
+      height: 30px;
+
+  .project-tools
+    float: right;
+    margin-top: 22px;
+    margin-right: 30px;
+
+  .bordered
+    border: solid $rm-border-line 1px;
+
+  //
+  // Property Attributes
+  //
+  .prop-attrs
+    .prop-street
+      font-weight: 500;
+      font-size: 18px;
+
+  //
+  // Inner panel
+  //
+  .inner
+    position: relative;
+
+  //
+  // Project Nav Widgets
+  //
+
+  .project-widgets
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: $project-widgets-width;
+    //margin-left: $project-gutter-width;
+    //margin-right: $project-gutter-width;
+    padding: 0 0px 20px 0px;
+    background-color: white;
+
+  .project-widget
+    position: relative;
+    width: $project-widget-width;
+    height: $project-widget-height;
+    background-color: white;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 15px;
+
+    .inner
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+    a
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 1;
+      color: black;
+
+    &.widget-active
+      width: $project-widget-width-active;
+      border-right: solid $light_blue 3px;
+      //border-right: 2px solid 1px 50% opacity;
+
+  .widget-favorite
+    .widget-background
+      color: $rm_favorite;
+
+  .widget-pin
+    .widget-background
+      color: $yellow;
+      font-size: 60px;
+      opacity: 0.2;
+
+  .widget-neighborhood
+    .widget-background
+      color: $dark_teal;
+
+  .widget-client
+    .widget-background
+      color: $green_logo;
+      font-size: 60px;
+
+  .widget-background
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: 55px;
+    line-height: $project-widget-height;
+    text-align: center;
+    z-index: 0;
+    opacity: 0.13;
+
+  .widget-count
+    font-size: 36px;
+    line-height: $project-widget-height;
+
+  .widget-title
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-transform: uppercase;
+    font-size: 10px;
+
+  //
+  // Project Content
+  //
+
+  .project-content
+    width: "calc(100% - %s)" % $project-content-width
+    margin-left: $project-content-width;
+    padding: $project-gutter-width
+
+  //
+  // Notes
+  //
+
+  .project-notes
+    margin-top: $project-gutter-width;
+    font-size: 16px;
+
+    .item
+      background-color: white;
+
+  .notes-title
+    text-transform: uppercase;
+    a
+      color: black;
+      font-weight: 600;
+
+  .note-title
+    font-weight: 500;
+  .note-date
+    float: right;
+    text-align: right;
+
+  .note-image
+    width: 110px;
+    height: 100px;
+    float: left;
+
+  .note-data-wrapper
+    min-height: 100px;
+    width: calc(100% - 110px);
+    float: left;
+
+  //
+  // Carousel Custom Template
+  //
+
+  .pin-sample-image
+    width: 500px
+    height: 300px
+
+  .pin-attributes
+    width: 500px
+    margin: 0 auto
+
+  .carousel-control
+    display: none;
+
+  .carousel-indicators
+    bottom: -35px;
+
+    li
+      border: 1px solid black;
+      background-color: white;
+
+      &.active
+        background-color: black;
+
+  //
+  // Project Sub-Pages
+  //
+
+  #project-pin-container, #project-favorite-container, #project-neighborhood-container
+    img
+     width: 100%
+
+  //
+  // Project Property View
+  //
+
+  .property-card
+    width: 100%;
+    background-color: white;
+    margin-bottom: 15px;
+
+  .property-data
+    position: relative;
+    padding: 10px;
+
+  .btn-actions
+    //position: absolute;
+    //top: 0;
+    //right: 0;
+    height: 40px;
+
+    button
+      position relative
+      font-size 22px
+      color: $gray_medium
+      border none
+      border-right 1px solid $darker_white
+      background-color $dark_white
+      padding 0 0 0 6px
+      width 25%
+      float left
+      min-width 10px
+      &:last-child
+        border none
+      //font-size: 19px;
+
+      &.button-is-pin
+        color: $rm_saved
+
+      &.button-is-favorite
+        color: $rm_favorite
+
+      &.button-has-notes
+        color: $rm_note
+
+      &.button-has-mail
+        color: $rm_mail
+
+  //
+  // Project sub-page property
+  //
+
+  .project-property-card
+    margin-bottom: 15px;
+
+    .property-card-right
+      position: relative;
+      min-height: 350px;
+
+    .property-data
+      padding: 0;
+
+    .project-card-notes
+      font-size: 14px;
+      margin-top: 15px;
+      margin-bottom: 60px;
+
+    .note-input
+      margin-top: 10px;
+      position: absolute;
+      bottom: 0;
+      right: 15px;
+      left: 15px;
+
+    .input-group-addon:hover
+      background-color: $light_blue;
+      cursor: pointer;
+
+    textarea
+      resize: none;
+
+    .btn-actions
+      top: -5px;
+      right: -10px;
+
+      .note
+        display: none;
+
+  //
+  // NEIGHBORHOODS
+  //
+
+  #project-neighborhood-container
+
+    .neighborhood
+      padding-right: 15px;
+      padding-bottom: 15px;
+
+  //
+  // CLIENTS
+  //
+
+  #project-client-container
+    .client
+      margin-bottom: 35px;
+
+      h3
+        margin 0
+        padding 0 5px
+        float left
+        line-height 42px
+
+      span
+        display block
+        padding 3px 5px
+        margin-bottom 20px
+        font-size 16px
+        &.label
+          font-size 12px
+          color $gray
+          text-align left
+          margin 0
+
+
+//@media not all, (-webkit-transform-3d)
+//  .carousel-inner > .carousel-item.next.left
+//  .carousel-inner > .carousel-item.prev.right,
+//  .carousel-inner > .carousel-item.active {
+//    -webkit-transform: translate3d(0, 0, 0);
+//    transform: translate3d(0, 0, 0);
+//    left: 0;
+//  }
+//
+//.carousel-inner > .active {
+//  left: 0;
+//}
+//
+//.carousel-inner > .active
+//.carousel-inner > .next
+//.carousel-inner > .prev {
+//  display: block;
+//}
+//
+//@media not all, (-webkit-transform-3d)
+//  .carousel-inner > .carousel-item {
+//    -webkit-transition: -webkit-transform 0.6s ease-in-out;
+//    -moz-transition: -moz-transform 0.6s ease-in-out;
+//    -o-transition: -o-transform 0.6s ease-in-out;
+//    transition: transform 0.6s ease-in-out;
+//    -webkit-backface-visibility: hidden;
+//    -moz-backface-visibility: hidden;
+//    backface-visibility: hidden;
+//    -webkit-perspective: 1000px;
+//    -moz-perspective: 1000px;
+//    perspective: 1000px;
+//  }
+//
+//.carousel-inner > .carousel-item {
+//  display: none;
+//  position: relative;
+//  -webkit-transition: 0.6s ease-in-out left;
+//  -o-transition: 0.6s ease-in-out left;
+//  transition: 0.6s ease-in-out left;
+//}

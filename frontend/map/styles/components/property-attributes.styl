@@ -1,6 +1,8 @@
 @import "property-attr-functions.styl"
 
 .prop-attrs
+  text-align: left;
+
   .prop-price
   &.prop-price
     font-size 18px
@@ -10,6 +12,40 @@
     &.prop-lg
       font-size 26px
       padding-bottom: 2px;
+
+  .prop-details.horizontal
+    color: $rm_attribute_lighter
+
+    .prop-detail
+      display inline-block
+      padding 0 5px
+      border-right 1px solid $black
+
+      &:first-child
+        padding-left 0
+
+      &:last-child
+        border none
+
+  //ul.attr
+  //  padding 0
+  //  color: $rm_attribute_lighter
+  //  white-space: nowrap;
+  //
+  //  li
+  //    list-style none
+  //    display inline-block
+  //    border-right 1px solid $black
+  //    border-bottom none
+  //    padding 0 5px
+  //    font-size 12px
+  //    line-height 12px
+  //
+  //    &:first-child
+  //      padding-left 0
+  //
+  //    &:last-child
+  //      border none
 
 .mobile-view
   .prop-attrs
