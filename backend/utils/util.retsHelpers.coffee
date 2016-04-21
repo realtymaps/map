@@ -252,4 +252,7 @@ module.exports = {
   getDataStream
   getPhotosObject
   getObjectList
+  RetsError: rets.RetsError
+  RetsServerError: rets.RetsServerError
+  RetsReplyError: rets.RetsReplyError
 }

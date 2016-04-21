@@ -8,6 +8,7 @@ ExpressResponse = require './util.expressResponse'
 url = require 'url'
 logger = require('../config/logger').spawn('util.route.helpers')
 clsFactory = require './util.cls'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 class CurrentProfileError extends Error
 class NotFoundError extends Error
@@ -57,7 +58,7 @@ handleRoute = ({req, res, next, toExec, isDirect}) ->
   .catch UpdateFailedError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
   .catch (err) ->
-    logger.error err.stack or err.toString()
+    logger.error analyzeValue.getSimpleDetails(err)
     next(err)
 
 wrapHandleRoutes = ({handles, isDirect}) ->

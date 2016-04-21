@@ -37,7 +37,7 @@ getQueueNeeds = () ->
   .then (result) ->
     interval = Date.now() - result[RUN_TIMESTAMP]
     if interval > config.HIREFIRE.WARN_THRESHOLD
-      logger.warn "Queue needs haven't been refreshed in #{moment.duration(interval).humanize()} (last refresh: #{(new Date(result[RUN_TIMESTAMP])).toLocaleString()})"
+      logger.warn "Queue needs haven't been refreshed in #{moment.duration(interval).humanize()} (last refresh: #{(new Date(result[RUN_TIMESTAMP]))})"
     logger.debug () -> ('Queue needs: '+JSON.stringify(result[QUEUE_NEEDS], null, 2))
     result[QUEUE_NEEDS]
 

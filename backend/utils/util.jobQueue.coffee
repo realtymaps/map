@@ -31,14 +31,14 @@ _summary = (subtask) ->
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   dbs.get('main').transaction (transaction) ->
-    logger.spawn('dbLock').debug () -> "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
+    logger.spawn('dbLock').debug () -> "---- <#{id}>   Getting lock: #{lockId}"
     transaction
     .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.spawn('dbLock').debug () -> "==================<#{id}>  Acquired lock: #{lockId}"
+      logger.spawn('dbLock').debug () -> "---- <#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
     .finally () ->
-      logger.spawn('dbLock').debug () -> "------------------<#{id}> Releasing lock: #{lockId}"
+      logger.spawn('dbLock').debug () -> "---- <#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)

@@ -183,6 +183,30 @@ sqlizeColName = (fullName) ->
     '"' + name + '"'
   .join('.')
 
+buildQuery = ({knex, entity, orHash}) ->
+  query = knex
+
+  if !Object.keys(entity).length #GTFO
+    return query.where({})
+
+  clonedEntity = clone entity
+
+  #iterate to build query and omit entity keys all in one
+  for key, val of clonedEntity
+    do (key, val) ->
+      if _.isArray val
+        if orHash?[key]?
+          query = orWhereIn(knex, key, val)
+        else
+          query = whereIn(knex, key, val)
+        delete clonedEntity[key]
+
+  if Object.keys(clonedEntity).length
+    return query.where(clonedEntity)
+
+  query
+
+
 buildRawBindings = (obj, opts={}) ->
   colPlaceholders = []
   colBindings = []
@@ -208,59 +232,36 @@ buildRawBindings = (obj, opts={}) ->
     bindings: valBindings
 
 
-buildQuery = ({knex, entity, orHash}) ->
-  query = knex
-
-  if !Object.keys(entity).length #GTFO
-    return query.where({})
-
-  clonedEntity = clone entity
-
-  #iterate to build query and omit entity keys all in one
-  for key, val of clonedEntity
-    do (key, val) ->
-      if _.isArray val
-        if orHash?[key]?
-          query = orWhereIn(knex, key, val)
-        else
-          query = whereIn(knex, key, val)
-        delete clonedEntity[key]
-
-  if Object.keys(clonedEntity).length
-    return query.where(clonedEntity)
-
-  query
-
-
 # Static function that produces an upsert query string given ids and entity of model.
 buildUpsertBindings = ({idObj, entityObj, tableName}) ->
   id = buildRawBindings(idObj, defaultNulls: true)
   entity = buildRawBindings(_.omit(entityObj, Object.keys(idObj)))
 
-  # postgresql template for raw query
-  # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
-  templateStr = """
-   INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
-    VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
-    ON CONFLICT (#{id.cols.placeholder})
-    DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
-    RETURNING #{id.cols.placeholder}
-  """
+  # postgresql templates for raw query (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
+  if entity.cols.placeholder
+    templateStr = """
+     INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
+      VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
+      ON CONFLICT (#{id.cols.placeholder})
+      DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
+      RETURNING #{id.cols.placeholder}
+    """
+  else
+    templateStr = """
+     INSERT INTO ?? (#{id.cols.placeholder})
+      VALUES (#{id.vals.placeholder})
+      ON CONFLICT (#{id.cols.placeholder})
+      DO NOTHING
+      RETURNING #{id.cols.placeholder}
+    """
 
   sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
   bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
 
 
-upsert = ({idObj, entityObj, dbFn, doWrapPromise}) ->
-  doWrapPromise ?= true
-  doUpsert = () ->
-    upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
-    dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
-
-  if doWrapPromise
-    return Promise.try () -> doUpsert()
-
-  doUpsert()
+upsert = ({idObj, entityObj, dbFn, transaction}) ->
+  upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
+  dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
 
 module.exports = {
   between

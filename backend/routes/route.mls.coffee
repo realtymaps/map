@@ -1,4 +1,5 @@
 retsHelpers = require '../utils/util.retsHelpers'
+retsService = require '../services/service.rets'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('backend:routes:mls')
 mlsConfigService = require '../services/service.mls_config'
@@ -42,49 +43,25 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getDatabaseList mlsConfig
-          .then (list) ->
-            next new ExpressResponse(list)
+      retsService.getDatabaseList(req.params)
+      .then (list) ->
+        next new ExpressResponse(list)
 
   getObjectList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getObjectList mlsConfig
-          .then (list) ->
-            next new ExpressResponse(list)
+      retsService.getObjectList(req.params)
+      .then (list) ->
+        next new ExpressResponse(list)
 
   getTableList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getTableList mlsConfig, req.params.databaseId
-          .then (list) ->
-            next new ExpressResponse(list)
+      retsService.getTableList(req.params)
+      .then (list) ->
+        next new ExpressResponse(list)
 
   getPhotos:
     method: 'get'
@@ -102,82 +79,25 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
-          .then (list) ->
-            next new ExpressResponse(list)
+      retsService.getColumnList(req.params)
+      .then (list) ->
+        next new ExpressResponse(list)
 
   getDataDump:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle:(req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          validations =
-            limit: [validators.integer(min: 1), validators.defaults(defaultValue: 1000)]
-          validateAndTransformRequest(req.query, validations)
-          .then (result) ->
-            retsHelpers.getDataStream(mlsConfig, result.limit)
-          .then (retsStream) ->
-            columns = null
-            # consider just streaming the file as building up data takes up a considerable amount of memory
-            data = []
-            new Promise (resolve, reject) ->
-              delimiter = null
-              csvStreamer = through2.obj (event, encoding, callback) ->
-                switch event.type
-                  when 'data'
-                    data.push(event.payload[1..-1].split(delimiter))
-                  when 'delimiter'
-                    delimiter = event.payload
-                  when 'columns'
-                    columns = event.payload
-                  when 'done'
-                    resolve(data)
-                    retsStream.unpipe(csvStreamer)
-                    csvStreamer.end()
-                  when 'error'
-                    reject(event.payload)
-                    retsStream.unpipe(csvStreamer)
-                    csvStreamer.end()
-                callback()
-              retsStream.pipe(csvStreamer)
-            .then () ->
-              data: data
-              options:
-                columns: columns
-                header: true
-          .then (csvPayload) ->
-            resObj = new ExpressResponse(csvPayload)
-            resObj.format = 'csv'
-            resObj.filename = req.params.mlsId.toLowerCase() + '_mlsdata.csv'
-            next(resObj)
+    handle: (req, res, next) ->
+      retsService.getDataDump(req.params.mlsId, req.query)
+      .then (csvPayload) ->
+        resObj = new ExpressResponse(csvPayload)
+        resObj.format = 'csv'
+        resObj.filename = req.params.mlsId.toLowerCase() + '_mlsdata.csv'
+        next(resObj)
 
   getLookupTypes:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then ([mlsConfig]) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
-          .then (list) ->
-            next new ExpressResponse(list)
+      retsService.getLookupTypes(req.params)
+      .then (list) ->
+        next new ExpressResponse(list)

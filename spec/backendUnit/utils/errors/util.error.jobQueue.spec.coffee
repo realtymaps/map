@@ -16,8 +16,6 @@ describe 'util.error.jobQueue', ->
 
         describe 'throws', ->
           it 'with correct name', ->
-            phrase = "montezuma's revenge"
-            err = new classz(phrase)
-            str = err.toString()
-            str.should.be.equal "#{err.name}: #{phrase}"
-            (-> throw err).should.throw(phrase)
+            err = new classz("montezuma's revenge")
+            err.toString().should.have.string "#{name}: montezuma's revenge"
+            (-> throw err).should.throw(/montezuma's revenge/)
