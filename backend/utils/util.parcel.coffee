@@ -141,7 +141,6 @@ upsertParcelSqlString = ({row, tableName, database}) ->
   {row, toReplaceWith} = _prepEntityForGeomReplace {row, tableName, database}
 
   q = sqlHelpers.upsert
-    doWrapPromise: false
     idObj: rm_property_id: row.rm_property_id
     entityObj: _.omit(row, 'rm_property_id'),
     dbFn: tables.property[tableName]

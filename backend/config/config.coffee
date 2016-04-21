@@ -9,7 +9,7 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 base =
   S3_URL: 'https://s3.amazonaws.com'
-  EXT_AWS_PHOTO_ACCOUNT: process.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
+  EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
   COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
@@ -87,6 +87,7 @@ base =
     OLD_TABLE_DAYS: 1
     SUBTASK_ERROR_DAYS: 30
     OLD_DELETE_MARKER_DAYS: 3
+    OLD_DELETE_PARCEL_DAYS: 3
     INACTIVE_ROW_DAYS: 3
   EMAIL_VERIFY:
     HASH_MIN_LENGTH: 20

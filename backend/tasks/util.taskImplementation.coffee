@@ -40,7 +40,7 @@ class TaskImplementation
     .then (subtasks) ->
       if !subtasks.length
         return 0
-      require('../utils/util.jobQueue').queueSubtasks({transaction, batchId, subtasks})
+      require('../services/service.jobQueue').queueSubtasks({transaction, batchId, subtasks})
     .then (count) ->
       if count == 0
         throw new Error("0 subtasks enqueued for #{task.name}")

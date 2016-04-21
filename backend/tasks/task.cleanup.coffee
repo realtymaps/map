@@ -4,7 +4,7 @@ logger = require '../config/logger'
 config = require '../config/config'
 dbs = require '../config/dbs'
 TaskImplementation = require './util.taskImplementation'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 mlsHelpers = require './util.mlsHelpers'
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -40,6 +40,13 @@ deleteMarkers = (subtask) ->
   .then (count) ->
     logger.debug "Deleted #{count} rows from delete marker table"
 
+deleteParcels = (subtask) ->
+  tables.deletes.parcel()
+  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_PARCEL_DAYS} days'::INTERVAL")
+  .delete()
+  .then (count) ->
+    logger.debug "Deleted #{count} rows from delete parcels table"
+
 deleteInactiveRows = (subtask) ->
   tables.property.combined()
   .where(active: false)
@@ -64,6 +71,7 @@ module.exports = new TaskImplementation {
   rawTables
   subtaskErrors
   deleteMarkers
+  deleteParcels
   deleteInactiveRows
   deletePhotosPrep
   deletePhotos

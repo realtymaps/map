@@ -1,23 +1,22 @@
-.collapse-header
-  h2.title Clients ({{project.clients.length}})
+#project-client-container
   .tools
     button(class="btn btn-white" ng-click="editClient()")
       span Add Client
-li(class="client" ng-repeat="client in project.clients")
-  h3 Client {{$index + 1}}
-  .tools
-    button(class="btn btn-link" ng-click="editClient(client)") Edit
-    button(class="btn btn-link" ng-click="removeClient(client)") Remove
-  .row
-    .col-md-6
-      span.label Name
-      span {{client.first_name}} {{client.last_name}}
-      span.label Phone (Cell)
-      span {{client.cell_phone}}
-      span.label Email
-      span {{client.email}}
-    .col-md-6
-      span.label Address
-      span {{client.address_1}} {{client.address_2}} {{client.zip}}
-      span.label Phone (Work)
-      span {{client.work_phone}}
+  .client.item.item-card.item-border(ng-repeat="client in clients")
+    h3 Client {{$index + 1}}
+    .tools
+      button(class="btn btn-link" ng-click="editClient(client)") Edit
+      button(class="btn btn-link" ng-click="removeClient(client)") Remove
+    .row
+      .col-md-6
+        span.label Name
+        span {{client.first_name}} {{client.last_name}}
+        span.label Phone (Cell)
+        span {{client.cell_phone}}
+        span.label Email
+        span {{client.email}}
+      .col-md-6
+        span.label Address
+        span {{client.address_1}} {{client.address_2}} {{client.zip}}
+        span.label Phone (Work)
+        span {{client.work_phone}}

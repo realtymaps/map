@@ -2,7 +2,7 @@ jobs = require '../services/service.jobs'
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('jobQueue:manual')
 

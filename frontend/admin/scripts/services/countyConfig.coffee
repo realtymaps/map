@@ -22,11 +22,11 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
   getConfigs = (params = {}) ->
     Promise.resolve(countyData)
 
-  getColumnList = (dataSourceId, dataSourceType, dataListType) ->
-    Restangular.all(dataSourceAPI).one(dataSourceId).all('dataSourceType').one(dataSourceType).all('dataListType').one(dataListType).all('columns').getList()
+  getColumnList = (dataSourceId, dataListType) ->
+    Restangular.all(dataSourceAPI).one(dataSourceId).all('dataListType').one(dataListType).all('columns').getList()
 
-  getLookupTypes = (dataSourceId, lookupId) ->
-    Restangular.all(lookupAPI).one(dataSourceId).all('lookupId').one(lookupId).getList('types')
+  getLookupTypes = (dataSourceId, dataListType, lookupId) ->
+    Restangular.all(lookupAPI).one(dataSourceId).all('dataListType').one(dataListType).all('lookupId').one(lookupId).getList('types')
 
   service =
     getConfigs: getConfigs

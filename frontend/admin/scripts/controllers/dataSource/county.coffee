@@ -135,7 +135,7 @@ app.controller 'rmapsCountyCtrl',
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName && field.Interpretation
       config = $scope.countyData.current
-      $scope.countyLoading = rmapsCountyService.getLookupTypes $scope.countyData.current.id, field.LookupName
+      $scope.countyLoading = rmapsCountyService.getLookupTypes($scope.countyData.current.id, config.dataListType.id, field.LookupName)
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
         if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
@@ -274,7 +274,7 @@ app.controller 'rmapsCountyCtrl',
       normalizeService.getRules()
       .then (rules) ->
         parseRules(rules)
-        rmapsCountyService.getColumnList(config.current.id, config.dataSourceType.id, config.dataListType.id)
+        rmapsCountyService.getColumnList(config.current.id, config.dataListType.id)
       .then (fields) ->
         $scope.fieldData.totalCount = fields.plain().length
         parseFields(fields)

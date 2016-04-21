@@ -14,6 +14,7 @@ app.controller 'rmapsProjectCtrl',
   $state,
   rmapsClientsFactory,
   rmapsEventConstants
+  rmapsNotesService,
   rmapsPageService,
   rmapsPrincipalService,
   rmapsProfilesService,
@@ -22,14 +23,26 @@ app.controller 'rmapsProjectCtrl',
   rmapsPropertyFormatterService,
   rmapsResultsFormatterService,
 
-  currentProfile
+  currentProfile,
+  currentProject
 ) ->
-  $scope.activeView = 'project'
+  #
+  # Set up Logging
+  #
+
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl', currentProfile
 
+  #
   # Current project is injected by route resolves
-  project = currentProfile
+  #
+
+  project = currentProject
+  profile = currentProfile
+
+  #
+  # Initialize Scope Variables
+  #
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
@@ -40,8 +53,17 @@ app.controller 'rmapsProjectCtrl',
     $state.go 'map', project_id: $state.params.id, property_id: result.rm_property_id
     return false
 
+  $scope.$state = $state
   $scope.project = null
+  $scope.newNotes = {}
+  $scope.notes = []
+  $scope.loadedProperties = false
+
   clientsService = null
+
+  #
+  # Scope Event Handlers
+  #
 
   $scope.getStateName = (name) ->
     name.replace /project(.+)/, '$1'
@@ -92,36 +114,61 @@ app.controller 'rmapsProjectCtrl',
       .then () ->
         _.assign $scope.project, $scope.projectCopy
 
-  $scope.loadProject = () ->
+  # Create Note
+  $scope.createNote = (project, property) ->
+    rmapsNotesService.createFromText(
+      $scope.newNotes[property.rm_property_id].text,
+      project.project_id,
+      property.rm_property_id,
+      property.geom_point_json
+    ).then () ->
+      $rootScope.$emit rmapsEventConstants.notes
+      delete $scope.newNotes[property.rm_property_id]
+
+  #
+  # Load Project Data
+  #
+
+  loadProject = () ->
     # It is important to load property details before properties are added to scope to prevent template breaking
     toLoad = _.merge {}, project.properties_selected, project.favorites
     if not _.isEmpty toLoad
-      $scope.loadProperties toLoad
+      loadProperties toLoad
       .then (properties) ->
-        project.properties_selected = _.pick properties, _.keys(project.properties_selected)
-        project.favorites = _.pick properties, _.keys(project.favorites)
+        $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
+        $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
-    $scope.loadClients()
+    loadClients()
+
+    loadNotes()
 
     $scope.project = project
 
     # Set the project name as the page title
     rmapsPageService.setDynamicTitle(project.name)
 
-  $scope.loadProperties = (properties) ->
+  loadProperties = (properties) ->
     rmapsPropertiesService.getProperties _.keys(properties), 'filter'
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
-      properties
 
-  $scope.loadClients = () ->
+      return properties
+    .finally () ->
+      $scope.loadedProperties = true
+
+  loadClients = () ->
     clientsService.getAll()
     .then (clients) ->
-      $scope.project.clients = clients
+      $scope.clients = clients
+
+  loadNotes = () ->
+    rmapsNotesService.getList()
+    .then (notes) ->
+      $scope.notes = notes
 
   $rootScope.$onRootScope rmapsEventConstants.notes, () ->
-    $scope.loadProject() unless !$state.params.id
+    loadProject() unless !$state.params.id
 
-  $scope.loadProject()
+  loadProject()

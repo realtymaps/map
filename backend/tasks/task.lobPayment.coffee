@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
 _ = require 'lodash'

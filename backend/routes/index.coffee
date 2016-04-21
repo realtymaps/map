@@ -39,8 +39,6 @@ module.exports = (app) ->
       wrappedCLS req,res, ->
         Promise.try () ->
           route.handle(req, res, next)
-        .catch isUnhandled, (error) ->
-          throw new PartiallyHandledError(error)
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
