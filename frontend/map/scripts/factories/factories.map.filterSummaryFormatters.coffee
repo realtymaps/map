@@ -75,8 +75,8 @@ app.factory 'rmapParcelResultsMutation',
 ($q, rmapSummaryResultsMutation, rmapsZoomLevelStateFactory, rmapsPropertiesService, rmapsLayerFormattersService, rmapsEmptyFilterData) ->
 
   stampit.methods
-    handleGeoJsonResults: () ->
-      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, @cache)
+    handleGeoJsonResults: (cache) ->
+      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
       .then (data) =>
         return if @isEmptyData()
 
@@ -87,7 +87,7 @@ app.factory 'rmapParcelResultsMutation',
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle
 
-    mutateParcel: () ->
+    mutateParcel: (cache) ->
       if @promise
         return @
 
@@ -101,7 +101,7 @@ app.factory 'rmapParcelResultsMutation',
       Toggles.showAddresses = @isAddressParcel()
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
-      @promise = @handleGeoJsonResults()
+      @promise = @handleGeoJsonResults(cache)
       @
 
   .compose rmapsZoomLevelStateFactory, rmapsEmptyFilterData
@@ -112,10 +112,10 @@ app.factory 'rmapsResultsFlow',
   flowFact = stampit
   .compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)
 
-  ({scope, filters, hash, mapState, data}) ->
+  ({scope, filters, hash, mapState, data, cache}) ->
     flow = flowFact({scope, filters, hash, mapState, data})
 
-    promise = flow.mutateCluster().mutateSummary().mutateParcel().promise
+    promise = flow.mutateCluster().mutateSummary().mutateParcel(cache).promise
 
     #make the promise apparent as an undefined promise will just pass through and make
     #q.all a nightmare to debug. This was the main big bug originally in here

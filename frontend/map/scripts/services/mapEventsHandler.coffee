@@ -1,23 +1,10 @@
+###globals _, L###
 NgLeafletCenter = require('../../../../common/utils/util.geometries.coffee').NgLeafletCenter
-caseing = require 'case'
 app = require '../app.coffee'
 events = require '../../../common/scripts/utils/events.coffee'
 
 _isMarker = (type) ->
   type == 'marker'
-
-_lastHoveredFactory = (lObject, model, layerName, type) ->
-  @destroy = =>
-    @lObject = null
-    @model = null
-    @layerName = null
-    @type = null
-
-  @lObject = lObject
-  @model = model
-  @layerName =layerName
-  @type = type
-  @
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
 rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
@@ -33,7 +20,6 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
     $scope = mapCtrl.scope
 
-    _lastHovered = null
 
     _lastEvents =
       mouseover:null
@@ -134,7 +120,6 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
-          {originalEvent} = event if event?
           $timeout ->
             return if _handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
