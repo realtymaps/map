@@ -11,7 +11,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
     args: opts
-    required: ['data_source_id', 'data_source_uuid','photo_id', 'image_id']
+    required: ['data_source_id', 'data_source_uuid', 'image_id']
 
   query = tables.property.combined()
   .where _.omit opts, 'image_id'

@@ -15,6 +15,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 auth = require '../utils/util.auth'
 {basicColumns} = require '../utils/util.sql.columns'
 _ = require 'lodash'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 _stateTransforms =
   state: [
@@ -76,7 +77,7 @@ handleRoute = (res, next, serviceCall) ->
   .catch CurrentProfileError, (err) ->
     next new ExpressResponse({profileIsNeeded: true,alert: {msg: err.message}}, httpStatus.BAD_REQUEST)
   .catch (err) ->
-    logger.error err.stack or err.toString()
+    logger.error analyzeValue.getSimpleDetails(err)
     next(err)
 
 

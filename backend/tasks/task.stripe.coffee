@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-jobQueue = require '../utils/util.jobQueue'
+jobQueue = require '../services/service.jobQueue'
 {HardFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:stripe')

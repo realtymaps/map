@@ -26,7 +26,7 @@ describe 'service.dataSource.coffee', ->
       DataSourceServiceClass = svc.__get__('DataSourceService')
 
       # create service instance to test on
-      dataSourceTest = new DataSourceServiceClass @config_dataSourceFields.dbFn(), "MetadataEntryID"
+      dataSourceTest = new DataSourceServiceClass @config_dataSourceFields.dbFn(), "id"
 
       # reset module to this test instance
       @dataSourceSvc = dataSourceTest
@@ -43,10 +43,12 @@ describe 'service.dataSource.coffee', ->
     beforeEach ->
       @dsSqlMock = new SqlMock 'config', 'dataSourceFields',
         result: [
+          id: 1
           MetadataEntryID: 1
           LongName: 'a.long.name'
           SystemName: 'A Long Name'
         ,
+          id: 2
           MetadataEntryID: 2
           LongName: 'another.long.name'
           SystemName: 'Another Long Name'
@@ -61,15 +63,11 @@ describe 'service.dataSource.coffee', ->
 
 
     it 'should GET columns', (done) ->
-      calledWithArgs = ["MetadataEntryID","SystemName","ShortName","LongName","DataType","Interpretation","LookupName"]
-      svc.getColumnList(@query.data_source_id, @query.data_source_type, @query.data_list_type).then (queryResults) =>
+      svc.getColumnList(@query.data_source_id, @query.data_list_type, getOverrides: false).then (queryResults) =>
         expect(@dsSqlMock.toString()).to.contain('"data_source_id" = \'blackknight\'')
-        expect(@dsSqlMock.toString()).to.contain('"data_source_type" = \'county\'')
         expect(@dsSqlMock.toString()).to.contain('"data_list_type" = \'tax\'')
         expect(@dsSqlMock.selectSpy.calledOnce).to.be.true
-        expect(@dsSqlMock.selectSpy.args).to.deep.equal [calledWithArgs]
         expect(@dsSqlMock.whereSpy.calledOnce).to.be.true
-        expect(@dsSqlMock.whereSpy.args).to.deep.equal [[@query]]
         expect(queryResults[0]).to.have.property 'LongName'
         expect(queryResults[1]).to.have.property 'LongName'
         done()
@@ -82,11 +80,13 @@ describe 'service.dataSource.coffee', ->
 
       @query =
         data_source_id: 'blackknight'
+        data_list_type: 'deed'
         lookup_id: 'AIR_CONDITIONING_TYPE'
 
     it 'should GET lookup fields', (done) ->
-      svc.getLookupTypes(@query.data_source_id, @query.lookup_id).then () =>
+      svc.getLookupTypes(@query.data_source_id, @query.data_list_type, @query.lookup_id).then () =>
         expect(@dsSqlMock.toString()).to.contain('"data_source_id" = \'blackknight\'')
+        expect(@dsSqlMock.toString()).to.contain('"data_list_type" = \'deed\'')
         expect(@dsSqlMock.toString()).to.contain('"LookupName" = \'AIR_CONDITIONING_TYPE\'')
         @dsSqlMock.selectSpy.calledOnce.should.be.true
         @dsSqlMock.whereSpy.calledOnce.should.be.true

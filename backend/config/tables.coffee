@@ -1,5 +1,6 @@
 dbs = require '../config/dbs'
 config = require '../config/config'
+_ = require 'lodash'
 
 
 # setting on module.exports before processing to help with IDE autocomplete
@@ -12,6 +13,9 @@ module.exports =
     notification: 'config_notification'
     dataSourceFields: 'config_data_source_fields'
     dataSourceLookups: 'config_data_source_lookups'
+    dataSourceDatabases: 'config_data_source_databases'
+    dataSourceObjects: 'config_data_source_objects'
+    dataSourceTables: 'config_data_source_tables'
   lookup:
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
@@ -104,8 +108,18 @@ _setup = (baseObject) ->
           ret = client.from(fullTableName)
         ret.raw = db.raw.bind(db)
         ret
+      transaction = (opts, handler) ->
+        if handler == undefined
+          # syntactic sugar to allow opts to be left out, but the handler to always be the last param
+          handler = opts
+          opts = undefined
+        dbs.get(dbName).transaction (trx) ->
+          fullOpts = _.extend({}, opts, {transaction: trx})
+          handler(query(fullOpts), trx)
       query.tableName = tableName
       query.buildTableName = buildTableName
+      query.dbName = dbName
+      query.transaction = transaction
       query
 
 _setup(module.exports)

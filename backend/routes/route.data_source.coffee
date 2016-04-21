@@ -6,11 +6,11 @@ routeHelpers = require '../utils/util.route.helpers'
 
 class DataSourceCrud extends RouteCrud
   getColumnList: (req, res) =>
-    data = @svc.getColumnList req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
+    data = @svc.getColumnList req.params.dataSourceId, req.params.dataListType, getOverrides: false
     @custom data, res
 
   getLookupTypes: (req, res) =>
-    data = @svc.getLookupTypes req.params.dataSourceId, req.params.lookupId
+    data = @svc.getLookupTypes req.params.dataSourceId, req.params.dataListType, req.params.lookupId
     @custom data, res
 
 

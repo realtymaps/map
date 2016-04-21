@@ -186,8 +186,8 @@ module.exports =
   data_source:
     apiBaseDataSource: apiBaseDataSource
     apiBaseDataSourceLookups: apiBaseDataSourceLookups
-    getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
-    getLookupTypes: "#{apiBaseDataSourceLookups}/:dataSourceId/lookupId/:lookupId/types"
+    getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataListType/:dataListType/columns"
+    getLookupTypes: "#{apiBaseDataSourceLookups}/:dataSourceId/dataListType/:dataListType/lookupId/:lookupId/types"
   data_source_rules:
     getRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
     createRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
