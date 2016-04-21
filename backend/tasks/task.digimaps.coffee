@@ -61,7 +61,7 @@ loadRawData = (subtask) -> Promise.try () ->
   .then (creds) ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
     .then (jsonStream) ->
-      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask)) + '_' + fipsCode
       dataLoadHistory =
         data_source_id: "#{subtask.task_name}_#{fileName}"
         data_source_type: 'parcel'
@@ -129,9 +129,12 @@ normalizeData = (subtask) ->
   logger.debug subtask
 
   {fipsCode} = subtask.data
+
   logger.debug subtask.data
 
-  dataLoadHelpers.getNormalizeRows(subtask)
+  rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask) + '_' + fipsCode
+
+  dataLoadHelpers.getNormalizeRows(subtask, rawSubid)
   .then (rows) ->
     return if !rows?.length
 

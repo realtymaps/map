@@ -28,7 +28,6 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
       startTime
     }
 
-
     tablesPropName = 'norm'+tableName.toInitCaps()
 
     promises = for payload in normalPayloads
