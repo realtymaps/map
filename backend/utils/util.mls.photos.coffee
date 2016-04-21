@@ -1,11 +1,9 @@
-logger = require('../config/logger').spawn('util.mls.photos')
-# retsHelpers = require './util.retsHelpers'
 _ = require 'lodash'
 Archiver = require 'archiver'
 through = require 'through2'
 keystore = require '../services/service.keystore'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
-logger = require('../config/logger').spawn('util.mls.photos')
+logger = require('../config/logger').spawn('mlsPhotos')
 shardLogger = logger.spawn('shard')
 crypto = require("crypto")
 Promise = require 'bluebird'
