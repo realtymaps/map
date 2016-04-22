@@ -17,6 +17,7 @@ uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 config = require '../config/config'
+internals = require './util.mlsHelpers.internals'
 
 
 ONE_DAY_MILLISEC = 24*60*60*1000
@@ -194,26 +195,14 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     cdnPhotoStrPromise
     .then (cdnPhotoStr) ->
 
-      bindings = [jsonObjStr]
-
-      if cdnPhotoStr
-        cdnPhotoStr = ',cdn_photo=?'
-        bindings.push cdnPhotoStr
-
-      query =
-        tables.property.listing()
-        .raw("""
-          UPDATE listing set
-          photos=jsonb_set(photos, '{#{imageId}}', ?, true)#{cdnPhotoStr}
-          WHERE
-           data_source_id = '#{subtask.task_name}' AND
-           data_source_uuid = '#{data_source_uuid}' AND
-           photo_id = '#{photo_id}';
-        """, bindings)
-
-
-      finePhotologger.debug query.toString()
-      query
+      internals.makeInsertPhoto {
+        data_source_id: subtask.task_name
+        data_source_uuid
+        cdnPhotoStr
+        jsonObjStr
+        imageId
+        photo_id
+      }
 
     .catch (error) ->
       logger.error error
