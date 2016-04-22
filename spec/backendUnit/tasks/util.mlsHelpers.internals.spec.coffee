@@ -1,7 +1,7 @@
 {should, expect}= require('chai')
 should()
 # sinon = require 'sinon'
-# Promise = require 'bluebird'
+Promise = require 'bluebird'
 logger = require('../../specUtils/logger').spawn('util.mlsHelpers.internals')
 rewire = require 'rewire'
 subject = rewire "../../../backend/tasks/util.mlsHelpers.internals"
@@ -86,6 +86,13 @@ describe 'makeInsertPhoto', ->
       newFileName: 'crap.jpg'
       data_source_uuid
       data_source_id
+      shardsPromise: Promise.resolve
+        one:
+          id: 0
+          url: 'cdn1.com'
+        two:
+          id: 1
+          url: 'cdn2.com'
     }
 
     cdnPhotoStrPromise

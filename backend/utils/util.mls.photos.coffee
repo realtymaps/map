@@ -114,11 +114,14 @@ hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
 
 
 getCndPhotoShard = (opts) -> Promise.try () ->
-  {newFileName, data_source_uuid, data_source_id} = onMissingArgsFail
+  {newFileName, data_source_uuid, data_source_id, shardsPromise} = onMissingArgsFail
     args: opts
     required: ['newFileName', 'data_source_id', 'data_source_uuid']
 
-  keystore.cache.getValuesMap('cdn_shards')
+  # logger.debug shardsPromise
+  shardsPromise ?= keystore.cache.getValuesMap('cdn_shards')
+
+  shardsPromise
   .then (cdnShards) ->
     cdnShards = _.mapValues cdnShards
     mod = md5(newFileName).charCodeAt(0) % 2
