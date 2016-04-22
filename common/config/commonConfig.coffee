@@ -75,12 +75,4 @@ commonConfig =
 
   validation: validation
   regexes: validation
-  subscription:
-    plans: [
-      'Free Tier'
-      'Standard Tier'
-      'Premium Tier'
-      'Deactivated Tier'
-    ]
-
 module.exports = commonConfig

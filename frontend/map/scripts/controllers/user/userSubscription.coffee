@@ -1,9 +1,15 @@
 app = require '../../app.coffee'
 module.exports = app
 
-app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log) ->
+app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log, rmapsPlansService) ->
   $log = $log.spawn("map:userSubscription")
-  console.log "$rootScope.user:\n#{JSON.stringify($rootScope.user, null, 2)}"
 
   $scope.unsubscribe = () ->
-    console.log "unsubscribe()"
+    rmapsPlansService.deactivate()
+    .then (deactivatedPlan) ->
+      $scope.plan = deactivatedPlan
+      $scope.message = "Your account has been deactivated."
+
+  rmapsPlansService.getPlan()
+  .then (plan) ->
+    $scope.plan = plan

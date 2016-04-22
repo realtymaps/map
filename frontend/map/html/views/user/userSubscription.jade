@@ -2,7 +2,9 @@
   h2 Payment Method
 .row.collapse-header.subscription-details
   h4 Plan
-  .row (plan/paid trial)
-  .row
+  .row(ng-show="plan")
+    p {{plan.group_name}}
+  .row.help-block(ng-show="message")
+    p {{message}}
   .row.subscription-buttons
-    .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
+    .btn.btn-default(ng-hide="plan.group_name == 'Deactivated Account'" ng-click="unsubscribe()") Unsubscribe

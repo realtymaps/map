@@ -1,1 +1,1 @@
-insert into auth_group (name) values ('Deactivated Tier');
+insert into auth_group (name) values ('Deactivated Account');

@@ -42,7 +42,6 @@ createPlan = (stripe, planName, settings) ->
     created
 
 initializePlan = (stripe, planName, settings) ->
-  console.log "initializePlan(), planName:\n#{planName}\nsettings:\n#{JSON.stringify(settings,null,2)}"
   try
     logger.debug "Attempting to initialize plan: #{planName}"
     onMissingArgsFail args: settings, required: ['price', 'interval']
