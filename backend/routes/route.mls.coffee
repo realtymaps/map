@@ -1,13 +1,9 @@
-retsService = require '../services/service.rets'
 retsCache = require '../services/service.retsCache'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('routes:mls')
-mlsConfigService = require '../services/service.mls_config'
 mlsService = require '../services/service.mls'
 {validators, validateAndTransformRequest} = require '../utils/util.validation'
 auth = require '../utils/util.auth'
-Promise = require 'bluebird'
-through2 = require 'through2'
 {handleRoute} =  require '../utils/util.route.helpers'
 internals = require './route.mls.internals'
 

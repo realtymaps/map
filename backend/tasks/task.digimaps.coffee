@@ -138,7 +138,7 @@ normalizeData = (subtask) ->
 
   logger.debug subtask.data
 
-  dataLoadHelpers.getNormalizeRows(subtask, dataLoadHelpers.buildUniqueSubtaskName(subtask))
+  dataLoadHelpers.getNormalizeRows subtask
   .then (rows) ->
     return if !rows?.length
 
