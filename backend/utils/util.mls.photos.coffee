@@ -129,7 +129,7 @@ getCndPhotoShard = (opts) -> Promise.try () ->
     if !shard?.url?
       throw new Error('Shard must have a url')
 
-    "'#{shard.url}/api/photos/resize' || chr(63) || 'data_source_id=#{data_source_id}&data_source_uuid=#{data_source_uuid}'"
+    "#{shard.url}/api/photos/resize?data_source_id=#{data_source_id}&data_source_uuid=#{data_source_uuid}"
 
 module.exports = {
   isSingleImage
