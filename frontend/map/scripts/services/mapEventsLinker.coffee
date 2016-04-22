@@ -1,4 +1,3 @@
-caseing = require 'case'
 app = require '../app.coffee'
 
 app.service "rmapsMapEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->

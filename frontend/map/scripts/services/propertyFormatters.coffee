@@ -1,15 +1,9 @@
+###globals _###
 app = require '../app.coffee'
-Point = require('../../../../common/utils/util.geometries.coffee').Point
-
-sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
-  rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
-
-  leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
-  limits = rmapsMainOptions.map
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants) ->
 
   _forSaleClass = {}
   _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
