@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('util.mlsHelpers')
 finePhotologger = logger.spawn('photos.fine')
@@ -17,6 +17,7 @@ uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 config = require '../config/config'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 ONE_DAY_MILLISEC = 24*60*60*1000
@@ -33,7 +34,7 @@ loadUpdates = (subtask, options) ->
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
       retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
-      .catch isCausedBy(rets.RetsReplyError), (error) ->
+      .catch errorHandlingUtils.isCausedBy(rets.RetsReplyError), (error) ->
         if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
           throw SoftFail(error, "Transient RETS error; try again later")
         throw error
@@ -46,13 +47,13 @@ loadUpdates = (subtask, options) ->
         batch_id: subtask.batch_id
         raw_table_name: rawTableName
       dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, retsStream)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+      .catch errorHandlingUtils.isUnhandled, (error) ->
+        throw new errorHandlingUtils.PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->
       deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
       {numRawRows, deletes}
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, 'failed to load RETS data for update')
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load RETS data for update')
 
 
 buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
@@ -346,9 +347,8 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
                 {newFileName, imageId, photo_id, objectData, data_source_uuid: listingRow.data_source_uuid}
             .catch (error) ->
               logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
-              logger.debug error
-              logger.debug error.stack
-              #record the error an move on
+              logger.debug analyzeValue.getSimpleDetails(error)
+              #record the error and move on
               tables.property.listing()
               .where(listingRow)
               .update(photo_import_error: error.stack)
@@ -360,9 +360,10 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         #filter/flatMap (remove nulls / GTFOS)
         Promise.all _.filter(saves).map _updatePhoto.bind(null, subtask)
 
-  .catch (error) ->
-    msg = logger.maybeInvalidError {error, where: 'storePhotos'}
-    throw SoftFail msg
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
+    .catch (error) ->
+      throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()

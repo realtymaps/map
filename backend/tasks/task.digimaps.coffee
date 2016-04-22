@@ -11,8 +11,9 @@ parcelsFetch = require '../services/service.parcels.fetcher.digimaps'
 parcelHelpers = require './util.parcelHelpers'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger.coffee').spawn('task:digimaps')
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
@@ -89,11 +90,10 @@ loadRawData = (subtask) -> Promise.try () ->
     .then (numRawRows) ->
       deletes = if (new Date(refreshThreshold)).getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
       {numRawRows, deletes}
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error, 'failed to load parcels data for update')
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load parcels data for update')
     .catch (error) ->
-      msg = logger.maybeInvalidError {error, where: 'parcels:loadRawData'}
-      throw SoftFail msg
+      throw new SoftFail(analyzeValue.getSimpleMessage(error))
     .then ({numRawRows, deletes}) ->
       if numRawRows == 0
         return 0

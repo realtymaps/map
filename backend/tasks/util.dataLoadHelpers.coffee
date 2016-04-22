@@ -429,7 +429,8 @@ finalizeEntry = (entries) ->
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
-  entry.actual_photo_count = Object.keys(entry.photos).length - 1#photo 0 and 1 are the same
+  entry.actual_photo_count = Object.keys(entry.photos).length - 1  # photo 0 and 1 are the same
+  entry.baths_total = entry.baths?.filter
   entry
 
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
@@ -629,9 +630,7 @@ ensureNormalizedTable = (dataType, subid) ->
       table.json('owner_address')
       if dataType == 'tax'
         table.integer('bedrooms')
-        table.integer('baths_full')
-        table.integer('baths_half')
-        table.decimal('baths_total', 4, 1)
+        table.json('baths')
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')
