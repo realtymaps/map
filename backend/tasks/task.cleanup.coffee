@@ -58,10 +58,14 @@ deleteInactiveRows = (subtask) ->
 deletePhotosPrep = (subtask) ->
   tables.deletes.photos()
   .select('id')
-  .orderBy 'id'
   .then (ids) ->
     ids = ids.map (obj) -> obj.id
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "deletePhotos"})
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: ids
+      maxPage: NUM_ROWS_TO_PAGINATE
+      laterSubtaskName: "deletePhotos"
+    }
 
 deletePhotos = (subtask) ->
   logger.debug subtask
