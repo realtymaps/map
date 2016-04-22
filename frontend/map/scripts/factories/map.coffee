@@ -362,11 +362,11 @@ app.factory 'rmapsMapFactory',
           wasSaved = result?.savedDetails?.isSaved
 
           # Handle the leaflet objects
-          #update markers early
+          #update markers immediately
           lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
-          #update polygons early
+          #update polygons immediately
           lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
           lObject.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
 
