@@ -7,7 +7,7 @@
       //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
       //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
-      carousel.bordered(interval="myInterval")
+      carousel.project-card.bordered(interval="myInterval")
         slide(ng-repeat="property in pins")
           .pin-image
             img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
