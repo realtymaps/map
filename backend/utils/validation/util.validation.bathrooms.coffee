@@ -4,6 +4,13 @@ floatValidation = require './util.validation.float'
 objectValidation = require './util.validation.object'
 
 
+# goal of this validator is to prep for both display and filtering.  If we have separate full and half bath values,
+# make it clear what's what.  If we don't, then display whatever combined value we have, which should look like
+# whatever local realtors expect.  In either case, the filter value shoudl be the number of full baths, plus .5 if
+# there is at least 1 half bath.  If we run into an MLS that differentiates quarter and 3-quarters baths, then we
+# might need to add more to this.
+
+
 module.exports = (options = {}) ->
   composite = objectValidation
     subValidateSeparate:
