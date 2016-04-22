@@ -30,6 +30,10 @@ _filterImports = (subtask, imports) ->
     folderObjs = _.filter folderObjs, (o) ->
       o.moment.isAfter(moment(refreshThreshold).utc())
 
+
+    if subtask.data.fipsCodeLimit?
+      logger.debug "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
+      folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
     filteredImports: folderObjs.map (f) -> f.name
     refreshThreshold: refreshThreshold
 
@@ -56,6 +60,8 @@ loadRawData = (subtask) -> Promise.try () ->
 
   {fileName, refreshThreshold} = subtask.data
   fipsCode = String.numeric path.basename fileName
+
+  subtask.data.rawTableSuffix = fipsCode
 
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
@@ -98,7 +104,7 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask
         laterSubtaskName: "recordChangeCounts"
         #rawDataType fixes lookup of rawtable for change counts
-        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel"}
+        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel", rawTableSuffix: fipsCode}
         replace: true
       }
       finalizePrepPromise = jobQueue.queueSubsequentSubtask {
@@ -122,16 +128,17 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask, totalOrList: numRows
         maxPage: NUM_ROWS_TO_PAGINATE
         laterSubtaskName: "normalizeData"
-        mergeData: {fipsCode}
+        mergeData: {fipsCode, dataType: 'parcel', rawTableSuffix: fipsCode}
       }
 
 normalizeData = (subtask) ->
   logger.debug subtask
 
   {fipsCode} = subtask.data
+
   logger.debug subtask.data
 
-  dataLoadHelpers.getNormalizeRows(subtask)
+  dataLoadHelpers.getNormalizeRows subtask
   .then (rows) ->
     return if !rows?.length
 
