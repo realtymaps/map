@@ -194,19 +194,23 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     cdnPhotoStrPromise
     .then (cdnPhotoStr) ->
 
+      bindings = [jsonObjStr]
+
       if cdnPhotoStr
-        cdnPhotoStr = ',cdn_photo=' + cdnPhotoStr
+        cdnPhotoStr = ',cdn_photo=?'
+        bindings.push cdnPhotoStr
 
       query =
         tables.property.listing()
-        .raw """
+        .raw("""
           UPDATE listing set
-          photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)#{cdnPhotoStr}
+          photos=jsonb_set(photos, '{#{imageId}}', ?, true)#{cdnPhotoStr}
           WHERE
            data_source_id = '#{subtask.task_name}' AND
            data_source_uuid = '#{data_source_uuid}' AND
            photo_id = '#{photo_id}';
-          """
+        """, bindings)
+
 
       finePhotologger.debug query.toString()
       query
