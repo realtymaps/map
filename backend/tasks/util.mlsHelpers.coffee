@@ -369,7 +369,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     throw SoftFail msg
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
-  tables.deletes.photo()
+  tables.deletes.photos()
   .where {id}
   .then (results) ->
     if !results?.length
@@ -382,7 +382,9 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
       extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
       Key: key
     .then () ->
-      tables.deletes.photo()
+      logger.debug 'succesful deletion of aws photo ' + key
+
+      tables.deletes.photos()
       .where {id}
       .del()
       .catch (error) ->
