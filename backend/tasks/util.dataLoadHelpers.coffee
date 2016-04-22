@@ -484,9 +484,10 @@ rollback = ({err, tableName, promiseQuery}) ->
   .then () ->
     throw err
 
-manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns, strTranforms}) -> Promise.try () ->
+manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns}) -> Promise.try () ->
   isRoot = false
-  if _.isString columns or !_.isArray columns
+
+  if _.isString(columns) || !_.isArray(columns)
     isRoot = true
     columns = [columns]
 
@@ -500,24 +501,49 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns, strTran
     .then () -> Promise.try () -> new Promise (resolve, reject) ->
       startedTransaction = true
 
+      maybeResolve = () ->
+        resolvedCtr++
+        if(resolvedCtr == count && isFinished)
+          resolve()
+
+      #this is to deal with knex's poor handling of json as strings
+      fixJsonString = (jsonObjVal) ->
+        jsonStr = JSON.stringify jsonObjVal
+        #fix json escape singleQuotes
+        jsonStr.replace(/\'/g, "\\'")
+        "'#{jsonStr}'"
+
       onData = (jsonObj) ->
         # logger.debug jsonObj, true
         if isRoot
-          vals = ["'#{strTranforms jsonObj}'"]
+          vals = [fixJsonString jsonObj]
         else
           vals = columns.map (col) ->
-            "'#{strTranforms[col](jsonObj[col])}'"
+            fixJsonString(jsonObj[col])
+
+        entity = {}
+        columns.forEach (col, index) ->
+          entity[col] = vals[index]
 
         colsStr = columns.join(',')
         valsStr = vals.join(',')
-        query = "INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});"
+        queryStr = "INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});"
+        # logger.debug entity, true
+        # queryStr = dbs.get('raw_temp')(tableName).insert(entity).toString()
+        # logger.debug queryStr
 
-        streamQuery query, (err) ->
-          if err
-            return reject err
-          resolvedCtr++
-          if(resolvedCtr == count && isFinished)
-            resolve()
+        promiseQuery queryStr
+        .then () ->
+          maybeResolve()
+        .catch (err) ->
+          queryStr = dbs.get('raw_temp')(tableName).insert(rm_error_msg: err.toString()).toString()
+          logger.debug queryStr
+          promiseQuery queryStr
+          .then () ->
+            maybeResolve()
+          .catch (err) ->
+            reject err
+
         count++
 
       jsonStream.on 'data', onData

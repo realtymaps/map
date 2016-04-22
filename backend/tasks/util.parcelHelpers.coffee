@@ -37,6 +37,7 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
         # logger.debug payload
 
         {row, stats, error} =  payload
+
         Promise.try () ->
           if error
             throw error

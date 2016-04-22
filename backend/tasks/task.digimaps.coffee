@@ -81,7 +81,6 @@ loadRawData = (subtask) -> Promise.try () ->
         dataLoadHistory
         jsonStream
         columns: 'feature'
-        strTranforms: JSON.stringify
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
@@ -125,7 +124,8 @@ loadRawData = (subtask) -> Promise.try () ->
         return
       logger.debug("num rows to normalize: #{numRows}")
       jobQueue.queueSubsequentPaginatedSubtask {
-        subtask, totalOrList: numRows
+        subtask
+        totalOrList: numRows
         maxPage: NUM_ROWS_TO_PAGINATE
         laterSubtaskName: "normalizeData"
         mergeData: {fipsCode, dataType: 'parcel', rawTableSuffix: fipsCode}
@@ -141,6 +141,7 @@ normalizeData = (subtask) ->
   dataLoadHelpers.getNormalizeRows subtask
   .then (rows) ->
     return if !rows?.length
+    # logger.debug rows[0]
 
     parcelHelpers.saveToNormalDb {
       subtask
