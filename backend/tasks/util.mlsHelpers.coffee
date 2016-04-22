@@ -17,6 +17,7 @@ uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 config = require '../config/config'
+internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
@@ -195,22 +196,14 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     cdnPhotoStrPromise
     .then (cdnPhotoStr) ->
 
-      if cdnPhotoStr
-        cdnPhotoStr = ',cdn_photo=' + cdnPhotoStr
-
-      query =
-        tables.property.listing()
-        .raw """
-          UPDATE listing set
-          photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)#{cdnPhotoStr}
-          WHERE
-           data_source_id = '#{subtask.task_name}' AND
-           data_source_uuid = '#{data_source_uuid}' AND
-           photo_id = '#{photo_id}';
-          """
-
-      finePhotologger.debug query.toString()
-      query
+      internals.makeInsertPhoto {
+        data_source_id: subtask.task_name
+        data_source_uuid
+        cdnPhotoStr
+        jsonObjStr
+        imageId
+        photo_id
+      }
 
     .catch (error) ->
       logger.error error
@@ -366,7 +359,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
-  tables.deletes.photo()
+  tables.deletes.photos()
   .where {id}
   .then (results) ->
     if !results?.length
@@ -379,7 +372,9 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
       extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
       Key: key
     .then () ->
-      tables.deletes.photo()
+      logger.debug 'succesful deletion of aws photo ' + key
+
+      tables.deletes.photos()
       .where {id}
       .del()
       .catch (error) ->

@@ -490,21 +490,17 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns, strTran
     isRoot = true
     columns = [columns]
 
-  dbs.getPlainClient 'raw_temp', (promiseQuery) -> Promise.try () ->
+  dbs.getPlainClient 'raw_temp', (promiseQuery,streamQuery) -> Promise.try () ->
     startedTransaction = false
     count = 0
+    resolvedCtr = 0
+    isFinished = false
+
     _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
     .then () -> Promise.try () -> new Promise (resolve, reject) ->
       startedTransaction = true
-      promises = []
 
-      jsonStream.on 'error', (error) ->
-        reject error
-
-      jsonStream.on 'end', () ->
-        resolve Promise.all promises
-
-      jsonStream.on 'data', (jsonObj) ->
+      onData = (jsonObj) ->
         # logger.debug jsonObj, true
         if isRoot
           vals = ["'#{strTranforms jsonObj}'"]
@@ -512,15 +508,27 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns, strTran
           vals = columns.map (col) ->
             "'#{strTranforms[col](jsonObj[col])}'"
 
-        # logger.debug "columns!!!!!!!!!!!!!!!!!!"
-        # logger.debug columns, true
-        # logger.debug "vals!!!!!!!!!!!!!!!!!!!"
-        # logger.debug vals, true
-
         colsStr = columns.join(',')
         valsStr = vals.join(',')
-        promises.push promiseQuery("INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});")
+        query = "INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});"
+
+        streamQuery query, (err) ->
+          if err
+            return reject err
+          resolvedCtr++
+          if(resolvedCtr == count && isFinished)
+            resolve()
         count++
+
+      jsonStream.on 'data', onData
+
+      jsonStream.once 'error', (error) ->
+        reject error
+
+      jsonStream.once 'end', () ->
+        jsonStream.removeListener 'data', onData
+        isFinished = true
+
 
     .catch (err) ->
       rollback({err, tableName, promiseQuery})

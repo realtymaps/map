@@ -63,8 +63,13 @@ storePhotosPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
+  logger.debug subtask
   #NOTE currently we can not do image download at high volume until we pool mls connections
   #swflmls, MRED and others only allow one connection at a time
+  if !subtask?.data?.values.length
+    logger.debug 'no values to process for storePhotos'
+    return
+
   PromiseExt.reduceSeries subtask.data.values.map (row) -> ->
     mlsHelpers.storePhotos(subtask, row)
 

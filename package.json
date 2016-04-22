@@ -128,6 +128,7 @@
     "hyperquest": "^1.2.0",
     "ignore": "^2.2.16",
     "image-size": "^0.3.5",
+    "is-property": "1.0.2",
     "isnode": "0.0.1",
     "istanbul": "0.4.2",
     "jade": "1.X",
