@@ -121,9 +121,11 @@ _rules =
         alias: 'Bedrooms'
         type: name: 'integer'
 
-      baths_full:
-        alias: 'Baths Full'
-        type: name: 'integer'
+      baths:
+        alias: 'Baths (Separate)'
+        type: name: 'bathrooms'
+        valid: () ->
+          @input.half? && @input.full? || @input.total?
 
       acres:
         alias: 'Acres'
@@ -228,9 +230,11 @@ _rules =
         alias: 'Bedrooms'
         type: name: 'integer'
 
-      baths_full:
-        alias: 'Baths Full'
-        type: name: 'integer'
+      baths:
+        alias: 'Baths (Separate)'
+        type: name: 'bathrooms'
+        valid: () ->
+          @input.half? && @input.full? || @input.total?
 
       acres:
         alias: 'Acres'

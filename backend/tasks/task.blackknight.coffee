@@ -175,8 +175,11 @@ checkFtpDrop = (subtask) ->
 loadRawData = (subtask) ->
   Promise.try () ->
     if subtask.data.fileType != constants.DELETE
-      # first ensure a normalized data table exists
-      dataLoadHelpers.ensureNormalizedTable(subtask.data.dataType, subtask.data.normalSubid)
+      # first ensure normalized data tables exist -- need all 3 no matter what type we're loading now
+      tax = dataLoadHelpers.ensureNormalizedTable(constants.TAX, subtask.data.normalSubid)
+      deed = dataLoadHelpers.ensureNormalizedTable(constants.DEED, subtask.data.normalSubid)
+      mortgage = dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
+      Promise.join tax, deed, mortgage, () -> # no-op
   .then () ->
     constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->

@@ -61,14 +61,26 @@ analyzeValue = (value, fullJson=false) ->
 getSimpleDetails = (err) ->
   if !err?.hasOwnProperty?
     return JSON.stringify(err)
-  if err.hasOwnProperty('isOperational') && err.name == 'error'  # means it's a knex error
+  if (err.hasOwnProperty('isOperational') && err.name == 'error') || (!err.stack && err.toString() == '[object Object]')
     inspect = util.inspect(err, depth: null)
     return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields
   else
     return err.stack || "#{err}"
 
 
+getSimpleMessage = (err) ->
+  if !err?
+    return JSON.stringify(err)
+  if err.message
+    return err.message
+  if err.toString() == '[object Object]'
+    inspect = util.inspect(err, depth: null)
+    return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields
+  else
+    return err.toString()
+
 
 module.exports = analyzeValue
 module.exports.INDENT = "    "
 module.exports.getSimpleDetails = getSimpleDetails
+module.exports.getSimpleMessage = getSimpleMessage

@@ -477,6 +477,28 @@
               span Age
               span.remove-icon(ng-show="fieldData.current.input.age" ng-click="removeBaseInput('age')") X
 
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'baths'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
+        .row
+          .col-md-2 Baths
+          .col-md-10
+            .field(rmaps-droppable="'full'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.full }")
+              span(ng-show="fieldData.current.input.full") {{fieldData.current.input.full}}:
+              span Full
+              span.remove-icon(ng-show="fieldData.current.input.full" ng-click="removeBaseInput('year')") X
+            span.sep AND
+            .field(rmaps-droppable="'half'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.half }")
+              span(ng-show="fieldData.current.input.half") {{fieldData.current.input.half}}:
+              span Half
+              span.remove-icon(ng-show="fieldData.current.input.half" ng-click="removeBaseInput('half')") X
+            span.sep AND
+            .field(rmaps-droppable="'total'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.total }")
+              span(ng-show="fieldData.current.input.total") {{fieldData.current.input.total}}:
+              span Total
+              span.remove-icon(ng-show="fieldData.current.input.total" ng-click="removeBaseInput('total')") X
+
       //- Generic
       .col-md-12.scroll(ng-show="['address','rm_property_id','data_source_uuid', 'owner_name', 'owner_name_2','owner_address','fips_code','year_built'].indexOf(fieldData.current.output) == -1")
         .row
