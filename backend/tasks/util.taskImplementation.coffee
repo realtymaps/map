@@ -1,6 +1,7 @@
 tables = require '../config/tables'
 {TaskNotImplemented} = require '../utils/errors/util.error.jobQueue'
 Promise = require 'bluebird'
+require '../config/promisify'
 memoize = require 'memoizee'
 
 
