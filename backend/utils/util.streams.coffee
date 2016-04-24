@@ -16,6 +16,7 @@ class StringStream extends Readable
     @push null
 
 
+_escapeCache = {}
 pgStreamEscape = (str, extraEscape) ->
   escaped = str
   .replace(/\\/g, '\\\\')
@@ -24,7 +25,11 @@ pgStreamEscape = (str, extraEscape) ->
   if !extraEscape
     return escaped
   else
-    return escaped.replace(new RegExp(extraEscape, 'g'), "\\#{extraEscape}")
+    # pgStreamEscape could run many times -- potentially once for each value in each row in a data file.  So we want to
+    # be very efficient, caching the regex and replacement string rather than rebuilding them both each time
+    if !_escapeCache[extraEscape]
+      _escapeCache[extraEscape] = {re: new RegExp(extraEscape, 'g'), replacement: "\\#{extraEscape}"}
+    return escaped.replace(_escapeCache[extraEscape].re, _escapeCache[extraEscape].replacement)
 
 
 geoJsonFormatter = (toMove, deletes) ->
