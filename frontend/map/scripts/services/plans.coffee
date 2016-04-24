@@ -22,4 +22,8 @@ app.service 'rmapsPlansService', ($http) ->
   deactivate: () ->
     $http.put subscriptionAPI.deactivate
     .then ({data}) ->
-      data
+      plan = data.plan
+      if plan.current_period_end
+        plan.current_period_end = new Date(plan.current_period_end * 1000).toLocaleDateString()
+      plan.group_name = plan.id.charAt(0).toUpperCase() + plan.id.slice(1) + " Tier"
+      plan

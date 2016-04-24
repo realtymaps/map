@@ -5,6 +5,8 @@ db = dbs.get('main')
 logger = require('../config/logger').spawn("service.user_subscription")
 {expectSingleRow} = require '../utils/util.sql.helpers'
 
+stripe = null
+require('../services/services.payment').then (svc) -> stripe = svc.stripe
 
 getPlan = (userId) ->
   tables.auth.m2m_user_group()
@@ -41,22 +43,27 @@ setPlan = (userId, plan) ->
 
 deactivate = (userId) ->
   # acquire the deactivated plan group id
-  # some of this logic would be replaced by calls to stripe plan
-  tables.config.keystore()
-  .select(
-    db.raw("value->>\'group_id\' as deactivate_group_id")
-  )
-  .where key: 'deactivated', namespace: 'plans'
+  # some of this logic would be replaced by better subscription handling we impl in future
+  tables.auth.user()
+  .select 'stripe_customer_id'
+  .where id: userId
   .then (result) ->
     expectSingleRow result
-  .then ({deactivate_group_id}) ->
-    setPlan userId, deactivate_group_id
-    .then (deactivatedPlan) ->
-      tables.user.project()
-      .update status: 'inactive'
-      .where auth_user_id: userId
-      .then () ->
-        return deactivatedPlan
+  .then ({stripe_customer_id}) ->
+    stripe.customers.listSubscriptions stripe_customer_id
+    .then (subscription) ->
+      sub_id = subscription.data[0].id
+      stripe.customers.cancelSubscription stripe_customer_id, sub_id, {at_period_end: true}
+      .then (response) ->
+        tables.user.project()
+        .update status: 'inactive'
+        .where auth_user_id: userId
+        .then () ->
+          plan: _.merge response.plan,
+            current_period_end: response.current_period_end
+            canceled_at: response.canceled_at
+    .catch (err) ->
+      throw new Error(err, "Encountered an issue deactivating the account, please contact customer service.")
 
 module.exports =
   getPlan: getPlan

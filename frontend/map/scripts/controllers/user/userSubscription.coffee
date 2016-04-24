@@ -6,9 +6,8 @@ app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log, rmapsPlan
 
   $scope.unsubscribe = () ->
     rmapsPlansService.deactivate()
-    .then (deactivatedPlan) ->
-      $scope.plan = deactivatedPlan
-      $scope.message = "Your account has been deactivated."
+    .then (plan) ->
+      $scope.plan = plan
 
   rmapsPlansService.getPlan()
   .then (plan) ->

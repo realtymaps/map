@@ -4,6 +4,8 @@
   h4 Plan
   .row(ng-show="plan")
     p {{plan.group_name}}
+  .row(ng-show="plan.canceled_at")
+    p Subscription has been deactivated. Service will expire {{plan.current_period_end}}
   .row.help-block(ng-show="message")
     p {{message}}
   .row.subscription-buttons
