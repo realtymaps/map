@@ -16,11 +16,15 @@ class StringStream extends Readable
     @push null
 
 
-pgStreamEscape = (str) ->
-  str
+pgStreamEscape = (str, extraEscape) ->
+  escaped = str
   .replace(/\\/g, '\\\\')
   .replace(/\n/g, '\\n')
   .replace(/\r/g, '\\r')
+  if !extraEscape
+    return escaped
+  else
+    return escaped.replace(new RegExp(extraEscape, 'g'), "\\#{extraEscape}")
 
 
 geoJsonFormatter = (toMove, deletes) ->

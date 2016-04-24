@@ -484,82 +484,35 @@ rollback = ({err, tableName, promiseQuery}) ->
   .then () ->
     throw err
 
-manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns}) -> Promise.try () ->
-  isRoot = false
 
-  if _.isString(columns) || !_.isArray(columns)
-    isRoot = true
-    columns = [columns]
+manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns}) -> Promise.try ->
+  isFinished = false
+  count = 0
 
-  dbs.getPlainClient 'raw_temp', (promiseQuery,streamQuery) -> Promise.try () ->
-    startedTransaction = false
-    count = 0
-    resolvedCtr = 0
-    isFinished = false
+  objectStreamTransform = (json, encoding, callback) ->
+    if isFinished
+      return
+    row = []
+    for column in columns
+      row.push(json[column])
+    count++
+    this.push(type: 'data', payload: row)
+  objectStreamer = through2.obj objectStreamTransform, (callback) ->
+    if isFinished
+      return
+    isFinished = true
+    objectStreamer.push(type: 'done', payload: count)
+  objectStreamer.push(type: 'delimiter', payload: '\t')
+  objectStreamer.push(type: 'columns', payload: columns)
 
-    _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
-    .then () -> Promise.try () -> new Promise (resolve, reject) ->
-      startedTransaction = true
+  jsonStream.once 'error', (err) ->
+    if isFinished
+      return
+    isFinished = true
+    objectStreamer.push(type: 'error', payload: err)
+  jsonStream.pipe(objectStreamer)
 
-      maybeResolve = () ->
-        resolvedCtr++
-        if(resolvedCtr == count && isFinished)
-          resolve()
-
-      #this is to deal with knex's poor handling of json as strings
-      fixJsonString = (jsonObjVal) ->
-        jsonStr = JSON.stringify jsonObjVal
-        #fix json escape singleQuotes
-        jsonStr.replace(/\'/g, "\\'")
-        "'#{jsonStr}'"
-
-      onData = (jsonObj) ->
-        # logger.debug jsonObj, true
-        if isRoot
-          vals = [fixJsonString jsonObj]
-        else
-          vals = columns.map (col) ->
-            fixJsonString(jsonObj[col])
-
-        entity = {}
-        columns.forEach (col, index) ->
-          entity[col] = vals[index]
-
-        colsStr = columns.join(',')
-        valsStr = vals.join(',')
-        queryStr = "INSERT into #{tableName} (#{colsStr}) Values (#{valsStr});"
-        # logger.debug entity, true
-        # queryStr = dbs.get('raw_temp')(tableName).insert(entity).toString()
-        # logger.debug queryStr
-
-        promiseQuery queryStr
-        .then () ->
-          maybeResolve()
-        .catch (err) ->
-          queryStr = dbs.get('raw_temp')(tableName).insert(rm_error_msg: err.toString()).toString()
-          logger.debug queryStr
-          promiseQuery queryStr
-          .then () ->
-            maybeResolve()
-          .catch (err) ->
-            reject err
-
-        count++
-
-      jsonStream.on 'data', onData
-
-      jsonStream.once 'error', (error) ->
-        reject error
-
-      jsonStream.once 'end', () ->
-        jsonStream.removeListener 'data', onData
-        isFinished = true
-
-
-    .catch (err) ->
-      rollback({err, tableName, promiseQuery})
-    .then () ->
-      _endRawTable({startedTransaction, count, tableName, promiseQuery})
+  manageRawDataStream(tableName, dataLoadHistory, objectStreamer)
 
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
@@ -578,11 +531,16 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
         dbStream.write('\\.\n')
         dbStream.end()
         hadError = true
+      doPerValEscape = (val) ->
+        utilStreams.pgStreamEscape(val, delimiter)
       dbStreamTransform = (event, encoding, callback) ->
         try
           switch event.type
             when 'data'
-              this.push(utilStreams.pgStreamEscape(event.payload))
+              if Array.isArray(event.payload)  # escape each value separately
+                this.push(_.map(event.payload, doPerValEscape).join(delimiter))
+              else  # escape the whole row at once
+                this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
               callback()
             when 'delimiter'
