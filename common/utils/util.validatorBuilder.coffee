@@ -124,6 +124,7 @@ _rules =
       baths:
         alias: 'Baths (Separate)'
         type: name: 'bathrooms'
+        input: {}
         valid: () ->
           @input.half? && @input.full? || @input.total?
 
@@ -233,6 +234,7 @@ _rules =
       baths:
         alias: 'Baths (Separate)'
         type: name: 'bathrooms'
+        input: {}
         valid: () ->
           @input.half? && @input.full? || @input.total?
 
