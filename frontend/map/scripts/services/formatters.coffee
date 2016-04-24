@@ -1,15 +1,7 @@
 app = require '../app.coffee'
 numeral = require 'numeral'
-casing = require 'case'
 moment = require 'moment'
 
-
-# turns a duration object into a humanized string, but with '1' instead of 'a' for single units
-_humanize = (duration) ->
-  readable = duration.humanize()
-  if readable[0] == 'a'
-    return '1'+readable.substring(1)
-  return readable
 
 # turns a number and a plural unit into a string with singular or plural as appropriate
 _humanizePartial = (val, unit) ->

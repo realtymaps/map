@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
@@ -7,11 +8,6 @@ priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
 app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
 
   $log = $log.spawn('map:layerFormatter')
-
-  renderCounters =
-    fill:
-      directive: 0
-      control: 0
 
   _isVisible = (scope, model, requireFilterModel=false) ->
     filterSummary = scope.map.markers.filterSummary
@@ -68,20 +64,25 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
 
     getStyle : (feature, layerName) ->
       return {} unless feature
+
       if feature?.savedDetails?.isSaved
-        status = 'saved'
-      else if feature?.rm_status?
+        savedStatus = 'saved'
+
+      if feature?.rm_status?
         status = feature?.rm_status
       else
         status = 'default'
 
       colors = if feature?.isMousedOver then hoverColors else normalColors
-      color = colors[status] || colors['default']
 
-      weight: if layerName == 'parcelBase' then _parcelBaseStyle.weight else 2
+      color = colors[status] || colors['default']
+      fillColor = colors[savedStatus || status] || colors['default']
+
+      weight: if layerName == '_parcelBase' then _parcelBaseStyle.weight else 4
       opacity: 1
-      color: if layerName == 'parcelBase' then _parcelBaseStyle.color else color
-      fillColor: color
+      color: if layerName == '_parcelBase' then _parcelBaseStyle.color else color
+      fillColor: fillColor
+      colorOpacity: 1
       fillOpacity: .75
 
   _mls = do ->
@@ -94,7 +95,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
 
     setMarkerPriceOptions: (model) ->
       return {} unless model
-      if not model.price
+      if !model.price
         formattedPrice = '-'
       else if model.price >= 1000000
         formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'

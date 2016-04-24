@@ -113,6 +113,9 @@ describe "rmapsLayerFormattersService", ->
           expect(obj.html).to.an 'string'
 
     describe 'Parcels', ->
+      weight = 4
+      colorOpacity = 1
+      fillOpacity = .75
 
       describe 'labelFromStreetNum', ->
         before ->
@@ -143,19 +146,21 @@ describe "rmapsLayerFormattersService", ->
           it 'feature saved', ->
             style = @subject {savedDetails:isSaved: true}
             style.should.be.ok
-            style.weight.should.be.equal 2
-            style.color.should.be.equal @rmapsStylusConstants['$rm_saved']
+            style.weight.should.be.equal weight
+            style.color.should.not.be.equal @rmapsStylusConstants['$rm_saved']
             style.fillColor.should.be.equal @rmapsStylusConstants['$rm_saved']
-            style.fillOpacity.should.be.equal .75
+            style.fillOpacity.should.be.equal fillOpacity
+            style.colorOpacity.should.be.equal colorOpacity
 
           describe 'feature not saved', ->
             it 'w no status', ->
               style = @subject {savedDetails:isSaved: false}
               style.should.be.ok
-              style.weight.should.be.equal 2
+              style.weight.should.be.equal weight
               style.color.should.be.equal 'transparent'
               style.fillColor.should.be.equal 'transparent'
-              style.fillOpacity.should.be.equal .75
+              style.fillOpacity.should.be.equal fillOpacity
+              style.colorOpacity.should.be.equal colorOpacity
 
             it 'invalid status', ->
               style = @subject(
@@ -165,10 +170,10 @@ describe "rmapsLayerFormattersService", ->
               )
 
               style.should.be.ok
-              style.weight.should.be.equal 2
+              style.weight.should.be.equal weight
               style.color.should.be.equal 'transparent'
               style.fillColor.should.be.equal 'transparent'
-              style.fillOpacity.should.be.equal .75
+              style.fillOpacity.should.be.equal fillOpacity
 
             it 'sold', ->
               style = @subject(
@@ -178,9 +183,9 @@ describe "rmapsLayerFormattersService", ->
               )
 
               style.should.be.ok
-              style.weight.should.be.equal 2
+              style.weight.should.be.equal weight
               style.color.should.be.equal @rmapsStylusConstants.$rm_sold
               style.fillColor.should.be.equal @rmapsStylusConstants.$rm_sold
-              style.fillOpacity.should.be.equal .75
+              style.fillOpacity.should.be.equal fillOpacity
 
         describe 'w/ layerName', ->

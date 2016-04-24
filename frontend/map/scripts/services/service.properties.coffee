@@ -218,14 +218,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       if !_.isArray models
         models = [ models ]
 
-      # In case this is a list of models, determine if *any* of them are being pinned... if so, invoke the _loadProperties()
+      # In case this is a list of models, determine if *any* of them are being pinned...
+      # if so, invoke the _loadProperties()
       needLoad = false
       _.each models, (model) ->
         if !model.savedDetails?.isSaved
           needLoad = true
 
         _saveProperty model, !model.savedDetails?.isSaved
-        return
 
       _processPropertyPins models, needLoad
 

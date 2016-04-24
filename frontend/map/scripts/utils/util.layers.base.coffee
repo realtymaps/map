@@ -1,3 +1,4 @@
+###globals _###
 httpSync = require './util.http.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles

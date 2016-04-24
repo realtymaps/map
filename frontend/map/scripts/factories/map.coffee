@@ -131,41 +131,6 @@ app.factory 'rmapsMapFactory',
 
         @layerFormatter = rmapsLayerFormattersService
 
-        @pinPropertyEventHandler = (event, eventData) =>
-          result = eventData.property
-
-          if result
-            wasSaved = result?.savedDetails?.isSaved
-
-            # Handle the leaflet object
-            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
-            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
-            lObject?.setIcon(new L.divIcon(result.icon))
-
-            #make sure selectedResult is updated if it exists
-            summary = @scope.map?.markers?.filterSummary
-            if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
-              delete @scope.selectedResult.savedDetails
-              angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
-
-            if wasSaved and !@scope.results[result.rm_property_id]
-              result.isMousedOver = undefined
-
-          @redraw(false)
-
-        @favoritePropertyEventHandler = (event, eventData) =>
-          result = eventData.property
-
-          if result
-            wasFavorite = result?.savedDetails?.isFavorite
-            if wasFavorite and !@scope.results[result.rm_property_id]
-              result.isMousedOver = undefined
-
-            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
-            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
-            lObject?.setIcon(new L.divIcon(result.icon))
-
-
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
 
@@ -255,29 +220,32 @@ app.factory 'rmapsMapFactory',
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManagerService.getFilters()
+
         unless filters?.status?
           @clearFilterSummary()
           return $q.resolve()
 
         rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
-          rmapsResultsFlow({
+          rmapsResultsFlow {
             @scope
             filters
             @hash
             @mapState
             data
             cache
-          })
+          }
 
       redraw: (cache = true) ->
         promise = null
         #consider renaming parcels to addresses as that is all they are used for now
         if @showClientSideParcels()
           verboseLogger.debug 'isAddressParcel'
-          promise = rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
+          promise = rmapsPropertiesService.getParcelBase(@hash, @mapState, cache)
+          .then (data) =>
             return unless data?
-            @scope.map.geojson.parcelBase =
+            #_parcelBase is a naming hack to have parcelBase render before individual filterPolys (allows them to be on top)
+            @scope.map.geojson._parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
 
@@ -386,5 +354,43 @@ app.factory 'rmapsMapFactory',
         @scope.map.center.zoom = zoomLevel
 
         resultCenter.zoom = 20 if @scope.satMap?
+
+      pinPropertyEventHandler: (event, eventData) =>
+        result = eventData.property
+
+        if result
+          wasSaved = result?.savedDetails?.isSaved
+
+          # Handle the leaflet objects
+          #update markers immediately
+          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+          lObject?.setIcon(new L.divIcon(result.icon))
+          #update polygons immediately
+          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
+          lObject.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
+
+          #make sure selectedResult is updated if it exists
+          summary = @scope.map?.markers?.filterSummary
+          if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
+            delete @scope.selectedResult.savedDetails
+            angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
+
+          if wasSaved and !@scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
+
+        @redraw(false)
+
+      favoritePropertyEventHandler: (event, eventData) =>
+        result = eventData.property
+
+        if result
+          wasFavorite = result?.savedDetails?.isFavorite
+          if wasFavorite and !@scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
+
+          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+          lObject?.setIcon(new L.divIcon(result.icon))
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////

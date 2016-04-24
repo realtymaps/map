@@ -175,6 +175,13 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           batch_id: subtask.batch_id
           rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
       .delete()
+      .then () ->
+        # clean up after itself in the deletes table
+        tables.deletes[deletesPropName](transaction: transaction)
+        .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+        .delete()
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -422,7 +429,8 @@ finalizeEntry = (entries) ->
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
-  entry.actual_photo_count = Object.keys(entry.photos).length - 1#photo 0 and 1 are the same
+  entry.actual_photo_count = Object.keys(entry.photos).length - 1  # photo 0 and 1 are the same
+  entry.baths_total = entry.baths?.filter
   entry
 
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
@@ -630,7 +638,7 @@ ensureNormalizedTable = (dataType, subid) ->
       table.json('owner_address')
       if dataType == 'tax'
         table.integer('bedrooms')
-        table.integer('baths_full')
+        table.json('baths')
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')

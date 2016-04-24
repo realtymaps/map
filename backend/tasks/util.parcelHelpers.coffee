@@ -8,6 +8,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 DELAY_MILLISECONDS = 100
 
@@ -57,8 +58,10 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
           .update(rm_valid: false, rm_error_msg: err.toString())
 
     Promise.all promises
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error, 'problem saving normalized data')
     .catch (error) ->
-      logger.maybeInvalidError {error, where: 'saveToNormalDb'}
+      throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 _finalizeUpdateListing = ({id, subtask}) ->
   #should not need owner promotion logic since it should have already been done
