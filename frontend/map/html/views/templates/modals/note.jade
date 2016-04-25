@@ -4,7 +4,7 @@ form.note(name="createEditNoteForm")
     h3.modal-title(ng-if="model.id") Edit Note
   .modal-body
     .form-group
-      label {{property.street_address_num}} {{property.street_address_name}} {{property.street_address_unit}}, {{formatters.property.getCityStateZip(property)}}
+      label {{formatters.property.getFullAddress(property)}}
       textarea.form-control(cols="25" rows="5"
         placeholder="Add a note about this property"
         name="text"

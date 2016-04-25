@@ -74,15 +74,42 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
         label = 'asking:'
       return label
 
+    getFullAddress: (model, owner=false) ->
+      if !model?
+        return ''
+
+      street = ''
+      if model.street_address_num
+        street += model.street_address_num
+
+      if model.street_address_name
+        street += ' ' + model.street_address_name
+
+      if model.street_address_unit
+        street += ' ' + model.street_address_unit
+
+      street = street.trim()
+
+      cityStateZip = @getCityStateZip(model, owner)
+
+      if street && cityStateZip
+        street += ", "
+
+      street += cityStateZip
+
+      return street
+
     getCityStateZip: (model, owner=false) ->
       if !model?
         return ''
       prefix = if owner then 'owner_' else ''
-      csz = "#{model[prefix+"city"]}"
-      if model[prefix+'state']
-        csz += ", #{model[prefix+"state"]}"
-      if model[prefix+'zip']
-        csz += " #{model[prefix+"zip"]}"
+      csz = ''
+      if model[prefix + 'city']
+        csz = model[prefix + "city"]
+      if model[prefix + 'state']
+        csz += ", #{model[prefix + "state"]}"
+      if model[prefix + 'zip']
+        csz += " #{model[prefix + "zip"]}"
       return csz
 
     showListingData: (model) ->
