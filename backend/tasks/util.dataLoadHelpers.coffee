@@ -293,7 +293,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
-        up_to_date: subtask.data.startTime
+        up_to_date: new Date(subtask.data.startTime)
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
       .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
@@ -687,7 +687,6 @@ module.exports = {
   manageRawJSONStream
   ensureNormalizedTable
   DELETE
-  refreshThreshold
   rollback
   updateRecord
   getRefreshThreshold

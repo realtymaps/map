@@ -38,10 +38,10 @@ getRetsClient = (loginUrl, username, password, static_ip, handler) ->
   _getRetsClientInternalWrapper(loginUrl, username, password, static_ip)
   .then (retsClient) ->
     handler(retsClient)
-    .catch isTransientRetsError, (error) ->
-      referenceId = [loginUrl, username, password, static_ip].join('__')
-      referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
-      throw error
+  .catch isTransientRetsError, (error) ->
+    referenceId = [loginUrl, username, password, static_ip].join('__')
+    referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
+    throw error
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
 

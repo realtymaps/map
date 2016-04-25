@@ -34,7 +34,7 @@ loadUpdates = (subtask, options) ->
       mlsInfo = mlsInfo?[0]
       retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
       .catch retsService.isTransientRetsError, (error) ->
-        throw SoftFail(error, "Transient RETS error; try again later")
+        throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
@@ -374,9 +374,9 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
       .where {id}
       .del()
       .catch (error) ->
-        throw SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
     .catch (error) ->
-      throw SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
 
 module.exports = {
