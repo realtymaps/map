@@ -244,6 +244,7 @@ runWorkerImpl = (queueName, prefix, quit) ->
         Promise.delay(30000) # poll again in 30 seconds
         .then nextIteration
 
+
 executeSubtask = (subtask, prefix) ->
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
@@ -296,7 +297,6 @@ executeSubtask = (subtask, prefix) ->
       subtask: subtask
       error: err
     throw err
-
 
 
 cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
