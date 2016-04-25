@@ -14,6 +14,7 @@ logger = require('../config/logger.coffee').spawn('task:digimaps')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
@@ -81,8 +82,7 @@ loadRawData = (subtask) -> Promise.try () ->
         tableName: rawTableName
         dataLoadHistory
         jsonStream
-        columns: 'feature'
-        strTranforms: JSON.stringify
+        column: 'feature'
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
@@ -127,7 +127,8 @@ loadRawData = (subtask) -> Promise.try () ->
         return
       logger.debug("num rows to normalize: #{numRows}")
       jobQueue.queueSubsequentPaginatedSubtask {
-        subtask, totalOrList: numRows
+        subtask
+        totalOrList: numRows
         maxPage: NUM_ROWS_TO_PAGINATE
         laterSubtaskName: "normalizeData"
         mergeData: {
@@ -148,6 +149,7 @@ normalizeData = (subtask) ->
   dataLoadHelpers.getNormalizeRows subtask
   .then (rows) ->
     return if !rows?.length
+    # logger.debug rows[0]
 
     parcelHelpers.saveToNormalDb {
       subtask
