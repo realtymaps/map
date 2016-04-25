@@ -485,31 +485,38 @@ rollback = ({err, tableName, promiseQuery}) ->
     throw err
 
 
-manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, columns}) -> Promise.try ->
+manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Promise.try ->
+  #one column to dump the whole json blob to
   isFinished = false
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
     if isFinished
       return
-    row = []
-    for column in columns
-      row.push(json[column])
     count++
-    this.push(type: 'data', payload: row)
+
+    this.push(type: 'data', payload: [JSON.stringify json])
+    callback()
+
+  #format the json to a format compatible for manageRawDataStream
+  #format: row of strings
   objectStreamer = through2.obj objectStreamTransform, (callback) ->
     if isFinished
       return
     isFinished = true
+    logger.debug "FINISHED: #{tableName}"
     objectStreamer.push(type: 'done', payload: count)
+    callback()
+
   objectStreamer.push(type: 'delimiter', payload: '\t')
-  objectStreamer.push(type: 'columns', payload: columns)
+  objectStreamer.push(type: 'columns', payload: [column])
 
   jsonStream.once 'error', (err) ->
     if isFinished
       return
     isFinished = true
     objectStreamer.push(type: 'error', payload: err)
+
   jsonStream.pipe(objectStreamer)
 
   manageRawDataStream(tableName, dataLoadHistory, objectStreamer)
