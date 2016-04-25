@@ -6,8 +6,8 @@
           .bordered
             .prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-              img(ng-cloak ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-              img(ng-cloak ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+              img.project-property-image(ng-cloak ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+              img.project-property-image(ng-cloak ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
             property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
 
@@ -36,3 +36,11 @@
                   ng-model="newNotes[property.rm_property_id].text"
                   validator="minlength=1")
                 span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") +
+
+    .project-instructions(ng-if="!pins.length")
+      span No properties have been Pinned
+      span.icon.icon-pin.project-instruction-icon
+
+      .project-instruction-details Pins are a way to save properties.  Just click the Pin icon anywhere you see it to add the property to this list.
+
+      img.project-instruction-image(src='/assets/project/pin-instruction.png')
