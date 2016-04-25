@@ -122,7 +122,7 @@ _rules =
         type: name: 'integer'
 
       baths:
-        alias: 'Baths (Separate)'
+        alias: 'Baths'
         type: name: 'bathrooms'
         input: {}
         valid: () ->
@@ -232,7 +232,7 @@ _rules =
         type: name: 'integer'
 
       baths:
-        alias: 'Baths (Separate)'
+        alias: 'Baths'
         type: name: 'bathrooms'
         input: {}
         valid: () ->
