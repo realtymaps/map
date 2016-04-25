@@ -21,24 +21,18 @@ internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-ONE_DAY_MILLISEC = 24*60*60*1000
-
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.refreshThreshold subtask,
-    fullRefreshMilliSec: ONE_DAY_MILLISEC
-    logDescription: 'task.mls'
+  jobQueue.getLastTaskStartTime(subtask.task_name)
   .then (refreshThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
       retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
-      .catch errorHandlingUtils.isCausedBy(rets.RetsReplyError), (error) ->
-        if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
-          throw SoftFail(error, "Transient RETS error; try again later")
-        throw error
+      .catch retsService.isTransientRetsError, (error) ->
+        throw SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
