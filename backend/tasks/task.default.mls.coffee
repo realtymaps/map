@@ -17,6 +17,8 @@ loadRawData = (subtask) ->
     limit = subtask.data?.limit
     logger.debug "limiting raw mls data to #{limit}"
 
+  now = Date.now()
+
   mlsHelpers.loadUpdates subtask,
     dataSourceId: subtask.task_name
     limit: limit
@@ -28,14 +30,14 @@ loadRawData = (subtask) ->
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: {deletes, dataType: 'listing'}, replace: true})
     finalizePrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeDataPrep", replace: true})
     storePhotosPrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "storePhotosPrep", replace: true})
-    activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes}, replace: true})
+    activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes, startTime: now}, replace: true})
     Promise.join recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, () ->
       numRawRows
   .then (numRows) ->
     if numRows == 0
       return
     logger.debug("num rows to normalize: #{numRows}")
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing'}})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,

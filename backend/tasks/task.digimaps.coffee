@@ -20,9 +20,7 @@ HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 NUM_ROWS_TO_PAGINATE = 2500
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.refreshThreshold subtask,
-    fullRefreshMilliSec: HALF_YEAR_MILLISEC
-    logDescription: 'task.mls'
+  dataLoadHelpers.getRefreshThreshold {subtask, fullRefreshMilliSec: HALF_YEAR_MILLISEC}
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
@@ -42,6 +40,8 @@ _filterImports = (subtask, imports) ->
 loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug subtask
 
+  now = Date.now()
+
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.defineImports({creds})
@@ -53,6 +53,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
     filteredImports = filteredImports.map (f) ->
       fileName: f
       refreshThreshold: refreshThreshold
+      startTime: now
 
     jobQueue.queueSubsequentSubtask({ subtask, manualData: filteredImports, laterSubtaskName: 'loadRawData'})
 
@@ -116,6 +117,7 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask, laterSubtaskName: "activateNewData"
         manualData: {deletes}
         replace: true
+        startTime: subtask.data.startTime
       }
       #finalizePrepPromise, activatePromise #ADD TO JOIN
       Promise.join recordCountsPromise, finalizePrepPromise, activatePromise,  () ->
@@ -128,7 +130,12 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask, totalOrList: numRows
         maxPage: NUM_ROWS_TO_PAGINATE
         laterSubtaskName: "normalizeData"
-        mergeData: {fipsCode, dataType: 'parcel', rawTableSuffix: fipsCode}
+        mergeData: {
+          fipsCode
+          dataType: 'parcel'
+          rawTableSuffix: fipsCode
+          startTime: subtask.data.startTime
+        }
       }
 
 normalizeData = (subtask) ->

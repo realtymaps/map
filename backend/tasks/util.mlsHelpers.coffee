@@ -4,7 +4,6 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('util.mlsHelpers')
 finePhotologger = logger.spawn('photos.fine')
-jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
@@ -21,10 +20,13 @@ internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
+ONE_YEAR_MILLIS = 365*24*60*60*1000
+
+
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  jobQueue.getLastTaskStartTime(subtask.task_name)
+  dataLoadHelpers.getRefreshThreshold {subtask, fullRefreshMilliSec: ONE_YEAR_MILLIS}
   .then (refreshThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)
