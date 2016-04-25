@@ -9,12 +9,12 @@ mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 DELAY_MILLISECONDS = 100
 
 
 saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
-  database = 'normalized'
   tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
 
@@ -37,6 +37,7 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
         # logger.debug payload
 
         {row, stats, error} =  payload
+
         Promise.try () ->
           if error
             throw error
