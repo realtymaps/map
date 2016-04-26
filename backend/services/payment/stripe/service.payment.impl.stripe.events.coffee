@@ -2,13 +2,14 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 {emailPlatform} = require '../../services.email'
-userTable = require('../../../config/tables').auth.user
+tables = require '../../../config/tables'
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted
 customerSubscriptionUpdated
 customerSubscriptionTrialWillEnd} = require '../../../enums/enum.payment.events'
 logger = require('../../../config/logger').spawn('stripe')
+
 
 emailPlatform.then (platform) ->
   emailPlatform = platform
@@ -46,7 +47,7 @@ StripeEvents = (stripe) ->
       unless customer
         logger.debug subscription, true
 
-      q = userTable().where(stripe_customer_id: customer)
+      q = tables.auth.user().where(stripe_customer_id: customer)
       # logger.debug q.toString()
 
       q.then (results) ->
@@ -62,17 +63,24 @@ StripeEvents = (stripe) ->
     callEvent = _eventHandles[eventObj.type]
     unless callEvent?
       throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
-    _verify(eventObj).then (validEvent) ->
-      logger.debug "POST _verify"
-      logger.debug "calling #{eventObj.type}"
-      logger.debug _eventHandles, true
+    _verify(eventObj)
+    .then (validEvent) ->
 
-      callEvent(validEvent)
+      # log the event in event history
+      tables.event.history()
+      .insert(
+        auth_user_id: db.raw("(select id from auth_user where stripe_customer_id = '#{validEvent.data.object.customer}')")
+        event_type: validEvent.type
+        data_blob: validEvent
+      ).then () ->
+        logger.debug "Event successfully inserted into history table."
+        logger.debug "POST _verify"
+        logger.debug "calling #{eventObj.type}"
+        logger.debug _eventHandles, true
+
+        callEvent(validEvent)
       .catch (err) ->
-        #TODO: maybe rethink this
-        #We need stripe to move on as an account might have been deleted
-        logger.error "Swallowing Error"
-        logger.error err?.message
+        throw new stripeErrors.StripeEventHandlingError err, "Error while logging & handling stripe webhook event."
 
   handle: handle
 
