@@ -56,8 +56,8 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    # deletes = if (new Date(refreshThreshold)).getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-    deletes = dataLoadHelpers.DELETE.UNTOUCHED # causes full refresh
+    # causes full refresh, see mls when we need to get more complicated
+    deletes = dataLoadHelpers.DELETE.UNTOUCHED
 
     Promise.all [
       jobQueue.queueSubsequentSubtask {
@@ -65,11 +65,13 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
         manualData: filteredImports
         laterSubtaskName: 'loadRawData'
       }
+
       jobQueue.queueSubsequentSubtask {
         subtask
         laterSubtaskName: "finalizeDataPrep"
         replace: true
       }
+
       jobQueue.queueSubsequentSubtask {
         subtask, laterSubtaskName: "activateNewData"
         manualData: {deletes}
@@ -124,7 +126,12 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask
         laterSubtaskName: "recordChangeCounts"
         #rawDataType fixes lookup of rawtable for change counts
-        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel", rawTableSuffix: fipsCode}
+        manualData: {
+          deletes
+          dataType: "normParcel"
+          rawDataType: "parcel"
+          subset: fipsCode
+        }
         replace: true
       }
       .then () ->

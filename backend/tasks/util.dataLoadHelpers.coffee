@@ -13,7 +13,6 @@ copyStream = require 'pg-copy-streams'
 utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
 rets = require 'rets-client'
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 parcelUtils = require '../utils/util.parcel'
 keystore = require '../services/service.keystore'
 analyzeValue = require '../../common/utils/util.analyzeValue'
@@ -54,6 +53,7 @@ recordChangeCounts = (subtask) -> Promise.try () ->
   subset =
     data_source_id: subtask.task_name
   _.extend(subset, subtask.data.subset)
+
   deletedPromise = Promise.try () ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
