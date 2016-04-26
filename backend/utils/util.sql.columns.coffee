@@ -69,7 +69,7 @@ basicColumns = do ->
     notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
-      'sqft', 'properties_selected']
+      'sqft', 'properties_selected', 'status']
 
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
       'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash', 'stripe_customer_id'

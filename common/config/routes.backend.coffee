@@ -16,6 +16,8 @@ apiBaseGroupsPermissions = "#{apiBase}/groupsPermissions"
 apiBasePermissions = "#{apiBase}/permissions"
 apiBaseProjects = "#{apiBase}/projects"
 apiBaseProfiles = "#{apiBase}/profiles"
+apiBaseUserSubscription = "#{apiBase}/subscription"
+apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
@@ -110,6 +112,11 @@ module.exports =
     apiBase: apiBaseProfiles
     root: apiBaseProfiles
     byId: "#{apiBaseProfiles}/:id"
+  user_subscription:
+    apiBase: apiBaseUserSubscription
+    getPlan: apiBaseUserSubscription
+    setPlan: "#{apiBaseUserSubscription}/:plan"
+    deactivate: "#{apiBaseDeactivateSubscription}"
   company:
     apiBase: apiBaseCompanies
     root: apiBaseCompanies
