@@ -37,7 +37,7 @@
                   validator="minlength=1")
                 span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") +
 
-    .project-instructions(ng-if="!pins.length")
+    .project-instructions(ng-if="!pins.length && loadedProperties")
       span No properties have been Pinned
       span.icon.icon-pin.project-instruction-icon
 
