@@ -16,6 +16,7 @@ rets = require 'rets-client'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 parcelUtils = require '../utils/util.parcel'
 keystore = require '../services/service.keystore'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 DELETE =
@@ -294,31 +295,41 @@ normalizeData = (subtask, options) -> Promise.try () ->
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
         up_to_date: new Date(subtask.data.startTime)
-      Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+      validateSingleField = (definitions) ->
+        validation.validateAndTransform(row, definitions)
+      Promise.props(_.mapValues(validationInfo.validationMap, validateSingleField))
       .cancellable()
-      .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
+      .then (normalizedData) ->
+        options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
-        updateRecord {
+        updateRecord({
           updateRow
           stats
           diffExcludeKeys: validationInfo.diffExcludeKeys
           dataType: subtask.data.dataType
           subid: subtask.data.normalSubid
-        }
-      .then (rm_property_id) ->
-        successes.push(rm_property_id)
-      #.then () ->
-      #  tables.temp(subid: rawSubid)
-      #  .where(rm_raw_id: row.rm_raw_id)
-      #  .update(rm_valid: true)
-      .catch validation.DataValidationError, (err) ->
-        tables.temp(subid: rawSubid)
-        .where(rm_raw_id: row.rm_raw_id)
-        .update(rm_valid: false, rm_error_msg: err.toString())
+        })
+        .then (rm_property_id) ->
+          successes.push(rm_property_id)
+        #.then () ->
+        #  tables.temp(subid: rawSubid)
+        #  .where(rm_raw_id: row.rm_raw_id)
+        #  .update(rm_valid: true)
+        .catch validation.DataValidationError, (err) ->
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: err.toString())
+        .catch analyzeValue.isKnexError, (err) ->
+          jsonData = JSON.stringify(updateRow,null,2)
+          logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
     Promise.each(rows, processRow)
   Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
     successes
+
 
 _specialUpdates =
   normParcel:
@@ -330,6 +341,8 @@ _specialUpdates =
       tables.property.normParcel()
       .raw parcelUtils.updateParcelStr {row, tableName: 'parcel', database: 'normalized'}
 
+
+# this function mutates a parameter, and that is by design -- please don't "fix" that without care
 updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow}) -> Promise.try () ->
   Promise.delay(100)  #throttle for heroku's sake
   .then () ->
