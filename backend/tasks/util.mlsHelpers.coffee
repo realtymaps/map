@@ -26,7 +26,7 @@ ONE_YEAR_MILLIS = 365*24*60*60*1000
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMilliSec: ONE_YEAR_MILLIS})
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: ONE_YEAR_MILLIS})
   .then (updateThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)

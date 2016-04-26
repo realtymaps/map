@@ -660,7 +660,7 @@ getUpdateThreshold = (opts) ->
 
   tempLogger = logger.spawn('task').spawn(subtask.task_name)
 
-  keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: {full: 0, incremental: 0})
+  keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
   .then (lastRefreshTimestamp) ->
     now = Date.now()
     if now.getTime() - lastRefreshTimestamp > fullRefreshMillis
