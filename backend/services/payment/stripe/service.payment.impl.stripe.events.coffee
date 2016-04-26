@@ -16,6 +16,9 @@ emailPlatform.then (platform) ->
 
 StripeEvents = (stripe) ->
   _eventHandles = {}
+  _eventHandles['default'] = (subscription, authUser) ->
+    logger.debug "default stripe webhook event handling"
+
   _eventHandles[customerSubscriptionCreated] = (subscription, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionCreated}"
     emailPlatform.events.subscriptionVerified
@@ -60,9 +63,8 @@ StripeEvents = (stripe) ->
     stripe.events.retrieve eventObj.id
 
   handle = (eventObj) -> Promise.try () ->
-    callEvent = _eventHandles[eventObj.type]
-    unless callEvent?
-      throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
+    callEvent = _eventHandles[eventObj.type] or _eventHandles['default']
+
     _verify(eventObj)
     .then (validEvent) ->
 
