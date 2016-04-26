@@ -7,13 +7,25 @@
       //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
       //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
-      carousel.bordered(interval="myInterval")
+      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length")
         slide(ng-repeat="property in pins")
           .pin-image
             img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
             img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
           .pin-attributes
             property-attributes(property="property")
+
+      .project-instructions(ng-if="!pins.length")
+        span You don't have any Pins
+        span.icon.icon-pin.project-instruction-icon
+        span or Favorites
+        i.fa.fa-heart.project-instruction-icon
+
+        .project-instruction-details
+          | Pins and Favorites are ways to save properties.
+          | As the project owner you will Pin properties to add them to this project.
+          | Your clients will mark properties as Favorites.
+        img.project-instruction-image(src='/assets/project/pin-favorite-instruction.png')
 
     .col-sm-6.hidden-xs
       img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")

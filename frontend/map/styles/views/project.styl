@@ -1,12 +1,16 @@
 @import "../animations.styl"
+@import "../variables.styl"
 
 // Project Dashboard
 
+#project-base-state
+  height: 100%
+
 #project-dashboard
 
-  $project-left-margin = 45px;
+  $project-left-margin = 30px;
   $project-gutter-width = 30px;
-  $project-widget-width = 160px;
+  $project-widget-width = 130px;
   $project-widget-width-active = $project-widget-width + 2;
   $project-widget-height = 100px;
   $project-widgets-width = $project-widget-width;
@@ -15,13 +19,14 @@
   a:focus, a:hover
     text-decoration none
 
-  background-color: $gray_lightest
+  height: 100%
+  background-color: $darker_white
   padding-left: 0;
   padding-right: 0;
 
   .project-header
     background-color: white
-    padding-left: 45px;
+    padding-left: $project-left-margin;
     padding-bottom: 10px;
 
     .pageTitle
@@ -36,6 +41,9 @@
     float: right;
     margin-top: 22px;
     margin-right: 30px;
+
+  .project-card
+    background-color: white;
 
   .bordered
     border: solid $rm-border-line 1px;
@@ -53,6 +61,7 @@
   //
   .inner
     position: relative;
+    height: 100%;
 
   //
   // Project Nav Widgets
@@ -147,8 +156,30 @@
 
   .project-content
     width: "calc(100% - %s)" % $project-content-width
+    height: 100%
     margin-left: $project-content-width;
     padding: $project-gutter-width
+
+  //
+  // Instructions
+  //
+  .project-instructions
+    text-align: center;
+    font-size: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+
+  .project-instruction-image
+    width: 250px;
+    display: block;
+    margin: 0 auto;
+
+  .project-instruction-details
+    font-size: 14px;
+    margin: 5px 0 15px;
+
+  .project-instruction-icon
+    padding-left: 5px;
 
   //
   // Notes
@@ -212,7 +243,7 @@
   // Project Sub-Pages
   //
 
-  #project-pin-container, #project-favorite-container, #project-neighborhood-container
+  #project-neighborhood-container
     img
      width: 100%
 
@@ -228,6 +259,9 @@
   .property-data
     position: relative;
     padding: 10px;
+
+  .project-property-image
+    width: 100%;
 
   .btn-actions
     //position: absolute;
@@ -267,11 +301,12 @@
   //
 
   .project-property-card
-    margin-bottom: 15px;
+    margin: 0 auto 15px auto;
+    max-width: 900px;
 
     .property-card-right
       position: relative;
-      min-height: 350px;
+      min-height: 325px;
 
     .property-data
       padding: 0;

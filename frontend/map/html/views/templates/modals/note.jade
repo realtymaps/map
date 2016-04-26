@@ -1,22 +1,16 @@
 form.note(name="createEditNoteForm")
   .modal-header
-    h3.modal-title(ng-if="!model.id") Create Note
+    h3.modal-title(ng-if="!model.id") Leave a Note
     h3.modal-title(ng-if="model.id") Edit Note
   .modal-body
     .form-group
-      label(for="title") Title
-      input.form-control(
-        placeholder="Type note title here."
-        type="text"
-        name="title"
-        ng-model="model.title")
-      label(for="text") Context
-      textarea.form-control(cols="25" rows="10"
-        placeholder="Fill in your note details here."
+      label {{formatters.property.getFullAddress(property)}}
+      textarea.form-control(cols="25" rows="5"
+        placeholder="Add a note about this property"
         name="text"
         type="text"
         ng-model="model.text"
-        validator="required,minlength=10")
+        validator="required,minlength=1")
 
   .modal-footer
     button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditNoteForm") Cancel
