@@ -343,8 +343,9 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow}) -> Promise.try () ->
-  Promise.delay(100)  #throttle for heroku's sake
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> Promise.try () ->
+  delay ?= 100
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
     tables.property[dataType](subid: subid)

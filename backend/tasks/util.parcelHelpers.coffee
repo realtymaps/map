@@ -12,12 +12,11 @@ jobQueue = require '../services/service.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
-DELAY_MILLISECONDS = 100
 
-
-saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
+saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
   tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  delay ?= 100
 
   jobQueue.getLastTaskStartTime(subtask.task_name, false)
   .then (startTime) ->
@@ -45,17 +44,20 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
             stats
             dataType: tablesPropName
             updateRow: row
+            delay
           }
         .then () ->
-          Promise.delay(100)
+          Promise.delay(delay)
           .then () ->
             tables.temp(subid: rawSubid)
             .where(rm_raw_id: row.rm_raw_id)
             .update(rm_valid: true, rm_error_msg: null)
         .catch (err) ->
-          tables.temp(subid: rawSubid)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: err.toString())
+          Promise.delay(delay)
+          .then () ->
+            tables.temp(subid: rawSubid)
+            .where(rm_raw_id: row.rm_raw_id)
+            .update(rm_valid: false, rm_error_msg: err.toString())
 
     Promise.all promises
     .catch isUnhandled, (error) ->
@@ -63,9 +65,10 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
     .catch (error) ->
       throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
-_finalizeUpdateListing = ({id, subtask}) ->
+_finalizeUpdateListing = ({id, subtask, delay}) ->
+  delay ?= 100
   #should not need owner promotion logic since it should have already been done
-  Promise.delay(DELAY_MILLISECONDS)  #throttle for heroku's sake
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     dbs.get('main').transaction (transaction) ->
       tables.property.combined(transaction: transaction)
@@ -92,10 +95,11 @@ finalizeParcelEntry = (entries) ->
   entry.update_source = entry.data_source_id
   entry
 
-_finalizeNewParcel = ({parcels, id, subtask}) ->
+_finalizeNewParcel = ({parcels, id, subtask, delay}) ->
+  delay ?= 100
   parcel = finalizeParcelEntry(parcels)
 
-  Promise.delay(DELAY_MILLISECONDS)  #throttle for heroku's sake
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     dbs.get('main').transaction (transaction) ->
       tables.property.parcel(transaction: transaction)
@@ -108,7 +112,7 @@ _finalizeNewParcel = ({parcels, id, subtask}) ->
         tables.property.parcel(transaction: transaction)
         .insert(parcel)
 
-finalizeData = (subtask, id) -> Promise.try () ->
+finalizeData = (subtask, id, delay) -> Promise.try () ->
   ###
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
@@ -128,8 +132,8 @@ finalizeData = (subtask, id) -> Promise.try () ->
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
 
-    finalizeListingPromise = _finalizeUpdateListing({id, subtask})
-    finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask})
+    finalizeListingPromise = _finalizeUpdateListing({id, subtask, delay})
+    finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask, delay})
 
     Promise.all [finalizeListingPromise, finalizeParcelPromise]
 

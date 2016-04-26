@@ -62,10 +62,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
     Promise.all [
       jobQueue.queueSubsequentSubtask {
         subtask
-        manualData: {
-          filteredImports
-          deletes
-        }
+        manualData: filteredImports
         laterSubtaskName: 'loadRawData'
       }
       jobQueue.queueSubsequentSubtask {
@@ -84,8 +81,8 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
 loadRawData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
-  {fileName} = subtask.data.filteredImports
-  {deletes} = subtask.data
+  {fileName} = subtask.data
+  deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
 
   subtask.data.rawTableSuffix = fipsCode
@@ -107,6 +104,7 @@ loadRawData = (subtask) -> Promise.try () ->
         dataLoadHistory
         jsonStream
         column: 'feature'
+        delay: 250
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
@@ -181,7 +179,7 @@ finalizeData = (subtask) ->
   logger.debug subtask
 
   Promise.map subtask.data.values, (id) ->
-    parcelHelpers.finalizeData(subtask, id)
+    parcelHelpers.finalizeData(subtask, id, 250)
   # .then ->
   #   jobQueue.queueSubsequentSubtask {
   #     subtask,
