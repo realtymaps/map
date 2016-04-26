@@ -118,7 +118,7 @@ _http = (opts, cb) ->
   for key,val of _requiredOpts
     toCheck = if val? then opts[val] else opts
     if !toCheck?
-      throw _httpOptionsErrorMsg(val)
+      throw new Error(_httpOptionsErrorMsg(val))
 
   xhr = createXhr()
   xhr.open(opts.method, opts.url, opts.isAsync)

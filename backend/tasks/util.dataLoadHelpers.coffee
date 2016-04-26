@@ -1,6 +1,5 @@
 tables = require '../config/tables'
 Promise = require 'bluebird'
-jobQueue = require '../services/service.jobQueue'
 validation = require '../utils/util.validation'
 validatorBuilder = require '../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
@@ -16,6 +15,7 @@ through2 = require 'through2'
 rets = require 'rets-client'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 parcelUtils = require '../utils/util.parcel'
+keystore = require '../services/service.keystore'
 
 
 DELETE =
@@ -182,6 +182,8 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           data_source_id: subtask.task_name
           batch_id: subtask.batch_id
         .delete()
+    .then () ->
+      setRefreshThreshold(subtask)
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -285,15 +287,13 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
-  # get start time for "last updated" stamp
-  startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
-  doNormalization = (rows, validationInfo, startTime) ->
+  doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
-        up_to_date: startTime
+        up_to_date: new Date(subtask.data.startTime)
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
       .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
@@ -316,7 +316,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, startTimePromise, doNormalization)
+  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
     successes
 
@@ -642,26 +642,28 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
-refreshThreshold = (subtask, opts) ->
-  {fullRefreshMilliSec, logDescription} = opts
 
-  onMissingArgsFail
-    args: opts
-    required: Object.keys {fullRefreshMilliSec}
+getRefreshThreshold = (opts) ->
+  {fullRefreshMilliSec, subtask} = opts
 
-  logDescription ?= ''
+  tempLogger = logger.spawn('task').spawn(subtask.task_name)
 
-  jobQueue.getLastTaskStartTime(subtask.task_name)
-  .then (lastSuccess) ->
+  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
+  .then (lastSuccessTimestamp) ->
+    lastSuccess = new Date(lastSuccessTimestamp)
     now = new Date()
-    tempLogger = logger.spawn(logDescription + subtask.task_name)
-    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec || now.getDate() != lastSuccess.getDate()
-      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec
+      # if more than the specified time has elapsed, refresh everything and handle deletes
       tempLogger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
       return new Date(0)
     else
       tempLogger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
       return lastSuccess
+
+
+setRefreshThreshold = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+
 
 module.exports = {
   buildUniqueSubtaskName
@@ -676,7 +678,8 @@ module.exports = {
   manageRawJSONStream
   ensureNormalizedTable
   DELETE
-  refreshThreshold
   rollback
   updateRecord
+  getRefreshThreshold
+  setRefreshThreshold
 }

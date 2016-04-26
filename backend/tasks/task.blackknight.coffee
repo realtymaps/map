@@ -85,7 +85,7 @@ _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
     processInfo.hasFiles = true
     processInfo
 
-_queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () ->
+_queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.try () ->
   if !files?.length
     return
   loadDataList = []
@@ -103,6 +103,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
       loadData.fileType = constants.LOAD
       loadData.rawTableSuffix = "#{file.name.slice(0, -7)}"
       loadData.normalSubid = file.name.slice(0, 5)
+      loadData.startTime = now
       countDataList.push
         rawTableSuffix: loadData.rawTableSuffix
         normalSubid: loadData.normalSubid
@@ -120,6 +121,7 @@ checkFtpDrop = (subtask) ->
   defaults[constants.REFRESH] = '19700101'
   defaults[constants.UPDATE] = '19700101'
   defaults[constants.LAST_COMPLETE_CHECK] = '19700101'
+  now = Date.now()
   keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (processDates) ->
     externalAccounts.getAccountInfo('blackknight')
@@ -161,10 +163,10 @@ checkFtpDrop = (subtask) ->
     dbs.get('main').transaction (transaction) ->
       if processInfo.hasFiles
         deletes = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.DELETE], constants.DELETE)
-        refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH)
-        update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE)
+        refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH, now)
+        update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE, now)
         #finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_finalizeDataPrep", {}, true)
-        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}, replace: true})
+        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
         fileProcessing = Promise.join deletes, refresh, update, activate, () ->  # empty handler
       else
         fileProcessing = Promise.resolve()
@@ -189,15 +191,16 @@ loadRawData = (subtask) ->
       delimiter: '\t'
       sftp: true
   .then (numRows) ->
-    if subtask.data.fileType == constants.DELETE
-      laterSubtaskName = "deleteData"
-    else
-      laterSubtaskName = "normalizeData"
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
       normalSubid: subtask.data.normalSubid
+    if subtask.data.fileType == constants.DELETE
+      laterSubtaskName = "deleteData"
+    else
+      laterSubtaskName = "normalizeData"
+      mergeData.startTime = subtask.data.startTime
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: constants.NUM_ROWS_TO_PAGINATE, laterSubtaskName, mergeData})
 
 saveProcessedDates = (subtask) ->
