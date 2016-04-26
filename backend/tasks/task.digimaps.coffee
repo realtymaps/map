@@ -56,12 +56,35 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    jobQueue.queueSubsequentSubtask({ subtask, manualData: filteredImports, laterSubtaskName: 'loadRawData'})
+    # causes full refresh, see mls when we need to get more complicated
+    deletes = dataLoadHelpers.DELETE.UNTOUCHED
+
+    Promise.all [
+      jobQueue.queueSubsequentSubtask {
+        subtask
+        manualData: filteredImports
+        laterSubtaskName: 'loadRawData'
+      }
+
+      jobQueue.queueSubsequentSubtask {
+        subtask
+        laterSubtaskName: "finalizeDataPrep"
+        replace: true
+      }
+
+      jobQueue.queueSubsequentSubtask {
+        subtask, laterSubtaskName: "activateNewData"
+        manualData: {deletes}
+        replace: true
+        startTime: subtask.data.startTime
+      }
+    ]
 
 loadRawData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
-  {fileName, refreshThreshold} = subtask.data
+  {fileName} = subtask.data
+  deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
 
   subtask.data.rawTableSuffix = fipsCode
@@ -83,44 +106,35 @@ loadRawData = (subtask) -> Promise.try () ->
         dataLoadHistory
         jsonStream
         column: 'feature'
+        delay: 250
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
       .catch (error) ->
         throw new SoftFail error.message
-    .then (numRawRows) ->
-      deletes = if (new Date(refreshThreshold)).getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-      {numRawRows, deletes}
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load parcels data for update')
     .catch (error) ->
       throw new SoftFail(analyzeValue.getSimpleMessage(error))
-    .then ({numRawRows, deletes}) ->
+    .then (numRawRows) ->
       if numRawRows == 0
         return 0
       # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
       # on whether this is a dump or an update)
       #TODO: the right way later
-      recordCountsPromise = jobQueue.queueSubsequentSubtask {
+      jobQueue.queueSubsequentSubtask {
         subtask
         laterSubtaskName: "recordChangeCounts"
         #rawDataType fixes lookup of rawtable for change counts
-        manualData: {deletes, dataType:"normParcel", rawDataType:"parcel", rawTableSuffix: fipsCode}
+        manualData: {
+          deletes
+          dataType: "normParcel"
+          rawDataType: "parcel"
+          subset: fipsCode
+        }
         replace: true
       }
-      finalizePrepPromise = jobQueue.queueSubsequentSubtask {
-        subtask
-        laterSubtaskName: "finalizeDataPrep"
-        replace: true
-      }
-      activatePromise = jobQueue.queueSubsequentSubtask {
-        subtask, laterSubtaskName: "activateNewData"
-        manualData: {deletes}
-        replace: true
-        startTime: subtask.data.startTime
-      }
-      #finalizePrepPromise, activatePromise #ADD TO JOIN
-      Promise.join recordCountsPromise, finalizePrepPromise, activatePromise,  () ->
+      .then () ->
         numRawRows
     .then (numRows) ->
       if numRows == 0
@@ -172,14 +186,14 @@ finalizeData = (subtask) ->
   logger.debug subtask
 
   Promise.map subtask.data.values, (id) ->
-    parcelHelpers.finalizeData(subtask, id)
-  .then ->
-    jobQueue.queueSubsequentSubtask {
-      subtask,
-      laterSubtaskName: 'syncCartoDb'
-      manualData: subtask.data
-      replace: true
-    }
+    parcelHelpers.finalizeData(subtask, id, 250)
+  # .then ->
+  #   jobQueue.queueSubsequentSubtask {
+  #     subtask,
+  #     laterSubtaskName: 'syncCartoDb'
+  #     manualData: subtask.data
+  #     replace: true
+  #   }
 
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data
