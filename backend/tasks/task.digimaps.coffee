@@ -17,11 +17,10 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 
-HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 NUM_ROWS_TO_PAGINATE = 2500
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getRefreshThreshold {subtask, fullRefreshMilliSec: HALF_YEAR_MILLISEC}
+  dataLoadHelpers.getLastUpdateTimestamp({subtask})
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
