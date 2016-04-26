@@ -37,7 +37,7 @@
                 validator="minlength=1")
                 span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") +
 
-    .project-instructions(ng-if="!favorites.length")
+    .project-instructions(ng-if="!favorites.length && loadedProperties")
       span You don't have any Favorites
       i.fa.fa-heart.project-instruction-icon
 

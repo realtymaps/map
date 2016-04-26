@@ -15,7 +15,7 @@
           .pin-attributes
             property-attributes(property="property")
 
-      .project-instructions(ng-if="!pins.length")
+      .project-instructions(ng-if="!pins.length && loadedProperties")
         span You don't have any Pins
         span.icon.icon-pin.project-instruction-icon
         span or Favorites
