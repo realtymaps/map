@@ -315,16 +315,16 @@ normalizeData = (subtask, options) -> Promise.try () ->
         #  tables.temp(subid: rawSubid)
         #  .where(rm_raw_id: row.rm_raw_id)
         #  .update(rm_valid: true)
-        .catch validation.DataValidationError, (err) ->
-          tables.temp(subid: rawSubid)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: err.toString())
         .catch analyzeValue.isKnexError, (err) ->
           jsonData = JSON.stringify(updateRow,null,2)
           logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
           .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+      .catch validation.DataValidationError, (err) ->
+        tables.temp(subid: rawSubid)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
   Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
