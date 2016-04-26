@@ -38,8 +38,12 @@ formatParcel = (feature) ->
   #match the db attributes
   obj = _.mapKeys feature.properties, (val, key) ->
     key.toLowerCase()
+
+  if !obj?.parcelapn?
+    throw new Error 'feaure.properties.parcelapn undefined'
+
   obj.data_source_uuid = obj.parcelapn
-  obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
+  obj.rm_property_id = obj.fips + '_' + obj.parcelapn + '_001'
   obj.geometry = feature.geometry
   obj.geometry.crs = crsFactory()
   obj

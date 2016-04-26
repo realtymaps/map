@@ -8,6 +8,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
@@ -33,8 +34,6 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
 
     promises = for payload in normalPayloads
       do (payload) ->
-        # logger.debug 'payload'
-        # logger.debug payload
 
         {row, stats, error} =  payload
 
@@ -42,17 +41,17 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
           if error
             throw error
 
-          # logger.debug "calling updateRecord"
           dataLoadHelpers.updateRecord {
             stats
             dataType: tablesPropName
             updateRow: row
           }
         .then () ->
-          tables.temp(subid: rawSubid)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: true, rm_error_msg: null)
+          Promise.delay(100)
           .then () ->
+            tables.temp(subid: rawSubid)
+            .where(rm_raw_id: row.rm_raw_id)
+            .update(rm_valid: true, rm_error_msg: null)
         .catch (err) ->
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
