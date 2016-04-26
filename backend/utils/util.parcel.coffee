@@ -89,6 +89,7 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
         error: error
 
       _.extend ret,
+        rm_raw_id: row.rm_raw_id
         stats: {
           data_source_id
           batch_id

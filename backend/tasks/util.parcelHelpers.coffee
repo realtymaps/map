@@ -34,7 +34,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     promises = for payload in normalPayloads
       do (payload) ->
 
-        {row, stats, error} =  payload
+        {row, stats, error, rm_raw_id} =  payload
 
         Promise.try () ->
           if error
@@ -50,13 +50,13 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           Promise.delay(delay)
           .then () ->
             tables.temp(subid: rawSubid)
-            .where(rm_raw_id: row.rm_raw_id)
+            .where(rm_raw_id: rm_raw_id)
             .update(rm_valid: true, rm_error_msg: null)
         .catch (err) ->
           Promise.delay(delay)
           .then () ->
             tables.temp(subid: rawSubid)
-            .where(rm_raw_id: row.rm_raw_id)
+            .where(rm_raw_id: rm_raw_id)
             .update(rm_valid: false, rm_error_msg: err.toString())
 
     Promise.all promises
