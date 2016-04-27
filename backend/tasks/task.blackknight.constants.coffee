@@ -5,7 +5,7 @@ svc = require '../services/service.dataSource'
 
 columns = {}
 
-_getColumns = (fileType, action, dataType) ->
+_getColumns = (fileType, action, dataType, subtask) ->
   svc.exposeKnex()
   .getAll(data_source_id:'blackknight', data_source_type:'county', data_list_type: dataType)
   .knex
@@ -14,12 +14,14 @@ _getColumns = (fileType, action, dataType) ->
   .then (data) ->
     _.map(data, 'LongName')
   .then (cols) ->
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{subtask?.data?.rawTableSuffix}] -- _getColumns(fresh) --: #{cols[0]}, #{cols[1]}, #{cols[2]}")
     columns[fileType][action][dataType] = cols
 
-getColumns = (fileType, action, dataType) -> Promise.try () ->
+getColumns = (fileType, action, dataType, subtask) -> Promise.try () ->
   if !columns[fileType][action][dataType]?
-    _getColumns(fileType, action, dataType)
+    _getColumns(fileType, action, dataType, subtask)
   else
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{subtask?.data?.rawTableSuffix}] -- _getColumns(cached) --: #{columns[fileType][action][dataType][0]}, #{columns[fileType][action][dataType][1]}, #{columns[fileType][action][dataType][2]}")
     columns[fileType][action][dataType]
 
 
