@@ -116,8 +116,11 @@ getCustomerIds(customer)
   })
   Promise.all(promises)
   .then( function(result){
-    console.log("\n"+successIds.length+" user(s) were successfully updated.\n\nThe following ids triggered stripe errors (possibly because they do not exist on the account associated with the active API_KEY):");
-    console.log(JSON.stringify(_.uniq(failedIds)));
+    console.log("\n"+successIds.length+" user(s) were successfully updated.")
+    if (failedIds.length > 0) {
+      console.log("\nThe following ids triggered stripe errors (possibly because they do not exist on the account associated with the active API_KEY):");
+      console.log(JSON.stringify(_.uniq(failedIds)));
+    }
     process.exit(0);
   })
 })

@@ -80,3 +80,9 @@ app databases.
   `joe` or `nem`), `prod`/`production`, `local`/`localhost`, or a fully-qualified app name (such as `dan-realtymaps-map`
   or `realtymaps-map`).  If no apps are listed, the values will be set on all heroku apps accessible by the
   credentialled user.
+* `./scripts/misc/externalSubscribe <stripe_customer_id> <plan_id> [app list...]` runs `./scripts/misc/subscribe` on
+external environments provided by the app list.  This is helpful for remote manual subscription setup.
+  * `stripe_customer_id` corresponds to `auth_user.stripe_customer_id` that is created upon account creation.
+  * `plan_id` references a plan.  Possible values include 'pro' and 'standard'.
+  * The remaining arguments act similar as above in `./scripts/misc/externalAccount`, however the default for an
+  empty list is to run on localhost only.
