@@ -183,9 +183,8 @@ loadRawData = (subtask) ->
       mortgage = dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
       Promise.join tax, deed, mortgage, () -> # no-op
   .then () ->
-    constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType, subtask)
+    constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{subtask?.data?.rawTableSuffix}] -- blackknight.loadRawData --: #{columns[0]}, #{columns[1]}, #{columns[2]}")
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
       columnsHandler: columns
