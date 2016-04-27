@@ -119,7 +119,8 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
   .then ({client, stream}) ->
     clientClose.onEndStream {
       client
-      stream: shp2json(stream).pipe(JSONStream.parse('*.features.*'))
+      stream: shp2json(stream, negativeFileRegExes: [/Points/i], alwaysReturnArray: true)
+      .pipe(JSONStream.parse('*.features.*'))
       where: 'getParcelJsonStream'
     }
 

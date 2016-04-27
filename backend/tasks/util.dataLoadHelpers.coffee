@@ -346,8 +346,10 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
   delay ?= 100
+  getRowChanges ?= _getRowChanges
+
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
@@ -369,7 +371,8 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> 
       # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
-      changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      changes = getRowChanges(updateRow, result, diffExcludeKeys)
+
       if changes.deleted == stats.batch_id
         # it wasn't really deleted, just purged earlier in this task as per black knight data flow
         delete changes.deleted
@@ -508,6 +511,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
+
     if isFinished
       return
     count++

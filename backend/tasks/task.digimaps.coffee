@@ -19,6 +19,8 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 
 NUM_ROWS_TO_PAGINATE = 2500
 
+DELAY_MILLISECONDS = 250
+
 _filterImports = (subtask, imports) ->
   dataLoadHelpers.getLastUpdateTimestamp({subtask})
   .then (refreshThreshold) ->
@@ -105,7 +107,6 @@ loadRawData = (subtask) -> Promise.try () ->
         dataLoadHistory
         jsonStream
         column: 'feature'
-        delay: 250
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
@@ -155,7 +156,7 @@ loadRawData = (subtask) -> Promise.try () ->
 normalizeData = (subtask) ->
   logger.debug subtask
 
-  {fipsCode} = subtask.data
+  {fipsCode,  delay} = subtask.data
 
   logger.debug subtask.data
 
@@ -168,6 +169,7 @@ normalizeData = (subtask) ->
       subtask
       rows
       fipsCode
+      delay: delay ? DELAY_MILLISECONDS
     }
 
 finalizeDataPrep = (subtask) ->

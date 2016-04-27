@@ -1,4 +1,6 @@
 Promise = require 'bluebird'
+_ = require 'lodash'
+diff = require('deep-diff').diff
 
 logger = require('../config/logger').spawn('(tasks) util.parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
@@ -12,11 +14,27 @@ jobQueue = require '../services/service.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
+diffExcludeKeys = [
+  'rm_inserted_time'
+  'rm_modified_time'
+  'geom_polys_raw'
+  'geom_point_raw'
+  'change_history'
+  # 'deleted'
+  # 'inserted'
+  # 'updated'
+]
+
+getRowChanges = (row1, row2) ->
+  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys))
+
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
   tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   delay ?= 100
+
+  logger.debug "delay: #{delay}"
 
   jobQueue.getLastTaskStartTime(subtask.task_name, false)
   .then (startTime) ->
@@ -31,35 +49,41 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
     tablesPropName = 'norm'+tableName.toInitCaps()
 
-    promises = for payload in normalPayloads
-      do (payload) ->
 
-        {row, stats, error, rm_raw_id} =  payload
+    #these promises must happen in order since we might have multiple props of the same rm_property_id
+    # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
+    #THIS FIXES insert collisions when they should be updates
+    #TODO: Bluebird 3.X use mapSeries
+    Promise.each normalPayloads, (payload) ->
+      # logger.debug payload
 
-        Promise.try () ->
-          if error
-            throw error
+      {row, stats, error, rm_raw_id} =  payload
 
-          dataLoadHelpers.updateRecord {
-            stats
-            dataType: tablesPropName
-            updateRow: row
-            delay
-          }
+      Promise.try () ->
+        if error
+          throw error
+
+        dataLoadHelpers.updateRecord {
+          stats
+          dataType: tablesPropName
+          updateRow: row
+          delay
+          getRowChanges
+        }
+      .then () ->
+        Promise.delay(delay)
         .then () ->
-          Promise.delay(delay)
-          .then () ->
-            tables.temp(subid: rawSubid)
-            .where(rm_raw_id: rm_raw_id)
-            .update(rm_valid: true, rm_error_msg: null)
-        .catch (err) ->
-          Promise.delay(delay)
-          .then () ->
-            tables.temp(subid: rawSubid)
-            .where(rm_raw_id: rm_raw_id)
-            .update(rm_valid: false, rm_error_msg: err.toString())
+          #if documenting fails do we worry about reverting the above insert / upsert?
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: rm_raw_id)
+          .update(rm_valid: true, rm_error_msg: null)
+      .catch (err) ->
+        Promise.delay(delay)
+        .then () ->
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: err.toString())
 
-    Promise.all promises
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
     .catch (error) ->
