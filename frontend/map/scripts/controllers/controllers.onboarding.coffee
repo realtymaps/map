@@ -38,7 +38,6 @@ rmapsPlansService, rmapsOnboardingService) ->
           newPlan
 
       submit: () ->
-        console.log "submitted!"
         $scope.view.showSteps = true
         promise = $q.resolve()
         if $scope.orderSvc.submitStepName == step
