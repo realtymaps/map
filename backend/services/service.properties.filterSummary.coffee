@@ -11,9 +11,6 @@ propMerge = require '../utils/util.properties.merge'
 _ = require 'lodash'
 validation = require '../utils/util.validation'
 
-_getZoom = (position) ->
-  position.center.zoom
-
 _isOnlyPinned = (queryParams) ->
   !queryParams?.state?.filters?.status?.length
 
@@ -31,7 +28,7 @@ _limitByPinnedProps = (query, state, queryParams) ->
 
   query
 
-_handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
+_handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
   returnAs = queryParams.returnType
   logger.debug "_handleReturnType: " + returnAs
 
@@ -50,7 +47,7 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
       props
 
   cluster = ->
-    filterSummaryImpl.getFilterSummary(queryParams, limit, sqlCluster.clusterQuery(zoom))
+    filterSummaryImpl.getFilterSummary(queryParams, limit, sqlCluster.clusterQuery(state.map_position.center.zoom))
     .then (properties) ->
       sqlCluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
@@ -91,7 +88,7 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   handle = handles[returnAs] or handles.default
   handle()
 
-_validateAndTransform = (state, rawFilters, localTransforms) ->
+_validateAndTransform = ({rawFilters, localTransforms}) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
@@ -106,9 +103,9 @@ _validateAndTransform = (state, rawFilters, localTransforms) ->
   validatedQuery
 
 module.exports =
-  getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = base) ->
+  getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = combined) ->
     Promise.try ->
-      _validateAndTransform(state, rawFilters, filterSummaryImpl.transforms)
+      _validateAndTransform({rawFilters, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
       return [] unless queryParams
-      _handleReturnType(filterSummaryImpl, state, queryParams, limit, _getZoom(state.map_position))
+      _handleReturnType({filterSummaryImpl, state, queryParams, limit})

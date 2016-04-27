@@ -25,8 +25,8 @@ basicColumns = do ->
       'owner_zip'
     ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     filterCombined: [
-      'rm_property_id', 'address', 'geometry_raw AS geometry',
-      'geometry_center', 'status', 'owner_name', 'owner_name_2', 'year_built', 'acres', 'sqft_finished', 'baths_full',
+      'rm_property_id', 'address', 'geometry',
+      'geometry_center AS geom_point_json', 'status AS rm_status', 'owner_name', 'owner_name_2', 'year_built', 'acres', 'sqft_finished', 'baths_total',
       'bedrooms', 'price', 'owner_address'
     ].map((name)-> tables.property.combined.tableName + '.' + name).join(', ')
     # columns returned for additional detail results
