@@ -25,7 +25,6 @@ zlib = require 'zlib'
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{subtask?.data?.rawTableSuffix}] -- countyHelpers.loadRawData --: #{options.columnsHandler[0]}, #{options.columnsHandler[1]}, #{options.columnsHandler[2]}")
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
   if options.sftp
@@ -104,7 +103,7 @@ loadRawData = (subtask, options) ->
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler, subtask)
+    objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")

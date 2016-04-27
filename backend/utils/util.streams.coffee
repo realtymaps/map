@@ -63,8 +63,7 @@ geoJsonFormatter = (toMove, deletes) ->
   through(write, end)
 
 
-delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler, subtask) ->
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{subtask?.data?.rawTableSuffix}] -- delimitedTextToObjectStream --: #{columnsHandler[0]}, #{columnsHandler[1]}, #{columnsHandler[2]}")
+delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   count = 0
   splitStream = split()
   doPreamble = true

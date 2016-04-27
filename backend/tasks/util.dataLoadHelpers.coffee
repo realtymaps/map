@@ -448,7 +448,6 @@ finalizeEntry = (entries) ->
   entry
 
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{tableName}] -- _createRawTable --: #{columns[0]}, #{columns[1]}, #{columns[2]}")
   if !_.isArray columns
     columns = [columns]
 
@@ -569,7 +568,6 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               delimiter = event.payload
               callback()
             when 'columns'
-              console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ [#{tableName}] -- manageRawDataStream --: #{event.payload[0]}, #{event.payload[1]}, #{event.payload[2]}")
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
