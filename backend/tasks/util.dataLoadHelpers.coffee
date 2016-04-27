@@ -681,7 +681,7 @@ getUpdateThreshold = (opts) ->
   keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
   .then (lastRefreshTimestamp) ->
     now = Date.now()
-    if now.getTime() - lastRefreshTimestamp > fullRefreshMillis
+    if now - lastRefreshTimestamp > fullRefreshMillis
       # if more than the specified time has elapsed, refresh everything and handle deletes
       tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} === performing refresh for #{subtask.task_name}")
       return 0
