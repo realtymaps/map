@@ -1,14 +1,14 @@
 app = require '../../app.coffee'
 module.exports = app
 
-app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log, rmapsPlansService) ->
+app.controller 'rmapsUserSubscriptionCtrl', ($rootScope, $scope, $log, rmapsSubscriptionService) ->
   $log = $log.spawn("map:userSubscription")
 
   $scope.unsubscribe = () ->
-    rmapsPlansService.deactivate()
-    .then (plan) ->
-      $scope.plan = plan
+    rmapsSubscriptionService.deactivate()
+    .then (subscription) ->
+      $scope.subscription = subscription
 
-  rmapsPlansService.getPlan()
-  .then (plan) ->
-    $scope.plan = plan
+  rmapsSubscriptionService.getSubscription()
+  .then (subscription) ->
+    $scope.subscription = subscription

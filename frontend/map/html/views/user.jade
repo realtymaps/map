@@ -10,7 +10,7 @@
                 a(ui-sref="user") My Account
               li(ng-repeat="state in $state.get() | filter:{parent: 'user'}"
                 ng-class="{active: $state.is(state.name)}")
-                a(ui-sref="{{state.name}}") {{getStateName(state.name) | camelToHuman }}
+                a(ui-sref="{{state.name}}") {{getStateName(state.name) | humanize }}
 
 
         .col-md-9.content
