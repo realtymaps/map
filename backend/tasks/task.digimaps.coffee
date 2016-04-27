@@ -18,11 +18,11 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 NUM_ROWS_TO_PAGINATE = 2500
-
+HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getLastUpdateTimestamp({subtask})
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: HALF_YEAR_MILLISEC})
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
