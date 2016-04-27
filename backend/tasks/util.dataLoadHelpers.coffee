@@ -184,7 +184,10 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           batch_id: subtask.batch_id
         .delete()
     .then () ->
-      setRefreshThreshold(subtask)
+      setLastUpdateTimestamp(subtask)
+    .then () ->
+      if subtask.setRefreshTimestamp
+        setLastRefreshTimestamp(subtask)
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -657,26 +660,34 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
 
-getRefreshThreshold = (opts) ->
-  {fullRefreshMilliSec, subtask} = opts
+getLastUpdateTimestamp = (opts) ->
+  {subtask} = opts
+  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
+
+
+setLastUpdateTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+
+
+getUpdateThreshold = (opts) ->
+  {fullRefreshMillis, subtask} = opts
 
   tempLogger = logger.spawn('task').spawn(subtask.task_name)
 
-  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
-  .then (lastSuccessTimestamp) ->
-    lastSuccess = new Date(lastSuccessTimestamp)
-    now = new Date()
-    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec
+  keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
+  .then (lastRefreshTimestamp) ->
+    now = Date.now()
+    if now.getTime() - lastRefreshTimestamp > fullRefreshMillis
       # if more than the specified time has elapsed, refresh everything and handle deletes
-      tempLogger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
-      return new Date(0)
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} === performing refresh for #{subtask.task_name}")
+      return 0
     else
-      tempLogger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
-      return lastSuccess
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} --- performing incremental update for #{subtask.task_name}")
+      return keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
 
-setRefreshThreshold = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+setLastRefreshTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
 
 
 module.exports = {
@@ -694,6 +705,8 @@ module.exports = {
   DELETE
   rollback
   updateRecord
-  getRefreshThreshold
-  setRefreshThreshold
+  getLastUpdateTimestamp
+  setLastUpdateTimestamp
+  getUpdateThreshold
+  setLastRefreshTimestamp
 }

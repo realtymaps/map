@@ -26,13 +26,13 @@ ONE_YEAR_MILLIS = 365*24*60*60*1000
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.getRefreshThreshold {subtask, fullRefreshMilliSec: ONE_YEAR_MILLIS}
-  .then (refreshThreshold) ->
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: ONE_YEAR_MILLIS})
+  .then (updateThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
+      retsService.getDataStream(mlsInfo, options?.limit, updateThreshold)
       .catch retsService.isTransientRetsError, (error) ->
         throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
@@ -47,8 +47,13 @@ loadUpdates = (subtask, options) ->
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->
-      deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-      {numRawRows, deletes}
+      result = {numRawRows}
+      if updateThreshold == 0
+        result.deletes = dataLoadHelpers.DELETE.UNTOUCHED
+        result.setRefreshTimestamp = true
+      else
+        result.deletes = dataLoadHelpers.DELETE.NONE
+
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load RETS data for update')
 
