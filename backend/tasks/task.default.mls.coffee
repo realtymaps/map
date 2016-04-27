@@ -72,6 +72,7 @@ storePhotos = (subtask) -> Promise.try () ->
     logger.debug 'no values to process for storePhotos'
     return
 
+  #TODO: Promise.reduce / each in bluebird should work fine
   PromiseExt.reduceSeries subtask.data.values.map (row) -> ->
     mlsHelpers.storePhotos(subtask, row)
 
