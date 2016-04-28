@@ -106,8 +106,6 @@ loadRawData = (subtask) -> Promise.try () ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
     .then (jsonStream) ->
 
-      logger.debug jsonStream
-
       dataLoadHelpers.manageRawJSONStream({
         tableName: rawTableName
         dataLoadHistory
