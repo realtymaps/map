@@ -1,3 +1,6 @@
+### APP ###
+app = require '../app.coffee'
+
 ###globals _###
 httpSync = require './util.http.coffee'
 googleStyles = require './styles/util.style.google.coffee'
@@ -40,7 +43,9 @@ _baseLayers =
       maxZoom: 21
       continuousWorld: true
 
-
+#
+# Define Module Exports for require()
+#
 module.exports = ->
   try
     _mapboxKey = httpSync.get routes.config.mapboxKey
@@ -54,3 +59,9 @@ module.exports = ->
       mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
 
   _baseLayers
+  
+#
+# Also define as AngularJS service
+#
+app.factory 'rmapsUtilLayersBase', () ->
+  return _baseLayers

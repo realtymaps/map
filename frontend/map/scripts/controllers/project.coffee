@@ -12,8 +12,11 @@ app.controller 'rmapsProjectCtrl',
   $rootScope,
   $scope,
   $state,
+  $timeout,
+
   rmapsClientsFactory,
   rmapsEventConstants
+  rmapsMapAccess,
   rmapsNotesService,
   rmapsPageService,
   rmapsPrincipalService,
@@ -60,6 +63,9 @@ app.controller 'rmapsProjectCtrl',
   $scope.loadedProperties = false
 
   clientsService = null
+
+  # Dashboard Map
+  $scope.dashboardMapAccess = rmapsMapAccess
 
   #
   # Scope Event Handlers
@@ -126,6 +132,11 @@ app.controller 'rmapsProjectCtrl',
       delete $scope.newNotes[property.rm_property_id]
 
   #
+  # Set up the Dashboard map
+  #
+
+
+  #
   # Load Project Data
   #
 
@@ -155,6 +166,10 @@ app.controller 'rmapsProjectCtrl',
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
+
+      $timeout(() ->
+        rmapsMapAccess.fitToBounds(result.data)
+      , 0)
 
       return properties
     .finally () ->

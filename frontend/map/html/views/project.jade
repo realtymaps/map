@@ -1,3 +1,5 @@
+include ../includes/mixins/_leafletMixin.jade
+
 .project-dashboard-container
   .row.project-top
     .col-sm-6.col-xs-12
@@ -28,7 +30,25 @@
         img.project-instruction-image(src='/assets/project/pin-favorite-instruction.png')
 
     .col-sm-6.hidden-xs
-      img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+      //img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+      .dashboardMap
+        leaflet(
+        id="dashboardMap"
+        bounds="dashboardMapAccess.mapScope.bounds"
+        defaults="dashboardMapAccess.mapScope.defaults"
+        center="dashboardMapAccess.mapScope.center"
+        layers="dashboardMapAccess.mapScope.layers"
+        markers="dashboardMapAccess.mapScope.markers"
+        markers-nested="true"
+        )
+        //event-broadcast="dashboardMapAccess.mapScope.events"
+        //markers-watch-options="dashboardMapAccess.mapScope.markersWatchOptions"
+        //geojson-watch-options="dashboardMapAccess.mapScope.geojsonWatchOptions"
+        //geojson="dashboardMapAccess.mapScope.geojson"
+        //geojson-nested="true"
+        //controls="controls"
+
+        //+leafletMixin('dashboardMapAccess.mapScope', 'dashboardMap')
 
     .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
       .notes-title
