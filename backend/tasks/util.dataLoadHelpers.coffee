@@ -184,7 +184,10 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           batch_id: subtask.batch_id
         .delete()
     .then () ->
-      setRefreshThreshold(subtask)
+      setLastUpdateTimestamp(subtask)
+    .then () ->
+      if subtask.setRefreshTimestamp
+        setLastRefreshTimestamp(subtask)
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -343,8 +346,10 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
   delay ?= 100
+  getRowChanges ?= _getRowChanges
+
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
@@ -366,7 +371,8 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> 
       # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
-      changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      changes = getRowChanges(updateRow, result, diffExcludeKeys)
+
       if changes.deleted == stats.batch_id
         # it wasn't really deleted, just purged earlier in this task as per black knight data flow
         delete changes.deleted
@@ -505,6 +511,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
+
     if isFinished
       return
     count++
@@ -657,26 +664,34 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
 
-getRefreshThreshold = (opts) ->
-  {fullRefreshMilliSec, subtask} = opts
+getLastUpdateTimestamp = (opts) ->
+  {subtask} = opts
+  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
+
+
+setLastUpdateTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+
+
+getUpdateThreshold = (opts) ->
+  {fullRefreshMillis, subtask} = opts
 
   tempLogger = logger.spawn('task').spawn(subtask.task_name)
 
-  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
-  .then (lastSuccessTimestamp) ->
-    lastSuccess = new Date(lastSuccessTimestamp)
-    now = new Date()
-    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec
+  keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
+  .then (lastRefreshTimestamp) ->
+    now = Date.now()
+    if now - lastRefreshTimestamp > fullRefreshMillis
       # if more than the specified time has elapsed, refresh everything and handle deletes
-      tempLogger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
-      return new Date(0)
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} === performing refresh for #{subtask.task_name}")
+      return 0
     else
-      tempLogger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
-      return lastSuccess
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} --- performing incremental update for #{subtask.task_name}")
+      return keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
 
-setRefreshThreshold = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+setLastRefreshTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
 
 
 module.exports = {
@@ -694,6 +709,8 @@ module.exports = {
   DELETE
   rollback
   updateRecord
-  getRefreshThreshold
-  setRefreshThreshold
+  getLastUpdateTimestamp
+  setLastUpdateTimestamp
+  getUpdateThreshold
+  setLastRefreshTimestamp
 }

@@ -42,6 +42,9 @@ formatParcel = (feature) ->
   if !obj?.parcelapn?
     throw new Error 'feaure.properties.parcelapn undefined'
 
+  # if obj.parcelapn.match(/row/i)
+  #   throw new Error 'feaure.properties.parcelapn contains ROW, ignore'
+
   obj.data_source_uuid = obj.parcelapn
   obj.rm_property_id = obj.fips + '_' + obj.parcelapn + '_001'
   obj.geometry = feature.geometry

@@ -17,11 +17,12 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 
-HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 NUM_ROWS_TO_PAGINATE = 2500
+HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
+DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getRefreshThreshold {subtask, fullRefreshMilliSec: HALF_YEAR_MILLISEC}
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: HALF_YEAR_MILLISEC})
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
@@ -106,7 +107,6 @@ loadRawData = (subtask) -> Promise.try () ->
         dataLoadHistory
         jsonStream
         column: 'feature'
-        delay: 250
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
@@ -156,7 +156,7 @@ loadRawData = (subtask) -> Promise.try () ->
 normalizeData = (subtask) ->
   logger.debug subtask
 
-  {fipsCode} = subtask.data
+  {fipsCode,  delay} = subtask.data
 
   logger.debug subtask.data
 
@@ -169,6 +169,7 @@ normalizeData = (subtask) ->
       subtask
       rows
       fipsCode
+      delay: delay ? DELAY_MILLISECONDS
     }
 
 finalizeDataPrep = (subtask) ->
