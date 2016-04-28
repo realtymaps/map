@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 shp2json = require 'shp2jsonx'
 through = require 'through'
+through2 = require 'through2'
 JSONStream = require 'JSONStream'
 PromiseFtp = require 'promise-ftp'
 parcelUtils = require '../utils/util.parcel'
@@ -117,22 +118,20 @@ getZipFileStream = (fullPath, {creds, doClose} = {}) ->
 
 getParcelJsonStream = (fullPath, {creds} = {}) ->
   getZipFileStream(fullPath, {creds, doClose: false})
-  .then ({client, stream}) -> new Promise (resolve, reject) ->
+  .then ({client, stream}) ->
+    finalStream = shp2json(stream, skipRegExes: [/Points/i], alwaysReturnArray: true)
 
-    stream = shp2json(stream, skipRegExes: [/Points/i], alwaysReturnArray: true)
-    stream.on 'error', (error) ->
-      reject error
+    # streamTransForm = (chunk, enc, cb) ->
+    # streamer = through2 streamTransForm, (cb) ->
+    #
+    # finalStream.on 'error', (error) ->
+    #   streamer.push
 
-    nextStream = clientClose.onEndStream {
+    clientClose.onEndStream {
       client
-      stream: stream.pipe(JSONStream.parse('*.features.*'))
+      stream: finalStream.pipe(JSONStream.parse('*.features.*'))
       where: 'getParcelJsonStream'
     }
-
-    stream.on 'end', () ->
-      resolve nextStream
-
-    return
 
 
 getFormatedParcelJsonStream = (fullPath, {creds} = {}) ->

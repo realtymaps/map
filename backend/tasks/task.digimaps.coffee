@@ -57,8 +57,9 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    # filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
-    #   f.fileName.match /17049/
+    filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
+      f.fileName.match /17049/
+      # f.fileName.match /06009/
 
     # causes full refresh, see mls when we need to get more complicated
     deletes = dataLoadHelpers.DELETE.UNTOUCHED
@@ -104,7 +105,7 @@ loadRawData = (subtask) -> Promise.try () ->
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
-    .then (jsonStream) ->
+    .then (jsonStream) -> Promise.try () ->
 
       dataLoadHelpers.manageRawJSONStream({
         tableName: rawTableName
