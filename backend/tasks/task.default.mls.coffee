@@ -24,7 +24,7 @@ loadRawData = (subtask) ->
     dataSourceId: subtask.task_name
     limit: limit
   .then ({numRawRows, deletes}) ->
-    if numRawRows == 0
+    if !numRawRows
       taskLogger.debug("no rows to normalize")
       return 0
     taskLogger.debug("rows to normalize: #{numRawRows}")

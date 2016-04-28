@@ -53,7 +53,7 @@ loadUpdates = (subtask, options) ->
         result.setRefreshTimestamp = true
       else
         result.deletes = dataLoadHelpers.DELETE.NONE
-
+      return result
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load RETS data for update')
 
