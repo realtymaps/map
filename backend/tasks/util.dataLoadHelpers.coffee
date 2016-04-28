@@ -511,7 +511,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
-    logger.debug json
+    # logger.debug json
     if isFinished
       return
     count++
