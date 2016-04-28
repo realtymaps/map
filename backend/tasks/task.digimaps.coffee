@@ -57,8 +57,8 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
-      f.fileName.match /17049/
+    # filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
+    #   f.fileName.match /17049/
 
     # causes full refresh, see mls when we need to get more complicated
     deletes = dataLoadHelpers.DELETE.UNTOUCHED
