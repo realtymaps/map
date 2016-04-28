@@ -27,7 +27,7 @@ loadRawData = (subtask) ->
     if numRawRows == 0
       taskLogger.debug("no rows to normalize")
       return 0
-    taskLogger.debug("rows to normalize: #{numRows}")
+    taskLogger.debug("rows to normalize: #{numRawRows}")
     # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
     # on whether this is a dump or an update)
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: {deletes, dataType: 'listing'}, replace: true})
