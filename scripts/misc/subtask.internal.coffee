@@ -45,4 +45,5 @@ subtaskFork = ({task, chunkIndex, totalChunks, pagedPerProcess, subtask, maxPage
 module.exports = {
   runPagedSubtask
   subtaskFork
+  getNextSubtask
 }

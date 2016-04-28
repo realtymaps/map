@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 diff = require('deep-diff').diff
 
-logger = require('../config/logger').spawn('(tasks) util.parcelHelpers')
+logger = require('../config/logger').spawn('util:parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -13,6 +13,8 @@ jobQueue = require '../services/service.jobQueue'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+
+column = 'feature'
 
 diffExcludeKeys = [
   'rm_inserted_time'
@@ -170,9 +172,27 @@ activateNewData = (subtask) ->
     deletesPropName: 'parcel'
   }
 
+handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows}) ->
+  errorLogger = logger.spawn('handleOveralNormalizeError')
+
+  errorLogger.debug "handling error"
+  errorLogger.debug error
+
+  promise = tables.jobQueue.dataLoadHistory()
+  .where dataLoadHistory
+  .update
+    rm_valid: false
+    rm_error_msg: error.message
+
+  if numRawRows?
+    promise.then () -> numRawRows
+
+
 module.exports = {
   saveToNormalDb
   finalizeData
   finalizeParcelEntry
   activateNewData
+  handleOveralNormalizeError
+  column
 }

@@ -114,15 +114,26 @@ getZipFileStream = (fullPath, {creds, doClose} = {}) ->
         return clientClose.onEndStream {stream, client, where: 'getZipFileStream'}
       {client, stream}
 
+
 getParcelJsonStream = (fullPath, {creds} = {}) ->
   getZipFileStream(fullPath, {creds, doClose: false})
-  .then ({client, stream}) ->
-    clientClose.onEndStream {
+  .then ({client, stream}) -> new Promise (resolve, reject) ->
+
+    stream = shp2json(stream, skipRegExes: [/Points/i], alwaysReturnArray: true)
+    stream.on 'error', (error) ->
+      reject error
+
+    nextStream = clientClose.onEndStream {
       client
-      stream: shp2json(stream, negativeFileRegExes: [/Points/i], alwaysReturnArray: true)
-      .pipe(JSONStream.parse('*.features.*'))
+      stream: stream.pipe(JSONStream.parse('*.features.*'))
       where: 'getParcelJsonStream'
     }
+
+    stream.on 'end', () ->
+      resolve nextStream
+
+    return
+
 
 getFormatedParcelJsonStream = (fullPath, {creds} = {}) ->
   getParcelJsonStream(fullPath, {creds})
