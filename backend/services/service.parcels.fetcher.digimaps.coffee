@@ -10,7 +10,6 @@ parcelUtils = require '../utils/util.parcel'
 logger = require('../config/logger').spawn('digimaps:parcelFetcher')
 clientClose = require '../utils/util.client.close'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
-{NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
 
 DIGIMAPS =
   DIRECTORIES:[{name:'DELIVERIES'}, {name: 'DMP_DELIVERY_', doParseDate:true}, {name:'ZIPS'}]
