@@ -99,7 +99,10 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        filterSummaryService.getFilterSummary(currentProfile(req), req.validBody)
+        filterSummaryService.getFilterSummary(
+          state: currentProfile(req)
+          req: req.validBody
+        )
 
   parcelBase:
     method: "post"

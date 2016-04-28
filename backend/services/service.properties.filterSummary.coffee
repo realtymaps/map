@@ -102,24 +102,28 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
   handle = handles[returnAs] or handles.default
   handle()
 
-_validateAndTransform = ({rawFilters, localTransforms}) ->
+_validateAndTransform = ({req, localTransforms}) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
-  if _isOnlyPinned(rawFilters) && _isNothingPinned(state)
+  if _isOnlyPinned(req) && _isNothingPinned(state)
     # we know there is absolutely nothing to select, GTFO before we do any real work
     logger.debug 'GTFO'
     return Promise.resolve()
 
   logger.debug 'validating transforms'
-  validatedQuery = validation.validateAndTransform(rawFilters, localTransforms)
+  validatedQuery = validation.validateAndTransform(req, localTransforms)
   logger.debug 'validated transforms'
   validatedQuery
 
 module.exports =
-  getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = combined) ->
+  getFilterSummary: ({state, req, limit}) ->
+    limit ?= 2000
+    filterSummaryImpl = base
+    if req.state?.filters?.combinedData == true
+      filterSummaryImpl = combined
     Promise.try ->
-      _validateAndTransform({rawFilters, localTransforms: filterSummaryImpl.transforms})
+      _validateAndTransform({req, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
       return [] unless queryParams
       _handleReturnType({filterSummaryImpl, state, queryParams, limit})
