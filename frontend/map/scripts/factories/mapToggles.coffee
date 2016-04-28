@@ -108,5 +108,6 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @togglePreviousLocation = ->
         _fireLocationChange()
 
+      @setLocation = _fireLocationChange
 
       @
