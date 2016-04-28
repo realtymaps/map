@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 diff = require('deep-diff').diff
 
-logger = require('../config/logger').spawn('(tasks) util.parcelHelpers')
+logger = require('../config/logger').spawn('util:parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -13,6 +13,8 @@ jobQueue = require '../services/service.jobQueue'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+
+column = 'feature'
 
 diffExcludeKeys = [
   'rm_inserted_time'
@@ -170,9 +172,38 @@ activateNewData = (subtask) ->
     deletesPropName: 'parcel'
   }
 
+handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
+  errorLogger = logger.spawn('handleOveralNormalizeError')
+
+  errorLogger.debug "handling error"
+  errorLogger.debug error
+  errorLogger.debug fileName
+
+  updateEntity =
+    rm_valid: false
+    rm_error_msg: fileName + " : " + error.message
+    raw_rows: 0
+
+  tables.jobQueue.dataLoadHistory()
+  .where dataLoadHistory
+  .then (results) ->
+    if results?.length
+      tables.jobQueue.dataLoadHistory()
+      .where dataLoadHistory
+      .update updateEntity
+    else
+      tables.jobQueue.dataLoadHistory()
+      .insert _.extend {}, dataLoadHistory, updateEntity
+  .then () ->
+    if numRawRows?
+      numRawRows
+
+
 module.exports = {
   saveToNormalDb
   finalizeData
   finalizeParcelEntry
   activateNewData
+  handleOveralNormalizeError
+  column
 }

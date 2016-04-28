@@ -15,6 +15,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
 
 
 NUM_ROWS_TO_PAGINATE = 2500
@@ -50,12 +51,15 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
   .then (imports) ->
     _filterImports(subtask, imports)
   .then ({filteredImports, refreshThreshold}) ->
-    # filteredImports = [filteredImports[0]] #NOTE: for testing ONLY
 
     filteredImports = filteredImports.map (f) ->
       fileName: f
       refreshThreshold: refreshThreshold
       startTime: now
+
+    # filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
+      # bad = f.fileName.match /17049/
+      # good = f.fileName.match /06009/
 
     # causes full refresh, see mls when we need to get more complicated
     deletes = dataLoadHelpers.DELETE.UNTOUCHED
@@ -90,28 +94,34 @@ loadRawData = (subtask) -> Promise.try () ->
 
   subtask.data.rawTableSuffix = fipsCode
 
+  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+
+  dataLoadHistory =
+    data_source_id: "#{subtask.task_name}_#{fipsCode}"
+    data_source_type: 'parcel'
+    data_type: 'parcel'
+    batch_id: subtask.batch_id
+    raw_table_name: rawTableName
+
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
     .then (jsonStream) ->
-      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-      dataLoadHistory =
-        data_source_id: "#{subtask.task_name}_#{fileName}"
-        data_source_type: 'parcel'
-        data_type: 'parcel'
-        batch_id: subtask.batch_id
-        raw_table_name: rawTableName
 
       dataLoadHelpers.manageRawJSONStream({
         tableName: rawTableName
         dataLoadHistory
         jsonStream
-        column: 'feature'
+        column: parcelHelpers.column
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
       .catch (error) ->
         throw new SoftFail error.message
+    .catch NoShapeFilesError, (error) ->
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
+    .catch UnzipError, (error) ->
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load parcels data for update')
     .catch (error) ->
