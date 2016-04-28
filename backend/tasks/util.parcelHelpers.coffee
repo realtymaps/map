@@ -172,20 +172,31 @@ activateNewData = (subtask) ->
     deletesPropName: 'parcel'
   }
 
-handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows}) ->
+handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
   errorLogger = logger.spawn('handleOveralNormalizeError')
 
   errorLogger.debug "handling error"
   errorLogger.debug error
+  errorLogger.debug fileName
 
-  promise = tables.jobQueue.dataLoadHistory()
-  .where dataLoadHistory
-  .update
+  updateEntity =
     rm_valid: false
-    rm_error_msg: error.message
+    rm_error_msg: fileName + " : " + error.message
+    raw_rows: 0
 
-  if numRawRows?
-    promise.then () -> numRawRows
+  tables.jobQueue.dataLoadHistory()
+  .where dataLoadHistory
+  .then (results) ->
+    if results?.length
+      tables.jobQueue.dataLoadHistory()
+      .where dataLoadHistory
+      .update updateEntity
+    else
+      tables.jobQueue.dataLoadHistory()
+      .insert _.extend {}, dataLoadHistory, updateEntity
+  .then () ->
+    if numRawRows?
+      numRawRows
 
 
 module.exports = {

@@ -95,6 +95,7 @@ loadRawData = (subtask) -> Promise.try () ->
   subtask.data.rawTableSuffix = fipsCode
 
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+
   dataLoadHistory =
     data_source_id: "#{subtask.task_name}_#{fipsCode}"
     data_source_type: 'parcel'
@@ -118,9 +119,9 @@ loadRawData = (subtask) -> Promise.try () ->
       .catch (error) ->
         throw new SoftFail error.message
     .catch NoShapeFilesError, (error) ->
-      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0}
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
     .catch UnzipError, (error) ->
-      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0}
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load parcels data for update')
     .catch (error) ->
