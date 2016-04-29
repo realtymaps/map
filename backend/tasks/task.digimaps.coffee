@@ -110,6 +110,7 @@ loadRawData = (subtask) -> Promise.try () ->
   {fileName} = subtask.data
   deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
+  numRowsToPageNormalize = subtask.data.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   subtask.data.rawTableSuffix = fipsCode
 
@@ -172,7 +173,7 @@ loadRawData = (subtask) -> Promise.try () ->
       jobQueue.queueSubsequentPaginatedSubtask {
         subtask
         totalOrList: numRows
-        maxPage: NUM_ROWS_TO_PAGINATE
+        maxPage: numRowsToPageNormalize
         laterSubtaskName: "normalizeData"
         mergeData: {
           fipsCode
@@ -202,6 +203,8 @@ normalizeData = (subtask) ->
     }
 
 finalizeDataPrep = (subtask) ->
+  numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
   logger.debug subtask
 
   tables.property.normParcel()
@@ -210,7 +213,7 @@ finalizeDataPrep = (subtask) ->
   .then (ids) ->
     ids  = ids.map (id) -> id.rm_property_id
     # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
   logger.debug subtask

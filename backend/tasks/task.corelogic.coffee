@@ -111,6 +111,8 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 loadRawData = (subtask) ->
+  numRowsToPageNormalize = subtask.data.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
+
   countyHelpers.loadRawData subtask,
     dataSourceId: 'corelogic'
     columnsHandler: (columnsLine) -> columnsLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
@@ -119,7 +121,7 @@ loadRawData = (subtask) ->
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData})
 
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
@@ -131,6 +133,8 @@ normalizeData = (subtask) ->
     buildRecord: countyHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
+  numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
   Promise.map subtask.data.sources, (source) ->
     tables.property[source]()
     .select('rm_property_id')
@@ -138,7 +142,7 @@ finalizeDataPrep = (subtask) ->
     .then (ids) ->
       _.pluck(ids, 'rm_property_id')
   .then (lists) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: _.union(lists), maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: _.union(lists), maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, countyHelpers.finalizeData.bind(null, subtask)
