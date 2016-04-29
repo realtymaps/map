@@ -66,7 +66,6 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="Toggles.propertiesInShapes"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
-
           li.set.row
             span.label.col-md-5 Old DrawToolbar
             .col-md-7
@@ -76,6 +75,16 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-repeat="c in ['show', 'hide']"
                   ng-model="Toggles.showOldToolbar"
                   btn-radio="{{c == 'show'}}"
+                  uncheckable) {{c}}
+          li.set.row
+            span.label.col-md-5 Combined Data
+            .col-md-7
+              .btn-group.pull-right
+                label.btn.btn-white.btn-checkbox(
+                  ng-class="{active: selectedFilters.combinedData == (c == 'on')}"
+                  ng-repeat="c in ['on', 'off']"
+                  ng-model="selectedFilters.combinedData"
+                  btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
         ul
           li.showAdvanced.row
