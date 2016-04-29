@@ -123,13 +123,12 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   if filters.listedDaysMax
     query.where("days_on_market", "<=", filters.listedDaysMax)
 
-  # TODO: make this work with new json address field (example: {"lines":["3325 West Washington Boulevard","Unit 2","Chicago, IL"],"strength":51})
   # If full address available, include matched property in addition to other matches regardless of filters
   filters.address = _.pick filters.address, filterAddress.keys
   filters.address = _.omit filters.address, _.isEmpty
   if _.keys(filters.address).length == filterAddress.keys.length
     logger.debug filters.address
-    addressString = "#{filters.address.street_address_num} #{filters.address.street_address_name} #{filters.address.city} #{filters.address.state} #{filters.address.zip.slice(0,5)}"
+    addressString = "#{filters.address.street_address_num} #{filters.address.street_address_name} #{filters.address.city}, #{filters.address.state} #{filters.address.zip.slice(0,5)}"
     logger.debug "addressString: #{addressString}"
     query.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
     query.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
@@ -138,8 +137,24 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   query
 
+transformProperties = (properties) ->
+  streetRe = /^(\d+)\s*(.+)/
+  cityRe = /^(.+),\s*(.+)/
+  for prop in properties
+    if prop.address?
+      # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
+      lines = prop.address.lines.slice(-3)
+      streetLine = lines[0].match(streetRe)
+      cityLine = lines[1].match(cityRe)
+      prop.street_address_num = streetLine[1]
+      prop.street_address_name = streetLine[2]
+      prop.city = cityLine[1]
+      prop.state = cityLine[2]
+      prop.zip = lines[2] ? '99999'
+
 module.exports =
   transforms: transforms
+  transformProperties: transformProperties
 
   getDefaultQuery: _getDefaultQuery
 
