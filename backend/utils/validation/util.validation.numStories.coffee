@@ -1,7 +1,5 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-DataValidationError = require '../errors/util.error.dataValidation'
-require '../../../common/extensions/strings'
 logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
