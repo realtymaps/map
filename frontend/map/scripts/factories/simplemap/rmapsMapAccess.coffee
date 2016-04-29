@@ -6,9 +6,9 @@ app.factory 'rmapsMapAccess', (
   $log
   $rootScope
 
-  leafletBoundsHelpers
   leafletData
 
+  rmapsBounds
   rmapsEventConstants
   rmapsGeometries
   rmapsMapScope
@@ -60,12 +60,7 @@ app.factory 'rmapsMapAccess', (
         return
 
       if properties.length > 1
-        coordinates = []
-        angular.forEach properties, (property) ->
-          if property.geom_point_json?.coordinates?
-            coordinates.push([ property.geom_point_json.coordinates[1], property.geom_point_json.coordinates[0] ])
-
-        bounds = leafletBoundsHelpers.createBoundsFromArray(coordinates)
+        bounds = rmapsBounds.boundsFromPropertyArray(properties)
         @mapScope.bounds = bounds
       else
         @mapScope.center = {
