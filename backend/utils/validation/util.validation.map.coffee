@@ -19,6 +19,18 @@ getLookupMap = (data_source_id, data_list_type, LookupName) ->
     return lookup
 getLookupMap = memoize.promise(getLookupMap, {primitive: true})
 
+
+doMapping = (param, options, map, singleValue) ->
+  mapped = map[singleValue]
+  if mapped?
+    return mapped
+  if !singleValue? || singleValue == ''
+    return null
+  if options.passUnmapped
+    return singleValue
+  throw new DataValidationError("unmappable value, options are: #{JSON.stringify(_.keys(map))}", param, singleValue)
+
+
 # Goal is to map the value of the param to a match mapped value
 #
 # TODO: rename to mapValues
@@ -36,11 +48,7 @@ module.exports = (options = {}) ->
       else
         return getLookupMap(options.lookup.dataSourceId, options.lookup.dataListType, options.lookup.lookupName)
     .then (map) ->
-      mapped = map[value]
-      if mapped?
-        return mapped
-      if !value? || value == ''
-        return null
-      if options.passUnmapped
-        return value
-      throw new DataValidationError("unmappable value, options are: #{JSON.stringify(_.keys(map))}", param, value)
+      if Array.isArray(value)
+        return _.map(value, doMapping.bind(null, param, options, map))
+      else
+        return doMapping(param, options, map, value)
