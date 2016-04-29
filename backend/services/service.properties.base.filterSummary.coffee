@@ -17,7 +17,7 @@ minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
-  baths: validators.integer()
+  baths: validators.float()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
 
@@ -90,7 +90,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     query.where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
 
   if filters.bathsMin
-    query.where("#{dbFn.tableName}.baths_full", ">=", filters.bathsMin)
+    query.where("#{dbFn.tableName}.baths_total", ">=", filters.bathsMin)
 
   if filters.hasOwner?
     # only checking owner_name here and now owner_name2 because we do normalization in the property summary
