@@ -15,9 +15,8 @@ getPlan = (userId) ->
     "#{tables.auth.group.tableName}.name as group_name"
   )
   .where "#{tables.auth.m2m_user_group.tableName}.user_id": userId
-  .join("#{tables.auth.group.tableName}", () ->
-      this.on("#{tables.auth.group.tableName}.id", "#{tables.auth.m2m_user_group.tableName}.group_id")
-    )
+  .join "#{tables.auth.group.tableName}", () ->
+    this.on("#{tables.auth.group.tableName}.id", "#{tables.auth.m2m_user_group.tableName}.group_id")
   .then (plan) ->
     expectSingleRow plan
   .then (plan) ->

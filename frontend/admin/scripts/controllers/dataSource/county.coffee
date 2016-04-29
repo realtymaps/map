@@ -135,7 +135,8 @@ app.controller 'rmapsCountyCtrl',
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName && field.Interpretation
       config = $scope.countyData.current
-      $scope.countyLoading = rmapsCountyService.getLookupTypes($scope.countyData.current.id, config.dataListType.id, field.LookupName)
+      console.log($scope.countyData)
+      $scope.countyLoading = rmapsCountyService.getLookupTypes(config.id, $scope.countyData.dataListType.id, field.LookupName)
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
         if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold

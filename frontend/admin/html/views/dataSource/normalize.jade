@@ -200,7 +200,7 @@
       .row.lookup(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
         .col-md-2 {{lookup.LongValue}}
         .col-md-2
-          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.mapping[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help(ng-show="$index == 0") Replace MLS values with more readable values where necessary
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
