@@ -197,7 +197,7 @@
     "serve-favicon": "2.1.X",
     "serve-static": "1.X.X",
     "sharp": "0.14.0",
-    "shp2jsonx": "1.0.3",
+    "shp2jsonx": "2.0.0",
     "sinon": "1.X.X",
     "split": "^0.3.3",
     "sprintf-js": "^1.0.2",

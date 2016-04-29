@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 shp2json = require 'shp2jsonx'
 through = require 'through'
+through2 = require 'through2'
 JSONStream = require 'JSONStream'
 PromiseFtp = require 'promise-ftp'
 parcelUtils = require '../utils/util.parcel'
@@ -114,15 +115,56 @@ getZipFileStream = (fullPath, {creds, doClose} = {}) ->
         return clientClose.onEndStream {stream, client, where: 'getZipFileStream'}
       {client, stream}
 
+
 getParcelJsonStream = (fullPath, {creds} = {}) ->
   getZipFileStream(fullPath, {creds, doClose: false})
-  .then ({client, stream}) ->
-    clientClose.onEndStream {
-      client
-      stream: shp2json(stream, negativeFileRegExes: [/Points/i], alwaysReturnArray: true)
-      .pipe(JSONStream.parse('*.features.*'))
-      where: 'getParcelJsonStream'
-    }
+  .then ({client, stream}) -> new Promise (resolve, reject) ->
+    ###
+      DO NOT put `Promise.try () ->` here or it will hurt your world.
+      Also do not put `Promise.try () ->` after using this function either.
+
+      For some reason it will cause an error and blow up node in mid stream and in mid Promise.
+    ###
+    finalStreamLogger = logger.spawn('finalStream')
+
+    ###
+      Error handling / intercepting hell:
+        In a nutshell we need to intercept the begining of a stream to make sure that we have valid
+        data to move on to other streams via pipes.
+
+      Breaking up into two explicit streams. So that intercept will not push data onto jsonStream and blow up
+      with invalid data / errors.
+
+      We use through2 (when it first has data) to resolve the jsonStream if we actually have something valid.
+      Otherwise we reject.
+    ###
+    interceptStream = shp2json(stream, skipRegExes: [/Points/i], alwaysReturnArray: true)
+    jsonStream = JSONStream.parse('*.features.*')
+
+    firstTime = true
+    t2Transform = (chunk, enc, cb) ->
+      if firstTime
+        firstTime = false
+        resolve(jsonStream)
+      @push chunk
+      cb()
+
+    t2Stream = through2 t2Transform, (cb) ->
+      client.end()
+      cb()
+
+    interceptStream.once 'error', (error) ->
+      # logger.debug "interceptStream @@@@@@@@@@@@@@@@@@@ error"
+      # logger.debug "NoShapeFilesError is instance: " + (error instanceof NoShapeFilesError)
+      client.end()
+      if firstTime
+        reject error
+      else
+        finalStreamLogger.error 'Your in limbo. The stream has errored and we are not handling it correctly.'
+        finalStreamLogger.error error
+
+    interceptStream.pipe(t2Stream).pipe(jsonStream)
+
 
 getFormatedParcelJsonStream = (fullPath, {creds} = {}) ->
   getParcelJsonStream(fullPath, {creds})
