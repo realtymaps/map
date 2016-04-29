@@ -6,24 +6,28 @@ require '../factories/filters.coffee'
 ###
 
 module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $timeout, rmapsFiltersFactory, $log) ->
+  $log = $log.spawn 'rmapsFiltersMobileCtrl'
+
   MAX_PRICE = 10000000
   MAX_SIZE = 10000
+  MIN_BEDS = 1
+  MAX_BEDS = 10
+  MIN_BATHS = 0.5
+  MAX_BATHS = 10
   MAX_DOM = 365
 
-  #initialize values for filter options in the select tags
+  #
+  # Initialize values for filter options in the select tags
+  #
   $scope.filterValues = rmapsFiltersFactory.values
 
-  # Initialize scope values from the global filters
-  $scope.bedsMin = $scope.selectedFilters.bedsMin || 0
-  $scope.bathsMin = $scope.selectedFilters.bathsMin || 0
-
+  #
   # Dirty tracking
-  $scope.dirty = false
-
-  markDirty = () ->
-    $scope.dirty = true
-
-  $scope.makeDirty = markDirty
+  #
+  $scope.makeDirty = ->
+    $timeout ->
+      $log.debug 'marking dirty'
+      $scope.dirty = true
 
   #
   # Create slider step arrays
@@ -66,7 +70,6 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   #
   # Create slider options
   #
-
   initSliderConfig = (minValue, maxValue, steps, presetMin, presetMax) ->
     # Filter the user filter values for $ and , characters
     if presetMin
@@ -87,14 +90,12 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
         ceil: maxValue
         stepsArray: steps
         hideLimitLabels: true
-        onChange: markDirty
-
-    setSliderMinMax config, presetMin, presetMax
-
-    return config
+        onChange: $scope.makeDirty
 
   $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
   $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
+  $scope.bedsSlider = options: floor: MIN_BEDS, ceil: MAX_BEDS, step: MIN_BEDS, onChange: $scope.makeDirty
+  $scope.bathsSlider = options: floor: MIN_BATHS, ceil: MAX_BATHS, step: MIN_BATHS, precision: 1, onChange: $scope.makeDirty
   $scope.domSlider = initSliderConfig 0, MAX_DOM, domSteps, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
   $timeout (() ->
@@ -107,7 +108,6 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   #
   # Display step value to user
   #
-
   $scope.translatePrice = (index) ->
     value = $filter('number')(priceSteps[index], 0)
     if index == priceSteps.length - 1
@@ -135,26 +135,21 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   #
   # Events
   #
-
-  $scope.changeBeds = (incr) ->
-    $scope.bedsMin = $scope.bedsMin + incr
-    $scope.bedsMin = 0 if $scope.bedsMin < 0
-    markDirty()
-
-  $scope.changeBaths = (incr) ->
-    $scope.bathsMin = $scope.bathsMin + incr
-    $scope.bathsMin = 0 if $scope.bathsMin < 0
-    markDirty()
-
   $scope.reset = () ->
-    $scope.bedsMin = $scope.selectedFilters.bedsMin || 0
-    $scope.bathsMin = $scope.selectedFilters.bathsMin || 0
+    $scope.bedsMin = $scope.selectedFilters.bedsMin || MIN_BEDS
+    $scope.bathsMin = $scope.selectedFilters.bathsMin || MIN_BATHS
 
     setSliderMinMax $scope.priceSlider, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
     setSliderMinMax $scope.sizeSlider, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
     setSliderMinMax $scope.domSlider, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
     $scope.dirty = false
+
+
+  #
+  # Initialize scope values from the global filters
+  #
+  $scope.reset()
 
   #
   # Apply the filter changes to the map results

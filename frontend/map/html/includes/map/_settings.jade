@@ -130,30 +130,22 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             rzslider(rz-slider-model="priceSlider.min" rz-slider-high="priceSlider.max" rz-slider-options="priceSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
         .item.settings-row
+          .settings-header Beds
+          .settings-value {{bedsMin}}+
+          .settings-slider
+            rzslider(rz-slider-model="bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+        .item.settings-row
+          .settings-header Baths
+          .settings-value {{bathsMin}}+
+          .settings-slider
+            rzslider(rz-slider-model="bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+        .item.settings-row
           .settings-header Sq Ft
           .settings-value {{translateSize(sizeSlider.min)}} - {{translateSize(sizeSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="sizeSlider.min" rz-slider-high="sizeSlider.max" rz-slider-options="sizeSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-
-        .item.settings-row
-          .settings-left
-            button.button.settings-button(ng-click="changeBeds(-1)")
-              i.icon-minus
-          .settings-right
-            button.button.settings-button(ng-click="changeBeds(1)")
-              i.icon-plus
-          .settings-center
-            .settings-label {{translateNumeric(bedsMin)}} Bedrooms
-
-        .item.settings-row
-          .settings-left
-            button.button.settings-button(ng-click="changeBaths(-1)")
-              i.icon-minus
-          .settings-right
-            button.button.settings-button(ng-click="changeBaths(1)")
-              i.icon-plus
-          .settings-center
-            .settings-label {{translateNumeric(bathsMin)}} Bathrooms
 
         .item.settings-row
           .settings-header Days on Market
