@@ -10,6 +10,7 @@ PromiseExt = require '../extensions/promise'
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
+NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
 
 loadRawData = (subtask) ->
@@ -62,7 +63,7 @@ storePhotosPrep = (subtask) ->
   .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
   .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "storePhotos", concurrency: 1})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE_FOR_PHOTOS, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
