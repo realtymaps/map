@@ -10,6 +10,7 @@ app.factory 'rmapsMapAccess', (
   leafletData
 
   rmapsEventConstants
+  rmapsGeometries
   rmapsMapScope
 ) ->
 
@@ -36,6 +37,22 @@ app.factory 'rmapsMapAccess', (
         @map = map
         @isReady = true
 
+    addPropertyMarkers: (properties) ->
+      if !properties?.length
+        return
+
+      @mapScope.markers = @mapScope.markers || {}
+      angular.forEach properties, (property) =>
+        if property.geom_point_json?.coordinates?
+          @mapScope.markers[property.rm_property_id] = {
+            lat: property.geom_point_json.coordinates[1],
+            lng: property.geom_point_json.coordinates[0],
+            draggable: false,
+            focus: false
+          }
+
+      return
+
     fitToBounds: (properties) ->
       $log.debug("fitToBounds", properties)
 
@@ -46,7 +63,7 @@ app.factory 'rmapsMapAccess', (
         coordinates = []
         angular.forEach properties, (property) ->
           if property.geom_point_json?.coordinates?
-            coordinates.push(property.geom_point_json.coordinates.reverse())
+            coordinates.push([ property.geom_point_json.coordinates[1], property.geom_point_json.coordinates[0] ])
 
         bounds = leafletBoundsHelpers.createBoundsFromArray(coordinates)
         @mapScope.bounds = bounds
@@ -56,6 +73,8 @@ app.factory 'rmapsMapAccess', (
           lng: properties[0].geom_point_json.coordinates[0],
           zoom: 15
         }
+
+      return
 
   #
   # Service instance

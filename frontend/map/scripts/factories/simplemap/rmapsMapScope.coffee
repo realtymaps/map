@@ -1,11 +1,14 @@
 app = require '../../app.coffee'
-Point = require('../../../../../common/utils/util.geometries.coffee').Point
 
 module.exports = app
 
 app.factory 'rmapsMapScope', (
+  $log
+
+  rmapsGeometries
   rmapsUtilLayersBase
 ) ->
+  $log = $log.spawn('rmapsMapScope')
 
   #
   # Public API
@@ -18,20 +21,21 @@ app.factory 'rmapsMapScope', (
     defaults: null
 
     bounds: null
-#    center: null
-    center: {
-      lat: 26.148111,
-      lng: -81.790809,
-      zoom: 15
-    }
+    center: new rmapsGeometries.LeafletCenter(26.148111, -81.790809, 15)
+#    center: {
+#      lat: 26.148111,
+#      lng: -81.790809,
+#      zoom: 15
+#    }
     controls: null
     events: null
     geojson: null
     layers:
       baselayers: rmapsUtilLayersBase
-    markers: {}
 
-    'markers-nested': true
+    markers: {}
+    markersNested: false
+
     'markers-watch-options': null
     'geojson-watch-options': null
     'geojson-nested': true
@@ -40,6 +44,7 @@ app.factory 'rmapsMapScope', (
     # Constructor
     #
     contructor: () ->
+      $log.debug('Construct Map Scope')
 
   #
   # Service instance

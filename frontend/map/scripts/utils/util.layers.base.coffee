@@ -59,9 +59,9 @@ module.exports = ->
       mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
 
   _baseLayers
-  
+
 #
 # Also define as AngularJS service
 #
 app.factory 'rmapsUtilLayersBase', () ->
-  return _baseLayers
+  return module.exports()

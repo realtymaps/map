@@ -7,6 +7,8 @@ require '../../../common/extensions/angular.coffee'
 appName = 'rmapsMapApp'
 
 app = window.angular.module appName, [
+  'rmapsCommonUtils'
+
   'angular-data.DSCacheFactory'
   'angular-stripe'
   'angularLoad'

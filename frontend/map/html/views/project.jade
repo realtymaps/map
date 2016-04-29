@@ -39,7 +39,7 @@ include ../includes/mixins/_leafletMixin.jade
         center="dashboardMapAccess.mapScope.center"
         layers="dashboardMapAccess.mapScope.layers"
         markers="dashboardMapAccess.mapScope.markers"
-        markers-nested="true"
+        markers-nested="dashboardMapAccess.mapScope.markersNested"
         )
         //event-broadcast="dashboardMapAccess.mapScope.events"
         //markers-watch-options="dashboardMapAccess.mapScope.markersWatchOptions"
@@ -47,8 +47,6 @@ include ../includes/mixins/_leafletMixin.jade
         //geojson="dashboardMapAccess.mapScope.geojson"
         //geojson-nested="true"
         //controls="controls"
-
-        //+leafletMixin('dashboardMapAccess.mapScope', 'dashboardMap')
 
     .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
       .notes-title

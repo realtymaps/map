@@ -16,7 +16,9 @@ app.controller 'rmapsProjectCtrl',
 
   rmapsClientsFactory,
   rmapsEventConstants
+
   rmapsMapAccess,
+
   rmapsNotesService,
   rmapsPageService,
   rmapsPrincipalService,
@@ -66,6 +68,7 @@ app.controller 'rmapsProjectCtrl',
 
   # Dashboard Map
   $scope.dashboardMapAccess = rmapsMapAccess
+
 
   #
   # Scope Event Handlers
@@ -168,6 +171,7 @@ app.controller 'rmapsProjectCtrl',
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
       $timeout(() ->
+        rmapsMapAccess.addPropertyMarkers(result.data)
         rmapsMapAccess.fitToBounds(result.data)
       , 0)
 
