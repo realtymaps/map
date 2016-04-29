@@ -36,9 +36,32 @@ _filterImports = (subtask, imports) ->
     if subtask.data.fipsCodeLimit?
       logger.debug "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
       folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
-    filteredImports: folderObjs.map (f) -> f.name
-    refreshThreshold: refreshThreshold
 
+    # folderObjs = _.filter folderObjs, (f) -> #NOTE: for testing ONLY
+      # bad = f.match /17049/
+      # good = f.match /06009/
+
+    fileNames = folderObjs.map (f) -> f.name
+    fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug fipsCodes
+
+    if subtask.data.fipsCodes? && _.isArray subtask.data.fipsCodes
+      fileNames = _.filter fileNames, (name) ->
+        _.any subtask.data.fipsCodes, (code) ->
+          name.match new RegExp(code)
+
+      fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug fipsCodes
+
+    {
+      filteredImports: fileNames
+      refreshThreshold
+      fipsCodes
+    }
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug subtask
@@ -56,10 +79,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       fileName: f
       refreshThreshold: refreshThreshold
       startTime: now
-
-    # filteredImports = _.filter filteredImports, (f) -> #NOTE: for testing ONLY
-      # bad = f.fileName.match /17049/
-      # good = f.fileName.match /06009/
 
     # causes full refresh, see mls when we need to get more complicated
     deletes = dataLoadHelpers.DELETE.UNTOUCHED
