@@ -14,6 +14,8 @@ NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
 
 loadRawData = (subtask) ->
+  numRowsToPageNormalize = subtask.data.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
+
   taskLogger = logger.spawn(subtask.task_name)
   if subtask.data?.limit?
     limit = subtask.data?.limit
@@ -35,7 +37,7 @@ loadRawData = (subtask) ->
     finalizePrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeDataPrep", replace: true})
     storePhotosPrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "storePhotosPrep", replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes, startTime: now}, replace: true})
-    normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
+    normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
     Promise.join(recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, normalizePromise, () ->)
     .then () ->
       return numRawRows
@@ -47,23 +49,27 @@ normalizeData = (subtask) ->
     buildRecord: mlsHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
+  numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
   tables.property.listing()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, (id) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
+  numRowsToPagePhotos = subtask.data.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
+
   tables.property.listing()
   .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
   .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE_FOR_PHOTOS, laterSubtaskName: "storePhotos", concurrency: 1})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
