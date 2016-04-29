@@ -17,7 +17,7 @@ minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
-  baths: validators.integer()
+  baths: validators.float()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
 
