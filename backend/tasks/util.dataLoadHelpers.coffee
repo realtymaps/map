@@ -275,7 +275,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getNormalizeRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
@@ -329,7 +329,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, doNormalization)
+  Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
     successes
 
@@ -700,7 +700,7 @@ module.exports = {
   activateNewData
   getValidationInfo
   normalizeData
-  getNormalizeRows
+  getRawRows
   getValues
   finalizeEntry
   manageRawDataStream
