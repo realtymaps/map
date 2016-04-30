@@ -88,10 +88,13 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
           batch_id
           rm_raw_id: row.rm_raw_id
         }
+        #return a valid row
         row: obj
       catch error
+        #return an error object
         error: error
 
+      #regardless we extend a row or an error object with stats
       _.extend ret,
         rm_raw_id: row.rm_raw_id
         stats: {
