@@ -110,7 +110,7 @@ loadRawData = (subtask) -> Promise.try () ->
   {fileName} = subtask.data
   deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
-  numRowsToPageNormalize = subtask.data.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
+  numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   subtask.data.rawTableSuffix = fipsCode
 
