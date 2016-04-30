@@ -88,12 +88,17 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
           batch_id
           rm_raw_id: row.rm_raw_id
         }
+        #return a valid row
         row: obj
       catch error
+        #return an error object
         error: error
 
+      # Regardless we extend a row or an error object with stats
+      # and .. with rm_raw_id! This allows for less object defined
+      # checking where rm_raw_id will always be defined.
       _.extend ret,
-        rm_raw_id: row.rm_raw_id
+        rm_raw_id: row.rm_raw_id# dont forget about me :)
         stats: {
           data_source_id
           batch_id
