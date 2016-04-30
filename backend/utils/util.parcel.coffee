@@ -3,6 +3,8 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('util.parcel')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
+validation = require '../utils/util.validation'
+
 
 formatParcel = (feature) ->
   ###
@@ -30,17 +32,16 @@ formatParcel = (feature) ->
      crs: { type: 'name', properties: {}
   ###
   if !feature?
-    throw new Error 'feature undefined'
-  if !feature?.geometry?
-    logger.error feature
-    throw new Error 'feature.geometry undefined'
+    throw new validation.DataValidationError('required', 'feature', feature)
+  if !feature.geometry?
+    throw new validation.DataValidationError('required', 'feature.geometry', feature.geometry)
 
   #match the db attributes
   obj = _.mapKeys feature.properties, (val, key) ->
     key.toLowerCase()
 
   if !obj?.parcelapn?
-    throw new Error 'feaure.properties.parcelapn undefined'
+    throw new validation.DataValidationError('required', 'feaure.properties.parcelapn', obj?.parcelapn)
 
   # if obj.parcelapn.match(/row/i)
   #   throw new Error 'feaure.properties.parcelapn contains ROW, ignore'

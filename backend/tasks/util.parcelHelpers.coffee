@@ -13,6 +13,7 @@ jobQueue = require '../services/service.jobQueue'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+validation = require '../utils/util.validation'
 
 column = 'feature'
 
@@ -72,8 +73,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           delay
           getRowChanges
         }
+      #removed for performance
       #.then () ->
-      #   removed for performance
       #  tables.temp(subid: rawSubid)
       #  .where(rm_raw_id: rm_raw_id)
       #  .update(rm_valid: true, rm_error_msg: null)
@@ -83,10 +84,12 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
         tables.temp(subid: rawSubid)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+      .catch validation.DataValidationError, (err) ->
+        tables.temp(subid: rawSubid)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: err.toString())
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
-    .catch (error) ->
-      throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 _finalizeUpdateListing = ({id, subtask, delay}) ->
   delay ?= 100
