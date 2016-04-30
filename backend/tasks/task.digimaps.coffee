@@ -16,6 +16,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
+util = require 'util'
 
 
 NUM_ROWS_TO_PAGINATE = 2500
@@ -64,7 +65,7 @@ _filterImports = (subtask, imports) ->
     }
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   now = Date.now()
 
@@ -105,7 +106,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
     ]
 
 loadRawData = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   {fileName} = subtask.data
   deletes = dataLoadHelpers.DELETE.UNTOUCHED
@@ -184,16 +185,16 @@ loadRawData = (subtask) -> Promise.try () ->
       }
 
 normalizeData = (subtask) ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   {fipsCode,  delay} = subtask.data
 
-  logger.debug subtask.data
-
-  dataLoadHelpers.getNormalizeRows subtask
+  dataLoadHelpers.getRawRows subtask
   .then (rows) ->
-    return if !rows?.length
-    # logger.debug rows[0]
+    if !rows?.length
+      logger.debug "no raw rows found for rm_raw_id #{subtask.data.offset+1} to #{subtask.data.offset+subtask.data.count}"
+      return
+    logger.debug "got #{rows.length} raw rows"
 
     parcelHelpers.saveToNormalDb {
       subtask
@@ -205,7 +206,7 @@ normalizeData = (subtask) ->
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   tables.property.normParcel()
   .select('rm_property_id')
@@ -216,7 +217,7 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   Promise.map subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id, 250)

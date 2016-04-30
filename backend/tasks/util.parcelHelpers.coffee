@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 diff = require('deep-diff').diff
 
-logger = require('../config/logger').spawn('util:parcelHelpers')
+logger = require('../config/logger').spawn('task:digimaps:parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -36,8 +36,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   delay ?= 100
 
-  logger.debug "delay: #{delay}"
-
   jobQueue.getLastTaskStartTime(subtask.task_name, false)
   .then (startTime) ->
 
@@ -48,6 +46,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       fipsCode
       startTime
     }
+
+    logger.debug "got #{normalPayloads.length} normalized rows"
 
     tablesPropName = 'norm'+tableName.toInitCaps()
 
@@ -72,16 +72,17 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           delay
           getRowChanges
         }
-      .then () ->
-        #if documenting fails do we worry about reverting the above insert / upsert?
+      #.then () ->
+      #   removed for performance
+      #  tables.temp(subid: rawSubid)
+      #  .where(rm_raw_id: rm_raw_id)
+      #  .update(rm_valid: true, rm_error_msg: null)
+      .catch analyzeValue.isKnexError, (err) ->
+        jsonData = JSON.stringify(row,null,2)
+        logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
         tables.temp(subid: rawSubid)
-        .where(rm_raw_id: rm_raw_id)
-        .update(rm_valid: true, rm_error_msg: null)
-      .catch (err) ->
-        tables.temp(subid: rawSubid)
-        .where(rm_raw_id: rm_raw_id)
-        .update(rm_valid: false, rm_error_msg: err.toString())
-
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
     .catch (error) ->
