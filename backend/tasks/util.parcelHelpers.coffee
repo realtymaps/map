@@ -90,8 +90,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
         .update(rm_valid: false, rm_error_msg: err.toString())
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
-    .catch (error) ->
-      throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 _finalizeUpdateListing = ({id, subtask, delay}) ->
   delay ?= 100
