@@ -72,8 +72,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           delay
           getRowChanges
         }
+      #removed for performance
       #.then () ->
-      #   removed for performance
       #  tables.temp(subid: rawSubid)
       #  .where(rm_raw_id: rm_raw_id)
       #  .update(rm_valid: true, rm_error_msg: null)
