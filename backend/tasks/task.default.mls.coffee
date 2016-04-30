@@ -14,7 +14,7 @@ NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
 
 loadRawData = (subtask) ->
-  numRowsToPageNormalize = subtask.data.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
+  numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   taskLogger = logger.spawn(subtask.task_name)
   if subtask.data?.limit?
@@ -49,7 +49,7 @@ normalizeData = (subtask) ->
     buildRecord: mlsHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
-  numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+  numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
   tables.property.listing()
   .select('rm_property_id')
@@ -63,7 +63,7 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
-  numRowsToPagePhotos = subtask.data.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
+  numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
 
   tables.property.listing()
   .select('data_source_id', 'data_source_uuid')

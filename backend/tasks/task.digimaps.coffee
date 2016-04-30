@@ -203,7 +203,7 @@ normalizeData = (subtask) ->
     }
 
 finalizeDataPrep = (subtask) ->
-  numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+  numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
   logger.debug subtask
 

@@ -56,7 +56,7 @@ deleteInactiveRows = (subtask) ->
     logger.debug "Deleted #{count} rows from combined data table"
 
 deletePhotosPrep = (subtask) ->
-  numRowsToPageDeletePhotos = subtask.data.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
+  numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
 
   tables.deletes.photos()
   .select('id')

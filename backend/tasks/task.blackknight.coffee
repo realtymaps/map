@@ -198,11 +198,11 @@ loadRawData = (subtask) ->
       normalSubid: subtask.data.normalSubid
     if subtask.data.fileType == constants.DELETE
       laterSubtaskName = "deleteData"
-      numRowsToPage = subtask.data.numRowsToPageDelete || constants.NUM_ROWS_TO_PAGINATE
+      numRowsToPage = subtask.data?.numRowsToPageDelete || constants.NUM_ROWS_TO_PAGINATE
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
-      numRowsToPage = subtask.data.numRowsToPageNormalize || constants.NUM_ROWS_TO_PAGINATE
+      numRowsToPage = subtask.data?.numRowsToPageNormalize || constants.NUM_ROWS_TO_PAGINATE
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
