@@ -8,6 +8,7 @@ profileService = require '../services/service.profiles'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
 projectSvc = require('../services/services.user').project
+subscriptionSvc = require '../services/service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -81,9 +82,12 @@ login = (req, res, next) -> Promise.try () ->
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
+      console.log "login()"
+      console.log "user:\n#{JSON.stringify(user)}"
       req.user = user
       logger.debug "session: #{req.session}"
       req.session.userid = user.id
+      req.session.subscription_status = subscriptionSvc.getStatus user.stripe_subscription_id
 
       userUtils.cacheUserValues(req)
       .then () ->

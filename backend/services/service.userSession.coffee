@@ -127,6 +127,8 @@ getIdentity = (req) ->
     'company_id'
     'parent_id'
   ]
+  console.log "getIdentity()"
+  console.log "session:\n#{JSON.stringify(req.session,null,2)}"
   if req.user
     # here we should probaby return some things from the user's profile as well, such as name
     user: _.pick req.user, safeUserFields

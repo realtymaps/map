@@ -40,6 +40,9 @@ setPlan = (userId, plan) ->
     .then (newPlan) ->
       newPlan
 
+getStatus = (subscriptionId) ->
+  "premium"
+
 deactivate = (userId) ->
   # acquire the deactivated plan group id
   # some of this logic would be replaced by better subscription handling we impl in future
@@ -68,3 +71,4 @@ module.exports =
   getPlan: getPlan
   setPlan: setPlan
   deactivate: deactivate
+  getStatus: getStatus
