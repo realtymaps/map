@@ -63,7 +63,7 @@ handles = wrapHandleRoutes handles:
               # console.log.magenta "planId/groupId: #{groupId}"
               logger.debug "auth_user_id: #{id}"
               #give plan / group permissions
-              # (deprecated, we'll use subscription status and plan data off stripe isntead)
+              # (deprecated, we'll use subscription status and plan data off stripe instead)
               tables.auth.m2m_user_group(transaction: trx)
               .insert user_id: parseInt(id), group_id: parseInt(groupId)
               .then ->
