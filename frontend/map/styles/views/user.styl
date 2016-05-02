@@ -74,6 +74,8 @@ all-details()
   .collapse-header
     border-bottom 1px solid $gray_lighter
 
+  .help-block
+    color: $rm-message-error
 
   // Basically each user account page content can be reduced to "details", and "buttons".
   // This is some inheritance to help keep styles consistent and organized,
@@ -87,6 +89,9 @@ all-details()
 
   .subscription-details
     all-details()
+
+    label
+      margin-top: 20px
 
     .subscription-buttons
       all-buttons()

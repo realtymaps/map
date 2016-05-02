@@ -17,6 +17,7 @@ apiBasePermissions = "#{apiBase}/permissions"
 apiBaseProjects = "#{apiBase}/projects"
 apiBaseProfiles = "#{apiBase}/profiles"
 apiBaseUserSubscription = "#{apiBase}/subscription"
+apiBaseUserSubscriptionPlan = "#{apiBase}/subscriptionPlan"
 apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
@@ -114,8 +115,9 @@ module.exports =
     byId: "#{apiBaseProfiles}/:id"
   user_subscription:
     apiBase: apiBaseUserSubscription
-    getPlan: apiBaseUserSubscription
-    setPlan: "#{apiBaseUserSubscription}/:plan"
+    getSubscription: apiBaseUserSubscription
+    getPlan: apiBaseUserSubscriptionPlan
+    setPlan: "#{apiBaseUserSubscriptionPlan}/:plan"
     deactivate: "#{apiBaseDeactivateSubscription}"
   company:
     apiBase: apiBaseCompanies

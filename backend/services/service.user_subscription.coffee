@@ -4,10 +4,22 @@ dbs = require '../config/dbs'
 db = dbs.get('main')
 logger = require('../config/logger').spawn("service.user_subscription")
 {expectSingleRow} = require '../utils/util.sql.helpers'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 stripe = null
 require('../services/services.payment').then (svc) -> stripe = svc.stripe
 
+_getStripeIds = (userId, trx) ->
+  tables.auth.user(transaction: trx)
+  .select 'stripe_customer_id', 'stripe_subscription_id'
+  .where id: userId
+  .then (result) ->
+    expectSingleRow result
+  .then (ids) ->
+    ids
+
+# deprecated code, using subscription status instead of user_group for
+#   subscription-based access checks
 getPlan = (userId) ->
   tables.auth.m2m_user_group()
   .select(
@@ -31,6 +43,8 @@ getPlan = (userId) ->
     .then (planDetails) ->
       _.merge plan, planDetails.value
 
+# deprecated code, using subscription status instead of user_group for
+#   subscription-based access checks
 setPlan = (userId, plan) ->
   tables.auth.m2m_user_group()
   .update group_id: plan
@@ -40,31 +54,34 @@ setPlan = (userId, plan) ->
     .then (newPlan) ->
       newPlan
 
-deactivate = (userId) ->
-  # acquire the deactivated plan group id
-  # some of this logic would be replaced by better subscription handling we impl in future
-  tables.auth.user()
-  .select 'stripe_customer_id'
-  .where id: userId
-  .then (result) ->
-    expectSingleRow result
-  .then ({stripe_customer_id}) ->
-    stripe.customers.listSubscriptions stripe_customer_id
+getSubscription = (userId) ->
+  _getStripeIds(userId)
+  .then ({stripe_customer_id, stripe_subscription_id}) ->
+    if !stripe_subscription_id?
+      throw new Error("No subscription is associated with user #{stripe_customer_id}.")
+    stripe.customers.retrieveSubscription stripe_customer_id, stripe_subscription_id
     .then (subscription) ->
-      sub_id = subscription.data[0].id
-      stripe.customers.cancelSubscription stripe_customer_id, sub_id, {at_period_end: true}
+      subscription
+
+  .catch isUnhandled, (err) ->
+    throw new PartiallyHandledError(err, "We encountered an issue while accessing your subscription")
+
+deactivate = (userId) ->
+  dbs.transaction 'main', (trx) ->
+    _getStripeIds(userId, trx)
+    .then ({stripe_customer_id, stripe_subscription_id}) ->
+      stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: true}
       .then (response) ->
-        tables.user.project()
+        tables.user.project(transaction: trx)
         .update status: 'inactive'
         .where auth_user_id: userId
         .then () ->
-          plan: _.merge response.plan,
-            current_period_end: response.current_period_end
-            canceled_at: response.canceled_at
-    .catch (err) ->
-      throw new Error(err, "Encountered an issue deactivating the account, please contact customer service.")
+          response
+    .catch isUnhandled, (err) ->
+      throw new PartiallyHandledError(err, "Encountered an issue deactivating the account, please contact customer service.")
 
 module.exports =
   getPlan: getPlan
   setPlan: setPlan
+  getSubscription: getSubscription
   deactivate: deactivate

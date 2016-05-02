@@ -1,0 +1,1 @@
+ALTER TABLE auth_user ADD COLUMN stripe_subscription_id TEXT;

@@ -88,7 +88,8 @@ basicColumns = do ->
       'sqft', 'properties_selected', 'status']
 
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
-      'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash', 'stripe_customer_id'
+      'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash',
+      'stripe_customer_id', 'stripe_subscription_id',
       'email_validation_hash_update_time', 'email_validation_attempt',
       'email_validation_hash', 'email_is_valid']
 
