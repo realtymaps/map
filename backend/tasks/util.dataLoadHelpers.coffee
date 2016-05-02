@@ -47,7 +47,7 @@ _countInvalidRows = (subid, assignedFalse) ->
 
 
 recordChangeCounts = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
   subset =
