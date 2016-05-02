@@ -37,3 +37,57 @@ $fnMakeMapSettings()
       li:first-child
         border-top 1px solid $gray_ligther
         padding-top 12px
+
+  .settings-slider
+
+    rzslider
+      margin: 16px 0 16px
+
+    .rz-bubble
+      display: none;
+
+    .rz-bar-wrapper
+      padding-top: 10px;
+
+    .rz-bar
+      height: 12px;
+      background-color: $rm-slider-bar-color;
+
+      &.rz-selection
+        background-color: $rm-slider-bar-selected-color;
+
+    .rz-pointer
+      width: 18px;
+      height: 23px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      background-color: white;
+      border: solid 1px $rm-slider-handle-color;
+      margin-top 2px
+
+      &:hover
+        background: $rm-slider-bar-selected-color;
+
+    .rz-pointer:after
+      display: none;
+
+    .settings-slider-handle
+    .settings-slider-handle:before
+    .settings-slider-handle:after
+      background-color: $rm-slider-handle-color;
+      width: 2px;
+      height: 12px;
+      content: '';
+
+    .settings-slider-handle
+      position: relative;
+      margin-left: 7px;
+      margin-top: 4px;
+
+      &:before
+        position: absolute;
+        right: 4px;
+
+      &:after
+        position: absolute;
+        left: 4px;
