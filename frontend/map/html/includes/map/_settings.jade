@@ -10,7 +10,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
       .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
         h4.title Property Filters
         ul
-          li.setPrice.row
+          li.row
             span.label.col-md-3 Price
             .col-md-4
               input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="Minimum")
@@ -18,29 +18,22 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-4
               input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="Maximum")
 
-          li.setBeds.row
+          li.row
             span.label.col-md-3 Beds
-            .col-md-9
-              .btn-group
-                label.btn.btn-white.btn-radio(
-                  ng-class="{active: selectedFilters.bedsMin == c.value}"
-                  ng-repeat="c in filterValues.beds | filter: { value: '' }"
-                  ng-model="selectedFilters.bedsMin"
-                  btn-radio="{{c.value}}"
-                  uncheckable) {{c.name}}
-
-          li.setBath.row
+            .col-md-7.settings-row
+              .settings-slider
+                rzslider(rz-slider-model="selectedFilters.bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+            .col-md-1.label
+              {{selectedFilters.bedsMin}}+
+          li.row
             span.label.col-md-3 Baths
-            .col-md-9
-              .btn-group
-                label.btn.btn-white.btn-radio(
-                  ng-class="{active: selectedFilters.bathsMin == c.value}"
-                  ng-repeat="c in filterValues.baths | filter: { value: '' }"
-                  ng-model="selectedFilters.bathsMin"
-                  btn-radio="{{c.value}}"
-                  uncheckable) {{c.name}}
+            .col-md-7.settings-row
+              .settings-slider
+                rzslider(rz-slider-model="selectedFilters.bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+            .col-md-1.label
+              {{selectedFilters.bathsMin}}+
 
-          li.setSqft.row
+          li.row
             span.label.col-md-3 Sqft
             .col-md-4
               input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="Minimum")
@@ -48,7 +41,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-4
               input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="Maximum")
 
-          li.setAcres.row
+          li.row
             span.label.col-md-3 Acres
             .col-md-4
               select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
@@ -56,7 +49,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-4
               select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
-          li.set.setInShapes.row
+          li.row
             span.label.col-md-5 In Shapes / Neighborhoods
             .col-md-7
               .btn-group.pull-right
@@ -66,7 +59,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="Toggles.propertiesInShapes"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
-          li.set.row
+          li.row
             span.label.col-md-5 Old DrawToolbar
             .col-md-7
               .btn-group.pull-right
@@ -76,7 +69,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="Toggles.showOldToolbar"
                   btn-radio="{{c == 'show'}}"
                   uncheckable) {{c}}
-          li.set.row
+          li.row
             span.label.col-md-5 Combined Data
             .col-md-7
               .btn-group.pull-right
@@ -87,18 +80,18 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
         ul
-          li.showAdvanced.row
+          li.row
             span.label.col-md-12
               span(ng-show="showAdvanced" ng-click="showAdvanced = !showAdvanced") Hide Advanced Filters ▼
               span(ng-show="!showAdvanced" ng-click="showAdvanced = !showAdvanced") Show Advanced Filters ▲
 
         ul.advanced(ng-show="showAdvanced")
-          li.setOwner.row
+          li.row
             span.label.col-md-3 Owner Name
             .col-md-9
               input.form-control(type="text" ng-model="selectedFilters.ownerName")
 
-          li.setListed.row
+          li.row
             span.label.col-md-3 Listed Days
             .col-md-4
               select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
@@ -106,7 +99,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-4
               select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
 
-          li.setClosePrice.row
+          li.row
             span.label.col-md-3 Close Price
             .col-md-4
               input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
