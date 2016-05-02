@@ -160,4 +160,8 @@ module.exports =
     handle: (req, res, next) ->
       handleRoute res, next, () ->
         validBody = _appendProjectId(req, req.validBody)
-        filterSummaryService.getFilterSummary(currentProfile(req), validBody, undefined, DrawnShapesFiltSvc)
+        filterSummaryService.getFilterSummary(
+          state: currentProfile(req),
+          req: validBody,
+          filterSummaryImpl: DrawnShapesFiltSvc
+        )
