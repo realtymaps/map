@@ -161,7 +161,8 @@ loadRawData = (subtask) -> Promise.try () ->
           deletes
           dataType: "normParcel"
           rawDataType: "parcel"
-          subset: fipsCode
+          subset:
+            fips_code: fipsCode
         }
         replace: true
       }
