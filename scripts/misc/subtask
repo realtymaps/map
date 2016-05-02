@@ -15,13 +15,11 @@ argv = require('yargs').argv
 rewire = require('rewire')
 task = rewire('../../backend/tasks/' + argv.task)
 subtask = task.subtasks[argv.subtask]
+internal =  require './subtask.internal'
 
 if argv.debug
   console.log argv
 
-getNextSubtask = (taskName) ->
-  console.log "fake get next subtask #{taskName}"
-  task.subtasks[taskName]
 
 #mock jobQueue to call things directly
 task.__set__ 'jobQueue',
@@ -34,7 +32,7 @@ task.__set__ 'jobQueue',
         console.log "subtasksToRun: #{subtasksToRun}"
         newSubtask = _.merge {}, subtask,
           data: data
-        promises.push getNextSubtask(laterSubtaskName)(newSubtask)
+        promises.push internal.getNextSubtask(task, laterSubtaskName)(newSubtask)
 
         subtasksToRun++
 
@@ -43,17 +41,27 @@ task.__set__ 'jobQueue',
     Promise.all promises
 
   queueSubsequentPaginatedSubtask: ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData}) ->
-    totalOrList = _.take totalOrList, maxPage
 
-    console.log "Fake Pagenate taskName: #{laterSubtaskName}"
-    console.log "Fake Pagenate totalOrList: #{totalOrList}"
-    console.log "Fake Pagenate maxPage: #{maxPage}"
+    if !maxPage?
+      return internal.runPagedSubtask {task, subtask, totalOrList, maxPage, laterSubtaskName, mergeData}
 
-    subtask.data = _.merge {}, subtask.data, mergeData,
-      values: totalOrList
+    chunks = totalOrList.length / maxPage
+    promiseChunks = []
+    pagedPerProcess = 4
 
-    getNextSubtask(laterSubtaskName)(subtask)
+    totalChunks = for chunkIndex in [0..chunks]
+      do (chunkIndex) ->
+        start = chunkIndex * maxPage
+        totalOrList.slice(start, (start + maxPage) - 1)
 
+    for chunk, chunkIndex in totalChunks
+      do (chunk, chunkIndex) ->
+        if chunkIndex == 0 or (chunkIndex + 1) % pagedPerProcess == 0
+          promiseChunks.push internal.subtaskFork({task, chunkIndex, totalChunks, pagedPerProcess, subtask, maxPage, laterSubtaskName, mergeData})
+
+    Promise.all promiseChunks
+    .then () ->
+      "done promiseChunks"
 
 if !subtask
   console.error('subtask not found')

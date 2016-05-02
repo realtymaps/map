@@ -56,6 +56,8 @@ deleteInactiveRows = (subtask) ->
     logger.debug "Deleted #{count} rows from combined data table"
 
 deletePhotosPrep = (subtask) ->
+  numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
+
   tables.deletes.photos()
   .select('id')
   .then (ids) ->
@@ -63,7 +65,7 @@ deletePhotosPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
       totalOrList: ids
-      maxPage: NUM_ROWS_TO_PAGINATE
+      maxPage: numRowsToPageDeletePhotos
       laterSubtaskName: "deletePhotos"
     }
 

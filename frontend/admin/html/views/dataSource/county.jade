@@ -189,7 +189,7 @@
       .row.lookup(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
         .col-md-2 {{lookup.LongValue}}
         .col-md-2
-          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.mapping[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help(ng-show="$index == 0") Replace values with more readable values where necessary
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
@@ -533,6 +533,12 @@
         .col-md-2 Implicit Decimal Places
         .col-md-4
           input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+
+    .col-md-12.scroll(ng-show="fieldData.current.Interpretation == 'Lookup' && fieldData.current.list != 'base'")
+      .row
+        .col-md-2 Do Lookup Table Mapping?
+        .col-md-4
+          input(type="checkbox" ng-model="fieldData.current.config.doLookup" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
 
     .col-md-12.scroll
       .row.advanced

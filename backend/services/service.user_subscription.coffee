@@ -18,6 +18,8 @@ _getStripeIds = (userId, trx) ->
   .then (ids) ->
     ids
 
+# deprecated code, using subscription status instead of user_group for
+#   subscription-based access checks
 getPlan = (userId) ->
   tables.auth.m2m_user_group()
   .select(
@@ -25,9 +27,8 @@ getPlan = (userId) ->
     "#{tables.auth.group.tableName}.name as group_name"
   )
   .where "#{tables.auth.m2m_user_group.tableName}.user_id": userId
-  .join("#{tables.auth.group.tableName}", () ->
+  .join "#{tables.auth.group.tableName}", () ->
     this.on("#{tables.auth.group.tableName}.id", "#{tables.auth.m2m_user_group.tableName}.group_id")
-  )
   .then (plan) ->
     expectSingleRow plan
   .then (plan) ->
@@ -42,6 +43,8 @@ getPlan = (userId) ->
     .then (planDetails) ->
       _.merge plan, planDetails.value
 
+# deprecated code, using subscription status instead of user_group for
+#   subscription-based access checks
 setPlan = (userId, plan) ->
   tables.auth.m2m_user_group()
   .update group_id: plan

@@ -18,6 +18,8 @@ stripeErrors  = require '../utils/errors/util.errors.stripe'
 NUM_ROWS_TO_PAGINATE = 25
 
 findStripeErrors = (subtask) ->
+  numRowsToPageFindErrors = subtask.data.numRowsToPageFindErrors || NUM_ROWS_TO_PAGINATE
+  
   unless stripe
     logger.debug "stripe api is not ready in jobtask"
     return
@@ -28,7 +30,7 @@ findStripeErrors = (subtask) ->
   .where 'error_name', 'ilike', '%stripe%'
   .where 'attempts', '<', 'max_attempts' #get active ones
   .orderBy 'id'
-  .limit NUM_ROWS_TO_PAGINATE
+  .limit numRowsToPageFindErrors
   .then (queued) ->
     logger.debug "#{queued.length} stripe errors to fix."
     Promise.map queued, (row) ->

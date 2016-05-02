@@ -32,7 +32,7 @@
     "karma": "karma start karma.conf.coffee"
   },
   "dependencies": {
-    "JSONStream": "^0.10.0",
+    "JSONStream": "1.1.1",
     "archiver": "0.21.0",
     "async": "^0.9.0",
     "aws-sdk": "^2.2.39",
@@ -70,6 +70,7 @@
     "data-structures": "^1.4.2",
     "dbsync": "^1.1.2",
     "debug": "^2.2.0",
+    "deep-diff": "0.3.3",
     "del": "^0.1.3",
     "errorhandler": "1.2.X",
     "escape-html": "^1.0.1",
@@ -196,7 +197,7 @@
     "serve-favicon": "2.1.X",
     "serve-static": "1.X.X",
     "sharp": "0.14.0",
-    "shp2jsonx": "^1.0.1",
+    "shp2jsonx": "2.0.0",
     "sinon": "1.X.X",
     "split": "^0.3.3",
     "sprintf-js": "^1.0.2",

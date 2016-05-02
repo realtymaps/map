@@ -25,7 +25,7 @@ describe 'utils/validation.validators.map()'.ns().ns('Backend'), ->
         value.should.equal('xxx')
     ]
 
-  promiseIt 'map values', () ->
+  promiseIt 'should map values', () ->
     transformMap =
       map:
         dog: 'bark'
@@ -41,7 +41,26 @@ describe 'utils/validation.validators.map()'.ns().ns('Backend'), ->
         b: validators.map (transformMap)
         c: validators.map (transformMap)
       .then (value) ->
-        value.should.eql({a: transformMap.map.dog, b: transformMap.map.cat, c: transformMap.map.bigCat})
+        value.should.eql({a: 'bark', b: 'meow', c: 'RAAAR'})
+    ]
+
+  promiseIt 'should map lookup values', () ->
+    transformMap =
+      lookup:
+        dataSourceId: 'blackknight'
+        dataListType: 'deed'
+        lookupName: 'ADJUSTABLE_RATE_INDEX'
+    orig =
+      a:'12MTA'
+      b:'COFI'
+      c:'PRIME'
+    [
+      expectResolve validateAndTransform orig,
+        a: validators.map (transformMap)
+        b: validators.map (transformMap)
+        c: validators.map (transformMap)
+      .then (value) ->
+        value.should.eql({a: 'Twelve Month Average', b: 'Cost of Funds', c: 'Prime'})
     ]
 
   promiseIt 'generalize values', () ->

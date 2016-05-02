@@ -15,12 +15,16 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
+util = require 'util'
 
 
 NUM_ROWS_TO_PAGINATE = 2500
+HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
+DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getLastUpdateTimestamp({subtask})
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: HALF_YEAR_MILLISEC})
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
@@ -33,12 +37,35 @@ _filterImports = (subtask, imports) ->
     if subtask.data.fipsCodeLimit?
       logger.debug "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
       folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
-    filteredImports: folderObjs.map (f) -> f.name
-    refreshThreshold: refreshThreshold
 
+    # folderObjs = _.filter folderObjs, (f) -> #NOTE: for testing ONLY
+      # bad = f.match /17049/
+      # good = f.match /06009/
+
+    fileNames = folderObjs.map (f) -> f.name
+    fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug fipsCodes
+
+    if subtask.data.fipsCodes? && _.isArray subtask.data.fipsCodes
+      fileNames = _.filter fileNames, (name) ->
+        _.any subtask.data.fipsCodes, (code) ->
+          name.match new RegExp(code)
+
+      fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug fipsCodes
+
+    {
+      filteredImports: fileNames
+      refreshThreshold
+      fipsCodes
+    }
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   now = Date.now()
 
@@ -48,7 +75,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
   .then (imports) ->
     _filterImports(subtask, imports)
   .then ({filteredImports, refreshThreshold}) ->
-    # filteredImports = [filteredImports[0]] #NOTE: for testing ONLY
 
     filteredImports = filteredImports.map (f) ->
       fileName: f
@@ -80,37 +106,43 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
     ]
 
 loadRawData = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   {fileName} = subtask.data
   deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
+  numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   subtask.data.rawTableSuffix = fipsCode
+
+  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+
+  dataLoadHistory =
+    data_source_id: "#{subtask.task_name}_#{fipsCode}"
+    data_source_type: 'parcel'
+    data_type: 'parcel'
+    batch_id: subtask.batch_id
+    raw_table_name: rawTableName
 
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
     parcelsFetch.getParcelJsonStream(fileName, {creds})
     .then (jsonStream) ->
-      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-      dataLoadHistory =
-        data_source_id: "#{subtask.task_name}_#{fileName}"
-        data_source_type: 'parcel'
-        data_type: 'parcel'
-        batch_id: subtask.batch_id
-        raw_table_name: rawTableName
 
       dataLoadHelpers.manageRawJSONStream({
         tableName: rawTableName
         dataLoadHistory
         jsonStream
-        column: 'feature'
-        delay: 250
+        column: parcelHelpers.column
       })
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
       .catch (error) ->
         throw new SoftFail error.message
+    .catch NoShapeFilesError, (error) ->
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
+    .catch UnzipError, (error) ->
+      parcelHelpers.handleOveralNormalizeError {error, dataLoadHistory, numRawRows: 0, fileName}
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load parcels data for update')
     .catch (error) ->
@@ -142,7 +174,7 @@ loadRawData = (subtask) -> Promise.try () ->
       jobQueue.queueSubsequentPaginatedSubtask {
         subtask
         totalOrList: numRows
-        maxPage: NUM_ROWS_TO_PAGINATE
+        maxPage: numRowsToPageNormalize
         laterSubtaskName: "normalizeData"
         mergeData: {
           fipsCode
@@ -153,25 +185,28 @@ loadRawData = (subtask) -> Promise.try () ->
       }
 
 normalizeData = (subtask) ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
-  {fipsCode} = subtask.data
+  {fipsCode,  delay} = subtask.data
 
-  logger.debug subtask.data
-
-  dataLoadHelpers.getNormalizeRows subtask
+  dataLoadHelpers.getRawRows subtask
   .then (rows) ->
-    return if !rows?.length
-    # logger.debug rows[0]
+    if !rows?.length
+      logger.debug "no raw rows found for rm_raw_id #{subtask.data.offset+1} to #{subtask.data.offset+subtask.data.count}"
+      return
+    logger.debug "got #{rows.length} raw rows"
 
     parcelHelpers.saveToNormalDb {
       subtask
       rows
       fipsCode
+      delay: delay ? DELAY_MILLISECONDS
     }
 
 finalizeDataPrep = (subtask) ->
-  logger.debug subtask
+  numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
+  logger.debug util.inspect(subtask, depth: null)
 
   tables.property.normParcel()
   .select('rm_property_id')
@@ -179,10 +214,10 @@ finalizeDataPrep = (subtask) ->
   .then (ids) ->
     ids  = ids.map (id) -> id.rm_property_id
     # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  logger.debug subtask
+  logger.debug util.inspect(subtask, depth: null)
 
   Promise.map subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id, 250)

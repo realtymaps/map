@@ -275,7 +275,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getNormalizeRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
@@ -329,7 +329,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, doNormalization)
+  Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
     successes
 
@@ -346,8 +346,10 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
   delay ?= 100
+  getRowChanges ?= _getRowChanges
+
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
@@ -369,7 +371,8 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay}) -> 
       # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
-      changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      changes = getRowChanges(updateRow, result, diffExcludeKeys)
+
       if changes.deleted == stats.batch_id
         # it wasn't really deleted, just purged earlier in this task as per black knight data flow
         delete changes.deleted
@@ -508,6 +511,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
+    # logger.debug json
     if isFinished
       return
     count++
@@ -677,7 +681,7 @@ getUpdateThreshold = (opts) ->
   keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
   .then (lastRefreshTimestamp) ->
     now = Date.now()
-    if now.getTime() - lastRefreshTimestamp > fullRefreshMillis
+    if now - lastRefreshTimestamp > fullRefreshMillis
       # if more than the specified time has elapsed, refresh everything and handle deletes
       tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} === performing refresh for #{subtask.task_name}")
       return 0
@@ -696,7 +700,7 @@ module.exports = {
   activateNewData
   getValidationInfo
   normalizeData
-  getNormalizeRows
+  getRawRows
   getValues
   finalizeEntry
   manageRawDataStream
