@@ -17,7 +17,6 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   #
 
   setIdentity = (identity) ->
-    console.log "identity:\n#{JSON.stringify(identity,null,2)}"
     _identity = identity
     _authenticated = !!identity
     _resolved = true
