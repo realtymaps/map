@@ -73,7 +73,7 @@ StripeEvents = (stripe) ->
       # log the event in event history
       tables.event.history()
       .insert(
-        auth_user_id: db.raw("(select id from auth_user where stripe_customer_id = '#{validEvent.data.object.customer}')")
+        auth_user_id: tables.auth.user().select('id').where(stripe_customer_id: validEvent.data.object.customer)
         event_type: validEvent.type
         data_blob: validEvent
       ).then () ->
