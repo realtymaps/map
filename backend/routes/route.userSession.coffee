@@ -82,22 +82,22 @@ login = (req, res, next) -> Promise.try () ->
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
-      console.log "login()"
-      console.log "user:\n#{JSON.stringify(user)}"
-      req.user = user
-      logger.debug "session: #{req.session}"
-      req.session.userid = user.id
-      req.session.subscription_status = subscriptionSvc.getStatus user.stripe_subscription_id
+      subscriptionSvc.getStatus user.stripe_customer_id, user.stripe_subscription_id
+      .then (subscription_status) ->
+        req.user = user
+        req.session.userid = user.id
+        req.session.subscription = subscription_status
+        logger.debug "session: #{req.session}"
 
-      userUtils.cacheUserValues(req)
-      .then () ->
-        req.session.saveAsync()
-      .then () ->
-        sessionSecurityService.ensureSessionCount(req)
-      .then () ->
-        sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
-      .then () ->
-        identity(req, res, next)
+        userUtils.cacheUserValues(req)
+        .then () ->
+          req.session.saveAsync()
+        .then () ->
+          sessionSecurityService.ensureSessionCount(req)
+        .then () ->
+          sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
+        .then () ->
+          identity(req, res, next)
 
 identity = (req, res, next) ->
   res.json identity: userSessionService.getIdentity req

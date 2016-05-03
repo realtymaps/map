@@ -1,12 +1,37 @@
 .collapse-header
-  h2 Payment Method
-.row.collapse-header.subscription-details
-  h4 Plan
-  .row(ng-show="plan")
-    p {{plan.group_name}}
-  .row(ng-show="plan.canceled_at")
-    p Subscription has been deactivated. Service will expire {{plan.current_period_end}}
-  .row.help-block(ng-show="message")
-    p {{message}}
-  .row.subscription-buttons
-    .btn.btn-default(ng-hide="plan.group_name == 'Deactivated Account'" ng-click="unsubscribe()") Unsubscribe
+  h2 Subscription
+.row.collapse-header.subscription-details(ng-show="subscription")
+  .row(ng-hide="subscription.error")
+    .col-md-6
+      label Status
+      p(ng-show="subscription.canceled_at") Canceled
+      p(ng-show="!subscription.canceled_at") {{ subscription.status | humanize }}
+    .col-md-6
+      label Plan
+      p {{ subscription.plan.metadata.alias | humanize }}
+      p {{ subscription.plan.metadata.price | currency }} / Month
+    .col-md-6
+      label Member Since
+      p {{ subscription.start * 1000 | date:'MM/dd/yyyy' }}
+    .col-md-6
+      label Discounts
+      p(ng-show="subscription.discount") {{ subscription.discount | currency }}
+      p(ng-show="!subscription.discount") None
+    .col-md-6(ng-show="subscription.status == 'trialing' && !subscription.canceled_at")
+      label Trial End
+      p {{ subscription.trial_end * 1000 | date:'MM/dd/yyyy'  }}
+    .col-md-6(ng-show="subscription.status != 'trialing' && !subscription.canceled_at")
+      label Current Expiration
+      p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
+    .col-md-6(ng-show="subscription.canceled_at")
+      label Period End
+      p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
+    .col-md-6(ng-show="subscription.canceled_at")
+      label Canceled On
+      p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
+
+  .row.subscription-buttons(ng-hide="subscription.error")
+    .btn.btn-default(ng-hide="subscription.canceled_at" ng-click="unsubscribe()") Unsubscribe
+
+  .row.help-block(ng-show="subscription.error")
+    p {{ subscription.error }}
