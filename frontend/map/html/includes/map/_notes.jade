@@ -8,7 +8,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
     popover="Notes"
     popover-trigger="click mouseenter")
     span.icon.icon-note
-  .dropdown-menu.whiteblock.no-margin(ng-cloak)
+  .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
       span
         a(ng-show="map.markers.notes.length" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{map.markers.notes.length}} Notes
