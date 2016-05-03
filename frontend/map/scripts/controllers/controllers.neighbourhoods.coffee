@@ -43,6 +43,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
 
     remove: (model) ->
       $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
+      #deleting properties to get the delete to happen on the backend
       delete model.properties.neighbourhood_name
       delete model.properties.neighbourhood_details
       _signalUpdate drawnShapesSvc.update model
