@@ -42,12 +42,10 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
         _signalUpdate drawnShapesSvc.update model
 
     remove: (model) ->
-      # $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
+      $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
       delete model.properties.neighbourhood_name
       delete model.properties.neighbourhood_details
       _signalUpdate drawnShapesSvc.update model
-      # .then () ->
-      #   $scope.getAll()
 
 .controller 'rmapsMapNeighbourhoodsCtrl', (
   $rootScope,
@@ -57,11 +55,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
   rmapsDrawnUtilsService,
   rmapsEventConstants) ->
 
-  ###
-    Anything long term statewise goes here.
-  ###
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
-
   $log = $log.spawn("map:neighbourhoods")
 
   $scope.getAll = (cache) ->
@@ -70,7 +64,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
       $scope.neighbourhoods = _.indexBy data, 'properties.id'
 
   $scope.neighbourhoodListToggled = (isOpen) ->
-    $scope.getAll(false)
+    $scope.getAll()
     $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
 
   $scope.getAll()

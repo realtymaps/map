@@ -1,3 +1,5 @@
+include ../mixins/_circleNrMixin.jade
+
 span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-list"
   ng-controller="rmapsMapNeighbourhoodsCtrl" ng-model="isOpen"
   dropdown on-toggle="neighbourhoodListToggled(open);isOpen = open" auto-close="disabled")
@@ -21,16 +23,16 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-
             span.icon.icon-add_neighbourhood
             span New Neighborhood
       .inner
-        ul
-          li(ng-repeat="model in neighbourhoods")
-            div(ng-controller="rmapsNeighbourhoodsModalCtrl")
+        ul(ng-controller="rmapsNeighbourhoodsModalCtrl")
+          li(ng-repeat="(key, model) in neighbourhoods")
+            div
               span.enity
-                span.count {{$index+1}}.
-
-                span.content
-                  //- h3.title {{model.properties.neighbourhood_name}}
-                  p.title {{model.properties.neighbourhood_name}}
-                  //- p.text {{model.properties.neighbourhood_details}}
+                +circleNrMixin("{{$index+1}}")
+              
+              span.content
+                //- h3.title {{model.properties.neighbourhood_name}}
+                p.title {{model.properties.neighbourhood_name}}
+                //- p.text {{model.properties.neighbourhood_details}}
 
               span.actions
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

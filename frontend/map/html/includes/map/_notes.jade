@@ -21,9 +21,9 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
           span.icon.icon-add_note
           span New Note
     .inner
-      ul
+      ul(ng-controller="rmapsNotesModalCtrl")
         li(ng-repeat="note in map.markers.notes" ng-cloak)
-          div(ng-controller="rmapsNotesModalCtrl")
+          div
             span.enity
               +noteMixin('{{note.title}}','{{note.text}}','{{$index+1}}')
 
