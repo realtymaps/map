@@ -106,11 +106,14 @@ _validateAndTransform = ({req, localTransforms}) ->
   validatedQuery
 
 module.exports =
-  getFilterSummary: ({state, req, limit}) ->
+  getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
     limit ?= 2000
-    filterSummaryImpl = base
-    if req.state?.filters?.combinedData == true
-      filterSummaryImpl = combined
+    if !filterSummaryImpl
+      if req.state?.filters?.combinedData == true
+        filterSummaryImpl = combined
+      else
+        filterSummaryImpl = base
+
     Promise.try ->
       _validateAndTransform({req, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
