@@ -38,20 +38,24 @@ getRetsClient = (loginUrl, username, password, static_ip, handler) ->
   _getRetsClientInternalWrapper(loginUrl, username, password, static_ip)
   .then (retsClient) ->
     handler(retsClient)
-    .catch errorHandlingUtils.isCausedBy(rets.RetsReplyError), (error) ->
-      if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED"]
-        referenceId = [loginUrl, username, password, static_ip].join('__')
-        referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
-      throw error
-    .catch errorHandlingUtils.isCausedBy(rets.RetsServerError), (error) ->
-      if "#{error.httpStatus}" == "401"
-        referenceId = [loginUrl, username, password, static_ip].join('__')
-        referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
-      throw error
+  .catch isTransientRetsError, (error) ->
+    referenceId = [loginUrl, username, password, static_ip].join('__')
+    referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
+    throw error
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
 
 
+isTransientRetsError = (error) ->
+  cause = errorHandlingUtils.getRootCause(error)
+  if cause instanceof rets.RetsReplyError && cause.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
+    return true
+  if cause instanceof rets.RetsServerError && "#{cause.httpStatus }" == "401"
+    return true
+  return false
+
+
 module.exports = {
   getRetsClient
+  isTransientRetsError
 }

@@ -78,6 +78,9 @@ app.provider 'rmapsPageService', () ->
       goToMap: () ->
         $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
 
+      goToDashboard: () ->
+        $state.go 'project', { id: rmapsProfilesService.currentProfile?.project_id }
+
       #
       # Accessors
       #

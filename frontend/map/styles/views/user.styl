@@ -16,6 +16,36 @@
     min-width: 80% !important
     
 
+all-buttons()
+  padding-top: 30px
+
+all-details()
+  margin: auto
+  padding: 0 0 15px 0
+
+  .row
+    margin: auto
+    padding: 0
+  
+  h4
+    font-weight: 800
+    margin-bottom: 30px
+
+  img
+    width: 40px
+    height: auto
+
+  label
+    color: $gray_medium
+  
+  label, p
+    font-family: "museo_sans500"
+    font-size: 14px
+    font-weight: 600
+    line-height: 15px
+    padding: 0
+
+
 .user
   @extends .table-view
   .table .fa-caret-down, .table .fa-caret-up
@@ -44,31 +74,24 @@
   .collapse-header
     border-bottom 1px solid $gray_lighter
 
-  .cc-details
-    margin: auto
-    padding: 0 0 15px 0
+  .help-block
+    color: $rm-message-error
 
-    .row
-      margin: auto
-      padding: 0
+  // Basically each user account page content can be reduced to "details", and "buttons".
+  // This is some inheritance to help keep styles consistent and organized,
+  //   while still being able to single-out special-case things per page
+  .cc-details
+    all-details()
 
     .cc-buttons
-      padding-top: 30px
-    
-    h4
-      font-weight: 800
-      margin-bottom: 30px
+      all-buttons()
 
-    img
-      width: 40px
-      height: auto
+
+  .subscription-details
+    all-details()
 
     label
-      color: $gray_medium
-    
-    label, p
-      font-family: "museo_sans500"
-      font-size: 14px
-      font-weight: 600
-      line-height: 15px
-      padding: 0
+      margin-top: 20px
+
+    .subscription-buttons
+      all-buttons()

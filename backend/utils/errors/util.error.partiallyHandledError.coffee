@@ -14,17 +14,30 @@ class PartiallyHandledError extends VError
       logger.error "Error reference: #{ref}\nDetails: #{analyzeValue.getSimpleDetails(args[0])}"
       @message = @message + " (Error reference #{ref})"
 
-module.exports =
-  PartiallyHandledError: PartiallyHandledError
-  isUnhandled: (err) ->
-    !err? || !(err instanceof PartiallyHandledError)
-  isCausedBy: (errorType, _err) ->
-    check = (err) ->
-      cause = err
-      while cause instanceof PartiallyHandledError
-        cause = cause.jse_cause
-      return cause instanceof errorType
-    if _err
-      return check(_err)
-    else
-      return check
+
+isUnhandled = (err) ->
+  !err? || !(err instanceof PartiallyHandledError)
+
+
+isCausedBy = (errorType, _err) ->
+  check = (err) ->
+    return getRootCause(err) instanceof errorType
+  if _err
+    return check(_err)
+  else
+    return check
+
+
+getRootCause = (err) ->
+  cause = err
+  while cause instanceof PartiallyHandledError
+    cause = cause.jse_cause
+  return cause
+
+
+module.exports = {
+  PartiallyHandledError
+  isUnhandled
+  isCausedBy
+  getRootCause
+}

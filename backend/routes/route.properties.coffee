@@ -99,7 +99,10 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        filterSummaryService.getFilterSummary(currentProfile(req), req.validBody)
+        filterSummaryService.getFilterSummary(
+          state: currentProfile(req)
+          req: req.validBody
+        )
 
   parcelBase:
     method: "post"
@@ -157,4 +160,8 @@ module.exports =
     handle: (req, res, next) ->
       handleRoute res, next, () ->
         validBody = _appendProjectId(req, req.validBody)
-        filterSummaryService.getFilterSummary(currentProfile(req), validBody, undefined, DrawnShapesFiltSvc)
+        filterSummaryService.getFilterSummary(
+          state: currentProfile(req),
+          req: validBody,
+          filterSummaryImpl: DrawnShapesFiltSvc
+        )

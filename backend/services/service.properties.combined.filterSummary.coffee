@@ -17,7 +17,7 @@ minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
-  baths: validators.integer()
+  baths: validators.float()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
 
@@ -42,6 +42,10 @@ transforms = do ->
                 ]
               validators.defaults(defaultValue: [])
             ]
+            address: [
+              validators.object()
+              validators.defaults(defaultValue: {})
+            ]
           validators.defaults(defaultValue: {})
       ]
   bounds:
@@ -51,10 +55,6 @@ transforms = do ->
       validators.array(minLength: 2)
     ]
     required: true
-  address: [
-    validators.object()
-    validators.defaults(defaultValue: {})
-  ]
   returnType: validators.string()
 
 _getDefaultQuery = ->
@@ -69,7 +69,7 @@ _getResultCount = (validatedQuery) ->
   query
 
 _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
-  logger.debug -> validatedQuery
+  logger.debug -> query.toString()
 
   # TODO: permissions
 
@@ -78,12 +78,12 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   return query if !filters?.status?.length
   throw new Error('knex starting query missing!') if !query
 
+  query.whereNotNull('geometry')
+
   query.limit(limit) if limit
   if bounds
     query.orWhere ->
       sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
-      # TODO: remove this line, it is a temp hack since no geometry data exists yet
-      query.whereNull('geometry_raw')
 
   if filters.status.length < statuses.length
     sqlHelpers.whereIn(query, "#{dbFn.tableName}.status", filters.status)
@@ -96,7 +96,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     query.where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
 
   if filters.bathsMin
-    query.where("#{dbFn.tableName}.baths_full", ">=", filters.bathsMin)
+    query.where("#{dbFn.tableName}.baths_total", ">=", filters.bathsMin)
 
   if filters.hasOwner?
     # only checking owner_name here and now owner_name2 because we do normalization in the property summary
@@ -123,23 +123,38 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   if filters.listedDaysMax
     query.where("days_on_market", "<=", filters.listedDaysMax)
 
-  # TODO: make this work with new json address field (example: {"lines":["3325 West Washington Boulevard","Unit 2","Chicago, IL"],"strength":51})
   # If full address available, include matched property in addition to other matches regardless of filters
-  # filters.address = _.pick filters.address, filterAddress.keys
-  # filters.address = _.omit filters.address, _.isEmpty
-  # if _.keys(filters.address).length == filterAddress.keys.length
-  #   query.orWhere ->
-  #     for key, value of filters.address
-  #       if key == 'zip'
-  #         # Match 5-digit zip even if DB contains zip ext
-  #         @where("#{dbFn.tableName}.#{key}", "like", "#{value}%")
-  #       else
-  #         @where("#{dbFn.tableName}.#{key}", "=", value)
+  filters.address = _.pick filters.address, filterAddress.keys
+  filters.address = _.omit filters.address, _.isEmpty
+  if _.keys(filters.address).length == filterAddress.keys.length
+    logger.debug filters.address
+    addressString = "#{filters.address.street_address_num} #{filters.address.street_address_name} #{filters.address.city}, #{filters.address.state} #{filters.address.zip.slice(0,5)}"
+    logger.debug "addressString: #{addressString}"
+    query.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
+    query.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
+
+  logger.debug query.toString()
 
   query
 
+transformProperties = (properties) ->
+  streetRe = /^(\d+)\s*(.+)/
+  cityRe = /^(.+),\s*(.+)/
+  for prop in properties
+    if prop.address?
+      # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
+      lines = prop.address.lines.slice(-3)
+      streetLine = lines[0].match(streetRe)
+      cityLine = lines[1].match(cityRe)
+      prop.street_address_num = streetLine[1]
+      prop.street_address_name = streetLine[2]
+      prop.city = cityLine[1]
+      prop.state = cityLine[2]
+      prop.zip = lines[2] ? '99999'
+
 module.exports =
   transforms: transforms
+  transformProperties: transformProperties
 
   getDefaultQuery: _getDefaultQuery
 

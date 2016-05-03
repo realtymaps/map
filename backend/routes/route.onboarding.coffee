@@ -63,6 +63,7 @@ handles = wrapHandleRoutes handles:
               # console.log.magenta "planId/groupId: #{groupId}"
               logger.debug "auth_user_id: #{id}"
               #give plan / group permissions
+              # (deprecated, we'll use subscription status and plan data off stripe instead)
               tables.auth.m2m_user_group(transaction: trx)
               .insert user_id: parseInt(id), group_id: parseInt(groupId)
               .then ->
@@ -72,7 +73,8 @@ handles = wrapHandleRoutes handles:
             tables.auth.user(transaction: trx).select(basicColumns.user.concat(["id"])...)
             .where id: parseInt id
           .then (authUser) ->
-            authUser = expectSingleRow(authUser)
+            expectSingleRow(authUser)
+          .then (authUser) ->
             logger.debug {fips_code, mls_code, mls_id, plan}, true
             if !fips_code and !(mls_code and mls_id)
               throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")

@@ -137,6 +137,8 @@ app.controller 'rmapsProjectCtrl',
       .then (properties) ->
         $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
+    else
+      $scope.loadedProperties = true
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
     loadClients()

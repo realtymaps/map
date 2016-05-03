@@ -1,6 +1,5 @@
 tables = require '../config/tables'
 Promise = require 'bluebird'
-jobQueue = require '../services/service.jobQueue'
 validation = require '../utils/util.validation'
 validatorBuilder = require '../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
@@ -14,8 +13,9 @@ copyStream = require 'pg-copy-streams'
 utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
 rets = require 'rets-client'
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 parcelUtils = require '../utils/util.parcel'
+keystore = require '../services/service.keystore'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 DELETE =
@@ -47,12 +47,13 @@ _countInvalidRows = (subid, assignedFalse) ->
 
 
 recordChangeCounts = (subtask) -> Promise.try () ->
-  logger.debug subtask
+  logger.debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
   subset =
     data_source_id: subtask.task_name
   _.extend(subset, subtask.data.subset)
+
   deletedPromise = Promise.try () ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
@@ -182,6 +183,11 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
           data_source_id: subtask.task_name
           batch_id: subtask.batch_id
         .delete()
+    .then () ->
+      setLastUpdateTimestamp(subtask)
+    .then () ->
+      if subtask.setRefreshTimestamp
+        setLastRefreshTimestamp(subtask)
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -269,7 +275,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getNormalizeRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
@@ -285,40 +291,48 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
-  # get start time for "last updated" stamp
-  startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
-  doNormalization = (rows, validationInfo, startTime) ->
+  doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
-        up_to_date: startTime
-      Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+        up_to_date: new Date(subtask.data.startTime)
+      validateSingleField = (definitions) ->
+        validation.validateAndTransform(row, definitions)
+      Promise.props(_.mapValues(validationInfo.validationMap, validateSingleField))
       .cancellable()
-      .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
+      .then (normalizedData) ->
+        options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
-        updateRecord {
+        updateRecord({
           updateRow
           stats
           diffExcludeKeys: validationInfo.diffExcludeKeys
           dataType: subtask.data.dataType
           subid: subtask.data.normalSubid
-        }
-      .then (rm_property_id) ->
-        successes.push(rm_property_id)
-      #.then () ->
-      #  tables.temp(subid: rawSubid)
-      #  .where(rm_raw_id: row.rm_raw_id)
-      #  .update(rm_valid: true)
+        })
+        .then (rm_property_id) ->
+          successes.push(rm_property_id)
+        #.then () ->
+        #  tables.temp(subid: rawSubid)
+        #  .where(rm_raw_id: row.rm_raw_id)
+        #  .update(rm_valid: true)
+        .catch analyzeValue.isKnexError, (err) ->
+          jsonData = JSON.stringify(updateRow,null,2)
+          logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+          tables.temp(subid: rawSubid)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-  Promise.join(getNormalizeRows(subtask, rawSubid), validationPromise, startTimePromise, doNormalization)
+  Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
     successes
+
 
 _specialUpdates =
   normParcel:
@@ -330,8 +344,13 @@ _specialUpdates =
       tables.property.normParcel()
       .raw parcelUtils.updateParcelStr {row, tableName: 'parcel', database: 'normalized'}
 
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow}) -> Promise.try () ->
-  Promise.delay(100)  #throttle for heroku's sake
+
+# this function mutates a parameter, and that is by design -- please don't "fix" that without care
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
+  delay ?= 100
+  getRowChanges ?= _getRowChanges
+
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
     tables.property[dataType](subid: subid)
@@ -352,7 +371,8 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow}) -> Promise
       # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
-      changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      changes = getRowChanges(updateRow, result, diffExcludeKeys)
+
       if changes.deleted == stats.batch_id
         # it wasn't really deleted, just purged earlier in this task as per black knight data flow
         delete changes.deleted
@@ -491,6 +511,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
+    # logger.debug json
     if isFinished
       return
     count++
@@ -642,26 +663,36 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
-refreshThreshold = (subtask, opts) ->
-  {fullRefreshMilliSec, logDescription} = opts
 
-  onMissingArgsFail
-    args: opts
-    required: Object.keys {fullRefreshMilliSec}
+getLastUpdateTimestamp = (opts) ->
+  {subtask} = opts
+  keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
-  logDescription ?= ''
 
-  jobQueue.getLastTaskStartTime(subtask.task_name)
-  .then (lastSuccess) ->
-    now = new Date()
-    tempLogger = logger.spawn(logDescription + subtask.task_name)
-    if now.getTime() - lastSuccess.getTime() > fullRefreshMilliSec || now.getDate() != lastSuccess.getDate()
-      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      tempLogger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
-      return new Date(0)
+setLastUpdateTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+
+
+getUpdateThreshold = (opts) ->
+  {fullRefreshMillis, subtask} = opts
+
+  tempLogger = logger.spawn('task').spawn(subtask.task_name)
+
+  keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
+  .then (lastRefreshTimestamp) ->
+    now = Date.now()
+    if now - lastRefreshTimestamp > fullRefreshMillis
+      # if more than the specified time has elapsed, refresh everything and handle deletes
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} === performing refresh for #{subtask.task_name}")
+      return 0
     else
-      tempLogger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
-      return lastSuccess
+      tempLogger.debug("Last full refresh: #{lastRefreshTimestamp} --- performing incremental update for #{subtask.task_name}")
+      return keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
+
+
+setLastRefreshTimestamp = (subtask) ->
+  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
+
 
 module.exports = {
   buildUniqueSubtaskName
@@ -669,14 +700,17 @@ module.exports = {
   activateNewData
   getValidationInfo
   normalizeData
-  getNormalizeRows
+  getRawRows
   getValues
   finalizeEntry
   manageRawDataStream
   manageRawJSONStream
   ensureNormalizedTable
   DELETE
-  refreshThreshold
   rollback
   updateRecord
+  getLastUpdateTimestamp
+  setLastUpdateTimestamp
+  getUpdateThreshold
+  setLastRefreshTimestamp
 }

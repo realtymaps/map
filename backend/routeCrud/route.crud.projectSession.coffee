@@ -52,8 +52,8 @@ class ClientsCrud extends RouteCrud
     If a new user is created,
   ###
   rootPOST: (req, res) ->
-    throw Error('User not logged in') unless req.user
-    throw Error('Project ID required') unless req.params.id
+    throw new Error('User not logged in') unless req.user
+    throw new Error('Project ID required') unless req.params.id
 
     newUser =
       date_invited: new Date()

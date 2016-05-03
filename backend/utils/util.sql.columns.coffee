@@ -25,10 +25,26 @@ basicColumns = do ->
       'owner_zip'
     ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     filterCombined: [
-      'rm_property_id', 'address', 'geometry_raw AS geometry',
-      'geometry_center', 'status', 'owner_name', 'owner_name_2', 'year_built', 'acres', 'sqft_finished', 'baths_full',
-      'bedrooms', 'price', 'owner_address'
-    ].map((name)-> tables.property.combined.tableName + '.' + name).join(', ')
+      'rm_property_id',
+      'address',
+      'geometry',
+      'geometry_center AS geom_point_json',
+      'status AS rm_status',
+      'owner_name',
+      'owner_name_2 as owner_name2',
+      'year_built',
+      'acres',
+      'sqft_finished as finished_sqft',
+      'baths_total',
+      "baths"
+      'bedrooms',
+      'price',
+      'owner_address'
+    ].map((name)-> tables.property.combined.tableName + '.' + name)
+    .concat [
+      "floor(#{tables.property.combined.tableName}.baths_total)::int as baths_full",
+      "(case when (#{tables.property.combined.tableName}.baths_total::int - #{tables.property.combined.tableName}.baths_total) > 0 then 1 else 0 end) as baths_half"
+    ].join(', ')
     # columns returned for additional detail results
     detail: [
       'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
@@ -69,10 +85,11 @@ basicColumns = do ->
     notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
-      'sqft', 'properties_selected']
+      'sqft', 'properties_selected', 'status']
 
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
-      'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash', 'stripe_customer_id'
+      'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash',
+      'stripe_customer_id', 'stripe_subscription_id',
       'email_validation_hash_update_time', 'email_validation_attempt',
       'email_validation_hash', 'email_is_valid']
 

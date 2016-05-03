@@ -1,6 +1,8 @@
 Promise = require 'bluebird'
+_ = require 'lodash'
+diff = require('deep-diff').diff
 
-logger = require('../config/logger').spawn('(tasks) util.parcelHelpers')
+logger = require('../config/logger').spawn('task:digimaps:parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -8,15 +10,32 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+validation = require '../utils/util.validation'
 
-DELAY_MILLISECONDS = 100
+column = 'feature'
+
+diffExcludeKeys = [
+  'rm_inserted_time'
+  'rm_modified_time'
+  'geom_polys_raw'
+  'geom_point_raw'
+  'change_history'
+  # 'deleted'
+  # 'inserted'
+  # 'updated'
+]
+
+getRowChanges = (row1, row2) ->
+  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys))
 
 
-saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
+saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
   tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  delay ?= 100
 
   jobQueue.getLastTaskStartTime(subtask.task_name, false)
   .then (startTime) ->
@@ -29,44 +48,55 @@ saveToNormalDb = ({subtask, rows, fipsCode}) -> Promise.try ->
       startTime
     }
 
+    logger.debug "got #{normalPayloads.length} normalized rows"
+
     tablesPropName = 'norm'+tableName.toInitCaps()
 
-    promises = for payload in normalPayloads
-      do (payload) ->
-        # logger.debug 'payload'
-        # logger.debug payload
 
-        {row, stats, error} =  payload
+    #these promises must happen in order since we might have multiple props of the same rm_property_id
+    # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
+    #THIS FIXES insert collisions when they should be updates
+    #TODO: Bluebird 3.X use mapSeries
+    Promise.each normalPayloads, (payload) ->
+      # logger.debug payload
 
-        Promise.try () ->
-          if error
-            throw error
+      #NOTE: rm_raw_id is always defined which is why it is destructured here
+      # this way we do not need to check for stats or row defined.
+      {row, stats, error, rm_raw_id} =  payload
 
-          # logger.debug "calling updateRecord"
-          dataLoadHelpers.updateRecord {
-            stats
-            dataType: tablesPropName
-            updateRow: row
-          }
-        .then () ->
-          tables.temp(subid: rawSubid)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: true, rm_error_msg: null)
-          .then () ->
-        .catch (err) ->
-          tables.temp(subid: rawSubid)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: err.toString())
+      Promise.try () ->
+        if error
+          throw error
 
-    Promise.all promises
+        dataLoadHelpers.updateRecord {
+          stats
+          dataType: tablesPropName
+          updateRow: row
+          delay
+          getRowChanges
+        }
+      #removed for performance
+      #.then () ->
+      #  tables.temp(subid: rawSubid)
+      #  .where({rm_raw_id})
+      #  .update(rm_valid: true, rm_error_msg: null)
+      .catch analyzeValue.isKnexError, (err) ->
+        jsonData = JSON.stringify(row,null,2)
+        logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+        tables.temp(subid: rawSubid)
+        .where({rm_raw_id})
+        .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+      .catch validation.DataValidationError, (err) ->
+        tables.temp(subid: rawSubid)
+        .where({rm_raw_id})
+        .update(rm_valid: false, rm_error_msg: err.toString())
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
-    .catch (error) ->
-      throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
-_finalizeUpdateListing = ({id, subtask}) ->
+_finalizeUpdateListing = ({id, subtask, delay}) ->
+  delay ?= 100
   #should not need owner promotion logic since it should have already been done
-  Promise.delay(DELAY_MILLISECONDS)  #throttle for heroku's sake
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     dbs.get('main').transaction (transaction) ->
       tables.property.combined(transaction: transaction)
@@ -93,10 +123,11 @@ finalizeParcelEntry = (entries) ->
   entry.update_source = entry.data_source_id
   entry
 
-_finalizeNewParcel = ({parcels, id, subtask}) ->
+_finalizeNewParcel = ({parcels, id, subtask, delay}) ->
+  delay ?= 100
   parcel = finalizeParcelEntry(parcels)
 
-  Promise.delay(DELAY_MILLISECONDS)  #throttle for heroku's sake
+  Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     dbs.get('main').transaction (transaction) ->
       tables.property.parcel(transaction: transaction)
@@ -109,7 +140,7 @@ _finalizeNewParcel = ({parcels, id, subtask}) ->
         tables.property.parcel(transaction: transaction)
         .insert(parcel)
 
-finalizeData = (subtask, id) -> Promise.try () ->
+finalizeData = (subtask, id, delay) -> Promise.try () ->
   ###
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
@@ -129,8 +160,8 @@ finalizeData = (subtask, id) -> Promise.try () ->
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
 
-    finalizeListingPromise = _finalizeUpdateListing({id, subtask})
-    finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask})
+    finalizeListingPromise = _finalizeUpdateListing({id, subtask, delay})
+    finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask, delay})
 
     Promise.all [finalizeListingPromise, finalizeParcelPromise]
 
@@ -143,9 +174,38 @@ activateNewData = (subtask) ->
     deletesPropName: 'parcel'
   }
 
+handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
+  errorLogger = logger.spawn('handleOveralNormalizeError')
+
+  errorLogger.debug "handling error"
+  errorLogger.debug error
+  errorLogger.debug fileName
+
+  updateEntity =
+    rm_valid: false
+    rm_error_msg: fileName + " : " + error.message
+    raw_rows: 0
+
+  tables.jobQueue.dataLoadHistory()
+  .where dataLoadHistory
+  .then (results) ->
+    if results?.length
+      tables.jobQueue.dataLoadHistory()
+      .where dataLoadHistory
+      .update updateEntity
+    else
+      tables.jobQueue.dataLoadHistory()
+      .insert _.extend {}, dataLoadHistory, updateEntity
+  .then () ->
+    if numRawRows?
+      numRawRows
+
+
 module.exports = {
   saveToNormalDb
   finalizeData
   finalizeParcelEntry
   activateNewData
+  handleOveralNormalizeError
+  column
 }
