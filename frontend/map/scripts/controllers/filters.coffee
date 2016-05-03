@@ -20,6 +20,9 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
   $scope.bedsSlider = options: floor: MIN_BEDS, ceil: MAX_BEDS, step: 1
   $scope.bathsSlider = options: floor: MIN_BATHS, ceil: MAX_BATHS, step: 0.5, precision: 1
 
+  $scope.selectedFilters.bedsMin ?= MIN_BEDS
+  $scope.selectedFilters.bathsMin ?= MIN_BATHS
+
   $scope.reset = ->
     $log.debug 'reset'
     $scope.selectedFilters.bedsMin = MIN_BEDS
