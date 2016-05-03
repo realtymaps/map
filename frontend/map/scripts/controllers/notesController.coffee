@@ -1,3 +1,4 @@
+###global _, L###
 app = require '../app.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'

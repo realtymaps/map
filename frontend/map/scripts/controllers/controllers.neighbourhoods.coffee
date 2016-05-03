@@ -1,6 +1,6 @@
 ###global _###
 app = require '../app.coffee'
-template = do require '../../html/views/templates/modals/neighbourhood.jade'
+template = do require '../../html/views/templates/modals/neighbourhoodModal.jade'
 
 app.controller 'rmapsNeighbourhoodsModalCtrl', ($rootScope, $scope, $modal,
 rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsService, rmapsMapTogglesFactory) ->
@@ -42,12 +42,20 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
         _signalUpdate drawnShapesSvc.update model
 
     remove: (model) ->
+      # $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
       delete model.properties.neighbourhood_name
       delete model.properties.neighbourhood_details
       _signalUpdate drawnShapesSvc.update model
+      # .then () ->
+      #   $scope.getAll()
 
-.controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http,
-$log, rmapsDrawnUtilsService, rmapsEventConstants) ->
+.controller 'rmapsMapNeighbourhoodsCtrl', (
+  $rootScope,
+  $scope,
+  $http,
+  $log,
+  rmapsDrawnUtilsService,
+  rmapsEventConstants) ->
 
   ###
     Anything long term statewise goes here.
@@ -56,13 +64,13 @@ $log, rmapsDrawnUtilsService, rmapsEventConstants) ->
 
   $log = $log.spawn("map:neighbourhoods")
 
-  getAll = (cache) ->
-    drawnShapesSvc.getNeighborhoodsNormalized(cache).then (data) ->
-      $log.debug "received data #{data.length} " if data?.length
-      $scope.neighbourhoods = data
+  $scope.getAll = (cache) ->
+    drawnShapesSvc.getNeighborhoodsNormalized(cache)
+    .then (data) ->
+      $scope.neighbourhoods = _.indexBy data, 'properties.id'
 
   $scope.neighbourhoodListToggled = (isOpen) ->
-    getAll(false)
+    $scope.getAll(false)
     $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
 
-  getAll()
+  $scope.getAll()

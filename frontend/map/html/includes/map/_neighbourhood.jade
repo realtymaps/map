@@ -28,9 +28,9 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-
                 span.count {{$index+1}}.
 
                 span.content
-                  a(href="#/neighbourhoods/{{model.properties.id}}")
-                  h3.title {{model.properties.neighbourhood_name}}
-                  p.text {{model.properties.neighbourhood_details}}
+                  //- h3.title {{model.properties.neighbourhood_name}}
+                  p.title {{model.properties.neighbourhood_name}}
+                  //- p.text {{model.properties.neighbourhood_details}}
 
               span.actions
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
