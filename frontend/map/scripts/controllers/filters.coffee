@@ -38,6 +38,7 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
     $scope.selectedFilters.closePriceMin = null
     $scope.selectedFilters.closePriceMax = null
     $scope.selectedFilters.ownerName = null
+    $scope.selectedFilters.propertyType = null
 
   $scope.toggled = ->
     $log.debug 'forceRender'
@@ -48,3 +49,5 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
       ), 10
     ), 10
 
+  $scope.onChange = ->
+    $log.debug $scope.selectedFilters
