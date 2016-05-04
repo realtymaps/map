@@ -2,15 +2,27 @@
 app = require '../app.coffee'
 template = do require '../../html/views/templates/modals/neighbourhoodModal.jade'
 
-app.controller 'rmapsNeighbourhoodsModalCtrl', ($rootScope, $scope, $modal,
-rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsService, rmapsMapTogglesFactory) ->
+app.controller 'rmapsNeighbourhoodsModalCtrl', (
+$rootScope,
+$scope,
+$modal,
+rmapsProjectsService,
+rmapsMainOptions,
+rmapsEventConstants,
+rmapsDrawnUtilsService,
+rmapsMapTogglesFactory,
+rmapsLeafletHelpers) ->
 
   _event = rmapsEventConstants.neighbourhoods
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   $scope.centerOn = (model) ->
-    $rootScope.$emit rmapsEventConstants.map.zoomToProperty, model
+    #zoom to bounds on shapes
+    #handle polygons, circles, and points
+    featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(model)
+    feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
+    $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, feature.getBounds()
 
   _signalUpdate = (promise) ->
     return $rootScope.$emit _event unless promise

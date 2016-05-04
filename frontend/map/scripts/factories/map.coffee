@@ -78,11 +78,14 @@ app.factory 'rmapsMapFactory',
         #
         # Property Button events
         #
-        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) ->
-          self.zoomTo result, false
+        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
+          @zoomTo result, false
 
-        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
-          self.zoomTo result, doChangeZoom
+        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
+          @zoomTo result, doChangeZoom
+
+        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds) =>
+          @fitBounds bounds
 
         $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
 
@@ -348,7 +351,7 @@ app.factory 'rmapsMapFactory',
         if result.geometry?
           result =  result.geometry
 
-        if !result?.coordinates?
+        if !result?.coordinates?.length > 1
           return
 
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])
