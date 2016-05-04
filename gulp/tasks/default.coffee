@@ -1,18 +1,17 @@
 gulp = require 'gulp'
-[
-  './spec'
-  './json'
-  './express'
-  './minify'
-  './gzip'
-  './complexity'
-  './checkdir'
-  './clean'
-  './otherAssets'
-  './watch'
-  './angular'
-].forEach (dep) ->
-  require dep
+require './spec'
+require './json'
+require './express'
+require './minify'
+require './gzip'
+require './complexity'
+require './checkdir'
+require './clean'
+require './otherAssets'
+require './watch'
+require './angular'
+require './mocha'
+
 
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used
 # help = require('gulp-help')(gulp) #BROKEN IN GULP 4
@@ -30,7 +29,7 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series 'prodAssetCheck',  gulp.series('otherAssets', 'angular', 'angularAdmin'), 'minify', 'gzip'
+gulp.task 'prod', gulp.series('backendIntegrationSpec', 'prodAssetCheck', 'otherAssets', 'angular', 'angularAdmin', 'minify', 'gzip')
 
 gulp.task 'default', gulp.parallel 'develop'
 
