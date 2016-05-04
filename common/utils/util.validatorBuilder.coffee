@@ -189,8 +189,8 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        config:
-          transformString: 'forceInitCaps'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
 
   county:
@@ -282,8 +282,8 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        config:
-          transformString: 'forceInitCaps'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
     mortgage:
       address:
