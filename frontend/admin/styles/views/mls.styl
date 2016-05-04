@@ -1,12 +1,49 @@
 $wizardPaneWidth = 775px
 $wizardPaneHeight = 250px
 
+mlsPanels()
+  .panel > .panel-heading
+    background-color: #337ab7
+    padding: 1em
+
+  .panel > .panel-body
+    border: 0
+    padding: 1em
+    overflow: auto
+    table
+      width: 100%
+
+mlsIcon()
+  .mls-icon
+    display: inline
+    width: 80px
+
+
+.mls-config-modal
+  mlsPanels()
+
+  .icon-list
+    mlsIcon()    
+    .selected
+      border: 1px solid #444
+      border-radius: 8px
+
+
 .mls-container
   padding-top: 3px
+
+  mlsPanels()
+  .panel > .panel-body
+    overflow: scroll
+
+  mlsIcon()
 
   *, h1, h2, h3, h4, h5, h6
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
     color: #000
+
+  table tr td:first-of-type
+    width: 20%
 
   .nav *, .panel-heading
     letter-spacing: 0.2em
@@ -30,17 +67,6 @@ $wizardPaneHeight = 250px
     font-size: 16px
     font-weight: bold
     text-align: left;
-
-  .panel > .panel-heading
-    background-color: #337ab7
-    padding: 1em
-
-  .panel > .panel-body
-    border: 0
-    padding: 1em
-    overflow: scroll
-    table
-      width: 100%
 
   .config-container
     position: relative

@@ -8,6 +8,7 @@ ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
 
+mlsServerFields = ['url', 'username', 'password']
 
 class MlsConfigService extends ServiceCrud
 
@@ -36,8 +37,10 @@ class MlsConfigService extends ServiceCrud
         mlsConfig
 
   update: (entity) ->
+    console.log "update(), entity:\n#{JSON.stringify(entity,null,2)}"
     # as config options are added to the mls_config table, they need to be added here as well
-    super(_.pick(entity, ['id', 'name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip']))
+    super(_.omit(entity, mlsServerFields.concat ['ready'])) # 'ready' is a maintenance field from frontend
+    #super(_.pick(entity, ['id', 'name', 'formal_name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip', 'disclaimer_logo', 'disclaimer_text']))
 
   updatePropertyData: (id, propertyData) ->
     @update({id: id, listing_data: propertyData})
@@ -46,7 +49,7 @@ class MlsConfigService extends ServiceCrud
   updateServerInfo: (id, serverInfo) ->
     externalAccounts.getAccountInfo(id)
     .then (accountInfo) ->
-      update = _.pick(serverInfo, ['url', 'username', 'password'])
+      update = _.pick(serverInfo, mlsServerFields)
       update.name = id
       update.environment = accountInfo.environment
       externalAccounts.updateAccountInfo(update)

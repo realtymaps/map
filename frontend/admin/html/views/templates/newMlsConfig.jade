@@ -1,39 +1,40 @@
-.panel.panel-default
-  .panel-heading
-    h3 Create New MLS Config
-  .panel-body
-    form(name=newMlsForm)
-      table
-        tr
-          td
-            label.data-label ID:
-          td
-            input(type="text" ng-model="mlsModalData.id" ng-disabled="editing").form-control.input-lg
-        tr
-          td
-            label.data-label Name:
-          td
-            input(type="text" ng-model="mlsModalData.name").form-control.input-lg
-        tr
-          td
-            label.data-label URL:
-          td
-            input(type="text" ng-model="mlsModalData.url").form-control.input-lg
-        tr
-          td
-            label.data-label Username:
-          td
-            input(type="text" ng-model="mlsModalData.username").form-control.input-lg
-        tr
-          td
-            label.data-label Password:
-          td
-            input(type="password" ng-model="mlsModalData.password").form-control.input-lg
-        tr
-          td
-            label.data-label Notes:
-          td
-            textarea(ng-model="mlsModalData.notes").form-control.input-lg
+.mls-config-modal
+  .panel.panel-default
+    .panel-heading
+      h3 Create New MLS Config
+    .panel-body
+      form(name=newMlsForm)
+        table
+          tr
+            td
+              label.data-label ID:
+            td
+              input(type="text" ng-model="mlsModalData.id" ng-disabled="editing").form-control.input-lg
+          tr
+            td
+              label.data-label Name:
+            td
+              input(type="text" ng-model="mlsModalData.name").form-control.input-lg
+          tr
+            td
+              label.data-label URL:
+            td
+              input(type="text" ng-model="mlsModalData.url").form-control.input-lg
+          tr
+            td
+              label.data-label Username:
+            td
+              input(type="text" ng-model="mlsModalData.username").form-control.input-lg
+          tr
+            td
+              label.data-label Password:
+            td
+              input(type="password" ng-model="mlsModalData.password").form-control.input-lg
+          tr
+            td
+              label.data-label Notes:
+            td
+              textarea(ng-model="mlsModalData.notes").form-control.input-lg
 
-      button(ng-click="ok()").btn.btn-success Save
-      button(ng-click="cancel()").btn.btn-danger Cancel
+        button(ng-click="ok()").btn.btn-success Save
+        button(ng-click="cancel()").btn.btn-danger Cancel
