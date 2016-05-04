@@ -431,6 +431,18 @@
               span Total
               span.remove-icon(ng-show="fieldData.current.input.total" ng-click="removeBaseInput('total')") X
 
+      .col-md-12.scroll(ng-show="fieldData.current.type.name == 'boolean'")
+        .row
+          .col-md-2 Truthy String (optional)
+          .col-md-4
+            input(type="text" ng-model="fieldData.current.config.truthy" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          .col-md-6.help Only needed when using a string field to fulfill this
+        .row
+          .col-md-2 Falsy String (optional)
+          .col-md-4
+            input(type="text" ng-model="fieldData.current.config.falsy" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          .col-md-6.help Only needed when using a string field to fulfill this
+
       //- Generic
       .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built','baths'].indexOf(fieldData.current.output) == -1")
         .row

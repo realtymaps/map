@@ -16,7 +16,19 @@ ruleDefaults =
 
   # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    _.pick @config, (v, k) -> ['advanced', 'alias', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString', 'doLookup', 'mapping'].indexOf(k) == -1
+    _.pick @config, (v, k) ->
+      # exclude keys from the first list, and include the (truthy, falsy) fields only if they have non-empty string values
+      [
+        'advanced'
+        'alias'
+        'DataType'
+        'nullZero'
+        'nullEmpty'
+        'nullNumber'
+        'nullString'
+        'doLookup'
+        'mapping'
+      ].indexOf(k) == -1 || (['truthy', 'falsy'].indexOf(k) != -1 && v?.length)
 
   getTransform: (globalOpts = {}) ->
     transformArr = []
@@ -26,6 +38,8 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
       transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+    if @config.nullEmptyArray
+      transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
     # Primary transform
     transformArr.push name: @type?.name, options: @getOptions()
@@ -41,7 +55,8 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: values: _.map @config.nullString, String
     if @config.mapping
       map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
-      transformArr.push name: 'map', options: {passUnmapped: true, map: map}
+      if Object.keys(map).length > 0
+        transformArr.push name: 'map', options: {passUnmapped: true, map: map}
 
     transformArr
 
@@ -338,7 +353,11 @@ typeRules =
       name: 'boolean'
       label: 'Yes/No'
     getTransform: () ->
-      name: 'nullify', options: @getOptions()
+      name: 'nullify'
+      options: @getOptions()
+    valid: () ->
+      # if you enter a value for truthy or falsy, you must enter a value for both
+      (@input.truthy?.length && @input.falsy?.length) || (!@input.truthy?.length && !@input.falsy?.length)
 
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
@@ -357,6 +376,9 @@ buildDataRule = (rule) ->
         rule.config.doLookup ?= true
     else if rule.Interpretation == 'LookupMulti'
       rule.type.label = 'Restricted Text (multiple values)'
+      rule.type.name = 'array'
+      rule.config.split = ','
+      rule.config.nullEmptyArray = true
     else
       rule.type.label = 'User-Entered Text'
   rule

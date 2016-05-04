@@ -23,15 +23,13 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-7.settings-row
               .settings-slider
                 rzslider(rz-slider-model="selectedFilters.bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-            .col-md-1.label
-              {{selectedFilters.bedsMin}}+
+            .col-md-1.label {{selectedFilters.bedsMin}}+
           li.row
             span.label.col-md-3 Baths
             .col-md-7.settings-row
               .settings-slider
                 rzslider(rz-slider-model="selectedFilters.bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-            .col-md-1.label
-              {{selectedFilters.bathsMin}}+
+            .col-md-1.label {{selectedFilters.bathsMin}}+
 
           li.row
             span.label.col-md-3 Sqft
