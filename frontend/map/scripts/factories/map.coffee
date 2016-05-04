@@ -345,13 +345,20 @@ app.factory 'rmapsMapFactory',
 
       zoomTo: (result, doChangeZoom) ->
         verboseLogger.debug "CAUGHT zoomToProperty event"
-        return if not result?.coordinates?
+        if result.geometry?
+          result =  result.geometry
+
+        if !result?.coordinates?
+          return
 
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])
         old = _.cloneDeep @scope.map.center
         resultCenter.zoom = old.zoom
         @scope.map.center = resultCenter
-        return unless doChangeZoom
+
+        if !doChangeZoom
+          return
+
         zoomLevel = @scope.options.zoomThresh.addressParcel
         zoomLevel = @scope.map.center.zoom if @scope.map.center.zoom > @scope.options.zoomThresh.addressParcel
         @scope.map.center.zoom = zoomLevel

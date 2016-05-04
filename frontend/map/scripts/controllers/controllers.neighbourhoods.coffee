@@ -9,6 +9,9 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
+  $scope.centerOn = (model) ->
+    $rootScope.$emit rmapsEventConstants.map.zoomToProperty, model
+
   _signalUpdate = (promise) ->
     return $rootScope.$emit _event unless promise
     promise.then (data) ->

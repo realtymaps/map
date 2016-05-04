@@ -5,7 +5,18 @@ confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 mapId = 'mainMap'
 originator = 'map'
 
-app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsEventConstants, rmapsPrincipalService) ->
+app.controller 'rmapsNotesModalCtrl', (
+$rootScope,
+$scope,
+$modal,
+rmapsNotesService,
+rmapsMainOptions,
+rmapsEventConstants,
+rmapsPrincipalService) ->
+
+  $scope.centerOn = (model) ->
+    $rootScope.$emit rmapsEventConstants.map.zoomToProperty, model
+
   _signalUpdate = (promise) ->
     return $rootScope.$emit rmapsEventConstants.notes unless promise
     promise.then ->

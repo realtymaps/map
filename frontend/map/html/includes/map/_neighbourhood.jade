@@ -24,7 +24,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-
             span New Neighborhood
       .inner
         ul(ng-controller="rmapsNeighbourhoodsModalCtrl")
-          li(ng-repeat="(key, model) in neighbourhoods")
+          li(ng-repeat="(key, model) in neighbourhoods" ng-click="centerOn(model)")
             div
               span.enity
                 +circleNrMixin("{{$index+1}}")
