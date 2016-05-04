@@ -17,8 +17,9 @@ app.factory 'rmapsFiltersFactory', () ->
     propertyTypes: [
       { name: '', value: undefined }
       { name: 'Single Family', value: 'Single Family' }
-      { name: 'Condo', value: 'Condo' }
-      { name: 'Co-Op', value: 'Co-Op' }
+      { name: 'Condo / Townhome', value: 'Condo / Townhome' }
+      { name: 'Lots', value: 'Lots' }
+      { name: 'Multi-Family', value: 'Multi-Family' }
     ]
     acresValues: [
       { value: undefined, name: '' }

@@ -1,6 +1,6 @@
 _ = require 'lodash'
 
-propertyTypes = {'Single Family', 'Condo', 'Co-Op'}
+propertyTypes = {'Single Family', 'Condo / Townhome', 'Lots', 'Multi-Family'}
 
 module.exports =
   enum: propertyTypes
