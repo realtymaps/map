@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 
 _events = [

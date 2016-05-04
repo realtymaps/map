@@ -1,4 +1,4 @@
-###global _###
+###globals _###
 app = require '../app.coffee'
 template = do require '../../html/views/templates/modals/neighbourhoodModal.jade'
 
@@ -33,8 +33,8 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
         if !model?.properties?.neighbourhood_name
           #makes the model a neighborhood with a defined empty string
           model.properties.neighbourhood_name = ''
-        _signalUpdate(drawnShapesSvc.create model)
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+        _signalUpdate(drawnShapesSvc.create model)
 
     update: (model) ->
       $scope.createModal(model).then (modalModel) ->
@@ -43,10 +43,10 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
 
     remove: (model) ->
       $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
-      #deleting properties to get the delete to happen on the backend
-      delete model.properties.neighbourhood_name
-      delete model.properties.neighbourhood_details
-      _signalUpdate drawnShapesSvc.update model
+      _signalUpdate drawnShapesSvc.delete model
+      .then () ->
+        $scope.$emit rmapsEventConstants.neighbourhoods.removeDrawItem, model
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
 
 .controller 'rmapsMapNeighbourhoodsCtrl', (
   $rootScope,

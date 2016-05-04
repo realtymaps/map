@@ -8,6 +8,8 @@ mod.constant 'rmapsEventConstants',
     neighbourhoods:
       createClick: 1
       dropdownToggled: 1
+      drawItems: 1
+      removeDrawItem: 1
     map:
       locationChange: 1
       results: 1

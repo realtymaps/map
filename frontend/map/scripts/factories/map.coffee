@@ -110,7 +110,10 @@ app.factory 'rmapsMapFactory',
             rmapsEventConstants.map.filters.updated
             rmapsEventConstants.map.mainMap.redraw
           ].forEach (eventName) =>
-            $scope.$on eventName, => @redraw()
+            $scope.$on eventName, (event, cache) =>
+              if !_.isBoolean cache
+                cache = false
+              @redraw(cache)
 
 
           _firstCenter = true

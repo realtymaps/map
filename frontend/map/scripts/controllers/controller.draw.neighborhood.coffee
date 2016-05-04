@@ -1,16 +1,24 @@
+###globals _###
 app = require '../app.coffee'
 mapId = 'mainMap'
 color = 'red'
 
 app.controller "rmapsDrawNeighborhoodCtrl", (
-$scope, $log, $rootScope, rmapsEventConstants, rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
+$scope,
+$log,
+$rootScope,
+rmapsEventConstants,
+rmapsDrawnUtilsService
+rmapsMapDrawHandlesFactory,
+rmapsDrawCtrlFactory,
+leafletData) ->
 
   $log = $log.spawn("map:rmapsDrawNeighborhoodCtrl")
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
-  drawnShapesSvc.getDrawnItemsNeighborhoods().then (drawnItems) ->
+  drawnShapesSvc.getDrawnItemsNeighborhoods()
+  .then (drawnItems) ->
     #filter drawItems which are only neighborhoods / frontend or backend
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
@@ -32,8 +40,8 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
 
       createPromise: (geoJson) ->
         #requires rmapsNeighbourhoodsModalCtrl to be in scope (parent)
-        $scope.create(geoJson).then ->
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+        $scope.create(geoJson)
     }
 
     _drawCtrlFactory = (handles) ->
@@ -60,7 +68,23 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
               shapeOptions: {color}
       }
 
-    $scope.$watch 'Toggles.isNeighborhoodDraw', (newVal) ->
+    reLoadDarCtrlFactory = (newVal) ->
       if newVal
         return _drawCtrlFactory(_handles)
       _drawCtrlFactory()
+
+    $scope.$watch 'Toggles.isNeighborhoodDraw', reLoadDarCtrlFactory
+    $rootScope.$onRootScope rmapsEventConstants.neighbourhoods.removeDrawItem, (event, model) ->
+      leafletData.getMap(mapId)
+      .then (map) ->
+        toRemove = null
+        keyToRemove = null
+
+        for key, val of drawnItems._layers
+          if val.model.properties.id == model.properties.id
+            toRemove = val
+            keyToRemove = key
+            break
+
+        delete drawnItems._layers[keyToRemove]
+        map.removeLayer toRemove
