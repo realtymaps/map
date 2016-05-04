@@ -27,7 +27,17 @@ describe "service.payment.impl.stripe.events", ->
   beforeEach ->
 
     mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
-    subject.__set__ 'userTable', mockUserTable.dbFn()
+    mockHistoryTable = new SqlMock 'event', 'history'
+
+    tables =
+      auth:
+        user: () ->
+          mockUserTable
+      event:
+        history: () ->
+          mockHistoryTable
+
+    subject.__set__ 'tables', tables
 
     @stripe =
       events:
