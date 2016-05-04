@@ -9,7 +9,7 @@ span.pinned-list.dropdown.btn-group(ng-hide="Toggles.getHideAnyDraw()" ng-contro
     popover-trigger="click mouseenter")
     span.icon.icon-pin
 
-  .dropdown-menu.whiteblock.no-margin
+  .dropdown-menu.whiteblock
     .fixed-header
       span
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties

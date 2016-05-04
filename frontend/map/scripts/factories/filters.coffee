@@ -13,24 +13,6 @@ app.factory 'rmapsFiltersFactory', () ->
       { label: 'Sold', value: 'sold' }
       { label: 'Not For Sale', value:'notForSale' }
     ]
-    beds: [
-      { value: undefined, name: '' }
-      { value: '1', name: '1+' }
-      { value: '2', name: '2+' }
-      { value: '3', name: '3+' }
-      { value: '4', name: '4+' }
-      { value: '5', name: '5+' }
-      { value: '6', name: '6+' }
-    ]
-    baths: [
-      { value: undefined, name: '' }
-      { value: '1', name: '1+' }
-      { value: '2', name: '2+' }
-      { value: '3', name: '3+' }
-      { value: '4', name: '4+' }
-      { value: '5', name: '5+' }
-      { value: '6', name: '6+' }
-    ]
     acresValues: [
       { value: undefined, name: '' }
       { value: '0.1', name: '.10 acres' }
