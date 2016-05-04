@@ -21,9 +21,14 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
 
         ul.basic
           li.row
+            span.label.col-md-3 Property Status
+            .col-md-9
+              select.form-control(ng-options='c.value as c.name for c in todo' disabled)
+
+          li.row
             span.label.col-md-3 Property Type
             .col-md-9
-              select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in todo' disabled)
+              select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes')
 
           li.row
             span.label.col-md-3 Price
@@ -57,15 +62,10 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
           li.row
             span.label.col-md-3 Acres
             .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
+              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name disable when (selectedFilters.acresMax != null && c.value > selectedFilters.acresMax) for c in filterValues.acresValues')
             span.col-md-1.label to
             .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
-
-          li.row
-            span.label.col-md-3 Property Status
-            .col-md-9
-              select.form-control(ng-options='c.value as c.name for c in todo' disabled)
+              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name disable when (selectedFilters.acresMin != null && c.value < selectedFilters.acresMin) for c in filterValues.acresValues')
 
           li.row
             span.label.col-md-5 In Shapes / Neighborhoods
@@ -87,10 +87,10 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
           li.row
             span.label.col-md-3 Listed Days
             .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
+              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMax != null && c.value > selectedFilters.listedDaysMax) for c in filterValues.listedDays')
             span.col-md-1.label to
             .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
+              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMin != null && c.value < selectedFilters.listedDaysMin) for c in filterValues.listedDays')
 
           li.row
             span.label.col-md-3 Close Price
@@ -141,6 +141,10 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
       mobile-header-buttons
         a.settings-header-button(ng-click="reset()" ng-class="{ 'disabled': !dirty }") Reset
       .list
+        .item.settings-row
+          .settings-header Property Type
+          select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes' ng-change="makeDirty()")
+
         .item.settings-row
           .settings-header Price
           .settings-value ${{translatePrice(priceSlider.min)}} - ${{translatePrice(priceSlider.max)}}

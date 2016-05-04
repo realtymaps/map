@@ -8,10 +8,17 @@ app.factory 'rmapsFiltersFactory', () ->
   # query filters
   values:
     propertyStatus: [
-      { label: 'For Sale', value: 'forSale' }
-      { label: 'Pending', value: 'pending' }
-      { label: 'Sold', value: 'sold' }
-      { label: 'Not For Sale', value:'notForSale' }
+      { name: '', value: undefined }
+      { name: 'For Sale', value: 'forSale' }
+      { name: 'Pending', value: 'pending' }
+      { name: 'Sold', value: 'sold' }
+      { name: 'Not For Sale', value:'notForSale' }
+    ]
+    propertyTypes: [
+      { name: '', value: undefined }
+      { name: 'Single Family', value: 'Single Family' }
+      { name: 'Condo', value: 'Condo' }
+      { name: 'Co-Op', value: 'Co-Op' }
     ]
     acresValues: [
       { value: undefined, name: '' }
@@ -33,12 +40,12 @@ app.factory 'rmapsFiltersFactory', () ->
     ]
     listedDays: [
       { value: undefined, name: '' }
-      { value: '15', name: '15+' }
-      { value: '30', name: '30+' }
-      { value: '60', name: '60+' }
-      { value: '120', name: '120+'}
-      { value: '240', name: '240+'}
-      { value: '365', name: '1 year+'}
-      { value: '580', name: '~ 1.5 years+'}
-      { value: '730', name: '2 years+'}
+      { value: 15, name: '15+' }
+      { value: 30, name: '30+' }
+      { value: 60, name: '60+' }
+      { value: 120, name: '120+'}
+      { value: 240, name: '240+'}
+      { value: 365, name: '1 year+'}
+      { value: 580, name: '~ 1.5 years+'}
+      { value: 730, name: '2 years+'}
     ]
