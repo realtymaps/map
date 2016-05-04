@@ -91,9 +91,6 @@
     "bootstrap": {
       "ignore": true
     },
-    "font-awesome": {
-      "ignore": true
-    },
     "fontawesome": {
       "main": [
         "css/font-awesome.css",
