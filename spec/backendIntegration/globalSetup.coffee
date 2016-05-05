@@ -8,7 +8,8 @@ before ->
 
 
 after ->
-  return require("#{basePath}/config/dbs").shutdown()
+  dbs = require("#{basePath}/config/dbs")
+  return dbs.shutdown(quiet: true)
 
 
 module.exports = {basePath, commonPath}

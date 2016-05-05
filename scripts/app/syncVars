@@ -3,6 +3,14 @@
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 
-eval "export MAIN_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl MAIN_DATABASE`"
-eval "export RAW_TEMP_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl RAW_TEMP_DATABASE`"
-eval "export NORMALIZED_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl NORMALIZED_DATABASE`"
+if [[ "$1" == "ssl" ]]
+then
+  SSL_PARAM="?ssl=true"
+else
+  SSL_PARAM=""
+fi
+
+
+eval "export MAIN_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl MAIN_DATABASE`${SSL_PARAM}"
+eval "export RAW_TEMP_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl RAW_TEMP_DATABASE`${SSL_PARAM}"
+eval "export NORMALIZED_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl NORMALIZED_DATABASE`${SSL_PARAM}"
