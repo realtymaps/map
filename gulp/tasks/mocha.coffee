@@ -7,6 +7,7 @@ logFile = require '../util/logFile'
 es = require 'event-stream'
 logger = require '../util/logger'
 require './unitPrep'
+dbs = require '../../backend/config/dbs'
 
 require 'chai'
 require('chai').should()
@@ -36,6 +37,15 @@ gulp.task 'backendIntegrationSpec', (done) ->
     done()
   else
     runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
+
+gulp.task 'dbShutdown', (done) ->
+  if process.env.CIRCLECI
+    # skip this step
+    done()
+  else
+    dbs.shutdown(quiet: true)
+    .then () ->
+      done()
 
 gulp.task 'backendIntegrationDebugSpec', (done) ->
   if process.env.CIRCLECI
