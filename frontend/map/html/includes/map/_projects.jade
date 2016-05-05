@@ -2,13 +2,15 @@ mixin projectsDropdown()
   span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
     button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
       span
-        h4(ng-show="principal.getCurrentProfile().sandbox") Project: Sandbox
-        h4(ng-show="!principal.getCurrentProfile().sandbox") Project: {{principal.getCurrentProfile().name}}
+        h4(ng-show="principal.getCurrentProfile().sandbox") Sandbox
+        h4(ng-show="!principal.getCurrentProfile().sandbox") {{principal.getCurrentProfile().name}}
       span.caret
     .dropdown-menu.whiteblock.no-margin
       .fixed-header
-        a(ng-show="totalProjects == 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Project
-        a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
+        div
+          div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Project
+          div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Projects
+          a(href="{{frontendRoutes.projects}}") View All
         span.results-btn(
           popover-placement="right"
           popover-trigger="click mouseenter"

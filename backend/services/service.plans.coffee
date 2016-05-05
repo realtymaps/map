@@ -21,7 +21,7 @@ getPlanId = (planName, trx) ->
   getAll().then (plans) ->
     planObj = plans[planName]
 
-    q = groupTable(trx)
+    q = groupTable(transaction: trx)
     .where 'name', 'ilike', "%#{planName}%"
     .orWhere 'name', 'ilike', "%#{planObj.alias.toLowerCase()}%"
 

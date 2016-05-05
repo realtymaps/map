@@ -75,10 +75,15 @@ StripeCustomers = (stripe) ->
       description: authUser.email + ' ' + extraDescription
 
     .then (customer) ->
-      _.extend authUser, stripe_customer_id: customer.id
+      [subscription] = _.filter customer.subscriptions.data, (el) -> el.plan.id == plan
+      _.extend authUser,
+        stripe_customer_id: customer.id
+        stripe_subscription_id: subscription.id
 
       tables.auth.user(transaction: trx)
-      .update stripe_customer_id: customer.id
+      .update
+        stripe_customer_id: customer.id
+        stripe_subscription_id: subscription.id
       .where id: authUser.id
       .then () ->
         authUser: authUser

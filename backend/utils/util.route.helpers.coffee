@@ -45,7 +45,7 @@ handleQuery = (q, res, lHandleQuery) ->
   q.then (result) ->
     res.json(result)
 
-handleRoute = ({req, res, next, toExec, isDirect}) ->
+handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->
     if isDirect
       return toExec(req, res, next)
@@ -65,7 +65,7 @@ wrapHandleRoutes = ({handles, isDirect}) ->
   for key, origFn of handles
     do (key, origFn) ->
       handles[key] = (req, res, next) ->
-        handleRoute {req, res, next, toExec: origFn, isDirect}
+        handleRoute req, res, next, origFn, isDirect
   handles
 
 #http://stackoverflow.com/questions/10183291/how-to-get-the-full-url-in-express

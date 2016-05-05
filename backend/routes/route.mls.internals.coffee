@@ -5,6 +5,7 @@ retsService = require '../services/service.rets'
 mlsConfigService = require '../services/service.mls_config'
 _ = require 'lodash'
 photoUtil = require '../utils/util.mls.photos'
+through2 = require 'through2'
 
 
 _handleGenericImage = ({setContentTypeFn, getStreamFn, next, res}) ->

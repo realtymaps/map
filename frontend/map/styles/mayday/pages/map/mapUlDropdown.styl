@@ -22,11 +22,18 @@ $fnMakeMapUlDropdown()
       align-items center
       justify-content space-between
 
+      .header-item
+        border-right: solid $rm-header_separators 1px;
+        display: inline-block;
+        padding-right: 10px;
+        margin-right: 10px;
+
       > span, .results-btn
         display flex
         align-items center
 
       .results-btn
+        @extend .noselect
         float right
         cursor pointer
         border 1px solid $black_10
@@ -37,6 +44,10 @@ $fnMakeMapUlDropdown()
           color $gray_lighter
         .icon
           font-size 18px
+        &:hover
+          background-color $darker_white
+          color $darker_blue
+
       .fa, .icon
         float left
         font-size 12px

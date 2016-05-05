@@ -39,14 +39,14 @@ a:hover:not(href)
   cursor pointer
 
 h1.logo
-  margin 0 35px 0 15px
+  margin 0 35px 0 5px
   float left
   @media (max-width: xs-1)
     margin 0 20px 0 0
   a.logo
     font-size 0px
     background url('/assets/logo_white_sm.png') no-repeat center center transparent
-    width 180px
+    width 155px
     height 44px
     display block
 
@@ -324,3 +324,11 @@ $fnSetHeaders(someColor)
   for num in (1...7)
     h{num}
       color comeColor
+
+.noselect
+  -webkit-touch-callout none
+  -webkit-user-select none
+  -khtml-user-select none
+  -moz-user-select none
+  -ms-user-select none
+  user-select none

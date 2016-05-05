@@ -8,7 +8,7 @@ include ../mixins/_avatarMixin.jade
       li(ng-show="principal.isAuthenticated()", ng-cloak)
         a(ui-sref="logout") Sign Out
       li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a(ui-sref="user") {{user.username}}
+        a(ui-sref="user") {{user.email}}
       li(ng-show="principal.isStaff()", ng-cloak)
         a(href="{{adminRoutes.index}}" target="_self") Admin
 

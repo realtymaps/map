@@ -4,7 +4,6 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('util.mlsHelpers')
 finePhotologger = logger.spawn('photos.fine')
-jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
@@ -21,24 +20,21 @@ internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-ONE_DAY_MILLISEC = 24*60*60*1000
+ONE_YEAR_MILLIS = 365*24*60*60*1000
+
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.refreshThreshold subtask,
-    fullRefreshMilliSec: ONE_DAY_MILLISEC
-    logDescription: 'task.mls'
-  .then (refreshThreshold) ->
+  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: ONE_YEAR_MILLIS})
+  .then (updateThreshold) ->
     tables.config.mls()
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsService.getDataStream(mlsInfo, options?.limit, refreshThreshold)
-      .catch errorHandlingUtils.isCausedBy(rets.RetsReplyError), (error) ->
-        if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
-          throw SoftFail(error, "Transient RETS error; try again later")
-        throw error
+      retsService.getDataStream(mlsInfo, options?.limit, updateThreshold)
+      .catch retsService.isTransientRetsError, (error) ->
+        throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
@@ -51,8 +47,13 @@ loadUpdates = (subtask, options) ->
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->
-      deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-      {numRawRows, deletes}
+      result = {numRawRows}
+      if updateThreshold == 0
+        result.deletes = dataLoadHelpers.DELETE.UNTOUCHED
+        result.setRefreshTimestamp = true
+      else
+        result.deletes = dataLoadHelpers.DELETE.NONE
+      return result
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load RETS data for update')
 
@@ -378,9 +379,9 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
       .where {id}
       .del()
       .catch (error) ->
-        throw SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
     .catch (error) ->
-      throw SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
 
 module.exports = {

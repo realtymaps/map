@@ -1,0 +1,126 @@
+#!/usr/bin/env node
+//
+// Tool for accounting for stripe_subscription_id in `auth_user`.
+// Creates new subscriptions for customers that don't already have active subscriptions.
+// NOTHING is done on users that already have a `stripe_subscription_id`, even if it's an inactive subscription.
+//   (you can make `stripe_subscription_id` null on users for which a new subscription is desired though)
+//
+// no arguments:
+//   same as running with 'all' and applies 'pro' plan
+// argument #1:
+//   customer_id:  <id> | 'all' | <blank is same as 'all' but uses default 'pro' plan>
+// argument #2:
+//   plan:    'pro' (default) | 'standard'
+//
+// EXAMPLES:
+//
+// `foreman run ./scripts/misc/subscribe`
+//   - for ALL users, attempt to pull existing subscription and save id to table (could be any plan, pro or standard)
+//   - for users without a subscription already, creates a new one with 'pro' plan by default
+//
+// `foreman run ./scripts/misc/subscribe cus_7khmZ8nGKEOaGL standard`
+//   - for user 'cus_7khmZ8nGKEOaGL', attempt to pull existing subscription and save id to table
+//   - if no subscription found, creates a new one with 'standard' plan
+
+
+
+var coffee = require('coffee-script');
+coffee.register()
+
+var Promise = require('bluebird');
+var _ = require('lodash');
+var argv = require('yargs').argv;
+var stripeBootstrap = require('../../backend/services/payment/stripe/service.payment.impl.stripe.bootstrap');
+var tables = require('../../backend/config/tables');
+
+
+
+var customer = argv._[0];
+var plan = argv._[1] || 'pro';
+var failedIds = [];
+var successIds = [];
+
+
+// customers only need to have one active subscription
+// This defensively returns first active one incase multiple
+//   active ones got put in for some reason
+getFirstActiveSubscription = function(stripe_customer_id) {
+  return stripeBootstrap
+  .then( function(stripe) {
+    return stripe.customers.listSubscriptions(stripe_customer_id)
+    .then( function(response) {
+      var subscriptions = response.data;
+      var subscription = null;
+      var idx = 0;
+      while (idx < subscriptions.length && subscription == null) {
+        if (subscriptions[idx++].canceled_at == null) subscription = subscriptions[idx-1];
+      }
+      return subscription
+    })
+  })
+  .catch( function(err){
+    failedIds.push(stripe_customer_id);
+  })
+}
+
+// get sub_id saved to db
+saveSubscriptionId = function(stripe_customer_id, stripe_subscription_id) {
+  return tables.auth.user().update({
+    "stripe_subscription_id": stripe_subscription_id}
+  ).where('stripe_customer_id', stripe_customer_id)
+  .then( function(){
+    successIds.push(stripe_customer_id);
+  })
+}
+
+// makes a subscription in stripe
+createSubscription = function(stripe_customer_id) {
+  return stripeBootstrap
+  .then( function(stripe) {
+    return stripe.customers.createSubscription(stripe_customer_id, {"plan": plan})
+    .then( function(response) {
+      return saveSubscriptionId(stripe_customer_id, response.id)
+    })
+    .catch( function(err){
+      failedIds.push(stripe_customer_id);
+    })
+  })
+}
+
+// 'list-ify' customers
+getCustomerIds = function(customer) {
+  if (customer != 'all') return Promise.resolve([customer]);
+  return tables.auth.user()
+  .select("stripe_customer_id")
+  .whereNotNull("stripe_customer_id")
+  .whereNull("stripe_subscription_id")
+  .then( function(results) {
+    // squash down to list of ids
+    return _.map(results,'stripe_customer_id');
+  })
+}
+
+
+getCustomerIds(customer)
+.then( function(list){
+  console.log("\n\nRetrieving (or creating) subscriptions for "+list.length+" user(s)...");
+  promises = [];
+  list.forEach( function(customer_id){
+    promises.push( 
+      getFirstActiveSubscription(customer_id)
+      .then( function(active){
+        if (typeof(active) != 'undefined' && active) return saveSubscriptionId(customer_id, active.id);
+        else return createSubscription(customer_id);
+      })
+    );
+  })
+  Promise.all(promises)
+  .then( function(result){
+    console.log("\n"+successIds.length+" user(s) were successfully updated.")
+    if (failedIds.length > 0) {
+      console.log("\nThe following ids triggered stripe errors (possibly because they do not exist on the account associated with the active API_KEY):");
+      console.log(JSON.stringify(_.uniq(failedIds)));
+    }
+    process.exit(0);
+  })
+})

@@ -208,6 +208,7 @@ module.exports = {
   getDataStream
   getPhotosObject
   getObjectList
+  isTransientRetsError: internals.isTransientRetsError
   RetsError: rets.RetsError
   RetsServerError: rets.RetsServerError
   RetsReplyError: rets.RetsReplyError

@@ -9,7 +9,7 @@ span.pinned-list.dropdown.btn-group(ng-hide="Toggles.getHideAnyDraw()" ng-contro
     popover-trigger="click mouseenter")
     i.fa.fa-envelope.icon
 
-  .dropdown-menu.whiteblock.no-margin
+  .dropdown-menu.whiteblock
     .fixed-header
       span
         a(ng-show="mailings.length" ui-sref="mail") {{mailings.length}} Mailings
@@ -31,4 +31,3 @@ span.pinned-list.dropdown.btn-group(ng-hide="Toggles.getHideAnyDraw()" ng-contro
               span.content
                 span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.rm_status}}
                 +propertyAttributes('property')
-

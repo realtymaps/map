@@ -1,0 +1,56 @@
+#!/bin/bash
+
+###
+# See README.md for examples of how to use this script
+###
+
+
+set -e
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+cd "$SCRIPT_DIR/.."
+
+
+CUSTOMER="$1"
+shift
+
+PLAN="$1"
+shift
+
+if [[ "$@" != "" ]]
+then
+    DB_TARGETS=""
+    for target in $@
+    do
+        if [[ "$target" == "prod" || "$target" == "production" ]]
+        then
+            DB_TARGETS="$DB_TARGETS realtymaps-map"
+        elif [[ "$target" == *realtymaps-map ]]
+        then
+            DB_TARGETS="$DB_TARGETS $target"
+        elif [[ "$target" == "local" || "$target" == "localhost" ]]
+        then
+            DB_TARGETS="$DB_TARGETS localhost"
+        else
+            DB_TARGETS="$DB_TARGETS ${target}-realtymaps-map"
+        fi
+    done
+else
+    DB_TARGETS="localhost"
+fi
+
+for app in $DB_TARGETS
+do
+    echo
+    echo "Executing on MAIN_DATABASE@${app}..."
+    if [[ "${app}" == "localhost" ]]
+    then
+        DB_TARGET=''
+    else
+        DB_TARGET="@${app}"
+    fi
+
+    DB_URL=`./scripts/database/getDbUrl MAIN_DATABASE${DB_TARGET}`
+    export MAIN_DATABASE_URL="${DB_URL}?ssl=true"
+    ./scripts/misc/subscribe "${CUSTOMER}" "${PLAN}"
+done
+echo

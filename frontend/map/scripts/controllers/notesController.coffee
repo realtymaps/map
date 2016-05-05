@@ -16,26 +16,30 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
     hasNotes: (property) ->
       rmapsNotesService.hasNotes(property?.rm_property_id)
 
-    createModal: (note = {}) ->
+    createModal: (note = {}, property) ->
+      modalScope = $scope.$new false
+      modalScope.property = property
+
       modalInstance = $modal.open
         animation: rmapsMainOptions.modals.animationsEnabled
         template: notesTemplate
+        scope: modalScope
         controller: 'rmapsModalInstanceCtrl'
         resolve: model: -> note
 
       modalInstance.result
 
-    create: (model, projectId) ->
-      $scope.createModal().then (note) ->
+    create: (property, projectId) ->
+      $scope.createModal({}, property).then (note) ->
         _.extend note,
-          rm_property_id : model.rm_property_id || undefined
-          geom_point_json : model.geom_point_json
+          rm_property_id : property.rm_property_id || undefined
+          geom_point_json : property.geom_point_json
           project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
         _signalUpdate rmapsNotesService.create note
 
-    update: (note) ->
+    update: (note, property) ->
       note = _.cloneDeep note
-      $scope.createModal(note).then (note) ->
+      $scope.createModal(note, property).then (note) ->
         _signalUpdate rmapsNotesService.update note
 
     remove: (note, confirm = false) ->

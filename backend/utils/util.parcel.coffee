@@ -3,6 +3,8 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('util.parcel')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
+validation = require '../utils/util.validation'
+
 
 formatParcel = (feature) ->
   ###
@@ -30,16 +32,22 @@ formatParcel = (feature) ->
      crs: { type: 'name', properties: {}
   ###
   if !feature?
-    throw new Error 'feature undefined'
-  if !feature?.geometry?
-    logger.error feature
-    throw new Error 'feature.geometry undefined'
+    throw new validation.DataValidationError('required', 'feature', feature)
+  if !feature.geometry?
+    throw new validation.DataValidationError('required', 'feature.geometry', feature.geometry)
 
   #match the db attributes
   obj = _.mapKeys feature.properties, (val, key) ->
     key.toLowerCase()
+
+  if !obj?.parcelapn?
+    throw new validation.DataValidationError('required', 'feaure.properties.parcelapn', obj?.parcelapn)
+
+  # if obj.parcelapn.match(/row/i)
+  #   throw new Error 'feaure.properties.parcelapn contains ROW, ignore'
+
   obj.data_source_uuid = obj.parcelapn
-  obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
+  obj.rm_property_id = obj.fips + '_' + obj.parcelapn + '_001'
   obj.geometry = feature.geometry
   obj.geometry.crs = crsFactory()
   obj
@@ -80,11 +88,17 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
           batch_id
           rm_raw_id: row.rm_raw_id
         }
+        #return a valid row
         row: obj
       catch error
+        #return an error object
         error: error
 
+      # Regardless we extend a row or an error object with stats
+      # and .. with rm_raw_id! This allows for less object defined
+      # checking where rm_raw_id will always be defined.
       _.extend ret,
+        rm_raw_id: row.rm_raw_id# dont forget about me :)
         stats: {
           data_source_id
           batch_id

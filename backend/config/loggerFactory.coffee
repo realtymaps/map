@@ -75,9 +75,9 @@ _resolveOutput = (func, bindThis) ->
     func.apply(bindThis, args)
 
 if !baselogger
-  throw Error('baselogger undefined')
+  throw new Error('baselogger undefined')
 if !_isValidLogObject(baselogger)
-  throw Error('baselogger is invalid')
+  throw new Error('baselogger is invalid')
 
 
 # cache logger results so we get consistent coloring

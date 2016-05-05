@@ -226,6 +226,8 @@ runWorkerImpl = (queueName, prefix, quit) ->
       logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
       return executeSubtask(subtask, prefix)
       .then nextIteration
+    else
+      logger.spawn("queue:#{queueName}").debug () -> "#{prefix} No subtask returned."
 
     if !quit && !logger.isEnabled("queue:#{queueName}")
       return Promise.delay(30000) # poll again in 30 seconds

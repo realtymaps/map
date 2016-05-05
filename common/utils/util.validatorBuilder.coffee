@@ -16,7 +16,7 @@ ruleDefaults =
 
   # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    _.pick @config, (v, k) -> ['advanced', 'alias', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
+    _.pick @config, (v, k) -> ['advanced', 'alias', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString', 'doLookup', 'mapping'].indexOf(k) == -1
 
   getTransform: (globalOpts = {}) ->
     transformArr = []
@@ -24,6 +24,8 @@ ruleDefaults =
     # Transforms that should precede type-specific logic
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
+    if @config.doLookup
+      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
 
     # Primary transform
     transformArr.push name: @type?.name, options: @getOptions()
@@ -37,6 +39,9 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: values: _.map @config.nullNumber, Number
     if @config.nullString
       transformArr.push name: 'nullify', options: values: _.map @config.nullString, String
+    if @config.mapping
+      map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
+      transformArr.push name: 'map', options: {passUnmapped: true, map: map}
 
     transformArr
 
@@ -184,8 +189,8 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        config:
-          transformString: 'forceInitCaps'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
 
   county:
@@ -277,8 +282,8 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        config:
-          transformString: 'forceInitCaps'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
     mortgage:
       address:
@@ -348,6 +353,8 @@ buildDataRule = (rule) ->
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
+      if rule.data_source_type == 'county'
+        rule.config.doLookup ?= true
     else if rule.Interpretation == 'LookupMulti'
       rule.type.label = 'Restricted Text (multiple values)'
     else

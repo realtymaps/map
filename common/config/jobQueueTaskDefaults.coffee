@@ -20,7 +20,7 @@ module.exports =
     retry_max_count: 10
     hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 1200
     kill_timeout_seconds: 1500
     auto_enqueue: true
@@ -34,9 +34,9 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 3000
     kill_timeout_seconds: 3600
     auto_enqueue: false
@@ -49,9 +49,9 @@ module.exports =
     data: null
     retry_delay_seconds: 30
     retry_max_count: 100
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 30
     kill_timeout_seconds: 45
     auto_enqueue: false
@@ -65,11 +65,11 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
-    warn_timeout_seconds: 600
-    kill_timeout_seconds: 750
+    hard_fail_zombies: false
+    warn_timeout_seconds: 2000
+    kill_timeout_seconds: 3000
     auto_enqueue: false
     active: true
 
@@ -81,9 +81,9 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 30
     kill_timeout_seconds: 45
     auto_enqueue: false
@@ -97,9 +97,9 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 30
     kill_timeout_seconds: 45
     auto_enqueue: false
@@ -113,9 +113,9 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 600
     kill_timeout_seconds: 750
     auto_enqueue: false
@@ -129,9 +129,9 @@ module.exports =
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
-    hard_fail_timeouts: true
+    hard_fail_timeouts: false
     hard_fail_after_retries: true
-    hard_fail_zombies: true
+    hard_fail_zombies: false
     warn_timeout_seconds: 240
     kill_timeout_seconds: 300
     auto_enqueue: false
