@@ -433,6 +433,18 @@
 
       .col-md-12.scroll(ng-show="fieldData.current.type.name == 'boolean'")
         .row
+          .col-md-2 RealtyMaps Field
+          .col-md-10
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+        .row
+          .col-md-2 Invert
+          .col-md-4
+            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+          .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
+        .row
           .col-md-2 Truthy String (optional)
           .col-md-4
             input(type="text" ng-model="fieldData.current.config.truthy" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
@@ -458,7 +470,7 @@
           .col-md-6.help Select a RealtyMaps Property Type
 
       //- Generic
-      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built','baths', 'property_type'].indexOf(fieldData.current.output) == -1")
+      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built','baths', 'property_type'].indexOf(fieldData.current.output) == -1 && fieldData.current.type.name != 'boolean'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-10
@@ -466,11 +478,6 @@
               span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
               span {{fieldData.current.alias}}
               span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
-        .row(ng-if="fieldData.current.type.name == 'boolean'")
-          .col-md-2 Invert
-          .col-md-4
-            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
-          .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
         .row(ng-if="fieldData.current.output == 'parcel_id'")
           .col-md-2 Strip Formatting
           .col-md-4
