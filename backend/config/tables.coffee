@@ -72,6 +72,8 @@ module.exports =
     property: 'data_combined_deletes'
     parcel: 'parcel_deletes'
   temp: 'raw_temp.raw'
+  event:
+    history: 'data_event_history'
 
 
 _setup = (baseObject) ->

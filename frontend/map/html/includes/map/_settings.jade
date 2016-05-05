@@ -5,11 +5,31 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         dropdown-toggle
         popover-placement="bottom"
         popover-trigger="click mouseenter"
-        popover="Search Filters")
+        popover="Property Filters")
         span.icon.icon-settings
-      .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
-        h4.title Property Filters
-        ul
+      .dropdown-menu.whiteblock(ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
+        h4.fixed-header
+          span Property Filters
+          span
+            a.results-btn(ng-click="reset()")
+              .fa.fa-undo
+              span Reset
+            a.results-btn(ng-click="showAdvanced = !showAdvanced")
+              span(ng-if="!showAdvanced" ng-cloak) More
+              span(ng-if="showAdvanced" ng-cloak) Less
+            span.title-right(ng-if="showAdvanced" ng-cloak) Advanced Filters
+
+        ul.basic
+          li.row
+            span.label.col-md-3 Property Status
+            .col-md-9
+              select.form-control(ng-options='c.value as c.name for c in todo' disabled)
+
+          li.row
+            span.label.col-md-3 Property Type
+            .col-md-9
+              select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes')
+
           li.row
             span.label.col-md-3 Price
             .col-md-4
@@ -23,8 +43,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             .col-md-7.settings-row
               .settings-slider
                 rzslider(rz-slider-model="selectedFilters.bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-            .col-md-1.label
-              {{selectedFilters.bedsMin}}+
+            .col-md-1.label {{selectedFilters.bedsMin}}+
           li.row
             span.label.col-md-3 Baths
             .col-md-7.settings-row
@@ -32,6 +51,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 rzslider(rz-slider-model="selectedFilters.bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
             .col-md-1.label
               {{selectedFilters.bathsMin}} +
+            .col-md-1.label {{selectedFilters.bathsMin}}+
 
           li.row
             span.label.col-md-3 Sqft
@@ -44,10 +64,10 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
           li.row
             span.label.col-md-3 Acres
             .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
+              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name disable when (selectedFilters.acresMax != null && c.value > selectedFilters.acresMax) for c in filterValues.acresValues')
             span.col-md-1.label to
             .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
+              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name disable when (selectedFilters.acresMin != null && c.value < selectedFilters.acresMin) for c in filterValues.acresValues')
 
           li.row
             span.label.col-md-5 In Shapes / Neighborhoods
@@ -59,6 +79,41 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="Toggles.propertiesInShapes"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
+
+        ul.advanced(ng-if="showAdvanced" ng-cloak)
+          li.row
+            span.label.col-md-3 Owner Name
+            .col-md-9
+              input.form-control(type="text" ng-model="selectedFilters.ownerName")
+
+          li.row
+            span.label.col-md-3 Listed Days
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMax != null && c.value > selectedFilters.listedDaysMax) for c in filterValues.listedDays')
+            span.col-md-1.label to
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMin != null && c.value < selectedFilters.listedDaysMin) for c in filterValues.listedDays')
+
+          li.row
+            span.label.col-md-3 Close Price
+            .col-md-4
+              input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
+            span.col-md-1.label to
+            .col-md-4
+                  input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
+
+          li.row
+            span.label.col-md-3 Close Date
+            .col-md-3.label start
+            .col-md-6
+              input.form-control(type="date" disabled)
+
+          li.row
+            span.label.col-md-3 Close Date
+            .col-md-3.label end
+            .col-md-6
+              input.form-control(type="date" disabled)
+
           li.row
             span.label.col-md-5 Old DrawToolbar
             .col-md-7
@@ -79,34 +134,6 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="selectedFilters.combinedData"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
-        ul
-          li.row
-            span.label.col-md-12
-              span(ng-show="showAdvanced" ng-click="showAdvanced = !showAdvanced") Hide Advanced Filters ▼
-              span(ng-show="!showAdvanced" ng-click="showAdvanced = !showAdvanced") Show Advanced Filters ▲
-
-        ul.advanced(ng-show="showAdvanced")
-          li.row
-            span.label.col-md-3 Owner Name
-            .col-md-9
-              input.form-control(type="text" ng-model="selectedFilters.ownerName")
-
-          li.row
-            span.label.col-md-3 Listed Days
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
-            span.col-md-1.label to
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
-
-          li.row
-            span.label.col-md-3 Close Price
-            .col-md-4
-              input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
-            span.col-md-1.label to
-            .col-md-4
-              input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
-
   .mobile-only
     button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
       span.icon.icon-settings
@@ -114,8 +141,12 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
   script(type="text/ng-template" id="SettingsModalMobile")
     .settings-modal-mobile(ng-controller="rmapsFiltersMobileCtrl")
       mobile-header-buttons
-          a.settings-header-button(ng-click="reset()" ng-class="{ 'disabled': !dirty }") Reset
+        a.settings-header-button(ng-click="reset()" ng-class="{ 'disabled': !dirty }") Reset
       .list
+        .item.settings-row
+          .settings-header Property Type
+          select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes' ng-change="makeDirty()")
+
         .item.settings-row
           .settings-header Price
           .settings-value ${{translatePrice(priceSlider.min)}} - ${{translatePrice(priceSlider.max)}}

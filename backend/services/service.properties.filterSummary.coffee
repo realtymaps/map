@@ -33,6 +33,7 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
   logger.debug "_handleReturnType: " + returnAs
 
   defaultFn = () ->
+    logger.debug queryParams
     query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 800)
     query = _limitByPinnedProps(query, state, queryParams)
     # remove dupes
@@ -91,7 +92,7 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
   handle = handles[returnAs] or handles.default
   handle()
 
-_validateAndTransform = ({req, localTransforms}) ->
+_validateAndTransform = ({req, state, localTransforms}) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
@@ -115,7 +116,7 @@ module.exports =
         filterSummaryImpl = base
 
     Promise.try ->
-      _validateAndTransform({req, localTransforms: filterSummaryImpl.transforms})
+      _validateAndTransform({req, state, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
       return [] unless queryParams
       _handleReturnType({filterSummaryImpl, state, queryParams, limit})
