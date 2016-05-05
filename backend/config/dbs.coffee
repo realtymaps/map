@@ -39,7 +39,8 @@ _barePgShutdown = () ->
     pg.end()
 
 
-shutdown = (quiet) ->
+shutdown = (opts={}) ->
+  {quiet} = opts
   if quiet
     log = logger.debug.bind(logger)
   else

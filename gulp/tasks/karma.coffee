@@ -3,6 +3,8 @@ gulp = require 'gulp'
 _ = require 'lodash'
 karmaKick = require 'karma-kickoff'
 argv = require('yargs').argv
+shutdown = require '../../backend/config/shutdown'
+
 
 opts =
   configFile: '../../karma.conf.coffee'
@@ -48,7 +50,7 @@ gulp.task 'karma', (done) ->
   karmaKick (code) ->
     done(code)
     if code
-      process.exit code #hack this should not need to be here
+      shutdown.exit(error: true)  #hack this should not need to be here
   ,
     _.extend {}, opts,
       reporters: ['dots', 'junit']
