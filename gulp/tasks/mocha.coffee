@@ -11,9 +11,10 @@ dbs = require '../../backend/config/dbs'
 
 require 'chai'
 require('chai').should()
+shutdown = require '../../backend/config/shutdown'
+
 
 runMocha = (files, reporter = 'dot', done) ->
-
   gulp.src files, read: false
   # .pipe logFile(es)
   .pipe plumber()
@@ -23,7 +24,7 @@ runMocha = (files, reporter = 'dot', done) ->
   .once 'error', (err) ->
     logger.error(err.stack ? err)
     done()
-    return process.exit(1)
+    return shutdown.exit(error: true)
 
 gulp.task 'backendUnitSpec', (done) ->
   runMocha ['spec/backendUnit/**/*spec*'], undefined, done
@@ -46,6 +47,14 @@ gulp.task 'dbShutdown', (done) ->
     dbs.shutdown(quiet: true)
     .then () ->
       done()
+
+gulp.task 'forceExit', (done) ->
+  if process.env.CIRCLECI
+    # skip this step
+    done()
+  else
+    done()
+    shutdown.exit()
 
 gulp.task 'backendIntegrationDebugSpec', (done) ->
   if process.env.CIRCLECI
