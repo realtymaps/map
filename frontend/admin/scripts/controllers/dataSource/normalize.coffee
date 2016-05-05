@@ -47,6 +47,8 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
+  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
+
   $scope.baseRules = rmapsValidatorBuilderService.getBaseRules('mls', 'listing')
 
   $scope.categories = {}

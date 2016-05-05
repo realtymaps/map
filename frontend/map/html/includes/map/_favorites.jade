@@ -9,7 +9,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="d
     popover-trigger="click mouseenter")
     i.icon.fa.fa-heart
 
-  .dropdown-menu.whiteblock.no-margin
+  .dropdown-menu.whiteblock
     .fixed-header
       span
         a(ng-show="favoriteTotal" ui-sref="projectFavorites({id: principal.getCurrentProfile().project_id})") {{favoriteTotal}} Favorite Properties

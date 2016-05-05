@@ -21,7 +21,8 @@ exit = (opts={}) ->
   logger.debug "Process exit initiated..."
   Promise.join(exitHandlers)
   .then () ->
-    require('./dbs').shutdown(!opts.error)
+    dbs = require('./dbs')
+    dbs.shutdown(quiet: !opts.error)
   .catch (err) ->
     logger.error "Caught error during shutdown: #{analyzeValue.getSimpleDetails(err)}"
   .finally () ->

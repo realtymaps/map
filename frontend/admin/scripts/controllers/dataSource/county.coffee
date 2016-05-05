@@ -54,6 +54,8 @@ app.controller 'rmapsCountyCtrl',
     'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
+  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
+
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
     $scope.targetCategories = _.map rmapsParcelEnums.categories[dataSourceType][dataListType], (label, list) ->
@@ -69,9 +71,8 @@ app.controller 'rmapsCountyCtrl',
   # Handles adding rules to categories
   addRule = (rule, list) ->
     category = $scope.categories[list]
-    _.defaults rule,
-      ordering: category.length
-      list: list
+    rule.ordering ?= category.length
+    rule.list ?= list
     idx = _.sortedIndex(category, rule, 'ordering')
     allRules[if list == 'base' then rule.output else rule.input] = rule
     category.splice idx, 0, rule
@@ -97,6 +98,11 @@ app.controller 'rmapsCountyCtrl',
       if !allRules[baseRulesKey]
         rule.output = baseRulesKey
         addBaseRule(rule)
+
+    # correct ordering in case there were gaps (from someone mucking with the db manually)
+    for name,list of $scope.categories when name != 'unassigned'
+      for rule,index in list
+        rule.ordering = index
 
     # Save base rules
     if 'base' of $scope.categories
@@ -126,7 +132,7 @@ app.controller 'rmapsCountyCtrl',
     if field.list != 'unassigned' && field.list != 'base'
       $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
-    $scope.loadLookups(if field.list == 'base' then allRules[field.output] else field)
+    $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 
   $scope.loadLookups = (field) ->
     if field?._lookups
