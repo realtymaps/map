@@ -1,4 +1,3 @@
-###globals _###
 app = require '../app.coffee'
 mapId = 'mainMap'
 color = 'red'
@@ -68,12 +67,11 @@ leafletData) ->
               shapeOptions: {color}
       }
 
-    reLoadDarCtrlFactory = (newVal) ->
+    $scope.$watch 'Toggles.isNeighborhoodDraw', (newVal) ->
       if newVal
         return _drawCtrlFactory(_handles)
       _drawCtrlFactory()
-
-    $scope.$watch 'Toggles.isNeighborhoodDraw', reLoadDarCtrlFactory
+      
     $rootScope.$onRootScope rmapsEventConstants.neighbourhoods.removeDrawItem, (event, model) ->
       leafletData.getMap(mapId)
       .then (map) ->
