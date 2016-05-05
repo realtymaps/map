@@ -201,6 +201,17 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
       numRawRows
 
 
+getRecordChangeCountsData = (fipsCode) ->
+  {
+    deletes: dataLoadHelpers.DELETE.UNTOUCHED
+    dataType: "normParcel"
+    rawDataType: "parcel"
+    rawTableSuffix: fipsCode
+    subset:
+      fips_code: fipsCode
+  }
+
+
 module.exports = {
   saveToNormalDb
   finalizeData
@@ -208,4 +219,5 @@ module.exports = {
   activateNewData
   handleOveralNormalizeError
   column
+  getRecordChangeCountsData
 }
