@@ -11,6 +11,13 @@ subStatus =
   discontinued: 'discontinued'
   auction: 'auction'
 
+propertyType = {
+  'Single Family',
+  'Condo / Townhome',
+  'Lots',
+  'Multi-Family'
+}
+
 categories =
   mls:
     listing:
@@ -75,3 +82,4 @@ mod.constant 'rmapsParcelEnums',
   subStatus: _.extend(subStatus, status)
   categories: categories
   address: address
+  propertyType: propertyType
