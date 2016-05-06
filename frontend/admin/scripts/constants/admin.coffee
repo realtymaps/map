@@ -9,10 +9,15 @@ admin =
     base:
       id: null
       name: null
+      formal_name: null
       notes: ''
       username: null
       password: null
       url: null
+      disclaimer_logo: null
+      disclaimer_text: null
+      dcma_contact_name: null
+      dcma_contact_address: null
     propertySchema:
       listing_data: {'queryTemplate': _queryTemplate}
     otherConfig:

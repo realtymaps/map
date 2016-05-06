@@ -52,6 +52,11 @@
                       input(type="text" ng-model="mlsData.current.name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
                   tr
                     td
+                      label.data-label Formal Name:
+                    td
+                      input(type="text" ng-model="mlsData.current.formal_name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
                       label.data-label Notes:
                     td
                       textarea(ng-model="mlsData.current.notes" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
@@ -60,6 +65,34 @@
                       label.data-label Active:
                     td
                       input(type="checkbox" ng-model="mlsData.task.active" ng-disabled="!principal.hasPermission('change_mlsconfig') || !isReady(mlsData.current)").form-control
+
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  div
+                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Disclaimer
+                table
+                  tr
+                    td
+                      label.data-label DCMA Contact Name:
+                    td
+                      input(type="text" ng-model="mlsData.current.dcma_contact_name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label DCMA Contact Address:
+                    td
+                      textarea(ng-model="mlsData.current.dcma_contact_address" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label Disclaimer Logo:
+                    td(colSpan=2)
+                      button(ng-click="selectIcon()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-primary Select Logo Icon
+
+                      //- input(type="text" ng-model="mlsData.current.disclaimer_logo" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label Disclaimer Text:
+                    td
+                      textarea(ng-model="mlsData.current.disclaimer_text" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
               accordion-group(is-disabled="!mlsData.current.id")
                 accordion-heading
@@ -146,6 +179,16 @@
                 span.data-entry {{mlsData.current.id}}
             tr
               td
+                label.data-label Active:
+              td
+                span.data-entry {{mlsData.task.active}}
+            tr
+              td
+                label.data-label Formal Name:
+              td
+                span.data-entry {{mlsData.current.formal_name}}
+            tr
+              td
                 label.data-label Name:
               td
                 span.data-entry {{mlsData.current.name}}
@@ -191,14 +234,32 @@
                 span.data-entry {{fieldNameMap.objects}}
             tr
               td
+                label.data-label DCMA Contact Name:
+              td
+                span.data-entry {{mlsData.current.dcma_contact_name}}
+            tr
+              td
+                label.data-label DCMA Contact Address:
+              td
+                span.data-entry {{mlsData.current.dcma_contact_address}}
+            tr
+              td
+                label.data-label Disclaimer Logo:
+              td
+                div(ng-show="mlsData.current.disclaimer_logo")
+                  .data-entry {{mlsData.current.disclaimer_logo}}
+                  img.mls-icon(ng-src="/assets/mlsicons/{{mlsData.current.disclaimer_logo}}")
+            tr
+              td
+                label.data-label Disclaimer Text:
+              td
+                span.data-entry {{mlsData.current.disclaimer_text}}
+
+            tr
+              td
                 label.data-label Notes:
               td
                 span.data-entry {{mlsData.current.notes}}
-            tr
-              td
-                label.data-label Active:
-              td
-                span.data-entry {{mlsData.task.active}}
 
             tr(ng-show="hasAllDefaultOtherConfig()").config-tr
               td(colspan=2)
