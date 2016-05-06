@@ -109,7 +109,6 @@ loadRawData = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
   {fileName} = subtask.data
-  deletes = dataLoadHelpers.DELETE.UNTOUCHED
   fipsCode = String.numeric path.basename fileName
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
@@ -157,13 +156,7 @@ loadRawData = (subtask) -> Promise.try () ->
         subtask
         laterSubtaskName: "recordChangeCounts"
         #rawDataType fixes lookup of rawtable for change counts
-        manualData: {
-          deletes
-          dataType: "normParcel"
-          rawDataType: "parcel"
-          subset:
-            fips_code: fipsCode
-        }
+        manualData: parcelHelpers.getRecordChangeCountsData(fipsCode)
         replace: true
       }
       .then () ->
@@ -220,8 +213,10 @@ finalizeDataPrep = (subtask) ->
 finalizeData = (subtask) ->
   logger.debug util.inspect(subtask, depth: null)
 
+  {delay} = subtask.data
+
   Promise.map subtask.data.values, (id) ->
-    parcelHelpers.finalizeData(subtask, id, 250)
+    parcelHelpers.finalizeData(subtask, id, delay ? DELAY_MILLISECONDS)
   # .then ->
   #   jobQueue.queueSubsequentSubtask {
   #     subtask,
