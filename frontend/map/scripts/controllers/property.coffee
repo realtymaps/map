@@ -1,8 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-#module.exports = app
-
 app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService,
 rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
   $log = $log.spawn 'rmapsPropertyCtrl'
