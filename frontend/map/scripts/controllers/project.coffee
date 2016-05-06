@@ -174,7 +174,7 @@ app.controller 'rmapsProjectCtrl',
         $scope.dashboardMapAccess.initPromise.then () ->
           if $scope.pins.length
             $timeout(() ->
-              highlightProperty(($scope.pins[0].rm_property_id)
+              highlightProperty($scope.pins[0].rm_property_id)
             , 0)
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
