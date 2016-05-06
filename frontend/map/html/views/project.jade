@@ -9,8 +9,8 @@ include ../includes/mixins/_leafletMixin.jade
       //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
       //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
-      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide")
-        slide(ng-repeat="property in pins" active="property.activeSlide")
+      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
+        slide(ng-repeat="property in pins" active="property.activeSlide" actual="property")
           .pin-image
             img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
             img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")

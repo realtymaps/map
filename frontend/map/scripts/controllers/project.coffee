@@ -71,13 +71,19 @@ app.controller 'rmapsProjectCtrl',
   # Dashboard Map
   #
   $scope.dashboardMapAccess = rmapsMapAccess
-  
+
+  highlightProperty = (propertyId) ->
+    rmapsMapAccess.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
+
   rmapsMapAccess.registerMarkerClick $scope, (event, args) ->
     {leafletEvent, leafletObject, model, modelName, layerName} = args
-    
+
     if property = properties[modelName]
       property.activeSlide = true
-      rmapsMapAccess.setPropertyClass(property.rm_property_id, 'project-dashboard-icon-saved', true)
+      highlightProperty(property.rm_property_id)
+
+  $scope.onSlideChanged = (nextSlide) ->
+    highlightProperty(nextSlide.actual.rm_property_id)
 
   #
   # Property carousel
@@ -163,6 +169,13 @@ app.controller 'rmapsProjectCtrl',
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
     else
       $scope.loadedProperties = true
+
+        # Highlight the first carousel property on the map
+        $scope.dashboardMapAccess.initPromise.then () ->
+          if $scope.pins.length
+            $timeout(() ->
+              highlightProperty(($scope.pins[0].rm_property_id)
+            , 0)
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
     loadClients()

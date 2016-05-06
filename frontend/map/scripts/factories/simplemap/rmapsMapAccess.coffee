@@ -26,14 +26,16 @@ app.factory 'rmapsMapAccess', (
     isReady: false
     mapId: 'dashboardMap'
     map: null
-    mapScope: rmapsMapScope
+    mapScope: rmapsMapScope,
+    initPromise: null
 
     #
     # Constructor
     #
     constructor: () ->
       # This promise is resolved when Leaflet has finished setting up the Map
-      leafletData.getMap(@mapId).then (map) =>
+      @initPromise = leafletData.getMap(@mapId)
+      @initPromise.then (map) =>
         @map = map
         @isReady = true
 
@@ -92,7 +94,7 @@ app.factory 'rmapsMapAccess', (
       if resetOtherMarkers
         _.forOwn @mapScope.markers, (marker) ->
           marker.icon?.className = 'project-dashboard-icon'
-          
+
       @mapScope.markers[propertyId]?.icon.className = className
 
   #
