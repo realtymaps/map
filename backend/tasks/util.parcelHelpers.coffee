@@ -10,7 +10,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
-{SoftFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
@@ -29,7 +29,8 @@ diffExcludeKeys = [
 ]
 
 getRowChanges = (row1, row2) ->
-  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys))
+  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys)).map (c) ->
+    _(c).omit(_.isUndefined).omit(_.isNull).value()
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
@@ -83,9 +84,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       .catch analyzeValue.isKnexError, (err) ->
         jsonData = JSON.stringify(row,null,2)
         logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
-        tables.temp(subid: rawSubid)
-        .where({rm_raw_id})
-        .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+        throw HardFail err.message
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
         .where({rm_raw_id})
@@ -134,7 +133,7 @@ _finalizeNewParcel = ({parcels, id, subtask}) ->
       .insert(parcel)
 
 finalizeData = (subtask, id, delay) -> Promise.try () ->
-  delay = delay ? 100
+  delay ?= 100
   ###
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
