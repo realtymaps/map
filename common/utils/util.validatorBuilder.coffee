@@ -24,6 +24,7 @@ ruleDefaults =
         'DataType'
         'nullZero'
         'nullEmpty'
+        'nullEmptyArray'
         'nullNumber'
         'nullString'
         'nullBoolean'
