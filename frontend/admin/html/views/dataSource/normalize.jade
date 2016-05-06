@@ -202,7 +202,7 @@
 
     div(ng-show="fieldData.current.list == 'base'")
       // Generic input handling here, only for "simple"/string input values (i.e. not array or object)
-      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built','baths', 'property_type'].indexOf(fieldData.current.output) == -1 && fieldData.current.type.name != 'boolean'")
+      .col-md-12.scroll(ng-show="typeof(fieldData.current.input) == 'string'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-10
