@@ -47,7 +47,7 @@ _upload = (stream, fileName) -> Promise.try ->
 _fipsCodeQuery = (opts) -> Promise.try () ->
   throw new Error('opts.fipscode required!') unless opts?.fipscode?
   query =
-  sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false, 'distinct on (rm_property_id)')
+  sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false)
   .where fips_code:opts.fipscode
   .whereNotNull 'rm_property_id'
   .orderBy 'rm_property_id'

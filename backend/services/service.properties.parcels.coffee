@@ -18,7 +18,7 @@ transforms =
 
 
 _getBaseParcelQueryByBounds = (bounds, limit) ->
-  query = tables.property.parcel()
+  query = sqlHelpers.select(tables.property.parcel(), 'parcel', false)
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
   query.where(active: true)
   query.limit(limit) if limit?

@@ -171,7 +171,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = (subtask, id) ->
+finalizeData = ({subtask, id, data_source_id}) ->
   tables.property.tax(subid: subtask.data.normalSubid)
   .select('*')
   .where
