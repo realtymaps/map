@@ -11,7 +11,7 @@ app.factory 'rmapsMapAccess', (
   rmapsBounds
   rmapsEventConstants
   rmapsGeometries
-  rmapsMapScope
+  rmapsMapContext
 ) ->
 
   #
@@ -20,19 +20,27 @@ app.factory 'rmapsMapAccess', (
   $log = $log.spawn('rmapsMapAccess')
 
   #
-  # Public API
+  # All Map Access instances
+  #
+  mapAccessCache = {}
+
+  #
+  # Map Access class implementation
   #
   class RmapsMapAccess
     isReady: false
-    mapId: 'dashboardMap'
+    mapId: null
     map: null
-    mapScope: rmapsMapScope,
+    context: null,
     initPromise: null
 
     #
     # Constructor
     #
-    constructor: () ->
+    constructor: (mapId) ->
+      @mapId = mapId
+      @context = rmapsMapContext.newMapContext()
+
       # This promise is resolved when Leaflet has finished setting up the Map
       @initPromise = leafletData.getMap(@mapId)
       @initPromise.then (map) =>
@@ -44,10 +52,10 @@ app.factory 'rmapsMapAccess', (
       if !properties?.length
         return
 
-      @mapScope.markers = @mapScope.markers || {}
+      @context.markers = @context.markers || {}
       angular.forEach properties, (property) =>
         if property.geom_point_json?.coordinates?
-          @mapScope.markers[property.rm_property_id] = {
+          @context.markers[property.rm_property_id] = {
             lat: property.geom_point_json.coordinates[1],
             lng: property.geom_point_json.coordinates[0],
             draggable: false,
@@ -69,9 +77,9 @@ app.factory 'rmapsMapAccess', (
 
       if properties.length > 1
         bounds = rmapsBounds.boundsFromPropertyArray(properties)
-        @mapScope.bounds = bounds
+        @context.bounds = bounds
       else
-        @mapScope.center = {
+        @context.center = {
           lat: properties[0].geom_point_json.coordinates[1],
           lng: properties[0].geom_point_json.coordinates[0],
           zoom: 15
@@ -82,7 +90,7 @@ app.factory 'rmapsMapAccess', (
     # Add a marker click handler $scope.$on for the current map and ensure
     # that the marker click events are enabled on the Map Scope
     registerMarkerClick: ($scope, handler) ->
-      @mapScope.enableMarkerEvent('click')
+      @context.enableMarkerEvent('click')
 
       event = "leafletDirectiveMarker.#{@mapId}.click"
       $log.debug "Register Marker Click #{event}"
@@ -92,22 +100,30 @@ app.factory 'rmapsMapAccess', (
     # Set the class of a property marker
     setPropertyClass: (propertyId, className, resetOtherMarkers = false) ->
       if resetOtherMarkers
-        _.forOwn @mapScope.markers, (marker) ->
+        _.forOwn @context.markers, (marker) ->
           marker.icon?.className = 'project-dashboard-icon'
 
-      @mapScope.markers[propertyId]?.icon.className = className
+      @context.markers[propertyId]?.icon.className = className
 
   #
-  # Service instance
+  # Service instance API
   #
-  service = new RmapsMapAccess()
+  service = {
+    newMapAccess: (mapId) ->
+      access = new RmapsMapAccess(mapId)
+      mapAccessCache[mapId] = access
+
+      return access
+
+    findMapAccess: (mapId) ->
+      return mapAccessCache[mapId]
+  }
 
   #
   # Private Implementation
   #
   clear = () ->
-    service.map = null
-    service.mapScope.clear()
+    mapAccessCache = {}
 
   #
   # Handle Logout

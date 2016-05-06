@@ -34,17 +34,17 @@ include ../includes/mixins/_leafletMixin.jade
       .dashboardMap
         leaflet(
         id="dashboardMap"
-        bounds="dashboardMapAccess.mapScope.bounds"
-        defaults="dashboardMapAccess.mapScope.defaults"
-        center="dashboardMapAccess.mapScope.center"
-        layers="dashboardMapAccess.mapScope.layers"
-        markers="dashboardMapAccess.mapScope.markers"
-        markers-nested="dashboardMapAccess.mapScope.markersNested"
-        event-broadcast="dashboardMapAccess.mapScope.events"
+        bounds="dashboardMapAccess.context.bounds"
+        defaults="dashboardMapAccess.context.defaults"
+        center="dashboardMapAccess.context.center"
+        layers="dashboardMapAccess.context.layers"
+        markers="dashboardMapAccess.context.markers"
+        markers-nested="dashboardMapAccess.context.markersNested"
+        event-broadcast="dashboardMapAccess.context.events"
         )
-        //markers-watch-options="dashboardMapAccess.mapScope.markersWatchOptions"
-        //geojson-watch-options="dashboardMapAccess.mapScope.geojsonWatchOptions"
-        //geojson="dashboardMapAccess.mapScope.geojson"
+        //markers-watch-options="dashboardMapAccess.context.markersWatchOptions"
+        //geojson-watch-options="dashboardMapAccess.context.geojsonWatchOptions"
+        //geojson="dashboardMapAccess.context.geojson"
         //geojson-nested="true"
         //controls="controls"
 

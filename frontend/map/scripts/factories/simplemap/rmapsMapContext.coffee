@@ -2,18 +2,18 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.factory 'rmapsMapScope', (
+app.factory 'rmapsMapContext', (
   $log
 
   rmapsGeometries
   rmapsUtilLayersBase
 ) ->
-  $log = $log.spawn('rmapsMapScope')
+  $log = $log.spawn('RmapsMapContext')
 
   #
   # Public API
   #
-  class RmapsMapScope
+  class RmapsMapContext
     #
     # Leaflet Scope Data
     #
@@ -22,11 +22,6 @@ app.factory 'rmapsMapScope', (
 
     bounds: null
     center: new rmapsGeometries.LeafletCenter(26.148111, -81.790809, 15)
-#    center: {
-#      lat: 26.148111,
-#      lng: -81.790809,
-#      zoom: 15
-#    }
     controls: null
     events: {}
     geojson: null
@@ -36,9 +31,9 @@ app.factory 'rmapsMapScope', (
     markers: {}
     markersNested: false
 
-    'markers-watch-options': null
-    'geojson-watch-options': null
-    'geojson-nested': true
+    markersWatchOptions: null
+    geojsonWatchOptions: null
+    geojsonNested: true
 
     #
     # Constructor
@@ -57,13 +52,10 @@ app.factory 'rmapsMapScope', (
   #
   # Service instance
   #
-  service = new RmapsMapScope()
-
-  #
-  # Private Implementation
-  #
-  clear = () ->
-
+  service = {
+    newMapContext: () ->
+      new RmapsMapContext()
+  }
 
   #
   # Return service

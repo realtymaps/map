@@ -70,12 +70,12 @@ app.controller 'rmapsProjectCtrl',
   #
   # Dashboard Map
   #
-  $scope.dashboardMapAccess = rmapsMapAccess
+  dashboardMapAccess = $scope.dashboardMapAccess = rmapsMapAccess.newMapAccess('dashboardMap')
 
   highlightProperty = (propertyId) ->
-    rmapsMapAccess.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
+    dashboardMapAccess.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
 
-  rmapsMapAccess.registerMarkerClick $scope, (event, args) ->
+  dashboardMapAccess.registerMarkerClick $scope, (event, args) ->
     {leafletEvent, leafletObject, model, modelName, layerName} = args
 
     if property = properties[modelName]
@@ -194,8 +194,8 @@ app.controller 'rmapsProjectCtrl',
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
       $timeout(() ->
-        rmapsMapAccess.addPropertyMarkers(result.data)
-        rmapsMapAccess.fitToBounds(result.data)
+        dashboardMapAccess.addPropertyMarkers(result.data)
+        dashboardMapAccess.fitToBounds(result.data)
       , 0)
 
       return properties
