@@ -16,8 +16,8 @@ ruleDefaults =
 
   # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    _.pick @config, (v, k) ->
-      # exclude keys from the first list, and include the (truthy, falsy) fields only if they have non-empty string values
+    options = _.pick @config, (v, k) ->
+      # config keys to exclude
       [
         'advanced'
         'alias'
@@ -26,9 +26,20 @@ ruleDefaults =
         'nullEmpty'
         'nullNumber'
         'nullString'
+        'nullBoolean'
         'doLookup'
         'mapping'
-      ].indexOf(k) == -1 || (['truthy', 'falsy'].indexOf(k) != -1 && v?.length)
+        'truthiness'
+      ].indexOf(k) == -1
+    if @config.truthiness && Object.keys(@config.truthiness).length > 0
+      options.truthy = []
+      options.falsy = []
+      for value, truthiness of @config.truthiness
+        if truthiness
+          options.truthy.push(value)
+        else
+          options.falsy.push(value)
+    options
 
   getTransform: (globalOpts = {}) ->
     transformArr = []
@@ -49,6 +60,8 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: value: 0
     if @config.nullEmpty
       transformArr.push name: 'nullify', options: value: ''
+    if @config.nullBoolean?
+      transformArr.push name: 'nullify', options: value: @config.nullBoolean
     if @config.nullNumber
       transformArr.push name: 'nullify', options: values: _.map @config.nullNumber, Number
     if @config.nullString
@@ -122,16 +135,13 @@ _rules =
 
       photo_id:
         alias: 'Photo ID'
-        required: false
 
       photo_count:
         alias: 'Photo Count'
-        required: false
         type: name: 'integer'
 
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'
-        required: false
         type: name: 'datetime'
 
       address:
@@ -167,10 +177,14 @@ _rules =
       hide_address:
         alias: 'Hide Address'
         type: name: 'boolean'
+        config:
+          nullBoolean: null
 
       hide_listing:
         alias: 'Hide Listing'
         type: name: 'boolean'
+        config:
+          nullBoolean: null
 
       status:
         alias: 'Status'
@@ -313,9 +327,6 @@ _rules =
       owner_address:
         group: 'mortgage'
 
-# no lists currently have no base filters, but deed used to, so
-# we'll keep this around just in case something comes along that needs this)
-_noBase = []
 
 # RETS/MLS rule defaults for each data type
 typeRules =
@@ -346,26 +357,46 @@ typeRules =
     type:
       name: 'datetime'
       label: 'Date and Time'
-    valid: () ->
-      !!@input.format
   Boolean:
     type:
       name: 'boolean'
       label: 'Yes/No'
-    getTransform: () ->
-      name: 'nullify'
-      options: @getOptions()
+    config:
+      nullBoolean: false
     valid: () ->
-      # if you enter a value for truthy or falsy, you must enter a value for both
-      (@input.truthy?.length && @input.falsy?.length) || (!@input.truthy?.length && !@input.falsy?.length)
+      if !@lookups
+        return true
+      # if this field has a lookup, you must mark something for all lookups, and must have both truthy and falsy values
+      if !@config.truthiness
+        return false
+      foundTruthy = false
+      foundFalsy = false
+      for lookup in @lookups
+        if !@config.truthiness[lookup.LongValue]?
+          return false
+        if @config.truthiness[lookup.LongValue]
+          foundTruthy = true
+        if !@config.truthiness[lookup.LongValue]
+          foundFalsy = true
+      return foundTruthy && foundFalsy
+
+baseTypeRules =
+  boolean: _.omit(typeRules.Boolean, 'type')
+  datetime: _.omit(typeRules.DateTime, 'type')
+  string: _.omit(typeRules.Character, 'type')
+  float: _.omit(typeRules.Decimal, 'type')
+  integer: _.omit(typeRules.Int, 'type')
 
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
 
 getBaseRules = (dataSourceType, dataListType) ->
-  if dataListType in _noBase
-    return {}
-  _.defaultsDeep(_.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType].common), _.cloneDeep(_rules[dataSourceType][dataListType]))
+  p1 = _.cloneDeep(_rules[dataSourceType][dataListType])
+  p2 = _.cloneDeep(_rules[dataSourceType].common)
+  p3 = _.cloneDeep(_rules.common)
+  builtBaseRules = _.defaultsDeep(p1, p2, p3)
+  return _.mapValues builtBaseRules, (val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])
+getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]

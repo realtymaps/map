@@ -205,7 +205,7 @@
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
         .col-md-2
-          select(ng-model="fieldData.current.config.value" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          select(ng-model="fieldData.current.config.nullBoolean" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Remove the selected value
 
     div(ng-show="fieldData.current.list == 'base'")
@@ -441,19 +441,17 @@
               span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
         .row
           .col-md-2 Invert
-          .col-md-4
+          .col-md-1
             input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
           .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
-        .row
-          .col-md-2 Truthy String (optional)
-          .col-md-4
-            input(type="text" ng-model="fieldData.current.config.truthy" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-          .col-md-6.help Only needed when using a string field to fulfill this
-        .row
-          .col-md-2 Falsy String (optional)
-          .col-md-4
-            input(type="text" ng-model="fieldData.current.config.falsy" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-          .col-md-6.help Only needed when using a string field to fulfill this
+        .row(ng-repeat="lookup in fieldData.current.lookups")
+          .col-md-2 Truthiness for: {{lookup.LongValue}}
+          .col-md-1
+            label Truthy
+              input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="true" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          .col-md-1
+            label Falsy
+              input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="false" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'property_type'")
         .row
@@ -494,7 +492,7 @@
       .row
         .col-md-2 Date Format
         .col-md-4
-          input(type="text" ng-model="fieldData.current.config.format" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
+          input(type="text" ng-model="fieldData.current.config.format" placeholder="YYYY-MM-DD[T]HH:mm:ss" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
         .col-md-6.help Date formatting, as documented #{''}
           a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
 
