@@ -10,7 +10,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
-{SoftFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
@@ -29,7 +29,8 @@ diffExcludeKeys = [
 ]
 
 getRowChanges = (row1, row2) ->
-  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys))
+  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys)).map (c) ->
+    _(c).omit(_.isUndefined).omit(_.isNull).value()
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
@@ -83,9 +84,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       .catch analyzeValue.isKnexError, (err) ->
         jsonData = JSON.stringify(row,null,2)
         logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
-        tables.temp(subid: rawSubid)
-        .where({rm_raw_id})
-        .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+        throw HardFail err.message
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
         .where({rm_raw_id})
@@ -93,24 +92,20 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
 
-_finalizeUpdateListing = ({id, subtask, delay}) ->
-  delay ?= 100
-  #should not need owner promotion logic since it should have already been done
-  Promise.delay(delay)  #throttle for heroku's sake
-  .then () ->
-    dbs.get('main').transaction (transaction) ->
-      tables.property.combined(transaction: transaction)
-      .where
-        rm_property_id: id
-        active: true
-      .then (rows) ->
-        promises = for r in rows
-          do (r) ->
-            #figure out data_source_id and type
-            #execute finalize for that specific MLS (subtask)
-            mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
+_finalizeUpdateListing = ({id, subtask}) ->
+  dbs.get('main').transaction (transaction) ->
+    tables.property.combined(transaction: transaction)
+    .where
+      rm_property_id: id
+      active: true
+    .then (rows) ->
+      promises = for r in rows
+        do (r) ->
+          #figure out data_source_id and type
+          #execute finalize for that specific MLS (subtask)
+          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
 
-        Promise.all promises
+      Promise.all promises
 
 finalizeParcelEntry = (entries) ->
   entry = entries.shift()
@@ -123,47 +118,47 @@ finalizeParcelEntry = (entries) ->
   entry.update_source = entry.data_source_id
   entry
 
-_finalizeNewParcel = ({parcels, id, subtask, delay}) ->
-  delay ?= 100
+_finalizeNewParcel = ({parcels, id, subtask}) ->
   parcel = finalizeParcelEntry(parcels)
 
-  Promise.delay(delay)  #throttle for heroku's sake
-  .then () ->
-    dbs.get('main').transaction (transaction) ->
+  dbs.get('main').transaction (transaction) ->
+    tables.property.parcel(transaction: transaction)
+    .where
+      rm_property_id: id
+      data_source_id: subtask.task_name
+      # active: false , #eventually this should be false, but for now this avoids collisions and updates legacy
+    .delete()
+    .then () ->
       tables.property.parcel(transaction: transaction)
-      .where
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        # active: false , #eventually this should be false, but for now this avoids collisions and updates legacy
-      .delete()
-      .then () ->
-        tables.property.parcel(transaction: transaction)
-        .insert(parcel)
+      .insert(parcel)
 
 finalizeData = (subtask, id, delay) -> Promise.try () ->
+  delay ?= 100
   ###
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
   ###
-  tables.property.normParcel()
-  .select('*')
-  .where(rm_property_id: id)
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .then (parcels) ->
-    if parcels.length == 0
-      # might happen if a singleton listing is deleted during the day
-      return tables.deletes.parcel()
-      .insert
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
+  Promise.delay delay
+  .then () ->
+    tables.property.normParcel()
+    .select('*')
+    .where(rm_property_id: id)
+    .whereNull('deleted')
+    .orderBy('rm_property_id')
+    .orderBy('deleted')
+    .then (parcels) ->
+      if parcels.length == 0
+        # might happen if a singleton listing is deleted during the day
+        return tables.deletes.parcel()
+        .insert
+          rm_property_id: id
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
 
-    finalizeListingPromise = _finalizeUpdateListing({id, subtask, delay})
-    finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask, delay})
+      finalizeListingPromise = _finalizeUpdateListing({id, subtask})
+      finalizeParcelPromise = _finalizeNewParcel({parcels, id, subtask})
 
-    Promise.all [finalizeListingPromise, finalizeParcelPromise]
+      Promise.all [finalizeListingPromise, finalizeParcelPromise]
 
 
 activateNewData = (subtask) ->
