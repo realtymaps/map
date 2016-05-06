@@ -381,6 +381,7 @@ typeRules =
           foundFalsy = true
       return foundTruthy && foundFalsy
 
+# this is a remapping of the above RETS type rules, but indexed on validation types rather than RETS types
 baseTypeRules =
   boolean: _.omit(typeRules.Boolean, 'type')
   datetime: _.omit(typeRules.DateTime, 'type')
