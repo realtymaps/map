@@ -3,6 +3,8 @@ logger = require('../config/logger').spawn('route.photos')
 {mergeHandles, wrapHandleRoutes} = require '../utils/util.route.helpers'
 transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
+ExpressResponse = require '../utils/util.expressResponse'
+httpStatus = require '../../common/utils/httpStatus'
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -39,7 +41,14 @@ handles = wrapHandleRoutes
               res.setHeader "X-#{name}", payload.meta[name]
 
           logger.debug 'piping image'
-          payload.stream.pipe(res)
+          payload.stream.once 'error', (err) ->
+            if res.headersSent
+              return next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+
+            res.status(httpStatus.INTERNAL_SERVER_ERROR)
+            res.render 'error', alert: {msg: err.message}
+          .pipe(res)
+
 
 
 module.exports = mergeHandles handles,
