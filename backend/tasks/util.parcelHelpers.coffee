@@ -8,6 +8,7 @@ tables = require '../config/tables'
 dbs = require '../config/dbs'
 dataLoadHelpers = require './util.dataLoadHelpers'
 mlsHelpers = require './util.mlsHelpers'
+countyHelpers = require './util.countyHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 jobQueue = require '../services/service.jobQueue'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
@@ -126,7 +127,10 @@ _finalizeUpdateListing = ({id, subtask, transaction}) ->
       do (r) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
-        mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
+        if r.data_source_type == 'mls'
+          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
+        else
+          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
 
     Promise.all promises
 

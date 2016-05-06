@@ -251,7 +251,7 @@ finalizeData = (subtask, id) ->
             tables.property.combined(transaction: transaction)
             .where
               rm_property_id: id
-              data_source_id: subtask.task_name
+              data_source_id: data_source_id || subtask.task_name
               active: false
             .delete()
             .then () ->
