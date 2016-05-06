@@ -58,11 +58,7 @@
               ng-click="selectField(item)"
               rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
               ng-repeat="item in categories.unassigned | filter:rootSearchText | filter:countySearchText | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
-                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-                 'datatype-yn': item.type.name == 'boolean', \
-                 'datatype-date': item.type.name == 'datetime' }"
-                 ng-show="item.type")
+                span.datatype(ng-class="item.type.name" ng-show="item.type")
 
       .col-md-3.list-container(ng-if="!showGrid")
         h4 Groups
@@ -95,11 +91,7 @@
           ng-repeat="item in fieldData.category.items | filter:rootSearchText")
             span(ng-show="!item.unselectable") {{item.input}}
             span(ng-show="item.unselectable") {{item.alias}}
-            span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-             'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-             'datatype-yn': item.type.name == 'boolean', \
-             'datatype-date': item.type.name == 'datetime' }"
-             ng-show="item.type")
+            span.datatype(ng-class="item.type.name" ng-show="item.type")
 
       .col-md-8.list-container(ng-if="showGrid")
         h4 Groups
@@ -121,11 +113,7 @@
               ng-repeat="item in category.items")
                 span(ng-show="!item.unselectable") {{item.input}}
                 span(ng-show="item.unselectable") {{item.output}}
-                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-                 'datatype-yn': item.type.name == 'boolean', \
-                 'datatype-date': item.type.name == 'datetime' }"
-                 ng-show="item.type")
+                span.datatype(ng-class="item.type.name" ng-show="item.type")
 
   .row.panel.properties-container(ng-show="fieldData.current")
 

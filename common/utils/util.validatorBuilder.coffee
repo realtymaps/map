@@ -410,6 +410,7 @@ buildDataRule = (rule) ->
       rule.type.name = 'array'
       rule.config.split = ','
       rule.config.nullEmptyArray = true
+      rule.config.nullEmpty = false
     else
       rule.type.label = 'User-Entered Text'
   rule

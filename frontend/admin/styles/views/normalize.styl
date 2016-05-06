@@ -63,14 +63,18 @@
       &:before
         content: "?"
         padding 0.25em
-      &.datatype-string:before
+      &.string:before
         content: "abc"
-      &.datatype-number:before
+      &.integer:before
         content "123"
-      &.datatype-yn:before
+      &.float:before
+        content "12.34"
+      &.boolean:before
         content "yes/no"
-      &.datatype-date:before
+      &.date:before
         content "date"
+      &.array:before
+        content "[ab,cd]"
 
   .placeholder-field
     border 2px solid transparent
