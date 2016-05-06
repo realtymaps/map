@@ -213,8 +213,10 @@ finalizeDataPrep = (subtask) ->
 finalizeData = (subtask) ->
   logger.debug util.inspect(subtask, depth: null)
 
+  {delay} = subtask.data
+
   Promise.map subtask.data.values, (id) ->
-    parcelHelpers.finalizeData(subtask, id, 250)
+    parcelHelpers.finalizeData(subtask, id, delay ? DELAY_MILLISECONDS)
   # .then ->
   #   jobQueue.queueSubsequentSubtask {
   #     subtask,
