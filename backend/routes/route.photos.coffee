@@ -5,6 +5,7 @@ transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
+{HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -48,6 +49,11 @@ handles = wrapHandleRoutes
             res.status(httpStatus.INTERNAL_SERVER_ERROR)
             res.render 'error', alert: {msg: err.message}
           .pipe(res)
+
+      .catch HttpStatusCodeError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, err.statusCode)
+      .catch BadContentTypeError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, httpStatus.UNSUPPORTED_MEDIA_TYPE)
 
 
 

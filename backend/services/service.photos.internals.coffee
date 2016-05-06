@@ -5,6 +5,7 @@ tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 sharp = require 'sharp'
 through2 = require 'through2'
+errors = require '../utils/errors/util.errors.photos'
 
 useOriginalImage = ({newSize, originalSize}) ->
   (!newSize?.width? || !newSize?.height?) ||
@@ -54,9 +55,9 @@ resize = ({stream, width, height}) -> new Promise (resolve, reject) ->
 
   interceptStream.once 'response', (response) ->
     if response.statusCode != 200
-      handleError new Error 'bad statusCode'
+      handleError new errors.HttpStatusCodeError(response.statusCode, 'Not and Image due to error code ' + response.statusCode)
     if !response.headers['content-type'].match /image/ig
-      handleError new Error 'not an image'
+      handleError new errors.BadContentTypeError 'not an image, content type is ' + response.headers['content-type']
 
   interceptStream.once 'error', handleError
 
