@@ -14,7 +14,9 @@ if [[ "$unamestr" == 'Linux' ]]; then
   curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
-  brew install homebrew/science/vips --with-imagemagick --with-webp
+  if ! hash vips &> /dev/null || [[ $IS_HEROKU = 1 ]];then
+    brew install homebrew/science/vips --with-imagemagick --with-webp
+  fi
 fi
 
 exit 0

@@ -346,8 +346,9 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges, doSafeJsonArray}) -> Promise.try () ->
   delay ?= 100
+  doSafeJsonArray ?= true
   getRowChanges ?= _getRowChanges
 
   Promise.delay(delay)  #throttle for heroku's sake
@@ -376,10 +377,14 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
       if changes.deleted == stats.batch_id
         # it wasn't really deleted, just purged earlier in this task as per black knight data flow
         delete changes.deleted
-      if !_.isEmpty changes
+      if !_.isEmpty changes && doSafeJsonArray
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
+      else
+        updateRow.change_history = changes
+
+      if doSafeJsonArray
+        updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
 
       if !_specialUpdates[dataType]?
         tables.property[dataType](subid: subid)
@@ -388,7 +393,7 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
           data_source_id: updateRow.data_source_id
         .update(updateRow)
       else
-        !_specialUpdates[dataType].update({subid, row: updateRow})
+        _specialUpdates[dataType].update({subid, row: updateRow})
   .then () ->
     updateRow.rm_property_id
 
