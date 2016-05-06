@@ -3,7 +3,8 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
+app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService,
+rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
   $log = $log.spawn 'rmapsPropertyCtrl'
   $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
 
