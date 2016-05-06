@@ -69,7 +69,11 @@
               ng-click="selectField(item)"
               rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
               ng-repeat="item in categories.unassigned | filter:rootSearchText | filter:mlsSearchText | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
-                span.datatype(ng-class="item.type.name" ng-show="item.type")
+                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+                 'datatype-yn': item.type.name == 'boolean', \
+                 'datatype-date': item.type.name == 'datetime' }"
+                 ng-show="item.type")
 
       .col-md-3.list-container(ng-if="!showGrid")
         h4 Groups
@@ -102,7 +106,11 @@
           ng-repeat="item in fieldData.category.items | filter:rootSearchText")
             span(ng-show="!item.unselectable") {{item.input}}
             span(ng-show="item.unselectable") {{item.alias}}
-            span.datatype(ng-class="item.type.name" ng-show="item.type")
+            span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+             'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+             'datatype-yn': item.type.name == 'boolean', \
+             'datatype-date': item.type.name == 'datetime' }"
+             ng-show="item.type")
 
       .col-md-8.list-container(ng-if="showGrid")
         h4 Groups
@@ -124,7 +132,11 @@
               ng-repeat="item in category.items")
                 span(ng-show="!item.unselectable") {{item.input}}
                 span(ng-show="item.unselectable") {{item.alias}}
-                span.datatype(ng-class="item.type.name" ng-show="item.type")
+                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+                 'datatype-yn': item.type.name == 'boolean', \
+                 'datatype-date': item.type.name == 'datetime' }"
+                 ng-show="item.type")
 
   .row.panel.properties-container(ng-show="fieldData.current")
 
@@ -193,24 +205,10 @@
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
         .col-md-2
-          select(ng-model="fieldData.current.config.nullBoolean" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          select(ng-model="fieldData.current.config.value" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Remove the selected value
-      .row(ng-if="fieldData.current.type.name == 'integer'")
-        .col-md-2 Implicit Decimal Places
-        .col-md-4
-          input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
 
     div(ng-show="fieldData.current.list == 'base'")
-      // Generic input handling here, only for "simple"/string input values (i.e. not array or object)
-      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built','baths', 'property_type'].indexOf(fieldData.current.output) == -1 && fieldData.current.type.name != 'boolean'")
-        .row
-          .col-md-2 RealtyMaps Field
-          .col-md-10
-            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-              span {{fieldData.current.alias}}
-              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
-
       .col-md-12.scroll(ng-if="fieldData.current.output == 'address'")
         .row
           .col-md-2 RealtyMaps Address
@@ -433,30 +431,35 @@
               span Total
               span.remove-icon(ng-show="fieldData.current.input.total" ng-click="removeBaseInput('total')") X
 
-      .col-md-12.scroll(ng-show="fieldData.current.type.name == 'boolean'")
-        .row
-          .col-md-2 Invert
-          .col-md-1
-            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
-          .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
-        .row(ng-repeat="lookup in fieldData.current.lookups")
-          .col-md-2 Truthiness for: {{lookup.LongValue}}
-          .col-md-1
-            label Truthy
-              input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="true" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-          .col-md-1
-            label Falsy
-              input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="false" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-
       .col-md-12.scroll(ng-show="fieldData.current.output == 'property_type'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-4
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
             select(ng-options="option for option in propertyTypeOptions" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help Select a RealtyMaps Property Type
 
-      .col-md-12.scroll(ng-show="fieldData.current.output == 'parcel_id'")
+      //- Generic
+      .col-md-12.scroll(ng-show="typeof(fieldData.current.input) == 'string'")
         .row
+          .col-md-2 RealtyMaps Field
+          .col-md-10
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+        .row(ng-if="fieldData.current.type.name == 'boolean'")
+          .col-md-2 Invert
+          .col-md-4
+            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+          .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
+        .row(ng-if="fieldData.current.output == 'parcel_id'")
           .col-md-2 Strip Formatting
           .col-md-4
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
@@ -468,14 +471,19 @@
           .col-md-4
             input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
 
-    // from here down is not restricted to base fields
     .col-md-12.typeahead.scroll(ng-show="fieldData.current.type.name == 'datetime'")
       .row
         .col-md-2 Date Format
         .col-md-4
-          input(type="text" ng-model="fieldData.current.config.format" placeholder="YYYY-MM-DD[T]HH:mm:ss" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
+          input(type="text" ng-model="fieldData.current.config.format" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
         .col-md-6.help Date formatting, as documented #{''}
           a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
+
+    .col-md-12.scroll(ng-show="fieldData.current.type.name == 'integer' && fieldData.current.list != 'base'")
+      .row
+        .col-md-2 Implicit Decimal Places
+        .col-md-4
+          input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
 
     .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
       .row.advanced
