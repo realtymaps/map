@@ -37,6 +37,7 @@ app.factory 'rmapsMapAccess', (
         @map = map
         @isReady = true
 
+    # Take a list of properties and create the Map Scope markers to render
     addPropertyMarkers: (properties) ->
       if !properties?.length
         return
@@ -48,11 +49,16 @@ app.factory 'rmapsMapAccess', (
             lat: property.geom_point_json.coordinates[1],
             lng: property.geom_point_json.coordinates[0],
             draggable: false,
-            focus: false
+            focus: false,
+            icon:
+              type: 'div'
+              className: 'project-dashboard-icon'
+              html: '<span class="icon icon-neighbourhood"></span>'
           }
 
       return
 
+    # Fit the map bounds to an array of properties
     fitToBounds: (properties) ->
       $log.debug("fitToBounds", properties)
 
@@ -70,6 +76,24 @@ app.factory 'rmapsMapAccess', (
         }
 
       return
+
+    # Add a marker click handler $scope.$on for the current map and ensure
+    # that the marker click events are enabled on the Map Scope
+    registerMarkerClick: ($scope, handler) ->
+      @mapScope.enableMarkerEvent('click')
+
+      event = "leafletDirectiveMarker.#{@mapId}.click"
+      $log.debug "Register Marker Click #{event}"
+
+      $scope.$on event, handler
+
+    # Set the class of a property marker
+    setPropertyClass: (propertyId, className, resetOtherMarkers = false) ->
+      if resetOtherMarkers
+        _.forOwn @mapScope.markers, (marker) ->
+          marker.icon?.className = 'project-dashboard-icon'
+          
+      @mapScope.markers[propertyId]?.icon.className = className
 
   #
   # Service instance

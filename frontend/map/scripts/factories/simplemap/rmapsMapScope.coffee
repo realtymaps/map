@@ -28,7 +28,7 @@ app.factory 'rmapsMapScope', (
 #      zoom: 15
 #    }
     controls: null
-    events: null
+    events: {}
     geojson: null
     layers:
       baselayers: rmapsUtilLayersBase
@@ -45,6 +45,14 @@ app.factory 'rmapsMapScope', (
     #
     contructor: () ->
       $log.debug('Construct Map Scope')
+
+    #
+    # Public functions
+    #
+    enableMarkerEvent: (eventName) ->
+      @events.markers = @events.markers || {}
+      @events.markers.enable = @events.markers.enable || []
+      @events.markers.enable.push(eventName)
 
   #
   # Service instance

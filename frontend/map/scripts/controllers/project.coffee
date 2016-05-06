@@ -44,6 +44,7 @@ app.controller 'rmapsProjectCtrl',
 
   project = currentProject
   profile = currentProfile
+  properties = []
 
   #
   # Initialize Scope Variables
@@ -66,9 +67,22 @@ app.controller 'rmapsProjectCtrl',
 
   clientsService = null
 
+  #
   # Dashboard Map
+  #
   $scope.dashboardMapAccess = rmapsMapAccess
+  
+  rmapsMapAccess.registerMarkerClick $scope, (event, args) ->
+    {leafletEvent, leafletObject, model, modelName, layerName} = args
+    
+    if property = properties[modelName]
+      property.activeSlide = true
+      rmapsMapAccess.setPropertyClass(property.rm_property_id, 'project-dashboard-icon-saved', true)
 
+  #
+  # Property carousel
+  #
+  $scope.activeSlide = 0
 
   #
   # Scope Event Handlers
@@ -135,11 +149,6 @@ app.controller 'rmapsProjectCtrl',
       delete $scope.newNotes[property.rm_property_id]
 
   #
-  # Set up the Dashboard map
-  #
-
-
-  #
   # Load Project Data
   #
 
@@ -148,7 +157,8 @@ app.controller 'rmapsProjectCtrl',
     toLoad = _.merge {}, project.properties_selected, project.favorites
     if not _.isEmpty toLoad
       loadProperties toLoad
-      .then (properties) ->
+      .then (loaded) ->
+        properties = loaded
         $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
     else
