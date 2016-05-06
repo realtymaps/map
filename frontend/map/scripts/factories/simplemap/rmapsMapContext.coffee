@@ -11,7 +11,7 @@ app.factory 'rmapsMapContext', (
   $log = $log.spawn('RmapsMapContext')
 
   #
-  # Public API
+  # This class represents the Leaflet configuration values placed in the scope and access by the Leaflet directive
   #
   class RmapsMapContext
     #

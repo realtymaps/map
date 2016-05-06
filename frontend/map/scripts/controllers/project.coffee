@@ -18,6 +18,7 @@ app.controller 'rmapsProjectCtrl',
   rmapsEventConstants
 
   rmapsMapAccess,
+  rmapsPropertyMarkers
 
   rmapsNotesService,
   rmapsPageService,
@@ -71,10 +72,13 @@ app.controller 'rmapsProjectCtrl',
   # Dashboard Map
   #
   dashboardMapAccess = $scope.dashboardMapAccess = rmapsMapAccess.newMapAccess('dashboardMap')
+  dashboardMapAccess.useMarkers(new rmapsPropertyMarkers('property'))
 
+  # Highlight markers on the map when selected
   highlightProperty = (propertyId) ->
-    dashboardMapAccess.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
+    dashboardMapAccess.markers.property.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
 
+  # Listen for property marker event clicks
   dashboardMapAccess.registerMarkerClick $scope, (event, args) ->
     {leafletEvent, leafletObject, model, modelName, layerName} = args
 
@@ -82,6 +86,7 @@ app.controller 'rmapsProjectCtrl',
       property.activeSlide = true
       highlightProperty(property.rm_property_id)
 
+  # When the carousel changes, highlight the selected property on the map
   $scope.onSlideChanged = (nextSlide) ->
     highlightProperty(nextSlide.actual.rm_property_id)
 
@@ -193,9 +198,12 @@ app.controller 'rmapsProjectCtrl',
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
+      #
+      # Add property markers to the dashboard map
+      #
       $timeout(() ->
-        dashboardMapAccess.addPropertyMarkers(result.data)
-        dashboardMapAccess.fitToBounds(result.data)
+        dashboardMapAccess.markers.property.addPropertyMarkers(result.data)
+        dashboardMapAccess.markers.property.fitToBounds(result.data)
       , 0)
 
       return properties

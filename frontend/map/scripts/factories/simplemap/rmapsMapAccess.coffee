@@ -28,10 +28,22 @@ app.factory 'rmapsMapAccess', (
   # Map Access class implementation
   #
   class RmapsMapAccess
-    isReady: false
+    # The Map Id used in the leaflet directive definition in template
     mapId: null
-    map: null
+
+    # The Leaflet scope context variables provided to the Leaflet directive
     context: null,
+
+    # The backing Leaflet map implementation itself
+    map: null
+
+    # Rmaps MarkerHelper marker sets being used by this map
+    markers: {}
+
+    # Is this Leaflet map ready to be used
+    isReady: false
+
+    # Leaflet initialization promise so that post-init actions can be taking by calling code
     initPromise: null
 
     #
@@ -47,45 +59,11 @@ app.factory 'rmapsMapAccess', (
         @map = map
         @isReady = true
 
-    # Take a list of properties and create the Map Scope markers to render
-    addPropertyMarkers: (properties) ->
-      if !properties?.length
-        return
-
-      @context.markers = @context.markers || {}
-      angular.forEach properties, (property) =>
-        if property.geom_point_json?.coordinates?
-          @context.markers[property.rm_property_id] = {
-            lat: property.geom_point_json.coordinates[1],
-            lng: property.geom_point_json.coordinates[0],
-            draggable: false,
-            focus: false,
-            icon:
-              type: 'div'
-              className: 'project-dashboard-icon'
-              html: '<span class="icon icon-neighbourhood"></span>'
-          }
-
-      return
-
-    # Fit the map bounds to an array of properties
-    fitToBounds: (properties) ->
-      $log.debug("fitToBounds", properties)
-
-      if !properties.length
-        return
-
-      if properties.length > 1
-        bounds = rmapsBounds.boundsFromPropertyArray(properties)
-        @context.bounds = bounds
-      else
-        @context.center = {
-          lat: properties[0].geom_point_json.coordinates[1],
-          lng: properties[0].geom_point_json.coordinates[0],
-          zoom: 15
-        }
-
-      return
+    # Add a set of markets to the map
+    useMarkers: (markerHelper) ->
+      @markers[markerHelper.markerType] = markerHelper
+      markerHelper.context = @context
+      @context.markers = markerHelper.markers
 
     # Add a marker click handler $scope.$on for the current map and ensure
     # that the marker click events are enabled on the Map Scope
@@ -97,13 +75,6 @@ app.factory 'rmapsMapAccess', (
 
       $scope.$on event, handler
 
-    # Set the class of a property marker
-    setPropertyClass: (propertyId, className, resetOtherMarkers = false) ->
-      if resetOtherMarkers
-        _.forOwn @context.markers, (marker) ->
-          marker.icon?.className = 'project-dashboard-icon'
-
-      @context.markers[propertyId]?.icon.className = className
 
   #
   # Service instance API
