@@ -7,10 +7,8 @@ cartodb = require 'cartodb-api'
 cartodbSql = require '../utils/util.cartodb.sql'
 tables = require '../config/tables'
 
-
-JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
-fs = require 'fs'
+
 
 _execCartodbSql = (sql) ->
   cartodbConfig()
@@ -36,7 +34,6 @@ _upload = (stream, fileName) -> Promise.try ->
     new Promise (resolve, reject) ->
       filteredStream.on 'error', reject
       filteredStream.on 'end', ->
-        logger.debug "stream length: #{byteLen}"
         logger.debug 'done processing stream'
 
         resolve cartodb.upload
@@ -48,7 +45,9 @@ _fipsCodeQuery = (opts) -> Promise.try () ->
   throw new Error('opts.fipscode required!') unless opts?.fipscode?
   query =
   sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false)
-  .where fips_code:opts.fipscode
+  .where
+    fips_code: opts.fipscode
+    active: true
   .whereNotNull 'rm_property_id'
   .orderBy 'rm_property_id'
 
@@ -63,8 +62,8 @@ _fipsCodeQuery = (opts) -> Promise.try () ->
   query
 
 parcel =
-  upload: (fipscode) ->
-    _upload _fipsCodeQuery(fipscode: fipscode).stream(), fipsCode
+  upload: (fipsCode) ->
+    _upload _fipsCodeQuery(fipscode: fipsCode).stream(), fipsCode
 
   #merge data to parcels cartodb table
   synchronize: (fipsCode) -> Promise.try ->
