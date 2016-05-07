@@ -267,7 +267,8 @@ normalizeData = (subtask) ->
     jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids, countyHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.ids, (id) ->
+    countyHelpers.finalizeData({subtask, id})
 
 
 ready = () ->
