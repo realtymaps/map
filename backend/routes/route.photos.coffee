@@ -42,12 +42,15 @@ handles = wrapHandleRoutes
               res.setHeader "X-#{name}", payload.meta[name]
 
           logger.debug 'piping image'
+
+          # this error is a worst case scenario if all the promise pre-streaming catches miss an exception
+          # so the error here would likley be an error in the resize processing
           payload.stream.once 'error', (err) ->
             if res.headersSent
-              return next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+              return next err # not using Express response since headers are already sent
 
-            res.status(httpStatus.INTERNAL_SERVER_ERROR)
-            res.render 'error', alert: {msg: err.message}
+            next new ExpressResponse(alert: {msg: 'stream error: ' + err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+
           .pipe(res)
 
       .catch HttpStatusCodeError, (err) ->
