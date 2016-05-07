@@ -38,7 +38,7 @@ app.factory 'rmapsMapAccess', (
     map: null
 
     # Rmaps MarkerHelper marker sets being used by this map
-    markers: {}
+    groups: {}
 
     # Is this Leaflet map ready to be used
     isReady: false
@@ -51,7 +51,7 @@ app.factory 'rmapsMapAccess', (
     #
     constructor: (mapId) ->
       @mapId = mapId
-      @context = rmapsMapContext.newMapContext()
+      @context = new rmapsMapContext()
 
       # This promise is resolved when Leaflet has finished setting up the Map
       @initPromise = leafletData.getMap(@mapId)
@@ -60,10 +60,22 @@ app.factory 'rmapsMapAccess', (
         @isReady = true
 
     # Add a set of markets to the map
-    useMarkers: (markerHelper) ->
-      @markers[markerHelper.markerType] = markerHelper
-      markerHelper.context = @context
-      @context.markers = markerHelper.markers
+    addMarkerGroup: (markerGroup, visible = true) ->
+      # Set the MapContext on the Marker Group
+      markerGroup.context = @context
+
+      # Store the MarkerGroup by the layer name for access through the MapAccess instance
+      @groups[markerGroup.layerName] = markerGroup
+
+      # Add the group overlay to the Map Context
+      @context.layers.overlays[markerGroup.layerName] = {
+        name: markerGroup.layerName
+        type: 'group'
+        visible: visible
+      }
+
+      # Add the group markers to the Map Context
+      @context.markers[markerGroup.layerName] = markerGroup.markers
 
     # Add a marker click handler $scope.$on for the current map and ensure
     # that the marker click events are enabled on the Map Scope

@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.factory 'rmapsPropertyMarkers', (
+app.factory 'rmapsPropertyMarkerGroup', (
   $log
   rmapsBounds
 ) ->
@@ -10,9 +10,9 @@ app.factory 'rmapsPropertyMarkers', (
   #
   # Class representing Leaflet markers that are backed by Realty Maps properties
   #
-  class RmapsPropertyMarkers
+  class RmapsPropertyMarkerGroup
     # Type name to be used for the makers
-    markerType: null
+    layerName: null
 
     # The Leaflet scope context variables provided to the Leaflet directive
     context: null
@@ -26,8 +26,8 @@ app.factory 'rmapsPropertyMarkers', (
       className: 'project-dashboard-icon'
       html: '<span class="icon icon-neighbourhood"></span>'
 
-    constructor: (markerType) ->
-      @markerType = markerType
+    constructor: (layerName) ->
+      @layerName = layerName
 
     # Take a list of properties and create the Map Scope markers to render
     addPropertyMarkers: (properties) ->
@@ -37,6 +37,7 @@ app.factory 'rmapsPropertyMarkers', (
       angular.forEach properties, (property) =>
         if property.geom_point_json?.coordinates?
           @markers[property.rm_property_id] = {
+            rm_property_id: property.rm_property_id,
             lat: property.geom_point_json.coordinates[1],
             lng: property.geom_point_json.coordinates[0],
             draggable: false,
@@ -73,4 +74,4 @@ app.factory 'rmapsPropertyMarkers', (
 
       @markers[propertyId]?.icon.className = className
 
-  return RmapsPropertyMarkers
+  return RmapsPropertyMarkerGroup

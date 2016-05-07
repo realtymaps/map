@@ -27,9 +27,10 @@ app.factory 'rmapsMapContext', (
     geojson: null
     layers:
       baselayers: rmapsUtilLayersBase
+      overlays: {}
 
     markers: {}
-    markersNested: false
+    markersNested: true  # Leaflet directive seems to choke on this
 
     markersWatchOptions: null
     geojsonWatchOptions: null
@@ -45,17 +46,17 @@ app.factory 'rmapsMapContext', (
     # Public functions
     #
     enableMarkerEvent: (eventName) ->
-      @events.markers = @events.markers || {}
-      @events.markers.enable = @events.markers.enable || []
+      if !@events.markers
+        @events.markers = {
+          enable: []
+        }
+
       @events.markers.enable.push(eventName)
 
   #
   # Service instance
   #
-  service = {
-    newMapContext: () ->
-      new RmapsMapContext()
-  }
+  service = RmapsMapContext
 
   #
   # Return service
