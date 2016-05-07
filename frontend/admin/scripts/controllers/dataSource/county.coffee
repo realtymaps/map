@@ -54,6 +54,9 @@ app.controller 'rmapsCountyCtrl',
     'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
+  $scope.typeOf = (val) ->
+    return typeof val
+
   $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
