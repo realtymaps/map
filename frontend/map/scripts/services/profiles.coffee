@@ -144,6 +144,13 @@ app.service 'rmapsProfilesService', (
           #TODO: this is a really ugly hack to workaround our poor state design in our app
           #filters and mapState need to be combined, also both should be moved to rootScope
           #the omits here are to keep from saving off duplicate data where project.filters is from the backend
+
+          # Some parts of the UI expect a Date object
+          if project.filters.closeDateMin
+            project.filters.closeDateMin = new Date(project.filters.closeDateMin)
+          if project.filters.closeDateMax
+            project.filters.closeDateMax = new Date(project.filters.closeDateMax)
+
           _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
 
         #

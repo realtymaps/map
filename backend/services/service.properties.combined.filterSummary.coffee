@@ -23,6 +23,7 @@ minMaxFilterValidations =
   baths: validators.float()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+  closeDate: validators.datetime()
 
 transforms = do ->
   makeMinMaxes = (result, validators, name) ->
@@ -132,6 +133,8 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   if filters.propertyType
     query.where("#{dbFn.tableName}.property_type", filters.propertyType)
+
+  sqlHelpers.between(query, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
   # If full address available, include matched property in addition to other matches regardless of filters
   filters.address = _.pick filters.address, filterAddress.keys

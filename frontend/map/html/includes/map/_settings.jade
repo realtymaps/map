@@ -112,13 +112,13 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             span.label.col-md-3 Close Date
             .col-md-3.label start
             .col-md-6
-              input.form-control(type="date" disabled)
+              input.form-control(ng-model="selectedFilters.closeDateMin" type="date" max="{{selectedFilters.closeDateMax | date:'yyyy-MM-dd'}}" ng-max="selectedFilters.closeDateMax" placeholder="yyyy-MM-dd")
 
           li.row
             span.label.col-md-3 Close Date
             .col-md-3.label end
             .col-md-6
-              input.form-control(type="date" disabled)
+              input.form-control(ng-model="selectedFilters.closeDateMax" type="date" min="{{selectedFilters.closeDateMin | date:'yyyy-MM-dd'}}" ng-min="selectedFilters.closeDateMin" placeholder="yyyy-MM-dd")
 
           li.row
             span.label.col-md-5 Old DrawToolbar
