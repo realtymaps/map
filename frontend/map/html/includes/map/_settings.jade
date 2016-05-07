@@ -22,8 +22,16 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         ul.basic
           li.row
             span.label.col-md-3 Property Status
-            .col-md-9
-              select.form-control(ng-options='c.value as c.name for c in todo' disabled)
+            .col-md-9.property-status
+              ul
+                li
+                  button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
+                li
+                  button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
+                li
+                  button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
+                li
+                  button.btn.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
 
           li.row
             span.label.col-md-3 Property Type
