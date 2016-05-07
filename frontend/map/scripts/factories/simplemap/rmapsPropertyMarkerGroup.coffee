@@ -11,6 +11,9 @@ app.factory 'rmapsPropertyMarkerGroup', (
   # Class representing Leaflet markers that are backed by Realty Maps properties
   #
   class RmapsPropertyMarkerGroup
+    # Parent MapAccess
+    parent: null
+
     # Type name to be used for the makers
     layerName: null
 
@@ -28,6 +31,10 @@ app.factory 'rmapsPropertyMarkerGroup', (
 
     constructor: (layerName) ->
       @layerName = layerName
+
+    init: (parentMapAccess, context) ->
+      @parent = parentMapAccess
+      @context = context
 
     # Take a list of properties and create the Map Scope markers to render
     addPropertyMarkers: (properties) ->
@@ -66,6 +73,21 @@ app.factory 'rmapsPropertyMarkerGroup', (
 
       return
 
+    # Add a marker click handler $scope.$on for the current map and ensure
+    # that the marker click events are enabled on the Map Scope
+    registerClickHandler: ($scope, handler) ->
+      @context.enableMarkerEvent('click')
+
+      # Wrap the actual handler in an anonymous handler that will unwrap the arguments
+      # and verify that only events for the appropriate Group layer will be handled
+      event = "leafletDirectiveMarker.#{@parent.mapId}.click"
+      $scope.$on event, (event, args) =>
+        {leafletEvent, leafletObject, model, modelName, layerName} = args
+
+        if layerName == @layerName
+          # Marker click was in the correct group, call the handler
+          handler(event, args, model.rm_property_id)
+
     # Set the class of a property marker
     setPropertyClass: (propertyId, className, resetOtherMarkers = false) ->
       if resetOtherMarkers
@@ -74,4 +96,7 @@ app.factory 'rmapsPropertyMarkerGroup', (
 
       @markers[propertyId]?.icon.className = className
 
+  #
+  # Return the class definition, which should be instantiated by the controller using the map
+  #
   return RmapsPropertyMarkerGroup

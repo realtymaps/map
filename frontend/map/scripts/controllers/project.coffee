@@ -80,12 +80,10 @@ app.controller 'rmapsProjectCtrl',
     dashboardMapAccess.groups.property.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
 
   # Listen for property marker event clicks
-  dashboardMapAccess.registerMarkerClick $scope, (event, args) ->
-    {leafletEvent, leafletObject, model, modelName, layerName} = args
-
-    if layerName == 'property' and property = properties[model.rm_property_id]
+  dashboardMapAccess.groups.property.registerClickHandler $scope, (event, args, propertyId) ->
+    if property = properties[propertyId]
       property.activeSlide = true
-      highlightProperty(property.rm_property_id)
+      highlightProperty(propertyId)
 
   # When the carousel changes, highlight the selected property on the map
   $scope.onSlideChanged = (nextSlide) ->

@@ -15,6 +15,11 @@ app.factory 'rmapsMapContext', (
   #
   class RmapsMapContext
     #
+    # Non-Leaflet data
+    #
+    mapId: null
+
+    #
     # Leaflet Scope Data
     #
 
@@ -39,8 +44,9 @@ app.factory 'rmapsMapContext', (
     #
     # Constructor
     #
-    contructor: () ->
+    contructor: (mapId) ->
       $log.debug('Construct Map Scope')
+      @mapId = mapId
 
     #
     # Public functions

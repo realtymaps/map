@@ -62,7 +62,7 @@ app.factory 'rmapsMapAccess', (
     # Add a set of markets to the map
     addMarkerGroup: (markerGroup, visible = true) ->
       # Set the MapContext on the Marker Group
-      markerGroup.context = @context
+      markerGroup.init(@, @context)
 
       # Store the MarkerGroup by the layer name for access through the MapAccess instance
       @groups[markerGroup.layerName] = markerGroup
@@ -76,16 +76,6 @@ app.factory 'rmapsMapAccess', (
 
       # Add the group markers to the Map Context
       @context.markers[markerGroup.layerName] = markerGroup.markers
-
-    # Add a marker click handler $scope.$on for the current map and ensure
-    # that the marker click events are enabled on the Map Scope
-    registerMarkerClick: ($scope, handler) ->
-      @context.enableMarkerEvent('click')
-
-      event = "leafletDirectiveMarker.#{@mapId}.click"
-      $log.debug "Register Marker Click #{event}"
-
-      $scope.$on event, handler
 
 
   #
