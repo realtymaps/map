@@ -43,6 +43,9 @@ app.controller 'rmapsNormalizeCtrl',
     'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
+  $scope.typeOf = (val) ->
+    return typeof val
+
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
