@@ -4,9 +4,13 @@ _ = require 'lodash'
 logger = require '../../config/logger'
 
 module.exports = (options = {truthy: "true", falsy: "false"}) ->
-  if !_.isArray(options.truthy) && options.truthy != undefined
+  if Array.isArray(options.truthy)
+    truthy = options.truthy
+  else if options.truthy?
     truthy = [options.truthy]
-  if !_.isArray(options.falsy) && options.falsy != undefined
+  if Array.isArray(options.falsy)
+    falsy = options.falsy
+  else if options.falsy?
     falsy = [options.falsy]
   truthyReturnValue = if options.invert? then !options.invert else true
 
@@ -19,18 +23,13 @@ module.exports = (options = {truthy: "true", falsy: "false"}) ->
 
     if truthy == undefined
       if value
-        # logger.debug value
-        # logger.debug 'returning truthy undefined'
         return truthyReturnValue
     else if value in truthy
-      # logger.debug 'returning truthy'
       return truthyReturnValue
     if falsy == undefined
-      if value or value == false
-        # logger.debug 'returning falsy undefined'
+      if !value
         return !truthyReturnValue
     else if value in falsy
-      # logger.debug 'returning falsy'
       return !truthyReturnValue
 
-    return Promise.reject new DataValidationError('invalid data type given for boolean field', param, value)
+    throw new DataValidationError('invalid value given for boolean field', param, value)
