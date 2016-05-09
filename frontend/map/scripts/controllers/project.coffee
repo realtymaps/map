@@ -173,8 +173,6 @@ app.controller 'rmapsProjectCtrl',
         properties = loaded
         $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
-    else
-      $scope.loadedProperties = true
 
         # Highlight the first carousel property on the map
         $scope.dashboardMapAccess.initPromise.then () ->
@@ -182,6 +180,9 @@ app.controller 'rmapsProjectCtrl',
             $timeout(() ->
               highlightProperty($scope.pins[0].rm_property_id)
             , 0)
+
+    else
+      $scope.loadedProperties = true
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
     loadClients()
