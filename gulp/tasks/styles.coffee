@@ -1,6 +1,5 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
-path = require 'path'
 gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
@@ -8,7 +7,9 @@ _ = require 'lodash'
 
 _testCb = null
 
-styles = (app) ->
+styles = ({app, doSourceMaps}) ->
+  doSourceMaps ?= true
+
   stylesFn = () ->
     _testCb() if _testCb
 
@@ -18,10 +19,12 @@ styles = (app) ->
       paths[app].rootStylus
     ]
 
-    gulp.src sourcePaths
-    .pipe $.sourcemaps.init()
+    stream = gulp.src sourcePaths
 
-    .pipe lessFilter = $.filter '**/*.less', restore: true
+    if doSourceMaps
+      stream = stream.pipe $.sourcemaps.init()
+
+    stream = stream.pipe lessFilter = $.filter '**/*.less', restore: true
     .pipe $.less()
     .on   'error', conf.errorHandler 'Less'
     .pipe lessFilter.restore
@@ -33,8 +36,11 @@ styles = (app) ->
 
     .pipe $.order sourcePaths
     .pipe $.concat app + '.css'
-    .pipe $.sourcemaps.write()
-    .pipe gulp.dest paths.destFull.styles
+
+    if doSourceMaps
+      stream = stream.pipe $.sourcemaps.write()
+
+    stream.pipe gulp.dest paths.destFull.styles
     .pipe $.size
       title: paths.dest.root
       showFiles: true
@@ -65,13 +71,17 @@ stylesWatch = (app) ->
 ###
  TASKS
 ###
-gulp.task 'styles', styles('map')
+gulp.task 'styles', styles(app: 'map')
+
+gulp.task 'stylesProd', styles(app: 'map', doSourceMaps: false)
 
 gulp.task 'stylesWatch', (done) ->
   stylesWatch 'map'
   done()
 
-gulp.task 'stylesAdmin', styles('admin')
+gulp.task 'stylesAdmin', styles(app: 'admin')
+
+gulp.task 'stylesAdminProd', styles(app: 'admin', doSourceMaps: false)
 
 gulp.task 'stylesWatchAdmin', (done) ->
   stylesWatch 'admin'
