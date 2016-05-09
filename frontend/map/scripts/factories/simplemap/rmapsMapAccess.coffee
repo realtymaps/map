@@ -20,11 +20,6 @@ app.factory 'rmapsMapAccess', (
   $log = $log.spawn('rmapsMapAccess')
 
   #
-  # All Map Access instances
-  #
-  mapAccessCache = {}
-
-  #
   # Map Access class implementation
   #
   class RmapsMapAccess
@@ -84,12 +79,7 @@ app.factory 'rmapsMapAccess', (
   service = {
     newMapAccess: (mapId) ->
       access = new RmapsMapAccess(mapId)
-      mapAccessCache[mapId] = access
-
       return access
-
-    findMapAccess: (mapId) ->
-      return mapAccessCache[mapId]
   }
 
   #

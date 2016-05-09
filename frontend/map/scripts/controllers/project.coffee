@@ -74,6 +74,9 @@ app.controller 'rmapsProjectCtrl',
   #
   dashboardMapAccess = $scope.dashboardMapAccess = rmapsMapAccess.newMapAccess('dashboardMap')
   dashboardMapAccess.addMarkerGroup(new rmapsPropertyMarkerGroup('property'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsMailMarkerGroup('mail'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsPropertyGeoJsonGroup('bounds'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsFilterSummaryGroup('filterSummary'))
 
   # Highlight markers on the map when selected
   highlightProperty = (propertyId) ->
@@ -175,7 +178,7 @@ app.controller 'rmapsProjectCtrl',
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
 
         # Highlight the first carousel property on the map
-        $scope.dashboardMapAccess.initPromise.then () ->
+        dashboardMapAccess.initPromise.then () ->
           if $scope.pins.length
             $timeout(() ->
               highlightProperty($scope.pins[0].rm_property_id)

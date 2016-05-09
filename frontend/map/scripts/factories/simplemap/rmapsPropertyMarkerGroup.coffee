@@ -41,7 +41,7 @@ app.factory 'rmapsPropertyMarkerGroup', (
       if !properties?.length
         return
 
-      angular.forEach properties, (property) =>
+      _.forEach properties, (property) =>
         if property.geom_point_json?.coordinates?
           @markers[property.rm_property_id] = {
             rm_property_id: property.rm_property_id,
