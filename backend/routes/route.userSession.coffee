@@ -82,7 +82,7 @@ login = (req, res, next) -> Promise.try () ->
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
-      subscriptionSvc.getStatus user.stripe_customer_id, user.stripe_subscription_id
+      subscriptionSvc.getStatus user
       .then (subscription_status) ->
         req.user = user
         req.session.userid = user.id

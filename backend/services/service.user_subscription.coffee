@@ -1,8 +1,10 @@
 _ = require 'lodash'
+Promise = require 'bluebird'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 db = dbs.get('main')
 logger = require('../config/logger').spawn("service.user_subscription")
+permSvc = require './service.permissions'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
@@ -61,17 +63,27 @@ setPlan = (userId, plan) ->
     .then (newPlan) ->
       newPlan
 
-getStatus = (stripe_customer_id, stripe_subscription_id) ->
-  _getStripeSubscription stripe_customer_id, stripe_subscription_id
-  .then (subscription) ->
-    if subscription.status == 'trialing' || subscription.status == 'active'
-      # note: when a subscription is canceled or in grace period, this will still
-      #   represent the plan id since this is access status, not just subscr status.
-      #   Stripe will automatically change this subscr status at end of grace period.
-      return subscription.plan.id
-    # if not active, we'll just return the actual status in case we want to show or do
-    #   specific things depending on past_due, canceled, etc.
-    return subscription.status
+getStatus = (user) -> Promise.try () ->
+  if !user.stripe_customer_id?  # if no subscription exists...
+    if !user.is_staff  # ... and if not a staff, it's a subaccount
+      return null
+    permSvc.getPermissionsForUserId user.id
+    .then (results) ->
+      # return subscription level for the staff if granted a perm for it
+      return 'pro' if results.access_premium
+      return 'standard' if results.access_standard
+
+  else # a stripe subscription exists, retrieve status
+    _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id
+    .then (subscription) ->
+      if subscription.status == 'trialing' || subscription.status == 'active'
+        # note: when a subscription is canceled or in grace period, this will still
+        #   represent the plan id since this is access status, not just subscr status.
+        #   Stripe will automatically change this subscr status at end of grace period.
+        return subscription.plan.id
+      # if not active, we'll just return the actual status in case we want to show or do
+      #   specific things depending on past_due, canceled, etc.
+      return subscription.status
 
 getSubscription = (userId) ->
   _getStripeIds(userId)
