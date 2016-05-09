@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-if [[ "$IS_HEROKU" != "" ]]; then
-  #use buildpacks
+if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
+  # use buildpacks if HEROKU
+  # CI skipp installs and expect specs dependent on installs to be in backendIntegration
   exit 0
 fi
 
