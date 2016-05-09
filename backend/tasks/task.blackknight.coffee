@@ -53,6 +53,9 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
       else if !file.name.endsWith('.gz')
         logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
         continue
+      else if (file.name.endsWith('.gz') && !file.name.startsWith('12021'))
+        logger.warn("Ignoring file due to FIPS code: #{folderInfo.path}/#{file.name}")
+        continue
       else
         fileType = folderInfo.action
       fileInfo = _.clone(folderInfo)
@@ -267,7 +270,8 @@ normalizeData = (subtask) ->
     jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids, countyHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.ids, (id) ->
+    countyHelpers.finalizeData({subtask, id})
 
 
 ready = () ->

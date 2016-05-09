@@ -54,6 +54,11 @@ app.controller 'rmapsCountyCtrl',
     'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
+  $scope.typeOf = (val) ->
+    return typeof val
+
+  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
+
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
     $scope.targetCategories = _.map rmapsParcelEnums.categories[dataSourceType][dataListType], (label, list) ->
@@ -69,9 +74,8 @@ app.controller 'rmapsCountyCtrl',
   # Handles adding rules to categories
   addRule = (rule, list) ->
     category = $scope.categories[list]
-    _.defaults rule,
-      ordering: category.length
-      list: list
+    rule.ordering ?= category.length
+    rule.list ?= list
     idx = _.sortedIndex(category, rule, 'ordering')
     allRules[if list == 'base' then rule.output else rule.input] = rule
     category.splice idx, 0, rule
@@ -97,6 +101,11 @@ app.controller 'rmapsCountyCtrl',
       if !allRules[baseRulesKey]
         rule.output = baseRulesKey
         addBaseRule(rule)
+
+    # correct ordering in case there were gaps (from someone mucking with the db manually)
+    for name,list of $scope.categories when name != 'unassigned'
+      for rule,index in list
+        rule.ordering = index
 
     # Save base rules
     if 'base' of $scope.categories
@@ -126,21 +135,25 @@ app.controller 'rmapsCountyCtrl',
     if field.list != 'unassigned' && field.list != 'base'
       $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
-    $scope.loadLookups(if field.list == 'base' then allRules[field.output] else field)
+    if field.list == 'base'
+      $scope.loadLookups(allRules[field.input], field)
+    else
+      $scope.loadLookups(field)
 
-  $scope.loadLookups = (field) ->
-    if field?._lookups
-      $scope.fieldData.current._lookups = field._lookups
+  $scope.loadLookups = (field, target) ->
+    if !target
+      target = field
+    setLookups = (lookups) ->
+      target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-        $scope.fieldData.current.lookups = field._lookups
-    else if field && !field._lookups && field.LookupName && field.Interpretation
-      config = $scope.countyData.current
-      console.log($scope.countyData)
-      $scope.countyLoading = rmapsCountyService.getLookupTypes(config.id, $scope.countyData.dataListType.id, field.LookupName)
+        target.lookups = field._lookups
+    if field?._lookups
+      setLookups(field._lookups)
+    else if field && !field._lookups && field.LookupName
+      config = $scope.mlsData.current
+      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
-        $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-          $scope.fieldData.current.lookups = lookups
+        setLookups(lookups)
         $scope.$evalAsync()
 
   # Move rules between categories
@@ -183,7 +196,7 @@ app.controller 'rmapsCountyCtrl',
     field = $scope.fieldData.current
     removed = field.input
     field.input = drag.model.input
-    $scope.loadLookups(drag.model)
+    $scope.loadLookups(drag.model, field)
     updateBase(field, removed)
 
   # Remove base field input
@@ -275,10 +288,15 @@ app.controller 'rmapsCountyCtrl',
       normalizeService.getRules()
       .then (rules) ->
         parseRules(rules)
+      .then () ->
         rmapsCountyService.getColumnList(config.current.id, config.dataListType.id)
       .then (fields) ->
         $scope.fieldData.totalCount = fields.plain().length
         parseFields(fields)
+
+    _.forEach $scope.baseRules, (rule, baseRulesKey) ->
+      $scope.countyLoading = $scope.countyLoading.then () ->
+        $scope.loadLookups(allRules[allRules[baseRulesKey].input], allRules[baseRulesKey])
 
   $scope.getCountyList = () ->
     rmapsCountyService.getConfigs({schemaReady: true})

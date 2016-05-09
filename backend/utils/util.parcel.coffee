@@ -140,6 +140,7 @@ _insertOrUpdate = (method, {row, tableName, database}) ->
 
   raw = q.toString()
   raw = raw.replace("'#{_toReplace}'", toReplaceWith)
+    .replace(/\\/g,'') #hack to deal with change_history and json knex issues
 
   logger.debug raw
   raw

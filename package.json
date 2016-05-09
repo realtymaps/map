@@ -179,7 +179,7 @@
     "pg-copy-streams": "^0.3.0",
     "pg-query-stream": "^0.7.0",
     "phantomjs-polyfill": "0.0.1",
-    "phantomjs-prebuilt": "2.1.4",
+    "phantomjs-prebuilt": "2.1.7",
     "pretty-hrtime": "^0.2.1",
     "promise-ftp": "^1.2.12",
     "promise-ftp-common": "^1.1.5",
@@ -221,9 +221,7 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.3.1",
     "winston": "0.8.X",
-    "yargs": "^3.29.0"
-  },
-  "devDependencies": {
+    "yargs": "^3.29.0",
     "gulp-wrap-commonjs": "^0.1.13",
     "rewire": "2.X",
     "stripe-debug": "2.X"

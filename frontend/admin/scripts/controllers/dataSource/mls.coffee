@@ -4,6 +4,7 @@ app = require '../../app.coffee'
 
 adminRoutes = require '../../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
+selectIconTemplate = require('../../../html/views/templates/selectIcon.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl',
@@ -240,7 +241,6 @@ app.controller 'rmapsMlsCtrl',
       $scope.loading = true
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
-
       promises.push rmapsJobsService.updateTask($scope.mlsData.current.id, {active: $scope.mlsData.task.active})
       promises.push $scope.mlsData.current.save()
 
@@ -318,6 +318,15 @@ app.controller 'rmapsMlsCtrl',
           msg = 'Error saving MLS.'
           $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: msg }
 
+    $scope.selectIcon = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: selectIconTemplate
+        controller: 'rmapsModalLogoCtrl'
+        resolve:
+          mlsModalData: () ->
+            return $scope.mlsData.current
+
     $scope.passwordModal = () ->
       modalInstance = $modal.open
         animation: $scope.animationsEnabled
@@ -339,6 +348,22 @@ app.controller 'rmapsModalInstanceCtrl',
       $modalInstance.close($scope.mlsModalData)
 
     $scope.cancel = () ->
+      $modalInstance.dismiss('cancel')
+
+
+app.controller 'rmapsModalLogoCtrl',
+  ($scope, $modalInstance, mlsModalData, rmapsAdminConstants, rmapsMainOptions) ->
+    $scope.iconList = rmapsMainOptions.mlsicons.filelist
+    $scope.mlsModalData = mlsModalData
+
+    $scope.selectIcon = (logo) ->
+      $scope.mlsModalData.disclaimer_logo = logo
+
+    $scope.ok = () ->
+      $modalInstance.close($scope.mlsModalData)
+
+    $scope.cancel = () ->
+      $scope.mlsModalData.disclaimer_logo = null
       $modalInstance.dismiss('cancel')
 
 

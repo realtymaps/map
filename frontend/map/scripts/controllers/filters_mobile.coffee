@@ -10,10 +10,10 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
 
   MAX_PRICE = 10000000
   MAX_SIZE = 10000
-  MIN_BEDS = 1
+  MIN_BEDS = 0
   MAX_BEDS = 10
-  MIN_BATHS = 0.5
-  MAX_BATHS = 10
+  MIN_BATHS = 0
+  MAX_BATHS = 6
   MAX_DOM = 365
 
   #
@@ -94,8 +94,8 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
 
   $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
   $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
-  $scope.bedsSlider = options: floor: MIN_BEDS, ceil: MAX_BEDS, step: MIN_BEDS, onChange: $scope.makeDirty
-  $scope.bathsSlider = options: floor: MIN_BATHS, ceil: MAX_BATHS, step: MIN_BATHS, precision: 1, onChange: $scope.makeDirty
+  $scope.bedsSlider = options: floor: MIN_BEDS, ceil: MAX_BEDS, step: 1, onChange: $scope.makeDirty
+  $scope.bathsSlider = options: floor: MIN_BATHS, ceil: MAX_BATHS, step: 0.5, precision: 1, onChange: $scope.makeDirty
   $scope.domSlider = initSliderConfig 0, MAX_DOM, domSteps, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
   $timeout (() ->

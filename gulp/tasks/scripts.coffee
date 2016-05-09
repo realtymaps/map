@@ -16,10 +16,12 @@ require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'
 logger = (require '../util/logger').spawn('scripts')
+shutdown = require '../../backend/config/shutdown'
 
 coffeelint = require('coffeelint')
 coffeelint.reporter = require('coffeelint-stylish').reporter
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
+
 
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
@@ -107,7 +109,7 @@ browserifyTask = (app, watch = false) ->
 
         through transform, flush
       .on 'error', (error) ->
-        process.exit(1)
+        shutdown.exit(error: true)
 
       #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
       #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post

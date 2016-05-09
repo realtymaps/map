@@ -8,7 +8,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-
     popover="Neighborhoods"
     popover-trigger="click mouseenter")
       span.icon.icon-neighbourhood
-    .dropdown-menu.whiteblock.no-margin
+    .dropdown-menu.whiteblock
       .fixed-header
         span
           a(ng-show="neighbourhoods.length" ui-sref="projectNeighborhoods({id: principal.getCurrentProfile().project_id})") {{neighbourhoods.length}} Neighborhoods

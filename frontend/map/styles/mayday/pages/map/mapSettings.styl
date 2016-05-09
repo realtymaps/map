@@ -1,13 +1,23 @@
 $fnMakeMapSettings()
   .settings-list
 
-    .blueArrow
-      &:before
-        right 15px
+    .dropdown-menu
+      &.showAdvanced
+        width calc(100% + 450px)
+
+    .fixed-header
+      margin 0
+      .results-btn
+        min-width 45px
+      .title-right
+        width 450px
+        text-align right
 
     ul
       padding 10px 20px 0px
       list-style none
+      display inline-block
+      vertical-align top
 
       li
         border none
@@ -32,11 +42,24 @@ $fnMakeMapSettings()
           &.active
             font-weight bold
 
-    .advanced
-      margin-top -15px
-      li:first-child
-        border-top 1px solid $gray_ligther
-        padding-top 12px
+
+    .basic, .advanced
+      width 450px
+      background-color $white
+
+    .property-status
+      ul
+        list-style none
+        padding 0
+        margin 0 -3px
+        li
+          display table-cell
+          button
+            height auto
+            font-size 12px
+            font-weight bold
+            margin 0 3px
+
 
   .settings-slider
 

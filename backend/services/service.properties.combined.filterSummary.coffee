@@ -4,6 +4,7 @@ validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
 filterAddress = require "../enums/filterAddress"
+filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
 
@@ -13,6 +14,8 @@ validators = validation.validators
 
 statuses = filterStatuses.keys
 
+propertyTypes = filterPropertyType.keys
+
 minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
@@ -20,6 +23,7 @@ minMaxFilterValidations =
   baths: validators.float()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+  closeDate: validators.datetime()
 
 transforms = do ->
   makeMinMaxes = (result, validators, name) ->
@@ -45,6 +49,10 @@ transforms = do ->
             address: [
               validators.object()
               validators.defaults(defaultValue: {})
+            ]
+            propertyType: [
+              validators.string()
+              validators.choice(choices: propertyTypes)
             ]
           validators.defaults(defaultValue: {})
       ]
@@ -122,6 +130,11 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     query.where("days_on_market", ">=", filters.listedDaysMin)
   if filters.listedDaysMax
     query.where("days_on_market", "<=", filters.listedDaysMax)
+
+  if filters.propertyType
+    query.where("#{dbFn.tableName}.property_type", filters.propertyType)
+
+  sqlHelpers.between(query, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
   # If full address available, include matched property in addition to other matches regardless of filters
   filters.address = _.pick filters.address, filterAddress.keys
