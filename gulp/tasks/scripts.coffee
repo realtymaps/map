@@ -37,20 +37,23 @@ browserifyTask = ({app, watch, doSourceMaps}) ->
   pipeline = (stream) ->
     doSourceMaps ?= true
 
-    stream = stream
-      .on 'error', (err) ->
-        conf.errorHandler 'Bundler'
-      .on 'end', ->
-        timestamp = prettyHrtime process.hrtime startTime
-        logger.debug 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
-      .pipe source outputName
-      .pipe buffer()
+    s2 = stream
+    .on 'error', (err) ->
+      conf.errorHandler 'Bundler'
+    .on 'end', ->
+      timestamp = prettyHrtime process.hrtime startTime
+      logger.debug 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+
+    .pipe source outputName
+    .pipe buffer()
 
     if doSourceMaps
-      stream = stream.pipe $.sourcemaps.init loadMaps: true
+      console.log 'doing sourcemaps'
+
+      s2.pipe $.sourcemaps.init loadMaps: true
       .pipe $.sourcemaps.write()
 
-    stream.pipe gulp.dest paths.destFull.scripts
+    s2.pipe gulp.dest paths.destFull.scripts
     stream
 
   bundledStream = pipeline through()
@@ -120,7 +123,7 @@ browserifyTask = ({app, watch, doSourceMaps}) ->
       #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
       #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post
       #  coffeelint.
-      .transform('coffeeify', sourceMap: mainConfig.COFFEE_SOURCE_MAP)
+      .transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
       .transform('browserify-ngannotate', { "ext": ".coffee" })
       .transform('jadeify')
       .transform('stylusify')

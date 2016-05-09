@@ -24,7 +24,7 @@ styles = ({app, doSourceMaps}) ->
     if doSourceMaps
       stream = stream.pipe $.sourcemaps.init()
 
-    stream.pipe lessFilter = $.filter '**/*.less', restore: true
+    stream = stream.pipe lessFilter = $.filter '**/*.less', restore: true
     .pipe $.less()
     .on   'error', conf.errorHandler 'Less'
     .pipe lessFilter.restore
