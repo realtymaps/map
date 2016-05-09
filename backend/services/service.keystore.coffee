@@ -77,16 +77,16 @@ _setValueImpl = (key, value, options, transaction) ->
         result[0].value  # note this is the old value
 
 # setValuesMap resolves to a map of the previous values for the namespace/keys (with undefined for keys that didn't exist)
-setValuesMap = (map, options={}) ->
+setValuesMap = (map, options={}) -> Promise.try () ->
   handler = (transaction) ->
     resultsPromises = {}
     for key,value of map
       resultsPromises[key] = _setValueImpl(key, value, options, transaction)
     return Promise.props resultsPromises
   if options.transaction?
-    handler(options.transaction)
+    return handler(options.transaction)
   else
-    dbs.get('main').transaction(handler)
+    return dbs.get('main').transaction(handler)
 
 
 _cached = {}
