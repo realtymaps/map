@@ -72,6 +72,7 @@ getStatus = (user) -> Promise.try () ->
       # return subscription level for the staff if granted a perm for it
       return 'pro' if results.access_premium
       return 'standard' if results.access_standard
+      return null
 
   else # a stripe subscription exists, retrieve status
     _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id
