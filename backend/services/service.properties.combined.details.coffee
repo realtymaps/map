@@ -28,9 +28,8 @@ transforms =
 _getDetailByPropertyId = (queryParams) ->
   query = sqlHelpers.select(
     tables.property.combined()
-    'new_all_explicit'  # queryParams.columns was used before, probably will be again
-    null
-    "#{tables.config.mls.tableName}.dcma_contact_name, #{tables.config.mls.tableName}.dcma_contact_address, #{tables.config.mls.tableName}.formal_name, ")
+    'detail_with_disclaimer'  # queryParams.columns was used before, probably will be again
+    null)
   .where
     active: true
     rm_property_id: queryParams.rm_property_id
@@ -41,9 +40,8 @@ _getDetailByPropertyId = (queryParams) ->
 _getDetailByPropertyIds = (queryParams) ->
   query = sqlHelpers.select(
     tables.property.combined()
-    'new_all_explicit'
-    null
-    "#{tables.config.mls.tableName}.dcma_contact_name, #{tables.config.mls.tableName}.dcma_contact_address, #{tables.config.mls.tableName}.formal_name, ")
+    'detail_with_disclaimer'
+    null)
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
   query.where(active: true)
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
@@ -53,9 +51,8 @@ _getDetailByPropertyIds = (queryParams) ->
 _getDetailByGeomPointJson = (queryParams) ->
   query = sqlHelpers.select(
     tables.property.combined()
-    'new_all_explicit'
-    null
-    "#{tables.config.mls.tableName}.dcma_contact_name, #{tables.config.mls.tableName}.dcma_contact_address, #{tables.config.mls.tableName}.formal_name, ")
+    'detail_with_disclaimer'
+    null)
   sqlHelpers.whereIntersects(query, queryParams.geom_point_json, 'geometry_raw')
   query.where(active: true)
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->

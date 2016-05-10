@@ -70,7 +70,7 @@ commonConfig =
         quality: .8
 
   mlsicons:
-    filelist: ['01.png']
+    filelist: ['01.png', '02.jpg', '03.jpg', '04.jpg', '05.png', '06.gif', '07.gif']
 
   pdfUpload:
     # sufficiently large random string via powers, http://stackoverflow.com/questions/10726909/random-alpha-numeric-string-in-javascript

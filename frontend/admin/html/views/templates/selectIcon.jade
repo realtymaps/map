@@ -10,7 +10,7 @@
               label.data-label Select a Logo Icon:
           tr
             td.icon-list
-              div(ng-repeat="img in iconList")
+              span(ng-repeat="img in iconList")
                 img.mls-icon(ng-src="/assets/mlsicons/{{img}}" ng-click="selectIcon(img)" ng-class="{selected: mlsModalData.disclaimer_logo == img}")
           tr
             td
