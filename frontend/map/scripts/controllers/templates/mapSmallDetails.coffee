@@ -16,12 +16,11 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
   photos = []
   if $scope.property.cdn_photo && $scope.property.photo_count
     for i in [1..$scope.property.photo_count]
-      host = $scope.property.cdn_photo.split('/')[0]
       photos.push
         key: i
-        # A bug in the photo service was sometimes crashing the app so for now this will skip the cdn.
-        # url: $scope.property.cdn_photo + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
-        url: $scope.property.cdn_photo.replace(host, '') + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
+        url: $scope.property.cdn_photo + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
+        # Uncomment this to load photos locally
+        # url: $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '') + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
 
   $scope.property.photos = photos
   $log.debug $scope.property.photos
