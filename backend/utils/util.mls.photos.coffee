@@ -79,7 +79,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
     logger.debug "fileName: #{fileName}"
 
     # not handling event.dataStream.once 'error' on purpose
-    # this makes it easier to decern overall errors vs individual pht
+    # this makes it easier to decern overall errors vs individual photo error
     payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
     if event.headerInfo.objectData?
