@@ -113,10 +113,12 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
+        ###eslint-disable###
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
             scope['clicked' + handleName.toInitCaps()] = (event) ->
               _enableHandle legacyHandle, scope
+
 
         scope.clickedPen = (event) ->
           #kick off free draw
@@ -127,6 +129,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         scope.clickedUndo = (event) ->
           #pull out of drawItems cache and put it back on the map
 
+
         scope.clickedEdit = (event) ->
           _enableHandle editModeHandles?.edit, scope
           scope.canSave = true
@@ -134,6 +137,8 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         scope.clickedTrash = (event) ->
           _enableHandle editModeHandles?.remove, scope
           scope.canSave = true
+
+        ###eslint-enable###
 
         _attachEvents()
 

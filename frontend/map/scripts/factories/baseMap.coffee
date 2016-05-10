@@ -135,5 +135,8 @@ module.exports = app.factory 'rmapsBaseMapFactory', (nemSimpleLogger, $timeout, 
 
       # $log.info 'BaseMap: ' + @
 
-#public fns
-      isZoomIn: (newValue, oldValue) -> newValue > oldValue
+    #public fns
+    isZoomIn: (newValue, oldValue) -> newValue > oldValue
+
+    fitBounds: (bounds) ->
+      @map.fitBounds bounds

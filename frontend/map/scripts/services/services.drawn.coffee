@@ -2,7 +2,11 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
+app.factory 'rmapsDrawnProfileFactory', (
+$log,
+$http,
+rmapsLeafletHelpers) ->
+
   (profile) ->
     ###eslint-disable###
     $logDraw = $log.spawn("projects:drawnShapes")
@@ -69,19 +73,9 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
       $http.delete _byIdUrl(shape)
 
     getDrawnItems: (cache = false, mainFn = 'getList') ->
-      drawnItems = new L.FeatureGroup()
       @[mainFn](cache)
       .then (drawnShapes) ->
-        # TODO: drawn shapes will get its own tables for GIS queries
-        $log.debug 'fetched shapes'
-        L.geoJson drawnShapes,
-          onEachFeature: (feature, layer) ->
-            $log.debug feature
-            if feature.properties?.shape_extras?.type = 'Circle'
-              layer = L.Circle.createFromFeature feature
-            layer.model = feature
-            drawnItems.addLayer layer
-        drawnItems
+        rmapsLeafletHelpers.geoJsonToFeatureGroup(drawnShapes)
 
     getDrawnItemsNeighborhoods: (cache) ->
       @getDrawnItems(cache, 'getNeighborhoods')
