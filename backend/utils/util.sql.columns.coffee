@@ -108,9 +108,20 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
+    mls_disclaimer: ['config_mls.dcma_contact_name', 'config_mls.dcma_contact_address', 'config_mls.formal_name'
+      'disclaimer_text', 'disclaimer_logo']
+
     new_all: '*'
 
+    new_all_explicit: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries,
+      rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished', 'status', 'substatus,
+      status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields,
+      ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built,
+      property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time,
+      actual_photo_count', 'cdn_photo', 'baths', 'baths_total']
+
   ret.all = "#{ret.filter}, #{ret.detail}"
+  ret.detail_with_disclaimer = "#{ret.new_all_explicit}, #{ret.mls_disclaimer}"
   ret
 
 

@@ -78,11 +78,14 @@ app.factory 'rmapsMapFactory',
         #
         # Property Button events
         #
-        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) ->
-          self.zoomTo result, false
+        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
+          @zoomTo result, false
 
-        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
-          self.zoomTo result, doChangeZoom
+        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
+          @zoomTo result, doChangeZoom
+
+        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds) =>
+          @fitBounds bounds
 
         $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
 
@@ -92,6 +95,9 @@ app.factory 'rmapsMapFactory',
         # End Property Button Events
         #
 
+        #
+        # This promise is resolved when Leaflet has finished setting up the Map
+        #
         leafletData.getMap('mainMap').then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
@@ -110,7 +116,13 @@ app.factory 'rmapsMapFactory',
             rmapsEventConstants.map.filters.updated
             rmapsEventConstants.map.mainMap.redraw
           ].forEach (eventName) =>
-            $scope.$on eventName, => @redraw()
+            $scope.$on eventName, (event, cache) =>
+              if !_.isBoolean cache
+                cache = false
+              @redraw(cache)
+
+          $scope.$on rmapsEventConstants.map.filters.updated, => @redraw()
+          $scope.$on rmapsEventConstants.map.mainMap.redraw, => @redraw()
 
 
           _firstCenter = true
@@ -342,13 +354,20 @@ app.factory 'rmapsMapFactory',
 
       zoomTo: (result, doChangeZoom) ->
         verboseLogger.debug "CAUGHT zoomToProperty event"
-        return if not result?.coordinates?
+        if result.geometry?
+          result =  result.geometry
+
+        if !result?.coordinates?.length > 1
+          return
 
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])
         old = _.cloneDeep @scope.map.center
         resultCenter.zoom = old.zoom
         @scope.map.center = resultCenter
-        return unless doChangeZoom
+
+        if !doChangeZoom
+          return
+
         zoomLevel = @scope.options.zoomThresh.addressParcel
         zoomLevel = @scope.map.center.zoom if @scope.map.center.zoom > @scope.options.zoomThresh.addressParcel
         @scope.map.center.zoom = zoomLevel

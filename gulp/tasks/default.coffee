@@ -29,7 +29,8 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series('backendIntegrationSpec', 'dbShutdown', 'prodAssetCheck', 'otherAssets', 'angular', 'angularAdmin', 'minify', 'gzip', 'forceExit')
+gulp.task 'prod', gulp.series('backendIntegrationSpec', 'dbShutdown', 'prodAssetCheck', 'otherAssets',
+  'angularProd', 'angularAdminProd', 'minify', 'gzip', 'forceExit')
 
 gulp.task 'default', gulp.parallel 'develop'
 

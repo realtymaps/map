@@ -100,30 +100,24 @@ $fnMakeMapUlDropdown()
             span.title
               color $light_blue
             span.actions
-              opacity 1
               transform scale(1)
 
     .actions
-      border 1px solid $transparent
-      border-radius 3px
       width 20%
       float right
-      opacity 0
       @extends .global-transition
 
-      &:hover
-      &:focus
-        border-color $black_10
-        background-color $white_50
-        color $rm-map-btn-icon-hover
-        .action-button
-          .action
-            opacity 1
-          .icon, .fa
-            color $rm-map-btn-icon-hover
+      .icon, .fa, .action-button
+        display inline-block
+        font-size 20px
+        padding 7px
+        cursor pointer
+        &:hover
+        &:focus
+          color $rm-map-btn-icon-hover
+
 
       .action-button
-        cursor pointer
         display flex
         align-items center
         justify-content space-around
@@ -141,6 +135,6 @@ $fnMakeMapUlDropdown()
           float right
           &:hover
           &:focus
-            color $light_blue
+            color $rm-map-btn-icon-hover
           &.icon-remove
             display none

@@ -31,7 +31,7 @@ module.exports =
   MORTGAGE: 'mortgage'
   REFRESH: 'Refresh'
   UPDATE: 'Update'
-  LAST_COMPLETE_CHECK: 'last complete check'
+  NO_NEW_DATA_FOUND: 'no new data found'
   DELETE: 'Delete'
   LOAD: 'Load'
   getColumns: getColumns

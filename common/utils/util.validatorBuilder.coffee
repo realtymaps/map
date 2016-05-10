@@ -16,7 +16,31 @@ ruleDefaults =
 
   # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    _.pick @config, (v, k) -> ['advanced', 'alias', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString', 'doLookup', 'mapping'].indexOf(k) == -1
+    options = _.omit(@config, [
+      'advanced'
+      'alias'
+      'DataType'
+      'LookupName'
+      'Interpretation'
+      'nullZero'
+      'nullEmpty'
+      'nullEmptyArray'
+      'nullNumber'
+      'nullString'
+      'nullBoolean'
+      'doLookup'
+      'mapping'
+      'truthiness'
+    ])
+    if @config.truthiness && Object.keys(@config.truthiness).length > 0
+      options.truthy = []
+      options.falsy = []
+      for value, truthiness of @config.truthiness
+        if truthiness
+          options.truthy.push(value)
+        else
+          options.falsy.push(value)
+    options
 
   getTransform: (globalOpts = {}) ->
     transformArr = []
@@ -25,7 +49,9 @@ ruleDefaults =
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
-      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @config.LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+    if @config.nullEmptyArray
+      transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
     # Primary transform
     transformArr.push name: @type?.name, options: @getOptions()
@@ -35,13 +61,16 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: value: 0
     if @config.nullEmpty
       transformArr.push name: 'nullify', options: value: ''
+    if @config.nullBoolean?
+      transformArr.push name: 'nullify', options: value: @config.nullBoolean
     if @config.nullNumber
       transformArr.push name: 'nullify', options: values: _.map @config.nullNumber, Number
     if @config.nullString
       transformArr.push name: 'nullify', options: values: _.map @config.nullString, String
     if @config.mapping
       map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
-      transformArr.push name: 'map', options: {passUnmapped: true, map: map}
+      if Object.keys(map).length > 0
+        transformArr.push name: 'map', options: {passUnmapped: true, map: map}
 
     transformArr
 
@@ -107,16 +136,13 @@ _rules =
 
       photo_id:
         alias: 'Photo ID'
-        required: false
 
       photo_count:
         alias: 'Photo Count'
-        required: false
         type: name: 'integer'
 
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'
-        required: false
         type: name: 'datetime'
 
       address:
@@ -152,10 +178,14 @@ _rules =
       hide_address:
         alias: 'Hide Address'
         type: name: 'boolean'
+        config:
+          nullBoolean: null
 
       hide_listing:
         alias: 'Hide Listing'
         type: name: 'boolean'
+        config:
+          nullBoolean: null
 
       status:
         alias: 'Status'
@@ -298,9 +328,6 @@ _rules =
       owner_address:
         group: 'mortgage'
 
-# no lists currently have no base filters, but deed used to, so
-# we'll keep this around just in case something comes along that needs this)
-_noBase = []
 
 # RETS/MLS rule defaults for each data type
 typeRules =
@@ -331,32 +358,61 @@ typeRules =
     type:
       name: 'datetime'
       label: 'Date and Time'
-    valid: () ->
-      !!@input.format
   Boolean:
     type:
       name: 'boolean'
       label: 'Yes/No'
-    getTransform: () ->
-      name: 'nullify', options: @getOptions()
+    config:
+      nullBoolean: false
+    valid: () ->
+      if !@lookups
+        return true
+      # if this field has a lookup, you must mark something for all lookups, and must have both truthy and falsy values
+      if !@config.truthiness
+        return false
+      foundTruthy = false
+      foundFalsy = false
+      for lookup in @lookups
+        if !@config.truthiness[lookup.LongValue]?
+          return false
+        if @config.truthiness[lookup.LongValue]
+          foundTruthy = true
+        if !@config.truthiness[lookup.LongValue]
+          foundFalsy = true
+      return foundTruthy && foundFalsy
+
+# this is a remapping of the above RETS type rules, but indexed on validation types rather than RETS types
+baseTypeRules =
+  boolean: _.omit(typeRules.Boolean, 'type')
+  datetime: _.omit(typeRules.DateTime, 'type')
+  string: _.omit(typeRules.Character, 'type')
+  float: _.omit(typeRules.Decimal, 'type')
+  integer: _.omit(typeRules.Int, 'type')
 
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
 
 getBaseRules = (dataSourceType, dataListType) ->
-  if dataListType in _noBase
-    return {}
-  _.defaultsDeep(_.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType].common), _.cloneDeep(_rules[dataSourceType][dataListType]))
+  p1 = _.cloneDeep(_rules[dataSourceType][dataListType])
+  p2 = _.cloneDeep(_rules[dataSourceType].common)
+  p3 = _.cloneDeep(_rules.common)
+  builtBaseRules = _.defaultsDeep(p1, p2, p3)
+  return _.mapValues builtBaseRules, (val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])
+getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
   if rule.type?.name == 'string'
-    if rule.Interpretation == 'Lookup'
+    if rule.config.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
       if rule.data_source_type == 'county'
         rule.config.doLookup ?= true
-    else if rule.Interpretation == 'LookupMulti'
+    else if rule.config.Interpretation == 'LookupMulti'
       rule.type.label = 'Restricted Text (multiple values)'
+      rule.type.name = 'array'
+      rule.config.split = ','
+      rule.config.nullEmptyArray = true
+      rule.config.nullEmpty = false
     else
       rule.type.label = 'User-Entered Text'
   rule

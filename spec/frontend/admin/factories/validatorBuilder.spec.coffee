@@ -25,11 +25,11 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Character"}
        transform: '[validators.string({}),validators.nullify({"value":""})]'
       ,
-       field: @validatorBuilder.buildDataRule {"config": "DataType": "DateTime"}
-       transform: '[validators.datetime({})]'
+       field: @validatorBuilder.buildDataRule {"config": {"DataType": "DateTime", "format": 'asdf'}}
+       transform: '[validators.datetime({"format":"asdf"})]'
       ,
-       field: @validatorBuilder.buildDataRule {"config": {"DataType": "Boolean", "value": false}}
-       transform: '[validators.nullify({"value":false})]'
+       field: @validatorBuilder.buildDataRule {"config": {"DataType": "Boolean"}}
+       transform: '[validators.boolean({}),validators.nullify({"value":false})]'
 
        # Base rules
       ,
@@ -55,10 +55,10 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})]'
       ,
        field: _buildBaseRule {"output": "acres"}
-       transform: '[validators.float({})]'
+       transform: '[validators.float({}),validators.nullify({"value":0})]'
       ,
        field: _buildBaseRule {"output": "parcel_id"}
-       transform: '[validators.string({"stripFormatting":true})]'
+       transform: '[validators.string({"stripFormatting":true}),validators.nullify({"value":""})]'
     ]
 
     expect(obj.field.getTransformString()).to.equal obj.transform for obj in rules

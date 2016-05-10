@@ -1,12 +1,12 @@
 Promise = require 'bluebird'
 request = require 'request'
 _ =  require 'lodash'
-sharp = require 'sharp'
 # config = require '../config/config'
 logger = require('../config/logger').spawn('service.photos')
 tables = require '../config/tables'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 sqlHelpers = require '../utils/util.sql.helpers'
+internals = require './service.photos.internals'
 
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
@@ -15,6 +15,7 @@ getMetaData = (opts) -> Promise.try () ->
 
   query = tables.property.combined()
   .where _.pick opts, ['data_source_id', 'data_source_uuid']
+  .where 'photos', '!=', '{}'
 
   logger.debug query.toString()
 
@@ -56,10 +57,11 @@ getResizedPayload = (opts) -> Promise.try () ->
         .where id: data_source_id
         .then (rows) ->
           {photoRes} = sqlHelpers.expectSingleRow(rows).listing_data
-          logger.debug "Using MLS photores for originalSize: #{photoRes.width} x #{payload.height}"
+          logger.debug "Using MLS photores for originalSize: #{photoRes.width} x #{photoRes.height}"
           photoRes
 
     .catch (err) ->
+      logger.warn err
       logger.warn "Could NOT get original size for photo!"
 
     .then (originalSize) ->
@@ -67,8 +69,10 @@ getResizedPayload = (opts) -> Promise.try () ->
       _resize = (width, height) ->
         if Number(width) != Number(originalSize?.width) || Number(height) != Number(originalSize?.height)
           logger.debug "Resizing to #{width}px x #{height}px"
-          stream = payload.stream.pipe(sharp().resize(width, height))
-          meta = _.extend {}, payload.meta, {width, height}
+          internals.resize {stream, width, height}
+          .then (resizeStream) ->
+            stream = resizeStream
+            meta = _.extend {}, payload.meta, {width, height}
 
       Promise.try ->
         if originalSize?.width && originalSize?.height # we can get aspect
@@ -82,12 +86,9 @@ getResizedPayload = (opts) -> Promise.try () ->
         else if width && height # no originalSize, so resize only if width and height provided
           _resize(width, height)
 
-      .catch (err) ->
-        logger.warn "Could NOT resize photo!"
-
     .then ->
-      stream: stream
-      meta: meta
+
+      {stream, meta}
 
 module.exports = {
   getRawPayload

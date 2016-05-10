@@ -4,7 +4,7 @@ logger = require '../config/logger'
 {mergeHandles} = require '../utils/util.route.helpers'
 safeProjectCols = require('../utils/util.sql.helpers').columns.project
 tables = require '../config/tables'
-ProjectRouteCrud = require '../routeCrud/route.crud.projectSession'
+ProjectRouteCrud = require './route.projectSession.internal'
 
 routeCrud = new ProjectRouteCrud(new ProjectSvc(tables.user.project).init(false), undefined, 'ProjectRouteCrud').init(true, safeProjectCols)
 merged = mergeHandles routeCrud,

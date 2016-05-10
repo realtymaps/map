@@ -1,3 +1,4 @@
+###globals _###
 #TODO This should probably become a controller
 app = require '../app.coffee'
 

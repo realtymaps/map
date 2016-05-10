@@ -3,6 +3,9 @@ logger = require('../config/logger').spawn('route.photos')
 {mergeHandles, wrapHandleRoutes} = require '../utils/util.route.helpers'
 transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
+ExpressResponse = require '../utils/util.expressResponse'
+httpStatus = require '../../common/utils/httpStatus'
+{HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -39,7 +42,22 @@ handles = wrapHandleRoutes
               res.setHeader "X-#{name}", payload.meta[name]
 
           logger.debug 'piping image'
-          payload.stream.pipe(res)
+
+          # this error is a worst case scenario if all the promise pre-streaming catches miss an exception
+          # so the error here would likley be an error in the resize processing
+          payload.stream
+          .once 'error', (err) ->
+            if res.headersSent
+              return next err # not using Express response since headers are already sent
+            next new ExpressResponse(alert: {msg: 'stream error: ' + err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+
+          .pipe(res)
+
+      .catch HttpStatusCodeError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, err.statusCode)
+      .catch BadContentTypeError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, httpStatus.UNSUPPORTED_MEDIA_TYPE)
+
 
 
 module.exports = mergeHandles handles,

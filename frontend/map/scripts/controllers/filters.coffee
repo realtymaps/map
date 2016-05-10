@@ -37,6 +37,8 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
     $scope.selectedFilters.listedDaysMax = null
     $scope.selectedFilters.closePriceMin = null
     $scope.selectedFilters.closePriceMax = null
+    $scope.selectedFilters.closeDateMin = null
+    $scope.selectedFilters.closeDateMax = null
     $scope.selectedFilters.ownerName = null
     $scope.selectedFilters.propertyType = null
 

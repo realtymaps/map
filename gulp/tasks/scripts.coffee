@@ -23,7 +23,8 @@ coffeelint.reporter = require('coffeelint-stylish').reporter
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
 
 
-browserifyTask = (app, watch = false) ->
+browserifyTask = ({app, watch, doSourceMaps}) ->
+  watch ?= false
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
   extGlobs = ['js', 'coffee'].map (ext) ->
@@ -34,17 +35,25 @@ browserifyTask = (app, watch = false) ->
   startTime = ''
 
   pipeline = (stream) ->
-    stream
+    doSourceMaps ?= true
+
+    s2 = stream
     .on 'error', (err) ->
       conf.errorHandler 'Bundler'
     .on 'end', ->
       timestamp = prettyHrtime process.hrtime startTime
       logger.debug 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+
     .pipe source outputName
     .pipe buffer()
-    .pipe $.sourcemaps.init loadMaps: true
-    .pipe $.sourcemaps.write()
-    .pipe gulp.dest paths.destFull.scripts
+
+    if doSourceMaps
+      logger.debug 'doing sourcemaps'
+
+      s2.pipe $.sourcemaps.init loadMaps: true
+      .pipe $.sourcemaps.write()
+
+    s2.pipe gulp.dest paths.destFull.scripts
     stream
 
   bundledStream = pipeline through()
@@ -114,7 +123,7 @@ browserifyTask = (app, watch = false) ->
       #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
       #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post
       #  coffeelint.
-      .transform('coffeeify', sourceMap: mainConfig.COFFEE_SOURCE_MAP)
+      .transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
       .transform('browserify-ngannotate', { "ext": ".coffee" })
       .transform('jadeify')
       .transform('stylusify')
@@ -164,10 +173,14 @@ browserifyTask = (app, watch = false) ->
 
   bundledStream
 
-gulp.task 'browserify', -> browserifyTask 'map'
-gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
+gulp.task 'browserify', -> browserifyTask app: 'map'
+gulp.task 'browserifyAdmin', -> browserifyTask app:'admin'
+
+gulp.task 'browserifyProd', -> browserifyTask app: 'map', doSourceMaps: false
+gulp.task 'browserifyAdminProd', -> browserifyTask app:'admin', doSourceMaps: false
 
 gulp.task 'browserifyAll', gulp.parallel 'browserify', 'browserifyAdmin'
+gulp.task 'browserifyAllProd', gulp.parallel 'browserifyProd', 'browserifyAdminProd'
 
 ###
 NOTE the watches here are the odd ball of all the gulp watches we have.
@@ -183,5 +196,5 @@ now depends on watch.
 
 Therefore in most conditions a watch should only watch period.
 ###
-gulp.task 'browserifyWatch', -> browserifyTask 'map', true
-gulp.task 'browserifyWatchAdmin', -> browserifyTask 'admin', true
+gulp.task 'browserifyWatch', -> browserifyTask app: 'map', watch: true
+gulp.task 'browserifyWatchAdmin', -> browserifyTask app: 'admin', watch: true
