@@ -7,6 +7,7 @@ logger = require('../config/logger').spawn('mlsPhotos')
 shardLogger = logger.spawn('shard')
 crypto = require("crypto")
 Promise = require 'bluebird'
+photoErrors = require '../utils/errors/util.errors.photos'
 
 md5 = (data) ->
   crypto.createHash('md5')
@@ -49,13 +50,20 @@ imageStream = (object) ->
 
     logger.debug event.headerInfo
     everSentData = true
-    event.dataStream.pipe(retStream)
+
+    event.dataStream
+    .once 'error', (err) ->
+      error = err
+    .pipe(retStream)
 
   retStream
 
 imagesHandle = (object, cb, doThrowNoEvents = false) ->
   everSentData = false
   imageId = 0
+
+  object.objectStream.once 'error', (error) ->
+    cb new photoErrors.ObjectsStreamError error
 
   object.objectStream.on 'data', (event) ->
 
@@ -70,6 +78,8 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
     fileName = "#{listingId}_#{imageId}.#{fileExt}"
     logger.debug "fileName: #{fileName}"
 
+    # not handling event.dataStream.once 'error' on purpose
+    # this makes it easier to decern overall errors vs individual pht
     payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
     if event.headerInfo.objectData?
@@ -78,29 +88,28 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
     imageId++
     cb(null, payload)
 
-  object.objectStream.on 'end', () ->
+  object.objectStream.once 'end', () ->
     if !everSentData and doThrowNoEvents
-      cb(new Error 'No object events')
+      cb(new photoErrors.NoPhotoObjectsError 'No object events')
     cb(null, null, true)
 
   return
 
 imagesStream = (object, archive = Archiver('zip')) ->
 
-  archive.on 'error', (err)  ->
-    throw err
+  archive.once 'error', (err)  ->
+    throw new photoErrors.ArchiveError err
 
   imagesHandle object, (err, payload, isEnd) ->
-    if(err)
+    if err
       throw err
 
-    if(isEnd)
+    if isEnd
       archive.finalize()
       logger.debug("Archive wrote #{archive.pointer()} bytes")
       return
 
     archive.append(payload.data, name: payload.name)
-
 
   archive
 

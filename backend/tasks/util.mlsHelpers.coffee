@@ -238,11 +238,14 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
         width: photoRes.width
     .then (upload) ->
 
-      upload.on 'uploaded', (details) ->
+      payload.data.once 'error', (error) ->
+        reject error
+
+      upload.once 'uploaded', (details) ->
         logger.debug details
         resolve(details)
 
-      upload.on 'error', (error) ->
+      upload.once 'error', (error) ->
         reject error
 
       payload.data.pipe(upload)
@@ -297,14 +300,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       savesPromise = new Promise (resolve, reject) ->
         mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
 
-          if(err)
+          if err
             logger.debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
-            logger.error err
-            #we might not want to reject here as some photos, could have suceeded
-            #this might be one corroupt photo out of many good ones (not sure)
             return reject err
 
-          if(isEnd)
+          if isEnd
             return resolve(
               Promise.all promises
               .then (args...) ->
@@ -357,7 +357,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
-      throw new SoftFail(analyzeValue.getSimpleMessage(error))
+      tables.property.listing()
+      .where(listingRow)
+      .update photo_import_error: """error message #{error.message}
+      stack: #{error.stack}
+      """
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photos()
