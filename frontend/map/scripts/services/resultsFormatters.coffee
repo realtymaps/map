@@ -1,17 +1,12 @@
-###globals _, angular###
+###globals _###
 app = require '../app.coffee'
-Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
-  rmapsLeafletObjectFetcherFactory, rmapsMainOptions) ->
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService) ->
 
   $log = $log.spawn("map:rmapsResultsFormatterService")
-
-  leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
-  limits = rmapsMainOptions.map
 
   class ResultsFormatter
 

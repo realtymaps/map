@@ -8,6 +8,7 @@ profileService = require '../services/service.profiles'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
 projectSvc = require('../services/services.user').project
+subscriptionSvc = require '../services/service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -81,19 +82,22 @@ login = (req, res, next) -> Promise.try () ->
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
-      req.user = user
-      logger.debug "session: #{req.session}"
-      req.session.userid = user.id
+      subscriptionSvc.getStatus user
+      .then (subscription_status) ->
+        req.user = user
+        req.session.userid = user.id
+        req.session.subscription = subscription_status
+        logger.debug "session: #{req.session}"
 
-      userUtils.cacheUserValues(req)
-      .then () ->
-        req.session.saveAsync()
-      .then () ->
-        sessionSecurityService.ensureSessionCount(req)
-      .then () ->
-        sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
-      .then () ->
-        identity(req, res, next)
+        userUtils.cacheUserValues(req)
+        .then () ->
+          req.session.saveAsync()
+        .then () ->
+          sessionSecurityService.ensureSessionCount(req)
+        .then () ->
+          sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
+        .then () ->
+          identity(req, res, next)
 
 identity = (req, res, next) ->
   res.json identity: userSessionService.getIdentity req
