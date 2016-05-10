@@ -115,7 +115,7 @@ getQueryPhoto = ({req, res, next, photoType}) ->
 # this  gets some data from a RETS server based on a query, and returns it as an array of row objects plus and array of
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a
 # sample of e.g. 1000 rows of data to look at when figuring out how to configure a new MLS
-getDataDump = (mlsId, query) ->
+getDataDump = (mlsId, query, next) ->
   mlsConfigService.getById(mlsId)
   .then ([mlsConfig]) ->
     if !mlsConfig

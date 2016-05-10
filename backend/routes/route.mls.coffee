@@ -83,7 +83,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      internals.getDataDump(req.params.mlsId, req.query)
+      internals.getDataDump(req.params.mlsId, req.query, next)
       .then (csvPayload) ->
         resObj = new ExpressResponse(csvPayload)
         resObj.format = 'csv'
