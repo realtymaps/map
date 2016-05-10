@@ -8,12 +8,15 @@ mod.constant 'rmapsEventConstants',
     neighbourhoods:
       createClick: 1
       dropdownToggled: 1
+      drawItems: 1
+      removeDrawItem: 1
     map:
       locationChange: 1
       results: 1
       center: 1
       centerOnProperty: 1
       zoomToProperty: 1
+      fitBoundsProperty: 1
       mainMap:
         redraw: 1
       drawPolys:

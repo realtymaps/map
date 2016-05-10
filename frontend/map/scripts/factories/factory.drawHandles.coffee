@@ -18,10 +18,10 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
 
         promise = createPromise or drawnShapesSvc?.create
         promise(geojson).then ({data}) ->
-          newId = data
+          [id] = data
           layer.model =
             properties:
-              id: newId
+              id: id
           commonPostDrawActions(layer.model)
 
       edited: ({layers}) ->

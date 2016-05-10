@@ -48,7 +48,7 @@ browserifyTask = ({app, watch, doSourceMaps}) ->
     .pipe buffer()
 
     if doSourceMaps
-      console.log 'doing sourcemaps'
+      logger.debug 'doing sourcemaps'
 
       s2.pipe $.sourcemaps.init loadMaps: true
       .pipe $.sourcemaps.write()

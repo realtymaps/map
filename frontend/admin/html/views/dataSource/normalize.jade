@@ -65,11 +65,11 @@
             .field-container(
             rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
               .field(
-              ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
+              ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.config.DataType }"
               ng-click="selectField(item)"
               rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
               ng-repeat="item in categories.unassigned | filter:rootSearchText | filter:mlsSearchText | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
-                span.datatype(ng-class="item.type.name" ng-show="item.type")
+                span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")
 
       .col-md-3.list-container(ng-if="!showGrid")
         h4 Groups
@@ -96,13 +96,13 @@
           class="base unselectable"
           ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
           .field(
-          ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
+          ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.config.DataType}"
           ng-click="item.unselectable || selectField(item)"
           rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
           ng-repeat="item in fieldData.category.items | filter:rootSearchText")
             span(ng-show="!item.unselectable") {{item.input}}
             span(ng-show="item.unselectable") {{item.alias}}
-            span.datatype(ng-class="item.type.name" ng-show="item.type")
+            span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")
 
       .col-md-8.list-container(ng-if="showGrid")
         h4 Groups
@@ -118,13 +118,13 @@
               class="base unselectable"
               ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
               .field(
-              ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
+              ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.config.DataType }"
               ng-click="item.unselectable || selectField(item)"
               rmaps-draggable="item" rmaps-draggable-collection="category.items"
               ng-repeat="item in category.items")
                 span(ng-show="!item.unselectable") {{item.input}}
                 span(ng-show="item.unselectable") {{item.alias}}
-                span.datatype(ng-class="item.type.name" ng-show="item.type")
+                span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")
 
   .row.panel.properties-container(ng-show="fieldData.current")
 
@@ -176,7 +176,7 @@
           select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
             option(value="") None
         .col-md-8.help Value will be changed to UPPERCASE, lowercase or Capitalized
-      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.Interpretation == 'LookupMulti'")
+      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.config.Interpretation == 'LookupMulti'")
         .col-md-2 Split by
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")

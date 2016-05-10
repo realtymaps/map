@@ -209,8 +209,10 @@ loadRawData = (subtask) ->
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
+
 saveProcessDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+
 
 deleteData = (subtask) ->
   # get rows for this subtask

@@ -115,16 +115,19 @@ app.controller 'rmapsCountyCtrl',
   parseFields = (fields) ->
     _.forEach fields, (field) ->
       rule = allRules[field.LongName]
-      if rule
-        _.extend rule, _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
-      else
+      if !rule
         rule = field
         rule.input = rule.LongName
         rule.output = rule.LongName
         addRule rule, 'unassigned'
 
-      # It is important to save the data type so a transform can be regenerated entirely from the config
-      rule.config = _.defaults rule.config ? {}, DataType: field.DataType
+      # It is important to save metadata so a transform can be regenerated entirely from the config
+      metadata = {DataType: field.DataType}
+      if field.Interpretation
+        metadata.Interpretation = field.Interpretation
+      if field.LookupName
+        metadata.LookupName = field.LookupName
+      rule.config = _.extend (rule.config ? {}), metadata
       rmapsValidatorBuilderService.buildDataRule rule
       true
     if 'base' of $scope.categories
@@ -255,7 +258,7 @@ app.controller 'rmapsCountyCtrl',
       $state.go($state.current, { id: $scope.countyData.current.id, list: $scope.countyData.dataListType.id }, { reload: true })
 
   # Show rules without metadata first, then unassigned followed by assigned
-  $scope.orderValid = (rule) -> !!rule.DataType
+  $scope.orderValid = (rule) -> !!rule.config.DataType
   $scope.orderList = (rule) -> rule.list != 'unassigned'
 
   $scope.removeRule = () ->

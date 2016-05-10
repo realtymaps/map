@@ -1,13 +1,28 @@
-###global _###
+###globals _###
 app = require '../app.coffee'
-template = do require '../../html/views/templates/modals/neighbourhood.jade'
+template = do require '../../html/views/templates/modals/neighbourhoodModal.jade'
 
-app.controller 'rmapsNeighbourhoodsModalCtrl', ($rootScope, $scope, $modal,
-rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsService, rmapsMapTogglesFactory) ->
+app.controller 'rmapsNeighbourhoodsModalCtrl', (
+$rootScope,
+$scope,
+$modal,
+rmapsProjectsService,
+rmapsMainOptions,
+rmapsEventConstants,
+rmapsDrawnUtilsService,
+rmapsMapTogglesFactory,
+rmapsLeafletHelpers) ->
 
   _event = rmapsEventConstants.neighbourhoods
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+
+  $scope.centerOn = (model) ->
+    #zoom to bounds on shapes
+    #handle polygons, circles, and points
+    featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(model)
+    feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
+    $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, feature.getBounds()
 
   _signalUpdate = (promise) ->
     return $rootScope.$emit _event unless promise
@@ -33,8 +48,8 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
         if !model?.properties?.neighbourhood_name
           #makes the model a neighborhood with a defined empty string
           model.properties.neighbourhood_name = ''
-        _signalUpdate(drawnShapesSvc.create model)
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+        _signalUpdate(drawnShapesSvc.create model)
 
     update: (model) ->
       $scope.createModal(model).then (modalModel) ->
@@ -42,27 +57,30 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
         _signalUpdate drawnShapesSvc.update model
 
     remove: (model) ->
-      delete model.properties.neighbourhood_name
-      delete model.properties.neighbourhood_details
-      _signalUpdate drawnShapesSvc.update model
+      $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
+      _signalUpdate drawnShapesSvc.delete model
+      .then () ->
+        $scope.$emit rmapsEventConstants.neighbourhoods.removeDrawItem, model
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
 
-.controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http,
-$log, rmapsDrawnUtilsService, rmapsEventConstants) ->
+.controller 'rmapsMapNeighbourhoodsCtrl', (
+  $rootScope,
+  $scope,
+  $http,
+  $log,
+  rmapsDrawnUtilsService,
+  rmapsEventConstants) ->
 
-  ###
-    Anything long term statewise goes here.
-  ###
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
-
   $log = $log.spawn("map:neighbourhoods")
 
-  getAll = (cache) ->
-    drawnShapesSvc.getNeighborhoodsNormalized(cache).then (data) ->
-      $log.debug "received data #{data.length} " if data?.length
-      $scope.neighbourhoods = data
+  $scope.getAll = (cache) ->
+    drawnShapesSvc.getNeighborhoodsNormalized(cache)
+    .then (data) ->
+      $scope.neighbourhoods = _.indexBy data, 'properties.id'
 
   $scope.neighbourhoodListToggled = (isOpen) ->
-    getAll(false)
+    $scope.getAll()
     $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
 
-  getAll()
+  $scope.getAll()

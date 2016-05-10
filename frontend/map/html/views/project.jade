@@ -1,3 +1,5 @@
+include ../includes/mixins/_leafletMixin.jade
+
 .project-dashboard-container
   .row.project-top
     .col-sm-6.col-xs-12
@@ -7,8 +9,8 @@
       //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
       //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
-      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length")
-        slide(ng-repeat="property in pins")
+      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
+        slide(ng-repeat="property in pins" active="property.activeSlide" actual="property")
           .pin-image
             img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
             img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
@@ -28,7 +30,24 @@
         img.project-instruction-image(src='/assets/project/pin-favorite-instruction.png')
 
     .col-sm-6.hidden-xs
-      img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+      //img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+      .dashboardMap
+        leaflet(
+        id="dashboardMap"
+        bounds="dashboardMapAccess.context.bounds"
+        defaults="dashboardMapAccess.context.defaults"
+        center="dashboardMapAccess.context.center"
+        layers="dashboardMapAccess.context.layers"
+        markers="dashboardMapAccess.context.markers"
+        markers-nested="true"
+        event-broadcast="dashboardMapAccess.context.events"
+        )
+        //markers-nested="dashboardMapAccess.context.markersNested"
+        //markers-watch-options="dashboardMapAccess.context.markersWatchOptions"
+        //geojson-watch-options="dashboardMapAccess.context.geojsonWatchOptions"
+        //geojson="dashboardMapAccess.context.geojson"
+        //geojson-nested="true"
+        //controls="controls"
 
     .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
       .notes-title
