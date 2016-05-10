@@ -345,7 +345,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
               #record the error and move on
               tables.property.listing()
               .where(listingRow)
-              .update(photo_import_error: error.stack)
+              .update(photo_import_error: analyzeValue.getSimpleDetails(error))
               .then () ->
                 null
           )
@@ -359,7 +359,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     .catch (error) ->
       tables.property.listing()
       .where(listingRow)
-      .update photo_import_error: analyzeValue.getSimpleMessage(error)
+      .update photo_import_error: analyzeValue.getSimpleDetails(error)
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photos()
