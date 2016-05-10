@@ -95,6 +95,9 @@ app.factory 'rmapsMapFactory',
         # End Property Button Events
         #
 
+        #
+        # This promise is resolved when Leaflet has finished setting up the Map
+        #
         leafletData.getMap('mainMap').then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
@@ -117,6 +120,9 @@ app.factory 'rmapsMapFactory',
               if !_.isBoolean cache
                 cache = false
               @redraw(cache)
+
+          $scope.$on rmapsEventConstants.map.filters.updated, => @redraw()
+          $scope.$on rmapsEventConstants.map.mainMap.redraw, => @redraw()
 
 
           _firstCenter = true

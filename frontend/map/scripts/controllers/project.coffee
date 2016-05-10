@@ -12,8 +12,14 @@ app.controller 'rmapsProjectCtrl',
   $rootScope,
   $scope,
   $state,
+  $timeout,
+
   rmapsClientsFactory,
   rmapsEventConstants
+
+  rmapsMapAccess,
+  rmapsPropertyMarkerGroup,
+
   rmapsNotesService,
   rmapsPageService,
   rmapsPrincipalService,
@@ -39,6 +45,7 @@ app.controller 'rmapsProjectCtrl',
 
   project = currentProject
   profile = currentProfile
+  properties = []
 
   #
   # Initialize Scope Variables
@@ -60,6 +67,37 @@ app.controller 'rmapsProjectCtrl',
   $scope.loadedProperties = false
 
   clientsService = null
+
+
+  #
+  # Dashboard Map
+  #
+  dashboardMapAccess = $scope.dashboardMapAccess = rmapsMapAccess.newMapAccess('dashboardMap')
+  dashboardMapAccess.addMarkerGroup(new rmapsPropertyMarkerGroup('property'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsMailMarkerGroup('mail'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsPropertyGeoJsonGroup('bounds'))
+#  dashboardMapAccess.addMarkerGroup(new rmapsFilterSummaryGroup('filterSummary'))
+
+  # Highlight markers on the map when selected
+  highlightProperty = (propertyId) ->
+    dashboardMapAccess.groups.property.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
+
+  # Listen for property marker event clicks
+  dashboardMapAccess.groups.property.registerClickHandler $scope, (event, args, propertyId) ->
+    if property = properties[propertyId]
+      property.activeSlide = true
+      highlightProperty(propertyId)
+
+  # When the carousel changes, highlight the selected property on the map
+  $scope.onSlideChanged = (nextSlide) ->
+    highlightProperty(nextSlide.actual.rm_property_id)
+
+
+  #
+  # Property carousel
+  #
+  $scope.activeSlide = 0
+
 
   #
   # Scope Event Handlers
@@ -134,9 +172,18 @@ app.controller 'rmapsProjectCtrl',
     toLoad = _.merge {}, project.properties_selected, project.favorites
     if not _.isEmpty toLoad
       loadProperties toLoad
-      .then (properties) ->
+      .then (loaded) ->
+        properties = loaded
         $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
+
+        # Highlight the first carousel property on the map
+        dashboardMapAccess.initPromise.then () ->
+          if $scope.pins.length
+            $timeout(() ->
+              highlightProperty($scope.pins[0].rm_property_id)
+            , 0)
+
     else
       $scope.loadedProperties = true
 
@@ -155,6 +202,14 @@ app.controller 'rmapsProjectCtrl',
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
+
+      #
+      # Add property markers to the dashboard map
+      #
+      $timeout(() ->
+        dashboardMapAccess.groups.property.addPropertyMarkers(result.data)
+        dashboardMapAccess.groups.property.fitToBounds(result.data)
+      , 0)
 
       return properties
     .finally () ->
