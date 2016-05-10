@@ -13,13 +13,13 @@ module.exports =
       .then toGeoFeatureCollection
         toMove: @drawnShapeCols
         geometry: ['geom_point_json', 'geom_polys_json', 'geom_line_json']
-        deletes: ['rm_inserted_time', 'rm_modified_time', 'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
+        deletes: ['rm_inserted_time', 'rm_modified_time',
+          'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
 
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true
       @toGeoJson(ReturningServiceEzCrud::getAll.call(@, query, options)
-        .knex[nullClause]('neighbourhood_name')
-      )
+        .knex[nullClause]('neighbourhood_name'))
 
     getAll: (query, options) ->
       @getAllBase query, options

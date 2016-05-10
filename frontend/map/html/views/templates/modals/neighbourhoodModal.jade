@@ -11,12 +11,12 @@ form.note(name="createEditNeighbourhoodForm")
         name="title"
         ng-model="model.properties.neighbourhood_name"
         validator="optMinlength=2")
-      label(for="neighbourhood_details") Details
-      textarea.form-control(cols="25" rows="10"
-        placeholder="Fill in your neighbourhood details/description here. (Optional)"
-        name="text"
-        ng-model="model.properties.neighbourhood_details"
-        validator="optMaxlength=150")
+      //- label(for="neighbourhood_details") Details
+      //- textarea.form-control(cols="25" rows="10"
+      //-   placeholder="Fill in your neighbourhood details/description here. (Optional)"
+      //-   name="text"
+      //-   ng-model="model.properties.neighbourhood_details"
+      //-   validator="optMaxlength=150")
 
   .modal-footer
     button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditNeighbourhoodForm") Cancel
