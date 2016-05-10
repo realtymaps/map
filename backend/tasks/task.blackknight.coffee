@@ -53,6 +53,9 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
       else if !file.name.endsWith('.gz')
         logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
         continue
+      else if (file.name.endsWith('.gz') && !file.name.startsWith('12021'))
+        logger.warn("Ignoring file due to FIPS code: #{folderInfo.path}/#{file.name}")
+        continue
       else
         fileType = folderInfo.action
       fileInfo = _.clone(folderInfo)
@@ -63,7 +66,7 @@ _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
   if i >= drops.length
     logger.debug "Finished processing all blackknight drops; no files found."
     # we've iterated over the whole list
-    processInfo.dates[constants.LAST_COMPLETE_CHECK] = moment.utc().format('YYYYMMDD')
+    processInfo.dates[constants.NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
     return processInfo
   drop = newFolders[drops[i]]
   if !drop[constants.TAX] || !drop[constants.DEED] || !drop[constants.MORTGAGE]
@@ -91,6 +94,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.tr
   loadDataList = []
   deleteDataList = []
   countDataList = []
+  fipsCodes = {}
   for file in files
     loadData =
       path: "#{file.path}/#{file.name}"
@@ -104,6 +108,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.tr
       loadData.rawTableSuffix = "#{file.name.slice(0, -7)}"
       loadData.normalSubid = file.name.slice(0, 5)
       loadData.startTime = now
+      fipsCodes[loadData.normalSubid] = true
       countDataList.push
         rawTableSuffix: loadData.rawTableSuffix
         normalSubid: loadData.normalSubid
@@ -112,7 +117,8 @@ _queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.tr
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: loadDataList, replace: true, concurrency: 10})
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: countDataList, replace: true})
-  Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
+  Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
+    fipsCodes
 
 
 checkFtpDrop = (subtask) ->
@@ -120,7 +126,7 @@ checkFtpDrop = (subtask) ->
   defaults = {}
   defaults[constants.REFRESH] = '19700101'
   defaults[constants.UPDATE] = '19700101'
-  defaults[constants.LAST_COMPLETE_CHECK] = '19700101'
+  defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
   now = Date.now()
   keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (processDates) ->
@@ -147,8 +153,6 @@ checkFtpDrop = (subtask) ->
       else
         logger.debug "Found #{drops.length} blackknight dates to process"
       processInfo = {dates: processDates}
-      # reset last complete check unless this run completes
-      processInfo.dates[constants.LAST_COMPLETE_CHECK] = '19700101'
       processInfo[constants.REFRESH] = []
       processInfo[constants.UPDATE] = []
       processInfo[constants.DELETE] = []
@@ -165,9 +169,16 @@ checkFtpDrop = (subtask) ->
         deletes = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.DELETE], constants.DELETE)
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH, now)
         update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE, now)
-        #finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_finalizeDataPrep", {}, true)
         activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join deletes, refresh, update, activate, () ->  # empty handler
+        fileProcessing = Promise.join deletes, refresh, update, activate, (refreshFips, updateFips) ->
+          fipsCodes = _.extend(refreshFips, updateFips)
+          normalizedTablePromises = []
+          for fipsCode of fipsCodes
+            # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.TAX, subtask.data.normalSubid)
+            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.DEED, subtask.data.normalSubid)
+            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
+          Promise.all(normalizedTablePromises)
       else
         fileProcessing = Promise.resolve()
       dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
@@ -175,15 +186,7 @@ checkFtpDrop = (subtask) ->
 
 
 loadRawData = (subtask) ->
-  Promise.try () ->
-    if subtask.data.fileType != constants.DELETE
-      # first ensure normalized data tables exist -- need all 3 no matter what type we're loading now
-      tax = dataLoadHelpers.ensureNormalizedTable(constants.TAX, subtask.data.normalSubid)
-      deed = dataLoadHelpers.ensureNormalizedTable(constants.DEED, subtask.data.normalSubid)
-      mortgage = dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
-      Promise.join tax, deed, mortgage, () -> # no-op
-  .then () ->
-    constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
+  constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
@@ -206,8 +209,10 @@ loadRawData = (subtask) ->
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
-saveProcessedDates = (subtask) ->
+
+saveProcessDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+
 
 deleteData = (subtask) ->
   # get rows for this subtask
@@ -267,38 +272,46 @@ normalizeData = (subtask) ->
     jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids, countyHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.ids, (id) ->
+    countyHelpers.finalizeData({subtask, id})
 
 
 ready = () ->
   defaults = {}
   defaults[constants.REFRESH] = '19700101'
   defaults[constants.UPDATE] = '19700101'
-  defaults[constants.LAST_COMPLETE_CHECK] = '19700101'
+  defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
   keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (processDates) ->
-    if processDates[constants.LAST_COMPLETE_CHECK] != moment.utc().format('YYYYMMDD')
+    today = moment.utc().format('YYYYMMDD')
+    yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
+    dayOfWeek = moment.utc().isoWeekday()
+    if processDates[constants.NO_NEW_DATA_FOUND] != today
       # needs to run using regular logic
       return undefined
-    dayOfWeek = moment.utc().isoWeekday()
-    if dayOfWeek == 7 || dayOfWeek == 1
+    else if dayOfWeek == 7 || dayOfWeek == 1
       # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-      return false
-    yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-    if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
+      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+      .then () ->
+        return false
+    else if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
       # we've already processed yesterday's data
-      return false
-    # no overrides, needs to run using regular logic
-    return undefined
+      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+      .then () ->
+        return false
+    else
+      # no overrides, needs to run using regular logic
+      return undefined
 
 
-subtasks =
-  checkFtpDrop: checkFtpDrop
-  loadRawData: loadRawData
-  deleteData: deleteData
-  normalizeData: normalizeData
+subtasks = {
+  checkFtpDrop
+  loadRawData
+  deleteData
+  normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
-  finalizeData: finalizeData
+  finalizeData
   activateNewData: dataLoadHelpers.activateNewData
-
+  saveProcessDates
+}
 module.exports = new TaskImplementation(subtasks, ready)

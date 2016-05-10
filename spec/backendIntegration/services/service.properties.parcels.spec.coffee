@@ -2,6 +2,8 @@ rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.properties.parcels'
 Promise = require 'bluebird'
 gjv = require 'geojson-validation'
+require("chai").should()
+
 mocks =
   map:
     state: require('../../fixtures/backend/mapState')

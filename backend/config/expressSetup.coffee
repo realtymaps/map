@@ -119,9 +119,12 @@ app.use (data, req, res, next) ->
   logger.error('uncaught error found by express:')
   analysis = analyzeValue(data)
   logger.error(analysis.toString())
-  res.status(status.INTERNAL_SERVER_ERROR).json alert:
-    msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
-    id: "500-#{req.path}"
+
+  if !res.headersSent
+    res.status(status.INTERNAL_SERVER_ERROR).json alert:
+      msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
+      id: "500-#{req.path}"
+      
   next()
 
 if config.USE_ERROR_HANDLER

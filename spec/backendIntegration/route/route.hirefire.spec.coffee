@@ -2,6 +2,7 @@
 hirefireRoute = require "#{basePath}/routes/route.hirefire"
 hirefireService = require "#{basePath}/services/service.hirefire"
 ExpressResponse = require "#{basePath}/utils/util.expressResponse"
+require("chai").should()
 
 
 # technically this is testing both route.hirefire and service.hirefire, but I left it combined because that ensures we

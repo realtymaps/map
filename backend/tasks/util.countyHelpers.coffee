@@ -171,7 +171,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = (subtask, id) ->
+finalizeData = ({subtask, id, data_source_id}) ->
   tables.property.tax(subid: subtask.data.normalSubid)
   .select('*')
   .where
@@ -251,7 +251,7 @@ finalizeData = (subtask, id) ->
             tables.property.combined(transaction: transaction)
             .where
               rm_property_id: id
-              data_source_id: subtask.task_name
+              data_source_id: data_source_id || subtask.task_name
               active: false
             .delete()
             .then () ->

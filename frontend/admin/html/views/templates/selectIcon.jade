@@ -1,0 +1,22 @@
+.mls-config-modal
+  .panel.panel-default
+    .panel-heading
+      h3 Select Disclaimer Icon
+    .panel-body
+      form(name=newMlsForm)
+        table
+          tr
+            td(colSpan="2")
+              label.data-label Select a Logo Icon:
+          tr
+            td.icon-list
+              div(ng-repeat="img in iconList")
+                img.mls-icon(ng-src="/assets/mlsicons/{{img}}" ng-click="selectIcon(img)" ng-class="{selected: mlsModalData.disclaimer_logo == img}")
+          tr
+            td
+              label.data-label Icon File Name:
+            td
+              input(type="text" ng-model="mlsModalData.disclaimer_logo").form-control.input-sm
+
+        button(ng-click="ok()").btn.btn-success Save
+        button(ng-click="cancel()").btn.btn-danger Cancel

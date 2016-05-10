@@ -18,9 +18,9 @@ transforms =
 
 
 _getBaseParcelQueryByBounds = (bounds, limit) ->
-  query = tables.property.parcel()
-  sqlHelpers.select(query, 'parcel', false, 'distinct on (rm_property_id)')
+  query = sqlHelpers.select(tables.property.parcel(), 'parcel', false)
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
+  query.where(active: true)
   query.limit(limit) if limit?
 
 _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try () ->

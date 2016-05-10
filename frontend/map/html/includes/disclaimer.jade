@@ -1,0 +1,2 @@
+.row.content-row(ng-repeat="mls in selectedResult.mls")
+  .btn.btn-white(ng-show="mls.dcma_contact_name && mls.dcma_contact_address" ng-click="showDCMA(mls)") DCMA for {{mls.formal_name}}

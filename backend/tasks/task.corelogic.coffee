@@ -145,7 +145,8 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: _.union(lists), maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, countyHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.values, (id) ->
+    countyHelpers.finalizeData({subtask, id})
 
 
 module.exports = new TaskImplementation

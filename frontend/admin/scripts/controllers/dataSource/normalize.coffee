@@ -43,6 +43,9 @@ app.controller 'rmapsNormalizeCtrl',
     'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
+  $scope.typeOf = (val) ->
+    return typeof val
+
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
@@ -125,27 +128,33 @@ app.controller 'rmapsNormalizeCtrl',
       rmapsValidatorBuilderService.buildDataRule rule
       true
 
-    _.forEach $scope.categories.base, (rule) -> updateAssigned()
+    if 'base' of $scope.categories
+      updateAssigned()
 
   # Show field options
   $scope.selectField = (field) ->
     if field.list != 'unassigned' && field.list != 'base'
       $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
-    $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
+    if field.list == 'base'
+      $scope.loadLookups(allRules[field.input], field)
+    else
+      $scope.loadLookups(field)
 
-  $scope.loadLookups = (field) ->
-    if field?._lookups
-      $scope.fieldData.current._lookups = field._lookups
+  $scope.loadLookups = (field, target) ->
+    if !target
+      target = field
+    setLookups = (lookups) ->
+      target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-        $scope.fieldData.current.lookups = field._lookups
+        target.lookups = field._lookups
+    if field?._lookups
+      setLookups(field._lookups)
     else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
-        $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-          $scope.fieldData.current.lookups = lookups
+        setLookups(lookups)
         $scope.$evalAsync()
 
   # Move rules between categories
@@ -188,7 +197,7 @@ app.controller 'rmapsNormalizeCtrl',
     field = $scope.fieldData.current
     removed = field.input
     field.input = drag.model.input
-    $scope.loadLookups(drag.model)
+    $scope.loadLookups(drag.model, field)
     updateBase(field, removed)
 
   # Remove base field input
@@ -281,9 +290,14 @@ app.controller 'rmapsNormalizeCtrl',
       normalizeService.getRules()
       .then (rules) ->
         parseRules(rules)
+      .then () ->
         rmapsMlsService.getColumnList(config.id, config.listing_data.db, config.listing_data.table)
       .then (fields) ->
         parseFields(fields)
+
+    _.forEach $scope.baseRules, (rule, baseRulesKey) ->
+      $scope.mlsLoading = $scope.mlsLoading.then () ->
+        $scope.loadLookups(allRules[allRules[baseRulesKey].input], allRules[baseRulesKey])
 
   $scope.getMlsList = () ->
     rmapsMlsService.getConfigs({schemaReady: true})

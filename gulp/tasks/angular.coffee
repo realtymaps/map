@@ -9,6 +9,10 @@ gulp.task 'angular', gulp.series 'styles', 'markup', 'browserify'
 
 gulp.task 'angularAdmin', gulp.series 'stylesAdmin', 'markupAdmin', 'browserifyAdmin'
 
+gulp.task 'angularProd', gulp.series 'stylesProd', 'markup', 'browserifyProd'
+
+gulp.task 'angularAdminProd', gulp.series 'stylesAdminProd', 'markupAdmin', 'browserifyAdminProd'
+
 gulp.task 'angularWatch', gulp.parallel 'stylesWatch', 'markupWatch', 'browserifyWatch'
 
 gulp.task 'angularWatchAdmin', gulp.parallel 'stylesWatchAdmin', 'markupWatchAdmin', 'browserifyWatchAdmin'

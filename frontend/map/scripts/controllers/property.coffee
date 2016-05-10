@@ -1,9 +1,8 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-module.exports = app
-
-app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
+app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService,
+rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
   $log = $log.spawn 'rmapsPropertyCtrl'
   $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
 
@@ -35,6 +34,12 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPr
         template: () ->
           pdf: mail.lob.url
           title: 'Mail Review'
+
+  $scope.showDCMA = (mls) ->
+    $modal.open
+      template: require('../../html/views/templates/modal-dmca.tpl.jade')()
+      controller: 'rmapsModalInstanceCtrl'
+      resolve: model: -> mls
 
   getPropertyDetail = (propertyId) ->
     $log.debug "Getting property detail for #{propertyId}"
