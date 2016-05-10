@@ -16,22 +16,22 @@ ruleDefaults =
 
   # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    options = _.pick @config, (v, k) ->
-      # config keys to exclude
-      [
-        'advanced'
-        'alias'
-        'DataType'
-        'nullZero'
-        'nullEmpty'
-        'nullEmptyArray'
-        'nullNumber'
-        'nullString'
-        'nullBoolean'
-        'doLookup'
-        'mapping'
-        'truthiness'
-      ].indexOf(k) == -1
+    options = _.omit(@config, [
+      'advanced'
+      'alias'
+      'DataType'
+      'LookupName'
+      'Interpretation'
+      'nullZero'
+      'nullEmpty'
+      'nullEmptyArray'
+      'nullNumber'
+      'nullString'
+      'nullBoolean'
+      'doLookup'
+      'mapping'
+      'truthiness'
+    ])
     if @config.truthiness && Object.keys(@config.truthiness).length > 0
       options.truthy = []
       options.falsy = []
@@ -49,7 +49,7 @@ ruleDefaults =
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
-      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @config.LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
       transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
@@ -403,11 +403,11 @@ getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{data
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
   if rule.type?.name == 'string'
-    if rule.Interpretation == 'Lookup'
+    if rule.config.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
       if rule.data_source_type == 'county'
         rule.config.doLookup ?= true
-    else if rule.Interpretation == 'LookupMulti'
+    else if rule.config.Interpretation == 'LookupMulti'
       rule.type.label = 'Restricted Text (multiple values)'
       rule.type.name = 'array'
       rule.config.split = ','
