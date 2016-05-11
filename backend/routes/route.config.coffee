@@ -5,12 +5,13 @@ cartodbConfig = require '../config/cartodb/cartodb'
 googleMapsConfig = require '../config/googleMaps'
 config = require '../config/config'
 _ = require 'lodash'
+internals = require './route.config.internals'
 
 module.exports =
-  debugLevels:
+  safeConfig:
     handle: (req, res, next) ->
-      logger.debug "sending config.LOGGING.ENABLE: #{config.LOGGING.ENABLE}"
-      res.send config.LOGGING.ENABLE
+      logger.debug "sending safeConfig.: #{internals.safeConfig}"
+      res.send internals.safeConfig
 
   mapboxKey:
     middleware: auth.requireLogin(redirectOnFail: true)
