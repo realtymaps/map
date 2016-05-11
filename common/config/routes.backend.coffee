@@ -153,7 +153,7 @@ module.exports =
     google: "#{apiBaseConfig}/google"
     stripe: "#{apiBaseConfig}/stripe"
     asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
-    debugLevels: "#{apiBaseConfig}/debugLevels"
+    safeConfig: "#{apiBaseConfig}/safeConfig"
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"

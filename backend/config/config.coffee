@@ -239,6 +239,7 @@ pools =
 base.DBS = _.merge(base.DBS, pools[scriptName])
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 config = _.merge({}, base, environmentConfig[base.ENV])
+config.NAME = base.ENV
 
 
 module.exports = config
