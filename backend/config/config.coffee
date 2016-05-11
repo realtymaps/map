@@ -12,7 +12,7 @@ base =
     DO_COMPILE_DEBUG: process.env.ANGULAR_DO_COMPILE_DEBUG ? true
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
-  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
+  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
