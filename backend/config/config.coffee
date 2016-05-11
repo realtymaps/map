@@ -10,6 +10,9 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 base =
   ANGULAR:
     DO_COMPILE_DEBUG: process.env.ANGULAR_DO_COMPILE_DEBUG ? true
+  KARMA:
+    LOG_LEVEL: process.env.KARMA_LOG_LEVEL ? 'info'
+    BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
   COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true

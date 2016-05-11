@@ -1,4 +1,4 @@
-config = require '../config/config'
+config = require '../config/config.coffee'
 
 
 # if safe config becomes more complicated we may want to make this memoizee function
