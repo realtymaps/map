@@ -6,7 +6,7 @@ include ../mixins/property/_propertyAttributes.jade
     div(carousel ng-if="property.photos.length")
       div(slide ng-repeat="photo in property.photos" index="slide.key")
         img(ng-src="{{photo.url}}" style="margin:auto;")
-        .carousel-caption {{photo.caption}}
+        .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
     span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
   +propertyAttributes('property')
   property-buttons(property='property'

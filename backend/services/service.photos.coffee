@@ -14,7 +14,7 @@ getMetaData = (opts) -> Promise.try () ->
     required: ['data_source_id', 'data_source_uuid', 'image_id']
 
   query = tables.property.combined()
-  .where _.omit opts, 'image_id'
+  .where _.pick opts, ['data_source_id', 'data_source_uuid']
   .where 'photos', '!=', '{}'
 
   logger.debug query.toString()
@@ -35,40 +35,60 @@ getRawPayload = (opts) ->
     meta: meta
 
 getResizedPayload = (opts) -> Promise.try () ->
-  {width, height} = opts
+  {width, height, data_source_id, data_source_uuid, image_id} = opts
+
+  logger.debug "Requested resize of photo #{data_source_uuid}##{image_id} to #{width||'?'}px x #{height||'?'}px"
   newSize = {width, height}
 
-  getRawPayload(_.omit opts, Object.keys newSize)
+  getRawPayload(opts)
   .then (payload) ->
-    stream = payload.stream
-    meta = payload.meta
 
-    useOrigImageOpts =
-      newSize: newSize
-      data_source_id: opts.data_source_id
+    {stream, meta} = payload
 
-    if payload.meta?.width? && payload.meta?.height?
-      logger.debug "using meta for originalSize"
-      logger.debug payload.meta, true
-      _.extend useOrigImageOpts, originalSize:
-        width: payload.meta.width
-        height: payload.meta.height
+    Promise.try ->
 
-    internals.useOriginalImagePromise(useOrigImageOpts)
-    .then (doUseOriginal) ->
+      if payload.meta?.width? && payload.meta?.height?
+        logger.debug "Using photo metadata for originalSize: #{payload.meta.width} x #{payload.meta.height}"
+        originalSize =
+          width: payload.meta.width
+          height: payload.meta.height
+      else
+        tables.config.mls()
+        .where id: data_source_id
+        .then (rows) ->
+          {photoRes} = sqlHelpers.expectSingleRow(rows).listing_data
+          logger.debug "Using MLS photores for originalSize: #{photoRes.width} x #{photoRes.height}"
+          photoRes
 
-      logger.debug "doUseOriginal: #{doUseOriginal}"
+    .catch (err) ->
+      logger.warn err
+      logger.warn "Could NOT get original size for photo!"
 
-      if doUseOriginal
-        return {stream, meta}
+    .then (originalSize) ->
 
-      logger.debug "resizing to width: #{width}, height: #{height}"
+      _resize = (width, height) ->
+        if Number(width) != Number(originalSize?.width) || Number(height) != Number(originalSize?.height)
+          logger.debug "Resizing to #{width}px x #{height}px"
+          internals.resize {stream, width, height}
+          .then (resizeStream) ->
+            stream = resizeStream
+            meta = _.extend {}, payload.meta, {width, height}
 
-      internals.resize {stream, width, height}
-      .then (stream) ->
-        stream: stream
-        meta: _.extend {}, payload.meta, {width, height}
+      Promise.try ->
+        if originalSize?.width && originalSize?.height # we can get aspect
+          aspect = originalSize.width / originalSize.height
+          if width && !height
+            _resize(width, Math.round(width/aspect))
+          else if !width && height
+            _resize(Math.round(height*aspect), height)
+          else if width && height
+            _resize(width, height)
+        else if width && height # no originalSize, so resize only if width and height provided
+          _resize(width, height)
 
+    .then ->
+
+      {stream, meta}
 
 module.exports = {
   getRawPayload

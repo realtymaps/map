@@ -1,6 +1,10 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
-_defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
+_defaultOptions =
+  closeButton: false
+  offset: new L.Point(0, -5)
+  autoPan: false
+  maxWidth: 260
 
 app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupConstants, rmapsRenderingService, $timeout) ->
   _map = null #TODO this ref shouldn't be global if so this should become a factory
