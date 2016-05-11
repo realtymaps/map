@@ -9,8 +9,6 @@ mod.config ($provide, $compileProvider) ->
 
     $delegate.get(backendRoutes.config.safeConfig, cache: true)
     .then ({data}) ->
-      isDebugLike = data.envLevel != 'production' && data != 'staging'
-
-      $compileProvider.debugInfoEnabled isDebugLike
+      $compileProvider.debugInfoEnabled data.ANGULAR.DO_COMPILE_DEBUG
 
     $delegate
