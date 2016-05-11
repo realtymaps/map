@@ -9,7 +9,7 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 base =
   ANGULAR:
-    DO_COMPILE_DEBUG: process.env.ANGULAR_DO_COMPILE_DEBUG || true
+    DO_COMPILE_DEBUG: process.env.ANGULAR_DO_COMPILE_DEBUG ? true
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
   COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
