@@ -3,6 +3,7 @@ Promise = require 'bluebird'
 memoize = require 'memoizee'
 _ = require 'lodash'
 {hiddenRequire} = require '../../common/utils/webpackHack.coffee'
+# karma hack workaround
 memoize.promise ?= () ->
 
 
