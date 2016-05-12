@@ -148,12 +148,8 @@ module.exports =
     version: "#{apiBase}/version"
   config:
     apiBase: apiBaseConfig
-    mapboxKey: "#{apiBaseConfig}/mapbox_key"
-    cartodb: "#{apiBaseConfig}/cartodb"
-    google: "#{apiBaseConfig}/google"
-    stripe: "#{apiBaseConfig}/stripe"
-    asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
-    debugLevels: "#{apiBaseConfig}/debugLevels"
+    safeConfig: "#{apiBaseConfig}/safeConfig"
+    protectedConfig: "#{apiBaseConfig}/protectedConfig"
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
