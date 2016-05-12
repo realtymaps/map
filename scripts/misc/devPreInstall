@@ -16,7 +16,7 @@ kill -9 $(ps aux | grep node | grep coffee | grep -v grep | grep -v Atom | grep 
 
 if ! hash gulp &> /dev/null || [[ $IS_HEROKU = 1 ]];then
   #gulp 4 branch sha#
-  npm install -g gulp@'git+https://github.com/gulpjs/gulp.git#b4d89c391b40cd29e8526e0391981eef67cfccab'
+  npm install -g gulp@'git+https://github.com/gulpjs/gulp.git#7243d6ead83c2e18236b9323be4a9265dcd511b6'
 fi
 
 #https://github.com/karma-runner/karma-coverage/issues/59 (why karma-cli only)

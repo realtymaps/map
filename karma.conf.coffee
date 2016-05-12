@@ -1,4 +1,5 @@
 istanbul = require('istanbul')
+backendConfig = require './backend/config/config'
 
 module.exports = (config) ->
   config.set
@@ -98,14 +99,19 @@ module.exports = (config) ->
     # - config.LOG_WARN
     # - config.LOG_INFO
     # - config.LOG_DEBUG
-    logLevel: config.LOG_INFO
+    logLevel: do ->
+      if backendConfig.KARMA.LOG_LEVEL
+        logName = 'LOG_' + backendConfig.KARMA.LOG_LEVEL.replace(/log_/ig).toUpperCase()
+        config[logName]
+      else
+        config.LOG_INFO
 
     # enable / disable watching file and executing tests whenever any file changes
     autoWatch: false
 
     # start these browsers
     # available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS']# options Chrome, PhantomJS
+    browsers: backendConfig.KARMA.BROWSERS ? ['PhantomJS']# options Chrome, PhantomJS
     #browserNoActivityTimeout: 200000000000000000000000000000000
     # If browser does not capture in given timeout [ms], kill it
     captureTimeout: 60000

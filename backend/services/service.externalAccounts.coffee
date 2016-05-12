@@ -15,7 +15,6 @@ _getEncryptor = (cipherKey) ->
     encryptors[cipherKey] = new Encryptor(cipherKey: cipherKey)
   return encryptors[cipherKey]
 
-
 _encrypt = (sourceObj, destObj, fieldName, cipherKey) ->
   plainText = sourceObj[fieldName]
   if plainText == undefined

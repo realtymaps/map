@@ -1,6 +1,6 @@
 _ = require 'lodash'
-externalAccounts = require '../../services/service.externalAccounts'
-require '../../config/promisify'
+externalAccounts = require '../../services/service.externalAccounts.coffee'
+require '../../config/promisify.coffee'
 memoize = require 'memoizee'
 Promise = require 'bluebird'
 
@@ -14,7 +14,7 @@ getConfig = () -> Promise.try () ->
     for key,val of accountInfo.other
       if key.startsWith('map-')
         maps.push(name: key.substr(4), mapId: val)
-    
+
     API_KEY: accountInfo.api_key
     ACCOUNT: accountInfo.username
     API_KEY_TO_US: accountInfo.other.api_key_to_us
