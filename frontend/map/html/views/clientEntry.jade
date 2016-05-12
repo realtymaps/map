@@ -1,0 +1,7 @@
+.inner.container.client-entry
+  h1.pageTitle Welcome, {{client.first_name}} {{client.last_name}}
+  .row
+    .col-lg-12
+      p {{parent.first_name}} {{parent.last_name}} has invited you to view their project #[span.project-name {{project.name}}].
+      p Enter in a password to use for your account:
+        input.form-control(ng-model="password")

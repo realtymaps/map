@@ -24,7 +24,7 @@ getPermissionForCodename = (codename) ->
   .where
     codename: codename
   .then (rows) ->
-    expectSingleRow(row)
+    expectSingleRow(rows)
   .then (row) ->
     logger.info("permission found for codename #{codename}")
     Promise.resolve(row)

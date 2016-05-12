@@ -1,15 +1,18 @@
 _ = require 'lodash'
+uuid = require '../utils/util.uuid'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
 tables = require('../config/tables')
+db = require('../config/dbs').get('main')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 userProfileSvc = (require '../services/services.user').user.profiles
+keystoreSvc = require '../services/service.keystore'
 userUtils = require '../utils/util.user'
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
@@ -59,15 +62,17 @@ class ClientsCrud extends RouteCrud
       date_invited: new Date()
       parent_id: req.user.id
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
+      email: req.body.email
     #TODO: the majority of this is service business logic and should be moved to service.user.project
     userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
     .then (clientId) ->
+      console.log "clientId:\n#{JSON.stringify(clientId,null,2)}"
       throw new Error 'user ID required - new or existing' unless clientId?
 
       # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
       newUser.id = clientId
 
-      userSessionSvc.updatePassword newUser, 'Password$1', false
+      #userSessionSvc.updatePassword newUser, 'Password$1', false
 
     .then ->
       # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
@@ -92,6 +97,19 @@ class ClientsCrud extends RouteCrud
         project_id: req.params.id
 
       profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
+
+    .then ->
+      clientEntryValue =
+        email: newUser.email
+        auth_user_id: newUser.id
+        parent_auth_user_id: req.user.id
+        project_id: req.params.id
+
+      clientEntryKey = uuid.genUUID()
+      console.log "new clientEntry:\n#{JSON.stringify(clientEntryValue,null,2)}"
+      console.log "key:\n#{clientEntryKey}"
+      keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
+
 
   ###
     Update user contact info - but only if the request came from the parent user
