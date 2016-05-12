@@ -3,7 +3,7 @@ include ../mixins/property/_propertyAttributes.jade
 .property-card(ng-controller="rmapsSmallDetailsCtrl")
   .property-img
     img(ng-cloak ng-if="!property.photos.length" ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
-    div(carousel ng-if="property.photos.length")
+    div(carousel carousel-image-error="http://fpoimg.com/300x250" ng-if="property.photos.length")
       div(slide ng-repeat="photo in property.photos" index="slide.key")
         img(ng-src="{{photo.url}}" style="margin:auto;")
         .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
