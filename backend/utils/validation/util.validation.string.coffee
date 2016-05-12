@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn 'util::validation::string'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
@@ -28,6 +28,7 @@ module.exports = (options = {}) ->
     if options.trim
       transformedValue = transformedValue.trim()
     if options.replace?
+      logger.debug options.replace
       transformedValue = transformedValue.replace(options.replace[0], options.replace[1])
     if options.stripFormatting
       transformedValue = transformedValue.replace(/[^a-zA-Z0-9]/g, '')

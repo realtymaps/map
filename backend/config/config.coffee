@@ -9,7 +9,7 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 base =
   ANGULAR:
-    DO_COMPILE_DEBUG: process.env.ANGULAR_DO_COMPILE_DEBUG ? true
+    DO_COMPILE_DEBUG: if process.env.ANGULAR_DO_COMPILE_DEBUG? then process.env.ANGULAR_DO_COMPILE_DEBUG == 'true' else true
   KARMA:
     LOG_LEVEL: process.env.KARMA_LOG_LEVEL ? 'info'
     BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']

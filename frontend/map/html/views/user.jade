@@ -103,10 +103,11 @@
                         .form-group
                           label.col-lg-3.control-label State:
                           .col-lg-8
-                            select.form-control(ng-model="user.us_state_id" validator="required" name="us_state_id")
+                            select.form-control(ng-model="user.us_state_id"
+                            validator="required" name="us_state_id")
                               option(
                                 ng-repeat="s in us_states"
-                                ng-selected="{{s.id == user.us_state_id}}"
+                                ng-selected="s.id == user.us_state_id"
                                 value="{{s.id}}") {{s.code}} - {{s.name}}
                         .form-group
                           label.col-lg-3.control-label Zip:
@@ -139,7 +140,7 @@
                         .form-group
                           label.col-md-3.control-label(title="Not for login.") username / alias:
                           .col-md-8
-                            input.form-control(name="username" ng-model="unamePass.username", type='text' validator="required,minlength=3")
+                            input.form-control(name="username" ng-model="user.username", type='text' validator="required,minlength=3")
                         .form-group
                           label.col-lg-3.control-label Website Url:
                           .col-lg-8
@@ -155,7 +156,7 @@
                             select.form-control(ng-model="user.account_use_type_id" validator="required" name="account_use_type_id")
                               option(
                                 ng-repeat="s in accountUseTypes"
-                                ng-selected="{{s.id == user.account_use_type_id}}"
+                                ng-selected="s.id == user.account_use_type_id"
                                 value="{{s.id}}") {{s.description}}
                         .form-group
                           label.col-md-3.control-label
@@ -203,7 +204,7 @@
                       //- select.form-control(ng-model="user.company_id" ng-change="companies.changed()")
                       //-   option(
                       //-     ng-repeat="(key,s) in companies"
-                      //-     ng-selected="{{s.id == user.company_id}}"
+                      //-     ng-selected="s.id == user.company_id"
                       //-     value="{{s.id}}") {{s.name}}
 
                     .col-md-8.col-sm-6.col-xs-12.personal-info
@@ -248,7 +249,7 @@
                             select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
                               option(
                                 ng-repeat="s in us_states"
-                                ng-selected="{{s.id == company.us_state_id}}"
+                                ng-selected="s.id == company.us_state_id"
                                 value="{{s.id}}") {{s.code}} - {{s.name}}
                         .form-group
                           label.col-lg-3.control-label Zip:

@@ -1,20 +1,28 @@
 tables = require '../../config/tables'
 {VALIDATION, EMAIL_VERIFY} = require '../../config/config'
 {validators} = require '../util.validation'
+clsFactory = require '../util.cls'
 
-email = (optUserId) ->
+email = (id) ->
+  id ?= clsFactory().getCurrentUserId()
+
   transform: [
-      validators.string(regex: VALIDATION.email)
-      validators.unique tableFn: tables.auth.user, id: optUserId, name: 'email', clauseGenFn: (value) ->
+    validators.string(regex: VALIDATION.email)
+    validators.unique {
+      tableFn: tables.auth.user
+      id
+      name: 'email'
+      clauseGenFn: (value) ->
         email: value
+    }
   ]
   required: true
 
-emailRequest = (optUserId) ->
+emailRequest = (id) ->
   params: validators.object isEmptyProtect: true
-  query:  validators.object isEmptyProtect: true
-  body:   validators.object subValidateSeparate:
-    email: email(optUserId)
+  query: validators.object isEmptyProtect: true
+  body: validators.object subValidateSeparate:
+    email: email(id)
 
 emailVerifyRequest =
   params: validators.object subValidateSeparate:
@@ -25,7 +33,8 @@ emailVerifyRequest =
   body: validators.object isEmptyProtect: true
 
 
-module.exports =
-  email: email
-  emailRequest: emailRequest
-  emailVerifyRequest: emailVerifyRequest
+module.exports = {
+  email
+  emailRequest
+  emailVerifyRequest
+}
