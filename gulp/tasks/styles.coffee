@@ -55,7 +55,7 @@ stylesWatch = (app) ->
   watchPaths = _.union (_.values _.pick paths.map, types), (_.values _.pick paths[app], types)
 
   # Keeps many files changing at once triggering the task over and over
-  stylesFn = _.debounce styles(app), 1000
+  stylesFn = _.debounce styles(app: app), 1000
   # Just for nicer gulp out
   stylesFn.displayName = 'styles'
 

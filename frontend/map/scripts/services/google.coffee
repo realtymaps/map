@@ -4,9 +4,9 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'rmapsGoogleService', ($http) ->
 
-  _googleConfigPromise = $http.get(backendRoutes.config.google)
+  _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
-    data
+    data = data.google
 
   service =
     ConfigPromise: _googleConfigPromise

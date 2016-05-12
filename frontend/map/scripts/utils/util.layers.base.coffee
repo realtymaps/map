@@ -5,7 +5,7 @@ app = require '../app.coffee'
 httpSync = require './util.http.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
-routes = require '../../../../common/config/routes.backend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 _mapboxKey = ''
 
@@ -48,7 +48,7 @@ _baseLayers =
 #
 module.exports = ->
   try
-    _mapboxKey = httpSync.get routes.config.mapboxKey
+    _mapboxKey = httpSync.get(backendRoutes.config.protectedConfig)?.mapbox
   catch
     _mapboxKey = ''
 
