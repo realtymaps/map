@@ -6,9 +6,9 @@ _stripeKeysDeferred = defer()
 _stripeKeysPromise = _stripeKeysDeferred.promise
 
 app.run ($http) ->
-  $http.get backendRoutes.config.stripe
+  $http.get backendRoutes.config.protectedConfig
   .then ({data}) ->
-    _stripeKeysDeferred.resolve data
+    _stripeKeysDeferred.resolve data.stripe
   .catch _stripeKeysDeferred.reject
 
 
