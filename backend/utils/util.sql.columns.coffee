@@ -40,6 +40,8 @@ basicColumns = do ->
       'bedrooms',
       'price',
       'owner_address'
+      'cdn_photo'
+      'photo_count'
     ].map((name)-> tables.property.combined.tableName + '.' + name)
     .concat [
       "floor(#{tables.property.combined.tableName}.baths_total)::int as baths_full",
