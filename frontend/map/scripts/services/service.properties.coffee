@@ -84,7 +84,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       , http: {route: backendRoutes.properties.filterSummary })
 
   _saveProperty = (model, save = true) ->
-    return if not model or not model.rm_property_id
+    return if !model or !model.rm_property_id
     rm_property_id = model.rm_property_id
 
     model.savedDetails ?= new rmapsPropertyFactory(rm_property_id)
@@ -92,7 +92,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
     prop = _savedProperties[rm_property_id]
 
     if save
-      if not prop
+      if !prop
         _.extend model, _savedProperties[rm_property_id]
         _savedProperties[rm_property_id] = model
       model.savedDetails.isSaved = true
@@ -101,14 +101,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       model.savedDetails.isSaved = false
 
   _favoriteProperty = (model) ->
-    return if not model or not model.rm_property_id
+    return if !model or !model.rm_property_id
     rm_property_id = model.rm_property_id
 
     if !model.savedDetails
       model.savedDetails = new rmapsPropertyFactory(rm_property_id)
 
     prop = _favoriteProperties[rm_property_id]
-    if not prop
+    if !prop
       _favoriteProperties[rm_property_id] = model
       model.savedDetails.isFavorite = true
     else
@@ -116,7 +116,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       model.savedDetails.isFavorite = false
 
   _setFlags = (model) ->
-    return if not model or not model.rm_property_id
+    return if !model or !model.rm_property_id
     rm_property_id = model.rm_property_id
 
     model.savedDetails ?= new rmapsPropertyFactory(rm_property_id)
@@ -200,7 +200,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
           needLoad = true
 
         _saveProperty model, true
-        return
 
       _processPropertyPins models, needLoad
 
@@ -210,7 +209,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
       _.each models, (model) ->
         _saveProperty model, false
-        return
 
       _processPropertyPins models, false
 

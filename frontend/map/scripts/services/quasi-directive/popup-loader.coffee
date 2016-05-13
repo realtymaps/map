@@ -1,3 +1,6 @@
+_delay = 100 #ms
+
+###globals L###
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions =
@@ -6,27 +9,10 @@ _defaultOptions =
   autoPan: false
   maxWidth: 260
 
-app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupConstants, rmapsRenderingService, $timeout) ->
-  _map = null #TODO this ref shouldn't be global if so this should become a factory
-  _templateScope = null
-  _renderPromises =
-    loadPromise: false
-  _lObj =  null
-  _handleMouseMove = null
-  _delay = 100 #ms
-  _timeoutPromise = null
 
-  $log = $log.spawn("map:popupLoader")
+app.service 'rmapsPopupGetOffset', () ->
 
-  _close =  ->
-    return unless _map
-    $log.debug 'closing popup'
-    # _map.closePopup()
-    _templateScope?.$destroy()
-    _templateScope = null
-    $timeout.cancel _timeoutPromise if _timeoutPromise
-
-  _getOffset = (map, model, offsets) ->
+  ({map, model, offsets}) ->
     # get center and point container coords
     return if !model?.coordinates?.length
     center = map.latLngToContainerPoint map.getCenter()
@@ -44,61 +30,103 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
       when quadrant is 'br' then new L.Point offsets.right, offsets.bottom
       else new L.Point offsets.left, offsets.bottom
 
-  _popup = ({map, model, opts, needToCompile, popupType, templateVars}) ->
-    popup = rmapsPopupConstants[popupType]
-    popup ?= rmapsPopupConstants.default
-    opts ?= _defaultOptions
-    template = popup.templateFn(templateVars)
-    needToCompile ?= true
-    _map = map
-    return if model?.markerType == 'cluster'
-    content = null
 
-    coords = model.coordinates or model.geom_point_json?.coordinates
+app.factory 'rmapsPopupFactory', (
+  $log,
+  $rootScope,
+  $compile,
+  rmapsPopupConstants,
+  rmapsPopupGetOffset
+) ->
 
-    # template for the popup box
-    if needToCompile
-      _templateScope = $rootScope.$new() unless _templateScope?
-      _templateScope.model = model
-      compiled = $compile(template)(_templateScope)
-      content = compiled[0]
-    else
-      content = template
+  $log = $log.spawn("map:rmapsPopupFactory")
 
-    # set the offset
-    opts.offset = _getOffset map, model, popup.offsets
+  class
+    constructor: ({map, model, opts, needToCompile, popupType, templateVars}) ->
+      @popup = rmapsPopupConstants[popupType]
+      @popup ?= rmapsPopupConstants.default
+      opts ?= _defaultOptions
+      template = @popup.templateFn(templateVars)
+      needToCompile ?= true
+      @map = map
 
-    # generate and apply popup object
-    if _lObj
-      $log.debug "L.Util.setOptions (#{popupType}): " + opts
-      L.Util.setOptions _lObj, opts
-    else
-      $log.debug "new L.popup (#{popupType}): " + opts
-      _lObj = new L.popup opts
+      return if model?.markerType == 'cluster'
+      content = null
 
-    _lObj.setLatLng
-      lat: coords[1]
-      lng: coords[0]
-    .openOn map
-    _lObj.setContent content
+      coords = model.coordinates or model.geom_point_json?.coordinates
 
-    # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
-    # This is an attempt to make sure the popup goes away once the cursor is moved away
-    _lObj._container?.addEventListener 'mouseleave', (e) ->
-      map.closePopup()
+      # template for the popup box
+      if needToCompile
+        @scope = $rootScope.$new()
+        @scope.model = model
+        @popupIsHovered = false
 
-    _lObj
+        compiled = $compile(template)(@scope)
+        content = compiled[0]
+      else
+        content = template
+
+      # set the offset
+      opts.offset = rmapsPopupGetOffset {@map, model, offsets: @popup.offsets}
+
+      # generate and apply popup object
+      if @lObj
+        $log.debug "L.Util.setOptions (#{popupType}): " + opts
+        L.Util.setOptions @lObj, opts
+      else
+        $log.debug "new L.popup (#{popupType}): " + opts
+        @lObj = new L.popup opts
+
+      @lObj.setLatLng
+        lat: coords[1]
+        lng: coords[0]
+      .openOn map
+      @lObj.setContent content
+
+      # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
+      # This is an attempt to make sure the popup goes away once the cursor is moved away
+      @lObj._container?.addEventListener 'mouseleave', (e) =>
+        @popupIsHovered = false
+        @map?.closePopup()
+
+      @lObj._container?.addEventListener 'mouseover', (e) =>
+        @popupIsHovered = true
+
+      @lObj
+
+    close: () ->
+      if !@popupIsHovered
+        $log.debug 'closing popup'
+        @map?.closePopup()
+        @scope?.$destroy()
+        @scope = null
+        return
+
+      @needsToClose = true
+
+
+app.service 'rmapsPopupLoaderService',(
+  $log,
+  rmapsPopupFactory,
+  $timeout
+) ->
+  _timeoutPromise = null
+  _queue = []
+  $log = $log.spawn("map:rmapsPopupLoaderService")
+
 
   load: (opts) ->
     $log.debug "popup loading in #{_delay}ms..."
-    _popupArgs = arguments
 
     $timeout.cancel _timeoutPromise if _timeoutPromise
 
     _timeoutPromise = $timeout () ->
-      _popup opts
+      _queue.push new rmapsPopupFactory opts
     , _delay
 
-  close: _close
+  close: () ->
+    $log.debug "popup closing in #{_delay}ms..."
 
-  getCurrent: -> _lObj
+    $timeout () ->
+      _queue.shift()?.close()
+    , _delay
