@@ -114,40 +114,41 @@ finalizeData = ({subtask, id, data_source_id}) ->
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
 
-    # owner name promotion logic
-    if !listings[0].owner_name? && !listings[0].owner_name_2?
-      if listings[1]?.owner_name? || listings[1]?.owner_name_2?
-        # keep the previously-promoted values
-        promotionPromise = Promise.resolve(owner_name: listings[1].owner_name, owner_name_2: listings[1].owner_name_2)
-      else
-        # need to query the tax table to get values to promote
-        promotionPromise = tables.property.combined()
-        .select('owner_name', 'owner_name_2')
+    listing = dataLoadHelpers.finalizeEntry(listings)
+    listing.data_source_type = 'mls'
+    _.extend(listing, parcel[0])
+    Promise.delay(100)  #throttle for heroku's sake
+    .then () ->
+      # do owner name and zoning promotion logic
+      if listing.owner_name? || listing.owner_name_2? || listing.zoning
+        # keep previously-promoted values
+        return
+      # need to query the tax table to get values to promote
+      tables.property.tax(subid: listing.fips_code)
+      .select('promoted_values')
+      .where
+        rm_property_id: id
+      .then (results=[]) ->
+        if results[0]?.promoted_values
+          # promote values into this listing
+          listing.extend(results[0].promoted_values)
+          # save back to the listing table to avoid making checks in the future
+          tables.property.listing()
+          .where
+            data_source_id: listing.data_source_id
+            data_source_uuid: listing.data_source_uuid
+          .update(results[0].promoted_values)
+    .then () ->
+      dbs.get('main').transaction (transaction) ->
+        tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id
-          data_source_type: 'county'
-        .then (results=[]) ->
-          results[0]
-    else
-      promotionPromise = Promise.resolve()
-
-    promotionPromise
-    .then (promotion) ->
-      listing = dataLoadHelpers.finalizeEntry(listings)
-      listing.data_source_type = 'mls'
-      _.extend(listing, parcel[0], promotion)
-      Promise.delay(100)  #throttle for heroku's sake
-      .then () ->
-        dbs.get('main').transaction (transaction) ->
+          data_source_id: data_source_id || subtask.task_name
+          active: false
+        .delete()
+        .then () ->
           tables.property.combined(transaction: transaction)
-          .where
-            rm_property_id: id
-            data_source_id: data_source_id || subtask.task_name
-            active: false
-          .delete()
-          .then () ->
-            tables.property.combined(transaction: transaction)
-            .insert(listing)
+          .insert(listing)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()

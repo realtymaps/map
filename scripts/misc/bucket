@@ -7,12 +7,13 @@ options:
 --action: function to call on service.aws
 --fileName || --Key: full path of whatever file
 --bucket || --extAcctName: bucket name in config_external_accounts
+--reminder: causes output every X seconds to show script is still running
 
 --*(any other S3 option for a interactive S3 function), example ContentType
 */
 
-var coffee = require('coffee-script')
-coffee.register()
+var coffee = require('coffee-script');
+coffee.register();
 
 var aws = require('../../backend/services/service.aws'),
   argv = require('yargs').argv,
@@ -20,24 +21,24 @@ var aws = require('../../backend/services/service.aws'),
   path = require('path'),
   _ = require('lodash'),
   Promise = require('bluebird'),
-  STD_OUT_CMDS = ['listObjects', 'countObjects', 'deleteAllObjects']
+  STD_OUT_CMDS = ['listObjects', 'countObjects', 'deleteAllObjects'];
 
 
-handle = aws[argv.action] || aws.postObject
+handle = aws[argv.action] || aws.postObject;
 
 if(!handle){
-  console.error('handle undefined')
-  process.exit(250)
+  console.error('handle undefined');
+  process.exit(250);
 }
 
 if (!argv.bucket) {
-  console.error('--bucket required')
-  process.exit(122)
+  console.error('--bucket required');
+  process.exit(122);
 }
 
 if (!argv.fileName && (argv.action == 'putObject' || !argv.action)) {
-  console.error('--fileName required to postObject!')
-  process.exit(123)
+  console.error('--fileName required to postObject!');
+  process.exit(123);
 }
 
 function getUserHome() {
@@ -46,71 +47,86 @@ function getUserHome() {
 
 
 var fileName = argv.fileName || argv.Key,
-  uploadFileName
+  uploadFileName;
 
 if (fileName &&  !(STD_OUT_CMDS.indexOf(argv.action) > -1)){
   if (fileName.indexOf('~') > -1) {
-    fileName = argv.fileName.replace('~', getUserHome())
+    fileName = argv.fileName.replace('~', getUserHome());
   }
-  console.log("attempting to load file: " + fileName)
+  console.log("attempting to load file: " + fileName);
 
-  uploadFileName = path.parse(fileName).base
+  uploadFileName = path.parse(fileName).base;
 }
 
 params = _.extend({},{
   extAcctName: argv.bucket
-}, _.omit(argv, ['bucket', 'action', 'fileName', 'Key', 'Body', '$0', '_']))
+}, _.omit(argv, ['bucket', 'action', 'fileName', 'reminder', 'Key', 'Body', '$0', '_']));
 
 if (uploadFileName){
-  params.Key = uploadFileName
+  params.Key = uploadFileName;
   if(!(['getObject', 'deleteObject'].indexOf(argv.action) > -1))
-    params.Body = fs.createReadStream(fileName)
+    params.Body = fs.createReadStream(fileName);
 }
 
 if(argv.action === 'getObject')//force node style
-  params.nodeStyle = true
+  params.nodeStyle = true;
+
+var reminder = null;
+if (argv.reminder) {
+  function doReminder() {
+    console.log(argv.action+' is still running...');
+  }
+  reminder = setInterval(doReminder, parseInt(argv.reminder)*1000);
+}
+
+function exit(code) {
+  if (reminder) {
+    clearInterval(reminder);
+  }
+  process.exit(code);
+}
 
 if(argv.action === 'upload'){
   return handle = new Promise(function(resolve, reject){
-    bodyStream = params.Body
-    delete params.Body
+    bodyStream = params.Body;
+    delete params.Body;
 
     handle(params).then(function(upload){
       upload.on('error', function(err){
         console.error(err);
-        process.exit(122)
-      })
+        exit(122);
+      });
       upload.on('uploaded', function(details){
-        console.log('success')
-        console.log(details)
-        process.exit(0)
-      })
+        console.log('success');
+        console.log(details);
+        exit(0);
+      });
 
-      bodyStream.pipe(upload)
+      bodyStream.pipe(upload);
     })
   })
 }
 
 handle(params)
 .then(function(ret) {
-  var wait = false
-  console.log(argv.action + ' success!!' + ' for filenamed ' + uploadFileName)
+  var wait = false;
+  console.log(argv.action + ' success!!' + (uploadFileName ? ' for file "'+uploadFileName+'"' : ''));
   if(argv.action === 'getObject' && ret){
-    wait = true
-    // console.log(ret)
+    wait = true;
+    // console.log(ret);
     ret.createReadStream()
     .on('end', function(){
-      process.exit(0)
+      exit(0);
     })
-    .pipe(fs.createWriteStream(uploadFileName))
+    .pipe(fs.createWriteStream(uploadFileName));
   }
   if(STD_OUT_CMDS.indexOf(argv.action) > -1)
-    console.log(ret)
+    console.log(JSON.stringify(ret,null,2));
 
   if(!wait)
-    process.exit(0)
+    exit(0);
 })
 .catch(function(error) {
-  console.error(error)
-  process.exit(200)
-})
+  console.error(error);
+  exit(200);
+});

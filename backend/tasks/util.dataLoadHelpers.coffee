@@ -253,7 +253,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
       usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-      diffExcludeKeys = []
+      diffExcludeKeys = ['promoted_values']
       if dataSourceType == 'mls'
         for groupName, validationList of validationMap
           for validationDefinition in validationList
@@ -263,7 +263,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
               usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
             else if validationDefinition.output == 'days_on_market'
               # explicitly exclude these keys from diff, because they are derived values based on date
-              diffExcludeKeys = _getUsedInputFields(validationDefinition)
+              diffExcludeKeys.concat(_getUsedInputFields(validationDefinition))
       else if dataSourceType == 'county'
         for groupName, validationList of validationMap
           for validationDefinition in validationList
@@ -619,16 +619,11 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
 
 ensureNormalizedTable = (dataType, subid) ->
   tableName = tables.property[dataType].buildTableName(subid)
-  dbs.get('normalized')
-  .select(1)
-  .from('pg_catalog.pg_class')
-  .where
-    relname: tableName
-    relkind: 'r'
-  .then (check=[]) ->
-    if check.length > 0
+  checkTableExists('normalized', tableName)
+  .then (tableAlreadyExists) ->
+    if tableAlreadyExists
       return
-    dbs.get('normalized').schema.createTable tableName, (table) ->
+    createTable = dbs.get('normalized').schema.createTable tableName, (table) ->
       table.timestamp('rm_inserted_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
       table.timestamp('rm_modified_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
       table.text('data_source_id').notNullable()
@@ -659,14 +654,20 @@ ensureNormalizedTable = (dataType, subid) ->
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')
+        table.json('promoted_values')
       else if dataType == 'deed'
         table.text('property_type')
+        table.text('zoning')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
-    .raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS FIRST)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
+    if dataType == 'tax'
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS LAST)")
+      .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
+    else
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date ASC NULLS FIRST)")
 
 
 getLastUpdateTimestamp = (opts) ->
@@ -699,6 +700,17 @@ setLastRefreshTimestamp = (subtask) ->
   keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
 
 
+checkTableExists = (db, tableName) ->
+  dbs.get(db)
+  .select(1)
+  .from('pg_catalog.pg_class')
+  .where
+    relname: tableName
+    relkind: 'r'
+  .then (check=[]) ->
+    return check.length > 0
+
+
 module.exports = {
   buildUniqueSubtaskName
   recordChangeCounts
@@ -718,4 +730,5 @@ module.exports = {
   setLastUpdateTimestamp
   getUpdateThreshold
   setLastRefreshTimestamp
+  checkTableExists
 }

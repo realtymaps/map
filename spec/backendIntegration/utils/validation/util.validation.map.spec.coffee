@@ -19,10 +19,16 @@ describe 'utils/validation.validators.map()'.ns().ns('Backend'), ->
         value.should.equal(1)
     ]
 
-  promiseIt 'should pass through any value not found in the map when passUnmapped is true', () ->
+  promiseIt 'should pass through any value not found in the map when unmapped is "pass"', () ->
     [
-      expectResolve(validators.map(map: {abc: 'xyz', '5': 10, '10': 999, x: 1}, passUnmapped: true)(param, 'xxx')).then (value) ->
+      expectResolve(validators.map(map: {abc: 'xyz', '5': 10, '10': 999, x: 1}, unmapped: 'pass')(param, 'xxx')).then (value) ->
         value.should.equal('xxx')
+    ]
+
+  promiseIt 'should nullify any value not found in the map when unmapped is "null"', () ->
+    [
+      expectResolve(validators.map(map: {abc: 'xyz', '5': 10, '10': 999, x: 1}, unmapped: 'null')(param, 'xxx')).then (value) ->
+        (value == null).should.be.truthy
     ]
 
   promiseIt 'should map values', () ->

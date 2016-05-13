@@ -47,9 +47,7 @@ app.controller 'rmapsNormalizeCtrl',
     return typeof val
 
   $scope.statusOptions = _.values rmapsParcelEnums.status
-
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
-
   $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
 
   $scope.baseRules = rmapsValidatorBuilderService.getBaseRules('mls', 'listing')
@@ -144,18 +142,20 @@ app.controller 'rmapsNormalizeCtrl',
     else
       $scope.loadLookups(field)
 
+  $scope.lookupThreshold = rmapsAdminConstants.dataSource.lookupThreshold
+
   $scope.loadLookups = (field, target) ->
     if !target
       target = field
     setLookups = (lookups) ->
       target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-        target.lookups = field._lookups
+        target.lookups = field.lookups = field._lookups
     if field?._lookups
       setLookups(field._lookups)
-    else if field && !field._lookups && field.LookupName
+    else if field && !field._lookups && field.config.LookupName
       config = $scope.mlsData.current
-      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
+      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.config.LookupName
       .then (lookups) ->
         setLookups(lookups)
         $scope.$evalAsync()
