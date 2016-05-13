@@ -9,11 +9,10 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
   {profile} = rmapsMainOptions.images.dimensions
   maxImagePixles = profile.width
   imageQuality = profile.quality
-  user = $rootScope.user
 
   # some strange bug in angular 1.4.X the select will not match the us_state_id
   # unless it is a string
-  $rootScope.user.us_state_id = $rootScope.user.us_state_id?.toString()
+  $scope.user.us_state_id = $scope.user.us_state_id?.toString()
 
   spawnAlert = (msg) ->
     alert =
@@ -34,8 +33,8 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
   .then ({data}) ->
     $scope.accountUseTypes = data
 
-  if user.company_id?
-    $http.get("#{backendRoutes.company.root}/#{user.company_id}")
+  if $scope.user.company_id?
+    $http.get("#{backendRoutes.company.root}/#{$scope.user.company_id}")
     .then ({data}) ->
       _.extend $scope.company, _.first data
 
@@ -63,7 +62,7 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
       toRender: () ->
         if @cropBlob.length
           return @cropBlob
-        if user.account_image_id?
+        if $scope.user.account_image_id?
           return @blob || backendRoutes.userSession.image
         '/assets/avatar.svg'
 
@@ -108,7 +107,7 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
         delete @blob
 
   $scope.pass =
-    username: '' + user.username
+    username: '' + $scope.user.username
 
     change: () ->
       if @password != @confirmPassword
