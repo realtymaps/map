@@ -3,7 +3,19 @@ Promise = require 'bluebird'
 keystoreSvc = require './service.keystore'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
+{transaction} = require '../config/dbs'
 {expectSingleRow} = require '../utils/util.sql.helpers'
+{createPasswordHash} =  require '../services/service.userSession'
+
+_updateClient = (client) ->
+  createPasswordHash client.password
+  .then (password) ->
+    client.password = password
+    tables.auth.user().returning(['id','email','password']).update client
+    .where id: client.id
+    .then (client) ->
+      console.log "client: #{JSON.stringify(client)}"
+      client
 
 
 getClientEntry = (key) ->
@@ -35,5 +47,12 @@ getClientEntry = (key) ->
             project: project
           }
 
+setPasswordAndBounce = (client) ->
+  console.log "client:\n#{JSON.stringify(client,null,2)}"
+  _updateClient(client)
+  # .then (id) ->
+
+
 module.exports =
   getClientEntry: getClientEntry
+  setPasswordAndBounce: setPasswordAndBounce
