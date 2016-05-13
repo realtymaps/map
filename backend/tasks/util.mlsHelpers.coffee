@@ -119,10 +119,10 @@ finalizeData = ({subtask, id, data_source_id}) ->
     _.extend(listing, parcel[0])
     Promise.delay(100)  #throttle for heroku's sake
     .then () ->
-      # owner name and zoning promotion logic
-      if !listing.owner_name? && !listing.owner_name_2? && !listing.zoning
+      # owner name and zoning promotion logic, if we have a fips code to do a lookup
+      if listing.fips_code && !listing.owner_name? && !listing.owner_name_2? && !listing.zoning
         # need to query the tax table to get values to promote
-        tables.property.tax()
+        tables.property.tax(subid: listing.fips_code)
         .select('promoted_values')
         .where
           rm_property_id: id
