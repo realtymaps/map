@@ -2,7 +2,7 @@ tables = require '../../config/tables'
 {VALIDATION, EMAIL_VERIFY} = require '../../config/config'
 {validators} = require '../util.validation'
 clsFactory = require '../util.cls'
-logger = require('../../config/logger').spawn("transforms::emails")
+logger = require('../../config/logger').spawn("transforms:emails")
 
 email = (id, tableFn = tables.auth.user) ->
   id ?= clsFactory().getCurrentUserId()
