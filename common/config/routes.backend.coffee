@@ -92,6 +92,7 @@ module.exports =
     profilesById: "#{apiBaseUsers}/:id/profiles/:profile_id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
+    setPasswordAndBounce: "#{apiBaseClientEntry}/login"
   user_user_groups:
     apiBase: apiBaseUsersGroups
     root: apiBaseUsersGroups

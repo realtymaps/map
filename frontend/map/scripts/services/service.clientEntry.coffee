@@ -12,3 +12,7 @@ app.service 'rmapsClientEntryService', ($http, $sce) ->
       if data.project.sandbox
         data.project.name = "Sandbox"
       data
+
+  setPasswordAndBounce: (entity) ->
+    $http.put backendRoutes.clientEntry.setPasswordAndBounce, entity
+
