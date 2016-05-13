@@ -13,7 +13,7 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
 
   # some strange bug in angular 1.4.X the select will not match the us_state_id
   # unless it is a string
-  $rootScope.user.us_state_id = $rootScope.user.us_state_id.toString()
+  $rootScope.user.us_state_id = $rootScope.user.us_state_id?.toString()
 
   spawnAlert = (msg) ->
     alert =
