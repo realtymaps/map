@@ -6,16 +6,13 @@ httpStatus = require '../../../../common/utils/httpStatus.coffee'
 module.exports = app.controller 'rmapsClientEntryCtrl', ($rootScope, $scope, $log, $state,
 rmapsClientEntryService, rmapsEventConstants, rmapsPrincipalService, rmapsProfilesService, rmapsMapAuthorizationFactory) ->
   $log = $log.spawn 'rmapsClientEntryCtrl'
-  console.log "rmapsClientEntryCtrl()"
-  console.log "params:\n#{JSON.stringify($state.params,null,2)}"
 
   $scope.login = () ->
-    console.log "$scope.client:\n#{JSON.stringify($scope.client,null,2)}"
     $scope.loginInProgress = true
+
+    # based on login controller
     rmapsClientEntryService.setPasswordAndBounce $scope.client
-    #$http.post backendRoutes.clientEntry.bounceLogin, $scope.client
     .then ({data, status}) ->
-      console.log "rmapsClientEntryService data"
       if !httpStatus.isWithinOK status
         $scope.loginInProgress = false
         return
@@ -34,10 +31,6 @@ rmapsClientEntryService, rmapsEventConstants, rmapsPrincipalService, rmapsProfil
 
   rmapsClientEntryService.getClientEntry $state.params.key
   .then (data) ->
-    console.log "rmapsClientEntryCtrl service call,  getClientEntry:\n#{JSON.stringify(data,null,2)}"
     $scope.client = data.client
     $scope.parent = data.parent
     $scope.project = data.project
-  .catch (err) ->
-    console.log "err:\n#{JSON.stringify(err,null,2)}"
-

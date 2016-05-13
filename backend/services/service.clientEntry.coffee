@@ -8,49 +8,51 @@ dbs = require '../config/dbs'
 {createPasswordHash} =  require '../services/service.userSession'
 
 _updateClient = (client) ->
+  # TODO:  handle if client already exists
   createPasswordHash client.password
   .then (password) ->
-    client.password = password
-    tables.auth.user().returning(['id','email','password']).update client
+    # make the client user suitable for login
+    tables.auth.user().returning(['id','email','password']).update(
+      password: password
+      email_is_valid: true
+      is_active: true)
     .where id: client.id
-    .then (client) ->
-      console.log "client: #{JSON.stringify(client)}"
+    .then (savedClient) ->
+      # return original client for login to use original form
       client
-
 
 getClientEntry = (key) ->
   dbs.transaction 'main', (trx) ->
+    # user/project data was saved in value for this client-entry key
     keystoreSvc.getValue key, namespace: 'client-entry', transaction: trx
     .then (entry) ->
-      console.log "entry:\n#{JSON.stringify(entry,null,2)}"
+      # get the user & parent objs
       tables.auth.user transaction: trx
       .select 'id', 'email', 'first_name', 'last_name'
-      .whereIn 'id', [entry.auth_user_id, entry.parent_auth_user_id]
+      .whereIn 'id', [entry.user.auth_user_id, entry.user.parent_id]
       .then (users) ->
-        console.log "users:\n#{JSON.stringify(users,null,2)}"
+        # "keyBy" the users for better referencing later
         authUsers = {}
         for user in users
           authUsers[user.id] = user
         authUsers
       .then (authUsers) ->
+        # obtain helpful project members
         tables.user.project transaction: trx
         .select 'id', 'name', 'sandbox'
-        .where id: entry.project_id
+        .where id: entry.project.id
         .then (project) ->
           expectSingleRow project
         .then (project) ->
-          console.log "authUsers:\n#{JSON.stringify(authUsers,null,2)}"
-          console.log "project:\n#{JSON.stringify(project,null,2)}"
           {
-            client: authUsers[entry.auth_user_id]
-            parent: authUsers[entry.parent_auth_user_id]
+            client: authUsers[entry.user.auth_user_id]
+            parent: authUsers[entry.user.parent_id]
             project: project
           }
 
+# sets password (if applicable) then logs client in to map
 setPasswordAndBounce = (client) ->
-  console.log "client:\n#{JSON.stringify(client,null,2)}"
   _updateClient(client)
-  # .then (id) ->
 
 
 module.exports =
