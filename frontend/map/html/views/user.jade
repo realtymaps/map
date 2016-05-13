@@ -103,12 +103,12 @@
                         .form-group
                           label.col-lg-3.control-label State:
                           .col-lg-8
-                            select.form-control(ng-model="user.us_state_id"
-                            validator="required" name="us_state_id")
-                              option(
-                                ng-repeat="s in us_states"
-                                ng-selected="s.id == user.us_state_id"
-                                value="s.id") {{s.code}} - {{s.name}}
+                            select.form-control(
+                              ng-model="user.us_state_id"
+                              validator="required"
+                              name="us_state_id"
+                              ng-options="s.id as (s.code+' - '+s.name) for s in us_states"
+                            )
                         .form-group
                           label.col-lg-3.control-label Zip:
                           .col-lg-8
@@ -246,11 +246,12 @@
                         .form-group
                           label.col-lg-3.control-label State:
                           .col-lg-8
-                            select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
-                              option(
-                                ng-repeat="s in us_states"
-                                ng-selected="s.id == company.us_state_id"
-                                value="s.id") {{s.code}} - {{s.name}}
+                            select.form-control(
+                              ng-model="company.us_state_id"
+                              validator="required"
+                              name="company_us_state_id"
+                              ng-options="s.id as (s.code+' - '+s.name) for s in us_states"
+                            )
                         .form-group
                           label.col-lg-3.control-label Zip:
                           .col-lg-8
