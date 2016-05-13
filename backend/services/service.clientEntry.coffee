@@ -29,7 +29,7 @@ getClientEntry = (key) ->
       # get the user & parent objs
       tables.auth.user transaction: trx
       .select 'id', 'email', 'first_name', 'last_name'
-      .whereIn 'id', [entry.user.auth_user_id, entry.user.parent_id]
+      .whereIn 'id', [entry.user.id, entry.user.parent_id]
       .then (users) ->
         # "keyBy" the users for better referencing later
         authUsers = {}
@@ -45,7 +45,7 @@ getClientEntry = (key) ->
           expectSingleRow project
         .then (project) ->
           {
-            client: authUsers[entry.user.auth_user_id]
+            client: authUsers[entry.user.id]
             parent: authUsers[entry.user.parent_id]
             project: project
           }
