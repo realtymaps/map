@@ -119,23 +119,25 @@ finalizeData = ({subtask, id, data_source_id}) ->
     _.extend(listing, parcel[0])
     Promise.delay(100)  #throttle for heroku's sake
     .then () ->
-      # owner name and zoning promotion logic, if we have a fips code to do a lookup
-      if listing.fips_code && !listing.owner_name? && !listing.owner_name_2? && !listing.zoning
-        # need to query the tax table to get values to promote
-        tables.property.tax(subid: listing.fips_code)
-        .select('promoted_values')
-        .where
-          rm_property_id: id
-        .then (results=[]) ->
-          if results[0]?.promoted_values
-            # promote values into this listing
-            listing.extend(results[0].promoted_values)
-            # save back to the listing table to avoid making checks in the future
-            tables.property.listing()
-            .where
-              data_source_id: listing.data_source_id
-              data_source_uuid: listing.data_source_uuid
-            .update(results[0].promoted_values)
+      # do owner name and zoning promotion logic
+      if listing.owner_name? || listing.owner_name_2? || listing.zoning
+        # keep previously-promoted values
+        return
+      # need to query the tax table to get values to promote
+      tables.property.tax(subid: listing.fips_code)
+      .select('promoted_values')
+      .where
+        rm_property_id: id
+      .then (results=[]) ->
+        if results[0]?.promoted_values
+          # promote values into this listing
+          listing.extend(results[0].promoted_values)
+          # save back to the listing table to avoid making checks in the future
+          tables.property.listing()
+          .where
+            data_source_id: listing.data_source_id
+            data_source_uuid: listing.data_source_uuid
+          .update(results[0].promoted_values)
     .then () ->
       dbs.get('main').transaction (transaction) ->
         tables.property.combined(transaction: transaction)

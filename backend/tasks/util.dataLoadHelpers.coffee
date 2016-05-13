@@ -619,14 +619,9 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
 
 ensureNormalizedTable = (dataType, subid) ->
   tableName = tables.property[dataType].buildTableName(subid)
-  dbs.get('normalized')
-  .select(1)
-  .from('pg_catalog.pg_class')
-  .where
-    relname: tableName
-    relkind: 'r'
-  .then (check=[]) ->
-    if check.length > 0
+  checkTableExists('normalized', tableName)
+  .then (tableAlreadyExists) ->
+    if tableAlreadyExists
       return
     createTable = dbs.get('normalized').schema.createTable tableName, (table) ->
       table.timestamp('rm_inserted_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
@@ -705,6 +700,17 @@ setLastRefreshTimestamp = (subtask) ->
   keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
 
 
+checkTableExists = (db, tableName) ->
+  dbs.get(db)
+  .select(1)
+  .from('pg_catalog.pg_class')
+  .where
+    relname: tableName
+    relkind: 'r'
+  .then (check=[]) ->
+    return check.length > 0
+
+
 module.exports = {
   buildUniqueSubtaskName
   recordChangeCounts
@@ -724,4 +730,5 @@ module.exports = {
   setLastUpdateTimestamp
   getUpdateThreshold
   setLastRefreshTimestamp
+  checkTableExists
 }

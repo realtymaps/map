@@ -170,14 +170,14 @@ checkFtpDrop = (subtask) ->
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH, now)
         update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE, now)
         activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join deletes, refresh, update, activate, (refreshFips, updateFips) ->
+        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
           fipsCodes = _.extend(refreshFips, updateFips)
           normalizedTablePromises = []
           for fipsCode of fipsCodes
             # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.TAX, subtask.data.normalSubid)
-            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.DEED, subtask.data.normalSubid)
-            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.TAX, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.DEED, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, fipsCode)
           Promise.all(normalizedTablePromises)
       else
         fileProcessing = Promise.resolve()
