@@ -1,0 +1,78 @@
+.mobile-view
+  #project-dashboard
+
+    $project-mobile-left-margin = 15px;
+    $project-mobile-gutter-width = 15px;
+    $project-mobile-widget-width = 20%;
+    $project-mobile-widget-height = 70px;
+    $project-mobile-widget-height-active = $project-mobile-widget-height + 2;
+    $project-mobile-widgets-width = 100%;
+    $project-mobile-widgets-height = $project-mobile-widget-height + 2;
+    $project-mobile-content-width = $project-mobile-widgets-width;
+
+    //
+    // Project Content
+    //
+    .project-content {
+      width: auto;
+      height: auto;
+      margin-left: auto;
+      padding: 85px 15px 15px 15px;
+    }
+
+    //
+    // Project Nav Widgets
+    //
+
+    .project-widgets
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: auto
+      width: $project-mobile-widgets-width;
+      height: $project-mobile-widgets-height;
+      //margin-left: $project-mobile-gutter-width;
+      //margin-right: $project-mobile-gutter-width;
+      padding: 0 0px 20px 0px;
+      background-color: white;
+
+    .project-widget
+      position: relative;
+      display: inline-block;
+      width: $project-mobile-widget-width;
+      height: $project-mobile-widget-height;
+      background-color: white;
+      margin-bottom: 0;
+      text-align: center;
+      font-size: 15px;
+
+      &.widget-active
+        width: $project-mobile-widget-width;
+        height: $project-mobile-widget-height-active;
+        border-bottom: solid $light_blue 3px;
+        border-right: none;
+
+    .widget-pin
+      .widget-background
+        font-size: 40px;
+
+    .widget-neighborhood
+      .widget-background
+        color: $dark_teal;
+
+    .widget-client
+      .widget-background
+        font-size: 40px;
+
+    .widget-background
+      font-size: 35px;
+      line-height: $project-mobile-widget-height;
+
+    .widget-count
+      font-size: 20px;
+      line-height: $project-mobile-widget-height;
+
+    .widget-title
+      text-transform: none;
+      font-size: 10px;
