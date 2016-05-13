@@ -132,9 +132,9 @@ app.controller 'rmapsProjectCtrl',
     $scope.saveClient = () ->
       modalInstance.dismiss('save')
       method = if $scope.clientCopy.id? then 'update' else 'create'
+      $scope.clientCopy = _.merge $scope.clientCopy, project_name: $scope.project.name
       clientsService[method] $scope.clientCopy
       .then () ->
-        console.log "#{method} client done, reloading clients"
         loadClients()
 
   $scope.editProject = (project) ->
@@ -218,10 +218,8 @@ app.controller 'rmapsProjectCtrl',
       $scope.loadedProperties = true
 
   loadClients = () ->
-    console.log "loading clients..."
     clientsService.getAll()
     .then (clients) ->
-      console.log "got clients:\n#{JSON.stringify(clients,null,2)}"
       $scope.project.clients = clients
 
   loadNotes = () ->
