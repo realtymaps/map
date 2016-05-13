@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
-logger = require('../../config/logger').spawn 'util::validation::string'
+logger = require('../../config/logger').spawn 'util:validation:string'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
