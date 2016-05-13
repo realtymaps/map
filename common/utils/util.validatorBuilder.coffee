@@ -315,6 +315,11 @@ _rules =
         getTransform: () ->
           name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
+      zoning:
+        alias: 'Zoning'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+
     mortgage:
       address:
         group: 'mortgage'

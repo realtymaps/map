@@ -58,6 +58,7 @@ app.controller 'rmapsCountyCtrl',
     return typeof val
 
   $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
+  $scope.zoningOptions = _.values rmapsParcelEnums.zoning
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
@@ -143,18 +144,20 @@ app.controller 'rmapsCountyCtrl',
     else
       $scope.loadLookups(field)
 
+  $scope.lookupThreshold = rmapsAdminConstants.dataSource.lookupThreshold
+
   $scope.loadLookups = (field, target) ->
     if !target
       target = field
     setLookups = (lookups) ->
       target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
-        target.lookups = field._lookups
+        target.lookups = field.lookups = field._lookups
     if field?._lookups
       setLookups(field._lookups)
-    else if field && !field._lookups && field.LookupName
-      config = $scope.mlsData.current
-      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
+    else if field && !field._lookups && field.config.LookupName
+      config = $scope.countyData.current
+      $scope.countyLoading = rmapsCountyService.getLookupTypes config.id, $scope.countyData.dataListType.id, field.config.LookupName
       .then (lookups) ->
         setLookups(lookups)
         $scope.$evalAsync()
