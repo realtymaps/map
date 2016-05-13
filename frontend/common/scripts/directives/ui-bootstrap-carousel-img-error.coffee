@@ -8,17 +8,20 @@ mod.directive 'carouselImageError', ($parse, $log) ->
   link: (scope, element, attrs, carouselCtrl) ->
     $log.debug "linking #{element} #{attrs.carouselImageError}"
 
-    placeholderImage = attrs.carouselImageError || 'http://fpoimg.com/300x250'
+    placeholderImage = attrs.carouselImageError
 
-    handler = (element) ->
-      $log.debug "handler called on #{element}"
+    addEvents = (element) ->
+      $log.debug "addEvents called on #{element}"
       img = element.find('img')?[0]
       img?.onerror = ->
         img.onerror = null
         img.src = placeholderImage
+      img?.onload = ->
+        $log.debug "image loaded #{img.src}"
+        scope.$emit 'imageLoaded', img
 
     carouselAddSlide = carouselCtrl.addSlide
     carouselCtrl.addSlide = (slide, element) ->
       $log.debug "addSlide called on #{slide} #{element}"
-      handler element
+      addEvents element
       carouselAddSlide.apply this, arguments
