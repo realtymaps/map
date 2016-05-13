@@ -119,7 +119,8 @@ class ClientsCrud extends RouteCrud
       .then () ->
         # email new client
         vero.createUserAndTrackEvent newUser.id, newUser.email, newUser, 'client_created', clientEntryValue
-        # TODO - add to notification job queue upon possible failure
+        # TODO - add to notification job queue upon possible failure,
+        #   then possibly move to `services/email/vero` if it gets squirrely enough
 
 
   ###
