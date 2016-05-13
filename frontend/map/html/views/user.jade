@@ -108,7 +108,7 @@
                               option(
                                 ng-repeat="s in us_states"
                                 ng-selected="s.id == user.us_state_id"
-                                value="{{s.id}}") {{s.code}} - {{s.name}}
+                                value="s.id") {{s.code}} - {{s.name}}
                         .form-group
                           label.col-lg-3.control-label Zip:
                           .col-lg-8
@@ -250,7 +250,7 @@
                               option(
                                 ng-repeat="s in us_states"
                                 ng-selected="s.id == company.us_state_id"
-                                value="{{s.id}}") {{s.code}} - {{s.name}}
+                                value="s.id") {{s.code}} - {{s.name}}
                         .form-group
                           label.col-lg-3.control-label Zip:
                           .col-lg-8
