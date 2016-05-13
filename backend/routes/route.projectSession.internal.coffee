@@ -1,6 +1,4 @@
 _ = require 'lodash'
-uuid = require '../utils/util.uuid'
-frontendRoutes = require '../../common/config/routes.frontend'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
@@ -15,17 +13,16 @@ profileSvc = (require '../services/services.user').profile
 userProfileSvc = (require '../services/services.user').user.profiles
 keystoreSvc = require '../services/service.keystore'
 userUtils = require '../utils/util.user'
+ProjectSvcClass = require('../services/service.user.project')
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
 Promise = require 'bluebird'
 # End temporary
 
+projectSvc = new ProjectSvcClass(tables.user.project).init(false)
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
-
-vero = null
-require('../services/email/vero').then (svc) -> vero = svc.vero
 
 class ClientsCrud extends RouteCrud
   init: () ->
@@ -61,6 +58,21 @@ class ClientsCrud extends RouteCrud
   rootPOST: (req, res) ->
     throw new Error('User not logged in') unless req.user
     throw new Error('Project ID required') unless req.params.id
+    console.log "client post!"
+    clientEntryValue =
+      user:
+        date_invited: new Date()
+        parent_id: req.user.id
+        first_name: req.body.first_name
+        last_name: req.body.last_name
+        username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
+        email: req.body.email
+      project:
+        id: req.params.id
+        name: req.body.project_name
+      event:
+        name: 'client_created' # altered to 'client_invited' for emails that exist in system
+        verify_host: req.headers.host
 
     newUser =
       date_invited: new Date()
@@ -69,59 +81,7 @@ class ClientsCrud extends RouteCrud
       last_name: req.body.last_name
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
       email: req.body.email
-    #TODO: the majority of this is service business logic and should be moved to service.user.project
-    userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
-    .then (clientId) ->
-      throw new Error 'user ID required - new or existing' unless clientId?
-
-      # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
-      newUser.id = clientId
-
-      #userSessionSvc.updatePassword newUser, 'Password$1', false
-
-    .then ->
-      # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
-      permissionsService.getPermissionForCodename 'unlimited_logins'
-
-    .then (authPermission) ->
-      logger.debug "Found new client permission id: #{authPermission.id}"
-
-      # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
-      throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
-
-      permission =
-        user_id: newUser.id
-        permission_id: authPermission.id
-
-      userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
-
-    .then ->
-      newProfile =
-        auth_user_id: newUser.id
-        parent_auth_user_id: req.user.id
-        project_id: req.params.id
-
-      profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
-
-    .then (data) ->
-      # save important information for client login later in keystore
-      # `clientEntryValue` also has data for vero template, so we send it there too
-      clientEntryKey = uuid.genUUID()
-      clientEntryValue =
-        user: newUser
-        project:
-          id: req.params.id
-          name: req.body.project_name
-        event:
-          verify_url: "http://#{req.headers.host}/#{frontendRoutes.clientEntry.replace(':key',clientEntryKey)}"
-
-      keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
-      .then () ->
-        # email new client
-        vero.createUserAndTrackEvent newUser.id, newUser.email, newUser, 'client_created', clientEntryValue
-        # TODO - add to notification job queue upon possible failure,
-        #   then possibly move to `services/email/vero` if it gets squirrely enough
-
+    projectSvc.addClient clientEntryValue
 
   ###
     Update user contact info - but only if the request came from the parent user

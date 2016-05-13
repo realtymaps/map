@@ -25,6 +25,13 @@ create = (newProfile) ->
   .then (inserted) ->
     inserted?[0]
 
+# if we already know project, we can use this routine
+createForProject = ({newProfile, transaction = null}) ->
+  if !newProfile.project_id? then throw new Error '`project_id` is required to create profile.'
+  tables.user.profile(transaction: transaction)
+  .returning safeProfile
+  .insert(_.pick newProfile, safeProfile)
+
 getProfiles = (auth_user_id) -> Promise.try () ->
   userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 
@@ -107,3 +114,4 @@ module.exports =
   update: update
   getFirst: getFirst
   create: create
+  createForProject: createForProject

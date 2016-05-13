@@ -1,12 +1,15 @@
 auth = require '../utils/util.auth'
-ProjectSvc = require('../services/service.user.project')
+ProjectSvcClass = require('../services/service.user.project')
 logger = require '../config/logger'
 {mergeHandles} = require '../utils/util.route.helpers'
 safeProjectCols = require('../utils/util.sql.helpers').columns.project
 tables = require '../config/tables'
 ProjectRouteCrud = require './route.projectSession.internal'
 
-routeCrud = new ProjectRouteCrud(new ProjectSvc(tables.user.project).init(false), undefined, 'ProjectRouteCrud').init(true, safeProjectCols)
+projectSvc = new ProjectSvcClass(tables.user.project).init(false)
+
+# routeCrud = new ProjectRouteCrud(new ProjectSvc(tables.user.project).init(false), undefined, 'ProjectRouteCrud').init(true, safeProjectCols)
+routeCrud = new ProjectRouteCrud(projectSvc, undefined, 'ProjectRouteCrud').init(true, safeProjectCols)
 merged = mergeHandles routeCrud,
   ##TODO: How much of the post, delete, and puts do we really want to allow?
   root:

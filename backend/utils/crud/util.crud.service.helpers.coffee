@@ -90,6 +90,7 @@ class Crud extends BaseObject
 
     @getAll query, doLogQuery, fnExec
     .then (found) =>
+      console.log "found:\n#{JSON.stringify(found,null,2)}"
       throw new Error('must match exactly one or zero records') unless found.length <= 1
 
       if found.length == 0

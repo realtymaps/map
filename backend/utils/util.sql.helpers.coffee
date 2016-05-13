@@ -208,6 +208,8 @@ buildQuery = ({knex, entity, orHash}) ->
 
 
 buildRawBindings = (obj, opts={}) ->
+  console.log "\nbuildRawBindings()"
+  console.log "obj:\n#{JSON.stringify(obj,null,2)}"
   colPlaceholders = []
   colBindings = []
   valPlaceholders = []
@@ -260,7 +262,12 @@ buildUpsertBindings = ({idObj, entityObj, tableName}) ->
 
 
 upsert = ({idObj, entityObj, dbFn, transaction}) ->
+  console.log "\nupsert()"
+  console.log "idObj:\n#{JSON.stringify(idObj,null,2)}"
+  console.log "entityObj:\n#{JSON.stringify(entityObj,null,2)}"
+  console.log "dbFn.tableName:\n#{JSON.stringify(dbFn.tableName,null,2)}"
   upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
+  console.log "upsertBindings:\n#{JSON.stringify(upsertBindings,null,2)}"
   dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
 
 module.exports = {

@@ -3,7 +3,6 @@ Promise = require 'bluebird'
 keystoreSvc = require './service.keystore'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
-{transaction} = require '../config/dbs'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {createPasswordHash} =  require '../services/service.userSession'
 
@@ -45,6 +44,7 @@ getClientEntry = (key) ->
           expectSingleRow project
         .then (project) ->
           {
+            event: entry.event.name # helps frontend distinguish new user
             client: authUsers[entry.user.id]
             parent: authUsers[entry.user.parent_id]
             project: project

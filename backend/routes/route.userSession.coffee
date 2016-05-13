@@ -88,6 +88,7 @@ login = (req, res, next) -> Promise.try () ->
         req.session.userid = user.id
         req.session.subscription = subscription_status
         logger.debug "session: #{req.session}"
+        console.log "session perms:\n#{JSON.stringify(req.session.permissions,null,2)}"
 
         userUtils.cacheUserValues(req)
         .then () ->
