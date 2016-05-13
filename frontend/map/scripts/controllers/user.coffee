@@ -41,29 +41,24 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
 
   $http.get(backendRoutes.company.root)
   .then ({data}) ->
-    _.merge $scope,
-      companies: _.indexBy data, 'id'
+    $scope.companies = _.indexBy data, 'id'
 
-  _.merge $scope,
-    # companies:
-    #   changed: () ->
-    #     _.merge $scope.company, $scope.companies[$scope.user.company_id]
-    user: _.extend _.clone($rootScope.user, true),
-      submit: () ->
-        $http.put backendRoutes.userSession.root, @
 
-    company:
-      submit: () ->
-        $http.post backendRoutes.userSession.companyRoot, @
+  $scope.maxImagePixles = maxImagePixles
+  $scope.imageQuality = imageQuality
 
-    maxImagePixles: maxImagePixles
-    imageQuality: imageQuality
+  $scope.user.submit = () ->
+    $http.put backendRoutes.userSession.root, @
 
-    imageForm:
-      cropBlob: ''
-      clearErrors: () ->
-        $scope.$evalAsync ->
-          $scope.imageForm.errors = {}
+  $scope.company = _.merge $scope.company || {},
+    submit: () ->
+      $http.post backendRoutes.userSession.companyRoot, @
+
+  $scope.imageForm =
+    cropBlob: ''
+    clearErrors: () ->
+      $scope.$evalAsync ->
+        $scope.imageForm.errors = {}
 
       toRender: () ->
         if @cropBlob.length
@@ -85,45 +80,45 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
           delete @cropBlob
           delete @blob
 
-    companyImageForm:
-      cropBlob: ''
+  $scope.companyImageForm =
+    cropBlob: ''
 
-      clearErrors: () ->
-        $scope.$evalAsync ->
-          $scope.companyImageForm.errors = {}
+    clearErrors: () ->
+      $scope.$evalAsync ->
+        $scope.companyImageForm.errors = {}
 
-      toRender: () ->
-        if @cropBlob.length
-          return @cropBlob
-        if $scope.company.account_image_id?
-          return @blob || backendRoutes.userSession.companyImage.replace(':account_image_id', $scope.company.account_image_id)
-        frontendRoutes.avatar
+    toRender: () ->
+      if @cropBlob.length
+        return @cropBlob
+      if $scope.company.account_image_id?
+        return @blob || backendRoutes.userSession.companyImage.replace(':account_image_id', $scope.company.account_image_id)
+      frontendRoutes.avatar
 
-      save: () ->
-        return spawnAlert 'No Image to Save.' unless @blob?
+    save: () ->
+      return spawnAlert 'No Image to Save.' unless @blob?
 
-        if _.keys(@errors).length
-          _.each @errors, (e) ->
-            spawnAlert e
-          return
+      if _.keys(@errors).length
+        _.each @errors, (e) ->
+          spawnAlert e
+        return
 
-        $http.put backendRoutes.userSession.companyImage.replace(':account_image_id',''), _.extend(blob: @cropBlob, $scope.company)
-        .success =>
-          delete @cropBlob
-          delete @blob
+      $http.put backendRoutes.userSession.companyImage.replace(':account_image_id',''), _.extend(blob: @cropBlob, $scope.company)
+      .success =>
+        delete @cropBlob
+        delete @blob
 
-    pass:
-      username: '' + user.username
+  $scope.pass =
+    username: '' + user.username
 
-      change: () ->
-        if @password != @confirmPassword
-          @errorMsg = 'passwords do not match!'
-        else
-          delete @errorMsg
+    change: () ->
+      if @password != @confirmPassword
+        @errorMsg = 'passwords do not match!'
+      else
+        delete @errorMsg
 
-      submit: () ->
-        if @password != @confirmPassword
-          return
-        $http.put backendRoutes.userSession.updatePassword, password: @password
+    submit: () ->
+      if @password != @confirmPassword
+        return
+      $http.put backendRoutes.userSession.updatePassword, password: @password
 
-    ready: true
+  $scope.ready = true
