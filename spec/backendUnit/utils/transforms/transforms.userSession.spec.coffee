@@ -4,21 +4,24 @@ rewire = require 'rewire'
 emailTransforms = rewire '../../../../backend/utils/transforms/transforms.email'
 SqlMock = require '../../../specUtils/sqlMock'
 {validateAndTransformRequest} = require '../../../../backend/utils/util.validation'
-transforms = require '../../../../backend/utils/transforms/transforms.userSession'
+transforms = rewire '../../../../backend/utils/transforms/transforms.userSession'
 routeInternals = require '../../../../backend/routes/route.userSession.internals'
 cls = require 'continuation-local-storage'
 {NAMESPACE} = require '../../../../backend/config/config'
 
 emailTransforms.__set__ 'tables',
   auth:
-    user: new SqlMock 'auth', 'user', result: [
-      id: 1
-      first_name: "Bo"
-      last_name: "Jackson"
-      email: "boknows@gmail.com"
-      email_validation_hash: "radarIsJammed"
-      cancel_email_hash: "terminated"
-    ]
+    user: () ->
+      new SqlMock 'auth', 'user', result: [
+        id: 1
+        first_name: "Bo"
+        last_name: "Jackson"
+        email: "boknows@gmail.com"
+        email_validation_hash: "radarIsJammed"
+        cancel_email_hash: "terminated"
+      ]
+
+transforms.__set__ 'emailTransforms', emailTransforms
 
 describe 'transforms.userSession', ->
   describe 'root', ->
