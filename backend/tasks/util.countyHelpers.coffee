@@ -258,7 +258,7 @@ finalizeData = ({subtask, id, data_source_id}) ->
 
         Promise.delay(100)  #throttle for heroku's sake
         .then () ->
-          if !_.isEqual(promotedValues, tax.promotedValues)
+          if !_.isEqual(promotedValues, tax.promoted_values)
             # need to save back promoted values to the normal table
             tables.property.tax(subid: subtask.data.normalSubid)
             .where
@@ -268,6 +268,7 @@ finalizeData = ({subtask, id, data_source_id}) ->
           else
             Promise.resolve()
         .then () ->
+          delete tax.promoted_values
           dbs.get('main').transaction (transaction) ->
             tables.property.combined(transaction: transaction)
             .where
