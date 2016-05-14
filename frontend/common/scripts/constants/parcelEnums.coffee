@@ -22,7 +22,6 @@ zoning = {
   'Agricultural'
   'Commercial'
   'Condominium Unit'
-  'Government'
   'Industrial'
   'Land'
   'Multi-Family Residential'

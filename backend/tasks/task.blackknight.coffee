@@ -221,35 +221,37 @@ deleteData = (subtask) ->
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   .then (rows) ->
     promises = for row in rows then do (row) ->
-      if subtask.data.action == constants.REFRESH
+      if row['FIPS Code'] != '12021'
+        logger.warn("Ignoring delete row due to FIPS code: #{subtask.data.action}/#{subtask.data.dataType}/#{row['FIPS Code']}")
+        Promise.resolve()
+      else if subtask.data.action == constants.REFRESH
         normalDataTable(subid: row['FIPS Code'])
         .where
           data_source_id: 'blackknight'
           fips_code: row['FIPS Code']
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
-      else
-        if subtask.data.dataType == constants.TAX
-          # get validation for parcel_id
-          dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
-          .then (validationInfo) ->
-            Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
-          .then (normalizedData) ->
-            normalDataTable(subid: row['FIPS Code'])
-            .where
-              data_source_id: 'blackknight'
-              fips_code: row['FIPS Code']
-              parcel_id: normalizedData.parcel_id
-            .whereNull('deleted')
-            .update(deleted: subtask.batch_id)
-        else
+      else if subtask.data.dataType == constants.TAX
+        # get validation for parcel_id
+        dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
+        .then (validationInfo) ->
+          Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+        .then (normalizedData) ->
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: row['BKFS Internal PID']
+            parcel_id: normalizedData.parcel_id
           .whereNull('deleted')
           .update(deleted: subtask.batch_id)
+      else
+        normalDataTable(subid: row['FIPS Code'])
+        .where
+          data_source_id: 'blackknight'
+          fips_code: row['FIPS Code']
+          data_source_uuid: row['BKFS Internal PID']
+        .whereNull('deleted')
+        .update(deleted: subtask.batch_id)
     Promise.all promises
 
 normalizeData = (subtask) ->
