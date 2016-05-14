@@ -454,7 +454,7 @@ finalizeEntry = (entries) ->
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
-  entry.actual_photo_count = Object.keys(entry.photos).length - 1  # photo 0 and 1 are the same
+  entry.actual_photo_count = _.keys(entry.photos).length - 1  # photo 0 and 1 are the same
   entry.baths_total = entry.baths?.filter
   entry
 
