@@ -222,7 +222,6 @@ deleteData = (subtask) ->
   .then (rows) ->
     promises = for row in rows then do (row) ->
       if row['FIPS Code'] != '12021'
-        logger.warn("Ignoring delete row due to FIPS code: #{subtask.data.action}/#{subtask.data.dataType}/#{row['FIPS Code']}")
         Promise.resolve()
       else if subtask.data.action == constants.REFRESH
         normalDataTable(subid: row['FIPS Code'])
