@@ -374,8 +374,8 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
       updateRow.change_history = result.change_history ? []
       changes = getRowChanges(updateRow, result, diffExcludeKeys)
 
-      if changes.deleted == stats.batch_id
-        # it wasn't really deleted, just purged earlier in this task as per black knight data flow
+      if changes.deleted
+        # it wasn't really deleted, just purged earlier as per black knight data flow
         delete changes.deleted
       if !_.isEmpty changes && doSafeJsonArray
         updateRow.change_history.push changes

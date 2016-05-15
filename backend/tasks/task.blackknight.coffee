@@ -241,7 +241,6 @@ deleteData = (subtask) ->
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
             parcel_id: normalizedData.parcel_id
-          .whereNull('deleted')
           .update(deleted: subtask.batch_id)
       else
         normalDataTable(subid: row['FIPS Code'])
@@ -249,7 +248,6 @@ deleteData = (subtask) ->
           data_source_id: 'blackknight'
           fips_code: row['FIPS Code']
           data_source_uuid: row['BKFS Internal PID']
-        .whereNull('deleted')
         .update(deleted: subtask.batch_id)
     Promise.all promises
 

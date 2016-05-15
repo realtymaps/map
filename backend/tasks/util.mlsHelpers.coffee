@@ -123,6 +123,8 @@ finalizeData = ({subtask, id, data_source_id}) ->
       if listing.owner_name? || listing.owner_name_2? || listing.zoning
         # keep previously-promoted values
         return
+      if listing.fips_code != '12021'
+        return
       # need to query the tax table to get values to promote
       tables.property.tax(subid: listing.fips_code)
       .select('promoted_values')
