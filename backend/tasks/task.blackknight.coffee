@@ -170,14 +170,14 @@ checkFtpDrop = (subtask) ->
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH, now)
         update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE, now)
         activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join deletes, refresh, update, activate, (refreshFips, updateFips) ->
+        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
           fipsCodes = _.extend(refreshFips, updateFips)
           normalizedTablePromises = []
           for fipsCode of fipsCodes
             # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.TAX, subtask.data.normalSubid)
-            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.DEED, subtask.data.normalSubid)
-            normalizedTablePromises.push  dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, subtask.data.normalSubid)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.TAX, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.DEED, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(constants.MORTGAGE, fipsCode)
           Promise.all(normalizedTablePromises)
       else
         fileProcessing = Promise.resolve()
@@ -221,35 +221,34 @@ deleteData = (subtask) ->
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   .then (rows) ->
     promises = for row in rows then do (row) ->
-      if subtask.data.action == constants.REFRESH
+      if row['FIPS Code'] != '12021'
+        Promise.resolve()
+      else if subtask.data.action == constants.REFRESH
         normalDataTable(subid: row['FIPS Code'])
         .where
           data_source_id: 'blackknight'
           fips_code: row['FIPS Code']
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
-      else
-        if subtask.data.dataType == constants.TAX
-          # get validation for parcel_id
-          dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
-          .then (validationInfo) ->
-            Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
-          .then (normalizedData) ->
-            normalDataTable(subid: row['FIPS Code'])
-            .where
-              data_source_id: 'blackknight'
-              fips_code: row['FIPS Code']
-              parcel_id: normalizedData.parcel_id
-            .whereNull('deleted')
-            .update(deleted: subtask.batch_id)
-        else
+      else if subtask.data.dataType == constants.TAX
+        # get validation for parcel_id
+        dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
+        .then (validationInfo) ->
+          Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+        .then (normalizedData) ->
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: row['BKFS Internal PID']
-          .whereNull('deleted')
+            parcel_id: normalizedData.parcel_id
           .update(deleted: subtask.batch_id)
+      else
+        normalDataTable(subid: row['FIPS Code'])
+        .where
+          data_source_id: 'blackknight'
+          fips_code: row['FIPS Code']
+          data_source_uuid: row['BKFS Internal PID']
+        .update(deleted: subtask.batch_id)
     Promise.all promises
 
 normalizeData = (subtask) ->

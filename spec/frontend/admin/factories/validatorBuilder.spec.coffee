@@ -46,13 +46,13 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.datetime({})]'
       ,
        field: _buildBaseRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})]'
+       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
       ,
        field: _buildBaseRule {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})]'
+       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
       ,
        field: _buildBaseRule {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})]'
+       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
       ,
        field: _buildBaseRule {"output": "acres"}
        transform: '[validators.float({}),validators.nullify({"value":0})]'

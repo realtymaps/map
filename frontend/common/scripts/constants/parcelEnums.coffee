@@ -18,6 +18,16 @@ propertyType = {
   'Multi-Family'
 }
 
+zoning = {
+  'Agricultural'
+  'Commercial'
+  'Condominium Unit'
+  'Industrial'
+  'Land'
+  'Multi-Family Residential'
+  'Single-Family Residential'
+}
+
 categories =
   mls:
     listing:
@@ -77,9 +87,11 @@ address =
   unitNum: 'Unit Number'
   showStreetInfo: 'Show Street Info'
 
-mod.constant 'rmapsParcelEnums',
-  status: status
+mod.constant 'rmapsParcelEnums', {
+  status
   subStatus: _.extend(subStatus, status)
-  categories: categories
-  address: address
-  propertyType: propertyType
+  categories
+  address
+  propertyType
+  zoning
+}

@@ -49,7 +49,7 @@ ruleDefaults =
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
-      transformArr.push name: 'map', options: {passUnmapped: true, lookup: {lookupName: @config.LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+      transformArr.push name: 'map', options: {unmapped: 'pass', lookup: {lookupName: @config.LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
       transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
@@ -70,7 +70,7 @@ ruleDefaults =
     if @config.mapping
       map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
       if Object.keys(map).length > 0
-        transformArr.push name: 'map', options: {passUnmapped: true, map: map}
+        transformArr.push name: 'map', options: {unmapped: 'pass', map: map}
 
     transformArr
 
@@ -191,20 +191,20 @@ _rules =
         alias: 'Status'
         required: true
         getTransform: () ->
-          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       status_display:
         alias: 'Status Display'
         required: true
         group: 'general'
         getTransform: () ->
-          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       substatus:
         alias: 'Sub-Status'
         required: true
         getTransform: () ->
-          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       discontinued_date:
         alias: 'Discontinued Date'
@@ -220,7 +220,7 @@ _rules =
       property_type:
         alias: 'Property Type'
         getTransform: () ->
-          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
 
 
   county:
@@ -313,7 +313,12 @@ _rules =
       property_type:
         alias: 'Property Type'
         getTransform: () ->
-          name: 'map', options: map: @config.map ? {}, passUnmapped: true
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
+
+      zoning:
+        alias: 'Zoning'
+        getTransform: () ->
+          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
 
     mortgage:
       address:
