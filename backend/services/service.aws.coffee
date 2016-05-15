@@ -4,10 +4,11 @@ AWS = require('aws-sdk')
 Promise = require 'bluebird'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 _ = require 'lodash'
-logger = require('../config/logger').spawn('service.aws')
+logger = require('../config/logger').spawn('aws')
 loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 Spinner = require('cli-spinner').Spinner
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 buckets =
   PDF: 'aws-pdf-downloads'
@@ -43,6 +44,9 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
   _debug opts, 'opts'
 
   externalAccounts.getAccountInfo(extAcctName)
+  .catch (error) ->
+    logger.debug "Did you forget to import account into externalAccounts?"
+    throw new errorHandlingUtils.PartiallyHandledError(error, "AWS external account lookup failed")
   .then (s3Info) ->
     AWS.config.update
       accessKeyId: s3Info.api_key
@@ -57,11 +61,8 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
 
     handle = s3[s3FnName + if nodeStyle then '' else 'Async']
     handle.call s3, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
-
-  .catch (error) ->
-    logger.error "AWS external account lookup failed!"
-    logger.debug "Did you forget to import account into externalAccounts?"
-    throw error
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, "AWS error encountered")
 
 
 getTimedDownloadUrl = (opts) ->
@@ -127,36 +128,53 @@ _handleAllObjects = (opts, pageCb = (->)) ->
     .then (listObjects) ->
       #https://github.com/aws/aws-sdk-js/blob/0d19fe976f48860d9e929b027de0b601f55523cb/lib/request.js#L460-L477
       listObjects.eachPage (err, list, continueCb) ->
-        if err
+        handleError = (err) ->
           spinner?.stop()
-          return reject err
+          continueCb(false)
+          reject(err)
+
+        if err
+          return handleError(err)
 
         ctr += list.Contents.length
         pageCb(list, pages)
-
-        if !@hasNextPage()
-          logger.debug "pages: #{pages + 1}"
-          continueCb(false)
-          spinner?.stop()
-          return resolve(ctr)
-
-        pages += 1
-        continueCb()
+        .then () =>
+          if @hasNextPage()
+            pages += 1
+            continueCb()
+          else
+            logger.debug "finished with page #{pages + 1}"
+            continueCb(false)
+            spinner?.stop()
+            resolve(ctr)
+        .catch (err) ->
+          handleError(err)
 
 deleteAllObjects = (opts) ->
-  promises = []
-  _handleAllObjects opts, (list, pagesIdx) ->
+  summary =
+    attempted: 0
+    deleted: 0
+    errors: []
+  handlePage = (list, pagesIdx) -> Promise.try () ->
+    if !list.Contents.length
+      logger.debug "page #{pagesIdx+1} is empty"
+      return
     logger.debug "deleting page: #{pagesIdx}"
-    promises.push deleteObjects _.extend {}, opts,
+    summary.attempted += list.Contents.length
+    deleteObjects _.extend {}, opts,
       Delete: Objects: list.Contents.map (o) -> Key: o.Key
-  .then (ctr) ->
-    logger.debug "deleted #{ctr} files!"
-    Promise.all promises
+    .then (result) ->
+      summary.deleted += (result.Deleted?.length||0)
+      summary.errors.concat(result.Errors)
+
+  _handleAllObjects(opts, handlePage)
+  .then () ->
+    summary
 
 countObjects = (opts) ->
   _handleAllObjects opts
 
-#for uploading  / putting streams of unkown exact size
+#for uploading  / putting streams of unknown exact size
 #node style only!!
 upload = (opts) ->
   _handler

@@ -181,15 +181,6 @@
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Enter the separator to use for splitting values in this field (a comma ',' is typical)
-      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > 50")
-        .col-md-2 Too many values to show.
-        .col-md-2
-          .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all {{fieldData.current._lookups.length}} values anyway?
-      .row.lookup(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
-        .col-md-2 {{lookup.LongValue}}
-        .col-md-2
-          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.mapping[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-        .col-md-8.help(ng-show="$index == 0") Replace MLS values with more readable values where necessary
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
         .col-md-2
@@ -199,10 +190,19 @@
         .col-md-2 Implicit Decimal Places
         .col-md-4
           input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > lookupThreshold")
+        .col-md-2 Lookup has {{fieldData.current._lookups.length}} entries.
+        .col-md-2
+          .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all values anyway?
+      .row.lookup(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
+        .col-md-2 {{lookup.LongValue}}
+        .col-md-2
+          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.mapping[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help(ng-show="$index == 0") Replace MLS values with more readable values where necessary
 
     div(ng-show="fieldData.current.list == 'base'")
       // Generic input handling here, only for "simple"/string input values (i.e. not array or object)
-      .col-md-12.scroll(ng-show="typeOf(fieldData.current.input) == 'string'")
+      .col-md-12.scroll(ng-show="fieldData.current.input == null || typeOf(fieldData.current.input) == 'string'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-10

@@ -26,8 +26,10 @@ doMapping = (param, options, map, singleValue) ->
     return mapped
   if !singleValue? || singleValue == ''
     return null
-  if options.passUnmapped
+  if options.unmapped == 'pass'
     return singleValue
+  if options.unmapped == 'null'
+    return null
   throw new DataValidationError("unmappable value, options are: #{JSON.stringify(_.keys(map))}", param, singleValue)
 
 

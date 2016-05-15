@@ -1,5 +1,5 @@
+###globals angular###
 app = require '../../app.coffee'
-_ = require 'lodash'
 
 #
 # USAGE:
@@ -34,7 +34,7 @@ app.directive 'propertyButtons', (
       pinClick: '&?'
       favoriteClick: '&?'
     templateUrl: './includes/directives/property/_propertyButtonsDirective.jade'
-    controller: ($scope, $element, $attrs, $transclude) ->
+    controller: ($scope) ->
 #      $log.debug "PROPERTY BUTTONS with property", $scope.propertyParent, "and project", $scope.projectParent
       $scope.formatters = {
         results: new rmapsResultsFormatterService  scope: $scope
@@ -47,7 +47,7 @@ app.directive 'propertyButtons', (
       else
         $log.error("Property Buttons Directive is not passed a Property argument")
 
-      $scope.$watch "propertyParent", (newValue) ->
+      $scope.$watchCollection "propertyParent", (newValue) ->
         $scope.property = newValue
 
       if !$scope.projectParent

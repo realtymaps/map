@@ -176,18 +176,18 @@ finalizeData = ({subtask, id, data_source_id}) ->
   .select('*')
   .where
     rm_property_id: id
-    data_source_id: subtask.task_name
+    data_source_id: data_source_id || subtask.task_name
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('deleted')
-  .orderByRaw('close_date DESC NULLS FIRST')
+  .orderByRaw('close_date DESC NULLS LAST')
   .then (taxEntries=[]) ->
     if taxEntries.length == 0
       # not sure if this should ever be possible, but we'll handle it anyway
       return tables.deletes.property()
       .insert
         rm_property_id: id
-        data_source_id: subtask.task_name
+        data_source_id: data_source_id || subtask.task_name
         batch_id: subtask.batch_id
     if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
       # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
@@ -199,11 +199,11 @@ finalizeData = ({subtask, id, data_source_id}) ->
     .select('*')
     .where
       rm_property_id: id
-      data_source_id: subtask.task_name
+      data_source_id: data_source_id || subtask.task_name
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
-    .orderByRaw('close_date ASC NULLS LAST')
+    .orderByRaw('close_date ASC NULLS FIRST')
     .then (deedEntries=[]) ->
       if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
         # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
@@ -212,11 +212,11 @@ finalizeData = ({subtask, id, data_source_id}) ->
       .select('*')
       .where
         rm_property_id: id
-        data_source_id: subtask.task_name
+        data_source_id: data_source_id || subtask.task_name
       .whereNull('deleted')
       .orderBy('rm_property_id')
       .orderBy('deleted')
-      .orderByRaw('close_date ASC NULLS LAST')
+      .orderByRaw('close_date ASC NULLS FIRST')
       parcelsPromise = tables.property.parcel()
       .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
       .where(rm_property_id: id)
@@ -231,7 +231,7 @@ finalizeData = ({subtask, id, data_source_id}) ->
         # TODO: static data fields?
 
         # now that we have an ordered sales history, overwrite that into the tax record
-        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
+        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
         tax.subscriber_groups.mortgage = mortgageEntries
         lastSale = deedEntries.pop()
         if lastSale?
@@ -239,6 +239,17 @@ finalizeData = ({subtask, id, data_source_id}) ->
           tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
           for field in saleFields
             tax[field] = lastSale[field]
+          # save the MLS promoted values for easier access
+          promotedValues =
+            owner_name: lastSale.owner_name
+            owner_name_2: lastSale.owner_name_2
+            zoning: lastSale.zoning
+        else
+          # save the MLS promoted values for easier access
+          promotedValues =
+            owner_name: tax.owner_name
+            owner_name_2: tax.owner_name_2
+            zoning: tax.zoning
         tax.shared_groups.sale = []
         tax.subscriber_groups.deedHistory = []
         for deedInfo in deedEntries
@@ -247,6 +258,17 @@ finalizeData = ({subtask, id, data_source_id}) ->
 
         Promise.delay(100)  #throttle for heroku's sake
         .then () ->
+          if !_.isEqual(promotedValues, tax.promoted_values)
+            # need to save back promoted values to the normal table
+            tables.property.tax(subid: subtask.data.normalSubid)
+            .where
+              data_source_id: data_source_id || subtask.task_name
+              data_source_uuid: tax.data_source_uuid
+            .update(promoted_values: promotedValues)
+          else
+            Promise.resolve()
+        .then () ->
+          delete tax.promoted_values
           dbs.get('main').transaction (transaction) ->
             tables.property.combined(transaction: transaction)
             .where
