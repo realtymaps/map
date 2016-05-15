@@ -3,6 +3,7 @@ Promise = require 'bluebird'
 keystoreSvc = require './service.keystore'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
+{transaction} = require '../config/dbs'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {createPasswordHash} =  require '../services/service.userSession'
 

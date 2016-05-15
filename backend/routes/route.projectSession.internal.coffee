@@ -24,6 +24,9 @@ projectSvc = new ProjectSvcClass(tables.user.project).init(false)
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
 
+vero = null
+require('../services/email/vero').then (svc) -> vero = svc.vero
+
 class ClientsCrud extends RouteCrud
   init: () ->
     @svc.doLogQuery = true
@@ -74,13 +77,14 @@ class ClientsCrud extends RouteCrud
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
 
-    newUser =
-      date_invited: new Date()
-      parent_id: req.user.id
-      first_name: req.body.first_name
-      last_name: req.body.last_name
-      username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
-      email: req.body.email
+    # newUser =
+    #   date_invited: new Date()
+    #   parent_id: req.user.id
+    #   first_name: req.body.first_name
+    #   last_name: req.body.last_name
+    #   username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
+    #   email: req.body.email
+
     projectSvc.addClient clientEntryValue
 
   ###
