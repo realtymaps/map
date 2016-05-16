@@ -24,3 +24,7 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
 
   $scope.property.photos = photos
   $log.debug $scope.property.photos
+
+  $scope.$on 'imageLoaded', (event, img) ->
+    $scope.imageLoaded = true
+    $scope.$evalAsync()
