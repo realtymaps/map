@@ -26,7 +26,7 @@ create = (newProfile) ->
     inserted?[0]
 
 # if we already know project, we can use this routine
-createForProject = ({newProfile, transaction = null}) ->
+createForProject = (newProfile, transaction = null) ->
   if !newProfile.project_id? then throw new Error '`project_id` is required to create profile.'
   tables.user.profile(transaction: transaction)
   .returning safeProfile

@@ -61,7 +61,6 @@ class ClientsCrud extends RouteCrud
   rootPOST: (req, res) ->
     throw new Error('User not logged in') unless req.user
     throw new Error('Project ID required') unless req.params.id
-    console.log "client post!"
     clientEntryValue =
       user:
         date_invited: new Date()
@@ -76,14 +75,6 @@ class ClientsCrud extends RouteCrud
       event:
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
-
-    # newUser =
-    #   date_invited: new Date()
-    #   parent_id: req.user.id
-    #   first_name: req.body.first_name
-    #   last_name: req.body.last_name
-    #   username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
-    #   email: req.body.email
 
     projectSvc.addClient clientEntryValue
 

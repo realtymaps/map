@@ -6,8 +6,7 @@ frontendRoutes = require '../../common/config/routes.frontend'
 {basicColumns, joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 DrawnShapesCrud = require './service.drawnShapes'
-{transaction} = require '../config/dbs'
-
+dbs = require '../config/dbs'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 permissionsService = require './service.permissions'
 profileSvc = require './service.profiles'
@@ -31,8 +30,10 @@ _inviteClient = (clientEntryValue) ->
   clientEntryKey = uuid.genUUID()
 
   if clientEntryValue.event.name == 'client_created'
+    # url for a password creation input for client
     verify_url = "http://#{clientEntryValue.event.verify_host}/#{frontendRoutes.clientEntry.replace(':key', clientEntryKey)}"
   else
+    # url to the project dashboard (client will need to login if not logged)
     verify_url = "http://#{clientEntryValue.event.verify_host}/project/#{clientEntryValue.project.id}"
 
   clientEntryValue.event.verify_url = verify_url
@@ -40,14 +41,13 @@ _inviteClient = (clientEntryValue) ->
   keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
   .then () ->
     # email new client
-    console.log "clientEntryValue:\n#{JSON.stringify(clientEntryValue,null,2)}"
-    # vero.createUserAndTrackEvent(
-    #   clientEntryValue.user.id
-    #   clientEntryValue.user.email
-    #   clientEntryValue.user
-    #   clientEntryValue.event.name
-    #   clientEntryValue
-    # )
+    vero.createUserAndTrackEvent(
+      clientEntryValue.user.id
+      clientEntryValue.user.email
+      clientEntryValue.user
+      clientEntryValue.event.name
+      clientEntryValue
+    )
     # TODO - add to notification job queue upon possible failure,
     #   then possibly move to `services/email/vero` if it gets squirrely enough
 
@@ -142,7 +142,7 @@ class ProjectCrud extends ThenableCrud
 
   addClient: (clientEntryValue) ->
     {user, project, event} = clientEntryValue
-    transaction 'main', (trx) ->
+    dbs.transaction 'main', (trx) ->
       # get the invited user if exists
       tables.auth.user(transaction: trx)
       .select 'id', 'email', 'first_name', 'last_name', 'parent_id', 'username'
@@ -171,31 +171,31 @@ class ProjectCrud extends ThenableCrud
         .then () ->
           _inviteClient clientEntryValue
 
-    # profile stuff
-    .then ->
-      newProfile =
-        auth_user_id: user.id
-        parent_auth_user_id: user.parent_id
-        project_id: project.id
-      console.log "newProfile:\n#{JSON.stringify(newProfile,null,2)}"
-      profileSvc.createForProject {newProfile}
-      # profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
+        # permission stuff
+        .then ->
+          # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
+          permissionsService.getPermissionForCodename 'unlimited_logins'
+        .then (authPermission) ->
+          logger.debug "Found new client permission id: #{authPermission.id}"
+          # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
+          throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
+          permission =
+            user_id: user.id
+            permission_id: authPermission.id
+            transaction: trx
+          console.log "permission:\n#{JSON.stringify(permission,null,2)}"
+          permissionsService.setPermissionForUserId permission
+          # userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
 
-    # permission stuff
-    .then ->
-      # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
-      permissionsService.getPermissionForCodename 'unlimited_logins'
-    .then (authPermission) ->
-      logger.debug "Found new client permission id: #{authPermission.id}"
-      # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
-      throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
-      permission =
-        user_id: user.id
-        permission_id: authPermission.id
-      console.log "permission:\n#{JSON.stringify(permission,null,2)}"
-      permissionsService.setPermissionForUserId permission
-      # userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
-
+        # profile stuff
+        .then ->
+          newProfile =
+            auth_user_id: user.id
+            parent_auth_user_id: user.parent_id
+            project_id: project.id
+          console.log "newProfile:\n#{JSON.stringify(newProfile,null,2)}"
+          profileSvc.createForProject newProfile, trx
+          # profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
 
 
 #temporary to not conflict with project

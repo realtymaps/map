@@ -23,7 +23,7 @@ rmapsClientEntryService, rmapsEventConstants, rmapsPrincipalService, rmapsProfil
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        rmapsMapAuthorizationFactory.goToPostLoginState()
+        $state.go 'project', id: $scope.project.id
     , (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false

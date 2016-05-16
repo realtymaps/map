@@ -103,7 +103,6 @@ setPermissionForUserId = ({user_id, permission_id, transaction = null}) ->
   .count()
   .where user_id: user_id, permission_id: permission_id
   .then ([result]) ->
-    console.log "permission result:\n#{JSON.stringify(result,null,2)}"
     if Number(result.count) == 0
       tables.auth.m2m_user_permission(transaction: transaction)
       .insert user_id: user_id, permission_id: permission_id
