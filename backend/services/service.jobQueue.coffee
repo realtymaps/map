@@ -6,7 +6,6 @@ sqlHelpers = require '../utils/util.sql.helpers'
 logger = require('../config/logger').spawn('jobQueue')
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
-notifications = require '../utils/util.notifications.coffee'
 tables = require '../config/tables'
 cluster = require 'cluster'
 config = require '../config/config'
@@ -20,7 +19,6 @@ internals = require './service.jobQueue.internals'
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
 MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
-sendNotification = notifications.notification('jobQueue')
 
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
@@ -416,7 +414,6 @@ module.exports = {
   queueSubsequentSubtask
   cancelTask
   doMaintenance
-  sendNotification
   getQueueNeeds
   queuePaginatedSubtask
   queueSubsequentPaginatedSubtask
