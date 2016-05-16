@@ -9,7 +9,7 @@ include ../includes/mixins/_leafletMixin.jade
             .pin-image
               img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
               img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-            .pin-attributes
+            .pin-attributes.content-block
               property-attributes(property="property")
 
       .mobile-only
@@ -18,7 +18,7 @@ include ../includes/mixins/_leafletMixin.jade
             .pin-image
               img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
               img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-            .pin-attributes
+            .pin-attributes.content-block
               property-attributes(property="property")
 
       .project-instructions(ng-if="!pins.length && loadedProperties")
