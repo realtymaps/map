@@ -120,6 +120,10 @@ basicColumns = do ->
       property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time,
       actual_photo_count', 'cdn_photo', 'baths', 'baths_total']
 
+    company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',
+      'city', 'zip'
+    ]
+
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret.detail_with_disclaimer = "#{ret.new_all_explicit}, #{ret.mls_disclaimer}"
   ret

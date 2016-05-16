@@ -3,6 +3,7 @@ validation =
   email: /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/
   number: /^\d+$/
   #http://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number
+  phoneNonNumeric: /[-. (]*/g
   phone:
     ///^\s*             #Line start, match any whitespaces at the beginning if any.
     (?:\+?(\d{1,3}))?   #GROUP 1: The country code. Optional.

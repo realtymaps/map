@@ -1,7 +1,7 @@
 # auth = require '../utils/util.auth'
 emailServices = require '../services/services.email'
 {mergeHandles} = require '../utils/util.route.helpers'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('route:email')
 {wrapHandleRoutes} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
 emailTransforms = require('../utils/transforms/transforms.email')
