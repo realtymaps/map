@@ -2,7 +2,7 @@
 should()
 # sinon = require 'sinon'
 Promise = require 'bluebird'
-logger = require('../../specUtils/logger').spawn('util::parcelHelpers')
+logger = require('../../specUtils/logger').spawn('util:parcelHelpers')
 rewire = require 'rewire'
 subject = rewire "../../../backend/tasks/util.parcelHelpers.coffee"
 dataLoadHelpers = rewire "../../../backend/tasks/util.dataLoadHelpers"

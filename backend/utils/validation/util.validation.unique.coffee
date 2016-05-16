@@ -2,6 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 {isUnique} = require '../../utils/util.sql.helpers'
+require '../../extensions/lodash'
 # logger = require('../../config/logger').spawn("validation:isUnique")
 
 module.exports = (options = {}) ->

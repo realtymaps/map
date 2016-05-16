@@ -17,6 +17,7 @@ ProjectSvcClass = require('../services/service.user.project')
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
+routeUserSessionInternals = require './route.userSession.internals'
 Promise = require 'bluebird'
 # End temporary
 
@@ -222,6 +223,6 @@ class ProjectRouteCrud extends RouteCrud
         req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
     .then () ->
-      identity: userSessionSvc.getIdentity req
+      identity: routeUserSessionInternals.getIdentity req
 
 module.exports = ProjectRouteCrud

@@ -2,7 +2,7 @@
 should()
 # sinon = require 'sinon'
 Promise = require 'bluebird'
-logger = require('../../specUtils/logger').spawn('task::digimaps')
+logger = require('../../specUtils/logger').spawn('task:digimaps')
 rewire = require 'rewire'
 subject = rewire "../../../backend/tasks/task.digimaps"
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors

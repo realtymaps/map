@@ -140,6 +140,17 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                   ng-model="selectedFilters.combinedData"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
+
+          li.row
+            span.label.col-md-5 Has Images
+            .col-md-7
+              .btn-group.pull-right
+                label.btn.btn-white.btn-checkbox(
+                  ng-class="{active: selectedFilters.hasImages == (c == true)}"
+                  ng-repeat="c in [true, false]"
+                  ng-model="selectedFilters.hasImages"
+                  btn-radio="{{c == true}}"
+                  uncheckable) {{c}}
   .mobile-only
     button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
       span.icon.icon-settings
