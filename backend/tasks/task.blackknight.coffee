@@ -215,10 +215,7 @@ saveProcessDates = (subtask) ->
 
 
 deleteData = (subtask) ->
-  # get rows for this subtask
-  normalDataTable = tables.property[subtask.data.dataType]
-  tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     promises = for row in rows then do (row) ->
       if row['FIPS Code'] != '12021'
@@ -243,13 +240,18 @@ deleteData = (subtask) ->
             parcel_id: normalizedData.parcel_id
           .update(deleted: subtask.batch_id)
       else
-        normalDataTable(subid: row['FIPS Code'])
-        .where
-          data_source_id: 'blackknight'
-          fips_code: row['FIPS Code']
-          data_source_uuid: row['BKFS Internal PID']
-        .update(deleted: subtask.batch_id)
-    Promise.all promises
+        # get validation for data_source_uuid
+        dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'data_source_uuid')
+        .then (validationInfo) ->
+          Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+        .then (normalizedData) ->
+          normalDataTable(subid: row['FIPS Code'])
+          .where
+            data_source_id: 'blackknight'
+            fips_code: row['FIPS Code']
+            data_source_uuid: normalizedData.data_source_uuid
+          .update(deleted: subtask.batch_id)
+    Promise.each promises
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
