@@ -17,7 +17,7 @@
       width: auto;
       height: auto;
       margin-left: auto;
-      padding: 15px 15px 85px 15px;
+      padding: 85px 15px 15px 15px;
     }
 
     //
@@ -28,8 +28,8 @@
       position: fixed;
       left: 0;
       right: 0;
-      bottom: 0;
-      top: auto;
+      bottom: auto;
+      top: 46px;
       width: $project-mobile-widgets-width;
       height: $project-mobile-widgets-height;
       //margin-left: $project-mobile-gutter-width;
@@ -87,12 +87,22 @@
     // Dashboard Carousel
     //
     .carousel
-      //height: 200px;
-      overflow: hidden;
+      margin-bottom: 25px;
 
     //
     // Notes
     //
+    .notes-title
+      margin-bottom: 10px;
+
     .note-image
       width: 58px;
       height: 58px;
+
+    .note-data-wrapper
+      min-height: 58px;
+      width: calc(100% - 58px);
+      float: left;
+      font-size: 13px;
+      padding-left: 15px;
+      color: $text_gray_lighter;
