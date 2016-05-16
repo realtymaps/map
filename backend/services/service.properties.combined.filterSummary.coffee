@@ -54,6 +54,7 @@ transforms = do ->
               validators.string()
               validators.choice(choices: propertyTypes)
             ]
+            hasImages: validators.boolean(truthy: true, falsy: false)
           validators.defaults(defaultValue: {})
       ]
   bounds:
@@ -145,6 +146,9 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     logger.debug "addressString: #{addressString}"
     query.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
     query.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
+
+  if filters.hasImages
+    query.where("photos", "!=", "{}")
 
   logger.debug query.toString()
 
