@@ -12,7 +12,7 @@ getLookupMap = (data_source_id, data_list_type, LookupName) ->
   .where({data_source_id, data_list_type, LookupName})
   .then (rows) ->
     if !rows?.length
-      throw new DataValidationError("no map provided, options are: #{JSON.stringify(options)}", param, value)
+      throw new DataValidationError("#{LookupName} not found for source #{data_source_id}, list_type #{data_list_type}")
     lookup = {}
     for row in rows
       lookup[row.Value] = row.LongValue
