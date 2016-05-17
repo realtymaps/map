@@ -107,38 +107,6 @@ updatePassword = (user, password, overwrite = true) ->
     tables.auth.user().update(password: toSet)
     .where(id: user.id)
 
-getIdentity = (req) ->
-  safeUserFields = [
-    'cell_phone'
-    'email'
-    'first_name'
-    'id'
-    'last_name'
-    'username'
-    'work_phone'
-    'account_image_id'
-    'address_1'
-    'address_2'
-    'us_state_id'
-    'zip'
-    'city'
-    'website_url'
-    'account_use_type_id'
-    'company_id'
-    'parent_id'
-  ]
-  if req.user
-    # here we should probaby return some things from the user's profile as well, such as name
-    user: _.pick req.user, safeUserFields
-    subscription: req.session.subscription
-    permissions: req.session.permissions
-    groups: req.session.groups
-    environment: config.ENV
-    profiles: req.session.profiles
-    currentProfileId: req.session.current_profile_id
-  else
-    null
-
 verifyValidAccount = (user) ->
   return unless user
   return user if user.is_superuser
@@ -148,16 +116,16 @@ verifyValidAccount = (user) ->
     throw new userSessionErrors.InActiveUserError("User is not valid due to inactive account.")
   user
 
-module.exports =
-  createPasswordHash: createPasswordHash
-  verifyPassword: verifyPassword
-  verifyValidAccount: verifyValidAccount
+module.exports = {
+  createPasswordHash
+  verifyPassword
+  verifyValidAccount
   getProfile: profileSvc.getFirst
   updateCurrentProfile: profileSvc.updateCurrent
   updateProfile: profileSvc.update
   getProfiles: profileSvc.getProfiles
-  getImage: getImage
-  upsertImage: upsertImage
-  upsertCompanyImage: upsertCompanyImage
-  updatePassword: updatePassword
-  getIdentity: getIdentity
+  getImage
+  upsertImage
+  upsertCompanyImage
+  updatePassword
+}

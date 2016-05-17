@@ -6,7 +6,7 @@ clsFactory = require '../util.cls'
 clone =  require 'clone'
 
 _errMsg = (thing) ->
-  "no #{thing} provided, options are: #{JSON.stringify(options)}"
+  "no #{thing} provided, options are: #{JSON.stringify(thing)}"
 # GOAL: To get a key from the continuation-local-storage and map it a object field
 # example:
 # options:

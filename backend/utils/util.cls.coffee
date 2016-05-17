@@ -2,7 +2,12 @@
 {NAMESPACE} = require '../config/config'
 
 module.exports = (namespace = getNamespace(NAMESPACE)) ->
-  namespace: namespace
-  getCurrentUserId: () ->
+
+  getCurrentUserId = () ->
     req = namespace.get('req')
     req.user.id
+
+  {
+    namespace
+    getCurrentUserId
+  }

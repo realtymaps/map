@@ -1,7 +1,6 @@
 _ = require 'lodash'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('services:user')
 tables = require '../config/tables'
-sqlHelpers = require '../utils/util.sql.helpers'
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns} = require '../utils/util.sql.columns'
 
