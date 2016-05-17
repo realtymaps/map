@@ -69,10 +69,14 @@ getResizedPayload = (opts) -> Promise.try () ->
       _resize = (width, height) ->
         if Number(width) != Number(originalSize?.width) || Number(height) != Number(originalSize?.height)
           logger.debug "Resizing to #{width}px x #{height}px"
-          internals.resize {stream, width, height}
-          .then (resizeStream) ->
-            stream = resizeStream
-            meta = _.extend {}, payload.meta, {width, height}
+
+          stream = stream.pipe((require 'sharp')().resize(width, height))
+          meta = _.extend {}, payload.meta, {width, height}
+
+          # internals.resize {stream, width, height}
+          # .then (resizeStream) ->
+          #   stream = resizeStream
+          #   meta = _.extend {}, payload.meta, {width, height}
 
       Promise.try ->
         if originalSize?.width && originalSize?.height # we can get aspect
