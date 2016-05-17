@@ -106,3 +106,34 @@
       font-size: 13px;
       padding-left: 15px;
       color: $text_gray_lighter;
+
+    //
+    // PINS and FAVORITES
+    //
+    .project-property-card
+      .prop-image
+        width: calc(100% - 50px);
+        display: inline-block;
+
+        img
+          max-height: 180px;
+
+      .property-card-right
+        min-height: 0;
+        margin-top: 10px;
+
+      property-buttons
+        float: right;
+        width: 50px;
+
+        .btn-actions
+          top: 0;
+          right: 0;
+          height: 100%;
+
+        button
+          border: none;
+          border-bottom: 1px solid #e0e0e0;
+          width: 100%;
+          height: 45px;
+          float: none;

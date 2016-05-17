@@ -2,7 +2,7 @@
   .project-top
     .project-property-card.item.item-card.bordered(ng-repeat="property in pins")
       .row
-        .col-xs-6
+        .col-sm-6.col-xs-12
           .bordered
             .prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
@@ -11,7 +11,7 @@
 
             property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
 
-        .col-xs-6.property-card-right
+        .col-sm-6.col-xs-12.property-card-right
           .property-data
             property-attributes(property='property')
 
