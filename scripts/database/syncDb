@@ -12,6 +12,7 @@ fi
 DB_LABEL=`echo "$1" | tr '[a-z]' '[A-Z]'`
 DST_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE`
 DBSYNC_RESULT=/tmp/dbsync.result
+S3_BUCKET=rmaps-dropbox
 
 if [[ $1 == *"@"* ]]
 then
@@ -31,17 +32,32 @@ then
     grep -E "^SUCCESS: \d+ migrations performed" "$DBSYNC_RESULT"
     migrationsResult=$?
     set -e
-    if [[ $migrationsResult -eq 0 ]]
+    if [[ "$CI_DB_SECRET_KEY" == "" ]]
+    then
+        echo "WARNING, CI_DB_SECRET_KEY MISSING"
+    fi
+    if [[ $migrationsResult -eq 0 && "$CI_DB_SECRET_KEY" != "" ]]
     then
         DB_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE@$HEROKU_APP_NAME`
+        cd /tmp
+
         echo "Dumping ${DB_LABEL} schema"
         if [[ $DB_LABEL == "NORMALIZED" ]]
         then
           tableList="-t listing -t parcel"
         fi
-        pg_dump -x -n public -s -F c $tableList -d "$DB_URL" > /tmp/${DB_LABEL}_schema.db
+        pg_dump -x -n public -s -F c $tableList -d "$DB_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
+
         echo "Dumping ${DB_LABEL} dbsync_migrations"
-        pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DB_URL" > /tmp/${DB_LABEL}_migrations.db
+        pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DB_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
+
+        echo "Uploading ${DB_LABEL} schema to S3"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
+
+        echo "Uploading ${DB_LABEL} dbsync_migrations to S3"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
+
+        cd -
     else
         echo "No schema changes"
     fi

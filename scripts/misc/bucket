@@ -24,7 +24,7 @@ var aws = require('../../backend/services/service.aws'),
   STD_OUT_CMDS = ['listObjects', 'countObjects', 'deleteAllObjects'];
 
 
-handle = aws[argv.action] || aws.postObject;
+handle = aws[argv.action] || aws.putObject;
 
 if(!handle){
   console.error('handle undefined');
@@ -37,7 +37,7 @@ if (!argv.bucket) {
 }
 
 if (!argv.fileName && (argv.action == 'putObject' || !argv.action)) {
-  console.error('--fileName required to postObject!');
+  console.error('--fileName required to putObject!');
   process.exit(123);
 }
 
