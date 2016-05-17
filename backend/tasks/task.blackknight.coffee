@@ -215,6 +215,7 @@ saveProcessDates = (subtask) ->
 
 
 deleteData = (subtask) ->
+  normalDataTable = tables.property[subtask.data.dataType]
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
