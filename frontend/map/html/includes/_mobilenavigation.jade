@@ -28,6 +28,16 @@ include mixins/_avatarMixin.jade
             div(ng-if="principal.isProjectEditor() && profile")
                 ul.nav.menu-options
                     li(ng-show="profile")
+                        a.menu-link(ng-click="goToState('project', {id: project.id})" class="project" ng-class="{ active: isActive('project') }")
+                          span.icon.menu-icon.icon-property
+                          span.menu-label Dashboard
+
+                    li(ng-show="profile")
+                        a.menu-link(ng-click="goToMap()" class="map" ng-class="{ active: isActive('map') }")
+                          span.icon.menu-icon.icon-project
+                          span.menu-label Map
+
+                    li(ng-show="profile")
                         a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
                             span.menu-label Pinned Properties
