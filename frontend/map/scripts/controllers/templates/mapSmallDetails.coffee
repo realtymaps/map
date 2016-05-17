@@ -18,9 +18,9 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
     for i in [1..$scope.property.photo_count]
       photos.push
         key: i
-        url: "http://" + $scope.property.cdn_photo + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
+        # url: "http://" + $scope.property.cdn_photo + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
         # Uncomment this to load photos locally
-        # url: $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '') + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
+        url: $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '') + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
 
   $scope.property.photos = photos
   $log.debug $scope.property.photos

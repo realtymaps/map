@@ -8,42 +8,45 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
       .row
         .col-sm-2
           ul.nav
+            li(ng-repeat="mls in selectedResult.mls")
+              a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") Property Detail
+            li(ng-repeat="county in selectedResult.county")
+              a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
             li
-              a(ng-click="tab = 'current'" ng-class="{active: tab == 'current'}") Current
-            li
-              a(ng-click="tab = 'revised'" ng-class="{active: tab == 'revised'}") Revised
-            li
-              a(ng-click="tab = 'raw'" ng-class="{active: tab == 'raw'}") Raw
+              a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
 
-        .col-sm-8(ng-show="tab == 'raw'")
+        .col-sm-8(ng-show="tab.selected == 'raw'")
           .content-heading Full raw data
           json-formatter(json="selectedResult" open="3")
 
-        .col-sm-8(ng-show="tab == 'revised'")
-          .row.content-block.prop-attrs.border-bottom
-            .col-sm-12
-              .content-heading NEW DATA GOES HERE
-              p.content-body {{selectedResult.property_information}}
-
-        .col-sm-8(ng-show="tab == 'current'")
+        .col-sm-8(ng-repeat="property in selectedResult.mls" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
-            //background-color:transparent; must be here to override googles meddling where it forces style via element
-            ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
-            include ../includes/map/_satilite.jade
-            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
 
+            .property-img
+              //- img(ng-cloak ng-if="!property.photos.length" ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+              //background-color:transparent; must be here to override googles meddling where it forces style via element
+              ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak ng-if="!property.photos.length" style="background-color:transparent;",focalcoord="property.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
+              include ../includes/map/_satilite.jade
+              .progress(ng-show="!imageLoaded && property.photos.length")
+                img(ng-src="/assets/progress-big.gif")
+              div(carousel carousel-image-error="/assets/mls_unavailable.png" ng-if="property.photos.length" ng-show="imageLoaded")
+                div(slide ng-repeat="photo in property.photos" index="slide.key")
+                  img(ng-src="{{photo.url}}" style="margin:auto;")
+                  .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
+
+            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
-              .prop-price.prop-lg(ng-if="selectedResult.price" ng-class="formatters.property.getForSaleClass(selectedResult, false)") {{formatters.property.getPrice(selectedResult.price)}}
+              .prop-price.prop-lg(ng-if="property.price" ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(property.price)}}
               .below-price
-                .sold-date.info.title(ng-if="formatters.property.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
-              .content-emphasis {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-              .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
+              .content-emphasis {{property.address.lines[0]}}
+              .content-muted(ng-repeat="line in property.address.lines.slice(1)") {{line}}
 
             .col-sm-6.text-right.desktop-only
-              property-buttons(property='selectedResult')
+              property-buttons(property='property')
 
           .content-block.prop-attrs.border-bottom(ng-show="getMail()")
             .content-heading Mail Campaigns
@@ -59,43 +62,43 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
-            .col-sm-8
+            .col-sm-6
               .content-heading Description
-              p.content-body {{selectedResult.property_information}}
+              p.content-body {{property.property_information}}
 
-            .col-sm-4
+            .col-sm-6
               .content-heading Property Info
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.bedrooms)}}
+                  .content-value {{formatters.property.orNa(property.bedrooms)}}
                   .content-label Beds
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.baths_total)}}
-                  .content-label Baths
+                  .content-value {{formatters.property.orNa(property.baths.value)}}
+                  .content-label {{property.baths.label}}
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.finished_sqft)}}
+                  .content-value {{formatters.property.orNa(property.sqft_finished)}}
                   .content-label Sq Ft
                 .col-xs-6
-                  .content-value {{formatters.property.getYear(selectedResult.year_built)}}
-                  .content-label Built
+                  .content-value {{formatters.property.getYear(property.year_built.value)}}
+                  .content-label {{property.year_built.label}}
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.acres)}}
+                  .content-value {{formatters.property.orNa(property.acres)}}
                   .content-label Acres
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.land_square_footage)}}
+                  .content-value {{formatters.property.orNa(property.land_square_footage)}}
                   .content-label Lot SqFt
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.lot_front_footage)}}
+                  .content-value {{formatters.property.orNa(property.lot_front_footage)}}
                   .content-label Front Ft
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.depth_footage)}}
+                  .content-value {{formatters.property.orNa(property.depth_footage)}}
                   .content-label Depth Ft
 
           .content-block.border-bottom
@@ -104,16 +107,16 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .col-sm-6
                 .content-label Current Owner
                 .content-lg
-                  span(ng-if="formatters.property.getCurrentOwnersTitle(selectedResult)") {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
-                  span {{selectedResult.owner_name}}
-                  span(ng-if="selectedResult.owner_name2")
+                  span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
+                  span {{property.owner_name}}
+                  span(ng-if="property.owner_name2")
                     br/
-                    | {{selectedResult.owner_name2}}
+                    | {{property.owner_name2}}
               .col-sm-6
                 .content-label Address
-                .content-lg {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
+                .content-lg {{property.owner_street_address_num}} {{property.owner_street_address_name}} {{property.owner_street_address_unit}}
                   br/
-                  | {{formatters.property.getCityStateZip(selectedResult,true)}}
+                  | {{formatters.property.getCityStateZip(property,true)}}
 
           .row.content-block.border-bottom
             .col-sm-6(ng-if="formatters.property.showListingData(selectedResult)")
@@ -152,9 +155,10 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .col-sm-6
           .row.content-block.mls-disclaimer.border-bottom
             .col-sm-12
-              .content-heading Broker Reciprocity
-                include ../includes/disclaimer.jade
-        .col-sm-2
+          .content-heading Broker Reciprocity
+            include ../includes/disclaimer.jade
+
+        .col-sm-8(ng-repeat="property in selectedResult.county" ng-show="tab.selected == '{{property.data_source_id}}'")
 
   .mobile-only
     mobile-header-buttons(header-id="page-modal-header")
