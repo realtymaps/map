@@ -25,6 +25,14 @@ source $SCRIPT_DIR/environmentNormalization/dbsync
 echo "SYNC: performing db migrations on: ${DB_LABEL}_DATABASE"
 $DBSYNC --path migrations/$1 --client pg --connection $DST_URL --reminder 1 --recursive | tee "$DBSYNC_RESULT"
 
+echo "SYNC: done performing db migrations"
+echo -e "SYNC: "
+ls -la "$DBSYNC_RESULT"
+echo "SYNC: saved file output below ------------------------"
+cat "$DBSYNC_RESULT"
+echo "SYNC: saved file output above ------------------------"
+
+
 if [[ "$NODE_ENV" == "production" ]]
 then
     echo "Checking for successful migrations"
