@@ -27,7 +27,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               //background-color:transparent; must be here to override googles meddling where it forces style via element
               ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak ng-if="!property.photos.length" style="background-color:transparent;",focalcoord="property.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
               include ../includes/map/_satilite.jade
-              .progress(ng-show="!imageLoaded && property.photos.length")
+              div(ng-show="!imageLoaded && property.photos.length")
                 img(ng-src="/assets/progress-big.gif")
               div(carousel carousel-image-error="/assets/mls_unavailable.png" ng-if="property.photos.length" ng-show="imageLoaded")
                 div(slide ng-repeat="photo in property.photos" index="slide.key")
