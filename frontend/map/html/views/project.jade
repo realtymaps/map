@@ -3,19 +3,25 @@ include ../includes/mixins/_leafletMixin.jade
 .project-dashboard-container
   .row.project-top
     .col-sm-6.col-xs-12
+      .desktop-only
+        carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
+          slide(ng-repeat="property in pins" active="property.activeSlide" actual="property")
+            .pin-image.prop-image
+              .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+              img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
+              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+            .pin-attributes.content-block
+              property-attributes(property="property")
 
-      //carousel(interval="myInterval" template-url="./includes/bootstrap/carousel.jade")
-      //  slide(ng-repeat="property in project.properties_selected" template-url="./includes/bootstrap/carousel-slide.jade")
-      //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-      //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-
-      carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
-        slide(ng-repeat="property in pins" active="property.activeSlide" actual="property")
-          .pin-image
-            img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
-            img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-          .pin-attributes
-            property-attributes(property="property")
+      .mobile-only
+        carousel.project-card.bordered(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
+          slide(ng-repeat="property in pins" active="property.activeSlide" actual="property")
+            .pin-image.prop-image
+              .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+              img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
+              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+            .pin-attributes.content-block
+              property-attributes(property="property")
 
       .project-instructions(ng-if="!pins.length && loadedProperties")
         span You don't have any Pins
@@ -59,7 +65,8 @@ include ../includes/mixins/_leafletMixin.jade
             .col-sm-12
               .note-image
                 a(class="note-img" ng-if="note.coordinates")
-                  img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+                  img.desktop-only(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+                  img.mobile-only(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 58, 58)}}" title="{{note.title}}")
               .note-data-wrapper
                 .note-data
                   .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}

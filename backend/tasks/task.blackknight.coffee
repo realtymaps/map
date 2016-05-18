@@ -215,9 +215,10 @@ saveProcessDates = (subtask) ->
 
 
 deleteData = (subtask) ->
+  normalDataTable = tables.property[subtask.data.dataType]
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
-    promises = for row in rows then do (row) ->
+    Promise.each rows, (row) ->
       if row['FIPS Code'] != '12021'
         Promise.resolve()
       else if subtask.data.action == constants.REFRESH
@@ -251,7 +252,7 @@ deleteData = (subtask) ->
             fips_code: row['FIPS Code']
             data_source_uuid: normalizedData.data_source_uuid
           .update(deleted: subtask.batch_id)
-    Promise.each promises
+
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,

@@ -1,0 +1,148 @@
+.mobile-view
+  #project-dashboard
+
+    $project-mobile-left-margin = 15px;
+    $project-mobile-gutter-width = 15px;
+    $project-mobile-widget-width = 20%;
+    $project-mobile-widget-height = 70px;
+    $project-mobile-widget-height-active = $project-mobile-widget-height + 2;
+    $project-mobile-widgets-width = 100%;
+    $project-mobile-widgets-height = $project-mobile-widget-height + 2;
+    $project-mobile-content-width = $project-mobile-widgets-width;
+
+    //
+    // Project Content
+    //
+    .project-content {
+      width: auto;
+      height: auto;
+      margin-left: auto;
+      padding: 85px 15px 15px 15px;
+    }
+
+    //
+    // Project Nav Widgets
+    //
+
+    .project-widgets
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: auto;
+      top: 46px;
+      width: $project-mobile-widgets-width;
+      height: $project-mobile-widgets-height;
+      //margin-left: $project-mobile-gutter-width;
+      //margin-right: $project-mobile-gutter-width;
+      padding: 0;
+      background-color: white;
+      z-index: 20;
+
+    .project-widget
+      position: relative;
+      display: inline-block;
+      width: $project-mobile-widget-width;
+      height: $project-mobile-widget-height;
+      background-color: white;
+      margin-bottom: 0;
+      text-align: center;
+      vertical-align: top;
+      font-size: 15px;
+
+      &.widget-active
+        width: $project-mobile-widget-width;
+        height: $project-mobile-widget-height-active;
+        border-bottom: solid $light_blue 3px;
+        border-right: none;
+
+        .widget-title
+          bottom: 0;
+
+    .widget-pin
+      .widget-background
+        font-size: 40px;
+
+    .widget-neighborhood
+      .widget-background
+        color: $dark_teal;
+
+    .widget-client
+      .widget-background
+        font-size: 40px;
+
+    .widget-background
+      font-size: 35px;
+      line-height: $project-mobile-widget-height;
+
+    .widget-count
+      font-size: 20px;
+      line-height: $project-mobile-widget-height;
+
+    .widget-title
+      text-transform: none;
+      font-size: 10px;
+      bottom: 1px;
+
+    //
+    // Dashboard Carousel
+    //
+    .carousel
+      margin-bottom: 25px;
+
+    //
+    // Notes
+    //
+    .notes-title
+      margin-bottom: 10px;
+
+    .note-image
+      width: 58px;
+      height: 58px;
+
+    .note-data-wrapper
+      min-height: 58px;
+      width: calc(100% - 58px);
+      float: left;
+      font-size: 13px;
+      padding-left: 15px;
+      color: $text_gray_lighter;
+
+    //
+    // PINS and FAVORITES
+    //
+    .project-property-card
+      padding: 0;
+
+      .prop-image
+        width: calc(100% - 40px);
+        display: inline-block;
+
+        img
+          max-height: 180px;
+
+      .property-card-right
+        min-height: 0;
+        margin-top: 10px;
+
+        .mobile-padding
+          padding: 0 10px 10px 10px;
+
+      .note-input
+        padding: 10px;
+
+      property-buttons
+        float: right;
+        width: 40px;
+
+        .btn-actions
+          top: 0;
+          right: 0;
+          height: 100%;
+
+        button
+          border: none;
+          border-bottom: 1px solid #e0e0e0;
+          padding-left: 3px;
+          width: 100%;
+          height: 45px;
+          float: none;

@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResponsiveViewService) ->
+module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResponsiveViewService, rmapsPageService) ->
   #
   # Scope variables
   #
@@ -73,3 +73,7 @@ module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window,
   $scope.goToState = (state, params, options) ->
     $scope.closeMobileNav()
     $state.go state, params, options
+
+  $scope.goToMap = () ->
+    $scope.closeMobileNav()
+    rmapsPageService.goToMap()

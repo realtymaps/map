@@ -70,16 +70,25 @@ app.provider 'rmapsPageService', () ->
       historyLength: $window.history.length
 
       back: () =>
-        if $window.history.length > @historyLength
+        if $state.current.mobile?.back?
+          $log.debug "Mobile back override to state #{$state.current.mobile.back}"
+          $state.go $state.current.mobile.back
+        else if $window.history.length > @historyLength
           $window.history.back()
         else
           @goToMap()
 
       goToMap: () ->
-        $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
+        if rmapsProfilesService.currentProfile?.project_id?
+          $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
+        else
+          $state.go 'main'
 
       goToDashboard: () ->
-        $state.go 'project', { id: rmapsProfilesService.currentProfile?.project_id }
+        if rmapsProfilesService.currentProfile?.project_id?
+          $state.go 'project', { id: rmapsProfilesService.currentProfile?.project_id }
+        else
+          $state.go 'main'
 
       #
       # Accessors
