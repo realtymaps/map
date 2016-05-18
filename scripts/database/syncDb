@@ -44,7 +44,7 @@ then
         echo "Dumping ${DB_LABEL} schema"
         if [[ $DB_LABEL == "NORMALIZED" ]]
         then
-          tableList="-t listing -t parcel"
+          tableList="-T 'tax_*' -T 'deed_*' -T 'mortgage_*'"
         fi
         pg_dump -x -n public -s -F c $tableList -d "$DB_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
 
