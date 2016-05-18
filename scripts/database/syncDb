@@ -25,27 +25,20 @@ source $SCRIPT_DIR/environmentNormalization/dbsync
 echo "SYNC: performing db migrations on: ${DB_LABEL}_DATABASE"
 $DBSYNC --path migrations/$1 --client pg --connection $DST_URL --reminder 1 --recursive | tee "$DBSYNC_RESULT"
 
-echo "SYNC: done performing db migrations"
-echo -e "SYNC: "
-ls -la "$DBSYNC_RESULT"
-echo "SYNC: saved file output below ------------------------"
-cat "$DBSYNC_RESULT"
-echo "SYNC: saved file output above ------------------------"
-
 
 if [[ "$NODE_ENV" == "production" ]]
 then
     echo "Checking for successful migrations"
     set +e
-    grep -E "^SUCCESS: \d+ migrations performed" "$DBSYNC_RESULT"
-    migrationsResult=$?
+    migrationsResult=`grep -E "^SUCCESS: \d+ migrations performed" "$DBSYNC_RESULT"`
     set -e
-    if [[ "$CI_DB_SECRET_KEY" == "" ]]
+    if [[ "$migrationsResult" != "" ]]
     then
-        echo "WARNING, CI_DB_SECRET_KEY MISSING"
-    fi
-    if [[ $migrationsResult -eq 0 && "$CI_DB_SECRET_KEY" != "" ]]
-    then
+        if [[ "$CI_DB_SECRET_KEY" == "" ]]
+        then
+            echo "ERROR: CI_DB_SECRET_KEY missing"
+            exit 1
+        fi
         DB_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE@$HEROKU_APP_NAME`
         cd /tmp
 
@@ -68,6 +61,8 @@ then
         cd -
     else
         echo "No schema changes"
+        migrationsResult=`grep -E "SUCCESS: \d+" "$DBSYNC_RESULT"`
+        echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ TEST: $migrationsResult"
     fi
 else
     echo "Environment is $NODE_ENV, not dumping schema"
