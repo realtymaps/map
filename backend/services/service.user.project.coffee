@@ -160,7 +160,7 @@ class ProjectCrud extends ThenableCrud
 
         # use existing user for 'client_invited' vero event
         else
-          user = result[0]
+          user = _.merge user, result[0]
           evtdata.name = 'client_invited'
           userPromise = Promise.resolve()
 
