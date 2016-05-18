@@ -117,7 +117,7 @@ app.provider 'rmapsPageService', () ->
     $rootScope.$on "$stateChangeStart", (event, toState) ->
       return if event.defaultPrevented
 
-      if toState.url
+      if toState.url?
         # Reset the Page related data
         page.reset()
 
