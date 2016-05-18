@@ -70,10 +70,14 @@ class ClientsCrud extends RouteCrud
         last_name: req.body.last_name
         username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
         email: req.body.email
+      parent:
+        id: req.user.id
+        first_name: req.user.first_name
+        last_name: req.user.last_name
       project:
         id: req.params.id
         name: req.body.project_name
-      event:
+      evtdata:
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
 
@@ -188,7 +192,6 @@ class ProjectRouteCrud extends RouteCrud
     super(req, res, next)
     .then (projects) =>
       newReq = @cloneRequest(req)
-      logger.debug "newReq: #{JSON.stringify newReq}"
 
       #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
       _.extend newReq.params, id: _.pluck(projects, 'id') #set to id since it gets mapped to user_profile.project_id

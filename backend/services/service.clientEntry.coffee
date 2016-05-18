@@ -45,7 +45,7 @@ getClientEntry = (key) ->
           expectSingleRow project
         .then (project) ->
           {
-            event: entry.event.name # helps frontend distinguish new user
+            event: entry.evtdata.name # helps frontend distinguish new user
             client: authUsers[entry.user.id]
             parent: authUsers[entry.user.parent_id]
             project: project

@@ -29,14 +29,14 @@ _inviteClient = (clientEntryValue) ->
   # `clientEntryValue` also has data for vero template, so we send it there too
   clientEntryKey = uuid.genUUID()
 
-  if clientEntryValue.event.name == 'client_created'
+  if clientEntryValue.evtdata.name == 'client_created'
     # url for a password creation input for client
-    verify_url = "http://#{clientEntryValue.event.verify_host}/#{frontendRoutes.clientEntry.replace(':key', clientEntryKey)}"
+    verify_url = "http://#{clientEntryValue.evtdata.verify_host}/#{frontendRoutes.clientEntry.replace(':key', clientEntryKey)}"
   else
     # url to the project dashboard (client will need to login if not logged)
-    verify_url = "http://#{clientEntryValue.event.verify_host}/project/#{clientEntryValue.project.id}"
+    verify_url = "http://#{clientEntryValue.evtdata.verify_host}/project/#{clientEntryValue.project.id}"
 
-  clientEntryValue.event.verify_url = verify_url
+  clientEntryValue.evtdata.verify_url = verify_url
   logger.debug -> "_inviteClient(), clientEntryValue:\n#{JSON.stringify(clientEntryValue)}"
   keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
   .then () ->
@@ -45,7 +45,7 @@ _inviteClient = (clientEntryValue) ->
       clientEntryValue.user.id
       clientEntryValue.user.email
       clientEntryValue.user
-      clientEntryValue.event.name
+      clientEntryValue.evtdata.name
       clientEntryValue
     )
     # TODO - add to notification job queue upon possible failure,
@@ -141,7 +141,7 @@ class ProjectCrud extends ThenableCrud
         true
 
   addClient: (clientEntryValue) ->
-    {user, project, event} = clientEntryValue
+    {user, parent, project, evtdata} = clientEntryValue
     dbs.transaction 'main', (trx) ->
       # get the invited user if exists
       tables.auth.user(transaction: trx)
@@ -155,14 +155,13 @@ class ProjectCrud extends ThenableCrud
           .insert user
           .returning 'id'
           .then ([id]) ->
-            console.log "id:\n#{JSON.stringify(id,null,2)}"
             user.id = id
-            event.name = 'client_created'
+            evtdata.name = 'client_created'
 
         # use existing user for 'client_invited' vero event
         else
           user = result[0]
-          event.name = 'client_invited'
+          evtdata.name = 'client_invited'
           userPromise = Promise.resolve()
 
         userPromise
@@ -183,9 +182,8 @@ class ProjectCrud extends ThenableCrud
             user_id: user.id
             permission_id: authPermission.id
             transaction: trx
-          console.log "permission:\n#{JSON.stringify(permission,null,2)}"
           permissionsService.setPermissionForUserId permission
-          # userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
+
 
         # profile stuff
         .then ->
@@ -193,10 +191,7 @@ class ProjectCrud extends ThenableCrud
             auth_user_id: user.id
             parent_auth_user_id: user.parent_id
             project_id: project.id
-          console.log "newProfile:\n#{JSON.stringify(newProfile,null,2)}"
           profileSvc.createForProject newProfile, trx
-          # profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
-
 
 #temporary to not conflict with project
 module.exports = ProjectCrud
