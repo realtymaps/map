@@ -12,7 +12,7 @@ parcelHelpers = require './util.parcelHelpers'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger.coffee').spawn('task:digimaps')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
-{SoftFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
@@ -92,12 +92,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       }
 
       jobQueue.queueSubsequentSubtask {
-        subtask
-        laterSubtaskName: "finalizeDataPrep"
-        replace: true
-      }
-
-      jobQueue.queueSubsequentSubtask {
         subtask, laterSubtaskName: "activateNewData"
         manualData: {deletes}
         replace: true
@@ -152,13 +146,22 @@ loadRawData = (subtask) -> Promise.try () ->
       # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
       # on whether this is a dump or an update)
       #TODO: the right way later
-      jobQueue.queueSubsequentSubtask {
-        subtask
-        laterSubtaskName: "recordChangeCounts"
-        #rawDataType fixes lookup of rawtable for change counts
-        manualData: parcelHelpers.getRecordChangeCountsData(fipsCode)
-        replace: true
-      }
+      Promise.all [
+        jobQueue.queueSubsequentSubtask {
+          subtask
+          laterSubtaskName: "recordChangeCounts"
+          #rawDataType fixes lookup of rawtable for change counts
+          manualData: parcelHelpers.getRecordChangeCountsData(fipsCode)
+          replace: true
+        }
+
+        jobQueue.queueSubsequentSubtask {
+          subtask
+          laterSubtaskName: "finalizeDataPrep"
+          manualData: {fipsCode}
+          replace: true
+        }
+      ]
       .then () ->
         numRawRows
     .then (numRows) ->
@@ -199,16 +202,28 @@ normalizeData = (subtask) ->
 
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+  fipsCode = subtask.data?.fipsCode
+
+  if !fipsCode?
+    throw new HardFail('fipsCode is required for finalizedDataPrep')
 
   logger.debug util.inspect(subtask, depth: null)
 
   tables.property.normParcel()
   .select('rm_property_id')
-  .where(batch_id: subtask.batch_id)
+  .where
+    batch_id: subtask.batch_id
+    fips_code: fipsCode
   .then (ids) ->
     ids  = ids.map (id) -> id.rm_property_id
     # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: ids
+      maxPage: numRowsToPageFinalize
+      laterSubtaskName: "finalizeData"
+      normalSubId: fipsCode #required for countyHelpers.finalizeData
+    }
 
 finalizeData = (subtask) ->
   logger.debug util.inspect(subtask, depth: null)
