@@ -26,7 +26,7 @@ getPermissionForCodename = (codename) ->
   .then (rows) ->
     expectSingleRow(rows)
   .then (row) ->
-    logger.info("permission found for codename #{codename}")
+    logger.debug("permission found for codename #{codename}")
     Promise.resolve(row)
   .catch (err) ->
     logger.error "error loading permission for codename #{codename}: #{err}"

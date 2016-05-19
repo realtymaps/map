@@ -58,8 +58,6 @@ handleRoute = (req, res, next, toExec, isDirect) ->
   .catch UpdateFailedError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
   .catch (err) ->
-    console.log "err:\n#{Object.keys(err)}"
-    console.log "err.message:#{err.message}"
     logger.error analyzeValue.getSimpleDetails(err)
     next(err)
 
