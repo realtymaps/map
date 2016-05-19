@@ -61,7 +61,9 @@ then
         cd -
     else
         echo "No schema changes"
-        migrationsResult=`grep -E "SUCCESS: \d+" "$DBSYNC_RESULT"`
+        set +e
+        migrationsResult=`grep -E "SUCCESS:" "$DBSYNC_RESULT"`
+        set -e
         echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ TEST: $migrationsResult"
     fi
 else
