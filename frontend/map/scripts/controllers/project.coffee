@@ -51,6 +51,7 @@ app.controller 'rmapsProjectCtrl',
   # Initialize Scope Variables
   #
 
+  $scope.propertiesService = rmapsPropertiesService
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
     property: new rmapsPropertyFormatterService

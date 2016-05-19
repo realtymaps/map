@@ -84,7 +84,7 @@ app.service 'rmapsProfilesService', (
       if @currentProfile
         @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
         @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-        @currentProfile.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
+        @currentProfile.properties_selected = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
 
         # Get the center of the main map if it has been created
         if rmapsMapFactory.currentMainMap

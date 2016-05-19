@@ -30,7 +30,7 @@
           .widget-background
             span.icon.icon-pin
           a(ui-sref="projectPins({ id: project.id})")
-            .widget-count {{_.keys(project.properties_selected).length || 0}}
+            .widget-count {{_.keys(propertiesService.pins).length || 0}}
             .widget-title Pins
 
       .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
@@ -38,7 +38,7 @@
           .widget-background
             i.icon.fa.fa-heart
           a(ui-sref="projectFavorites({ id: project.id})")
-            .widget-count {{_.keys(project.favorites).length || 0}}
+            .widget-count {{_.keys(propertiesService.favorites).length || 0}}
             .widget-title Favorites
 
       .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
