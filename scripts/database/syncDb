@@ -28,7 +28,7 @@ $DBSYNC --path migrations/$1 --client pg --connection $DST_URL --reminder 1 --re
 
 if [[ "$NODE_ENV" == "production" ]]
 then
-    echo "Checking for successful migrations"
+    echo "Checking for successful migrations..."
     set +e
     migrationsResult=`fgrep "SUCCESS: " "$DBSYNC_RESULT" | fgrep " migrations performed"`
     set -e
@@ -38,6 +38,7 @@ then
     fi
     if [[ "$migrationsResult" != "" ]]
     then
+        echo "Successful migrations detected!"
         cd /tmp
 
         echo "Dumping ${DB_LABEL} schema"
@@ -58,7 +59,7 @@ then
 
         cd -
     else
-        echo "No schema changes"
+        echo "No schema changes."
     fi
 else
     echo "Environment is $NODE_ENV, not dumping schema"

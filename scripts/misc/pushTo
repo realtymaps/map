@@ -47,5 +47,10 @@ fi
 
 # do the push
 echo "PUSH_TO: pushing to ${SERVICE}"
+if [[ "${SERVICE}" == "heroku" ]]
+then
+    # https://discuss.circleci.com/t/git-errors-failing-the-build-when-deploying-to-heroku/776/2
+    [[ ! -s \"$(git rev-parse --git-dir)/shallow\" ]] || git fetch --unshallow
+fi
 git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:master"
 
