@@ -4,13 +4,16 @@ userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coff
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
 tables = require('../config/tables')
+db = require('../config/dbs').get('main')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 userProfileSvc = (require '../services/services.user').user.profiles
+keystoreSvc = require '../services/service.keystore'
 userUtils = require '../utils/util.user'
+ProjectSvcClass = require('../services/service.user.project')
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
@@ -18,8 +21,12 @@ routeUserSessionInternals = require './route.userSession.internals'
 Promise = require 'bluebird'
 # End temporary
 
+projectSvc = new ProjectSvcClass(tables.user.project).init(false)
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
+
+vero = null
+require('../services/email/vero').then (svc) -> vero = svc.vero
 
 class ClientsCrud extends RouteCrud
   init: () ->
@@ -55,44 +62,26 @@ class ClientsCrud extends RouteCrud
   rootPOST: (req, res) ->
     throw new Error('User not logged in') unless req.user
     throw new Error('Project ID required') unless req.params.id
+    clientEntryValue =
+      user:
+        date_invited: new Date()
+        parent_id: req.user.id
+        first_name: req.body.first_name
+        last_name: req.body.last_name
+        username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
+        email: req.body.email
+      parent:
+        id: req.user.id
+        first_name: req.user.first_name
+        last_name: req.user.last_name
+      project:
+        id: req.params.id
+        name: req.body.project_name
+      evtdata:
+        name: 'client_created' # altered to 'client_invited' for emails that exist in system
+        verify_host: req.headers.host
 
-    newUser =
-      date_invited: new Date()
-      parent_id: req.user.id
-      username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
-    #TODO: the majority of this is service business logic and should be moved to service.user.project
-    userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
-    .then (clientId) ->
-      throw new Error 'user ID required - new or existing' unless clientId?
-
-      # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
-      newUser.id = clientId
-
-      userSessionSvc.updatePassword newUser, 'Password$1', false
-
-    .then ->
-      # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
-      permissionsService.getPermissionForCodename 'unlimited_logins'
-
-    .then (authPermission) ->
-      logger.debug "Found new client permission id: #{authPermission.id}"
-
-      # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
-      throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
-
-      permission =
-        user_id: newUser.id
-        permission_id: authPermission.id
-
-      userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
-
-    .then ->
-      newProfile =
-        auth_user_id: newUser.id
-        parent_auth_user_id: req.user.id
-        project_id: req.params.id
-
-      profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
+    projectSvc.addClient clientEntryValue
 
   ###
     Update user contact info - but only if the request came from the parent user
@@ -203,7 +192,6 @@ class ProjectRouteCrud extends RouteCrud
     super(req, res, next)
     .then (projects) =>
       newReq = @cloneRequest(req)
-      logger.debug "newReq: #{JSON.stringify newReq}"
 
       #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
       _.extend newReq.params, id: _.pluck(projects, 'id') #set to id since it gets mapped to user_profile.project_id

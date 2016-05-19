@@ -157,6 +157,11 @@ module.exports = app.config (
   buildChildState 'userTeamMembers', 'user', page: { title: 'Team Members' }
   buildChildState 'userPaymentHistory', 'user', page: { title: 'Payment History' }
 
+  buildState 'clientEntry',
+    #parent: null
+    loginRequired: false
+    permissionsRequired: false
+
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'

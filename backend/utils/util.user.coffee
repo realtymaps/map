@@ -24,9 +24,10 @@ cacheUserValues = (req, reload = {}) ->
     .then (groupsHash) ->
       req.session.groups = groupsHash
     promises.push groupsPromise
+
   if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
-    profilesPromise = userSessionService.getProfiles(req.user.id)
+    profilesPromise = userSessionService.getProfiles req.user.id
     .then (profiles) ->
       logger.debug 'userSessionService.getProfiles.then'
       req.session.profiles = profiles

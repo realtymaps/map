@@ -61,8 +61,6 @@ login = (req, res, next) -> Promise.try () ->
         req.user = user
         req.session.userid = user.id
         req.session.subscription = subscription_status
-        logger.debug "session: #{req.session}"
-
         userUtils.cacheUserValues(req)
         .then () ->
           req.session.saveAsync()
@@ -107,7 +105,7 @@ updateState = (req, res, next) ->
 profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
-      userSessionService.getProfiles(req.user.id)
+      userSessionService.getProfiles req.user.id
       .then (result) ->
         res.json result
     PUT: () ->
