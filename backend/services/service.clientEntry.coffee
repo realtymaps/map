@@ -31,11 +31,8 @@ getClientEntry = (key) ->
       .select 'id', 'email', 'first_name', 'last_name'
       .whereIn 'id', [entry.user.id, entry.user.parent_id]
       .then (users) ->
-        # "keyBy" the users for better referencing later
-        authUsers = {}
-        for user in users
-          authUsers[user.id] = user
-        authUsers
+        # index the users for better referencing later
+        _.indexBy users, 'id'
       .then (authUsers) ->
         # obtain helpful project members
         tables.user.project transaction: trx
