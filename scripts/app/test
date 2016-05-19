@@ -1,8 +1,55 @@
 #!/bin/bash
+set -e
+set -o pipefail
 
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$CIRCLECI" != "" ]]
+then
+  # when on CircleCI, there's stuff we have to do to prep the dbs before we run the tests
+
+  echo "***** Creating DBs:"
+  $SCRIPT_DIR/database/createDbs postgres
+
+  for DB in main normalized
+  do
+    echo "===== Setting up $DB db:"
+    DB_UPCASE=`echo "$DB" | tr '[:lower:]' '[:upper:]'`
+
+    echo "~~~~~ Creating extensions:"
+    $SCRIPT_DIR/database/createExtensions $DB postgres
+
+    echo "~~~~~ Downloading db schema cache file:"
+    curl -# -o /tmp/ci_data_${DB}_schema.db ${CI_DB_SECRET_URL}_${DB_UPCASE}_SCHEMA
+
+    echo "~~~~~ Loading db schema cache file:"
+    pg_restore -d realtymaps_${DB} -U postgres -e -O /tmp/ci_data_${DB}_schema.db
+
+    echo "~~~~~ Downloading dbsync cache file:"
+    curl -# -o /tmp/ci_data_${DB}_dbsync.db ${CI_DB_SECRET_URL}_${DB_UPCASE}_DBSYNC
+
+    echo "~~~~~ Loading dbsync cache files:"
+    pg_restore -d realtymaps_${DB} -U postgres -e -O /tmp/ci_data_${DB}_dbsync.db
+
+    echo "~~~~~ Setting DB url var:"
+    DB_URL="postgres://postgres@localhost:5432/realtymaps_${DB}"
+    eval "export ${DB_UPCASE}_DATABASE_URL=${DB_URL}"
+    # need to put it in the .env file so foreman will use it
+    echo "${DB_UPCASE}_DATABASE_URL=${DB_URL}" >> ./.env
+
+    echo "~~~~~ Applying new migrations:"
+    $SCRIPT_DIR/database/syncDb $DB
+
+    echo "~~~~~ Inserting mock data:"
+    $SCRIPT_DIR/database/syncDb $DB --ci
+  done
+fi
+
+
+echo "***** Running tests:"
 if [[ `which foreman` == "" ]]
 then
     gem install foreman
 fi
-
 foreman run gulp rspec
