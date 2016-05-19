@@ -2,6 +2,7 @@
 
 #end merge count 585151
 set -e
+set -o pipefail
 
 destTable=$1
 frmTable=$2

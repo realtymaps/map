@@ -2,6 +2,18 @@ machine:
   node:
     version: v4.3.1
 
+
+dependencies:
+  pre:
+    # these arcane commands get postgres 9.5 (which is currently "experimental" on CircleCI) to run on the default port,
+    # based on comments in this thread: https://discuss.circleci.com/t/request-postgres-9-5/2611
+    - sudo service postgresql stop 9.4
+    - sudo cp -v /etc/postgresql/9.{4,5}/main/pg_hba.conf
+    - sudo sed -i "s/port = ..../port = 5432/g" /etc/postgresql/9.5/main/postgresql.conf
+    - sudo service postgresql restart 9.5
+    - sudo su - postgres -c "echo \"CREATE USER ubuntu WITH SUPERUSER PASSWORD '';\" | psql"
+
+
 deployment:
   prod:
     branch: master

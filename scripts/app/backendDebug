@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 foreman run node-debug coffee backend/server.coffee --nodejs

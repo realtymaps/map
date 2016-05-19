@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 
 # intended usage `./scrips/templates/new_table_template credit_card`
 #

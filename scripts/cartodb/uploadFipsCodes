@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 #required install cartodb-upload (via npm -g or link)
 

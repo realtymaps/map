@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 # 2 weeks in seconds
 THRESHOLD_WINDOW=$((2*7*24*60*60))
@@ -87,14 +88,14 @@ do
         # if we were told to skip, short-circuit out of the loop before doing anything
         continue
     fi
-    
-    # find out when the most recent commit on this branch happened 
+
+    # find out when the most recent commit on this branch happened
     TIMESTAMP="$(git log -1 --pretty=format:"%ci" "$branch")"
     TIMESTAMP_EPOCH=`date -jf '%F %T %z' "$TIMESTAMP" '+%s'`
     if [[ "$TIMESTAMP_EPOCH" < "$BEFORE_THRESHOLD_EPOCH" ]]
     then
         # ok, it happened long enough ago that we don't need it any more
-        
+
         LOCAL_BRANCH="yes"
         for remote in $REMOTE_PREFIXES
         do
