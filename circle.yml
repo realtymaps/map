@@ -11,7 +11,7 @@ dependencies:
     - sudo cp -v /etc/postgresql/9.{4,5}/main/pg_hba.conf
     - sudo sed -i "s/port = ..../port = 5432/g" /etc/postgresql/9.5/main/postgresql.conf
     - sudo service postgresql restart 9.5
-    - sudo su - postgres -c "echo \"CREATE USER ubuntu WITH CREATEDB PASSWORD '';\" | psql"
+    - sudo su - postgres -c "echo \"CREATE USER ubuntu WITH SUPERUSER PASSWORD '';\" | psql"
 
 
 deployment:
