@@ -33,35 +33,19 @@ gulp.task 'backendUnitDebugSpec', (done) ->
   runMocha ['spec/backendUnit/**/*spec*'], 'spec', done
 
 gulp.task 'backendIntegrationSpec', (done) ->
-  if process.env.CIRCLECI
-    logger.debug("Skipping integration tests (CIRCLECI=#{process.env.CIRCLECI})")
-    done()
-  else
-    runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
+  runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
 
 gulp.task 'dbShutdown', (done) ->
-  if process.env.CIRCLECI
-    # skip this step
+  dbs.shutdown(quiet: true)
+  .then () ->
     done()
-  else
-    dbs.shutdown(quiet: true)
-    .then () ->
-      done()
 
 gulp.task 'forceExit', (done) ->
-  if process.env.CIRCLECI
-    # skip this step
-    done()
-  else
-    done()
-    shutdown.exit()
+  done()
+  shutdown.exit()
 
 gulp.task 'backendIntegrationDebugSpec', (done) ->
-  if process.env.CIRCLECI
-    logger.debug("Skipping integration tests (CIRCLECI=#{process.env.CIRCLECI})")
-    done()
-  else
-    runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
+  runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
 
 gulp.task 'backendSpec', gulp.series('unitTestPrep', 'backendUnitSpec', 'unitTestTeardown', 'backendIntegrationSpec')
 gulp.task 'backendDebugSpec', gulp.series('unitTestPrep', 'backendUnitDebugSpec', 'unitTestTeardown', 'backendIntegrationDebugSpec')
