@@ -52,10 +52,10 @@ then
         pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DST_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
 
         echo "Uploading ${DB_LABEL} schema to S3"
-        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA" --quiet
 
         echo "Uploading ${DB_LABEL} dbsync_migrations to S3"
-        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC" --quiet
 
         cd -
     else
