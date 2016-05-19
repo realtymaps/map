@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
@@ -39,7 +38,6 @@ then
     fi
     if [[ "$migrationsResult" != "" ]]
     then
-        DB_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE@$HEROKU_APP_NAME`
         cd /tmp
 
         echo "Dumping ${DB_LABEL} schema"
@@ -47,10 +45,10 @@ then
         then
           tableList="-T 'tax_*' -T 'deed_*' -T 'mortgage_*'"
         fi
-        pg_dump -x -n public -s -F c $tableList -d "$DB_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
+        pg_dump -x -n public -s -F c $tableList -d "$DST_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
 
         echo "Dumping ${DB_LABEL} dbsync_migrations"
-        pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DB_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
+        pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DST_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
 
         echo "Uploading ${DB_LABEL} schema to S3"
         $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
