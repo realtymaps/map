@@ -54,5 +54,5 @@ then
     git fetch --all --unshallow
     echo "PUSH_TO: doing push"
 fi
+echo "git push --force git@${SERVICE}.com:${PROJECT}.git ${CIRCLE_SHA1}:master"
 git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:master"
-
