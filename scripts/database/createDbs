@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+
+
+if [[ $1 == '' ]]; then
+  echo 'user name required'
+  exit 1
+fi
+
+createdb -h localhost -U $1 realtymaps_main
+createdb -h localhost -U $1 realtymaps_normalized
+createdb -h localhost -U $1 realtymaps_raw_temp
+createdb -h localhost -U $1 realtymaps_test

@@ -1,16 +1,22 @@
 #!/bin/bash
 set -e
+set -o pipefail
+
+
 if [[ $1 == '' ]]; then
   echo 'db name required'
-  exit 201
+  exit 1
+fi
+if [[ $2 == '' ]]; then
+  echo 'user name required'
+  exit 1
 fi
 
-#https://realtymaps.atlassian.net/wiki/display/NDS/Database+Setup
-SQL_STR="CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS postgis_topology;
-CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE EXTENSION IF NOT EXISTS tablefunc;"
 
-psql -d "realtymaps_$1" -U superdev -c "$SQL_STR"
+
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS postgis"
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS postgis_topology"
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch"
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder"
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+psql -h localhost -d "realtymaps_$1" -U $2 -c "CREATE EXTENSION IF NOT EXISTS tablefunc"
