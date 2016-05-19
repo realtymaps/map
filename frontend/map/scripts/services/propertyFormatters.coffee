@@ -27,8 +27,8 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       _.extend @, rmapsFormattersService.Common
       _.extend @, google: rmapsGoogleService
 
-    isSavedResult: (result) ->
-      rmapsPropertiesService.isSavedProperty result?.rm_property_id
+    isPinnedResult: (result) ->
+      rmapsPropertiesService.isPinnedProperty result?.rm_property_id
 
     isFavoriteResult: (result) ->
       rmapsPropertiesService.isFavoriteProperty result?.rm_property_id
@@ -46,12 +46,12 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
 
     getForSaleClass: (result, showSaved = true) ->
       return '' unless result
-      soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isSaved
+      soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isPinned
       soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
 
     getStatusLabelClass: (result, ignoreSavedStatus=false) ->
       return '' unless result
-      soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
+      soldClass = _statusLabelClass['saved'] if result.savedDetails?.isPinned && !ignoreSavedStatus
       return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
 
     showSoldDate: (result) ->

@@ -3,9 +3,9 @@ div.btn-actions
     i.fa.fa-heart(ng-class="{'fa-heart':formatters.property.isFavoriteResult(property), 'fa-heart-o':!formatters.property.isFavoriteResult(property)}") &nbsp;
     .button-help Favorite
 
-  button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isSavedResult(property) }")
+  button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isPinnedResult(property) }")
     span.icon.icon-pin
-    .button-help {{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}
+    .button-help {{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}
 
   button.send(ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }")
     i.fa.fa-envelope
