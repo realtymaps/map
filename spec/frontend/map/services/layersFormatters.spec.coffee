@@ -29,13 +29,13 @@ describe "rmapsLayerFormattersService", ->
                   savedDetails:{}
                 2:
                   savedDetails:
-                    isSaved: true
+                    isPinned: true
                 3:
                   savedDetails:
-                    isSaved: false
+                    isPinned: false
                 5:
                   savedDetails:
-                    isSaved: undefined
+                    isPinned: undefined
               }
 
 
@@ -55,10 +55,10 @@ describe "rmapsLayerFormattersService", ->
               @subject.isVisible(@mockScope, {rm_property_id:4}).should.be.not.ok
 
             it 'savedDetails isSaved undefined', ->
-              @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isSaved:undefined}}).should.be.not.ok
+              @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:undefined}}).should.be.not.ok
 
             it 'savedDetails isSaved false', ->
-              @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isSaved:false}}).should.be.not.ok
+              @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:false}}).should.be.not.ok
 
         describe 'in filterSummary', ->
           it 'savedDetails isSaved false', ->
@@ -77,7 +77,7 @@ describe "rmapsLayerFormattersService", ->
 
         describe 'in filterSummary', ->
           it 'savedDetails isSaved', ->
-            @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isSaved:true}}).should.be.ok
+            @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:true}}).should.be.ok
 
     describe 'MLS', ->
 
@@ -144,7 +144,7 @@ describe "rmapsLayerFormattersService", ->
             (@subject undefined).should.be.ok
 
           it 'feature saved', ->
-            style = @subject {savedDetails:isSaved: true}
+            style = @subject {savedDetails:isPinned: true}
             style.should.be.ok
             style.weight.should.be.equal weight
             style.color.should.not.be.equal @rmapsStylusConstants['$rm_saved']
@@ -154,7 +154,7 @@ describe "rmapsLayerFormattersService", ->
 
           describe 'feature not saved', ->
             it 'w no status', ->
-              style = @subject {savedDetails:isSaved: false}
+              style = @subject {savedDetails:isPinned: false}
               style.should.be.ok
               style.weight.should.be.equal weight
               style.color.should.be.equal 'transparent'
@@ -166,7 +166,7 @@ describe "rmapsLayerFormattersService", ->
               style = @subject(
                 rm_status: 'crap'
                 savedDetails:
-                  isSaved: false
+                  isPinned: false
               )
 
               style.should.be.ok
@@ -179,7 +179,7 @@ describe "rmapsLayerFormattersService", ->
               style = @subject(
                 rm_status: 'recently sold'
                 savedDetails:
-                  isSaved: false
+                  isPinned: false
               )
 
               style.should.be.ok
