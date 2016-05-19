@@ -18,10 +18,9 @@ if [[ $1 =~ (.*)_.*@(.*) ]]; then
   DB_LABEL="$1"
   DST_URL=`$SCRIPT_DIR/database/getDbUrl $DB_LABEL`
   MIGRATION_FOLDER=`echo ${BASH_REMATCH[1]} | tr '[A-Z]' '[a-z]'`
-  APP=${BASH_MATCH[2]}
+  APP=${BASH_REMATCH[2]}
   DST_URL="${DST_URL}?ssl=true"
   echo "SYNC: performing db migrations on: $DB_LABEL"
-
 else
   # short name, like `main` or `raw_temp`
   DB_LABEL=`echo "$1" | tr '[a-z]' '[A-Z]'`
