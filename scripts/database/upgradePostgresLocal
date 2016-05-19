@@ -1,24 +1,27 @@
 #!/bin/sh
 set -e
+set -o pipefail
+
+
 echo creating dev user:
 # create the role used for migrations (use "devpass" as the password)
 createuser -d -E -P dev
-  
+
 # create a superuser (use a secure password of your choice)
 echo creating superdev user:
 createuser -d -E -l -P -r -s superdev
-  
+
 # create our dbs (use "devpass" as the password for each command)
 createdb -U dev realtymaps_property_dev
 createdb -U dev realtymaps_users_dev
 createdb -U dev realtymaps_test_dev
- 
+
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis;"
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_topology;"
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION fuzzystrmatch;"
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_tiger_geocoder;"
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION pg_trgm;"
 psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION tablefunc;"
- 
+
 psql -d postgres://superdev@localhost:5432/realtymaps_property_dev -f /tmp/main_dump.db
 cp /tmp/pg_hba.conf ~/Library/Application\ Support/Postgres/var-9.5/pg_hba.conf

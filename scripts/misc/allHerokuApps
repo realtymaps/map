@@ -2,6 +2,7 @@
 
 # example use ./scripts/misc/allHerokuApps config:set KEY=VALUE
 set -e
+set -o pipefail
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 cd "$DIR/.."
 
