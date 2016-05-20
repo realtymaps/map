@@ -42,7 +42,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
   jobQueue.getLastTaskStartTime(subtask.task_name, false)
   .then (startTime) ->
 
-    normalPayloads = parcelUtils.normalize {
+    normalPayloadsPromise = parcelUtils.normalize {
       batch_id: subtask.batch_id
       data_source_id: subtask.task_name
       rows
@@ -50,16 +50,15 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       startTime
     }
 
-    logger.debug "got #{normalPayloads.length} normalized rows"
+    logger.debug "got #{normalPayloadsPromise.length} normalized rows"
 
     tablesPropName = 'norm'+tableName.toInitCaps()
-
 
     #these promises must happen in order since we might have multiple props of the same rm_property_id
     # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
     #THIS FIXES insert collisions when they should be updates
     #TODO: Bluebird 3.X use mapSeries
-    Promise.each normalPayloads, (payload) ->
+    Promise.each normalPayloadsPromise, (payload) ->
       # logger.debug payload
 
       #NOTE: rm_raw_id is always defined which is why it is destructured here
