@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('jobQueue')
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
-notifications = require '../utils/util.notifications.coffee'
+notifications = require './service.notifications'
 tables = require '../config/tables'
 cluster = require 'cluster'
 memoize = require 'memoizee'
@@ -15,7 +15,10 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-sendNotification = notifications.notification('jobQueue')
+sendNotification = notifications.notification {
+  type: 'jobQueue'
+  frequency: 'immediate'
+}
 
 
 summary = (subtask) ->
@@ -347,4 +350,5 @@ module.exports = {
   runWorkerImpl
   cancelTaskImpl
   executeSubtask
+  sendNotification
 }

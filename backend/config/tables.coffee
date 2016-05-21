@@ -63,6 +63,7 @@ module.exports =
     creditCards: 'user_credit_cards'
     shellHistory: 'user_shell_history'
     errors: 'user_errors'
+    notification: 'user_notification'
   mail:
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
