@@ -12,16 +12,26 @@ module.exports = (params, output, definition) -> Promise.try () ->
   input = definition.input || output
   transform = definition.transform || noop
   required = definition.required
-  if _.isString(input)
+  isRoot = definition.isRoot ? false
+
+  if isRoot
+    values = params
+  else if _.isString(input)
     values = params[input]
   else if _.isArray(input)
     values = _.at(params, input)
   else
     values = _.mapValues input, (sourceName) -> params[sourceName]
-  doValidationSteps(transform, output, values)
-  .then (transformed) ->
-    # check for required value
-    if required && !transformed?
-      throw new DataValidationError('required', output, undefined)
-    else
-      return transformed
+
+  doValidationStepsFn = () ->
+    doValidationSteps(transform, output, values)
+    .then (transformed) ->
+      # check for required value
+      if required && !transformed?
+        throw new DataValidationError('required', output, undefined)
+      else
+        if !isRoot || !input?
+          return transformed
+        input = null
+        doValidationStepsFn(noop, output, transformed)
+  doValidationStepsFn()

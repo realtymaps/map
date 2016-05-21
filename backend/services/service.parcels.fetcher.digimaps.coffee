@@ -1,11 +1,9 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 shp2json = require 'shp2jsonx'
-through = require 'through'
 through2 = require 'through2'
 JSONStream = require 'JSONStream'
 PromiseFtp = require 'promise-ftp'
-parcelUtils = require '../utils/util.parcel'
 
 logger = require('../config/logger').spawn('digimaps:parcelFetcher')
 clientClose = require '../utils/util.client.close'
@@ -166,18 +164,8 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
     interceptStream.pipe(t2Stream).pipe(jsonStream)
 
 
-getFormatedParcelJsonStream = (fullPath, {creds} = {}) ->
-  getParcelJsonStream(fullPath, {creds})
-  .then (stream) ->
-    write = (obj) ->
-      @queue parcelUtils.formatParcel(obj)
-    end = ->
-      @queue null
-    stream.pipe through(write, end)
-
 module.exports = {
   getZipFileStream
   getParcelJsonStream
-  getFormatedParcelJsonStream
   defineImports
 }
