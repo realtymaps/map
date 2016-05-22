@@ -97,7 +97,7 @@ _setup = (baseObject) ->
       - subid allows having a collection of tables all serving 1 purpose (and with 1 entry in `tables`)
       - major performance improvement to do that
       ###
-      buildTableName = (subid) -> "#{tableName}_#{subid}"
+      buildTableName = dbs.buildTableName(tableName)
       query = (opts={}) ->
         db = dbs.get(dbName)
         client = opts.transaction ? db

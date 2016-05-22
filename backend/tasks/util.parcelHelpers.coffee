@@ -154,7 +154,7 @@ getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
     maxPage: numRowsToPageFinalize
     laterSubtaskName: "finalizeData"
     mergeData:
-      normalSubId: fipsCode #required for countyHelpers.finalizeData
+      normalSubid: fipsCode #required for countyHelpers.finalizeData
   }
 
 

@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('util.parcel')
+logger = require('../config/logger').spawn('util:parcel')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 {DataValidationError} = require '../utils/util.validation'
