@@ -19,7 +19,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 
 
-NUM_ROWS_TO_PAGINATE = 2500
+NUM_ROWS_TO_PAGINATE = 250
 HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 DELAY_MILLISECONDS = 250
 
@@ -159,7 +159,6 @@ loadRawData = (subtask) -> Promise.try () ->
           subtask
           laterSubtaskName: "finalizeDataPrep"
           manualData: {fipsCode}
-          replace: true
         }
       ]
       .then () ->
