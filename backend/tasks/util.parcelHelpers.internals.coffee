@@ -28,7 +28,6 @@ getRowChanges = (row1, row2) ->
     _(c).omit(_.isUndefined).omit(_.isNull).value()
 
 
-
 finalizeParcelEntry = (entries) ->
   entry = entries.shift()
   entry.active = false
@@ -39,6 +38,7 @@ finalizeParcelEntry = (entries) ->
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
   entry
+
 
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   parcel = finalizeParcelEntry(parcels)
@@ -64,8 +64,10 @@ finalizeUpdateListing = ({id, subtask, transaction}) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
+          logger.debug () -> "mlsHelpers.finalizeData"
           mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
         else
+          logger.debug () -> "countyHelpers.finalizeData"
           countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
 
     Promise.all promises
