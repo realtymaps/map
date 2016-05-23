@@ -1,82 +1,65 @@
 #projects
-  .desktop-only
-    .inner
-      .container
-        header.row
-          .col-md-8
-            h1.pageTitle Projects
-            p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighbourhoods, and clients.
-          .col-md-4.text-right
-            .tools
-              input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
-              span.divider
-                button.btn.btn-primary(ng-click="addProject()") Create
-        .row
-          .col-md-12
-            table.table.table-hover
-              thead
-                tr
-                  th.select
-                    input(type="checkbox" name="selectAll")
-                  th
-                    span Title
-                  th
-                    span Pins
-                  th
-                    span Neighbourhoods
-                  th
-                    span Favorites
-                  th
-                    span Notes
-                  th
-                    span Clients
-                  th
-                    span Created
-                  th.col-md-1
-                    span
-                  th.col-md-1
-                    span
-              tbody
-                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: ['-sandbox', 'name']")
-                  td.select
-                    input(type="checkbox" name="selectGroup_{{$index}}")
-                  td(ui-sref="project({id: {{project.id}}})")
-                    h4(ng-show="!project.sandbox") {{project.name}}
-                    h4(ng-show="project.sandbox") Sandbox
-                    a.details(title="View details") View Details
-                  td
-                    a(ui-sref="projectPins({id: {{project.id}}})") {{_.keys(project.properties_selected).length}}
-                  td
-                    a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}}
-                  td
-                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{_.keys(project.favorites).length}}
-                  td
-                    a(ui-sref="projectNotes({id: {{project.id}}})") {{project.notes.length}}
-                  td
-                    a(ui-sref="projectClients({id: {{project.id}}})") {{project.clients.length}}
-                  td
-                    span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
-                  td.col-md-1
-                    button.btn.btn-white(ng-click="loadMap(project); $event.stopPropagation()") View Map
-                  td.col-md-1
-                    button.btn.btn-white(ng-click="deleteProject(project); $event.stopPropagation()") Delete
-  .mobile-only
-    .inner
-      .container
-        .row
-          .col-md-12
-            ul.projects-list
-              li(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
-                h2.title(ng-click="loadMap(project); $event.stopPropagation()") {{project.name || "Sandbox"}}
-                  i.fa.fa-chevron-right.pull-right
-                div.tools
-                    a(ui-sref="project({id: {{project.id}}})") Next
-                ul.data
-                  li
-                      a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{enity.neighbourhoods.length}} Neighbourhoods
-                  li
-                      a(ui-sref="projectPins({id: {{project.id}}})") {{enity.properties.length}} Properties
-                  li
-                      a(ui-sref="projectClients({id: {{project.id}}})") {{enity.clients.length}} Clients
-                  li
-                      a(ui-sref="projectNotes({id: {{project.id}}})") {{enity.notes.length}} Notes
+
+  .projects-list
+    .project-list-item.item.item-icon-right.content-block(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
+      i.project-select-icon.pull-right.fa.fa-chevron-right
+      .content-heading(ng-click="loadMap(project); $event.stopPropagation()") {{project.name || "Sandbox"}}
+      .project-widgets
+        .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
+          .inner
+            .widget-background
+              span.icon.icon-property
+            a(ui-sref="project({ id: project.id})")
+              .widget-title Dashboard
+
+        .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
+          .inner
+            .widget-background
+              span.icon.icon-project
+            a(ng-click="loadMap(project)")
+              .widget-title Map
+
+        .project-widget.widget-pin(ng-class="{ 'widget-active': $state.is('projectPins')}")
+          .inner
+            .widget-background
+              span.icon.icon-pin
+            a(ui-sref="projectPins({ id: project.id})")
+              .widget-count {{_.keys(project.properties_selected).length || 0}}
+              .widget-title Pins
+
+        .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
+          .inner
+            .widget-background
+              i.icon.fa.fa-heart
+            a(ui-sref="projectFavorites({ id: project.id})")
+              .widget-count {{_.keys(project.favorites).length || 0}}
+              .widget-title Favorites
+
+        .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+          .inner
+            .widget-background
+              span.icon.icon-neighbourhood
+            a(ui-sref="projectNeighbourhoods({ id: project.id})")
+              .widget-count {{project.neighbourhoods.length || 0}}
+              .widget-title Areas
+
+        .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
+          .inner
+            .widget-background
+              i.icon.fa.fa-user
+            a(ui-sref="projectClients({ id: project.id})")
+              .widget-count {{project.clients.length || 0}}
+              .widget-title Clients
+      //.tools
+      //  a(ui-sref="project({id: {{project.id}}})") Dashboard
+      //.content-body
+      //  .col-xs-3
+      //    a.content-muted.content-sm(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}} Areas
+      //  .col-xs-3
+      //    a.content-muted.content-sm(ui-sref="projectPins({id: {{project.id}}})") {{_.keys(project.properties_selected).length}} Pins
+      //  //li
+      //  //  a.content-muted.content-sm(ui-sref="projectFavorites({id: {{project.id}}})") {{_.keys(project.favorites).length}} Favorites
+      //  .col-xs-3
+      //    a.content-muted.content-sm(ui-sref="projectClients({id: {{project.id}}})") {{project.clients.length}} Clients
+      //  .col-xs-3
+      //    a.content-muted.content-sm(ui-sref="projectNotes({id: {{project.id}}})") {{project.notes.length}} Notes
