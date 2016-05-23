@@ -47,12 +47,12 @@
             span.icon.icon-neighbourhood
           a(ui-sref="projectNeighbourhoods({ id: project.id})")
             .widget-count {{project.neighbourhoods.length || 0}}
-            .widget-title Neighborhoods
+            .widget-title Areas
 
       .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
         .inner
           .widget-background
-            span.icon.icon-project
+            i.icon.fa.fa-user
           a(ui-sref="projectClients({ id: project.id})")
             .widget-count {{project.clients.length || 0}}
             .widget-title Clients
