@@ -170,7 +170,7 @@ module.exports = {
 
 # route-specific middleware that requires a user to be the parent of the given project
 # being acted upon.
-  requireProjectParent: ({methods = ['get', 'put', 'post', 'delete', 'patch'], projectParam = 'id'}) ->
+  requireProjectParent: ({methods = ['get', 'put', 'post', 'delete', 'patch']}) ->
     # list-ize to defensively accept strings
     methods = [methods] if _.isString methods
     return (req, res, next) -> Promise.try () ->
