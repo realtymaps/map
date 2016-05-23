@@ -184,6 +184,9 @@ finalizeData = ({subtask, id, data_source_id}) ->
         data_source_id: data_source_id || subtask.task_name
         batch_id: subtask.batch_id
     if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
+      logger.debug "batch_id mismatch!!"
+      logger.debug "subtask.data.cause: #{subtask.data.cause}"
+      logger.debug "subtask.data.batch_id: #{subtask.data.batch_id} vs #{taxEntries[0]?.batch_id}"
       # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
       # of the given enqueue source , in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
       # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
