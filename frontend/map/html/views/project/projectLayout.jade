@@ -41,6 +41,14 @@
             .widget-count {{_.keys(propertiesService.favorites).length || 0}}
             .widget-title Favorites
 
+      .project-widget.widget-note(ng-class="{ 'widget-active': $state.is('projectNotes')}")
+        .inner
+          .widget-background
+            i.fa.fa-sticky-note
+          a(ui-sref="projectNotes({ id: project.id})")
+            .widget-count {{notes.length || 0}}
+            .widget-title Notes
+
       .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
         .inner
           .widget-background

@@ -5,21 +5,29 @@
       i.project-select-icon.pull-right.fa.fa-chevron-right
       .content-heading(ng-click="loadMap(project); $event.stopPropagation()") {{project.name || "Sandbox"}}
       .project-widgets
-        .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
+        .project-widget.widget-project
           .inner
             .widget-background
               span.icon.icon-property
             a(ui-sref="project({ id: project.id})")
               .widget-title Dashboard
 
-        .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
+        .project-widget.widget-project
           .inner
             .widget-background
               span.icon.icon-project
             a(ng-click="loadMap(project)")
               .widget-title Map
 
-        .project-widget.widget-pin(ng-class="{ 'widget-active': $state.is('projectPins')}")
+        .project-widget.widget-note
+          .inner
+            .widget-background
+              i.fa.fa-sticky-note
+            a(ui-sref="projectNotes({ id: project.id})")
+              //.widget-count {{notes.length || 0}}
+              .widget-title Notes
+
+        .project-widget.widget-pin
           .inner
             .widget-background
               span.icon.icon-pin
@@ -27,7 +35,7 @@
               .widget-count {{_.keys(project.properties_selected).length || 0}}
               .widget-title Pins
 
-        .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
+        .project-widget.widget-favorite
           .inner
             .widget-background
               i.icon.fa.fa-heart
@@ -35,7 +43,7 @@
               .widget-count {{_.keys(project.favorites).length || 0}}
               .widget-title Favorites
 
-        .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+        .project-widget.widget-neighborhood
           .inner
             .widget-background
               span.icon.icon-neighbourhood
@@ -43,7 +51,7 @@
               .widget-count {{project.neighbourhoods.length || 0}}
               .widget-title Areas
 
-        .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
+        .project-widget.widget-client
           .inner
             .widget-background
               i.icon.fa.fa-user

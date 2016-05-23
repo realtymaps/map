@@ -1,4 +1,5 @@
 .project-notes-container(ng-controller="rmapsNotesModalCtrl")
+
   .list.bordered
     .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
       .row
