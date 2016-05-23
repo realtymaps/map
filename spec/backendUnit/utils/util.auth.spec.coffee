@@ -132,3 +132,124 @@ describe 'util.auth', ->
       req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
       resultcb = resultBase.bind(null, done, "json")
       requirePermissions req, res, next
+
+  describe 'requireProject', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () ->
+          resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when no user", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req = user: null
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should return 401 if no profile_id", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        user: id: 7
+        session:
+          current_profile_id: null
+          profiles:
+            "1":
+              user_id: 7
+              parent_auth_user_id: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should return 401 if no profiles", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        user: id: 7
+        session:
+          current_profile_id: 1
+          profiles: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should return 401 if no matching profile", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        user: id: 7
+        session:
+          current_profile_id: 2
+          profiles:
+            "1":
+              user_id: 7
+              parent_auth_user_id: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should pass with user, profile, and project as expected", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        user: id: 7
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              parent_auth_user_id: null
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProject req, @res, @next
+
+  describe 'requireProjectParent', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () ->
+          resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not parent of project", (done) ->
+      requireProjectParent = auth.requireProjectParent(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProjectParent req, @res, @next
+
+    it "should pass when parent_auth_user_id matches user", (done) ->
+      requireProjectParent = auth.requireProjectParent(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              parent_auth_user_id: 7
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProjectParent req, @res, @next
