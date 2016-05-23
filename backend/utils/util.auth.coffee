@@ -168,6 +168,27 @@ module.exports = {
           return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
       return process.nextTick(next)
 
+# route-specific middleware that requires a user to be the parent of the given project
+# being acted upon.
+  requireProjectParent: ({methods = ['get', 'put', 'post', 'delete', 'patch'], projectParam = 'id'}) ->
+    # list-ize to defensively accept strings
+    methods = [methods] if _.isString methods
+    return (req, res, next) -> Promise.try () ->
+
+      # middleware is not applicable for given request methods, move along
+      return process.nextTick(next) if !(_.some methods, (item) -> item.toUpperCase() == req.method)
+
+      # procure profile
+      profile = req.session.profiles[req.session.current_profile_id]
+      if !profile?
+        throw new Error("Profile #{req.session.current_profile_id} not found for user #{req.user.id} when determining project parent.")
+
+      # this is the actual parent check
+      if profile.parent_auth_user_id? != req.user.id
+        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
+
+      return process.nextTick(next)
+
 # route-specific middleware that requires permissions set on the session,
 # and either responds with a 401 or a logout redirect on failure, based on
 # the options passed:
