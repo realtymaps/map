@@ -193,9 +193,9 @@ requireProject = ({methods}) ->
 
     return process.nextTick(next)
 
-# route-specific middleware that requires a user to be the parent of the given project
-# being acted upon.  implies `requireProject` automatically
-requireProjectParent = ({methods}) ->
+# route-specific middleware that requires a user to be the editor (which would logically include
+# parent but not always) of the given project being acted upon.  implies `requireProject` automatically
+requireProjectEditor = ({methods, parentidparam}) ->
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
   return (req, res, next) -> Promise.try () ->
@@ -215,6 +215,30 @@ requireProjectParent = ({methods}) ->
         return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
 
       return process.nextTick(next)
+
+# route-specific middleware that requires a user to be the parent of the given project
+# being acted upon.  implies `requireProject` automatically
+requireProjectParent = ({methods, parentidparam}) ->
+  # list-ize to defensively accept strings
+  methods = [methods] if _.isString methods
+  return (req, res, next) -> Promise.try () ->
+
+    # middleware is not applicable for this req.method, move along
+    return process.nextTick(next) if ignoreThisMethod req.method, methods
+
+    # ensure project
+    proj = requireProject {methods}
+    proj req, res, () ->
+
+      # procure profile (should exist by virtue of passing requireProject)
+      profile = req.session.profiles[req.session.current_profile_id]
+
+      # this is the actual parent check
+      if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
+        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
+
+      return process.nextTick(next)
+
 
 # route-specific middleware that requires permissions set on the session,
 # and either responds with a 401 or a logout redirect on failure, based on
@@ -252,6 +276,7 @@ module.exports =
   checkSessionSecurity: checkSessionSecurity
   requireLogin: requireLogin
   requireProject: requireProject
-  requireProjectParent: requireProjectParent        
+  requireProjectParent: requireProjectParent
+  requireProjectEditor: requireProjectEditor
   requirePermissions: requirePermissions
   logout: logout
