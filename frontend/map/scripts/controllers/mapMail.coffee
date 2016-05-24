@@ -11,7 +11,7 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropert
 
   $scope.addMail = (maybeParcel) ->
 
-    savedProperties = rmapsPropertiesService.getSavedProperties()
+    savedProperties = rmapsPropertiesService.pins
 
     if maybeParcel?
       property_ids = [maybeParcel.rm_property_id]

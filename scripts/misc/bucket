@@ -23,8 +23,9 @@ var aws = require('../../backend/services/service.aws'),
   Promise = require('bluebird'),
   STD_OUT_CMDS = ['listObjects', 'countObjects', 'deleteAllObjects'];
 
-
-handle = aws[argv.action] || aws.postObject;
+var action = argv.action || 'putObject';
+var handle = aws[action];
+var log = (argv.quiet ? function() {} : console.log);
 
 if(!handle){
   console.error('handle undefined');
@@ -36,8 +37,8 @@ if (!argv.bucket) {
   process.exit(122);
 }
 
-if (!argv.fileName && (argv.action == 'putObject' || !argv.action)) {
-  console.error('--fileName required to postObject!');
+if (!argv.fileName && (action == 'putObject')) {
+  console.error('--fileName required to putObject!');
   process.exit(123);
 }
 
@@ -49,32 +50,32 @@ function getUserHome() {
 var fileName = argv.fileName || argv.Key,
   uploadFileName;
 
-if (fileName &&  !(STD_OUT_CMDS.indexOf(argv.action) > -1)){
+if (fileName && !(STD_OUT_CMDS.indexOf(action) > -1)){
   if (fileName.indexOf('~') > -1) {
     fileName = argv.fileName.replace('~', getUserHome());
   }
-  console.log("attempting to load file: " + fileName);
+  log("attempting to load file: " + fileName);
 
   uploadFileName = path.parse(fileName).base;
 }
 
 params = _.extend({},{
   extAcctName: argv.bucket
-}, _.omit(argv, ['bucket', 'action', 'fileName', 'reminder', 'Key', 'Body', '$0', '_']));
+}, _.omit(argv, ['bucket', 'action', 'fileName', 'reminder', 'quiet', 'Key', 'Body', '$0', '_']));
 
 if (uploadFileName){
   params.Key = uploadFileName;
-  if(!(['getObject', 'deleteObject'].indexOf(argv.action) > -1))
+  if(!(['getObject', 'deleteObject'].indexOf(action) > -1))
     params.Body = fs.createReadStream(fileName);
 }
 
-if(argv.action === 'getObject')//force node style
+if(action === 'getObject')//force node style
   params.nodeStyle = true;
 
 var reminder = null;
 if (argv.reminder) {
   function doReminder() {
-    console.log(argv.action+' is still running...');
+    console.log(action+' is still running...');  // no quiet check here
   }
   reminder = setInterval(doReminder, parseInt(argv.reminder)*1000);
 }
@@ -86,7 +87,7 @@ function exit(code) {
   process.exit(code);
 }
 
-if(argv.action === 'upload'){
+if(action === 'upload'){
   return handle = new Promise(function(resolve, reject){
     bodyStream = params.Body;
     delete params.Body;
@@ -97,8 +98,8 @@ if(argv.action === 'upload'){
         exit(122);
       });
       upload.on('uploaded', function(details){
-        console.log('success');
-        console.log(details);
+        log('success');
+        log(details);
         exit(0);
       });
 
@@ -110,18 +111,17 @@ if(argv.action === 'upload'){
 handle(params)
 .then(function(ret) {
   var wait = false;
-  console.log(argv.action + ' success!!' + (uploadFileName ? ' for file "'+uploadFileName+'"' : ''));
-  if(argv.action === 'getObject' && ret){
+  log(action + ' success!!' + (uploadFileName ? ' for file "'+uploadFileName+'"' : ''));
+  if(action === 'getObject' && ret){
     wait = true;
-    // console.log(ret);
     ret.createReadStream()
     .on('end', function(){
       exit(0);
     })
     .pipe(fs.createWriteStream(uploadFileName));
   }
-  if(STD_OUT_CMDS.indexOf(argv.action) > -1)
-    console.log(JSON.stringify(ret,null,2));
+  if(STD_OUT_CMDS.indexOf(action) > -1)
+    log(JSON.stringify(ret,null,2));
 
   if(!wait)
     exit(0);

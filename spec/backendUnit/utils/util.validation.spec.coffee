@@ -53,6 +53,24 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
         a: transform: any: [validators.integer(),validators.object()]
       , DataValidationError
 
+  describe "isRoot", ->
+
+    it 'basic', () ->
+      validateAndTransform {a: 'abc'},
+        a: isRoot:true
+      .then (values) ->
+        values.should.eql(a: a: 'abc')
+
+    it 'fipsCode', () ->
+      validateAndTransform {fipsCode: 'abc'},
+        fips_code:
+          isRoot:true
+          transform: validators.fips()
+          input: 'fipsCode'
+      .then (values) ->
+        values.should.eql(fips_code: 'abc')
+
+
   promiseIt 'should reject if a required parameter is undefined', () ->
     [
       expectResolve validateAndTransform {},

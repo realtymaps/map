@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
@@ -9,16 +10,73 @@ then
     exit 0
 fi
 
-DB_LABEL=`echo "$1" | tr '[a-z]' '[A-Z]'`
-DST_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE`
+DBSYNC_RESULT=/tmp/dbsync.result
+S3_BUCKET=rmaps-dropbox
 
-if [[ $1 == *"@"* ]]
-then
-    DST_URL="${DST_URL}?ssl=true"
+if [[ $1 =~ (.*)_.*@(.*) ]]; then
+  # long name, like `MAIN_DATABASE@realtymaps_map`
+  DB_LABEL="$1"
+  DST_URL=`$SCRIPT_DIR/database/getDbUrl $DB_LABEL`
+  MIGRATION_FOLDER=`echo ${BASH_REMATCH[1]} | tr '[A-Z]' '[a-z]'`
+  APP=${BASH_REMATCH[2]}
+  DST_URL="${DST_URL}?ssl=true"
+  echo "SYNC: performing db migrations on: $DB_LABEL"
+else
+  # short name, like `main` or `raw_temp`
+  DB_LABEL=`echo "$1" | tr '[a-z]' '[A-Z]'`
+  DST_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE`
+  MIGRATION_FOLDER=$1
+  echo "SYNC: performing db migrations on: ${DB_LABEL}_DATABASE"
 fi
+
+
+if [[ "$2" == "--ci" ]]
+then
+  MIGRATION_FOLDER="ci_${MIGRATION_FOLDER}_data"
+fi
+
 
 source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
-echo "SYNC: performing db migrations on: ${DB_LABEL}_DATABASE"
-$DBSYNC --path migrations/$1 --client pg --connection $DST_URL --reminder 1 --recursive
+$DBSYNC --path migrations/$MIGRATION_FOLDER --client pg --connection $DST_URL --reminder 1 --recursive | tee "$DBSYNC_RESULT"
+
+
+if [[ "$NODE_ENV" == "production" ]]
+then
+    echo "Checking for successful migrations..."
+    set +e
+    migrationsResult=`fgrep "SUCCESS: " "$DBSYNC_RESULT" | fgrep " migrations performed"`
+    set -e
+    if [[ "$CI_DB_SECRET_KEY" == "" ]]
+    then
+        echo "ERROR: CI_DB_SECRET_KEY missing"
+    fi
+    if [[ "$migrationsResult" != "" ]]
+    then
+        echo "Successful migrations detected!"
+        cd /tmp
+
+        echo "Dumping ${DB_LABEL} schema"
+        if [[ $DB_LABEL == "NORMALIZED" ]]
+        then
+          tableList="-T 'tax_*' -T 'deed_*' -T 'mortgage_*'"
+        fi
+        pg_dump -x -n public -s -F c $tableList -d "$DST_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA"
+
+        echo "Dumping ${DB_LABEL} dbsync_migrations"
+        pg_dump -x -n public -a -F c -t dbsync_migrations -d "$DST_URL" > "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC"
+
+        echo "Uploading ${DB_LABEL} schema to S3"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_SCHEMA" --quiet
+
+        echo "Uploading ${DB_LABEL} dbsync_migrations to S3"
+        $SCRIPT_DIR/misc/bucket --bucket $S3_BUCKET --fileName "${CI_DB_SECRET_KEY}_${DB_LABEL}_DBSYNC" --quiet
+
+        cd $SCRIPT_DIR/..
+    else
+        echo "No schema changes."
+    fi
+else
+    echo "Environment is $NODE_ENV, not dumping schema"
+fi

@@ -11,6 +11,7 @@ apiBaseDataSource = "#{apiBase}/data_source"
 apiBaseDataSourceLookups = "#{apiBase}/lookups"
 apiBaseUsers = "#{apiBase}/users"
 apiBaseUsersGroups = "#{apiBase}/usersGroups"
+apiBaseClientEntry = "#{apiBase}/clientEntry"
 apiBaseGroups = "#{apiBase}/groups"
 apiBaseGroupsPermissions = "#{apiBase}/groupsPermissions"
 apiBasePermissions = "#{apiBase}/permissions"
@@ -89,6 +90,9 @@ module.exports =
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     profiles: "#{apiBaseUsers}/:id/profiles"
     profilesById: "#{apiBaseUsers}/:id/profiles/:profile_id"
+  clientEntry:
+    getClientEntry: "#{apiBaseClientEntry}"
+    setPasswordAndBounce: "#{apiBaseClientEntry}/login"
   user_user_groups:
     apiBase: apiBaseUsersGroups
     root: apiBaseUsersGroups

@@ -1,5 +1,6 @@
 _ = require 'lodash'
 tables = require '../../backend/config/tables'
+dbs = require '../../backend/config/dbs'
 sinon = require 'sinon'
 _logger = require("./logger").spawn('SqlMock')
 Promise = require 'bluebird'
@@ -57,10 +58,16 @@ class SqlMock
         callback(temptrx)
 
   dbFn: () =>
-    fn = () =>
+    @buildTableName = dbs.buildTableName(@tableName)
+
+    fn = ({subid} = {}) =>
+      if subid?
+        @_svc = null
+        @init({subid})
       @logger.debug "dbFn invoked"
       @
     fn.tableName = @tableName
+    fn.buildTableName = @buildTableName
     @logger.debug () -> "tablename: #{@tableName}"
     fn
 
@@ -82,15 +89,15 @@ class SqlMock
   setError: (error) ->
     @error = error
 
-  init: () ->
-    @initSvc()
+  init: ({subid} = {}) ->
+    @initSvc({subid})
     @initMaintenanceContainers()
 
   initMaintenanceContainers: () ->
     @_queryChainFlag = false
     @_queryArgChain = []
 
-  initSvc: () ->
+  initSvc: ({subid} = {}) ->
     if @groupName == 'dbs' and @tableHandle == 'main' # special case svc
       @logger.debug "hooking dbs.get('main') for service"
       @_svc = dbs.get('main')
@@ -98,7 +105,9 @@ class SqlMock
       @logger.debug () => "hooking tables.#{@groupName}.#{@tableHandle} for service"
       @_svc ?= tables[@groupName][@tableHandle]
       @tableName = @_svc.tableName or @tableHandle
-      @_svc = @_svc()
+      if subid?
+        @tableName = @buildTableName(subid)
+      @_svc = @_svc({subid})
     @_svc
 
   resetSpies: () ->

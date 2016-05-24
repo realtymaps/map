@@ -1,12 +1,13 @@
 _ = require 'lodash'
-{crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
-logger = require('../config/logger').spawn('util.parcel')
+Promise = require 'bluebird'
+logger = require('../config/logger').spawn('util:parcel')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
-validation = require '../utils/util.validation'
+{DataValidationError} = require '../utils/util.validation'
+transforms = require '../utils/transforms/transform.parcel'
 
 
-formatParcel = (feature) ->
+formatParcel = (feature) -> Promise.try ->
   ###
     parcelapn: '48066001',
     fips: '06009',
@@ -32,42 +33,15 @@ formatParcel = (feature) ->
      crs: { type: 'name', properties: {}
   ###
   if !feature?
-    throw new validation.DataValidationError('required', 'feature', feature)
-  if !feature.geometry?
-    throw new validation.DataValidationError('required', 'feature.geometry', feature.geometry)
+    throw new DataValidationError('required', 'feature', feature)
 
   #match the db attributes
   obj = _.mapKeys feature.properties, (val, key) ->
     key.toLowerCase()
 
-  if !obj?.parcelapn?
-    throw new validation.DataValidationError('required', 'feaure.properties.parcelapn', obj?.parcelapn)
-
-  # if obj.parcelapn.match(/row/i)
-  #   throw new Error 'feaure.properties.parcelapn contains ROW, ignore'
-
-  obj.data_source_uuid = obj.parcelapn
-  obj.rm_property_id = obj.fips + '_' + obj.parcelapn + '_001'
   obj.geometry = feature.geometry
-  obj.geometry.crs = crsFactory()
-  obj
 
-_trimmedPicks = [
-  'fips_code'
-  'rm_property_id'
-  'street_address_num'
-  'street_unit_num'
-  'geometry'
-  'data_source_uuid'
-  'rm_raw_id'
-]
-
-formatTrimmedParcel = (feature) ->
-  feature = formatParcel(feature)
-  feature.street_address_num = feature.sthsnum
-  feature.street_unit_num = feature.stunitnum
-  feature.fips_code = feature.fips
-  _.pick feature, _trimmedPicks
+  transforms.validateAndTransform(obj)
 
 
 normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
@@ -75,9 +49,9 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
 
   for row in stringRows
     do (row) ->
-      ret = try
-        #feature is a string, make it a JSON obj
-        obj = formatTrimmedParcel JSON.parse row.feature
+      #feature is a string, make it a JSON obj
+      formatParcel JSON.parse row.feature
+      .then (obj) ->
         # logger.debug obj
 
         if fipsCode
@@ -90,21 +64,22 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
         }
         #return a valid row
         row: obj
-      catch error
+      .catch (error) ->
         #return an error object
         error: error
+      .then (ret) ->
 
-      # Regardless we extend a row or an error object with stats
-      # and .. with rm_raw_id! This allows for less object defined
-      # checking where rm_raw_id will always be defined.
-      _.extend ret,
-        rm_raw_id: row.rm_raw_id# dont forget about me :)
-        stats: {
-          data_source_id
-          batch_id
-          rm_raw_id: row.rm_raw_id
-          up_to_date: startTime
-        }
+        # Regardless we extend a row or an error object with stats
+        # and .. with rm_raw_id! This allows for less object defined
+        # checking where rm_raw_id will always be defined.
+        _.extend ret,
+          rm_raw_id: row.rm_raw_id# dont forget about me :)
+          stats: {
+            data_source_id
+            batch_id
+            rm_raw_id: row.rm_raw_id
+            up_to_date: startTime
+          }
 
 _toReplace = 'REPLACE_ME'
 
@@ -168,7 +143,6 @@ upsertParcelSqlString = ({row, tableName, database}) ->
 
 module.exports = {
   formatParcel
-  formatTrimmedParcel
   normalize
   upsertParcelSqlString
   insertParcelStr

@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 
 
@@ -7,18 +8,18 @@ if [ -n "$IS_HEROKU" ] ; then
     echo "in Heroku, skipping stopServe script"
 else
 
-    
+
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/.."
-    
-    
+
+
     if [[ $# == 0 ]]
     then
         PORTS="3000 4000"
     else
         PORTS="$*"
     fi
-    
+
     for i in $PORTS
     do
         PID=$(./app/getRunningPID $i)

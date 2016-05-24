@@ -24,9 +24,9 @@ getPermissionForCodename = (codename) ->
   .where
     codename: codename
   .then (rows) ->
-    expectSingleRow(row)
+    expectSingleRow(rows)
   .then (row) ->
-    logger.info("permission found for codename #{codename}")
+    logger.debug("permission found for codename #{codename}")
     Promise.resolve(row)
   .catch (err) ->
     logger.error "error loading permission for codename #{codename}: #{err}"
@@ -98,9 +98,19 @@ getGroupsForUserId = (id) ->
 # we're not going to memoize this one because we're caching the results on the
 # session, and want new logins to get new groups instantly
 
+setPermissionForUserId = ({user_id, permission_id, transaction = null}) ->
+  tables.auth.m2m_user_permission(transaction: transaction)
+  .count()
+  .where user_id: user_id, permission_id: permission_id
+  .then ([result]) ->
+    if Number(result.count) == 0
+      tables.auth.m2m_user_permission(transaction: transaction)
+      .insert user_id: user_id, permission_id: permission_id
+
 
 module.exports =
   getPermissionForCodename: getPermissionForCodename
   getPermissionsForGroupId: memoize(getPermissionsForGroupId, primitive: true, maxAge: 10*60*1000, preFetch: .1)
   getPermissionsForUserId: getPermissionsForUserId
   getGroupsForUserId: getGroupsForUserId
+  setPermissionForUserId: setPermissionForUserId

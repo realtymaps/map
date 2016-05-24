@@ -37,6 +37,7 @@ task.__set__ 'jobQueue',
         subtasksToRun++
 
         if subtasksToRun >= parseInt(argv.subtasksToRun)
+          console.log "SUBTASK SHOULD BREAK!!!!!!!!!"
           break
     Promise.all promises
 
@@ -45,7 +46,11 @@ task.__set__ 'jobQueue',
     if !maxPage?
       return internal.runPagedSubtask {task, subtask, totalOrList, maxPage, laterSubtaskName, mergeData}
 
-    chunks = totalOrList.length / maxPage
+    chunks = if argv.chunks?
+      parseInt(argv.chunks)
+    else
+      totalOrList.length / maxPage
+
     promiseChunks = []
     pagedPerProcess = 4
 
@@ -69,6 +74,9 @@ if !subtask
 
 payload = if argv.subtaskStateJson then JSON.parse(argv.subtaskStateJson) else
   require('../../' + argv.subtaskStateFile)
+
+if argv.batch_id?
+  payload.batch_id = argv.batch_id
 
 if argv.data
   console.log("overriding data!")

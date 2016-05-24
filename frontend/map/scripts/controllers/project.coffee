@@ -51,6 +51,7 @@ app.controller 'rmapsProjectCtrl',
   # Initialize Scope Variables
   #
 
+  $scope.propertiesService = rmapsPropertiesService
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
     property: new rmapsPropertyFormatterService
@@ -118,7 +119,7 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.removeClient = (client) ->
     clientsService.remove client
-    .then $scope.loadClients
+    .then loadClients
 
   $scope.editClient = (client) ->
     $scope.clientCopy = _.clone client || {}
@@ -132,8 +133,10 @@ app.controller 'rmapsProjectCtrl',
     $scope.saveClient = () ->
       modalInstance.dismiss('save')
       method = if $scope.clientCopy.id? then 'update' else 'create'
+      $scope.clientCopy = _.merge $scope.clientCopy, project_name: $scope.project.name
       clientsService[method] $scope.clientCopy
-      .then $scope.loadClients
+      .then () ->
+        loadClients()
 
   $scope.editProject = (project) ->
     $scope.projectCopy = _.clone project || {}
@@ -218,7 +221,7 @@ app.controller 'rmapsProjectCtrl',
   loadClients = () ->
     clientsService.getAll()
     .then (clients) ->
-      $scope.clients = clients
+      $scope.project.clients = clients
 
   loadNotes = () ->
     rmapsNotesService.getList()

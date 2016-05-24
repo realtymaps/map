@@ -7,13 +7,14 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
   getPinned = (event, eventData) ->
     pinned = eventData.properties if eventData
 
-    $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
+    $scope.pinnedProperties = pinned or rmapsPropertiesService.pins
     $scope.pinnedTotal = _.keys($scope.pinnedProperties).length
 
   getFavorites = (event, eventData) ->
     favorites = eventData.properties if favorites
 
-    $scope.favoriteProperties = favorites or rmapsPropertiesService.getFavoriteProperties()
+    $log.debug "!!!!! Favorites", rmapsPropertiesService.favorites
+    $scope.favoriteProperties = favorites or rmapsPropertiesService.favorites
     $scope.favoriteTotal = _.keys($scope.favoriteProperties).length
 
   $scope.pinResults = ($event) ->

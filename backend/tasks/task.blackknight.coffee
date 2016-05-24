@@ -4,7 +4,6 @@ jobQueue = require '../services/service.jobQueue'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:blackknight')
-sqlHelpers = require '../utils/util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 PromiseSftp = require 'promise-sftp'
@@ -12,7 +11,6 @@ _ = require 'lodash'
 keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
 dbs = require '../config/dbs'
-path = require 'path'
 moment = require 'moment'
 constants = require './task.blackknight.constants'
 validation = require '../utils/util.validation'
@@ -273,8 +271,27 @@ normalizeData = (subtask) ->
       normalSubid: subtask.data.normalSubid
     jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
 
+# not used as a task since it is in normalizeData
+# however this makes finalizeData accesible via the subtask script
+finalizeDataPrep = (subtask) ->
+  {normalSubid} = subtask.data
+  if !normalSubid?
+    throw new SoftFail "normalSubid required"
+
+  tables.property.tax(subid: normalSubid)
+  .select('rm_property_id')
+  .then (results) ->
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask,
+      totalOrList: results.map (r) -> r.rm_property_id
+      maxPage: 100
+      laterSubtaskName: "finalizeData"
+      mergeData:
+        normalSubid: normalSubid
+    }
+
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids, (id) ->
+  Promise.map subtask.data.ids || subtask.data.values, (id) ->
     countyHelpers.finalizeData({subtask, id})
 
 
@@ -312,6 +329,7 @@ subtasks = {
   deleteData
   normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  finalizeDataPrep
   finalizeData
   activateNewData: dataLoadHelpers.activateNewData
   saveProcessDates

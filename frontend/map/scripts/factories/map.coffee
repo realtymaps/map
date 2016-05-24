@@ -378,7 +378,7 @@ app.factory 'rmapsMapFactory',
         result = eventData.property
 
         if result
-          wasSaved = result?.savedDetails?.isSaved
+          wasSaved = result?.savedDetails?.isPinned
 
           # Handle the leaflet objects
           #update markers immediately

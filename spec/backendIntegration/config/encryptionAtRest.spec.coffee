@@ -1,8 +1,13 @@
 require("chai").should()
 {basePath} = require '../globalSetup'
+logger = require '../../specUtils/logger'
 
 
 describe 'ENCRYPTION_AT_REST', () ->
+
+  if process.env.CIRCLECI
+    logger.debug("Skipping encryption key test (CIRCLECI=#{process.env.CIRCLECI})")
+    return
 
   encryptor = require "#{basePath}/config/encryptor"
 

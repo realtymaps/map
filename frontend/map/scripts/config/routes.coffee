@@ -157,6 +157,11 @@ module.exports = app.config (
   buildChildState 'userTeamMembers', 'user', page: { title: 'Team Members' }
   buildChildState 'userPaymentHistory', 'user', page: { title: 'Payment History' }
 
+  buildState 'clientEntry',
+    #parent: null
+    loginRequired: false
+    permissionsRequired: false
+
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'
@@ -183,7 +188,6 @@ module.exports = app.config (
   buildChildState 'project', 'projectLayout',
     projectParam: 'id',
     page: { title: 'Project', dynamicTitle: true },
-    mobile: { modal: true },
     controller: null,
     templateUrl: './views/project.jade'
 
@@ -195,11 +199,11 @@ module.exports = app.config (
     templateUrl: './views/project/projectLayout.jade',
 
   # Project child states
-  buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, mobile: { modal: true }, templateUrl: './views/project/projectClients.jade'
-  buildChildState 'projectNotes', 'projectLayout', projectParam: 'id', page: { title: 'Notes' }, mobile: { modal: true }, templateUrl: './views/project/projectNotes.jade'
-  buildChildState 'projectFavorites', 'projectLayout', projectParam: 'id', page: { title: 'Favorites' }, mobile: { modal: true }, templateUrl: './views/project/projectFavorites.jade'
-  buildChildState 'projectNeighbourhoods', 'projectLayout', projectParam: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }, templateUrl: './views/project/projectNeighbourhoods.jade'
-  buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }, templateUrl: './views/project/projectPins.jade'
+  buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, templateUrl: './views/project/projectClients.jade'
+  buildChildState 'projectNotes', 'projectLayout', projectParam: 'id', page: { title: 'Notes' }, templateUrl: './views/project/projectNotes.jade'
+  buildChildState 'projectFavorites', 'projectLayout', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
+  buildChildState 'projectNeighbourhoods', 'projectLayout', projectParam: 'id', page: { title: 'Neighborhoods' }, templateUrl: './views/project/projectNeighbourhoods.jade'
+  buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'
 
   buildState 'neighbourhoods'
   buildState 'notes'

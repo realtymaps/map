@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('jobQueue')
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
-notifications = require '../utils/util.notifications.coffee'
+notifications = require './service.notifications'
 tables = require '../config/tables'
 cluster = require 'cluster'
 memoize = require 'memoizee'
@@ -15,7 +15,10 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-sendNotification = notifications.notification('jobQueue')
+sendNotification = notifications.notification {
+  type: 'jobQueue'
+  frequency: 'immediate'
+}
 
 
 summary = (subtask) ->
@@ -331,6 +334,60 @@ cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
     .then (count) ->
       logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
 
+# non db portion of queueSubtask
+buildQueueSubtaskDatas = ({subtask, manualData, replace}) ->
+  if manualData?
+    if replace
+      subtaskData = manualData
+    else
+      if _.isArray manualData && _.isArray subtask.data
+        throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.name}")
+      else if _.isArray manualData
+        subtaskData = manualData
+        mergeData = subtask.data
+      else if _.isArray subtask.data
+        subtaskData = subtask.data
+        mergeData = manualData
+      else
+        subtaskData = _.extend(subtask.data||{}, manualData)
+  else
+    subtaskData = subtask.data
+
+  {
+    subtaskData
+    mergeData
+  }
+
+# non db portion of queuePaginatedSubtask
+buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
+  if _.isArray(totalOrList)
+    list = totalOrList
+    total = totalOrList.length
+  else
+    list = null
+    total = totalOrList
+  total = Number(total)
+  if !total
+    return
+  subtasks = Math.ceil(total/maxPage)
+  subtasksQueued = 0
+  countHandled = 0
+
+  data = for i in [1..subtasks]
+    datum =
+      offset: countHandled
+      count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
+      i: i
+      of: subtasks
+    if list
+      datum.values = list.slice(datum.offset, datum.offset+datum.count)
+    if mergeData
+      _.extend(datum, mergeData)
+    subtasksQueued += 1
+    countHandled += datum.count
+    datum
+
+  data
 
 module.exports = {
   summary
@@ -347,4 +404,7 @@ module.exports = {
   runWorkerImpl
   cancelTaskImpl
   executeSubtask
+  sendNotification
+  buildQueueSubtaskDatas
+  buildQueuePaginatedSubtaskDatas
 }

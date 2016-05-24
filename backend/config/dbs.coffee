@@ -98,12 +98,17 @@ transaction = (args...) ->
       throw err
 
 
-module.exports =
-  shutdown: shutdown
-  get: get
-  getPlainClient: getPlainClient
-  transaction: transaction
-  connectionless: connectionless
+buildTableName = (tableName) ->
+  (subid) -> "#{tableName}_#{subid}"
+
+module.exports = {
+  shutdown
+  get
+  getPlainClient
+  transaction
+  connectionless
   isEnabled: () -> _enabled
   enable: () -> _enabled = true
   disable: () -> _enabled = false
+  buildTableName
+}

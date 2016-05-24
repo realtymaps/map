@@ -2,7 +2,7 @@
   .tools
     button(class="btn btn-white" ng-click="editClient()")
       span Add Client
-  .client.item.item-card.item-border(ng-repeat="client in clients")
+  .client.item.item-card.item-border(ng-repeat="client in project.clients")
     h3 Client {{$index + 1}}
     .tools
       button(class="btn btn-link" ng-click="editClient(client)") Edit

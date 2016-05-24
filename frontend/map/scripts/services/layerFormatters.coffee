@@ -13,11 +13,11 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     filterSummary = scope.map.markers.filterSummary
     if !model || requireFilterModel && !filterSummary[model.rm_property_id]
       return false
-    # by returning savedDetails.isSaved false instead of undefined it allows us to tell the difference
+    # by returning savedDetails.isPinned false instead of undefined it allows us to tell the difference
     # between parcels and markers. Where parcels do not have rm_status (always).
     # depends on rmapsProperties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
     filterModel = filterSummary[model.rm_property_id] or model
-    nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isSaved
+    nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isPinned
     nonBool == true
 
   _parcels = do ->
@@ -65,7 +65,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     getStyle : (feature, layerName) ->
       return {} unless feature
 
-      if feature?.savedDetails?.isSaved
+      if feature?.savedDetails?.isPinned
         savedStatus = 'saved'
 
       if feature?.rm_status?
@@ -109,7 +109,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         hovered = ''
         zIndex = 2
 
-      if model.savedDetails?.isSaved
+      if model.savedDetails?.isPinned
         status = 'saved'
       else
         status = model.rm_status

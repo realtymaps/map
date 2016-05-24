@@ -1,53 +1,96 @@
 #projects
-  @extends .font-regular
-  @extends .table-view
 
-#projects-list
-  @extends .font-regular
+  .project-list-item
+    height: 92px;
 
-  *
-    transition none
+  .project-select-icon
+    font-size: 20px;
+    margin-right: 14px;
 
-  .repeat
-    margin 0
+  $projects-widget-width = 16.6%;
+  $projects-widget-height = 62px;
+  $projects-widgets-width = 100%;
+  $projects-widgets-height = $projects-widget-height;
 
-  h3, .fa
-    color $black
+  .project-widgets
+    position: absolute;
+    left: 10px;
+    right: 0px;
+    bottom: 0;
+    top: 26px;
+    height: $projects-widgets-height;
+    padding: 0;
+    background-color: white;
+    z-index: 20;
 
-  .back-button
-    position absolute
-    left -10px
-    top 25px
-    color $light_blue
+  .project-widget
+    position: relative;
+    display: inline-block;
+    width: $projects-widget-width;
+    height: $projects-widget-height;
+    background-color: white;
+    margin-bottom: 0;
+    text-align: center;
+    vertical-align: top;
+    font-size: 15px;
 
-  .fa, .icon, .btn
-    margin .25em
+    .inner
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
 
-  .collapse-header
-    overflow hidden
-    cursor pointer
-    &:hover
-    &:active
-      background $light_blue_select
+    a
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 1;
+      color: $black
 
-  .projects-list
-    .collapse-header
-      border-bottom 1px solid $gray_lighter
+  .widget-background
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: 30px;
+    line-height: $projects-widget-height;
+    text-align: center;
+    z-index: 0;
+    opacity: 0.13;
 
-  h3
-    padding 0 5px
+  .widget-title
+    position: absolute;
+    bottom: 1px;
+    left: 0;
+    right: 0;
+    text-transform: none;
+    font-size: 10px;
+    color: $text_gray_lighter
 
-  ul
-    list-style none
-    padding 0
-    margin 0
-    li
+  .widget-count
+    font-size: 20px;
+    line-height: $projects-widget-height;
+    color: $text_gray_lighter
 
-      h2.title
-        text-align left
-        float left
-        padding 0 !important
-      .tools
-        text-align right
-        padding 5px 0
+  .widget-favorite
+    .widget-background
+      color: $text_gray_lightest !important;
 
+  .widget-pin
+    .widget-background
+      color: $text_gray_lightest !important;
+      opacity: 0.2;
+      font-size: 30px;
+
+  .widget-neighborhood
+    .widget-background
+      color: $text_gray_lightest !important;
+
+  .widget-client
+    .widget-background
+      color: $text_gray_lightest !important;
+      font-size: 32px;
+      margin-top: -3px;

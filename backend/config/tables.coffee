@@ -63,6 +63,7 @@ module.exports =
     creditCards: 'user_credit_cards'
     shellHistory: 'user_shell_history'
     errors: 'user_errors'
+    notification: 'user_notification'
   mail:
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
@@ -96,7 +97,7 @@ _setup = (baseObject) ->
       - subid allows having a collection of tables all serving 1 purpose (and with 1 entry in `tables`)
       - major performance improvement to do that
       ###
-      buildTableName = (subid) -> "#{tableName}_#{subid}"
+      buildTableName = dbs.buildTableName(tableName)
       query = (opts={}) ->
         db = dbs.get(dbName)
         client = opts.transaction ? db

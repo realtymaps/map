@@ -50,7 +50,7 @@ handleRoute = (req, res, next, toExec, isDirect) ->
     if isDirect
       return toExec(req, res, next)
 
-    handleQuery toExec(req, res), res
+    handleQuery toExec(req, res, next), res
   .catch DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
   .catch MissingVarError, (err) ->

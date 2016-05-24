@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
@@ -47,5 +48,11 @@ fi
 
 # do the push
 echo "PUSH_TO: pushing to ${SERVICE}"
-git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:master"
-
+if [[ "${SERVICE}" == "heroku" ]]
+then
+    echo "PUSH_TO: unshallowing git clone"
+    git fetch --unshallow origin
+    echo "PUSH_TO: doing push"
+fi
+echo "git push --force git@${SERVICE}.com:${PROJECT}.git ${CIRCLE_SHA1}:refs/heads/master"
+git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:refs/heads/master"
