@@ -157,6 +157,13 @@ getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
       normalSubid: fipsCode #required for countyHelpers.finalizeData
   }
 
+getParcelsPromise = ({rm_property_id, active}) ->
+  active ?= true
+
+  tables.property.parcel()
+  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+  .where({rm_property_id, active})
+
 
 module.exports = {
   saveToNormalDb
@@ -167,4 +174,5 @@ module.exports = {
   column: internals.column
   getRecordChangeCountsData
   getFinalizeSubtaskData
+  getParcelsPromise
 }

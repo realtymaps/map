@@ -89,7 +89,9 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id}) ->
+finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
+  parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
+
   listingsPromise = tables.property.listing()
   .select('*')
   .where(rm_property_id: id)
@@ -100,12 +102,11 @@ finalizeData = ({subtask, id, data_source_id}) ->
   .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
 
-  parcelsPromise = tables.property.normParcel()
-  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-  .whereNull('deleted')
-  .where(rm_property_id: id)
 
-  Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
+
+  Promise.join listingsPromise
+  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  , (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
       return tables.deletes.property()

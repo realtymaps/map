@@ -1,13 +1,5 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
-{SoftFail} = require '../utils/errors/util.error.jobQueue'
-utilStreams = require '../utils/util.streams'
-dbs = require '../config/dbs'
-logger = require '../config/logger'
-tables = require '../config/tables'
-dataLoadHelpers = require './util.dataLoadHelpers'
-externalAccounts = require '../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
 PromiseSftp = require 'promise-sftp'
 unzip = require 'unzip2'
@@ -15,6 +7,14 @@ fs = require 'fs'
 path = require 'path'
 rimraf = require 'rimraf'
 zlib = require 'zlib'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
+utilStreams = require '../utils/util.streams'
+logger = require('../config/logger').spawn('task:util:countyHelpers')
+tables = require '../config/tables'
+dataLoadHelpers = require './util.dataLoadHelpers'
+externalAccounts = require '../services/service.externalAccounts'
+internals = require './util.countyHelpers.internals'
 
 
 # loads all records from a ftp-dropped zip file
@@ -165,117 +165,14 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = ({subtask, id, data_source_id}) ->
-  tables.property.tax(subid: subtask.data.normalSubid)
-  .select('*')
-  .where
-    rm_property_id: id
-    data_source_id: data_source_id || subtask.task_name
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('close_date DESC NULLS LAST')
-  .then (taxEntries=[]) ->
-    if taxEntries.length == 0
-      # not sure if this should ever be possible, but we'll handle it anyway
-      return tables.deletes.property()
-      .insert
-        rm_property_id: id
-        data_source_id: data_source_id || subtask.task_name
-        batch_id: subtask.batch_id
-    if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
-      logger.debug "batch_id mismatch!!"
-      logger.debug "subtask.data.cause: #{subtask.data.cause}"
-      logger.debug "subtask.data.batch_id: #{subtask.data.batch_id} vs #{taxEntries[0]?.batch_id}"
-      # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
-      # of the given enqueue source , in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
-      # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
-      # care of it.
-      return
-    tables.property.deed(subid: subtask.data.normalSubid)
-    .select('*')
-    .where
-      rm_property_id: id
-      data_source_id: data_source_id || subtask.task_name
-    .whereNull('deleted')
-    .orderBy('rm_property_id')
-    .orderBy('deleted')
-    .orderByRaw('close_date ASC NULLS FIRST')
-    .then (deedEntries=[]) ->
-      if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
-        # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
-        return
-      mortgagePromise = tables.property.mortgage(subid: subtask.data.normalSubid)
-      .select('*')
-      .where
-        rm_property_id: id
-        data_source_id: data_source_id || subtask.task_name
-      .whereNull('deleted')
-      .orderBy('rm_property_id')
-      .orderBy('deleted')
-      .orderByRaw('close_date ASC NULLS FIRST')
-      parcelsPromise = tables.property.parcel()
-      .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-      .where(rm_property_id: id)
-      Promise.join mortgagePromise, parcelsPromise, (mortgageEntries=[], parcel=[]) ->
-        # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-        # TODO: simultaneous closings, how do we properly sort to account for that?
-        tax = dataLoadHelpers.finalizeEntry(taxEntries)
-        tax.data_source_type = 'county'
-        _.extend(tax, parcel[0])
+finalizeData = ({subtask, id, data_source_id, transaction, delay, activeParcel, parcelHelpers}) ->
+  parcelHelpers ?= require './util.parcelHelpers'#delayed require due to circular dependency
 
-        # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
-        # TODO: static data fields?
-
-        # now that we have an ordered sales history, overwrite that into the tax record
-        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
-        tax.subscriber_groups.mortgage = mortgageEntries
-        lastSale = deedEntries.pop()
-        if lastSale?
-          tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-          tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-          for field in saleFields
-            tax[field] = lastSale[field]
-          # save the MLS promoted values for easier access
-          promotedValues =
-            owner_name: lastSale.owner_name
-            owner_name_2: lastSale.owner_name_2
-            zoning: lastSale.zoning
-        else
-          # save the MLS promoted values for easier access
-          promotedValues =
-            owner_name: tax.owner_name
-            owner_name_2: tax.owner_name_2
-            zoning: tax.zoning
-        tax.shared_groups.sale = []
-        tax.subscriber_groups.deedHistory = []
-        for deedInfo in deedEntries
-          tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
-          tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
-
-        Promise.delay(100)  #throttle for heroku's sake
-        .then () ->
-          if !_.isEqual(promotedValues, tax.promoted_values)
-            # need to save back promoted values to the normal table
-            tables.property.tax(subid: subtask.data.normalSubid)
-            .where
-              data_source_id: data_source_id || subtask.task_name
-              data_source_uuid: tax.data_source_uuid
-            .update(promoted_values: promotedValues)
-          else
-            Promise.resolve()
-        .then () ->
-          delete tax.promoted_values
-          dbs.get('main').transaction (transaction) ->
-            tables.property.combined(transaction: transaction)
-            .where
-              rm_property_id: id
-              data_source_id: data_source_id || subtask.task_name
-              active: false
-            .delete()
-            .then () ->
-              tables.property.combined(transaction: transaction)
-              .insert(tax)
+  Promise.join internals.finalizeDataTax {subtask, id, data_source_id}
+  , internals.finalizeDataDeed {subtask, id, data_source_id}
+  , internals.finalizeDataMortgage {subtask, id, data_source_id}
+  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  , internals.finalizeJoin {subtask, id, data_source_id, transaction, delay}
 
 
 ###

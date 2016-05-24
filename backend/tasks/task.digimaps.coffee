@@ -221,7 +221,8 @@ finalizeDataPrep = (subtask) ->
     )
 
 finalizeData = (subtask) ->
-  logger.debug util.inspect(subtask, depth: null)
+  # logger.debug () -> util.inspect(subtask, depth: null)
+  logger.debug () -> 'beginning finalizeData'
 
   {delay, normalSubid} = subtask.data
 
