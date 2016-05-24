@@ -166,6 +166,14 @@ app.controller 'rmapsProjectCtrl',
       $rootScope.$emit rmapsEventConstants.notes
       delete $scope.newNotes[property.rm_property_id]
 
+  $scope.createProjectNote = (project) ->
+    rmapsNotesService.createFromText(
+      $scope.newNotes['project'].text,
+      project.project_id
+    ).then () ->
+      $rootScope.$emit rmapsEventConstants.notes
+      delete $scope.newNotes['project']
+
   #
   # Load Project Data
   #
