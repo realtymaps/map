@@ -18,7 +18,7 @@
       height: auto;
       margin-left: auto;
       padding: 15px 15px 15px 15px;
-      margin-top: 117px;
+      margin-top: 70px;
     }
 
     //
@@ -98,10 +98,10 @@
 
     .note-image
       width: 58px;
-      height: 58px;
+      max-height: 58px;
 
     .note-data-wrapper
-      min-height: 58px;
+      //min-height: 58px;
       width: calc(100% - 58px);
       float: left;
       font-size: 13px;
@@ -151,12 +151,6 @@
     //
     // Project NOTES Tab
     //
-    .project-note-input
-      position: fixed;
-      top: 117px;
-      left: 0;
-      right: 0;
-      z-index: 20;
-
-      textarea
-        resize: none;
+    .project-notes-container
+      .project-note-input
+        margin-bottom: 15px;

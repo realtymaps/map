@@ -8,7 +8,7 @@
         type="text"
         ng-model="newNotes['project'].text"
         validator="minlength=1")
-        span.input-group-addon(ng-click="createProjectNote(project)" validation-submit="createProjectNoteForm") +
+        span.input-group-addon(ng-click="createProjectNote(project)" validation-submit="createProjectNoteForm") Add
 
   .list.bordered
     .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
