@@ -168,10 +168,10 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 finalizeData = ({subtask, id, data_source_id, transaction, delay, activeParcel, parcelHelpers}) ->
   parcelHelpers ?= require './util.parcelHelpers'#delayed require due to circular dependency
 
-  Promise.join internals.finalizeDataTax {subtask, id, data_source_id}
-  , internals.finalizeDataDeed {subtask, id, data_source_id}
-  , internals.finalizeDataMortgage {subtask, id, data_source_id}
-  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  Promise.join internals.finalizeDataTax {subtask, id, data_source_id, transaction}
+  , internals.finalizeDataDeed {subtask, id, data_source_id, transaction}
+  , internals.finalizeDataMortgage {subtask, id, data_source_id, transaction}
+  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel, transaction)
   , internals.finalizeJoin {subtask, id, data_source_id, transaction, delay}
 
 

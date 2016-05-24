@@ -89,10 +89,10 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
+finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.property.listing()
+  listingsPromise = tables.property.listing(transaction: transaction)
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -105,11 +105,11 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
 
 
   Promise.join listingsPromise
-  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel, transaction)
   , (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
-      return tables.deletes.property()
+      return tables.deletes.property(transaction: transaction)
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name
@@ -127,7 +127,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
       if listing.fips_code != '12021'
         return
       # need to query the tax table to get values to promote
-      tables.property.tax(subid: listing.fips_code)
+      tables.property.tax(subid: listing.fips_code, transaction: transaction)
       .select('promoted_values')
       .where
         rm_property_id: id
@@ -136,13 +136,13 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
           # promote values into this listing
           listing.extend(results[0].promoted_values)
           # save back to the listing table to avoid making checks in the future
-          tables.property.listing()
+          tables.property.listing(transaction: transaction)
           .where
             data_source_id: listing.data_source_id
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
-      dbs.get('main').transaction (transaction) ->
+      doUpsert = (transaction) ->
         tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id
@@ -152,6 +152,10 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
         .then () ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
+      if transaction
+        doUpsert(transaction)
+      else
+        dbs.get('main').transaction(doUpsert)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()

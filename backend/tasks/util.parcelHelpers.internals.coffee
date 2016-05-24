@@ -66,7 +66,7 @@ finalizeUpdateListing = ({id, subtask, transaction}) ->
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
           logger.debug "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, activeParcel: false})
+          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, activeParcel: false, transaction})
         else
           logger.debug "countyHelpers.finalizeData"
           #delay is zero since hire up the change we have already been delayed

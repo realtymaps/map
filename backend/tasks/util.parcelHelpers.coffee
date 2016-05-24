@@ -159,10 +159,10 @@ getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
       normalSubid: fipsCode #required for countyHelpers.finalizeData
   }
 
-getParcelsPromise = ({rm_property_id, active}) ->
+getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
-  tables.property.parcel()
+  tables.property.parcel(transaction: transaction)
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where({rm_property_id, active})
 

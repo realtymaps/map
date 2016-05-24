@@ -13,9 +13,9 @@ _documentFinalize = (fnName, cbPromise) ->
     logger.debug () -> "#{fnName} FINISHED"
     entries
 
-finalizeDataTax = ({subtask, id, data_source_id}) ->
+finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
   _documentFinalize "finalizeDataTax", () ->
-    tables.property.tax(subid: subtask.data.normalSubid)
+    tables.property.tax(subid: subtask.data.normalSubid, transaction: transaction)
     .select('*')
     .where
       rm_property_id: id
@@ -27,7 +27,7 @@ finalizeDataTax = ({subtask, id, data_source_id}) ->
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
         # not sure if this should ever be possible, but we'll handle it anyway
-        return tables.deletes.property()
+        return tables.deletes.property(transaction: transaction)
         .insert
           rm_property_id: id
           data_source_id: data_source_id || subtask.task_name
@@ -45,9 +45,9 @@ finalizeDataTax = ({subtask, id, data_source_id}) ->
       taxEntries
 
 
-finalizeDataDeed = ({subtask, id, data_source_id}) ->
+finalizeDataDeed = ({subtask, id, data_source_id, transaction}) ->
   _documentFinalize "finalizeDataDeed", () ->
-    tables.property.deed(subid: subtask.data.normalSubid)
+    tables.property.deed(subid: subtask.data.normalSubid, transaction: transaction)
     .select('*')
     .where
       rm_property_id: id
@@ -64,9 +64,9 @@ finalizeDataDeed = ({subtask, id, data_source_id}) ->
 
 
 
-finalizeDataMortgage = ({subtask, id, data_source_id}) ->
+finalizeDataMortgage = ({subtask, id, data_source_id, transaction}) ->
   _documentFinalize "finalizeDataMortgage", () ->
-    tables.property.mortgage(subid: subtask.data.normalSubid)
+    tables.property.mortgage(subid: subtask.data.normalSubid, transaction: transaction)
     .select('*')
     .where
       rm_property_id: id
