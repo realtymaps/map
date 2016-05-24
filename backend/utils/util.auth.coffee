@@ -53,6 +53,8 @@ logout = (req, res, next) -> Promise.try () ->
     logger.error "error logging out user: #{err}"
     next(err)
 
+ignoreThisMethod = (thisMethod, methods) ->
+  return !(_.some methods, (item) -> item.toUpperCase() == thisMethod)
 
 #
 # middleware function handlers
@@ -177,6 +179,9 @@ requireProject = ({methods}) ->
   methods = [methods] if _.isString methods
   return (req, res, next) -> Promise.try () ->
 
+    # middleware is not applicable for this req.method, move along
+    return process.nextTick(next) if ignoreThisMethod req.method, methods
+
     if !req.user?
       return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
     if !req.session?.current_profile_id?
@@ -196,7 +201,7 @@ requireProjectParent = ({methods}) ->
   return (req, res, next) -> Promise.try () ->
 
     # middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if !(_.some methods, (item) -> item.toUpperCase() == req.method)
+    return process.nextTick(next) if ignoreThisMethod req.method, methods
 
     # ensure project
     proj = requireProject {methods}
