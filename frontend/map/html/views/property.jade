@@ -109,9 +109,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .content-lg
                   span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
                   span {{property.owner_name}}
-                  span(ng-if="property.owner_name2")
+                  span(ng-if="property.owner_name_2")
                     br/
-                    | {{property.owner_name2}}
+                    | {{property.owner_name_2}}
               .col-sm-6
                 .content-label Address
                 .content-lg {{property.owner_street_address_num}} {{property.owner_street_address_name}} {{property.owner_street_address_unit}}
