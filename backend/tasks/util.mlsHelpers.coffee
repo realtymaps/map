@@ -92,7 +92,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.property.listing(transaction: transaction)
+  listingsPromise = tables.property.listing()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -127,7 +127,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
       if listing.fips_code != '12021'
         return
       # need to query the tax table to get values to promote
-      tables.property.tax(subid: listing.fips_code, transaction: transaction)
+      tables.property.tax(subid: listing.fips_code)
       .select('promoted_values')
       .where
         rm_property_id: id
@@ -136,7 +136,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
           # promote values into this listing
           listing.extend(results[0].promoted_values)
           # save back to the listing table to avoid making checks in the future
-          tables.property.listing(transaction: transaction)
+          tables.property.listing()
           .where
             data_source_id: listing.data_source_id
             data_source_uuid: listing.data_source_uuid
