@@ -4,7 +4,6 @@ diff = require('deep-diff').diff
 
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
 tables = require '../config/tables'
-dbs = require '../config/dbs'
 mlsHelpers = require './util.mlsHelpers'
 countyHelpers = require './util.countyHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -65,12 +64,16 @@ finalizeUpdateListing = ({id, subtask, transaction}) ->
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
           logger.debug () -> "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
+          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, activeParcel: false})
         else
           logger.debug () -> "countyHelpers.finalizeData"
-          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id})
+          #delay is zero since hire up the change we have already been delayed
+          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, activeParcel: false})
+          .then () ->
+            logger.debug () -> "countyHelpers.finalizeData FINISHED"
 
     Promise.all promises
+
 
 
 module.exports = {

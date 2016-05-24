@@ -7,6 +7,8 @@ subject = rewire "../../../backend/tasks/util.parcelHelpers.coffee"
 dataLoadHelpers = rewire "../../../backend/tasks/util.dataLoadHelpers"
 tables = require('../../../backend/config/tables')
 countyHelpers = rewire '../../../backend/tasks/util.countyHelpers'
+countyHelpersInternals = rewire '../../../backend/tasks/util.countyHelpers.internals'
+parcelHelpers = rewire '../../../backend/tasks/util.parcelHelpers'
 jqInternals = require '../../../backend/services/service.jobQueue.internals'
 SqlMock = require '../../specUtils/sqlMock'
 
@@ -80,24 +82,40 @@ describe "util.parcelHelpers", () ->
         normalSubid: '12021'
       ]
 
-    it 'util.countyHelpers finalizeData - call tax_12021 (some fipsCode)', () ->
-      subtask = data: subtaskDataToBuild.mergeData
+    describe "util.countyHelpers finalizeData - call tax_12021 (some fipsCode)", () ->
+      propTaxMock = tableName = null
 
-      propTaxMock = new SqlMock 'property', 'tax', result: []
-      deletesPropMock = new SqlMock 'deletes', 'property'
+      before ->
+        tableName = "tax_#{fipsCode}"
+        subtask = data: subtaskDataToBuild.mergeData
 
-      tables =
-        property:
-          tax: propTaxMock.dbFn()
-        deletes:
-          property: () -> deletesPropMock
+        propTaxMock = new SqlMock 'property', 'tax', result: []
+        mortgagePropMock = new SqlMock 'property', 'mortgage', result: []
+        deedPropMock = new SqlMock 'property', 'deed', result: []
+        parcelPropMock = new SqlMock 'property', 'parcel', result: []
 
-      countyHelpers.__set__ 'tables', tables
+        deletesPropMock = new SqlMock 'deletes', 'property', result: []
 
-      countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county'})
 
-      tableName = "tax_#{fipsCode}"
-      propTaxMock.tableName.should.be.eql tableName
+        tables =
+          property:
+            tax: propTaxMock.dbFn()
+            mortgage: mortgagePropMock.dbFn()
+            deed: deedPropMock.dbFn()
+            parcel: parcelPropMock.dbFn()
+          deletes:
+            property: deletesPropMock.dbFn()
 
-      regex = new RegExp(tableName)
-      regex.test(propTaxMock.toString()).should.be.ok
+        countyHelpersInternals.__set__ 'tables', tables
+        countyHelpers.__set__ 'internals', countyHelpersInternals
+        parcelHelpers.__set__ 'tables', tables
+
+        countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county', parcelHelpers})
+
+
+      it 'tableName', () ->
+        propTaxMock.tableName.should.be.eql tableName
+
+      it 'query Regex', () ->
+        regex = new RegExp(tableName)
+        regex.test(propTaxMock.toString()).should.be.ok

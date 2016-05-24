@@ -43,7 +43,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
       #NOTE: rm_raw_id is always defined which is why it is destructured here
       # this way we do not need to check for stats or row defined.
-      {row, stats, error, rm_raw_id} =  payload
+      {row, stats, error, rm_raw_id} = payload
 
       Promise.try () ->
         if error
@@ -97,10 +97,9 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
           batch_id: subtask.batch_id
 
       dbs.get('main').transaction (transaction) ->
-        finalizeListingPromise = internals.finalizeUpdateListing {id, subtask, transaction}
-        finalizeParcelPromise = internals.finalizeNewParcel {parcels, id, subtask, transaction}
-
-        Promise.all [finalizeListingPromise, finalizeParcelPromise]
+        internals.finalizeNewParcel {parcels, id, subtask, transaction}
+        .then () ->
+          internals.finalizeUpdateListing {id, subtask, transaction}
 
 
 activateNewData = (subtask) ->
@@ -157,6 +156,13 @@ getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
       normalSubid: fipsCode #required for countyHelpers.finalizeData
   }
 
+getParcelsPromise = ({rm_property_id, active}) ->
+  active ?= true
+
+  tables.property.parcel()
+  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+  .where({rm_property_id, active})
+
 
 module.exports = {
   saveToNormalDb
@@ -167,4 +173,5 @@ module.exports = {
   column: internals.column
   getRecordChangeCountsData
   getFinalizeSubtaskData
+  getParcelsPromise
 }
