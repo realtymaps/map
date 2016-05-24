@@ -15,7 +15,7 @@ _documentFinalize = (fnName, cbPromise) ->
 
 finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
   _documentFinalize "finalizeDataTax", () ->
-    tables.property.tax(subid: subtask.data.normalSubid, transaction: transaction)
+    tables.property.tax(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -45,9 +45,9 @@ finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
       taxEntries
 
 
-finalizeDataDeed = ({subtask, id, data_source_id, transaction}) ->
+finalizeDataDeed = ({subtask, id, data_source_id}) ->
   _documentFinalize "finalizeDataDeed", () ->
-    tables.property.deed(subid: subtask.data.normalSubid, transaction: transaction)
+    tables.property.deed(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -64,9 +64,9 @@ finalizeDataDeed = ({subtask, id, data_source_id, transaction}) ->
 
 
 
-finalizeDataMortgage = ({subtask, id, data_source_id, transaction}) ->
+finalizeDataMortgage = ({subtask, id, data_source_id}) ->
   _documentFinalize "finalizeDataMortgage", () ->
-    tables.property.mortgage(subid: subtask.data.normalSubid, transaction: transaction)
+    tables.property.mortgage(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -150,12 +150,12 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction}) ->
 
         #this may have been a deadlock from parcels
         #we must use an existing transaction if there is one
-        if transaction?
-          return _updateDataCombined {subtask, id, data_source_id, transaction, tax}
-
-        dbs.get('main').transaction (trx) ->
+        doUpdate = (trx) ->
           _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
-
+        if transaction?
+          doUpdate(transaction)
+        else
+          dbs.get('main').transaction(doUpdate)
 
 
 module.exports = {
