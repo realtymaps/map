@@ -13,9 +13,6 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 twilioClientPromise = Promise.try () ->
-  if process.env.CI? #hate doing this, but is worth a more complicated workaround?
-    return
-
   externalAccounts.getAccountInfo('twilio')
   .then (accountInfo) ->
     client: twilio(accountInfo.username, accountInfo.api_key)
