@@ -28,12 +28,12 @@ prepForRmPropertyId =
 
 final =
   rm_property_id:
-    isRoot: true
+    input: false
     transform: validators.rm_property_id()
     required: true
 
   fips_code:
-    isRoot: true
+    input: false
     transform: validators.fips()
     required: true
 

@@ -42,31 +42,30 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
 
   describe "transform.any", ->
 
-    it 'should pass if any validations in the "any" array pass validation, even if some fail', () ->
-      validateAndTransform {a: 'abc'},
+    promiseIt 'should pass if any validations in the "any" array pass validation, even if some fail', () ->
+      expectResolve validateAndTransform {a: 'abc'},
         a: transform: any: [validators.integer(), validators.string(forceUpperCase: true)]
       .then (values) ->
         values.should.eql(a: 'ABC')
 
-    it 'should fail if all validations in the "any" array fail validation', () ->
+    promiseIt 'should fail if all validations in the "any" array fail validation', () ->
       expectReject validateAndTransform {a: 'abc'},
         a: transform: any: [validators.integer(),validators.object()]
       , DataValidationError
 
-  describe "isRoot", ->
+  describe "rooted input", ->
 
-    it 'basic', () ->
-      validateAndTransform {a: 'abc'},
-        a: isRoot:true
+    promiseIt 'basic', () ->
+      expectResolve validateAndTransform {a: 'abc'},
+        a: {input: false}
       .then (values) ->
         values.should.eql(a: a: 'abc')
 
-    it 'fipsCode', () ->
-      validateAndTransform {fipsCode: 'abc'},
+    promiseIt 'fipsCode', () ->
+      expectResolve validateAndTransform {fipsCode: 'abc'},
         fips_code:
-          isRoot:true
           transform: validators.fips()
-          input: 'fipsCode'
+          input: false
       .then (values) ->
         values.should.eql(fips_code: 'abc')
 
