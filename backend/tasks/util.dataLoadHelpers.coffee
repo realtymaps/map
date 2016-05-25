@@ -346,9 +346,8 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges, doSafeJsonArray}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
   delay ?= 100
-  doSafeJsonArray ?= true
   getRowChanges ?= _getRowChanges
 
   Promise.delay(delay)  #throttle for heroku's sake
@@ -371,23 +370,21 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
-      updateRow.change_history = result.change_history ? []
       changes = getRowChanges(updateRow, result, diffExcludeKeys)
 
       if changes.deleted?
         # it wasn't really deleted, just purged earlier as per black knight data flow
         delete changes.deleted
 
-      if !_.isEmpty(changes) && doSafeJsonArray
-        if !_.isFunction(updateRow.change_history.push)
-          console.log("updateRow.change_history.push: (#{typeof updateRow.change_history}) / #{JSON.stringify(updateRow.change_history,null,2)}")
-        updateRow.change_history.push changes
+      if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
         updateRow.deleted = null
-      else
-        updateRow.change_history = changes
-
-      if doSafeJsonArray
+        updateRow.change_history = result.change_history ? []
+        # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
+        if !Array.isArray(updateRow.change_history)
+          updateRow.change_history = [updateRow.change_history]
+        # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
+        updateRow.change_history.push changes
         updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
 
       if !_specialUpdates[dataType]?

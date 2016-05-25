@@ -16,6 +16,8 @@ diffExcludeKeys = [
   'rm_modified_time'
   'geom_polys_raw'
   'geom_point_raw'
+  'geom_polys_json'
+  'geom_point_json'
   'change_history'
   'deleted'
   'inserted'
@@ -40,7 +42,6 @@ finalizeParcelEntry = (entries) ->
 
 
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
-  logger.debug "parcelHelpers.finalizeNewParcel START"
   parcel = finalizeParcelEntry(parcels)
 
   tables.property.parcel(transaction: transaction)
@@ -56,7 +57,6 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
     return parcel
 
 finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
-  logger.debug "parcelHelpers.finalizeUpdateListing START"
   tables.property.combined(transaction: transaction)
   .where
     rm_property_id: id
@@ -73,9 +73,6 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
           logger.debug "countyHelpers.finalizeData"
           #delay is zero since hire up the change we have already been delayed
           countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, finalizedParcel})
-          .then () ->
-            logger.debug "countyHelpers.finalizeData FINISHED"
-
     Promise.all promises
 
 
