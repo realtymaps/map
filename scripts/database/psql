@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+OUT=`./scripts/database/psqlCoffee $1`
+
+# echo OUT $OUT
+if [[ $OUT =~ .*=(.*)[[:space:]](psql.*) ]]; then
+  echo 'MATCH'
+  # echo ${BASH_REMATCH[1]}
+  # echo ${BASH_REMATCH[2]}
+  export PGPASSWORD=${BASH_REMATCH[1]}
+  ${BASH_REMATCH[2]}
+fi

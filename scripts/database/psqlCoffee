@@ -1,0 +1,33 @@
+#!/usr/bin/env coffee
+{exec} = require 'child_process'
+Promise =  require 'bluebird'
+
+execAsync = Promise.promisify exec
+# spawn = Promise.promisify spawn
+
+[binary, directory, firstArg] = process.argv
+
+path = directory.replace("psqlCoffee", "")
+
+execAsync "#{path}getDbUrl #{firstArg}"
+.then ([DB_URL, stderr]) ->
+
+  # the below regex is too complicated for regex(3) POSIX regex
+  # hence we are in coffee/ javascript doing this instead
+  groups = DB_URL.match /.*:\/\/(\w*):(.*)@(.*):(\d*)\/(.*)/
+
+  [crap, username, password, host, port, db] = groups
+  # console.log "USER_NAME: #{username}"
+  # console.log "PASSWORD: #{password}"
+  # console.log "HOST: #{host}"
+  # console.log "PORT: #{port}"
+  # console.log "DB: #{db}"
+
+  {username, password, host, port, db}
+.then ({username, password, host, port, db}) ->
+  console.log "PGPASSWORD=#{password} psql -p #{port} -h #{host} -U #{username} -d #{db}"
+.catch (err) ->
+  console.error err
+  process.exit 1
+.then ->
+  process.exit 0
