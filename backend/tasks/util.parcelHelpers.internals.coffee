@@ -16,6 +16,8 @@ diffExcludeKeys = [
   'rm_modified_time'
   'geom_polys_raw'
   'geom_point_raw'
+  'geom_polys_json'
+  'geom_point_json'
   'change_history'
   'deleted'
   'inserted'
