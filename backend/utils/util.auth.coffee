@@ -174,71 +174,98 @@ requireLogin = (options = {}) ->
     return process.nextTick(next)
 
 # route-specific middleware that requires profile and project for the user
-requireProject = ({methods}) ->
+# optional: methods
+# optional: projectIdParam (needs to match the url param of the endpoint, though)
+requireProject = ({methods, projectIdParam} = {}) ->
+  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+  projectIdParam ?= 'id'
+
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
   return (req, res, next) -> Promise.try () ->
 
     # middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod req.method, methods
+    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
+    # project id
+    project_id = req.params[projectIdParam]
+    if !project_id?
+      return next new ExpressResponse(alert: {msg: "To perform this action, please choose a project."}, httpStatus.UNAUTHORIZED)
     if !req.user?
       return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
-    if !req.session?.current_profile_id?
-      return next new ExpressResponse(alert: {msg: "Missing profile ID for #{req.path}."}, httpStatus.UNAUTHORIZED)
-    if !req.session?.profiles?
-      return next new ExpressResponse(alert: {msg: "No profiles found for user id #{req.user.id}."}, httpStatus.UNAUTHORIZED)
-    if !req.session.profiles[req.session.current_profile_id]?
-      return next new ExpressResponse(alert: {msg: "No profiles for user #{req.user.id} found for profile id #{req.session.current_profile_id}."}, httpStatus.UNAUTHORIZED)
+    if !req.session?.profiles? or Object.keys(req.session.profiles).length == 0
+      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, httpStatus.UNAUTHORIZED)
+
+    # get profile
+    profile = _.find(req.session.profiles, project_id: Number(project_id))
+    if !profile?
+      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, httpStatus.UNAUTHORIZED)
 
     return process.nextTick(next)
 
 # route-specific middleware that requires a user to be the editor (which would logically include
 # parent but not always) of the given project being acted upon.  implies `requireProject` automatically
-requireProjectEditor = ({methods, parentidparam}) ->
+# optional: methods
+# optional: projectIdParam (needs to match the url param of the endpoint, though)
+requireProjectEditor = ({methods, projectIdParam} = {}) ->
+  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+  projectIdParam ?= 'id'
+
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
   return (req, res, next) -> Promise.try () ->
 
-    # middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod req.method, methods
+    # if middleware is not applicable for this req.method, move along
+    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
     # ensure project
-    proj = requireProject {methods}
-    proj req, res, () ->
+    proj = requireProject({methods, projectIdParam})
+    proj(req, res, () ->
+
+      # project id
+      project_id = req.params[projectIdParam]
 
       # procure profile (should exist by virtue of passing requireProject)
-      profile = req.session.profiles[req.session.current_profile_id]
+      profile = _.find(req.session.profiles, project_id: Number(project_id))
 
-      # this is the actual parent check
-      if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
-        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
+      # check 'can_edit'
+      if !profile.can_edit
+        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, httpStatus.UNAUTHORIZED)
 
       return process.nextTick(next)
+    )
 
 # route-specific middleware that requires a user to be the parent of the given project
 # being acted upon.  implies `requireProject` automatically
-requireProjectParent = ({methods, parentidparam}) ->
+# optional: methods
+# optional: projectIdParam (needs to match the url param of the endpoint, though)
+requireProjectParent = ({methods, projectIdParam} = {}) ->
+  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+  projectIdParam ?= 'id'
+
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
   return (req, res, next) -> Promise.try () ->
 
-    # middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod req.method, methods
+    # if middleware is not applicable for this req.method, move along
+    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
     # ensure project
-    proj = requireProject {methods}
-    proj req, res, () ->
+    proj = requireProject({methods, projectIdParam})
+    proj(req, res, () ->
+
+      # project id
+      project_id = req.params[projectIdParam]
 
       # procure profile (should exist by virtue of passing requireProject)
-      profile = req.session.profiles[req.session.current_profile_id]
+      profile = _.find(req.session.profiles, project_id: Number(project_id))
 
-      # this is the actual parent check
+      # this is the parent check
       if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
         return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
 
       return process.nextTick(next)
-
+    )
 
 # route-specific middleware that requires permissions set on the session,
 # and either responds with a 401 or a logout redirect on failure, based on

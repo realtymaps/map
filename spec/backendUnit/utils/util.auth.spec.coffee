@@ -140,8 +140,8 @@ describe 'util.auth', ->
         done()
       @resultcb = null
       @res =
-        json: () ->
-          resultcb("json")
+        json: () =>
+          @resultcb("json")
 
       @next = (err) =>
         if err and err.status
@@ -149,33 +149,36 @@ describe 'util.auth', ->
         else
           @resultcb("next")
 
-    it "should return 401 when no user", (done) ->
-      requireProject = auth.requireProject(methods: 'get')
-      req = user: null
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProject req, @res, @next
-
-    it "should return 401 if no profile_id", (done) ->
+    it "should return 401 when no project id", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
-        user: id: 7
-        session:
-          current_profile_id: null
-          profiles:
-            "1":
-              user_id: 7
-              parent_auth_user_id: null
-
+        method: 'GET'
+        user: id: 1
+        params: {}
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireProject req, @res, @next
+
+
+    it "should return 401 when no user", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: null
+        params: id: 1
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+
 
     it "should return 401 if no profiles", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
+        method: 'GET'
         user: id: 7
+        params: id: 1
         session:
           current_profile_id: 1
-          profiles: null
+          profiles: {}
 
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireProject req, @res, @next
@@ -183,12 +186,15 @@ describe 'util.auth', ->
     it "should return 401 if no matching profile", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
+        method: 'GET'
         user: id: 7
+        params: id: "1"  # project id
         session:
-          current_profile_id: 2
+          current_profile_id: 1
           profiles:
             "1":
               user_id: 7
+              project_id: 2  # project id, diff from above
               parent_auth_user_id: null
 
       @resultcb = @resultBase.bind(null, done, "error: 401")
@@ -197,12 +203,15 @@ describe 'util.auth', ->
     it "should pass with user, profile, and project as expected", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
+        method: 'GET'
         user: id: 7
+        params: id: "1"  # project id
         session:
           current_profile_id: 1
           profiles:
             "1":
               user_id: 7
+              project_id: 1  # project id, same as above
               parent_auth_user_id: null
 
       @resultcb = @resultBase.bind(null, done, "next")
@@ -215,8 +224,8 @@ describe 'util.auth', ->
         done()
       @resultcb = null
       @res =
-        json: () ->
-          resultcb("json")
+        json: () =>
+          @resultcb("json")
 
       @next = (err) =>
         if err and err.status
@@ -229,11 +238,13 @@ describe 'util.auth', ->
       req =
         method: 'GET'
         user: id: 7
+        params: id: "1"
         session:
           current_profile_id: 1
           profiles:
             "1":
               user_id: 7
+              project_id: 1
               parent_auth_user_id: 1
 
       @resultcb = @resultBase.bind(null, done, "error: 401")
@@ -244,12 +255,67 @@ describe 'util.auth', ->
       req =
         method: 'GET'
         user: id: 7
+        params: id: "1"
         session:
           current_profile_id: 1
           profiles:
             "1":
               user_id: 7
+              project_id: 1
               parent_auth_user_id: 7
 
       @resultcb = @resultBase.bind(null, done, "next")
       requireProjectParent req, @res, @next
+
+
+  describe 'requireProjectEditor', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not editor of project", (done) ->
+      requireProjectEditor = auth.requireProjectEditor(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              can_edit: false
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProjectEditor req, @res, @next
+
+    it "should pass when user can_edit (even if not parent)", (done) ->
+      requireProjectEditor = auth.requireProjectEditor(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              can_edit: true
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProjectEditor req, @res, @next
