@@ -61,7 +61,7 @@ deletePhotosPrep = (subtask) ->
   tables.deletes.photos()
   .select('id')
   .then (ids) ->
-    ids = ids.map (obj) -> obj.id
+    ids = _.pluck(ids, 'id')
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
       totalOrList: ids
