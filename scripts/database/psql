@@ -4,11 +4,16 @@ set -o pipefail
 
 OUT=`./scripts/database/psqlCoffee $1`
 
+# make $* easy to use with `psql` below
+shift
+args=("$@")
+
 # echo OUT $OUT
 if [[ $OUT =~ .*=(.*)[[:space:]](psql.*) ]]; then
-  echo 'MATCH'
+  # echo 'MATCH'
   # echo ${BASH_REMATCH[1]}
   # echo ${BASH_REMATCH[2]}
+  set -x
   export PGPASSWORD=${BASH_REMATCH[1]}
-  ${BASH_REMATCH[2]}
+  ${BASH_REMATCH[2]} "${args[@]}"
 fi
