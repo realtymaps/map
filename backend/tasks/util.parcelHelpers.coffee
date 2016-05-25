@@ -79,7 +79,6 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
   ###
-  logger.debug () -> "<#{id}> parcelHelpers.finalizeData START"
   Promise.delay delay
   .then () ->
     tables.property.normParcel()
@@ -89,7 +88,6 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
     .orderBy('rm_property_id')
     .orderBy('deleted')
     .then (parcels) ->
-      logger.debug () -> "<#{id}> parcelHelpers.finalizeData parcels.length: #{parcels.length}"
       if parcels.length == 0
         # might happen if a singleton listing is deleted during the day
         return tables.deletes.parcel()
@@ -99,10 +97,13 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
           batch_id: subtask.batch_id
 
       dbs.get('main').transaction (transaction) ->
-        logger.debug () -> "<#{id}> parcelHelpers.finalizeData transaction start"
         internals.finalizeNewParcel {parcels, id, subtask, transaction}
         .then (finalizedParcel) ->
           internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
+          .then () ->
+            logger.debug () -> "internals.finalizeUpdateListing (#{id}) FINISHED"
+      .then () ->
+        logger.debug () -> "parcelHelpers.finalizeData: (#{id}) FINISHED"
 
 
 activateNewData = (subtask) ->
