@@ -373,15 +373,15 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, subid, updat
       # found an existing row, so need to update, but include change log
       result = result[0]
 
-      if flattenRows
-        newData = _flattenedRow(updateRow)
-        oldData = _flattenedRow(result)
-      else
-        newData = updateRow
-        oldData = result
+      # possibly flatten the rows
+      newData = if flattenRows then _flattenedRow(updateRow) else updateRow
+      oldData = if flattenRows then _flattenedRow(result) else result
+      # remove excluded keys
       newData = _.omit(newData, diffExcludeKeys)
       oldData = _.omit(oldData, diffExcludeKeys)
+      # do our brand of diff
       changes = _diff(newData, oldData)
+      # mask certain changed values with the simple `true` value
       for field in diffBooleanKeys
         if changes.hasOwnProperty(field)
           changes[field] = true
