@@ -40,6 +40,7 @@ finalizeParcelEntry = (entries) ->
 
 
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
+  logger.debug "parcelHelpers.finalizeNewParcel START"
   parcel = finalizeParcelEntry(parcels)
 
   tables.property.parcel(transaction: transaction)
@@ -51,8 +52,11 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   .then () ->
     tables.property.parcel(transaction: transaction)
     .insert(parcel)
+  .then () ->
+    return parcel
 
-finalizeUpdateListing = ({id, subtask, transaction}) ->
+finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
+  logger.debug "parcelHelpers.finalizeUpdateListing START"
   tables.property.combined(transaction: transaction)
   .where
     rm_property_id: id
@@ -63,14 +67,14 @@ finalizeUpdateListing = ({id, subtask, transaction}) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
-          logger.debug () -> "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, activeParcel: false})
+          logger.debug "mlsHelpers.finalizeData"
+          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, finalizedParcel, transaction})
         else
-          logger.debug () -> "countyHelpers.finalizeData"
+          logger.debug "countyHelpers.finalizeData"
           #delay is zero since hire up the change we have already been delayed
-          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, activeParcel: false})
+          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, finalizedParcel})
           .then () ->
-            logger.debug () -> "countyHelpers.finalizeData FINISHED"
+            logger.debug "countyHelpers.finalizeData FINISHED"
 
     Promise.all promises
 

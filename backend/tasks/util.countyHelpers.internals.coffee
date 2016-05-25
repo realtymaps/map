@@ -13,7 +13,7 @@ _documentFinalize = (fnName, cbPromise) ->
     logger.debug () -> "#{fnName} FINISHED"
     entries
 
-finalizeDataTax = ({subtask, id, data_source_id}) ->
+finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
   _documentFinalize "finalizeDataTax", () ->
     tables.property.tax(subid: subtask.data.normalSubid)
     .select('*')
@@ -27,7 +27,7 @@ finalizeDataTax = ({subtask, id, data_source_id}) ->
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
         # not sure if this should ever be possible, but we'll handle it anyway
-        return tables.deletes.property()
+        return tables.deletes.property(transaction: transaction)
         .insert
           rm_property_id: id
           data_source_id: data_source_id || subtask.task_name
@@ -150,12 +150,12 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction}) ->
 
         #this may have been a deadlock from parcels
         #we must use an existing transaction if there is one
-        if transaction?
-          return _updateDataCombined {subtask, id, data_source_id, transaction, tax}
-
-        dbs.get('main').transaction (trx) ->
+        doUpdate = (trx) ->
           _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
-
+        if transaction?
+          doUpdate(transaction)
+        else
+          dbs.get('main').transaction(doUpdate)
 
 
 module.exports = {

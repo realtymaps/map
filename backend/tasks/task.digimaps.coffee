@@ -229,7 +229,7 @@ finalizeData = (subtask) ->
   if !normalSubid?
     throw new HardFail "normalSubid must be defined"
 
-  Promise.map subtask.data.values, (id) ->
+  Promise.each subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id, delay ? DELAY_MILLISECONDS)
   # .then ->
   #   jobQueue.queueSubsequentSubtask {

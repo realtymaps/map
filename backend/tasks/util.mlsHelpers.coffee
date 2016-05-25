@@ -89,7 +89,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
+finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   listingsPromise = tables.property.listing()
@@ -105,11 +105,11 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
 
 
   Promise.join listingsPromise
-  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   , (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
-      return tables.deletes.property()
+      return tables.deletes.property(transaction: transaction)
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name
@@ -142,7 +142,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
-      dbs.get('main').transaction (transaction) ->
+      doUpsert = (transaction) ->
         tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id
@@ -152,6 +152,10 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
         .then () ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
+      if transaction
+        doUpsert(transaction)
+      else
+        dbs.get('main').transaction(doUpsert)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()
