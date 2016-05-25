@@ -374,8 +374,8 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, subid, updat
       result = result[0]
 
       # possibly flatten the rows
-      newData = if flattenRows then _flattenedRow(updateRow) else updateRow
-      oldData = if flattenRows then _flattenedRow(result) else result
+      newData = if flattenRows then _flattenRow(updateRow) else updateRow
+      oldData = if flattenRows then _flattenRow(result) else result
       # remove excluded keys
       newData = _.omit(newData, diffExcludeKeys)
       oldData = _.omit(oldData, diffExcludeKeys)
@@ -419,7 +419,7 @@ getValues = (list, target) ->
 
 # Not all row fields are taken into the result, only those that correspond most directly to the source data,
 # excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
-_flattenedRow = (row) ->
+_flattenRow = (row) ->
   flattened = {}
   for groupName, groupList of row.shared_groups
     getValues(groupList, flattened)
