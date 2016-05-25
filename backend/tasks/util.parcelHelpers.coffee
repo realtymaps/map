@@ -101,8 +101,8 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
       dbs.get('main').transaction (transaction) ->
         logger.debug () -> "<#{id}> parcelHelpers.finalizeData transaction start"
         internals.finalizeNewParcel {parcels, id, subtask, transaction}
-        .then () ->
-          internals.finalizeUpdateListing {id, subtask, transaction}
+        .then (finalizedParcel) ->
+          internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
 
 
 activateNewData = (subtask) ->

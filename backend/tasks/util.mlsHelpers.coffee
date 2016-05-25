@@ -89,7 +89,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
+finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   listingsPromise = tables.property.listing()
@@ -105,7 +105,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel, transaction}) ->
 
 
   Promise.join listingsPromise
-  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel, transaction)
+  , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   , (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
