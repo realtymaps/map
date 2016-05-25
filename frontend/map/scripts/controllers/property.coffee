@@ -49,26 +49,11 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
     .then (property) ->
       $scope.selectedResult = property
       $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
-      $scope.tab.selected = $scope.dataSources[0].data_source_id
-
-      PHOTO_WIDTH = 275
-      for property in $scope.dataSources
-        photos = []
-        if property.cdn_photo && property.photo_count
-          for i in [1..property.photo_count]
-            photos.push
-              key: i
-              # url: "http://" + property.cdn_photo + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
-              # Uncomment this to load photos locally
-              url: property.cdn_photo.replace(property.cdn_photo.split('/')[0], '') + "&width=#{PHOTO_WIDTH}&image_id=#{i}"
-
-        property.photos = photos
-        $log.debug property.photos
+      $scope.tab.selected = (property.mls[0] || property.county[0])?.data_source_id || 'raw'
+      for dataSource in $scope.dataSources
+        $log.debug dataSource
+        for groupName, group of dataSource.shared_groups
+          dataSource.shared_groups[groupName] = _.zipObject _.map(group, 'name'), _.map(group, 'value')
+          $log.debug group
 
   getPropertyDetail $stateParams.id
-
-  $scope.$on 'imageLoaded', (event, img) ->
-    $scope.imageLoaded = true
-    $scope.$evalAsync()
-
-  return
