@@ -371,21 +371,22 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
-      updateRow.change_history = result.change_history ? []
       changes = getRowChanges(updateRow, result, diffExcludeKeys)
 
       if changes.deleted?
         # it wasn't really deleted, just purged earlier as per black knight data flow
         delete changes.deleted
 
-      if !_.isEmpty(changes) && doSafeJsonArray
-        if !Array.isArray(updateRow.change_history)
-          updateRow.change_history = [updateRow.change_history]
-        updateRow.change_history.push changes
+      if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
         updateRow.deleted = null
-      else
-        updateRow.change_history = changes
+        if doSafeJsonArray
+          updateRow.change_history = result.change_history ? []
+          if !Array.isArray(updateRow.change_history)
+            updateRow.change_history = [updateRow.change_history]
+          updateRow.change_history.push changes
+        else
+          updateRow.change_history = changes
 
       if doSafeJsonArray
         updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
