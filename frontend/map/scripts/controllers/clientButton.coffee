@@ -14,8 +14,8 @@ $stateParams,
 rmapsPrincipalService,
 rmapsClientsFactory
 ) ->
-  clientsService = new rmapsClientsFactory $stateParams.project_id
   profile = rmapsPrincipalService.getCurrentProfile()
+  clientsService = new rmapsClientsFactory profile.project_id
 
   loadClients = () ->
     clientsService.getAll()

@@ -41,7 +41,7 @@ getProfiles = (auth_user_id) -> Promise.try () ->
       profiles
     else
       logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
-      create auth_user_id: auth_user_id, sandbox: true
+      create auth_user_id: auth_user_id, sandbox: true, can_edit: true
       .then () ->
         userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 

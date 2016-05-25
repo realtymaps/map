@@ -96,7 +96,7 @@ basicColumns = do ->
       'email_validation_hash', 'email_is_valid']
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
-    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles',
+    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
       'map_position', 'map_results', 'favorites']
 
     drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
@@ -153,6 +153,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.id as id"
     "#{tables.user.profile.tableName}.auth_user_id as user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id"
+    "#{tables.user.profile.tableName}.can_edit"
     "#{tables.user.profile.tableName}.filters"
     "#{tables.user.profile.tableName}.map_toggles"
     "#{tables.user.profile.tableName}.map_position"
@@ -177,6 +178,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id as parent_auth_user_id"
     "#{tables.user.profile.tableName}.project_id as project_id"
+    "#{tables.user.profile.tableName}.can_edit as can_edit"
     "#{tables.user.profile.tableName}.favorites as favorites"
 
     "#{tables.auth.user.tableName}.email as email"
