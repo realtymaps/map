@@ -16,6 +16,7 @@ diffExcludeKeys = [
   'geom_polys_raw'
   'geom_point_raw'
   'change_history'
+  'deleted'
   'inserted'
   'updated'
   'batch_id'
