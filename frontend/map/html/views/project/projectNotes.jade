@@ -1,14 +1,25 @@
-.project-notes(ng-controller="rmapsNotesModalCtrl")
-  .row(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
-    .col-md-2
-      img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
-    .col-md-8
-      .data
-        h4 {{note.title}}
-        p {{note.text}}
-    .col-md-2
-      .note-date
-        | {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
-      .tools
-        button.btn.btn-link(ng-click="update(note)") Edit
-        button.btn.btn-link(ng-click="remove(note, true)") Remove
+.project-notes-container(ng-controller="rmapsNotesModalCtrl")
+  .project-note-input
+    form.note(name="createProjectNoteForm" ng-submit="createNote(project)")
+      .input-group
+        textarea.form-control(cols="25" rows="2"
+        placeholder="Add a note about this project"
+        name="noteText"
+        type="text"
+        ng-model="newNotes['project'].text"
+        validator="minlength=1")
+        span.input-group-addon(ng-click="createProjectNote(project)" validation-submit="createProjectNoteForm") Add
+
+  .list.bordered
+    .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
+      .row
+        .col-sm-12
+          .note-image
+            a(class="note-img" ng-if="note.coordinates")
+              img.desktop-only(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+              img.mobile-only(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 58, 58)}}" title="{{note.title}}")
+          .note-data-wrapper
+            .note-data
+              .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+              .note-title {{note.title}}
+              .note-text {{note.text}}
