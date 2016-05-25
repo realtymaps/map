@@ -73,6 +73,7 @@ getResizedPayload = (opts) -> Promise.try () ->
           stream = stream.pipe((require 'sharp')().resize(width, height))
           meta = _.extend {}, payload.meta, {width, height}
 
+          # Using this method seems to cause 504 gateway timeout.
           # internals.resize {stream, width, height}
           # .then (resizeStream) ->
           #   stream = resizeStream

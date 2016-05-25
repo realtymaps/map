@@ -51,9 +51,9 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
       $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
       $scope.tab.selected = (property.mls[0] || property.county[0])?.data_source_id || 'raw'
       for dataSource in $scope.dataSources
-        $log.debug dataSource
+        # Each group is an array of fields, here transformed into objects so the template may access them
+        # Note - this is temporary until all necessary fields have been promoted to primary fields
         for groupName, group of dataSource.shared_groups
           dataSource.shared_groups[groupName] = _.zipObject _.map(group, 'name'), _.map(group, 'value')
-          $log.debug group
 
   getPropertyDetail $stateParams.id

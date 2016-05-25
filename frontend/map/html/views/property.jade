@@ -80,16 +80,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value {{formatters.property.orNa(property.acres)}}
                   .content-label Acres
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(property.land_square_footage)}}
+                  .content-value {{formatters.property.orNa(Math.round(property.acres*43560))}}
                   .content-label Lot SqFt
-
-              //- .row.content-row
-              //-   .col-xs-6
-              //-     .content-value {{formatters.property.orNa(property.lot_front_footage)}}
-              //-     .content-label Front Ft
-              //-   .col-xs-6
-              //-     .content-value {{formatters.property.orNa(property.depth_footage)}}
-              //-     .content-label Depth Ft
 
           .content-block.border-bottom
             .content-heading Owner Info
@@ -119,7 +111,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .row
                 .col-sm-6
                   .content-label Close Price
-                  .content-value {{formatters.property.getPrice(property.shared_groups.general['Close Price'])}}
+                  .content-value {{formatters.property.getPrice(property.price)}}
                 .col-sm-6
                   .content-label Close Date
                   .content-value

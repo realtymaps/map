@@ -91,8 +91,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   query.limit(limit) if limit
   if bounds
-    query.orWhere ->
-      sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
+    sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
 
   if filters.status.length < statuses.length
     sqlHelpers.whereIn(query, "#{dbFn.tableName}.status", filters.status)

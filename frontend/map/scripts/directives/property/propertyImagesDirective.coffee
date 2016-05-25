@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 #
 # USAGE:
 #
-#   property-images(property="propertyScopeVar")
+#   property-images(property="propertyScopeVar" imageWidth="400" imageHeight="300")
 #
 
 app.directive 'propertyImages', (
@@ -13,11 +13,11 @@ app.directive 'propertyImages', (
   rmapsResultsFormatterService,
 ) ->
   restrict: 'EA'
+  templateUrl: './includes/directives/property/_propertyImagesDirective.jade'
   scope:
     propertyParent: '=property'
     imageWidth: '@imageWidth'
     imageHeight: '@imageHeight'
-  templateUrl: './includes/directives/property/_propertyImagesDirective.jade'
 
   controller: ($scope) ->
     $log = $log.spawn 'propertyImagesDirective'
@@ -35,25 +35,25 @@ app.directive 'propertyImages', (
 
     imageLoaded = (event, img) ->
       $timeout ->
-        $log.debug 'imageLoaded!'
         $scope.imageLoaded = true
         $scope.$evalAsync()
-      , 100
+      , 50
 
     photos = []
     if $scope.property.cdn_photo && $scope.property.photo_count
-      resizeUrl = "http://" + $scope.property.cdn_photo
+      resizeUrl = $scope.property.cdn_photo
       if resizeUrl.slice(0,4) != "http"
         resizeUrl = "http://#{resizeUrl}"
 
-       # uncomment to load photos locally
-      resizeUrl = $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '')
+      # uncomment to load photos locally
+      # resizeUrl = $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '')
 
       if $scope.imageWidth
         resizeUrl += "&width=#{$scope.imageWidth}"
       if $scope.imageHeight
         resizeUrl += "&height=#{scope.imageHeight}"
 
+      # Skip the first image, it is expected to be a duplicate
       for i in [1..$scope.property.photo_count]
         photos.push
           key: i
