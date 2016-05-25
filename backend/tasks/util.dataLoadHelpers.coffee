@@ -380,7 +380,7 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
 
       if !_.isEmpty(changes) && doSafeJsonArray
         if !_.isFunction(updateRow.change_history.push)
-          console.log("updateRow.change_history.push: (#{typeof updateRow.change_history.push}) / #{JSON.stringify(updateRow.change_history.push,null,2)}")
+          console.log("updateRow.change_history.push: (#{typeof updateRow.change_history}) / #{JSON.stringify(updateRow.change_history,null,2)}")
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
         updateRow.deleted = null
