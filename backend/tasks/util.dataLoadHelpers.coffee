@@ -253,7 +253,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
       usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-      diffExcludeKeys = ['promoted_values']
+      diffExcludeKeys = []
       if dataSourceType == 'mls'
         for groupName, validationList of validationMap
           for validationDefinition in validationList
@@ -346,9 +346,11 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, subid, updateRow, delay, flattenRows}) -> Promise.try () ->
+  diffExcludeKeys ?= []
+  diffBooleanKeys ?= []
   delay ?= 100
-  getRowChanges ?= _getRowChanges
+  flattenRows ?= true
 
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
@@ -370,22 +372,30 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
-      changes = getRowChanges(updateRow, result, diffExcludeKeys)
 
-      if changes.deleted?
-        # it wasn't really deleted, just purged earlier as per black knight data flow
-        delete changes.deleted
+      if flattenRows
+        newData = _flattenedRow(updateRow)
+        oldData = _flattenedRow(result)
+      else
+        newData = updateRow
+        oldData = result
+      newData = _.omit(newData, diffExcludeKeys)
+      oldData = _.omit(oldData, diffExcludeKeys)
+      changes = _diff(newData, oldData)
+      for field in diffBooleanKeys
+        if changes.hasOwnProperty(field)
+          changes[field] = true
 
+      updateRow.deleted = null
+      updateRow.change_history = result.change_history ? []
+      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
+      if !Array.isArray(updateRow.change_history)
+        updateRow.change_history = [updateRow.change_history]
+      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
       if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
-        updateRow.deleted = null
-        updateRow.change_history = result.change_history ? []
-        # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
-        if !Array.isArray(updateRow.change_history)
-          updateRow.change_history = [updateRow.change_history]
-        # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
         updateRow.change_history.push changes
-        updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
+      updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
 
       if !_specialUpdates[dataType]?
         tables.property[dataType](subid: subid)
@@ -407,39 +417,30 @@ getValues = (list, target) ->
   target
 
 
-# this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
-# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source data,
+# Not all row fields are taken into the result, only those that correspond most directly to the source data,
 # excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
-_getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
-  fields1 = {}
-  fields2 = {}
+_flattenedRow = (row) ->
+  flattened = {}
+  for groupName, groupList of row.shared_groups
+    getValues(groupList, flattened)
+  for groupName, groupList of row.subscriber_groups
+    getValues(groupList, flattened)
+  _.extend(flattened, row.hidden_fields)
+  _.extend(flattened, row.ungrouped_fields)
+  return flattened
 
-  # first, flatten the objects
-  for groupName, groupList of row1.shared_groups
-    getValues(groupList, fields1)
-  for groupName, groupList of row1.subscriber_groups
-    getValues(groupList, fields1)
-  _.extend(fields1, row1.hidden_fields)
-  _.extend(fields1, row1.ungrouped_fields)
 
-  for groupName, groupList of row2.shared_groups
-    getValues(groupList, fields2)
-  for groupName, groupList of row2.subscriber_groups
-    getValues(groupList, fields2)
-  _.extend(fields2, row2.hidden_fields)
-  _.extend(fields2, row2.ungrouped_fields)
-
-  # then get changes from row1 to row2
+# this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
+# taken from row2 (intended to be the older set)
+_diff = (row1, row2) ->
   result = {}
-  for fieldName, value1 of fields1
-    if fieldName in diffExcludeKeys
+  for fieldName, value1 of row1
+    if _.isMatch(value1, row2[fieldName])
       continue
-    if _.isMatch(value1, fields2[fieldName])
-      continue
-    result[fieldName] = (fields2[fieldName] ? null)
+    result[fieldName] = (row2[fieldName] ? null)
 
   # then get fields missing from row1
-  _.extend result, _.omit(fields2, Object.keys(fields1))
+  _.extend result, _.omit(row2, Object.keys(row1))
 
 
 finalizeEntry = (entries) ->
