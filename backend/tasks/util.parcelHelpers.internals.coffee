@@ -1,6 +1,5 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
-diff = require('deep-diff').diff
 
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
 tables = require '../config/tables'
@@ -16,18 +15,18 @@ diffExcludeKeys = [
   'rm_modified_time'
   'geom_polys_raw'
   'geom_point_raw'
-  'geom_polys_json'
-  'geom_point_json'
   'change_history'
   'deleted'
   'inserted'
   'updated'
+  'batch_id'
+  'rm_raw_id'
 ]
 
-getRowChanges = (row1, row2) ->
-  diff(_.omit(row1, diffExcludeKeys), _.omit(row2, diffExcludeKeys)).map (c) ->
-    _(c).omit(_.isUndefined).omit(_.isNull).value()
-
+diffBooleanKeys = [
+  'geom_polys_json'
+  'geom_point_json'
+]
 
 finalizeParcelEntry = (entries) ->
   entry = entries.shift()
@@ -78,9 +77,10 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
 
 
 module.exports = {
-  getRowChanges
   finalizeNewParcel
   finalizeParcelEntry
   finalizeUpdateListing
   column
+  diffExcludeKeys
+  diffBooleanKeys
 }

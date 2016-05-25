@@ -54,7 +54,9 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           dataType: tablesPropName
           updateRow: row
           delay
-          getRowChanges: internals.getRowChanges
+          flattenRows: false
+          diffExcludeKeys: internals.diffExcludeKeys
+          diffBooleanKeys: internals.diffBooleanKeys
         }
       #removed for performance
       #.then () ->

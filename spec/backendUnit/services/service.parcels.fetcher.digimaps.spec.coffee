@@ -25,7 +25,6 @@ describe 'service.parcel.fetcher.digimaps', ->
     svc.__set__ '_ftpClientFactory', () => Promise.resolve @mockFtpClient
 
   it 'getZipFileStream', (done) ->
-    this.timeout(10000)
     @subject.getZipFileStream('/ZIPS/Parcels_123.zip')
     .then (stream) ->
       str = ''

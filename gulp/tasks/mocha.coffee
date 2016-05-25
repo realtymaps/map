@@ -21,6 +21,7 @@ runMocha = (files, reporter = 'dot', done) ->
   .pipe mocha
     reporter: reporter
     showStack: true
+    timeout: 10000
   .once 'error', (err) ->
     logger.error(err.stack ? err)
     done()

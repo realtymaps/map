@@ -120,8 +120,6 @@ class TestServiceCrudProject extends ServiceCrudProject
 
 describe 'route.projectSession', ->
 
-  this.timeout(10000)
-
   afterEach ->
     @projCrudSvc.resetStubs()
     @cls.kill()
@@ -237,7 +235,6 @@ describe 'route.projectSession', ->
         body:{}
 
     it 'clients', ->
-      this.timeout(10000) # give it a longer timeout since 2s doesn't seem to be enough
       @subject.byIdDELETE(@mockRequest,mockRes,(->))
       .then =>
         @subject.svc.deleteStub.called.should.be.true
