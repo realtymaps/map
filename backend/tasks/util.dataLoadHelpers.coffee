@@ -311,6 +311,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
           diffExcludeKeys: validationInfo.diffExcludeKeys
           dataType: subtask.data.dataType
           subid: subtask.data.normalSubid
+          dataSourceType: options.dataSourceType
         })
         .then (rm_property_id) ->
           successes.push(rm_property_id)
@@ -346,7 +347,7 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, subid, updateRow, delay, flattenRows}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows}) -> Promise.try () ->
   diffExcludeKeys ?= []
   diffBooleanKeys ?= []
   delay ?= 100
@@ -374,8 +375,8 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, subid, updat
       result = result[0]
 
       # possibly flatten the rows
-      newData = if flattenRows then _flattenRow(updateRow) else updateRow
-      oldData = if flattenRows then _flattenRow(result) else result
+      newData = if flattenRows then _flattenRow(updateRow, dataSourceType, dataType) else updateRow
+      oldData = if flattenRows then _flattenRow(result, dataSourceType, dataType) else result
       # remove excluded keys
       newData = _.omit(newData, diffExcludeKeys)
       oldData = _.omit(oldData, diffExcludeKeys)
@@ -419,14 +420,22 @@ getValues = (list, target) ->
 
 # Not all row fields are taken into the result, only those that correspond most directly to the source data,
 # excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
-_flattenRow = (row) ->
+_flattenRow = (row, dataSourceType, dataType) ->
   flattened = {}
+
+  # first get the [{name: x1, value: y1} ...] lists flattened down as {x1: y1, x2: y2, ...}
   for groupName, groupList of row.shared_groups
     getValues(groupList, flattened)
   for groupName, groupList of row.subscriber_groups
     getValues(groupList, flattened)
+
+  # then merge in hidden and ungrouped fields
   _.extend(flattened, row.hidden_fields)
   _.extend(flattened, row.ungrouped_fields)
+
+  # retain the configured base/filter fields
+  baseRuleKeys = _.keys(validatorBuilder.getBaseRules(dataSourceType, dataType))
+  _.extend(flattened, _.pick(row, baseRuleKeys))
   return flattened
 
 
@@ -435,7 +444,7 @@ _flattenRow = (row) ->
 _diff = (row1, row2) ->
   result = {}
   for fieldName, value1 of row1
-    if _.isMatch(value1, row2[fieldName])
+    if _.isEqual(value1, row2[fieldName])
       continue
     result[fieldName] = (row2[fieldName] ? null)
 
