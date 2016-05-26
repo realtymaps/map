@@ -48,6 +48,14 @@ final =
   geometry:
     required: true
 
+finalizeParcelAsDataCombined =
+  geometry_raw: input: 'geom_polys_raw'
+  geometry: input: 'geom_polys_json'
+  geometry_center: input: 'geom_point_json'
+
+execFinalizeParcelAsDataCombined = (finalizedParcel) ->
+  validation.validateAndTransform finalizedParcel, finalizeParcelAsDataCombined
+
 validateAndTransform = (toTransform) ->
   validation.validateAndTransform toTransform, prepForRmPropertyId
   .then (valid) ->
@@ -57,4 +65,6 @@ module.exports = {
   prepForRmPropertyId
   final
   validateAndTransform
+  finalizeParcelAsDataCombined
+  execFinalizeParcelAsDataCombined
 }
