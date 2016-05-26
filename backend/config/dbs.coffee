@@ -102,7 +102,7 @@ buildTableName = (tableName) ->
   (subid) -> "#{tableName}_#{subid}"
 
 
-ensureTransaction = (handler, transaction, dbName) ->
+ensureTransaction = (transaction, dbName, handler) ->
   if transaction?
     handler(transaction)
   else

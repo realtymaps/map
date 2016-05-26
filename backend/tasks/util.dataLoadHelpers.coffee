@@ -149,7 +149,7 @@ activateNewData = (subtask, {propertyPropName, deletesPropName, transaction} = {
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
-  doActivate = (transaction) ->
+  dbs.ensureTransaction transaction, 'main', (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
@@ -203,7 +203,6 @@ activateNewData = (subtask, {propertyPropName, deletesPropName, transaction} = {
     .then () ->
       if subtask.setRefreshTimestamp
         setLastRefreshTimestamp(subtask)
-  dbs.ensureTransaction(doActivate, transaction, 'main')
 
 
 _getUsedInputFields = (validationDefinition) ->

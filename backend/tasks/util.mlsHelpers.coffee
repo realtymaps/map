@@ -142,7 +142,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
-      doUpsert = (transaction) ->
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
         tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id
@@ -152,7 +152,6 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
         .then () ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
-      dbs.ensureTransaction(doUpsert, transaction, 'main')
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()
