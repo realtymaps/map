@@ -1,11 +1,12 @@
-Promise = require 'bluebird'
-tables = require '../config/tables'
-logger = require '../config/logger'
-config = require '../config/config'
-dbs = require '../config/dbs'
-TaskImplementation = require './util.taskImplementation'
-jobQueue = require '../services/service.jobQueue'
-mlsHelpers = require './util.mlsHelpers'
+Promise = require('bluebird')
+tables = require('../config/tables')
+logger = require('../config/logger')
+config = require('../config/config')
+dbs = require('../config/dbs')
+TaskImplementation = require('./util.taskImplementation')
+jobQueue = require('../services/service.jobQueue')
+mlsHelpers = require('./util.mlsHelpers')
+_ = require('lodash')
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500

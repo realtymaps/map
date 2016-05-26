@@ -214,7 +214,7 @@ finalizeDataPrep = (subtask) ->
     batch_id: subtask.batch_id
     fips_code: fipsCode
   .then (ids) ->
-    ids  = ids.map (id) -> id.rm_property_id
+    ids  = _.pluck(ids, 'rm_property_id')
     # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
     jobQueue.queueSubsequentPaginatedSubtask(
       parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})

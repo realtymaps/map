@@ -6,14 +6,14 @@ tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 _documentFinalize = (fnName, cbPromise) ->
-  logger.debug () -> "#{fnName} STARTED"
+  logger.spawn('verbose').debug () -> "#{fnName} STARTED"
 
   cbPromise()
   .then (entries) ->
-    logger.debug () -> "#{fnName} FINISHED"
+    logger.spawn('verbose').debug () -> "#{fnName} FINISHED"
     entries
 
-finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
+finalizeDataTax = ({subtask, id, data_source_id, transaction, forceFinalize}) ->
   _documentFinalize "finalizeDataTax", () ->
     tables.property.tax(subid: subtask.data.normalSubid)
     .select('*')
@@ -32,20 +32,19 @@ finalizeDataTax = ({subtask, id, data_source_id, transaction}) ->
           rm_property_id: id
           data_source_id: data_source_id || subtask.task_name
           batch_id: subtask.batch_id
-      if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
-        logger.debug "batch_id mismatch!!"
-        logger.debug "subtask.data.cause: #{subtask.data.cause}"
-        logger.debug "subtask.data.batch_id: #{subtask.data.batch_id} vs #{taxEntries[0]?.batch_id}"
+        .then () ->
+          return null
+      if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
         # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
-        # of the given enqueue source , in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
+        # of the given enqueue source, in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
         # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
         # care of it.
-        return
+        return null
+      return taxEntries
 
-      taxEntries
 
-
-finalizeDataDeed = ({subtask, id, data_source_id}) ->
+finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataDeed", () ->
     tables.property.deed(subid: subtask.data.normalSubid)
     .select('*')
@@ -57,10 +56,11 @@ finalizeDataDeed = ({subtask, id, data_source_id}) ->
     .orderBy('deleted')
     .orderByRaw('close_date ASC NULLS FIRST')
     .then (deedEntries=[]) ->
-      if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+      if !forceFinalize && subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from deed instead of: #{subtask.data.cause}"
         # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
-        return
-      deedEntries
+        return null
+      return deedEntries
 
 
 
@@ -77,10 +77,10 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
     .orderByRaw('close_date ASC NULLS FIRST')
 
 
-_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcel}) ->
+_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
   tax = dataLoadHelpers.finalizeEntry(taxEntries)
   tax.data_source_type = 'county'
-  _.extend(tax, parcel[0])
+  _.extend(tax, parcelEntries[0])
 
   # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
   # TODO: static data fields?
@@ -126,14 +126,12 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     tables.property.combined(transaction: transaction)
     .insert(tax)
 
-finalizeJoin = ({subtask, id, data_source_id, delay, transaction}) ->
-  delay ?= 100
-
-  (taxEntries, deedEntries, mortgageEntries=[], parcel=[]) ->
+finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
+    delay ?= 100
     _documentFinalize "finalizeJoin", () ->
       # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
       # TODO: simultaneous closings, how do we properly sort to account for that?
-      {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcel})
+      {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
 
       Promise.delay(delay)  #throttle for heroku's sake
       .then () ->
@@ -149,8 +147,7 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction}) ->
       .then () ->
         delete tax.promoted_values
 
-        #this may have been a deadlock from parcels
-        #we must use an existing transaction if there is one
+        # we must use an existing transaction if there is one
         doUpdate = (trx) ->
           _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
         if transaction?

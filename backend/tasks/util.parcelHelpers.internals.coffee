@@ -70,8 +70,8 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
           mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, finalizedParcel, transaction})
         else
           logger.debug "countyHelpers.finalizeData"
-          #delay is zero since hire up the change we have already been delayed
-          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, finalizedParcel})
+          #delay is zero since higher up the change we have already been delayed
+          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, finalizedParcel, forceFinalize: true})
     Promise.all promises
 
 

@@ -165,14 +165,24 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, parcelHelpers}) ->
+finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, parcelHelpers, forceFinalize}) ->
   parcelHelpers ?= require './util.parcelHelpers'#delayed require due to circular dependency
 
-  Promise.join internals.finalizeDataTax {subtask, id, data_source_id, transaction}
-  , internals.finalizeDataDeed {subtask, id, data_source_id}
-  , internals.finalizeDataMortgage {subtask, id, data_source_id}
-  , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
-  , internals.finalizeJoin {subtask, id, data_source_id, transaction, delay}
+  internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
+  .then (taxEntries) ->
+    if !taxEntries?
+      return
+    internals.finalizeDataDeed {subtask, id, data_source_id, forceFinalize}
+    .then (deedEntries) ->
+      if !deedEntries?
+        return
+      mortgagePromise = internals.finalizeDataMortgage {subtask, id, data_source_id}
+      if finalizedParcel?
+        parcelsPromise = Promise.resolve([finalizedParcel])
+      else
+        parcelsPromise = parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
+      Promise.join mortgagePromise, parcelsPromise, (mortgageEntries, parcelEntries) ->
+        internals.finalizeJoin {subtask, id, data_source_id, transaction, delay, taxEntries, deedEntries, mortgageEntries, parcelEntries}
 
 
 module.exports =
