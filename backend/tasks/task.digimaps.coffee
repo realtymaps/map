@@ -81,9 +81,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    # causes full refresh, see mls when we need to get more complicated
-    deletes = dataLoadHelpers.DELETE.UNTOUCHED
-
     Promise.all [
       jobQueue.queueSubsequentSubtask {
         subtask
@@ -93,7 +90,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
 
       jobQueue.queueSubsequentSubtask {
         subtask, laterSubtaskName: "activateNewData"
-        manualData: {deletes}
+        manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
         replace: true
         startTime: subtask.data.startTime
       }
@@ -239,6 +236,14 @@ finalizeData = (subtask) ->
   #     replace: true
   #   }
 
+recordChangeCounts = (subtask) ->
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
+  .then (deletedIds) ->
+    jobQueue.queueSubsequentPaginatedSubtask(
+      parcelHelpers.getFinalizeSubtaskData({subtask, ids: deletedIds, fipsCode: subtask.data.subset.fips_code, numRowsToPageFinalize, deletedParcel: true})
+    )
+
+
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data
 #   parcel.upload(fipsCode)
@@ -251,7 +256,7 @@ module.exports = new TaskImplementation {
   loadRawDataPrep
   loadRawData
   normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  recordChangeCounts
   finalizeDataPrep
   finalizeData
   activateNewData: parcelHelpers.activateNewData

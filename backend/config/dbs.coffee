@@ -101,6 +101,14 @@ transaction = (args...) ->
 buildTableName = (tableName) ->
   (subid) -> "#{tableName}_#{subid}"
 
+
+ensureTransaction = (transaction, dbName, handler) ->
+  if transaction?
+    handler(transaction)
+  else
+    get(dbName).transaction(handler)
+
+
 module.exports = {
   shutdown
   get
@@ -111,4 +119,5 @@ module.exports = {
   enable: () -> _enabled = true
   disable: () -> _enabled = false
   buildTableName
+  ensureTransaction
 }

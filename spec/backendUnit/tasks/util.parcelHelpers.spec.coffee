@@ -48,7 +48,9 @@ describe "util.parcelHelpers", () ->
     it 'getFinalizeSubtaskData', () ->
       subtaskDataToBuild.totalOrList.should.be.eql ids
       subtaskDataToBuild.maxPage.should.be.eql numRowsToPageFinalize
-      subtaskDataToBuild.mergeData.should.be.eql normalSubid: fipsCode
+      subtaskDataToBuild.mergeData.should.deep.equal
+        normalSubid: fipsCode
+        deletedParcel: undefined
 
     it 'getFinalizeSubtaskData -> buildQueuePaginatedSubtaskDatas', () ->
       datas = jqInternals.buildQueuePaginatedSubtaskDatas subtaskDataToBuild
@@ -59,6 +61,7 @@ describe "util.parcelHelpers", () ->
         of: 1
         values: [ '1' ]
         normalSubid: '12021'
+        deletedParcel: undefined
       ]
 
     it 'getFinalizeSubtaskData -> buildQueuePaginatedSubtaskDatas -> buildQueueSubtaskDatas', () ->
@@ -70,6 +73,7 @@ describe "util.parcelHelpers", () ->
         of: 1
         values: [ '1' ]
         normalSubid: '12021'
+        deletedParcel: undefined
       ]
 
       jqInternals.buildQueueSubtaskDatas {subtask, manualData: datas}
@@ -80,6 +84,7 @@ describe "util.parcelHelpers", () ->
         of: 1
         values: [ '1' ]
         normalSubid: '12021'
+        deletedParcel: undefined
       ]
 
     describe "util.countyHelpers finalizeData - call tax_12021 (some fipsCode)", () ->
@@ -89,7 +94,7 @@ describe "util.parcelHelpers", () ->
         tableName = "tax_#{fipsCode}"
         subtask = data: subtaskDataToBuild.mergeData
 
-        propTaxMock = new SqlMock 'property', 'tax', result: []
+        propTaxMock = new SqlMock 'property', 'tax', result: [{rm_property_id: 1}]
         mortgagePropMock = new SqlMock 'property', 'mortgage', result: []
         deedPropMock = new SqlMock 'property', 'deed', result: []
         parcelPropMock = new SqlMock 'property', 'parcel', result: []
@@ -109,8 +114,9 @@ describe "util.parcelHelpers", () ->
         countyHelpersInternals.__set__ 'tables', tables
         countyHelpers.__set__ 'internals', countyHelpersInternals
         parcelHelpers.__set__ 'tables', tables
+        countyHelpers.__set__ 'parcelHelpers', parcelHelpers
 
-        countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county', parcelHelpers})
+        countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county'})
 
 
       it 'tableName', () ->

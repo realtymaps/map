@@ -4,6 +4,7 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 
 _documentFinalize = (fnName, cbPromise) ->
   logger.spawn('verbose').debug () -> "#{fnName} STARTED"
@@ -26,14 +27,7 @@ finalizeDataTax = ({subtask, id, data_source_id, transaction, forceFinalize}) ->
     .orderByRaw('close_date DESC NULLS LAST')
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
-        # not sure if this should ever be possible, but we'll handle it anyway
-        return tables.deletes.property(transaction: transaction)
-        .insert
-          rm_property_id: id
-          data_source_id: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
-        .then () ->
-          return null
+        throw new HardFail("No tax entries found for: #{id}")
       if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
         logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
         # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
@@ -127,33 +121,29 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     .insert(tax)
 
 finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
-    delay ?= 100
-    _documentFinalize "finalizeJoin", () ->
-      # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-      # TODO: simultaneous closings, how do we properly sort to account for that?
-      {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
+  delay ?= 100
+  _documentFinalize "finalizeJoin", () ->
+    # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
+    # TODO: simultaneous closings, how do we properly sort to account for that?
+    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
 
-      Promise.delay(delay)  #throttle for heroku's sake
-      .then () ->
-        if !_.isEqual(promotedValues, tax.promoted_values)
-          # need to save back promoted values to the normal table
-          tables.property.tax(subid: subtask.data.normalSubid)
-          .where
-            data_source_id: data_source_id || subtask.task_name
-            data_source_uuid: tax.data_source_uuid
-          .update(promoted_values: promotedValues)
-        else
-          Promise.resolve()
-      .then () ->
-        delete tax.promoted_values
+    Promise.delay(delay)  #throttle for heroku's sake
+    .then () ->
+      if !_.isEqual(promotedValues, tax.promoted_values)
+        # need to save back promoted values to the normal table
+        tables.property.tax(subid: subtask.data.normalSubid)
+        .where
+          data_source_id: data_source_id || subtask.task_name
+          data_source_uuid: tax.data_source_uuid
+        .update(promoted_values: promotedValues)
+      else
+        Promise.resolve()
+    .then () ->
+      delete tax.promoted_values
 
-        # we must use an existing transaction if there is one
-        doUpdate = (trx) ->
-          _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
-        if transaction?
-          doUpdate(transaction)
-        else
-          dbs.get('main').transaction(doUpdate)
+      # we must use an existing transaction if there is one
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
+        _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
 
 
 module.exports = {

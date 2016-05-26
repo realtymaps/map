@@ -46,7 +46,7 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-recordChangeCounts = (subtask) -> Promise.try () ->
+recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
   logger.debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
@@ -125,16 +125,31 @@ recordChangeCounts = (subtask) -> Promise.try () ->
       touched_rows: null  # query was too expensive to run
 
   Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, updateDataLoadHistory)
+  .then () ->
+    if !opts.indicateDeletes
+      return
+
+    select = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+    .select('rm_property_id', 'data_source_id', 'batch_id')
+    .where(subset)
+    .where(batch_id: subtask.batch_id)
+    .toSQL()
+
+    nestedSelect = tables.deletes[opts.deletesTable].raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
+
+    tables.deletes.property()
+    .returning('rm_property_id')
+    .insert(nestedSelect)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise.try () ->
+activateNewData = (subtask, {propertyPropName, deletesPropName, transaction} = {}) -> Promise.try () ->
   logger.debug subtask
 
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
-  dbs.get('main').transaction (transaction) ->
+  dbs.ensureTransaction transaction, 'main', (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted

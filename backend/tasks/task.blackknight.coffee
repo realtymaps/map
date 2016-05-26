@@ -220,6 +220,7 @@ deleteData = (subtask) ->
       if row['FIPS Code'] != '12021'
         Promise.resolve()
       else if subtask.data.action == constants.REFRESH
+        # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
           data_source_id: 'blackknight'
@@ -269,7 +270,7 @@ normalizeData = (subtask) ->
       count: successes.length
       ids: successes
       normalSubid: subtask.data.normalSubid
-    jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accesible via the subtask script
@@ -283,7 +284,7 @@ finalizeDataPrep = (subtask) ->
   .then (results) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask,
-      totalOrList: results.map (r) -> r.rm_property_id
+      totalOrList: _.pluck(results, 'rm_property_id')
       maxPage: 100
       laterSubtaskName: "finalizeData"
       mergeData:
@@ -323,12 +324,16 @@ ready = () ->
       return undefined
 
 
+recordChangeCounts = (subtask) ->
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'property')
+
+
 subtasks = {
   checkFtpDrop
   loadRawData
   deleteData
   normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  recordChangeCounts
   finalizeDataPrep
   finalizeData
   activateNewData: dataLoadHelpers.activateNewData

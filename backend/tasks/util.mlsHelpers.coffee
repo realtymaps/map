@@ -108,7 +108,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
   , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   , (listings=[], parcel=[]) ->
     if listings.length == 0
-      # might happen if a singleton listing is deleted during the day
+      # might happen if a singleton listing is changed to hidden during the day
       return tables.deletes.property(transaction: transaction)
       .insert
         rm_property_id: id
@@ -142,7 +142,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
-      doUpsert = (transaction) ->
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
         tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id
@@ -152,10 +152,6 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
         .then () ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
-      if transaction
-        doUpsert(transaction)
-      else
-        dbs.get('main').transaction(doUpsert)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()
