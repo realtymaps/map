@@ -110,6 +110,11 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
       .then () ->
         logger.debug () -> "parcelHelpers.finalizeData: (#{id}) FINISHED"
 
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(error, 'failed to finalizeData')
+  .catch (error) ->
+    throw new HardFail(analyzeValue.getSimpleMessage(error))
+
 
 activateNewData = (subtask) ->
   logger.debug subtask
