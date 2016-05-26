@@ -222,7 +222,7 @@ waitForExclusiveAccess = (subtask) ->
   tables.config.mls()
   .select('id')
   .then (excludeIds) ->
-    excludeIds.push('blackknight')
+    excludeIds.concat(subtask.data.additionalExclusions)
     tables.jobQueue.taskHistory()
     .where(current: true)
     .whereIn('name', excludeIds)

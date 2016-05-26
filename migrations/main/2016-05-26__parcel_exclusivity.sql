@@ -20,7 +20,7 @@ INSERT INTO jq_subtask_config (
   'digimaps',
   'parcel',
   '10006',
-  NULL,
+  '{"additionalExclusions": ["blackknight"]}',
   '0',
   '72', -- with its 1-hour timeout, this means it could wait for 3 days before the whole task must retry
   'f',
