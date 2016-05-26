@@ -46,7 +46,7 @@ app.directive 'propertyImages', (
         resizeUrl = "http://#{resizeUrl}"
 
       # uncomment to load photos locally
-      # resizeUrl = $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '')
+      resizeUrl = $scope.property.cdn_photo.replace($scope.property.cdn_photo.split('/')[0], '')
 
       if $scope.imageWidth
         resizeUrl += "&width=#{$scope.imageWidth}"
