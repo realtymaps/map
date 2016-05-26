@@ -80,7 +80,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value {{formatters.property.orNa(property.acres)}}
                   .content-label Acres
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(Math.round(property.acres*43560))}}
+                  .content-value {{formatters.property.orNa(property.acres*43560) | number:0}}
                   .content-label Lot SqFt
 
           .content-block.border-bottom
