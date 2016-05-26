@@ -143,13 +143,13 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise.try () ->
+activateNewData = (subtask, {propertyPropName, deletesPropName, transaction} = {}) -> Promise.try () ->
   logger.debug subtask
 
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
-  dbs.get('main').transaction (transaction) ->
+  doActivate = (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
@@ -203,6 +203,7 @@ activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise
     .then () ->
       if subtask.setRefreshTimestamp
         setLastRefreshTimestamp(subtask)
+  dbs.ensureTransaction(doActivate, transaction, 'main')
 
 
 _getUsedInputFields = (validationDefinition) ->

@@ -152,10 +152,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
         .then () ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
-      if transaction
-        doUpsert(transaction)
-      else
-        dbs.get('main').transaction(doUpsert)
+      dbs.ensureTransaction(doUpsert, transaction, 'main')
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()

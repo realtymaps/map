@@ -144,10 +144,7 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, de
         # we must use an existing transaction if there is one
         doUpdate = (trx) ->
           _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
-        if transaction?
-          doUpdate(transaction)
-        else
-          dbs.get('main').transaction(doUpdate)
+        dbs.ensureTransaction(doUpdate, transaction, 'main')
 
 
 module.exports = {

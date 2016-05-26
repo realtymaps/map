@@ -114,10 +114,15 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
 activateNewData = (subtask) ->
   logger.debug subtask
 
-  dataLoadHelpers.activateNewData subtask, {
-    propertyPropName: 'parcel',
-    deletesPropName: 'parcel'
-  }
+  dbs.get('main').transaction (transaction) ->
+    overrides =
+      propertyPropName: 'parcel',
+      deletesPropName: 'parcel'
+      transaction: transaction
+    activateParcels = dataLoadHelpers.activateNewData(subtask, overrides)
+    activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
+    Promise.join activateParcels, activateDataCombined, () ->  # noop
+
 
 handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
   errorLogger = logger.spawn('handleOveralNormalizeError')
