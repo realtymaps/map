@@ -16,7 +16,6 @@ transforms = require '../utils/transforms/transform.parcel'
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
-  tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   delay ?= 100
 
@@ -32,8 +31,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     }
 
     logger.debug "got #{normalPayloadsPromise.length} normalized rows"
-
-    tablesPropName = 'norm'+tableName.toInitCaps()
 
     #these promises must happen in order since we might have multiple props of the same rm_property_id
     # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
@@ -52,7 +49,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
         dataLoadHelpers.updateRecord {
           stats
-          dataType: tablesPropName
+          dataType: 'normParcel'
           updateRow: row
           delay
           flattenRows: false

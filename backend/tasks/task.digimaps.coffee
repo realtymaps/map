@@ -217,6 +217,28 @@ finalizeDataPrep = (subtask) ->
       parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})
     )
 
+
+waitForExclusiveAccess = (subtask) ->
+  tables.config.mls()
+  .select('id')
+  .then (excludeIds) ->
+    excludeIds.push('blackknight')
+    tables.jobQueue.taskHistory()
+    .where(current: true)
+    .whereIn('name', excludeIds)
+    .whereNull('finished')
+    .then (results=[]) ->
+      if results.length > 0
+        logger.info("Waiting for exclusive data_combined access; #{results.length} tasks remaining: #{results.join(', ')}")
+        # Create a promise that doesn't finish on its own -- it just waits to get timed out and retried.  This is safer
+        # than trying to poll internally, because a polling flow can't handle zombies, but a retrying flow can
+        return new Promise (resolve, reject) ->  # noop
+      else
+        logger.info("Exclusive data_combined access obtained")
+        # go ahead and resolve, so the subtask will finish and the task will continue
+        return null
+
+
 finalizeData = (subtask) ->
   # logger.debug () -> util.inspect(subtask, depth: null)
   logger.debug () -> 'beginning finalizeData'
@@ -243,7 +265,6 @@ recordChangeCounts = (subtask) ->
       parcelHelpers.getFinalizeSubtaskData({subtask, ids: deletedIds, fipsCode: subtask.data.subset.fips_code, numRowsToPageFinalize, deletedParcel: true})
     )
 
-
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data
 #   parcel.upload(fipsCode)
@@ -258,6 +279,7 @@ module.exports = new TaskImplementation {
   normalizeData
   recordChangeCounts
   finalizeDataPrep
+  waitForExclusiveAccess
   finalizeData
   activateNewData: parcelHelpers.activateNewData
 }

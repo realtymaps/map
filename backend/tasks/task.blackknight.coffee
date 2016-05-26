@@ -297,31 +297,43 @@ finalizeData = (subtask) ->
 
 
 ready = () ->
-  defaults = {}
-  defaults[constants.REFRESH] = '19700101'
-  defaults[constants.UPDATE] = '19700101'
-  defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
-  keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (processDates) ->
-    today = moment.utc().format('YYYYMMDD')
-    yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-    dayOfWeek = moment.utc().isoWeekday()
-    if processDates[constants.NO_NEW_DATA_FOUND] != today
-      # needs to run using regular logic
-      return undefined
-    else if dayOfWeek == 7 || dayOfWeek == 1
-      # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
-      .then () ->
-        return false
-    else if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
-      # we've already processed yesterday's data
-      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
-      .then () ->
-        return false
-    else
-      # no overrides, needs to run using regular logic
-      return undefined
+  # don't automatically run if digimaps is running
+  tables.jobQueue.taskHistory()
+  .where
+    current: true
+    name: 'digimaps'
+  .whereNull('finished')
+  .then (results) ->
+    if results?.length
+      # found an instance of digimaps, GTFO
+      return false
+
+    # if we didn't bail above, do some other special logic for efficiency
+    defaults = {}
+    defaults[constants.REFRESH] = '19700101'
+    defaults[constants.UPDATE] = '19700101'
+    defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
+    keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+    .then (processDates) ->
+      today = moment.utc().format('YYYYMMDD')
+      yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
+      dayOfWeek = moment.utc().isoWeekday()
+      if processDates[constants.NO_NEW_DATA_FOUND] != today
+        # needs to run using regular logic
+        return undefined
+      else if dayOfWeek == 7 || dayOfWeek == 1
+        # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+        keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+        .then () ->
+          return false
+      else if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
+        # we've already processed yesterday's data
+        keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+        .then () ->
+          return false
+      else
+        # no overrides, needs to run using regular logic
+        return undefined
 
 
 recordChangeCounts = (subtask) ->
