@@ -3,6 +3,7 @@ logger = require('../config/logger').spawn('service.photos')
 sharp = require 'sharp'
 through2 = require 'through2'
 errors = require '../utils/errors/util.errors.photos'
+logger = require('../config/logger').spawn('service.photos.internals')
 
 resize = ({stream, width, height}) -> new Promise (resolve, reject) ->
 
@@ -12,12 +13,15 @@ resize = ({stream, width, height}) -> new Promise (resolve, reject) ->
   firstTime = true
   t2Transform = (chunk, enc, cb) ->
     if firstTime
+      logger.debug 'pushing first chunk'
       firstTime = false
       resolve(resizeStream)
+    logger.debug 'pushing chunk'
     @push chunk
     cb()
 
   t2Stream = through2 t2Transform, (cb) ->
+    logger.debug 't2Transform'
     cb()
 
   handleError = (error) ->
@@ -28,6 +32,7 @@ resize = ({stream, width, height}) -> new Promise (resolve, reject) ->
       logger.error error
 
   interceptStream.once 'response', (response) ->
+    logger.debug 'response received'
     if response.statusCode != 200
       handleError new errors.HttpStatusCodeError(response.statusCode, 'Not an Image due to error code ' + response.statusCode)
     if !response.headers['content-type'].match /image/ig

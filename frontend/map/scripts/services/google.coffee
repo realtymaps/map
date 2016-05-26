@@ -63,10 +63,14 @@ app.service 'rmapsGoogleService', ($http) ->
         apiKey = "&key=#{data.MAPS.API_KEY}"
 
       getUrl: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
-        unless geoObj?.geom_point_json?
+        coords = geoObj?.geom_point_json?.coordinates
+        coords ?= geoObj?.geometry_center?.coordinates
+        coords ?= geoObj?.coordinates
+
+        if !coords
           return
 
-        service.StreetView.getUrlForCoordinates(geoObj.geom_point_json.coordinates, width, height, fov, heading, pitch, sensor)
+        service.StreetView.getUrlForCoordinates(coords, width, height, fov, heading, pitch, sensor)
 
       getUrlForCoordinates: (lonLat, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
         # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama

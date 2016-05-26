@@ -6,13 +6,14 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
   $log = $log.spawn 'rmapsPropertyCtrl'
   $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
 
-  _.extend $scope,
-    rmapsFormattersService.Common,
-    google: rmapsGoogleService
-    getMail: () ->
-      rmapsMailCampaignService.getMail $stateParams.id
+  _.extend $scope, rmapsFormattersService.Common,
 
-  $scope.tab = 'current'
+  $scope.google = rmapsGoogleService
+
+  $scope.getMail = () ->
+    rmapsMailCampaignService.getMail $stateParams.id
+
+  $scope.tab = selected: ''
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
@@ -47,7 +48,12 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
     rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
     .then (property) ->
       $scope.selectedResult = property
+      $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
+      $scope.tab.selected = (property.mls[0] || property.county[0])?.data_source_id || 'raw'
+      for dataSource in $scope.dataSources
+        # Each group is an array of fields, here transformed into objects so the template may access them
+        # Note - this is temporary until all necessary fields have been promoted to primary fields
+        for groupName, group of dataSource.shared_groups
+          dataSource.shared_groups[groupName] = _.zipObject _.map(group, 'name'), _.map(group, 'value')
 
   getPropertyDetail $stateParams.id
-
-  return
