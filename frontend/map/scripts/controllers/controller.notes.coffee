@@ -150,6 +150,8 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
           model
           templateVars:
             title: model.title
+            first_name: model.first_name
+            last_name: model.last_name
             text: model.text
             circleNrArg: model.$index + 1
           needToCompile: false
