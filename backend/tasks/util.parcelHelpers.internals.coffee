@@ -1,5 +1,4 @@
 Promise = require 'bluebird'
-_ = require 'lodash'
 
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
 tables = require '../config/tables'
@@ -54,6 +53,7 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
     .insert(parcel)
   .then () ->
     return parcel
+
 
 finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
   tables.property.combined(transaction: transaction)

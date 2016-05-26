@@ -12,6 +12,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
 internals = require './util.parcelHelpers.internals'
+transforms = require '../utils/transforms/transform.parcel'
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
@@ -100,6 +101,8 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
 
       dbs.get('main').transaction (transaction) ->
         internals.finalizeNewParcel {parcels, id, subtask, transaction}
+        .then (finalizedParcel) ->
+          transforms.execFinalizeParcelAsDataCombined(finalizedParcel)
         .then (finalizedParcel) ->
           internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
           .then () ->
