@@ -121,29 +121,29 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     .insert(tax)
 
 finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
-    delay ?= 100
-    _documentFinalize "finalizeJoin", () ->
-      # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-      # TODO: simultaneous closings, how do we properly sort to account for that?
-      {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
+  delay ?= 100
+  _documentFinalize "finalizeJoin", () ->
+    # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
+    # TODO: simultaneous closings, how do we properly sort to account for that?
+    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
 
-      Promise.delay(delay)  #throttle for heroku's sake
-      .then () ->
-        if !_.isEqual(promotedValues, tax.promoted_values)
-          # need to save back promoted values to the normal table
-          tables.property.tax(subid: subtask.data.normalSubid)
-          .where
-            data_source_id: data_source_id || subtask.task_name
-            data_source_uuid: tax.data_source_uuid
-          .update(promoted_values: promotedValues)
-        else
-          Promise.resolve()
-      .then () ->
-        delete tax.promoted_values
+    Promise.delay(delay)  #throttle for heroku's sake
+    .then () ->
+      if !_.isEqual(promotedValues, tax.promoted_values)
+        # need to save back promoted values to the normal table
+        tables.property.tax(subid: subtask.data.normalSubid)
+        .where
+          data_source_id: data_source_id || subtask.task_name
+          data_source_uuid: tax.data_source_uuid
+        .update(promoted_values: promotedValues)
+      else
+        Promise.resolve()
+    .then () ->
+      delete tax.promoted_values
 
-        # we must use an existing transaction if there is one
-        dbs.ensureTransaction transaction, 'main', (transaction) ->
-          _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
+      # we must use an existing transaction if there is one
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
+        _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
 
 
 module.exports = {
