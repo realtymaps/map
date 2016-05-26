@@ -237,7 +237,7 @@ finalizeData = (subtask) ->
   #   }
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true)
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask(
       parcelHelpers.getFinalizeSubtaskData({subtask, ids: deletedIds, fipsCode: subtask.data.subset.fips_code, numRowsToPageFinalize, deletedParcel: true})

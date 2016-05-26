@@ -135,7 +135,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     .where(batch_id: subtask.batch_id)
     .toSQL()
 
-    nestedSelect = tables.deletes.property.raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
+    nestedSelect = tables.deletes[opts.deletesTable].raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
 
     tables.deletes.property()
     .returning('rm_property_id')
