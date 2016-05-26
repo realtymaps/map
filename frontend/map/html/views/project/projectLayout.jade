@@ -5,7 +5,7 @@
     h1.pageTitle(ng-show="project.sandbox") Sandbox
 
     .project-tools
-      button(class="btn btn-white" ng-click="editProject(project, $event)")
+      button(class="btn btn-white" rmaps-require-project-editor="disable" ng-click="editProject(project, $event)")
         i.fa.fa-pencil-square-o
         span Edit
       button.btn.btn-white(ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
