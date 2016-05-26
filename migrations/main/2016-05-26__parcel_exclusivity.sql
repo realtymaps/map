@@ -22,7 +22,7 @@ INSERT INTO jq_subtask_config (
   '10006',
   '{"additionalExclusions": ["blackknight"]}',
   '0',
-  '72', -- with its 1-hour timeout, this means it could wait for 3 days before the whole task must retry
+  '24', -- with its 1-hour timeout, this means it could wait for 1 full day before the whole task must retry
   'f',
   't',
   'f',
