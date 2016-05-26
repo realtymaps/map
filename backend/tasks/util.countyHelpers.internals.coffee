@@ -122,6 +122,7 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     active: false
   .delete()
   .then () ->
+    logger.spawn(subtask.task_name).debug () -> "@@@@@@@@@@@ data_combined update --- rm_property_id: #{id}, geometry: #{tax.geometry?}"
     tables.property.combined(transaction: transaction)
     .insert(tax)
 
