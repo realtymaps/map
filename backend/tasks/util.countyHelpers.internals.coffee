@@ -4,6 +4,7 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 
 _documentFinalize = (fnName, cbPromise) ->
   logger.spawn('verbose').debug () -> "#{fnName} STARTED"
@@ -26,14 +27,7 @@ finalizeDataTax = ({subtask, id, data_source_id, transaction, forceFinalize}) ->
     .orderByRaw('close_date DESC NULLS LAST')
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
-        # not sure if this should ever be possible, but we'll handle it anyway
-        return tables.deletes.property(transaction: transaction)
-        .insert
-          rm_property_id: id
-          data_source_id: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
-        .then () ->
-          return null
+        throw new HardFail("No tax entries found for: #{id}")
       if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
         logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
         # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority

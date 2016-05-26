@@ -108,7 +108,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
   , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   , (listings=[], parcel=[]) ->
     if listings.length == 0
-      # might happen if a singleton listing is deleted during the day
+      # might happen if a singleton listing is changed to hidden during the day
       return tables.deletes.property(transaction: transaction)
       .insert
         rm_property_id: id

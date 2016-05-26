@@ -46,7 +46,7 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-recordChangeCounts = (subtask) -> Promise.try () ->
+recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
   logger.debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
@@ -125,6 +125,21 @@ recordChangeCounts = (subtask) -> Promise.try () ->
       touched_rows: null  # query was too expensive to run
 
   Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, updateDataLoadHistory)
+  .then () ->
+    if !opts.indicateDeletes
+      return
+
+    select = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+    .select('rm_property_id', 'data_source_id', 'batch_id')
+    .where(subset)
+    .where(batch_id: subtask.batch_id)
+    .toSQL()
+
+    nestedSelect = tables.deletes.property.raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
+
+    tables.deletes.property()
+    .returning('rm_property_id')
+    .insert(nestedSelect)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
