@@ -4,6 +4,7 @@ _ = require 'lodash'
 
 
 # when a user fails a directive permission below, modify the sensitive element according to options
+# somewhat based on http://stackoverflow.com/questions/19224028/add-directives-from-directive-in-angularjs
 restrictElement = (scope, element, attrs, options) ->
 
   # Assign some readable tests that are made to break possible existing expressions.
