@@ -10,18 +10,9 @@ Execute Sql or other additional args:
 ./scripts/database/psql MAIN_DATABASE@realtymaps-map -c "select count(*) from parcel;"
 MAIN_COMMENT
 
-OUT=`./scripts/database/psqlCoffee $1`
-
+DB_SPECIFIER="$1"
 # make $* easy to use with `psql` below
 shift
 args=("$@")
 
-# echo OUT $OUT
-if [[ $OUT =~ .*=(.*)[[:space:]](psql.*) ]]; then
-  # echo 'MATCH'
-  # echo ${BASH_REMATCH[1]}
-  # echo ${BASH_REMATCH[2]}
-  set -x
-  export PGPASSWORD=${BASH_REMATCH[1]}
-  ${BASH_REMATCH[2]} "${args[@]}"
-fi
+psql -d `foreman run ./scripts/database/getDbUrl $DB_SPECIFIER` "${args[@]}"
