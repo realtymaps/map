@@ -2,6 +2,10 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
+###
+  Docs for reference and to maintain with this file:
+  https://realtymaps.atlassian.net/wiki/display/RD/Authorization
+###
 
 # when a user fails a directive permission below, modify the sensitive element according to options
 # somewhat based on http://stackoverflow.com/questions/19224028/add-directives-from-directive-in-angularjs
