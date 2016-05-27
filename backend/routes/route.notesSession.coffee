@@ -1,11 +1,9 @@
 logger = require '../config/logger'
-notesSvc = (require '../services/services.user').notes
-{Crud, wrapRoutesTrait} = require '../utils/crud/util.crud.route.helpers'
-{mergeHandles} = require '../utils/util.route.helpers'
+notesSvc = require '../services/services.notes'
+RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 auth = require '../utils/util.auth'
 {validators} = require '../utils/util.validation'
-userExtensions = require('../utils/crud/extensions/util.crud.extension.user')
-{basicColumns} = require '../utils/util.sql.columns'
+routeHelpers = require '../utils/util.route.helpers'
 
 
 bodyTransform =
@@ -21,34 +19,24 @@ bodyTransform =
 TODO: SPECS to double check security for notes permissions to notes owners
 TODO: Validate query and body params.
 ###
-class NotesSessionCrud extends Crud
-  @include userExtensions.route
-  init: () ->
-    @reqTransforms =
-      params: validators.reqId()
-      query: validators.object isEmptyProtect: true
-
-    @rootPOSTTransforms =
-      body: [
-        bodyTransform
-        validators.reqId()
-      ]
-
-    @byIdPutTransforms =
-      body: bodyTransform
-
-    super(arguments...)
-
-  rootGET: (req, res, next) =>
-    super(req, res, next)
-    .then (notes) =>
-      @toLeafletMarker notes
+class NotesSessionCrud extends RouteCrud
 
 
+# Yay for the new style
+instance = new NotesSessionCrud notesSvc,
+  debugNS: 'notesRoute'
+  reqTransforms:
+    params: validators.reqId()
+    query: validators.object isEmptyProtect: true
+  rootPOSTTransforms:
+    body: [
+      bodyTransform
+      validators.reqId()
+    ]
+  byIdPutTransforms:
+    body: bodyTransform
 
-NotesSessionRouteCrud = wrapRoutesTrait NotesSessionCrud
-
-module.exports = mergeHandles new NotesSessionRouteCrud(notesSvc).init(true, basicColumns.notes),
+module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get', 'post']
     middleware: [
