@@ -57,7 +57,7 @@ basicColumns = do ->
       'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id',
       'mls_name', 'sewer', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage',
       'depth_footage', 'mls_close_date', 'mls_close_price', 'sale_date', 'sale_price', 'prior_sale_date',
-      "#{ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age",
+      "#{ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age", 'description', 'original_price'
     ].join(', ')
     # columns returned for full detail results, with geom_polys_json AS geometry for geojson standard
     all_detail_geojson: [
@@ -118,7 +118,7 @@ basicColumns = do ->
       status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields,
       ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built,
       property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time,
-      actual_photo_count', 'cdn_photo', 'baths', 'baths_total']
+      actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'description', 'original_price']
 
     company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',
       'city', 'zip'
