@@ -30,9 +30,9 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
                 +circleNrMixin("{{$index+1}}")
 
               span.content
-                //- h3.title {{model.properties.neighbourhood_name}}
-                p.title {{model.properties.neighbourhood_name}}
-                //- p.text {{model.properties.neighbourhood_details}}
+                //- h3.title {{model.properties.area_name}}
+                p.title {{model.properties.area_name}}
+                //- p.text {{model.properties.area_details}}
 
               span.actions
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

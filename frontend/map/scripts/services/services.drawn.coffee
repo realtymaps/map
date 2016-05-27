@@ -44,8 +44,8 @@ rmapsLeafletHelpers) ->
         normal.id = shape.properties.id
       if shape.properties?.shape_extras?
         normal.shape_extras = shape.properties.shape_extras
-      normal.neighbourhood_name = if shape.properties.neighbourhood_name? then shape.properties.neighbourhood_name else null
-      normal.neighbourhood_details = shape.properties.neighbourhood_details || null
+      normal.area_name = if shape.properties.area_name? then shape.properties.area_name else null
+      normal.area_details = shape.properties.area_details || null
       normal
 
     _normalizedList = (geojson) ->

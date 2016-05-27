@@ -44,7 +44,7 @@ getFilterSummaryAsQuery = (filters, limit, query = getDefaultQuery()) ->
 
   if filters.isArea?
     if filters.isArea
-      query = query.whereNotNull("#{drawnShapesName}.neighbourhood_name", filters.project_id)
+      query = query.whereNotNull("#{drawnShapesName}.area_name", filters.project_id)
 
   query
 

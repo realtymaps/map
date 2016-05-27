@@ -19,7 +19,7 @@ module.exports =
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true
       @toGeoJson(ReturningServiceEzCrud::getAll.call(@, query, options)
-        .knex[nullClause]('neighbourhood_name'))
+        .knex[nullClause]('area_name'))
 
     getAll: (query, options) ->
       @getAllBase query, options
