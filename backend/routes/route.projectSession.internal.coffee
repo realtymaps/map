@@ -130,9 +130,9 @@ class ProjectRouteCrud extends RouteCrud
     #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
     class DrawnShapeCrud extends EzRouteCrud
 
-      neighborhoods: (req, res, next) =>
+      areas: (req, res, next) =>
         @getEntity(req, 'rootGET').then (entity) =>
-          @_wrapRoute @svc.neighborhoods(entity), res
+          @_wrapRoute @svc.areas(entity), res
 
     @drawnShapesCrud = new DrawnShapeCrud @svc.drawnShapes,
       rootGETTransforms:

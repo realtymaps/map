@@ -1,8 +1,8 @@
 ###globals _###
 app = require '../app.coffee'
-template = do require '../../html/views/templates/modals/neighbourhoodModal.jade'
+template = do require '../../html/views/templates/modals/areaModal.jade'
 
-app.controller 'rmapsNeighbourhoodsModalCtrl', (
+app.controller 'rmapsAreasModalCtrl', (
 $rootScope,
 $scope,
 $modal,
@@ -13,7 +13,7 @@ rmapsDrawnUtilsService,
 rmapsMapTogglesFactory,
 rmapsLeafletHelpers) ->
 
-  _event = rmapsEventConstants.neighbourhoods
+  _event = rmapsEventConstants.areas
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
@@ -31,14 +31,14 @@ rmapsLeafletHelpers) ->
       data
 
   _.extend $scope,
-    activeView: 'neighbourhoods'
+    activeView: 'areas'
 
-    createModal: (neighbourhood = {}) ->
+    createModal: (area = {}) ->
       modalInstance = $modal.open
         animation: rmapsMainOptions.modals.animationsEnabled
         template: template
         controller: 'rmapsModalInstanceCtrl'
-        resolve: model: -> neighbourhood
+        resolve: model: -> area
 
       modalInstance.result
 
@@ -46,7 +46,7 @@ rmapsLeafletHelpers) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
         if !model?.properties?.neighbourhood_name
-          #makes the model a neighborhood with a defined empty string
+          #makes the model an area with a defined empty string
           model.properties.neighbourhood_name = ''
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
         _signalUpdate(drawnShapesSvc.create model)
@@ -57,13 +57,13 @@ rmapsLeafletHelpers) ->
         _signalUpdate drawnShapesSvc.update model
 
     remove: (model) ->
-      $scope.neighbourhoods = _.omit $scope.neighbourhoods, model.properties.id
+      $scope.areas = _.omit $scope.areas, model.properties.id
       _signalUpdate drawnShapesSvc.delete model
       .then () ->
-        $scope.$emit rmapsEventConstants.neighbourhoods.removeDrawItem, model
+        $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
         $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
 
-.controller 'rmapsMapNeighbourhoodsCtrl', (
+.controller 'rmapsMapAreasCtrl', (
   $rootScope,
   $scope,
   $http,
@@ -72,15 +72,15 @@ rmapsLeafletHelpers) ->
   rmapsEventConstants) ->
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
-  $log = $log.spawn("map:neighbourhoods")
+  $log = $log.spawn("map:areas")
 
   $scope.getAll = (cache) ->
-    drawnShapesSvc.getNeighborhoodsNormalized(cache)
+    drawnShapesSvc.getAreasNormalized(cache)
     .then (data) ->
-      $scope.neighbourhoods = _.indexBy data, 'properties.id'
+      $scope.areas = _.indexBy data, 'properties.id'
 
-  $scope.neighbourhoodListToggled = (isOpen) ->
+  $scope.areaListToggled = (isOpen) ->
     $scope.getAll()
-    $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
+    $rootScope.$emit rmapsEventConstants.areas.dropdownToggled, isOpen
 
   $scope.getAll()

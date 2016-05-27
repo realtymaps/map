@@ -43,12 +43,12 @@
               .widget-count {{_.keys(project.favorites).length || 0}}
               .widget-title Favorites
 
-        .project-widget.widget-neighborhood
+        .project-widget.widget-area
           .inner
             .widget-background
-              span.icon.icon-neighbourhood
-            a(ui-sref="projectNeighbourhoods({ id: project.id})")
-              .widget-count {{project.neighbourhoods.length || 0}}
+              span.icon.icon-area
+            a(ui-sref="projectAreas({ id: project.id})")
+              .widget-count {{project.areas.length || 0}}
               .widget-title Areas
 
         .project-widget.widget-client
@@ -62,7 +62,7 @@
       //  a(ui-sref="project({id: {{project.id}}})") Dashboard
       //.content-body
       //  .col-xs-3
-      //    a.content-muted.content-sm(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}} Areas
+      //    a.content-muted.content-sm(ui-sref="projectAreas({id: {{project.id}}})") {{project.areas.length}} Areas
       //  .col-xs-3
       //    a.content-muted.content-sm(ui-sref="projectPins({id: {{project.id}}})") {{_.keys(project.properties_selected).length}} Pins
       //  //li

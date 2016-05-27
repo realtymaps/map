@@ -1,4 +1,4 @@
-#neighbour.content-section-container(ng-class="{active:isActive('neighbourhoods')}")
+#neighbour.content-section-container(ng-class="{active:isActive('areas')}")
     .desktop-only
         header
             a(class="btn btn-default back" href="#map")
@@ -17,15 +17,15 @@
                     .col-md-3.navbar
                         include ../includes/_sidebar.jade
                     .col-md-9.content
-                        h2.title Neighbourhoods ({{neighbourhoodList.length}})
+                        h2.title Areas ({{areaList.length}})
                         .row
-                            ul.neighbourhoods
-                                li(ng-repeat="enity in neighbourhoodList" class="col-md-6")
-                                    a(class="map" href="#/neighbourhoods/{{enity.id}}")
-                                        span View Neighbourhood
+                            ul.areas
+                                li(ng-repeat="enity in areaList" class="col-md-6")
+                                    a(class="map" href="#/areas/{{enity.id}}")
+                                        span View Area
                                         img(src="static/img/{{enity.mapImg}}")
                                     div.data
-                                        h3 Neighbourhood {{enity.id}}
+                                        h3 Area {{enity.id}}
                                         button(class="btn btn-link") Delete
 
                         hr
@@ -33,7 +33,7 @@
         header
             a(class="subnav" href="#map")
                 img(src='static/img/base/icons/mobile_back_icon.png', width='23px' height='23px' alt='back')
-                | Neighbourhoods
+                | Areas
             .menu
                 a(href="#map")
                     | Filter
@@ -45,20 +45,20 @@
                     .col-md-12(ng-controller="rmapsAccordionCtrl")
                         accordion(close-others="oneAtATime")
                             accordion-group(ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
-                                ul.neighbourhood-list
-                                    li(ng-repeat="id in enity.neighbourhoods")
+                                ul.area-list
+                                    li(ng-repeat="id in enity.areas")
                                         div.mapimg
-                                            img(src="static/img/{{neighbourhoodData[id].mapImg}}" alt="Neighbourhood map")
+                                            img(src="static/img/{{areaData[id].mapImg}}" alt="Area map")
                                         div.info
                                             div.content
                                                 h2.title
-                                                    a(href="neighbourhood/{{neighbourhoodData[id].id}}") {{neighbourhoodData[id].title}}
+                                                    a(href="area/{{areaData[id].id}}") {{areaData[id].title}}
                                                 ul.data
                                                     li
-                                                        | {{neighbourhoodData[id].vicinity}}
+                                                        | {{areaData[id].vicinity}}
                                                     li
-                                                        a(href="") {{neighbourhoodData[id].properties.length}} properties
+                                                        a(href="") {{areaData[id].properties.length}} properties
 
                                             div.tools
-                                                a(href="#/neighbourhood/{{neighbourhoodData[id].id}}")
+                                                a(href="#/area/{{areaData[id].id}}")
                                                     img(src='static/img/base/icons/mobile_next_2_icon.png', width='23px' height='23px' alt='next')

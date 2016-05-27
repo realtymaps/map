@@ -24,5 +24,5 @@ module.exports =
     getAll: (query, options) ->
       @getAllBase query, options
 
-    neighborhoods: (query, options) ->
+    areas: (query, options) ->
       @getAllBase query, options, 'whereNotNull'

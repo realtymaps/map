@@ -2,7 +2,7 @@ app = require '../app.coffee'
 mapId = 'mainMap'
 color = 'red'
 
-app.controller "rmapsDrawNeighborhoodCtrl", (
+app.controller "rmapsDrawAreaCtrl", (
 $scope,
 $log,
 $rootScope,
@@ -12,17 +12,17 @@ rmapsMapDrawHandlesFactory,
 rmapsDrawCtrlFactory,
 leafletData) ->
 
-  $log = $log.spawn("map:rmapsDrawNeighborhoodCtrl")
+  $log = $log.spawn("map:rmapsDrawAreaCtrl")
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
-  drawnShapesSvc.getDrawnItemsNeighborhoods()
+  drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
-    #filter drawItems which are only neighborhoods / frontend or backend
+    #filter drawItems which are only areas / frontend or backend
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     if !Object.keys(drawnItems._layers).length
-      # There are zero neighborhoods, force propertiesInShapes to false
+      # There are zero areas, force propertiesInShapes to false
       $scope.Toggles.propertiesInShapes = false
       $rootScope.propertiesInShapes = false
 
@@ -38,7 +38,7 @@ leafletData) ->
       announceCb: () ->
 
       createPromise: (geoJson) ->
-        #requires rmapsNeighbourhoodsModalCtrl to be in scope (parent)
+        #requires rmapsAreasModalCtrl to be in scope (parent)
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
         $scope.create(geoJson)
     }
@@ -51,7 +51,7 @@ leafletData) ->
         drawnItems
         postDrawAction: ->
           $scope.$emit rmapsEventConstants.map.mainMap.redraw
-        name: "neighborhood"
+        name: "area"
         itemsOptions:
           color: color
           fillColor: color
@@ -67,12 +67,12 @@ leafletData) ->
               shapeOptions: {color}
       }
 
-    $scope.$watch 'Toggles.isNeighborhoodDraw', (newVal) ->
+    $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
       if newVal
         return _drawCtrlFactory(_handles)
       _drawCtrlFactory()
       
-    $rootScope.$onRootScope rmapsEventConstants.neighbourhoods.removeDrawItem, (event, model) ->
+    $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, model) ->
       leafletData.getMap(mapId)
       .then (map) ->
         toRemove = null

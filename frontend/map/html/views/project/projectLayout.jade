@@ -49,12 +49,12 @@
             .widget-count {{notes.length || 0}}
             .widget-title Notes
 
-      .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+      .project-widget.widget-area(ng-class="{ 'widget-active': $state.is('projectAreas')}")
         .inner
           .widget-background
-            span.icon.icon-neighbourhood
-          a(ui-sref="projectNeighbourhoods({ id: project.id})")
-            .widget-count {{project.neighbourhoods.length || 0}}
+            span.icon.icon-area
+          a(ui-sref="projectAreas({ id: project.id})")
+            .widget-count {{project.areas.length || 0}}
             .widget-title Areas
 
       .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")

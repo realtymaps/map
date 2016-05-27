@@ -12,13 +12,13 @@ rmapsLeafletHelpers) ->
     $logDraw = $log.spawn("projects:drawnShapes")
     ###eslint-enable###
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
-    neighborhoodUrl = backendRoutes.projectSession.neighborhoods.replace(":id",profile.project_id)
+    areaUrl = backendRoutes.projectSession.areas.replace(":id",profile.project_id)
 
     getList = (cache = false) ->
       $http.getData rootUrl, cache: cache
 
-    getNeighborhoods = (cache = false) ->
-      $http.getData neighborhoodUrl, cache: cache
+    getAreas = (cache = false) ->
+      $http.getData areaUrl, cache: cache
 
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
@@ -55,10 +55,10 @@ rmapsLeafletHelpers) ->
 
     getList: getList
 
-    getNeighborhoods: getNeighborhoods
+    getAreas: getAreas
 
-    getNeighborhoodsNormalized: (cache) ->
-      getNeighborhoods(cache).then _normalizedList
+    getAreasNormalized: (cache) ->
+      getAreas(cache).then _normalizedList
 
     getListNormalized: (cache = false) ->
       getList(cache).then _normalizedList
@@ -77,8 +77,8 @@ rmapsLeafletHelpers) ->
       .then (drawnShapes) ->
         rmapsLeafletHelpers.geoJsonToFeatureGroup(drawnShapes)
 
-    getDrawnItemsNeighborhoods: (cache) ->
-      @getDrawnItems(cache, 'getNeighborhoods')
+    getDrawnItemsAreas: (cache) ->
+      @getDrawnItems(cache, 'getAreas')
 
 app.service 'rmapsDrawnUtilsService',
 ($http, $log, $rootScope, rmapsPrincipalService, rmapsDrawnProfileFactory) ->
