@@ -127,7 +127,6 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
       if hardStatuses.length > 0
         sqlHelpers.orWhereIn(this, "#{dbFn.tableName}.status", hardStatuses)
-  console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+((new Error(query.toString())).stack))
 
   sqlHelpers.between(query, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
   sqlHelpers.between(query, "#{dbFn.tableName}.sqft_finished", filters.sqftMin, filters.sqftMax)
