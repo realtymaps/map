@@ -76,6 +76,21 @@ Property Detail Modal
   a.active
     background: $gray_lighter
 
+  .subscriber-groups
+    .panel-heading
+      background: transparent
+
+    .table-striped
+      > :nth-child(even)
+        background-color $gray_lightest
+      .row :first-child
+        font-weight bold
+      .row
+        height 50px
+        margin 0
+        display flex
+        align-items center
+
 .mobile-view
   .property-detail-modal
     .property-detail-container
