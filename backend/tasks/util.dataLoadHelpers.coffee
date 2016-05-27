@@ -129,23 +129,10 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     if !opts.indicateDeletes
       return
 
-    # more than likley this will usually be a normalized db tables
-    # this is a good canidancy for having a table.normalProperty
-    propertiesQuery = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+    tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
     .select('rm_property_id', 'data_source_id', 'batch_id')
     .where(subset)
     .where(batch_id: subtask.batch_id)
-
-    if tables.property[subtask.data.dataType].dbName == 'main'
-      propertiesQuery.toSQL()
-
-      nestedSelect = tables.deletes[opts.deletesTable]().raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
-
-      return tables.deletes.property()
-      .returning('rm_property_id')
-      .insert(nestedSelect)
-
-    propertiesQuery
     .then (results) ->
       Promise.map results, (r) ->
         tables.deletes.property()
