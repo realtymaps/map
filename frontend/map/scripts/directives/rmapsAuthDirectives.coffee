@@ -76,6 +76,8 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile) ->
 # require the logged user to be an active subscriber
 app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile) ->
   restrict: 'A'
+  terminal: true
+  priority: 1000
   link: (scope, element, attrs) ->
     # GTFO if subscriber
     if $rootScope.principal.isSubscriber() then return
