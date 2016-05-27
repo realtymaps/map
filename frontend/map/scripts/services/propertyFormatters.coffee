@@ -56,13 +56,13 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
 
     showSoldDate: (result) ->
       return false unless result
-      return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
+      return (result?.rm_status=='sold'||result.rm_status=='not for sale') && result.close_date
 
     sendSnail: (result) ->
       $rootScope.$emit rmapsEventConstants.snail.initiateSend, result
 
     getPriceLabel: (status) ->
-      if (status =='recently sold'|| status=='not for sale')
+      if (status =='sold'|| status=='not for sale')
         label = ''
       else
         label = 'asking:'

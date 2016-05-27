@@ -29,7 +29,6 @@ basicColumns = do ->
       'address',
       'geometry',
       'geometry_center AS geom_point_json',
-      'status AS rm_status',
       'owner_name',
       'owner_name_2 as owner_name2',
       'year_built',
@@ -46,6 +45,10 @@ basicColumns = do ->
     .concat [
       "floor(#{tables.property.combined.tableName}.baths_total)::int as baths_full",
       "(case when (#{tables.property.combined.tableName}.baths_total::int - #{tables.property.combined.tableName}.baths_total) > 0 then 1 else 0 end) as baths_half"
+      """(CASE
+      WHEN #{tables.property.combined.tableName}.status = 'not for sale' AND #{tables.property.combined.tableName}.close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold'
+      ELSE #{tables.property.combined.tableName}.status
+      END) AS rm_status"""
     ].join(', ')
     # columns returned for additional detail results
     detail: [
