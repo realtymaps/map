@@ -173,7 +173,8 @@ handleZombies = (transaction=null) ->
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
   .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
-  .orWhereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
+  .orWhere () ->
+    @whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
       handleSubtaskError({
