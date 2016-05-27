@@ -217,7 +217,15 @@ finalizeDataPrep = (subtask) ->
       parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})
     )
 
+###
+This step is an in-between to protect a following step from being run.
+In this case we are hoping to protect finalizeData (not prep) and activateData.
 
+This is due to the fact that mls or county could be finalizing and activating data at the same time.
+Since parcels can modify both mls and county rows in data_combined weird results could happen.
+
+The opposite is true of county and mls since they only modify their perspective and exclusive rows.
+###
 waitForExclusiveAccess = (subtask) ->
   tables.config.mls()
   .select('id')
@@ -259,10 +267,18 @@ finalizeData = (subtask) ->
   #   }
 
 recordChangeCounts = (subtask) ->
+  numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
   dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask(
-      parcelHelpers.getFinalizeSubtaskData({subtask, ids: deletedIds, fipsCode: subtask.data.subset.fips_code, numRowsToPageFinalize, deletedParcel: true})
+      parcelHelpers.getFinalizeSubtaskData({
+        subtask
+        ids: deletedIds
+        fipsCode: subtask.data.subset.fips_code,
+        numRowsToPageFinalize
+        deletedParcel: true
+      })
     )
 
 # syncCartoDb: (subtask) -> Promise.try ->
