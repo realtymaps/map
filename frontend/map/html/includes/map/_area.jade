@@ -4,7 +4,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
   ng-controller="rmapsMapAreasCtrl" ng-model="isOpen"
   dropdown on-toggle="areaListToggled(open);isOpen = open" auto-close="disabled")
     div(ng-if="isOpen" ng-controller="rmapsDrawAreaCtrl")
-    button.btn.btn-transparent.dropdown-toggle.neighbour.nav-btn.toggle-active(
+    button.btn.btn-transparent.dropdown-toggle.area.nav-btn.toggle-active(
     dropdown-toggle
     popover-placement="bottom"
     popover="Areas"
