@@ -1,0 +1,11 @@
+#project-area-container
+  .area.col-sm-6(ng-repeat="area in project.areas")
+    .item.item-border.item-card
+      a.map
+        span View Area
+        img(src="/assets/test_map.jpg")
+      .data
+        h3 {{area.name}}
+      button.btn.btn-link
+        i.fa.fa-trash-o
+        span Delete

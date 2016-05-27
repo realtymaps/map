@@ -27,7 +27,7 @@ app.factory 'rmapsPropertyMarkerGroup', (
     icon:
       type: 'div'
       className: 'project-dashboard-icon'
-      html: '<span class="icon icon-neighbourhood"></span>'
+      html: '<span class="icon icon-area"></span>'
 
     constructor: (layerName) ->
       @layerName = layerName

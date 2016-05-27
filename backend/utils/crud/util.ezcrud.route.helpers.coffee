@@ -89,6 +89,7 @@ class RouteCrud
       entity
 
   rootGET: ({req, res, next, lHandleQuery}) ->
+    @logger.debug "XXXXXX SUPER rootGET"
     @getEntity(req, 'rootGET').then (entity) =>
       @_wrapRoute @svc.getAll(entity), res, lHandleQuery
 

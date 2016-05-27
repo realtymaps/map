@@ -81,7 +81,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     if $rootScope.propertiesInShapes and returnType  #is drawnShapes filterSummary
       pathId = 'drawnShapes'
-      bodyExtensions.isNeighbourhood = true
+      bodyExtensions.isArea = true
 
     route = backendRoutes.properties[pathId]
 

@@ -129,17 +129,15 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     if !opts.indicateDeletes
       return
 
-    select = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+    tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
     .select('rm_property_id', 'data_source_id', 'batch_id')
     .where(subset)
     .where(batch_id: subtask.batch_id)
-    .toSQL()
-
-    nestedSelect = tables.deletes[opts.deletesTable].raw("(rm_property_id, data_source_id, batch_id) #{select.sql}", select.bindings)
-
-    tables.deletes.property()
-    .returning('rm_property_id')
-    .insert(nestedSelect)
+    .then (results) ->
+      Promise.map results, (r) ->
+        tables.deletes.property()
+        .returning('rm_property_id')
+        .insert(r)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows

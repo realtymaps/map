@@ -1,0 +1,19 @@
+form.note(name="createEditAreaForm")
+  .modal-header
+    h3.modal-title(ng-if="!model.properties.area_name") Make Shape an Area
+    h3.modal-title(ng-if="model.properties.area_name") Edit Area
+  .modal-body
+    .form-group
+      label(for="area_name") Name
+      input.form-control(
+        id="area_name"
+        placeholder="Type Area name here."
+        type="text"
+        name="title"
+        ng-model="model.properties.area_name"
+        validator="optMinlength=2")
+
+
+  .modal-footer
+    button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditAreaForm") Cancel
+    button.btn.btn-primary(type="submit" ng-click="save()" validation-submit="createEditAreaForm") Save
