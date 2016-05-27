@@ -20,7 +20,7 @@ module.exports =
   projectFavorites: '/favorites'
   projectNotes:   '/notes'
   projectPins:    '/pins'
-  projectNeighbourhoods: '/neighbourhoods'
+  projectAreas: '/areas'
 
   user:           'user'
   userMLS:        '/userMLS'
@@ -31,7 +31,7 @@ module.exports =
   userPaymentHistory: '/userPaymentHistory'
   clientEntry:   'clientEntry/:key'
   
-  neighbourhoods: 'neighbourhoods'
+  areas:          'areas'
   notes:          'notes'
   favorites:      'favorites'
   addProjects:    'addProjects'

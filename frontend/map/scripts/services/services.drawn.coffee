@@ -12,13 +12,13 @@ rmapsLeafletHelpers) ->
     $logDraw = $log.spawn("projects:drawnShapes")
     ###eslint-enable###
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
-    neighborhoodUrl = backendRoutes.projectSession.neighborhoods.replace(":id",profile.project_id)
+    areaUrl = backendRoutes.projectSession.areas.replace(":id",profile.project_id)
 
     getList = (cache = false) ->
       $http.getData rootUrl, cache: cache
 
-    getNeighborhoods = (cache = false) ->
-      $http.getData neighborhoodUrl, cache: cache
+    getAreas = (cache = false) ->
+      $http.getData areaUrl, cache: cache
 
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
@@ -44,8 +44,8 @@ rmapsLeafletHelpers) ->
         normal.id = shape.properties.id
       if shape.properties?.shape_extras?
         normal.shape_extras = shape.properties.shape_extras
-      normal.neighbourhood_name = if shape.properties.neighbourhood_name? then shape.properties.neighbourhood_name else null
-      normal.neighbourhood_details = shape.properties.neighbourhood_details || null
+      normal.area_name = if shape.properties.area_name? then shape.properties.area_name else null
+      normal.area_details = shape.properties.area_details || null
       normal
 
     _normalizedList = (geojson) ->
@@ -55,10 +55,10 @@ rmapsLeafletHelpers) ->
 
     getList: getList
 
-    getNeighborhoods: getNeighborhoods
+    getAreas: getAreas
 
-    getNeighborhoodsNormalized: (cache) ->
-      getNeighborhoods(cache).then _normalizedList
+    getAreasNormalized: (cache) ->
+      getAreas(cache).then _normalizedList
 
     getListNormalized: (cache = false) ->
       getList(cache).then _normalizedList
@@ -77,8 +77,8 @@ rmapsLeafletHelpers) ->
       .then (drawnShapes) ->
         rmapsLeafletHelpers.geoJsonToFeatureGroup(drawnShapes)
 
-    getDrawnItemsNeighborhoods: (cache) ->
-      @getDrawnItems(cache, 'getNeighborhoods')
+    getDrawnItemsAreas: (cache) ->
+      @getDrawnItems(cache, 'getAreas')
 
 app.service 'rmapsDrawnUtilsService',
 ($http, $log, $rootScope, rmapsPrincipalService, rmapsDrawnProfileFactory) ->

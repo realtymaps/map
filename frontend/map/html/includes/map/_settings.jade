@@ -76,7 +76,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
               select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name disable when (selectedFilters.acresMin != null && c.value < selectedFilters.acresMin) for c in filterValues.acresValues')
 
           li.row
-            span.label.col-md-5 In Shapes / Neighborhoods
+            span.label.col-md-5 In Shapes / Areas
             .col-md-7
               .btn-group.pull-right
                 label.btn.btn-white.btn-checkbox(
@@ -195,7 +195,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
         .item.settings-row
-          .settings-header In Shapes / Neighborhoods
+          .settings-header In Shapes / Areas
           button.button.settings-button.btn-white.btn-checkbox(
             ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
             ng-click="makeDirty()"

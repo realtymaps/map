@@ -36,7 +36,7 @@ _transforms = _.extend {}, _stateTransforms,
   bounds: validators.string()
   returnType: validators.string()
   columns: validators.string()
-  isNeighbourhood: validators.boolean(truthy: true, falsy: false)
+  isArea: validators.boolean(truthy: true, falsy: false)
   properties_selected: validators.object()
   geom_point_json: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]

@@ -1,0 +1,39 @@
+include ../mixins/_circleNrMixin.jade
+
+span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
+  ng-controller="rmapsMapAreasCtrl" ng-model="isOpen"
+  dropdown on-toggle="areaListToggled(open);isOpen = open" auto-close="disabled")
+    div(ng-if="isOpen" ng-controller="rmapsDrawAreaCtrl")
+    button.btn.btn-transparent.dropdown-toggle.area.nav-btn.toggle-active(
+    dropdown-toggle
+    popover-placement="bottom"
+    popover="Areas"
+    popover-trigger="click mouseenter")
+      span.icon.icon-area
+    .dropdown-menu.whiteblock
+      .fixed-header
+        span
+          a(ng-show="areas.length" ui-sref="projectAreas({id: principal.getCurrentProfile().project_id})") {{areas.length}} Areas
+          span(ng-show="!areas.length") No Areas
+        span.results-btn(
+          popover-placement="right"
+          popover-trigger="mouseenter"
+          popover="Add Area"
+          ng-click="Toggles.toggleIsAreaDraw()")
+            span.icon.icon-add_area
+            span New Area
+      .inner
+        ul(ng-controller="rmapsAreasModalCtrl")
+          li(ng-repeat="(key, model) in areas" ng-click="centerOn(model)")
+            div
+              span.enity
+                +circleNrMixin("{{$index+1}}")
+
+              span.content
+                //- h3.title {{model.properties.area_name}}
+                p.title {{model.properties.area_name}}
+                //- p.text {{model.properties.area_details}}
+
+              span.actions
+                span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+                span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

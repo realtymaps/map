@@ -13,7 +13,7 @@ app.config ($provide) ->
         'edit'
         'trash'
       ]
-      neighborhood: [
+      area: [
         'rectangle'
         'circle'
         'polygon'

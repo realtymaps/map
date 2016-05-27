@@ -23,7 +23,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
 
       @showAddresses = true
       @showPrices = true
-      @showNeighbourhoodTap = false
+      @showAreaTap = false
       @showNotes = false
       @showMail = false
       @propertiesInShapes = false
@@ -34,14 +34,14 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       # Don't load any of the following from the database
 
       @isSketchMode = false
-      @isNeighborhoodDraw = false
+      @isAreaDraw = false
       @showOldToolbar = false
 
       @enableNoteTap = () =>
         @showNoteTap = true
 
-      @enableNeighbourhoodTap = () =>
-        @showNeighbourhoodTap = true
+      @enableAreaTap = () =>
+        @showAreaTap = true
 
       @toggleNotes = () =>
         @showNotes = !@showNotes
@@ -82,11 +82,11 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @toggleIsSketchMode = () =>
         @isSketchMode = !@isSketchMode
 
-      @toggleIsNeighborhoodDraw = () =>
-        @isNeighborhoodDraw = !@isNeighborhoodDraw
+      @toggleIsAreaDraw = () =>
+        @isAreaDraw = !@isAreaDraw
 
       @getHideAnyDraw = () =>
-        @isSketchMode or @isNeighborhoodDraw
+        @isSketchMode or @isAreaDraw
 
       @toggleSearch = (val) =>
         if val?
