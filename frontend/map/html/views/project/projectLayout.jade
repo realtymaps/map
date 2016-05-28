@@ -5,6 +5,20 @@
     h1.pageTitle(ng-show="project.sandbox") Sandbox
 
     .project-tools
+      .project-info.content-block.content-horizontal
+        .content-item(ng-if="project.minPrice || project.maxPrice")
+          .content-value {{project.minPrice || 0 | currency:"$":0}} - {{project.maxPrice || 0 | currency:"$":0}}
+          .content-label Price
+        .content-item(ng-if="project.beds")
+          .content-value {{project.beds}}+
+          .content-label Beds
+        .content-item(ng-if="project.baths")
+          .content-value {{project.baths}}+
+          .content-label Bath
+        .content-item(ng-if="project.sqft")
+          .content-value {{project.sqft | number:0}}+
+          .content-label Sq Ft
+
       button(class="btn btn-white" ng-click="editProject(project, $event)")
         i.fa.fa-pencil-square-o
         span Edit
