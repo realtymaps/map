@@ -108,7 +108,7 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
 
-activateNewData = (subtask) ->
+activateNewData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
   dbs.get('main').transaction (transaction) ->
