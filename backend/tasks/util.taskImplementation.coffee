@@ -25,14 +25,14 @@ class TaskImplementation
   constructor: (@subtasks, @ready) ->
     @name = 'TaskImplementation'
 
-  executeSubtask: (subtask) ->
+  executeSubtask: (subtask) -> Promise.try () ->
     # call the handler for the subtask
     subtaskBaseName = subtask.name.replace(/[^_]+_/g,'')
     if !(subtaskBaseName of @subtasks)
       throw new Error("Can't find subtask code for #{subtask.name}")
     @subtasks[subtaskBaseName](subtask)
 
-  initialize: (transaction, batchId, task) ->
+  initialize: (transaction, batchId, task) -> Promise.try () ->
     tables.jobQueue.subtaskConfig(transaction: transaction)
     .where
       task_name: task.name

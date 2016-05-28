@@ -85,7 +85,7 @@ getPlainClient = (dbName, handler) ->
       logger.warn "Error disconnecting raw db connection: #{err}"
 
 
-transaction = (args...) ->
+transaction = (args...) -> Promise.try () ->
   # allow the 'main' arg to be omitted
   if typeof(args[0]) != 'string'
     args.unshift('main')
@@ -102,7 +102,7 @@ buildTableName = (tableName) ->
   (subid) -> "#{tableName}_#{subid}"
 
 
-ensureTransaction = (transaction, dbName, handler) ->
+ensureTransaction = (transaction, dbName, handler) -> Promise.try () ->
   if transaction?
     handler(transaction)
   else
