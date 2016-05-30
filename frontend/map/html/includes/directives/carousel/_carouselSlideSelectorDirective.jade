@@ -1,4 +1,4 @@
-.carousel-slide-selector
+.carousel-slide-selector(ng-show="!hideSlideSelector")
   select(
   ng-show="slides.length > 1"
   ng-options="slide as slide.actual.street_address_name for slide in slides"

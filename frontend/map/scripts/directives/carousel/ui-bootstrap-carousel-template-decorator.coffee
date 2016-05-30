@@ -1,7 +1,7 @@
 app = require '../../app.coffee'
 
 app.config ($provide) ->
-  $provide.decorator 'carouselDirective', ($delegate, $log) ->
+  $provide.decorator 'carouselDirective', ($delegate) ->
     # Replace the UI Bootstrap CAROUSEL default Template
     $delegate[0].templateUrl = (element, attrs) ->
       return attrs.templateUrl || './includes/bootstrap/carousel.jade'
