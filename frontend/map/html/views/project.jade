@@ -8,8 +8,7 @@ include ../includes/mixins/_leafletMixin.jade
         interval="myInterval"
         ng-if="pins.length"
         active="activeSlide"
-        on-carousel-change="onSlideChanged(nextSlide, direction)"
-        template-url="./includes/bootstrap/carousel.jade")
+        on-carousel-change="onSlideChanged(nextSlide, direction)")
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
             .pin-image.prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
@@ -19,7 +18,11 @@ include ../includes/mixins/_leafletMixin.jade
               property-attributes(property="property")
 
       .mobile-only
-        carousel.carousel-standard(interval="myInterval" ng-if="pins.length" active="activeSlide" on-carousel-change="onSlideChanged(nextSlide, direction)")
+        carousel.carousel-standard(
+        interval="myInterval"
+        ng-if="pins.length"
+        active="activeSlide"
+        on-carousel-change="onSlideChanged(nextSlide, direction)")
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
             .pin-image.prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
