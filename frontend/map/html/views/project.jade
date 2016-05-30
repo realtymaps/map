@@ -9,6 +9,7 @@ include ../includes/mixins/_leafletMixin.jade
         ng-if="pins.length"
         active="activeSlide"
         show-slide-selector
+        slide-selector-label="'Property: ' + actual.street_address_name + ', ' + pins.length"
         on-carousel-change="onSlideChanged(nextSlide, direction)")
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
             .pin-image.prop-image
