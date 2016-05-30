@@ -137,7 +137,8 @@ _handleAllObjects = (opts, pageCb = (->)) ->
           return handleError(err)
 
         ctr += list.Contents.length
-        pageCb(list, pages)
+        Promise.try ->
+          pageCb(list, pages)
         .then () =>
           if @hasNextPage()
             pages += 1

@@ -49,7 +49,7 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
       .then () ->
         $scope.draw.show = true
 
-        $rootScope.$onRootScope rmapsEventConstants.neighbourhoods.dropdownToggled, (event, isOpen) ->
+        $rootScope.$onRootScope rmapsEventConstants.areas.dropdownToggled, (event, isOpen) ->
           $scope.draw.show = !isOpen
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->

@@ -81,9 +81,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
       refreshThreshold: refreshThreshold
       startTime: now
 
-    # causes full refresh, see mls when we need to get more complicated
-    deletes = dataLoadHelpers.DELETE.UNTOUCHED
-
     Promise.all [
       jobQueue.queueSubsequentSubtask {
         subtask
@@ -93,7 +90,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
 
       jobQueue.queueSubsequentSubtask {
         subtask, laterSubtaskName: "activateNewData"
-        manualData: {deletes}
+        manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
         replace: true
         startTime: subtask.data.startTime
       }
@@ -220,6 +217,36 @@ finalizeDataPrep = (subtask) ->
       parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})
     )
 
+###
+This step is an in-between to protect a following step from being run.
+In this case we are hoping to protect finalizeData (not prep) and activateData.
+
+This is due to the fact that mls or county could be finalizing and activating data at the same time.
+Since parcels can modify both mls and county rows in data_combined weird results could happen.
+
+The opposite is true of county and mls since they only modify their perspective and exclusive rows.
+###
+waitForExclusiveAccess = (subtask) ->
+  tables.config.mls()
+  .select('id')
+  .then (excludeIds) ->
+    excludeIds.concat(subtask.data.additionalExclusions)
+    tables.jobQueue.taskHistory()
+    .where(current: true)
+    .whereIn('name', excludeIds)
+    .whereNull('finished')
+    .then (results=[]) ->
+      if results.length > 0
+        logger.info("Waiting for exclusive data_combined access; #{results.length} tasks remaining: #{results.join(', ')}")
+        # Create a promise that doesn't finish on its own -- it just waits to get timed out and retried.  This is safer
+        # than trying to poll internally, because a polling flow can't handle zombies, but a retrying flow can
+        return new Promise (resolve, reject) ->  # noop
+      else
+        logger.info("Exclusive data_combined access obtained")
+        # go ahead and resolve, so the subtask will finish and the task will continue
+        return null
+
+
 finalizeData = (subtask) ->
   # logger.debug () -> util.inspect(subtask, depth: null)
   logger.debug () -> 'beginning finalizeData'
@@ -239,6 +266,21 @@ finalizeData = (subtask) ->
   #     replace: true
   #   }
 
+recordChangeCounts = (subtask) ->
+  numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
+
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
+  .then (deletedIds) ->
+    jobQueue.queueSubsequentPaginatedSubtask(
+      parcelHelpers.getFinalizeSubtaskData({
+        subtask
+        ids: deletedIds
+        fipsCode: subtask.data.subset.fips_code,
+        numRowsToPageFinalize
+        deletedParcel: true
+      })
+    )
+
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data
 #   parcel.upload(fipsCode)
@@ -251,8 +293,9 @@ module.exports = new TaskImplementation {
   loadRawDataPrep
   loadRawData
   normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  recordChangeCounts
   finalizeDataPrep
+  waitForExclusiveAccess
   finalizeData
   activateNewData: parcelHelpers.activateNewData
 }

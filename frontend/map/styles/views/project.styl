@@ -25,6 +25,7 @@
   padding-right: 0;
 
   .project-header
+    position: relative;
     background-color: white
     padding-left: $project-left-margin;
     padding-bottom: 10px;
@@ -36,17 +37,35 @@
       font-size: 12px;
       padding: 3px;
       height: 30px;
+      display: inline-block;
+      margin: 25px 0 0 0;
+      vertical-align: top;
+
 
   .project-tools
-    float: right;
-    margin-top: 22px;
-    margin-right: 30px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 15px;
+    line-height: 36px;
+    background-color: white;
+    z-index: 1;
 
   .project-card
     background-color: white;
 
   .bordered
     border: solid $rm-border-line 1px;
+
+  //
+  // Project Info
+  //
+  .project-info
+    display: inline-block;
+    margin-top: 8px;
+
+    .content-value
+      font-size: 16px;
 
   //
   // Inner panel
@@ -115,7 +134,7 @@
       color: $yellow;
       opacity: 0.25;
 
-  .widget-neighborhood
+  .widget-area
     .widget-background
       color: $dark_teal;
 
@@ -230,6 +249,10 @@
 
   .note-title
     font-weight: 500;
+
+  .note-author
+    font-weight: 600;
+
   .note-date
     float: right;
     text-align: right;
@@ -278,7 +301,7 @@
   // Project Sub-Pages
   //
 
-  #project-neighborhood-container
+  #project-area-container
     img
      width: 100%
 
@@ -373,12 +396,12 @@
         display: none;
 
   //
-  // NEIGHBORHOODS
+  // AREAS
   //
 
-  #project-neighborhood-container
+  #project-area-container
 
-    .neighborhood
+    .area
       padding-right: 15px;
       padding-bottom: 15px;
 

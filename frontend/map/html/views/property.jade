@@ -8,42 +8,35 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
       .row
         .col-sm-2
           ul.nav
+            li(ng-repeat="mls in selectedResult.mls")
+              a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") Property Detail
+            li(ng-repeat="county in selectedResult.county")
+              a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
             li
-              a(ng-click="tab = 'current'" ng-class="{active: tab == 'current'}") Current
-            li
-              a(ng-click="tab = 'revised'" ng-class="{active: tab == 'revised'}") Revised
-            li
-              a(ng-click="tab = 'raw'" ng-class="{active: tab == 'raw'}") Raw
+              a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
 
-        .col-sm-8(ng-show="tab == 'raw'")
+        .col-sm-8(ng-show="tab.selected == 'raw'")
           .content-heading Full raw data
           json-formatter(json="selectedResult" open="3")
 
-        .col-sm-8(ng-show="tab == 'revised'")
-          .row.content-block.prop-attrs.border-bottom
-            .col-sm-12
-              .content-heading NEW DATA GOES HERE
-              p.content-body {{selectedResult.property_information}}
-
-        .col-sm-8(ng-show="tab == 'current'")
+        .col-sm-8(ng-repeat="property in selectedResult.mls" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
-            //background-color:transparent; must be here to override googles meddling where it forces style via element
-            ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
-            include ../includes/map/_satilite.jade
-            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
 
+            property-images(property="property")
+
+            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
-              .prop-price.prop-lg(ng-if="selectedResult.price" ng-class="formatters.property.getForSaleClass(selectedResult, false)") {{formatters.property.getPrice(selectedResult.price)}}
+              .prop-price.prop-lg(ng-if="property.price" ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(property.price)}}
               .below-price
-                .sold-date.info.title(ng-if="formatters.property.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
-              .content-emphasis {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-              .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
+              .content-emphasis {{property.address.lines[0]}}
+              .content-muted(ng-repeat="line in property.address.lines.slice(1)") {{line}}
 
             .col-sm-6.text-right.desktop-only
-              property-buttons(property='selectedResult')
+              property-buttons(property='property')
 
           .content-block.prop-attrs.border-bottom(ng-show="getMail()")
             .content-heading Mail Campaigns
@@ -59,43 +52,160 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
-            .col-sm-8
+            .col-sm-6
               .content-heading Description
-              p.content-body {{selectedResult.property_information}}
+              p.content-body {{property.shared_groups.details['Property Information']}}
 
-            .col-sm-4
+            .col-sm-6
               .content-heading Property Info
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.bedrooms)}}
+                  .content-value {{formatters.property.orNa(property.bedrooms)}}
                   .content-label Beds
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.baths_total)}}
-                  .content-label Baths
+                  .content-value {{formatters.property.orNa(property.baths.value)}}
+                  .content-label {{property.baths.label}}
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.finished_sqft)}}
+                  .content-value {{formatters.property.orNa(property.sqft_finished)}}
                   .content-label Sq Ft
                 .col-xs-6
-                  .content-value {{formatters.property.getYear(selectedResult.year_built)}}
-                  .content-label Built
+                  .content-value {{formatters.property.getYear(property.year_built.value)}}
+                  .content-label {{property.year_built.label}}
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.acres)}}
+                  .content-value {{formatters.property.orNa(property.acres)}}
                   .content-label Acres
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.land_square_footage)}}
+                  .content-value {{formatters.property.orNa(property.acres*43560) | number:0}}
+                  .content-label Lot SqFt
+
+          .content-block.border-bottom
+            .content-heading Owner Info
+            .row
+              .col-sm-6
+                .content-label Current Owner
+                .content-lg
+                  span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
+                  span {{property.owner_name}}
+                  span(ng-if="property.owner_name_2")
+                    br/
+                    | {{property.owner_name_2}}
+              .col-sm-6
+                .content-label Address
+                .content-lg(ng-repeat="line in property.owner_address.lines") {{line}}
+
+          .row.content-block.border-bottom
+            .col-sm-6(ng-if="formatters.property.showListingData(property)")
+              .content-heading MLS Listing Info
+              .row.content-row
+                .col-sm-6
+                  .content-label Listed for
+                  .content-value {{formatters.property.humanizeDays(property.days_on_market) }}
+                .col-sm-6
+                  .content-label Orginal Asked Price
+                  .content-value {{formatters.property.getPrice(property.shared_groups.listing['Original List Price'])}}
+              .row
+                .col-sm-6
+                  .content-label Close Price
+                  .content-value {{formatters.property.getPrice(property.price)}}
+                .col-sm-6
+                  .content-label Close Date
+                  .content-value
+                    span(ng-if="property.close_date") {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    span(ng-if="!property.close_date") N/A
+            .col-sm-6(ng-if="formatters.property.showSalesData(property)")
+              .content-heading Historical Sales Info
+              .row.content-row
+                .col-sm-6
+                  .content-label Mortgage
+                  .content-value {{formatters.property.getPrice(property.mortgage_amount)}}
+                .col-sm-6
+                  .content-label Prior Sales Price
+                  .content-value {{formatters.property.getPrice(property.sale_price)}}
+              .row
+                .col-sm-6
+                  .content-label Prior Sale Date
+                  .content-value
+                    span(ng-if="property.sale_date") {{property.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    span(ng-if="!property.sale_date") N/A
+                .col-sm-6
+          .row.content-block.mls-disclaimer
+            .col-sm-6
+              .content-heading Broker Reciprocity
+              include ../includes/disclaimer.jade
+
+        .col-sm-8(ng-repeat="property in selectedResult.county" ng-show="tab.selected == '{{property.data_source_id}}'")
+          .prop-image.prop-image-lg
+            .property-img
+              img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 750, 350)}}" title="{{property.title}}")
+
+          .row.content-block.prop-attrs.border-bottom
+            .col-sm-6
+              .prop-price.prop-lg(ng-if="property.price" ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(property.price)}}
+              .below-price
+                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+
+              .content-emphasis {{property.address.lines[0]}}
+              .content-muted(ng-repeat="line in property.address.lines.slice(1)") {{line}}
+
+            .col-sm-6.text-right.desktop-only
+              property-buttons(property='property')
+
+          .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+            .content-heading Mail Campaigns
+
+            .row.content-row.vertical-align(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
+              a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+              .col-sm-3.content-body
+                span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+              .col-sm-3.content-body
+                span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
+              .col-sm-3.content-body.pull-right.text-right
+                button.btn.btn-sm.btn-white(ng-click="previewLetter(mail)") Preview
+                  i.fa.fa-envelope
+
+          .row.content-block.prop-attrs.border-bottom
+            .col-sm-6
+              .content-heading Description
+              p.content-body {{property.property_information}}
+
+            .col-sm-6
+              .content-heading Property Info
+
+              .row.content-row
+                .col-xs-6
+                  .content-value {{formatters.property.orNa(property.bedrooms)}}
+                  .content-label Beds
+                .col-xs-6
+                  .content-value {{formatters.property.orNa(property.baths.value)}}
+                  .content-label {{property.baths.label}}
+
+              .row.content-row
+                .col-xs-6
+                  .content-value {{formatters.property.orNa(property.sqft_finished)}}
+                  .content-label Sq Ft
+                .col-xs-6
+                  .content-value {{formatters.property.getYear(property.year_built.value)}}
+                  .content-label {{property.year_built.label}}
+
+              .row.content-row
+                .col-xs-6
+                  .content-value {{formatters.property.orNa(property.acres)}}
+                  .content-label Acres
+                .col-xs-6
+                  .content-value {{formatters.property.orNa(property.land_square_footage)}}
                   .content-label Lot SqFt
 
               .row.content-row
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.lot_front_footage)}}
+                  .content-value {{formatters.property.orNa(property.lot_front_footage)}}
                   .content-label Front Ft
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(selectedResult.depth_footage)}}
+                  .content-value {{formatters.property.orNa(property.depth_footage)}}
                   .content-label Depth Ft
 
           .content-block.border-bottom
@@ -104,57 +214,50 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .col-sm-6
                 .content-label Current Owner
                 .content-lg
-                  span(ng-if="formatters.property.getCurrentOwnersTitle(selectedResult)") {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
-                  span {{selectedResult.owner_name}}
-                  span(ng-if="selectedResult.owner_name2")
+                  span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
+                  span {{property.owner_name}}
+                  span(ng-if="property.owner_name_2")
                     br/
-                    | {{selectedResult.owner_name2}}
+                    | {{property.owner_name_2}}
               .col-sm-6
                 .content-label Address
-                .content-lg {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
-                  br/
-                  | {{formatters.property.getCityStateZip(selectedResult,true)}}
+                .content-lg(ng-repeat="line in property.owner_address.lines.slice(1)") {{line}}
 
           .row.content-block.border-bottom
-            .col-sm-6(ng-if="formatters.property.showListingData(selectedResult)")
+            .col-sm-6(ng-if="formatters.property.showListingData(property)")
               .content-heading MLS Listing Info
               .row.content-row
                 .col-sm-6
                   .content-label Listed for
-                  .content-value {{formatters.property.humanizeDays(selectedResult.listing_age) }}
+                  .content-value {{formatters.property.humanizeDays(property.days_on_market) }}
                 .col-sm-6
                   .content-label Orginal Asked Price
-                  .content-value {{formatters.property.getPrice(selectedResult.original_price)}}
+                  .content-value {{formatters.property.getPrice(property.original_price)}}
               .row
                 .col-sm-6
                   .content-label Close Price
-                  .content-value {{formatters.property.getPrice(selectedResult.mls_close_price)}}
+                  .content-value {{formatters.property.getPrice(property.mls_close_price)}}
                 .col-sm-6
                   .content-label Close Date
                   .content-value
-                    span(ng-if="selectedResult.mls_close_date") {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    span(ng-if="!selectedResult.mls_close_date") N/A
-            .col-sm-6(ng-if="formatters.property.showSalesData(selectedResult)")
+                    span(ng-if="property.mls_close_date") {{property.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    span(ng-if="!property.mls_close_date") N/A
+            .col-sm-6(ng-if="formatters.property.showSalesData(property)")
               .content-heading Historical Sales Info
               .row.content-row
                 .col-sm-6
                   .content-label Mortgage
-                  .content-value {{formatters.property.getPrice(selectedResult.mortgage_amount)}}
+                  .content-value {{formatters.property.getPrice(property.mortgage_amount)}}
                 .col-sm-6
                   .content-label Prior Sales Price
-                  .content-value {{formatters.property.getPrice(selectedResult.sale_price)}}
+                  .content-value {{formatters.property.getPrice(property.sale_price)}}
               .row
                 .col-sm-6
                   .content-label Prior Sale Date
                   .content-value
-                    span(ng-if="selectedResult.sale_date") {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    span(ng-if="!selectedResult.sale_date") N/A
+                    span(ng-if="property.sale_date") {{property.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    span(ng-if="!property.sale_date") N/A
                 .col-sm-6
-          .row.content-block.mls-disclaimer.border-bottom
-            .col-sm-12
-              .content-heading Broker Reciprocity
-                include ../includes/disclaimer.jade
-        .col-sm-2
 
   .mobile-only
     mobile-header-buttons(header-id="page-modal-header")

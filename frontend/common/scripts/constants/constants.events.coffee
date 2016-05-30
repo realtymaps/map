@@ -5,7 +5,7 @@ mod = require '../module.coffee'
 mod.constant 'rmapsEventConstants',
   keysToValues
     notes: 1
-    neighbourhoods:
+    areas:
       createClick: 1
       dropdownToggled: 1
       drawItems: 1

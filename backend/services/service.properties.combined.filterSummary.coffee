@@ -91,8 +91,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   query.limit(limit) if limit
   if bounds
-    query.orWhere ->
-      sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
+    sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
 
   if filters.status.length < statuses.length
     sqlHelpers.whereIn(query, "#{dbFn.tableName}.status", filters.status)
@@ -137,6 +136,9 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   sqlHelpers.between(query, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
+  if filters.hasImages
+    query.where("photos", "!=", "{}")
+
   # If full address available, include matched property in addition to other matches regardless of filters
   filters.address = _.pick filters.address, filterAddress.keys
   filters.address = _.omit filters.address, _.isEmpty
@@ -146,9 +148,6 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     logger.debug "addressString: #{addressString}"
     query.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
     query.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
-
-  if filters.hasImages
-    query.where("photos", "!=", "{}")
 
   logger.debug query.toString()
 

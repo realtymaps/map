@@ -1,8 +1,8 @@
 include _circleNrMixin.jade
 
-mixin noteMixin(title, text, circleNrArg)
-  +circleNrMixin(circleNrArg)
-  span.content
-    p.text #{text}
-    //- h3.title #{title}
-    //- p.text #{text}
+mixin noteMixin(first_name, last_name, text, circleNrArg)
+  .note-mixin
+    +circleNrMixin(circleNrArg)
+    span.content
+      span.author #{first_name} #{last_name} &nbsp;
+      span.text #{text}

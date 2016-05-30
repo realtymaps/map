@@ -47,10 +47,10 @@ include mixins/_avatarMixin.jade
                             span.menu-badge.count {{project.notes.length}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectNeighbourhoods', {id: project.id})" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                            span.icon.menu-icon.icon-neighbourhood
-                            span.menu-label Neighbourhoods
-                            span.menu-badge.count {{project.neighbourhoods.length}}
+                        a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
+                            span.icon.menu-icon.icon-area
+                            span.menu-label Areas
+                            span.menu-badge.count {{project.areas.length}}
 
                 #client-section(ng-show="clients")
                     #client-header.menu-label My Clients
@@ -73,10 +73,10 @@ include mixins/_avatarMixin.jade
             div(ng-if="principal.isProjectViewer() && profile")
                 ul.nav.menu-options
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectNeighbourhoods', {id: project.id})" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                            span.icon.menu-icon.icon-neighbourhood
-                            span.menu-label Neighbourhoods
-                            span.menu-badge.count {{project.neighbourhoods.length}}
+                        a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
+                            span.icon.menu-icon.icon-area
+                            span.menu-label Areas
+                            span.menu-badge.count {{project.areas.length}}
 
                     li(ng-show="profile")
                         a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
