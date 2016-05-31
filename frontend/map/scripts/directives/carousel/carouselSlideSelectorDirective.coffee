@@ -57,9 +57,10 @@ app.directive 'slideSelectorControl', ($log) ->
             actual: slide.actual
           })
 
-        return 'Slide'
+        idx = ($scope.indexOfSlide(slide) + 1)
+        return 'Slide ' + idx
 
-    link: ($scope, $elem, $attrs, slideSelectorCtrl) ->
+    link: ($scope, $elem, $attrs, slideSelectorCtrl, carouselCtrl) ->
       if slideSelectorCtrl
         slideSelectorCtrl.registerSlideSelector($scope)
       else
