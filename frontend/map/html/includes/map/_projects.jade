@@ -12,6 +12,7 @@ mixin projectsDropdown()
           div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Projects
           a(href="{{frontendRoutes.projects}}") View All
         span.results-btn(
+          rmaps-require-subscriber="disable"
           popover-placement="right"
           popover-trigger="click mouseenter"
           popover="Add Project"
@@ -34,7 +35,7 @@ mixin projectsDropdown()
                       span(ng-show="project.archived == true") &#32;(archived)
                     span.col-md-4.text-right &#32;{{project.modified.format('MMM Do')}}
               span.actions
-                span.action-button(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+                span.action-button(rmaps-require-subscriber="disable" ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
                   span.action(ng-show="project.archived") Unarchive
                   span.action(ng-show="!project.archived") Archive
                   span.icon.icon-save_on_disk

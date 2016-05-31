@@ -22,24 +22,41 @@ restrictElement = (scope, element, attrs, options) ->
   if options.disable
     if 'ngDisabled' of attrs
       savedExpression = attrs.ngDisabled
-      attrs.ngDisabled = "#{savedExpression} || authDisabled();" # include former expression to help readability
+      attrs.ngDisabled = "authDisabled() || (#{savedExpression});" # include former expression to help readability
     else
       attrs.ngDisabled = "authDisabled();"
     element.attr('ng-disabled', attrs.ngDisabled)
+
+    # remove existing angular ng-click (necessary if not an input / button)
+    if 'ngClick' of attrs
+      attrs.ngClick = null # clear
+      element.removeAttr('ng-click')
+
+    # account for ui-router clicking
+    if element.attr('ui-sref')
+      attrs.uiSref = null
+      element.removeAttr('ui-sref')
+
+    # account for misc click handlers (like on elements like anchor)
+    element.on "click", (event) ->
+      event.preventDefault()
+
+    # apply the 'disabled' class
+    element.addClass('disabled')
 
 
   # in order to comprehensively `hide`, let's address both ngHide and ngShow
   if options.hide
     if 'ngHide' of attrs
       savedExpression = attrs.ngHide
-      attrs.ngHide = "#{savedExpression} || authHidden();"
+      attrs.ngHide = "authHidden() || (#{savedExpression})"
     else
       attrs.ngHide = "authHidden();"
     element.attr('ng-hide', attrs.ngHide)
 
     if 'ngShow' of attrs
       savedExpression = attrs.ngShow
-      attrs.ngShow = "#{savedExpression} && authNotShown();"
+      attrs.ngShow = "authNotShown() && (#{savedExpression})"
     else
       attrs.ngShow = "authNotShown();"
     element.attr('ng-show', attrs.ngShow)
@@ -49,7 +66,7 @@ restrictElement = (scope, element, attrs, options) ->
   if options.omit
     if 'ngIf' of attrs
       savedExpression = attrs.ngIf
-      attrs.ngIf = "#{savedExpression} && authRemoved();"
+      attrs.ngIf = "authRemoved() && (#{savedExpression})"
     else
       attrs.ngIf = "authRemoved();"
     element.attr('ng-if', attrs.ngIf)
@@ -61,19 +78,18 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile) ->
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
-    # GTFO if proj editor
-    if $rootScope.principal.isProjectEditor() then return
+    if !$rootScope.principal.isProjectEditor()
+      # options assemble
+      optionalFlags = attrs.rmapsRequireProjectEditor
+      options =
+        disable: /disable/.test optionalFlags
+        hide: /hide/.test optionalFlags
+        omit: !optionalFlags # default, expect something on element like `ng-if="false"`
+      restrictElement(scope, element, attrs, options)
 
-    # options assemble
-    optionalFlags = attrs.rmapsRequireProjectEditor
-    options =
-      disable: /disable/.test optionalFlags
-      hide: /hide/.test optionalFlags
-      omit: !optionalFlags # default, expect something on element like `ng-if="false"`
+    # element.attr('tooltip', "Restricted to project editors.")
 
-    restrictElement(scope, element, attrs, options)
     element.removeAttr('rmaps-require-project-editor')
-
     $compile(element)(scope)
 
 
@@ -83,18 +99,15 @@ app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile) ->
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
-    # GTFO if subscriber
-    if $rootScope.principal.isSubscriber() then return
+    if !$rootScope.principal.isSubscriber()
+      # options assemble
+      optionalFlags = attrs.rmapsRequireSubscriber
+      options =
+        disable: /disable/.test optionalFlags
+        hide: /hide/.test optionalFlags
+        omit: !optionalFlags # default, expect something on element like `ng-if="false"`
+      restrictElement(scope, element, attrs, options)
 
-    # options assemble
-    optionalFlags = attrs.rmapsRequireSubscriber
-    options =
-      disable: /disable/.test optionalFlags
-      hide: /hide/.test optionalFlags
-      omit: !optionalFlags # default, expect something on element like `ng-if="false"`
-
-    restrictElement(scope, element, attrs, options)
     element.removeAttr('rmaps-require-subscriber')
-
     $compile(element)(scope)
 

@@ -31,7 +31,6 @@ require('../services/email/vero').then (svc) -> vero = svc.vero
 class ClientsCrud extends RouteCrud
   init: () ->
     @svc.doLogQuery = true
-    @reqTransforms = params: validators.reqId toKey: 'parent_auth_user_id'
     @byIdGETTransforms =
       params: validators.mapKeys
         id: joinColumnNames.client.project_id

@@ -319,3 +319,54 @@ describe 'util.auth', ->
 
       @resultcb = @resultBase.bind(null, done, "next")
       requireProjectEditor req, @res, @next
+
+
+  describe 'requireSubscriber', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not a subscriber", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireSubscriber req, @res, @next
+
+
+    it "should return 401 when subscription expired", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: 'unpaid'
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireSubscriber req, @res, @next
+
+    it "should pass when user has a paid subscription", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: 'pro'
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireSubscriber req, @res, @next

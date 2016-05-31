@@ -26,7 +26,6 @@ class NotesSessionCrud extends RouteCrud
 instance = new NotesSessionCrud notesSvc,
   debugNS: 'notesRoute'
   reqTransforms:
-    params: validators.reqId()
     query: validators.object isEmptyProtect: true
   rootPOSTTransforms:
     body: [
@@ -46,4 +45,5 @@ module.exports = routeHelpers.mergeHandles instance,
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireProjectEditor(methods: ['put', 'delete'])
     ]
