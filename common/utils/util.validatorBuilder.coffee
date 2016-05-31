@@ -222,6 +222,14 @@ _rules =
         getTransform: () ->
           name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
 
+      description:
+        alias: 'Description'
+
+      original_price:
+        alias: 'Original Price'
+        type: name: 'currency'
+        config:
+          nullZero: true
 
   county:
     common:
