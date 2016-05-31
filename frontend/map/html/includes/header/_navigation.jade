@@ -14,7 +14,7 @@ nav.navigation.pull-left(role="navigation")
       a(ng-click="page.goToMap()")
         span map
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('mail') }")
-      a(ui-sref="mail")
+      a(ui-sref="mail" rmaps-require-project-editor="disable")
         span mail
     //li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
     //  a(ui-sref="history")

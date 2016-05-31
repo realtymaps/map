@@ -16,17 +16,19 @@ merged = mergeHandles routeCrud,
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireSubscriber(methods: 'post')
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireProjectEditor(methods: ['put', 'post', 'delete'])
     ]
   clients:
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      auth.requireProjectParent(methods: 'post')
+      auth.requireProjectEditor(methods: 'post')
     ]
   clientsById:
     methods: ['get', 'post', 'put', 'delete']

@@ -19,10 +19,10 @@
           .content-value {{project.sqft | number:0}}+
           .content-label Sq Ft
 
-      button(class="btn btn-white" ng-click="editProject(project, $event)")
+      button.btn.btn-white(rmaps-require-project-editor ng-click="editProject(project, $event)")
         i.fa.fa-pencil-square-o
         span Edit
-      button.btn.btn-white(ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
+      button.btn.btn-white(rmaps-require-project-editor ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
         span.icon.icon-save_on_disk
         span(ng-if="!project.archived") Archive
         span(ng-show="!project.sandbox" ng-if="project.archived") Unarchive

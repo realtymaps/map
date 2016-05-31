@@ -32,13 +32,13 @@ module.exports = routeHelpers.mergeHandles instance,
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      # auth.requirePermissions({all:['add_','change_']}, logoutOnFail:true)
+      auth.requireProjectEditor(methods: ['get', 'post'], projectIdParam: null)
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
+      auth.requireProjectEditor(methods: ['post', 'put', 'delete'], projectIdParam: null)
     ]
   getReviewDetails:
     methods: ['get']

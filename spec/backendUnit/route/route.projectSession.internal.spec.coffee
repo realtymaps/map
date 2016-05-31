@@ -176,7 +176,6 @@ describe 'route.projectSession', ->
       .then () =>
         @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
-        obj.parent_auth_user_id = @mockRequest.user.id
         obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
         @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
         logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
@@ -185,7 +184,6 @@ describe 'route.projectSession', ->
         @subject.clientsCrud.svc.clientProfileMock
         .whereSpy.args.should.be.eql  [
           ['user_profile.project_id', 1 ]
-          [parent_auth_user_id: 2]
         ]
         @subject.clientsCrud.svc.clientProfileMock
         .whereInSpy.args.should.be.eql []
