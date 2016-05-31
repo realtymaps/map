@@ -1,7 +1,7 @@
 app = require '../../app.coffee'
 
 # Show slide selector in carousel
-app.directive 'showSlideSelector', ($log) ->
+app.directive 'slideSelector', ($log) ->
   return {
     restrict: 'A'
     require: '^carousel'
@@ -29,7 +29,7 @@ app.directive 'showSlideSelector', ($log) ->
 app.directive 'slideSelectorLabel', ($parse, $log) ->
   return {
     restrict: 'A'
-    require: 'showSlideSelector'
+    require: 'slideSelector'
     link: ($scope, $elem, $attrs, showSlideSelectorCtrl) ->
       # Parse the label function and pass it to the coordinating showSlideSelector directive
       # so that it can be passed to the actual selector directive
@@ -38,10 +38,10 @@ app.directive 'slideSelectorLabel', ($parse, $log) ->
   }
 
 # Slide selector add on for UI-Bootstrap Carousel
-app.directive 'slideSelector', ($log) ->
+app.directive 'slideSelectorControl', ($log) ->
   return {
     restrict: 'EA'
-    require: '^?showSlideSelector'
+    require: '^?slideSelector'
     templateUrl: './includes/directives/carousel/_carouselSlideSelectorDirective.jade'
     controller: ($scope) ->
       if $scope.slides?.length > 0
@@ -59,9 +59,9 @@ app.directive 'slideSelector', ($log) ->
 
         return 'Slide'
 
-    link: ($scope, $elem, $attrs, showSlideSelectorCtrl) ->
-      if showSlideSelectorCtrl
-        showSlideSelectorCtrl.registerSlideSelector($scope)
+    link: ($scope, $elem, $attrs, slideSelectorCtrl) ->
+      if slideSelectorCtrl
+        slideSelectorCtrl.registerSlideSelector($scope)
       else
         $scope.hideSlideSelector = true
 

@@ -8,7 +8,7 @@ include ../includes/mixins/_leafletMixin.jade
         interval="myInterval"
         ng-if="pins.length"
         active="activeSlide"
-        show-slide-selector
+        slide-selector
         slide-selector-label="formatters.property.getStreetAddress(actual)"
         on-carousel-change="onSlideChanged(nextSlide, direction)")
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
