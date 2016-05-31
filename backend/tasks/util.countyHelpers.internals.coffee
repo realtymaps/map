@@ -72,7 +72,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
 
 
 _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  tax = dataLoadHelpers.finalizeEntry(taxEntries)
+  tax = dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
   tax.data_source_type = 'county'
   _.extend(tax, parcelEntries[0])
 
@@ -109,7 +109,6 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
     tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-  tax.update_source = subtask.task_name
   {promotedValues,tax}
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
