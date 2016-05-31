@@ -134,12 +134,15 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     span(ng-if="!property.sale_date") N/A
                 .col-sm-6
 
-          accordion.row.content-block.border-bottom.subscriber-groups(close-others="false")
+          accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{group.label}}")
               .table-striped
                 .row.content-row(ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4 {{field.name}}
-                  .col-sm-8 {{field.value}}
+                  .col-sm-8
+                    json-formatter(ng-if="_.isObject(field.value)" json="field.value" open="3")
+                    span(ng-if="isoDate(field.value)") {{field.value | date}}
+                    span(ng-if="!_.isObject(field.value) && !isoDate(field.value)") {{field.value}}
 
           .row.content-block.mls-disclaimer
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")
