@@ -5,5 +5,5 @@ module.exports = (type = 'geojsonPolys') ->
     returnType: type
     state:
       filters:
-        status: [ 'for sale', 'pending', 'recently sold' ]
+        status: [ 'for sale', 'pending', 'sold' ]
         # any other filters like bedsMin/Max, columns, etc

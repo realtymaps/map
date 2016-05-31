@@ -15,6 +15,7 @@ tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 internals = require './util.countyHelpers.internals'
+parcelHelpers = null  # required later to avoid circular dependency
 
 
 # loads all records from a ftp-dropped zip file
@@ -166,7 +167,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 
 
 finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, forceFinalize}) ->
-  parcelHelpers = require './util.parcelHelpers'  # delayed require due to circular dependency
+  parcelHelpers ?= require './util.parcelHelpers'  # delayed require due to circular dependency
 
   internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
   .then (taxEntries) ->

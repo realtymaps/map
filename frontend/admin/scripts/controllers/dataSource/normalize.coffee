@@ -46,7 +46,7 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.typeOf = (val) ->
     return typeof val
 
-  $scope.statusOptions = _.values rmapsParcelEnums.status
+  $scope.statusOptions = _.values rmapsParcelEnums.statusData
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
   $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
 

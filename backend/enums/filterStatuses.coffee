@@ -1,4 +1,4 @@
-statuses = ['for sale', 'recently sold', 'pending', 'not for sale', 'saved']
+statuses = ['for sale', 'sold', 'pending', 'not for sale', 'saved']
 
 thisEnum = {}
 # object where space props get replaced with underscore
