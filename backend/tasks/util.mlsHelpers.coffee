@@ -89,7 +89,8 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
+finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->
+  delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   listingsPromise = tables.property.listing()
@@ -115,10 +116,10 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction}) ->
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
 
-    listing = dataLoadHelpers.finalizeEntry(listings)
+    listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
     listing.data_source_type = 'mls'
     _.extend(listing, parcel[0])
-    Promise.delay(100)  #throttle for heroku's sake
+    Promise.delay(delay)  #throttle for heroku's sake
     .then () ->
       # do owner name and zoning promotion logic
       if listing.owner_name? || listing.owner_name_2? || listing.zoning

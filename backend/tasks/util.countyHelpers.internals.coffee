@@ -14,7 +14,7 @@ _documentFinalize = (fnName, cbPromise) ->
     logger.spawn('verbose').debug () -> "#{fnName} FINISHED"
     entries
 
-finalizeDataTax = ({subtask, id, data_source_id, transaction, forceFinalize}) ->
+finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataTax", () ->
     tables.property.tax(subid: subtask.data.normalSubid)
     .select('*')
@@ -71,7 +71,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
     .orderByRaw('close_date ASC NULLS FIRST')
 
 
-_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
+_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
   tax = dataLoadHelpers.finalizeEntry(taxEntries)
   tax.data_source_type = 'county'
   _.extend(tax, parcelEntries[0])
@@ -109,6 +109,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
     tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
     tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
+  tax.update_source = subtask.task_name
   {promotedValues,tax}
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
@@ -128,7 +129,7 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, de
   _documentFinalize "finalizeJoin", () ->
     # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
     # TODO: simultaneous closings, how do we properly sort to account for that?
-    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries})
+    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
 
     Promise.delay(delay)  #throttle for heroku's sake
     .then () ->

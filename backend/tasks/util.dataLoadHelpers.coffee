@@ -465,7 +465,7 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-finalizeEntry = (entries) ->
+finalizeEntry = ({entries, subtask}) ->
   entry = entries.shift()
   entry.active = false
   delete entry.deleted
@@ -477,7 +477,7 @@ finalizeEntry = (entries) ->
   entry.address = sqlHelpers.safeJsonArray(entry.address)
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = entry.data_source_id
+  entry.update_source = subtask.task_name
   entry.actual_photo_count = _.keys(entry.photos).length - 1  # photo 0 and 1 are the same
   entry.baths_total = entry.baths?.filter
   entry

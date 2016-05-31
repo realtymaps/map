@@ -27,7 +27,7 @@ diffBooleanKeys = [
   'geom_point_json'
 ]
 
-finalizeParcelEntry = (entries) ->
+finalizeParcelEntry = ({entries, subtask}) ->
   entry = entries.shift()
   entry.active = false
   delete entry.deleted
@@ -35,12 +35,12 @@ finalizeParcelEntry = (entries) ->
   delete entry.rm_modified_time
   entry.prior_entries = sqlHelpers.safeJsonArray(entries)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = entry.data_source_id
+  entry.update_source = subtask.task_name
   entry
 
 
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
-  parcel = finalizeParcelEntry(parcels)
+  parcel = finalizeParcelEntry({entries: parcels, subtask})
 
   tables.property.parcel(transaction: transaction)
   .where
@@ -67,11 +67,26 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
           logger.debug "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, finalizedParcel, transaction})
+          mlsHelpers.finalizeData {
+            subtask
+            id
+            data_source_id: r.data_source_id
+            finalizedParcel
+            transaction
+            delay: 0
+          }
         else
           logger.debug "countyHelpers.finalizeData"
           #delay is zero since higher up the change we have already been delayed
-          countyHelpers.finalizeData({subtask, id, data_source_id: r.data_source_id, transaction, delay: 0, finalizedParcel, forceFinalize: true})
+          countyHelpers.finalizeData {
+            subtask
+            id
+            data_source_id: r.data_source_id
+            transaction
+            delay: 0
+            finalizedParcel
+            forceFinalize: true
+          }
     Promise.all promises
 
 
