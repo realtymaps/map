@@ -166,7 +166,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, forceFinalize, update_source}) ->
+finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, forceFinalize}) ->
   parcelHelpers ?= require './util.parcelHelpers'  # delayed require due to circular dependency
 
   internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
@@ -193,7 +193,6 @@ finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParce
           deedEntries
           mortgageEntries
           parcelEntries
-          update_source
         }
 
 
