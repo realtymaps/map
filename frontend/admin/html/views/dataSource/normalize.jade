@@ -462,7 +462,7 @@
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
 
-      .col-md-12.scroll(ng-show="['price','acres'].indexOf(fieldData.current.output) != -1")
+      .col-md-12.scroll(ng-show="['price','acres','original_price'].indexOf(fieldData.current.output) != -1")
         .row
           .col-md-2 Implicit Decimal Places
           .col-md-4

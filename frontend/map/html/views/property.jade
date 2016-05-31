@@ -54,7 +54,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
               .content-heading Description
-              p.content-body {{property.shared_groups.details['Property Information']}}
+              p.content-body {{formatters.property.orNa(property.description)}}
 
             .col-sm-6
               .content-heading Property Info
@@ -107,7 +107,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value {{formatters.property.humanizeDays(property.days_on_market) }}
                 .col-sm-6
                   .content-label Orginal Asked Price
-                  .content-value {{formatters.property.getPrice(property.shared_groups.listing['Original List Price'])}}
+                  .content-value {{formatters.property.getPrice(property.original_price)}}
               .row
                 .col-sm-6
                   .content-label Close Price
