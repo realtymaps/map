@@ -87,8 +87,6 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile) ->
         omit: !optionalFlags # default, expect something on element like `ng-if="false"`
       restrictElement(scope, element, attrs, options)
 
-    # element.attr('tooltip', "Restricted to project editors.")
-
     element.removeAttr('rmaps-require-project-editor')
     $compile(element)(scope)
 

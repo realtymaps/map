@@ -180,7 +180,7 @@ requireProject = ({methods, projectIdParam} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam = null if _.isUndefined(projectIdParam)
+  projectIdParam = 'id' if _.isUndefined(projectIdParam)
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -191,7 +191,7 @@ requireProject = ({methods, projectIdParam} = {}) ->
 
     # get profile based on project param.  some endpoints will not have this,
     # so if project is not present, get it via `current_profile_id` off session
-    if projectIdParam of req.params
+    if req.params? and projectIdParam of req.params
       project_id = req.params[projectIdParam]
       profile = _.find(req.session.profiles, project_id: Number(project_id))
     else
@@ -216,7 +216,9 @@ requireProject = ({methods, projectIdParam} = {}) ->
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
 requireProjectEditor = ({methods, projectIdParam} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
-  projectIdParam ?= 'id'
+
+  # use default projectIdParam only for undefined; null is a valid option that can force use of session params
+  projectIdParam = 'id' if _.isUndefined(projectIdParam)
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -233,7 +235,7 @@ requireProjectEditor = ({methods, projectIdParam} = {}) ->
       profile = req.rmapsProfile
 
       # auth-ing
-      if !profile.can_edit
+      if !profile?.can_edit
         return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, httpStatus.UNAUTHORIZED)
 
       return process.nextTick(next)
@@ -245,7 +247,9 @@ requireProjectEditor = ({methods, projectIdParam} = {}) ->
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
 requireProjectParent = ({methods, projectIdParam} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
-  projectIdParam ?= 'id'
+
+  # use default projectIdParam only for undefined; null is a valid option that can force use of session params
+  projectIdParam = 'id' if _.isUndefined(projectIdParam)
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -262,7 +266,7 @@ requireProjectParent = ({methods, projectIdParam} = {}) ->
       profile = req.rmapsProfile
 
       # auth-ing
-      if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
+      if !profile? or (profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id)
         return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
 
       return process.nextTick(next)

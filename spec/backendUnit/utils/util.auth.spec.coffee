@@ -149,12 +149,13 @@ describe 'util.auth', ->
         else
           @resultcb("next")
 
-    it "should return 401 when no project id", (done) ->
+    it "should return 401 when no project id or session profiles", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
         user: id: 1
         params: {}
+        session: profiles: {}
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireProject req, @res, @next
 
@@ -165,9 +166,9 @@ describe 'util.auth', ->
         method: 'GET'
         user: null
         params: id: 1
+        session: profiles: {}
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireProject req, @res, @next
-
 
 
     it "should return 401 if no profiles", (done) ->
@@ -183,7 +184,7 @@ describe 'util.auth', ->
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireProject req, @res, @next
 
-    it "should return 401 if no matching profile", (done) ->
+    it "should return 401 if project_id does not match a profile", (done) ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
