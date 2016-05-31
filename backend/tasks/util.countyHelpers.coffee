@@ -183,7 +183,17 @@ finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParce
       else
         parcelsPromise = parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
       Promise.join mortgagePromise, parcelsPromise, (mortgageEntries, parcelEntries) ->
-        internals.finalizeJoin {subtask, id, data_source_id, transaction, delay, taxEntries, deedEntries, mortgageEntries, parcelEntries}
+        internals.finalizeJoin {
+          subtask
+          id
+          data_source_id
+          transaction
+          delay
+          taxEntries
+          deedEntries
+          mortgageEntries
+          parcelEntries
+        }
 
 
 module.exports =

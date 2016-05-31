@@ -112,11 +112,12 @@ activateNewData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
   dbs.get('main').transaction (transaction) ->
-    overrides =
+
+    activateParcels = dataLoadHelpers.activateNewData(subtask, {
       propertyPropName: 'parcel',
       deletesPropName: 'parcel'
-      transaction: transaction
-    activateParcels = dataLoadHelpers.activateNewData(subtask, overrides)
+      transaction}
+    )
     activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
     Promise.join activateParcels, activateDataCombined, () ->  # noop
 
