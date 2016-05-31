@@ -18,6 +18,7 @@ app.directive 'showSlideSelector', ($log) ->
       registerSlideSelector: (selectorScope) ->
         $scope.selectorScope = selectorScope
         $scope.selectorScope.selectorLabelFn = $scope.selectorLabelFn
+        $scope.selectorScope.carouselParentScope = $scope.$parent
 
       setLabelFunction: (labelFn) ->
         $scope.selectorLabelFn = labelFn
@@ -52,7 +53,7 @@ app.directive 'slideSelector', ($log) ->
 
       $scope.getLabel = (slide) ->
         if $scope.selectorLabelFn
-          return $scope.selectorLabelFn($scope, {
+          return $scope.selectorLabelFn($scope.carouselParentScope || $scope, {
             actual: slide.actual
           })
 
