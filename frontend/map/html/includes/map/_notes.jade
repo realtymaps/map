@@ -25,7 +25,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.title}}','{{note.text}}','{{$index+1}}')
+              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{$index+1}}')
 
               // TODO - add sketch feature in
                 span.sketch
@@ -36,5 +36,5 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
                   a(href="#comment") Leave a comment
 
             span.actions
-              span.icon.icon-remove(ng-click="remove(note); $event.stopPropagation()")
-              span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
+              span.icon.icon-remove(rmaps-require-project-editor="disable" ng-click="remove(note); $event.stopPropagation()")
+              span.fa.fa-edit(rmaps-require-project-editor="disable" ng-click="update(note); $event.stopPropagation()")

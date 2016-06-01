@@ -125,7 +125,7 @@ newProject = (req, res, next) ->
     profileService.getCurrentSessionProfile req.session
 
   .then (profile) ->
-    toSave = _.extend auth_user_id: req.user.id, req.body
+    toSave = _.extend({auth_user_id: req.user.id, can_edit: true}, req.body)
 
     # If current profile is sandbox, convert it to a regular project
     if profile.sandbox is true

@@ -4,16 +4,17 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 
 _documentFinalize = (fnName, cbPromise) ->
-  logger.debug () -> "#{fnName} STARTED"
+  logger.spawn('verbose').debug () -> "#{fnName} STARTED"
 
   cbPromise()
   .then (entries) ->
-    logger.debug () -> "#{fnName} FINISHED"
+    logger.spawn('verbose').debug () -> "#{fnName} FINISHED"
     entries
 
-finalizeDataTax = ({subtask, id, data_source_id}) ->
+finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataTax", () ->
     tables.property.tax(subid: subtask.data.normalSubid)
     .select('*')
@@ -26,26 +27,18 @@ finalizeDataTax = ({subtask, id, data_source_id}) ->
     .orderByRaw('close_date DESC NULLS LAST')
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
-        # not sure if this should ever be possible, but we'll handle it anyway
-        return tables.deletes.property()
-        .insert
-          rm_property_id: id
-          data_source_id: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
-      if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
-        logger.debug "batch_id mismatch!!"
-        logger.debug "subtask.data.cause: #{subtask.data.cause}"
-        logger.debug "subtask.data.batch_id: #{subtask.data.batch_id} vs #{taxEntries[0]?.batch_id}"
+        throw new HardFail("No tax entries found for: #{id}")
+      if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
         # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
-        # of the given enqueue source , in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
+        # of the given enqueue source, in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
         # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
         # care of it.
-        return
+        return null
+      return taxEntries
 
-      taxEntries
 
-
-finalizeDataDeed = ({subtask, id, data_source_id}) ->
+finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataDeed", () ->
     tables.property.deed(subid: subtask.data.normalSubid)
     .select('*')
@@ -57,10 +50,11 @@ finalizeDataDeed = ({subtask, id, data_source_id}) ->
     .orderBy('deleted')
     .orderByRaw('close_date ASC NULLS FIRST')
     .then (deedEntries=[]) ->
-      if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+      if !forceFinalize && subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from deed instead of: #{subtask.data.cause}"
         # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
-        return
-      deedEntries
+        return null
+      return deedEntries
 
 
 
@@ -77,10 +71,13 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
     .orderByRaw('close_date ASC NULLS FIRST')
 
 
-_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcel}) ->
-  tax = dataLoadHelpers.finalizeEntry(taxEntries)
+_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
+  tax = dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
   tax.data_source_type = 'county'
-  _.extend(tax, parcel[0])
+  _.extend(tax, parcelEntries[0])
+
+  # all county data gets 'not for sale' status -- it will be differentiated into 'sold' vs 'not for sale' at query time
+  tax.status = 'not for sale'
 
   # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
   # TODO: static data fields?
@@ -122,40 +119,34 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     active: false
   .delete()
   .then () ->
+    logger.spawn(subtask.task_name).debug () -> "@@@@@@@@@@@ data_combined update --- rm_property_id: #{id}, geometry: #{tax.geometry?}"
     tables.property.combined(transaction: transaction)
     .insert(tax)
 
-finalizeJoin = ({subtask, id, data_source_id, delay, transaction}) ->
+finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
   delay ?= 100
+  _documentFinalize "finalizeJoin", () ->
+    # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
+    # TODO: simultaneous closings, how do we properly sort to account for that?
+    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
 
-  (taxEntries, deedEntries, mortgageEntries=[], parcel=[]) ->
-    _documentFinalize "finalizeJoin", () ->
-      # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-      # TODO: simultaneous closings, how do we properly sort to account for that?
-      {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcel})
+    Promise.delay(delay)  #throttle for heroku's sake
+    .then () ->
+      if !_.isEqual(promotedValues, tax.promoted_values)
+        # need to save back promoted values to the normal table
+        tables.property.tax(subid: subtask.data.normalSubid)
+        .where
+          data_source_id: data_source_id || subtask.task_name
+          data_source_uuid: tax.data_source_uuid
+        .update(promoted_values: promotedValues)
+      else
+        Promise.resolve()
+    .then () ->
+      delete tax.promoted_values
 
-      Promise.delay(delay)  #throttle for heroku's sake
-      .then () ->
-        if !_.isEqual(promotedValues, tax.promoted_values)
-          # need to save back promoted values to the normal table
-          tables.property.tax(subid: subtask.data.normalSubid)
-          .where
-            data_source_id: data_source_id || subtask.task_name
-            data_source_uuid: tax.data_source_uuid
-          .update(promoted_values: promotedValues)
-        else
-          Promise.resolve()
-      .then () ->
-        delete tax.promoted_values
-
-        #this may have been a deadlock from parcels
-        #we must use an existing transaction if there is one
-        if transaction?
-          return _updateDataCombined {subtask, id, data_source_id, transaction, tax}
-
-        dbs.get('main').transaction (trx) ->
-          _updateDataCombined {subtask, id, data_source_id, transaction: trx, tax}
-
+      # we must use an existing transaction if there is one
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
+        _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
 
 
 module.exports = {

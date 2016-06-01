@@ -16,16 +16,19 @@ merged = mergeHandles routeCrud,
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireSubscriber(methods: 'post')
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireProjectEditor(methods: ['put', 'post', 'delete'])
     ]
   clients:
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireProjectEditor(methods: 'post')
     ]
   clientsById:
     methods: ['get', 'post', 'put', 'delete']
@@ -54,10 +57,10 @@ merged = mergeHandles routeCrud,
     ]
 
 
-merged.neighborhoods =
+merged.areas =
   middleware: [
     auth.requireLogin(redirectOnFail: true)
   ]
-  handle: routeCrud.drawnShapesCrud.neighborhoods
+  handle: routeCrud.drawnShapesCrud.areas
 
 module.exports = merged

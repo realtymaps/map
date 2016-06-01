@@ -3,7 +3,7 @@
 
     $project-mobile-left-margin = 15px;
     $project-mobile-gutter-width = 15px;
-    $project-mobile-widget-width = 20%;
+    $project-mobile-widget-width = 16.66%;
     $project-mobile-widget-height = 70px;
     $project-mobile-widget-height-active = $project-mobile-widget-height + 2;
     $project-mobile-widgets-width = 100%;
@@ -17,7 +17,8 @@
       width: auto;
       height: auto;
       margin-left: auto;
-      padding: 85px 15px 15px 15px;
+      padding: 15px 15px 15px 15px;
+      margin-top: 70px;
     }
 
     //
@@ -62,7 +63,7 @@
       .widget-background
         font-size: 40px;
 
-    .widget-neighborhood
+    .widget-area
       .widget-background
         color: $dark_teal;
 
@@ -97,10 +98,10 @@
 
     .note-image
       width: 58px;
-      height: 58px;
+      max-height: 58px;
 
     .note-data-wrapper
-      min-height: 58px;
+      //min-height: 58px;
       width: calc(100% - 58px);
       float: left;
       font-size: 13px;
@@ -146,3 +147,10 @@
           width: 100%;
           height: 45px;
           float: none;
+
+    //
+    // Project NOTES Tab
+    //
+    .project-notes-container
+      .project-note-input
+        margin-bottom: 15px;

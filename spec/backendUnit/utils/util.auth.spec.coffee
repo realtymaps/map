@@ -132,3 +132,242 @@ describe 'util.auth', ->
       req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
       resultcb = resultBase.bind(null, done, "json")
       requirePermissions req, res, next
+
+  describe 'requireProject', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when no project id or session profiles", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 1
+        params: {}
+        session: profiles: {}
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+
+    it "should return 401 when no user", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: null
+        params: id: 1
+        session: profiles: {}
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+
+    it "should return 401 if no profiles", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: 1
+        session:
+          current_profile_id: 1
+          profiles: {}
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should return 401 if project_id does not match a profile", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"  # project id
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              project_id: 2  # project id, diff from above
+              parent_auth_user_id: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProject req, @res, @next
+
+    it "should pass with user, profile, and project as expected", (done) ->
+      requireProject = auth.requireProject(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"  # project id
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              project_id: 1  # project id, same as above
+              parent_auth_user_id: null
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProject req, @res, @next
+
+  describe 'requireProjectParent', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not parent of project", (done) ->
+      requireProjectParent = auth.requireProjectParent(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProjectParent req, @res, @next
+
+    it "should pass when parent_auth_user_id matches user", (done) ->
+      requireProjectParent = auth.requireProjectParent(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 7
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProjectParent req, @res, @next
+
+
+  describe 'requireProjectEditor', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not editor of project", (done) ->
+      requireProjectEditor = auth.requireProjectEditor(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              can_edit: false
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireProjectEditor req, @res, @next
+
+    it "should pass when user can_edit (even if not parent)", (done) ->
+      requireProjectEditor = auth.requireProjectEditor(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        params: id: "1"
+        session:
+          current_profile_id: 1
+          profiles:
+            "1":
+              can_edit: true
+              user_id: 7
+              project_id: 1
+              parent_auth_user_id: 1
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireProjectEditor req, @res, @next
+
+
+  describe 'requireSubscriber', ->
+    beforeEach ->
+      @resultBase = (done, expected, call) ->
+        call.should.equal(expected)
+        done()
+      @resultcb = null
+      @res =
+        json: () =>
+          @resultcb("json")
+
+      @next = (err) =>
+        if err and err.status
+          @resultcb("error: #{err.status}")
+        else
+          @resultcb("next")
+
+    it "should return 401 when not a subscriber", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: null
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireSubscriber req, @res, @next
+
+
+    it "should return 401 when subscription expired", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: 'unpaid'
+
+      @resultcb = @resultBase.bind(null, done, "error: 401")
+      requireSubscriber req, @res, @next
+
+    it "should pass when user has a paid subscription", (done) ->
+      requireSubscriber = auth.requireSubscriber(methods: 'get')
+      req =
+        method: 'GET'
+        user: id: 7
+        session:
+          subscription: 'pro'
+
+      @resultcb = @resultBase.bind(null, done, "next")
+      requireSubscriber req, @res, @next

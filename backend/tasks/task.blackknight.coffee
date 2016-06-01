@@ -220,6 +220,7 @@ deleteData = (subtask) ->
       if row['FIPS Code'] != '12021'
         Promise.resolve()
       else if subtask.data.action == constants.REFRESH
+        # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
           data_source_id: 'blackknight'
@@ -269,7 +270,7 @@ normalizeData = (subtask) ->
       count: successes.length
       ids: successes
       normalSubid: subtask.data.normalSubid
-    jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accesible via the subtask script
@@ -283,7 +284,7 @@ finalizeDataPrep = (subtask) ->
   .then (results) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask,
-      totalOrList: results.map (r) -> r.rm_property_id
+      totalOrList: _.pluck(results, 'rm_property_id')
       maxPage: 100
       laterSubtaskName: "finalizeData"
       mergeData:
@@ -296,31 +297,47 @@ finalizeData = (subtask) ->
 
 
 ready = () ->
-  defaults = {}
-  defaults[constants.REFRESH] = '19700101'
-  defaults[constants.UPDATE] = '19700101'
-  defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
-  keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (processDates) ->
-    today = moment.utc().format('YYYYMMDD')
-    yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-    dayOfWeek = moment.utc().isoWeekday()
-    if processDates[constants.NO_NEW_DATA_FOUND] != today
-      # needs to run using regular logic
-      return undefined
-    else if dayOfWeek == 7 || dayOfWeek == 1
-      # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
-      .then () ->
-        return false
-    else if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
-      # we've already processed yesterday's data
-      keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
-      .then () ->
-        return false
-    else
-      # no overrides, needs to run using regular logic
-      return undefined
+  # don't automatically run if digimaps is running
+  tables.jobQueue.taskHistory()
+  .where
+    current: true
+    name: 'digimaps'
+  .whereNull('finished')
+  .then (results) ->
+    if results?.length
+      # found an instance of digimaps, GTFO
+      return false
+
+    # if we didn't bail above, do some other special logic for efficiency
+    defaults = {}
+    defaults[constants.REFRESH] = '19700101'
+    defaults[constants.UPDATE] = '19700101'
+    defaults[constants.NO_NEW_DATA_FOUND] = '19700101'
+    keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+    .then (processDates) ->
+      today = moment.utc().format('YYYYMMDD')
+      yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
+      dayOfWeek = moment.utc().isoWeekday()
+      if processDates[constants.NO_NEW_DATA_FOUND] != today
+        # needs to run using regular logic
+        return undefined
+      else if dayOfWeek == 7 || dayOfWeek == 1
+        # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+        keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+        .then () ->
+          return false
+      else if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday
+        # we've already processed yesterday's data
+        keystore.setValue(constants.NO_NEW_DATA_FOUND, today, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
+        .then () ->
+          return false
+      else
+        # no overrides, needs to run using regular logic
+        return undefined
+
+
+recordChangeCounts = (subtask) ->
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'property')
 
 
 subtasks = {
@@ -328,7 +345,7 @@ subtasks = {
   loadRawData
   deleteData
   normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  recordChangeCounts
   finalizeDataPrep
   finalizeData
   activateNewData: dataLoadHelpers.activateNewData

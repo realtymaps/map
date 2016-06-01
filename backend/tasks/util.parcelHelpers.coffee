@@ -12,10 +12,10 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
 internals = require './util.parcelHelpers.internals'
+transforms = require '../utils/transforms/transform.parcel'
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
-  tableName = 'parcel'
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   delay ?= 100
 
@@ -31,8 +31,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     }
 
     logger.debug "got #{normalPayloadsPromise.length} normalized rows"
-
-    tablesPropName = 'norm'+tableName.toInitCaps()
 
     #these promises must happen in order since we might have multiple props of the same rm_property_id
     # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
@@ -51,10 +49,12 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
         dataLoadHelpers.updateRecord {
           stats
-          dataType: tablesPropName
+          dataType: 'normParcel'
           updateRow: row
           delay
-          getRowChanges: internals.getRowChanges
+          flattenRows: false
+          diffExcludeKeys: internals.diffExcludeKeys
+          diffBooleanKeys: internals.diffBooleanKeys
         }
       #removed for performance
       #.then () ->
@@ -64,7 +64,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       .catch analyzeValue.isKnexError, (err) ->
         jsonData = JSON.stringify(row,null,2)
         logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
-        throw HardFail err.message
+        throw new HardFail(err.message)
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
         .where({rm_raw_id})
@@ -79,36 +79,48 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
   - MOVE / UPSERT entire normalized.parcel table to main.parcel
   - UPDATE LISTINGS / data_combined geometries
   ###
-  Promise.delay delay
+  Promise.delay(delay)
   .then () ->
-    tables.property.normParcel()
-    .select('*')
-    .where(rm_property_id: id)
-    .whereNull('deleted')
-    .orderBy('rm_property_id')
-    .orderBy('deleted')
-    .then (parcels) ->
-      if parcels.length == 0
-        # might happen if a singleton listing is deleted during the day
-        return tables.deletes.parcel()
-        .insert
-          rm_property_id: id
-          data_source_id: subtask.task_name
-          batch_id: subtask.batch_id
-
+    if subtask.data.deletedParcel
       dbs.get('main').transaction (transaction) ->
-        internals.finalizeNewParcel {parcels, id, subtask, transaction}
-        .then () ->
-          internals.finalizeUpdateListing {id, subtask, transaction}
+        internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel: false}
+    else
+      tables.property.normParcel()
+      .select('*')
+      .where(rm_property_id: id)
+      .whereNull('deleted')
+      .orderBy('rm_property_id')
+      .orderBy('deleted')
+      .then (parcels) ->
+        if parcels.length == 0
+          throw new HardFail("No parcel entries found for: #{id}")
+
+        dbs.get('main').transaction (transaction) ->
+          internals.finalizeNewParcel {parcels, id, subtask, transaction}
+          .then (finalizedParcel) ->
+            transforms.execFinalizeParcelAsDataCombined(finalizedParcel)
+          .then (finalizedParcel) ->
+            internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
+
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(error, 'failed to finalizeData')
+  .catch (error) ->
+    throw new HardFail(analyzeValue.getSimpleMessage(error))
 
 
-activateNewData = (subtask) ->
+activateNewData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
-  dataLoadHelpers.activateNewData subtask, {
-    propertyPropName: 'parcel',
-    deletesPropName: 'parcel'
-  }
+  dbs.get('main').transaction (transaction) ->
+
+    activateParcels = dataLoadHelpers.activateNewData(subtask, {
+      propertyPropName: 'parcel',
+      deletesPropName: 'parcel'
+      transaction}
+    )
+    activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
+    Promise.join activateParcels, activateDataCombined, () ->  # noop
+
 
 handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
   errorLogger = logger.spawn('handleOveralNormalizeError')
@@ -146,7 +158,7 @@ getRecordChangeCountsData = (fipsCode) ->
       fips_code: fipsCode
   }
 
-getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
+getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize, deletedParcel}) ->
   {
     subtask
     totalOrList: ids
@@ -154,12 +166,13 @@ getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize}) ->
     laterSubtaskName: "finalizeData"
     mergeData:
       normalSubid: fipsCode #required for countyHelpers.finalizeData
+      deletedParcel: deletedParcel
   }
 
-getParcelsPromise = ({rm_property_id, active}) ->
+getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
-  tables.property.parcel()
+  tables.property.parcel(transaction: transaction)
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where({rm_property_id, active})
 

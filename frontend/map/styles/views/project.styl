@@ -25,6 +25,7 @@
   padding-right: 0;
 
   .project-header
+    position: relative;
     background-color: white
     padding-left: $project-left-margin;
     padding-bottom: 10px;
@@ -36,17 +37,35 @@
       font-size: 12px;
       padding: 3px;
       height: 30px;
+      display: inline-block;
+      margin: 25px 0 0 0;
+      vertical-align: top;
+
 
   .project-tools
-    float: right;
-    margin-top: 22px;
-    margin-right: 30px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 15px;
+    line-height: 36px;
+    background-color: white;
+    z-index: 1;
 
   .project-card
     background-color: white;
 
   .bordered
     border: solid $rm-border-line 1px;
+
+  //
+  // Project Info
+  //
+  .project-info
+    display: inline-block;
+    margin-top: 8px;
+
+    .content-value
+      font-size: 16px;
 
   //
   // Inner panel
@@ -108,9 +127,14 @@
     .widget-background
       color: $yellow;
       font-size: 60px;
-      opacity: 0.2;
+      opacity: 0.25;
 
-  .widget-neighborhood
+  .widget-note
+    .widget-background
+      color: $yellow;
+      opacity: 0.25;
+
+  .widget-area
     .widget-background
       color: $dark_teal;
 
@@ -214,6 +238,9 @@
     .item
       background-color: white;
 
+  .project-note
+    position: relative;
+
   .notes-title
     text-transform: uppercase;
     a
@@ -222,17 +249,22 @@
 
   .note-title
     font-weight: 500;
+
+  .note-author
+    font-weight: 600;
+
   .note-date
     float: right;
     text-align: right;
 
   .note-image
     width: 110px;
-    height: 100px;
+    min-height: 1px;
+    max-height: 100px;
     float: left;
 
   .note-data-wrapper
-    min-height: 100px;
+    //min-height: 100px;
     width: calc(100% - 110px);
     float: left;
 
@@ -269,7 +301,7 @@
   // Project Sub-Pages
   //
 
-  #project-neighborhood-container
+  #project-area-container
     img
      width: 100%
 
@@ -364,12 +396,12 @@
         display: none;
 
   //
-  // NEIGHBORHOODS
+  // AREAS
   //
 
-  #project-neighborhood-container
+  #project-area-container
 
-    .neighborhood
+    .area
       padding-right: 15px;
       padding-bottom: 15px;
 
@@ -398,44 +430,15 @@
           text-align left
           margin 0
 
+  //
+  // NOTES TAB
+  //
+  .project-notes-container
+    .item
+      background-color: white;
 
-//@media not all, (-webkit-transform-3d)
-//  .carousel-inner > .carousel-item.next.left
-//  .carousel-inner > .carousel-item.prev.right,
-//  .carousel-inner > .carousel-item.active {
-//    -webkit-transform: translate3d(0, 0, 0);
-//    transform: translate3d(0, 0, 0);
-//    left: 0;
-//  }
-//
-//.carousel-inner > .active {
-//  left: 0;
-//}
-//
-//.carousel-inner > .active
-//.carousel-inner > .next
-//.carousel-inner > .prev {
-//  display: block;
-//}
-//
-//@media not all, (-webkit-transform-3d)
-//  .carousel-inner > .carousel-item {
-//    -webkit-transition: -webkit-transform 0.6s ease-in-out;
-//    -moz-transition: -moz-transform 0.6s ease-in-out;
-//    -o-transition: -o-transform 0.6s ease-in-out;
-//    transition: transform 0.6s ease-in-out;
-//    -webkit-backface-visibility: hidden;
-//    -moz-backface-visibility: hidden;
-//    backface-visibility: hidden;
-//    -webkit-perspective: 1000px;
-//    -moz-perspective: 1000px;
-//    perspective: 1000px;
-//  }
-//
-//.carousel-inner > .carousel-item {
-//  display: none;
-//  position: relative;
-//  -webkit-transition: 0.6s ease-in-out left;
-//  -o-transition: 0.6s ease-in-out left;
-//  transition: 0.6s ease-in-out left;
-//}
+    .project-note-input
+      margin-bottom: 30px;
+
+      textarea
+        resize: none;

@@ -79,15 +79,23 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   ##
 
   isSubscriber: () ->
-    return _identity and _identity.user?.parent_id == null
+    return (_identity and _identity.subscription? and
+      _identity.subscription != 'canceled' and _identity.subscription != 'unpaid')
+
+  # always implies an active subscription when set to 'pro' or 'standard'
+  hasSubscription: (subscription) ->
+    if !subscription?
+      return _identity and (_identity.subscription == 'pro' or _identity.subscription == 'standard')
+    else
+      return _identity and _identity.subscription == subscription
 
   isProjectEditor: () ->
     profile = getCurrentProfile()
-    return profile and profile.parent_auth_user_id == null
+    return profile?.can_edit
 
   isProjectViewer: () ->
     profile = getCurrentProfile()
-    return profile and profile.parent_auth_user_id != null
+    return profile?.parent_auth_user_id != null
 
   isIdentityResolved: () ->
     return _resolved

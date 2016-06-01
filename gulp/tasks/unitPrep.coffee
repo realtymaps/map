@@ -16,6 +16,11 @@ gulp.task 'unitTestPrep', (done) ->
       other:
         secret_test_api_key: ''
         secret_live_api_key: ''
+    twilio:
+      username: 'asdf'
+      api_key: 'asdf'
+      other:
+        number: '+12223334444'
   universalMock.mock externalAccounts, 'getAccountInfo', (acctName) ->
     Promise.resolve(accounts[acctName])
 

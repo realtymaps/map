@@ -3,7 +3,7 @@
 @import './map/mapProperties.styl'
 @import './map/mapUlDropdown.styl'
 @import './map/mapNotes.styl'
-@import './map/mapNeighbourhoods.styl'
+@import './map/mapAreas.styl'
 @import './map/mapSettings.styl'
 @import './map/mapLayerTools.styl'
 @import './map/mapZoomLocTools.styl'
@@ -23,7 +23,7 @@ body
   .map-navigation
     // override some default bootstrap stuff for all dropdown controls
     $fnMakeMapNotes()
-    $fnMakeMapNeighbourhoods()
+    $fnMakeMapAreas()
     $fnMakeMapSettings()
     $fnMakeMapPinned()
 
@@ -35,7 +35,7 @@ body
 
     .favorites
     .notes-list
-    .neighbourhood-list
+    .area-list
     .pinned-list
       button
         span
@@ -91,7 +91,7 @@ body
 @-moz-document url-prefix()
   .favorites
   .notes-list
-  .neighbourhood-list
+  .area-list
   .pinned-list
     button
       span

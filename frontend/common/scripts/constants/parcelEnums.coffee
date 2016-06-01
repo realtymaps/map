@@ -1,11 +1,13 @@
 _ = require 'lodash'
 mod = require '../module.coffee'
 
-status =
+statusUniversal =
   notForSale: 'not for sale'
-  sold: 'recently sold'
   pending: 'pending'
   forSale: 'for sale'
+
+statusFilter =
+  sold: 'sold'
 
 subStatus =
   discontinued: 'discontinued'
@@ -88,8 +90,9 @@ address =
   showStreetInfo: 'Show Street Info'
 
 mod.constant 'rmapsParcelEnums', {
-  status
-  subStatus: _.extend(subStatus, status)
+  status: _.extend(statusUniversal, statusFilter)
+  subStatus: _.extend(statusUniversal, statusFilter, subStatus)
+  statusData: statusUniversal
   categories
   address
   propertyType

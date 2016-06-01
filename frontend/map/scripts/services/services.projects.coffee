@@ -6,17 +6,17 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
 
   _mockData = (project) ->
 
-    project.neighbourhoods = []
-    project.neighbourhoods.push
+    project.areas = []
+    project.areas.push
       name: 'Hill Valley'
-      description: 'A friendly neighbourhood for families and scientists alike'
-    project.neighbourhoods.push
+      description: 'A friendly area for families and scientists alike'
+    project.areas.push
       name: 'Park Place'
       description: 'Kinda expensive...'
-    project.neighbourhoods.push
+    project.areas.push
       name: 'South Park'
       description: 'A great place to live if you like comedy'
-    project.neighbourhoods.push
+    project.areas.push
       name: 'Monticello'
       description: 'Not the famous one'
 
@@ -62,5 +62,5 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
       .then (response) ->
         rmapsPrincipalService.setIdentity response.data.identity
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
-        
+
         return response.data.identity

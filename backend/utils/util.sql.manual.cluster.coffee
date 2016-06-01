@@ -13,7 +13,7 @@ _makeClusterQuery = (roundTo, scale) ->
     dbs.get('main').raw('count(*)'),
     dbs.get('main').raw("count(case when rm_status='not for sale' then 1 end) as notforsale"),
     dbs.get('main').raw("count(case when rm_status='pending' then 1 end) as pending"),
-    dbs.get('main').raw("count(case when rm_status='recently sold' then 1 end) as recentlysold"),
+    dbs.get('main').raw("count(case when rm_status='sold' then 1 end) as recentlysold"),
     dbs.get('main').raw("count(case when rm_status='for sale' then 1 end) as forsale"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))

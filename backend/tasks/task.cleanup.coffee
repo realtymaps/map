@@ -1,11 +1,12 @@
-Promise = require 'bluebird'
-tables = require '../config/tables'
-logger = require '../config/logger'
-config = require '../config/config'
-dbs = require '../config/dbs'
-TaskImplementation = require './util.taskImplementation'
-jobQueue = require '../services/service.jobQueue'
-mlsHelpers = require './util.mlsHelpers'
+Promise = require('bluebird')
+tables = require('../config/tables')
+logger = require('../config/logger')
+config = require('../config/config')
+dbs = require('../config/dbs')
+TaskImplementation = require('./util.taskImplementation')
+jobQueue = require('../services/service.jobQueue')
+mlsHelpers = require('./util.mlsHelpers')
+_ = require('lodash')
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
@@ -61,7 +62,7 @@ deletePhotosPrep = (subtask) ->
   tables.deletes.photos()
   .select('id')
   .then (ids) ->
-    ids = ids.map (obj) -> obj.id
+    ids = _.pluck(ids, 'id')
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
       totalOrList: ids

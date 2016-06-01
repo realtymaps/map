@@ -34,7 +34,7 @@ render = (data, stream) ->
           The home sales process can certainly be a stressful and exhausting process.", align: 'justify')
     .moveDown()
     .text("Despite the challenges of today’s real estate market, I have seen success with real estate sales in your
-          area. My recent sales of homes in your neighbourhood include:", align: 'justify')
+          area. My recent sales of homes in your area include:", align: 'justify')
     .moveDown()
     .text("     -   518 Galloway Dr, a 3-bedroom house listed for 3 months and sold for $193,500", align: 'justify')
     .text("     -   109 Yellow Piper Ct, a 3-bedroom house listed for 2.5 months and sold for $175,000", align: 'justify')

@@ -5,10 +5,24 @@
     h1.pageTitle(ng-show="project.sandbox") Sandbox
 
     .project-tools
-      button(class="btn btn-white" ng-click="editProject(project, $event)")
+      .project-info.content-block.content-horizontal
+        .content-item(ng-if="project.minPrice || project.maxPrice")
+          .content-value {{project.minPrice || 0 | currency:"$":0}} - {{project.maxPrice || 0 | currency:"$":0}}
+          .content-label Price
+        .content-item(ng-if="project.beds")
+          .content-value {{project.beds}}+
+          .content-label Beds
+        .content-item(ng-if="project.baths")
+          .content-value {{project.baths}}+
+          .content-label Bath
+        .content-item(ng-if="project.sqft")
+          .content-value {{project.sqft | number:0}}+
+          .content-label Sq Ft
+
+      button.btn.btn-white(rmaps-require-project-editor ng-click="editProject(project, $event)")
         i.fa.fa-pencil-square-o
         span Edit
-      button.btn.btn-white(ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
+      button.btn.btn-white(rmaps-require-project-editor ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
         span.icon.icon-save_on_disk
         span(ng-if="!project.archived") Archive
         span(ng-show="!project.sandbox" ng-if="project.archived") Unarchive
@@ -41,12 +55,20 @@
             .widget-count {{_.keys(propertiesService.favorites).length || 0}}
             .widget-title Favorites
 
-      .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+      .project-widget.widget-note(ng-class="{ 'widget-active': $state.is('projectNotes')}")
         .inner
           .widget-background
-            span.icon.icon-neighbourhood
-          a(ui-sref="projectNeighbourhoods({ id: project.id})")
-            .widget-count {{project.neighbourhoods.length || 0}}
+            i.fa.fa-sticky-note
+          a(ui-sref="projectNotes({ id: project.id})")
+            .widget-count {{notes.length || 0}}
+            .widget-title Notes
+
+      .project-widget.widget-area(ng-class="{ 'widget-active': $state.is('projectAreas')}")
+        .inner
+          .widget-background
+            span.icon.icon-area
+          a(ui-sref="projectAreas({ id: project.id})")
+            .widget-count {{project.areas.length || 0}}
             .widget-title Areas
 
       .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")

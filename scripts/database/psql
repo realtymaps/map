@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+<<MAIN_COMMENT
+Get into psql console.
+./scripts/database/psql MAIN_DATABASE@realtymaps-map
+
+Execute Sql or other additional args:
+./scripts/database/psql MAIN_DATABASE@realtymaps-map -c "select count(*) from parcel;"
+MAIN_COMMENT
+
+DB_SPECIFIER="$1"
+# make $* easy to use with `psql` below
+shift
+args=("$@")
+
+psql -d `foreman run ./scripts/database/getDbUrl $DB_SPECIFIER` "${args[@]}"

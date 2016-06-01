@@ -84,7 +84,24 @@ storePhotos = (subtask) -> Promise.try () ->
   PromiseExt.reduceSeries subtask.data.values.map (row) -> ->
     mlsHelpers.storePhotos(subtask, row)
 
-module.exports = new TaskImplementation {
+
+ready = () ->
+  # don't automatically run if digimaps is running
+  tables.jobQueue.taskHistory()
+  .where
+    current: true
+    name: 'digimaps'
+  .whereNull('finished')
+  .then (results) ->
+    if results?.length
+      # found an instance of digimaps, GTFO
+      return false
+
+    # if we didn't bail, signal to use normal enqueuing logic
+    return undefined
+
+
+subtasks = {
   loadRawData
   normalizeData
   finalizeDataPrep
@@ -94,3 +111,6 @@ module.exports = new TaskImplementation {
   storePhotosPrep
   storePhotos
 }
+
+
+module.exports = new TaskImplementation(subtasks, ready)

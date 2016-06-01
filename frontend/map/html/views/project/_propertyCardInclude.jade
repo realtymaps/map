@@ -21,7 +21,7 @@
           .item.item-border.project-note(ng-repeat="note in notes | filter:{ rm_property_id: property.rm_property_id } | orderBy:rm_inserted_time as filteredNotes")
             .note-data
               .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
-              .note-title(ng-if="note.title") {{note.title}}
+              .note-author {{note.first_name}} {{note.last_name}}
               .note-text {{note.text}}
 
       .note-input
@@ -33,4 +33,4 @@
             type="text"
             ng-model="newNotes[property.rm_property_id].text"
             validator="minlength=1")
-            span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") +
+            span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") Add

@@ -177,7 +177,7 @@ describe "rmapsLayerFormattersService", ->
 
             it 'sold', ->
               style = @subject(
-                rm_status: 'recently sold'
+                rm_status: 'sold'
                 savedDetails:
                   isPinned: false
               )

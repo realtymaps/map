@@ -120,8 +120,6 @@ class TestServiceCrudProject extends ServiceCrudProject
 
 describe 'route.projectSession', ->
 
-  this.timeout(10000)
-
   afterEach ->
     @projCrudSvc.resetStubs()
     @cls.kill()
@@ -178,7 +176,6 @@ describe 'route.projectSession', ->
       .then () =>
         @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
-        obj.parent_auth_user_id = @mockRequest.user.id
         obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
         @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
         logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
@@ -187,7 +184,6 @@ describe 'route.projectSession', ->
         @subject.clientsCrud.svc.clientProfileMock
         .whereSpy.args.should.be.eql  [
           ['user_profile.project_id', 1 ]
-          [parent_auth_user_id: 2]
         ]
         @subject.clientsCrud.svc.clientProfileMock
         .whereInSpy.args.should.be.eql []
@@ -237,7 +233,6 @@ describe 'route.projectSession', ->
         body:{}
 
     it 'clients', ->
-      this.timeout(10000) # give it a longer timeout since 2s doesn't seem to be enough
       @subject.byIdDELETE(@mockRequest,mockRes,(->))
       .then =>
         @subject.svc.deleteStub.called.should.be.true

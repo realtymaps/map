@@ -64,7 +64,7 @@ describe "rmapsFilterManagerService", ->
           @$rootScope.selectedFilters =
             sold: true
 
-          expect(@subject.getFilters()).to.eql status: ['recently sold']
+          expect(@subject.getFilters()).to.eql status: ['sold']
 
         it 'notForSale', ->
           @$rootScope.selectedFilters =
@@ -88,4 +88,4 @@ describe "rmapsFilterManagerService", ->
             sold: true
             notForSale: true
 
-          expect(@subject.getFilters()).to.eql status: ['for sale', 'recently sold', 'not for sale']
+          expect(@subject.getFilters()).to.eql status: ['for sale', 'sold', 'not for sale']

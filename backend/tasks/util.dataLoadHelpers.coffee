@@ -46,7 +46,7 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-recordChangeCounts = (subtask) -> Promise.try () ->
+recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
   logger.debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
@@ -125,16 +125,29 @@ recordChangeCounts = (subtask) -> Promise.try () ->
       touched_rows: null  # query was too expensive to run
 
   Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, updateDataLoadHistory)
+  .then () ->
+    if !opts.indicateDeletes
+      return
+
+    tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+    .select('rm_property_id', 'data_source_id', 'batch_id')
+    .where(subset)
+    .where(batch_id: subtask.batch_id)
+    .then (results) ->
+      Promise.map results, (r) ->
+        tables.deletes.property()
+        .returning('rm_property_id')
+        .insert(r)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {propertyPropName, deletesPropName} = {}) -> Promise.try () ->
+activateNewData = (subtask, {propertyPropName, deletesPropName, transaction} = {}) -> Promise.try () ->
   logger.debug subtask
 
   propertyPropName ?= 'combined'
   deletesPropName ?= 'property'
   # wrapping this in a transaction improves performance, since we're editing some rows twice
-  dbs.get('main').transaction (transaction) ->
+  dbs.ensureTransaction transaction, 'main', (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
@@ -253,7 +266,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
       usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-      diffExcludeKeys = ['promoted_values']
+      diffExcludeKeys = []
       if dataSourceType == 'mls'
         for groupName, validationList of validationMap
           for validationDefinition in validationList
@@ -324,6 +337,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
           diffExcludeKeys: validationInfo.diffExcludeKeys
           dataType: subtask.data.dataType
           subid: subtask.data.normalSubid
+          dataSourceType: options.dataSourceType
         })
         .then (rm_property_id) ->
           successes.push(rm_property_id)
@@ -359,10 +373,11 @@ _specialUpdates =
 
 
 # this function mutates a parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getRowChanges, doSafeJsonArray}) -> Promise.try () ->
+updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows}) -> Promise.try () ->
+  diffExcludeKeys ?= []
+  diffBooleanKeys ?= []
   delay ?= 100
-  doSafeJsonArray ?= true
-  getRowChanges ?= _getRowChanges
+  flattenRows ?= true
 
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
@@ -384,20 +399,30 @@ updateRecord = ({stats, diffExcludeKeys, dataType, subid, updateRow, delay, getR
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
+
+      # possibly flatten the rows
+      newData = if flattenRows then _flattenRow(updateRow, dataSourceType, dataType) else updateRow
+      oldData = if flattenRows then _flattenRow(result, dataSourceType, dataType) else result
+      # remove excluded keys
+      newData = _.omit(newData, diffExcludeKeys)
+      oldData = _.omit(oldData, diffExcludeKeys)
+      # do our brand of diff
+      changes = _diff(newData, oldData)
+      # mask certain changed values with the simple `true` value
+      for field in diffBooleanKeys
+        if changes.hasOwnProperty(field)
+          changes[field] = true
+
+      updateRow.deleted = null
       updateRow.change_history = result.change_history ? []
-      changes = getRowChanges(updateRow, result, diffExcludeKeys)
-
-      if changes.deleted
-        # it wasn't really deleted, just purged earlier as per black knight data flow
-        delete changes.deleted
-      if !_.isEmpty changes && doSafeJsonArray
-        updateRow.change_history.push changes
+      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
+      if !Array.isArray(updateRow.change_history)
+        updateRow.change_history = [updateRow.change_history]
+      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
+      if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
-      else
-        updateRow.change_history = changes
-
-      if doSafeJsonArray
-        updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
+        updateRow.change_history.push changes
+      updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
 
       if !_specialUpdates[dataType]?
         tables.property[dataType](subid: subid)
@@ -419,42 +444,41 @@ getValues = (list, target) ->
   target
 
 
-# this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
-# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source data,
+# Not all row fields are taken into the result, only those that correspond most directly to the source data,
 # excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
-_getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
-  fields1 = {}
-  fields2 = {}
+_flattenRow = (row, dataSourceType, dataType) ->
+  flattened = {}
 
-  # first, flatten the objects
-  for groupName, groupList of row1.shared_groups
-    getValues(groupList, fields1)
-  for groupName, groupList of row1.subscriber_groups
-    getValues(groupList, fields1)
-  _.extend(fields1, row1.hidden_fields)
-  _.extend(fields1, row1.ungrouped_fields)
+  # first get the [{name: x1, value: y1} ...] lists flattened down as {x1: y1, x2: y2, ...}
+  for groupName, groupList of row.shared_groups
+    getValues(groupList, flattened)
+  for groupName, groupList of row.subscriber_groups
+    getValues(groupList, flattened)
 
-  for groupName, groupList of row2.shared_groups
-    getValues(groupList, fields2)
-  for groupName, groupList of row2.subscriber_groups
-    getValues(groupList, fields2)
-  _.extend(fields2, row2.hidden_fields)
-  _.extend(fields2, row2.ungrouped_fields)
+  # then merge in hidden and ungrouped fields
+  _.extend(flattened, row.hidden_fields)
+  _.extend(flattened, row.ungrouped_fields)
 
-  # then get changes from row1 to row2
+  # retain the configured base/filter fields
+  baseRuleKeys = _.keys(validatorBuilder.getBaseRules(dataSourceType, dataType))
+  _.extend(flattened, _.pick(row, baseRuleKeys))
+  return flattened
+
+
+# this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
+# taken from row2 (intended to be the older set)
+_diff = (row1, row2) ->
   result = {}
-  for fieldName, value1 of fields1
-    if fieldName in diffExcludeKeys
+  for fieldName, value1 of row1
+    if _.isEqual(value1, row2[fieldName])
       continue
-    if _.isMatch(value1, fields2[fieldName])
-      continue
-    result[fieldName] = (fields2[fieldName] ? null)
+    result[fieldName] = (row2[fieldName] ? null)
 
   # then get fields missing from row1
-  _.extend result, _.omit(fields2, Object.keys(fields1))
+  _.extend result, _.omit(row2, Object.keys(row1))
 
 
-finalizeEntry = (entries) ->
+finalizeEntry = ({entries, subtask}) ->
   entry = entries.shift()
   entry.active = false
   delete entry.deleted
@@ -466,7 +490,7 @@ finalizeEntry = (entries) ->
   entry.address = sqlHelpers.safeJsonArray(entry.address)
   entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = entry.data_source_id
+  entry.update_source = subtask.task_name
   entry.actual_photo_count = _.keys(entry.photos).length - 1  # photo 0 and 1 are the same
   entry.baths_total = entry.baths?.filter
   entry

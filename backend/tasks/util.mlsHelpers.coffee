@@ -87,7 +87,8 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
-finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
+finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->
+  delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   listingsPromise = tables.property.listing()
@@ -103,20 +104,20 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
 
 
   Promise.join listingsPromise
-  , parcelHelpers.getParcelsPromise(rm_property_id: id, active: activeParcel)
+  , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   , (listings=[], parcel=[]) ->
     if listings.length == 0
-      # might happen if a singleton listing is deleted during the day
-      return tables.deletes.property()
+      # might happen if a singleton listing is changed to hidden during the day
+      return tables.deletes.property(transaction: transaction)
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
 
-    listing = dataLoadHelpers.finalizeEntry(listings)
+    listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
     listing.data_source_type = 'mls'
     _.extend(listing, parcel[0])
-    Promise.delay(100)  #throttle for heroku's sake
+    Promise.delay(delay)  #throttle for heroku's sake
     .then () ->
       # do owner name and zoning promotion logic
       if listing.owner_name? || listing.owner_name_2? || listing.zoning
@@ -140,7 +141,7 @@ finalizeData = ({subtask, id, data_source_id, activeParcel}) ->
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
-      dbs.get('main').transaction (transaction) ->
+      dbs.ensureTransaction transaction, 'main', (transaction) ->
         tables.property.combined(transaction: transaction)
         .where
           rm_property_id: id

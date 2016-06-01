@@ -29,7 +29,6 @@ basicColumns = do ->
       'address',
       'geometry',
       'geometry_center AS geom_point_json',
-      'status AS rm_status',
       'owner_name',
       'owner_name_2 as owner_name2',
       'year_built',
@@ -46,6 +45,10 @@ basicColumns = do ->
     .concat [
       "floor(#{tables.property.combined.tableName}.baths_total)::int as baths_full",
       "(case when (#{tables.property.combined.tableName}.baths_total::int - #{tables.property.combined.tableName}.baths_total) > 0 then 1 else 0 end) as baths_half"
+      """(CASE
+      WHEN #{tables.property.combined.tableName}.status = 'not for sale' AND #{tables.property.combined.tableName}.close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold'
+      ELSE #{tables.property.combined.tableName}.status
+      END) AS rm_status"""
     ].join(', ')
     # columns returned for additional detail results
     detail: [
@@ -96,11 +99,11 @@ basicColumns = do ->
       'email_validation_hash', 'email_is_valid']
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
-    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles',
+    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
       'map_position', 'map_results', 'favorites']
 
     drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
-      'neighbourhood_name', 'neighbourhood_details']
+      'area_name', 'area_details']
 
     creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
 
@@ -153,6 +156,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.id as id"
     "#{tables.user.profile.tableName}.auth_user_id as user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id"
+    "#{tables.user.profile.tableName}.can_edit"
     "#{tables.user.profile.tableName}.filters"
     "#{tables.user.profile.tableName}.map_toggles"
     "#{tables.user.profile.tableName}.map_position"
@@ -177,6 +181,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id as parent_auth_user_id"
     "#{tables.user.profile.tableName}.project_id as project_id"
+    "#{tables.user.profile.tableName}.can_edit as can_edit"
     "#{tables.user.profile.tableName}.favorites as favorites"
 
     "#{tables.auth.user.tableName}.email as email"

@@ -328,6 +328,8 @@ queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, 
 
 queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData, concurrency}) -> Promise.try () ->
   data = internals.buildQueuePaginatedSubtaskDatas {totalOrList, maxPage, mergeData}
+  if !data
+    return
   queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency})
 
 getSubtaskConfig = (transaction, subtaskName, taskName) ->

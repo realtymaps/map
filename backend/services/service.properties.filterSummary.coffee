@@ -58,7 +58,7 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
       properties
 
   geojsonPolys = () ->
-    query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 2000, query)
+    query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 2000)
     return Promise.resolve([]) unless query
 
     # include saved id's in query so no need to touch db later
@@ -89,7 +89,7 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
     clusterOrDefault
   }
 
-  handle = handles[returnAs] or handles.default
+  handle = handles[returnAs] || handles.default
   handle()
 
 _validateAndTransform = ({req, state, localTransforms}) ->
