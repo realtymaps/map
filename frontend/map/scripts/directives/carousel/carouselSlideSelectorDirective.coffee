@@ -1,5 +1,28 @@
 app = require '../../app.coffee'
 
+
+###
+
+  USAGE:
+
+  carousel.carousel-standard(
+    slide-selector
+    slide-selector-label="formatters.property.getStreetAddress(actual)"
+  )
+    slide(ng-repeat="property in pins" actual="property")
+      div SLIDE CONTENT GOES HERE
+
+  EXPLANATION
+
+    slide-selector - required attribute Directive that enables the slide selector tool feature
+    slide-selector-label - optional attribute Directive that takes an AngularJS expression.  This is used
+                           to create the values that display in the Select input control
+
+    slide.actual - This property of the Carousel Slide directive is required because it sets the model
+                   object that will be passed to the slide-selector-label expression as the "actual" value
+
+###
+
 # Show slide selector in carousel
 app.directive 'slideSelector', ($log) ->
   return {
