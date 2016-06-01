@@ -318,8 +318,9 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .then (normalizedData) ->
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
+
         # Data in groups does not need to be searchable, so it gets pre-formatted here
-        for groupName, group of _.extend updateRow.shared_groups, updateRow.subscriber_groups
+        preformat = (group) ->
           for field in group
             if _.isDate field.value
               field.value = moment(field.value).format 'MMMM Do, YYYY'
@@ -330,6 +331,12 @@ normalizeData = (subtask, options) -> Promise.try () ->
             else if _.isBoolean field.value
               field.value = if field.value then 'yes' else 'no'
               logger.debug "Normalized a boolean #{field.name} = #{field.value}"
+
+        for groupName, group of updateRow.shared_groups
+          preformat(group)
+
+        for groupName, group of updateRow.subscriber_groups
+          preformat(group)
 
         updateRecord({
           updateRow
