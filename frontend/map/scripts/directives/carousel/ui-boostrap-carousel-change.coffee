@@ -1,6 +1,6 @@
-mod = require '../module.coffee'
+app = require '../../app.coffee'
 
-mod.directive 'onCarouselChange', ($parse) ->
+app.directive 'onCarouselChange', ($parse) ->
   return {
     require: 'carousel'
     link: (scope, element, attrs, carouselCtrl) ->
