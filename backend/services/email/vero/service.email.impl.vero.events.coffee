@@ -4,58 +4,13 @@ Promise = require 'bluebird'
 backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
 logger = require('../../../config/logger').spawn('vero')
-{EMAIL_PLATFORM} = require '../../../config/config'
-{SubscriptionSignUpError
-SubscriptionDeletedError
-SubscriptionUpdatedError
-SubscriptionVerifiedError
-SubscriptionTrialEndedError} = require '../../../utils/errors/util.errors.vero'
-paymentEvents = require '../../../enums/enum.payment.events'
-
+internals = null
 emailRoutes = backendRoutes.email
 
-inErrorSupportPhrase = """
-PS:
-
-If this was not initiated by you or feel this is in error please contact [contact me] (support@realtymaps.com) .
-"""
 
 VeroEvents = (vero) ->
 
-  {createOrUpdate} = require('./service.email.impl.vero.user')(vero)
-
-  _requireAuthUser = (opts) -> Promise.try () ->
-    onMissingArgsFail args: opts, required: ['authUser']
-
-  _cancelPlan = (opts) -> Promise.try () ->
-    _requireAuthUser(opts)
-    {authUser, eventName} = opts
-    delete opts.cancelPlanUrl
-
-    cancelPlanUrl = clsFullUrl emailRoutes.cancelPlan.replace(":cancelPlan", authUser.cancel_email_hash)
-    createOrUpdate _.extend {}, opts,
-      eventName: eventName
-      eventData:
-        cancel_plan_url: cancelPlanUrl
-        in_error_support_phrase: inErrorSupportPhrase
-
-  _callAndRetry = (opts, attempt = 0, ErrorClazz, recallFn, promise) ->
-    logger.debug.cyan "#{recallFn.name} ATTEMPT: #{attempt}"
-
-    promise
-    .catch (err) ->
-      logger.error "#{recallFn.name} error!"
-      logger.error err
-
-      if attempt >= EMAIL_PLATFORM.MAX_RETRIES - 1
-        logger.error "MAX_RETRIES reached for #{recallFn.name}"
-        #add to a JobQueue task to complete later?
-        throw new ErrorClazz(opts)
-
-      setTimeout ->
-        recallFn opts, attempt++
-      , EMAIL_PLATFORM.RETRY_DELAY_MILLI
-
+  internals = require('./service.email.impl.vero.events.internals')(vero)
 
   # Returns the vero-promise response as Promise([user, event]).
   subscriptionSignUp = (opts, attempt) -> Promise.try () ->
@@ -70,53 +25,101 @@ VeroEvents = (vero) ->
     logger.debug "VERIFY URL"
     logger.debug.yellow verifyUrl
 
-    _callAndRetry opts, attempt, SubscriptionSignUpError, subscriptionSignUp,
-      createOrUpdate _.extend {}, opts,
-        eventName: paymentEvents.customerSubscriptionCreated
-        eventData:
-          verify_url: verifyUrl
-          in_error_support_phrase: inErrorSupportPhrase
+    _.merge opts,
+      eventData:
+        verify_url: verifyUrl
+
+    internals.callAndRetry {
+      opts
+      attempt
+      recallFn: @
+      errorName: "SubscriptionSignUpError"
+      eventName: "customerSubscriptionCreated"
+    }
 
 
   subscriptionTrialEnding = (opts, attempt) -> Promise.try () ->
     @name = "subscriptionTrialEnding"
     logger.debug "handling vero #{@name}"
-    _callAndRetry opts, attempt, SubscriptionTrialEndedError, subscriptionTrialEnding,
-      _cancelPlan _.extend {}, opts,
-        eventName: paymentEvents.customerSubscriptionTrialWillEnd
+
+    internals.cancelPlanOptions opts
+
+    internals.callAndRetry {
+      opts
+      attempt
+      recallFn: @
+      errorName: "SubscriptionTrialEndedError"
+      eventName: "customerSubscriptionTrialWillEnd"
+    }
 
   #Purpose To send a Welcome Email stating that the account validation was successful
   subscriptionVerified = (opts, attempt) ->
     @name = "subscriptionVerified"
     logger.debug "handling vero #{@name}"
-    _callAndRetry opts, attempt, SubscriptionVerifiedError, subscriptionVerified,
-      createOrUpdate _.extend {}, opts,
-        eventName: paymentEvents.customerSubscriptionVerified
-        eventData:
-          in_error_support_phrase: inErrorSupportPhrase
+
+    internals.callAndRetry {
+      opts
+      attempt
+      recallFn: @
+      errorName: "SubscriptionVerifiedError"
+      eventName: "customerSubscriptionVerified"
+    }
 
   subscriptionUpdated = (opts, attempt) ->
     @name = "subscriptionUpdated"
     logger.debug "handling vero #{@name}"
-    _callAndRetry opts, attempt, SubscriptionUpdatedError, subscriptionUpdated,
-      createOrUpdate _.extend {}, opts,
-        eventName: paymentEvents.customerSubscriptionUpdated
-        eventData:
-          in_error_support_phrase: inErrorSupportPhrase
+
+    internals.callAndRetry {
+      opts
+      attempt
+      recallFn: @
+      errorName: "SubscriptionUpdatedError"
+      eventName: "customerSubscriptionUpdated"
+    }
 
   subscriptionDeleted = (opts, attempt) ->
     @name = "subscriptionDeleted"
     logger.debug "handling vero #{@name}"
-    _callAndRetry opts, attempt, SubscriptionDeletedError, subscriptionDeleted,
-      createOrUpdate _.extend {}, opts,
-        eventName: paymentEvents.customerSubscriptionDeleted
-        eventData:
-          in_error_support_phrase: inErrorSupportPhrase
 
-  subscriptionSignUp: subscriptionSignUp
-  subscriptionVerified: subscriptionVerified
-  subscriptionTrialEnding: subscriptionTrialEnding
-  subscriptionUpdated: subscriptionUpdated
-  subscriptionDeleted: subscriptionDeleted
+    internals.callAndRetry {
+      opts
+      attempt
+      recallFn: @
+      errorName: "SubscriptionDeletedError"
+      eventName: "customerSubscriptionDeleted"
+    }
+
+
+  notificationFavorite = (opts, attempt) ->
+    internals.notificationProperties {
+      opts
+      attempt
+      recallFn: @
+      name: "notificationFavorite"
+      errorName: "NotificationFavoriteError"
+      eventName: "notificationFavorite"
+    }
+
+
+  notificationPinned = (opts, attempt) ->
+    internals.notificationProperties {
+      opts
+      attempt
+      recallFn: @
+      name: "notificationPinned"
+      errorName: "NotificationPinnedError"
+      eventName: "notificationPinned"
+    }
+
+
+  {
+    subscriptionSignUp
+    subscriptionVerified
+    subscriptionTrialEnding
+    subscriptionUpdated
+    subscriptionDeleted
+    notificationFavorite
+    notificationPinned
+  }
 
 module.exports = VeroEvents

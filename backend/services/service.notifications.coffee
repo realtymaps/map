@@ -6,6 +6,8 @@ errorHelpers = require '../utils/errors/util.error.partiallyHandledError'
 internals = require './service.notifications.internals'
 internalsNotificationConfig = require './service.notification.config.internals'
 notificationConfigService =  require('./service.notifcation.config').instance
+notificationUserService =  require('./service.notifcation.user').instance
+internalsNotificationUser = require './service.notification.user.internals'
 ###
   Intended to be the workflow service which combines business logic of
   config_notification with user_notification. This is mainly intended for queing
@@ -40,21 +42,35 @@ sendNotificationNow = ({configRows, options}) ->
   .catch (err) ->
     logger.error "notification error: #{analyzeValue.getSimpleDetails(err)}"
 
+###
+  Adds a row to user_notification.
+  First gets the config attributes and then merges the options to fill out
+  other columns.
+###
+sendNotificationEventually = ({configRows, options}) ->
+  Promise.all Promise.map configRows, (row) ->
+    entity =
+      config_notification_id: row.id
+
+    _.extend entity, _.pick options, internalsNotificationUser.getColumns
+    notificationUserService.create entity
 
 notificationHandles =
-  immediate: sendNotificationNow
+  email: sendNotificationNow
+  sms: sendNotificationNow
+  emailVero: sendNotificationEventually
 
-notification = ({type, frequency}) ->
+notification = ({type, method}) ->
   (options) ->
     safeFields = _.pick options, internalsNotificationConfig.getColumns
-    entity = _.extend safeFields, {type, frequency}
+    entity = _.extend safeFields, {type, method}
 
     logger.debug entity
 
     notificationConfigService
     .getAllWithUser(entity)
     .then (configRows) ->
-      notificationHandles[frequency] {configRows, options}
+      notificationHandles[method] {configRows, options}
 
 module.exports =
   notification: notification
