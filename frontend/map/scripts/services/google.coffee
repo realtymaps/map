@@ -2,7 +2,9 @@ app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsGoogleService', ($http) ->
+app.service 'rmapsGoogleService', ($http, $log) ->
+
+  $log = $log.spawn 'rmapsGoogleService'
 
   _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
@@ -72,7 +74,7 @@ app.service 'rmapsGoogleService', ($http) ->
 
         service.StreetView.getUrlForCoordinates(coords, width, height, fov, heading, pitch, sensor)
 
-      getUrlForCoordinates: (lonLat, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
+      getUrlForCoordinates: (lonLat, width, height = width//1.33, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
         # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama
         # heading is better left as undefined as google figures out the best heading based on the lat lon target
         # we might want to consider going through the api which will gives us URL
@@ -80,6 +82,10 @@ app.service 'rmapsGoogleService', ($http) ->
           heading = "&heading=#{heading}"
 
         unless lonLat
+          return
+
+        if !width
+          $log.warn 'size parameter required for streetview'
           return
 
         "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
