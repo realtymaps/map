@@ -22,9 +22,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
         .col-sm-8(ng-repeat="property in dataSources" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
 
-            property-images(property="property" image-width="475")
+            property-images(property="property" image-height="350")
 
-            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
@@ -140,9 +140,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .row.content-row(ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4 {{field.name}}
                   .col-sm-8
+                    div(ng-if="!field.value.lines") {{field.value}}
                     div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
-                    span(ng-if="isoDate(field.value)") {{field.value | date}}
-                    span(ng-if="!field.value.lines && !isoDate(field.value)") {{field.value}}
 
           .row.content-block.mls-disclaimer
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")
