@@ -12,6 +12,9 @@ app.directive 'propertyImages', (
   rmapsPropertyFormatterService,
   rmapsResultsFormatterService,
 ) ->
+
+  $log = $log.spawn 'propertyImagesDirective'
+
   restrict: 'EA'
   templateUrl: './includes/directives/property/_propertyImagesDirective.jade'
   scope:
@@ -20,8 +23,6 @@ app.directive 'propertyImages', (
     imageHeight: '@imageHeight'
 
   controller: ($scope) ->
-    $log = $log.spawn 'propertyImagesDirective'
-    $log.debug $scope.propertyParent
 
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope
@@ -51,7 +52,7 @@ app.directive 'propertyImages', (
       if $scope.imageWidth
         resizeUrl += "&width=#{$scope.imageWidth}"
       if $scope.imageHeight
-        resizeUrl += "&height=#{scope.imageHeight}"
+        resizeUrl += "&height=#{$scope.imageHeight}"
 
       # Skip the first image, it is expected to be a duplicate
       for i in [1..$scope.property.photo_count]

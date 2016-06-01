@@ -46,17 +46,20 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
 
     getForSaleClass: (result, showSaved = true) ->
       return '' unless result
+      status = result?.rm_status || result?.status
       soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isPinned
-      soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+      soldClass or _forSaleClass[status] or _forSaleClass['default']
 
     getStatusLabelClass: (result, ignoreSavedStatus=false) ->
       return '' unless result
+      status = result?.rm_status || result?.status
       soldClass = _statusLabelClass['saved'] if result.savedDetails?.isPinned && !ignoreSavedStatus
-      return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
+      return soldClass or _statusLabelClass[status] or _statusLabelClass['default']
 
     showSoldDate: (result) ->
       return false unless result
-      return (result?.rm_status=='sold'||result.rm_status=='not for sale') && result.close_date
+      status = result?.rm_status || result?.status
+      return (status=='sold'||status=='not for sale') && result.close_date
 
     sendSnail: (result) ->
       $rootScope.$emit rmapsEventConstants.snail.initiateSend, result

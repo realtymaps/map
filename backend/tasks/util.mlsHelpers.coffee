@@ -61,8 +61,6 @@ loadUpdates = (subtask, options) ->
 buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
-  normalizedData.general.unshift(name: 'Address', value: base.address)
-  normalizedData.general.unshift(name: 'Status', value: base.status_display)
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
     ungrouped = null
