@@ -128,7 +128,6 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
     group2 = 'mortgage'
   normalizedData[group1] ?= []
   normalizedData[group2] ?= []
-  normalizedData[group1].unshift(name: 'Address', value: base.address)
   normalizedData[group2].unshift(name: "Owner 1", value: base.owner_name)
   normalizedData[group2].unshift(name: "Owner 2", value: base.owner_name_2)
   normalizedData[group2].unshift(name: "Owner's Address", value: base.owner_address)
