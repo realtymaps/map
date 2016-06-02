@@ -77,7 +77,7 @@ deletePhotos = (subtask) ->
     mlsHelpers.deleteOldPhoto(subtask, id)
 
 
-module.exports = new TaskImplementation {
+module.exports = new TaskImplementation 'cleanup', {
   rawTables
   subtaskErrors
   deleteMarkers

@@ -1,0 +1,7 @@
+.carousel-slide-selector(ng-show="!hideSlideSelector")
+  select(
+  ng-show="slides.length > 1"
+  ng-options="slide as getLabel(slide) for slide in slides"
+  ng-model="slideSelectorCurrent"
+  ng-init="slideSelectorCurrent = slides[0]"
+  ng-change="select(slideSelectorCurrent)")

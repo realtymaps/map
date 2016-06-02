@@ -45,7 +45,7 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
 
       filterSummaryImpl.transformProperties?(properties)
 
-      properties = toLeafletMarker properties, ['geom_point_json', 'geometry']
+      properties = toLeafletMarker properties
       props = indexBy(properties, false)
       props
 
@@ -55,23 +55,6 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
       filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
-
-  geojsonPolys = () ->
-    query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 2000)
-    return Promise.resolve([]) unless query
-
-    # include saved id's in query so no need to touch db later
-    propertiesIds = _.keys(state.properties_selected)
-    if propertiesIds.length > 0
-      sqlHelpers.orWhereIn(query, 'rm_property_id', propertiesIds)
-
-    # data formatting
-    query.then (data) ->
-      'type': 'FeatureCollection'
-      'features': propMerge.updateSavedProperties(state, data).map (d) ->
-        d.type = 'Feature'
-        d.properties = {}
-        d
 
   clusterOrDefault = () ->
     _limitByPinnedProps(filterSummaryImpl.getResultCount(queryParams), state, queryParams)
@@ -85,7 +68,6 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
 
   handles = {
     cluster
-    geojsonPolys
     default: defaultFn
     clusterOrDefault
   }

@@ -25,8 +25,14 @@ class NotesSessionCrud extends RouteCrud
 # Yay for the new style
 instance = new NotesSessionCrud notesSvc,
   debugNS: 'notesRoute'
+  # as more parameters become necessary to filter on note model, we
+  # can add elements to `query:` array below to clean & authenticate them
   reqTransforms:
-    query: validators.object isEmptyProtect: true
+    query: [
+      validators.object
+        subValidateSeparate:
+          project_id: validators.integer()
+    ]
   rootPOSTTransforms:
     body: [
       bodyTransform

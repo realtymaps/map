@@ -75,6 +75,18 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       if !model?
         return ''
 
+      street = @getStreetAddress(model, owner)
+
+      cityStateZip = @getCityStateZip(model, owner)
+
+      if street && cityStateZip
+        street += ", "
+
+      street += cityStateZip
+
+      return street
+
+    getStreetAddress: (model, owner=false) ->
       street = ''
       if model.street_address_num
         street += model.street_address_num
@@ -86,13 +98,6 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
         street += ' ' + model.street_address_unit
 
       street = street.trim()
-
-      cityStateZip = @getCityStateZip(model, owner)
-
-      if street && cityStateZip
-        street += ", "
-
-      street += cityStateZip
 
       return street
 

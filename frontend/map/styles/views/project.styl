@@ -167,6 +167,15 @@
     font-size: 10px;
 
   //
+  // Adjust Carousel Controls for height of property information
+  //
+  .carousel-control
+    .glyphicon-chevron-right
+    .glyphicon-chevron-left
+      top: 150px;
+      margin-top: 0;
+
+  //
   // Project Map
   //
   #dashboardMap
@@ -272,10 +281,6 @@
   // Carousel Custom Template
   //
 
-  .carousel
-    .item
-      padding: 0 !important;
-
   .pin-sample-image
     width: 500px
     height: 300px
@@ -283,19 +288,6 @@
   .pin-attributes
     width: 500px
     margin: 0 auto
-
-  .carousel-control
-    display: none;
-
-  .carousel-indicators
-    bottom: -35px;
-
-    li
-      border: 1px solid black;
-      background-color: white;
-
-      &.active
-        background-color: black;
 
   //
   // Project Sub-Pages

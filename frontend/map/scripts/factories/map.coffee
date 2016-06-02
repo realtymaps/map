@@ -121,9 +121,6 @@ app.factory 'rmapsMapFactory',
                 cache = false
               @redraw(cache)
 
-          $scope.$on rmapsEventConstants.map.filters.updated, => @redraw()
-          $scope.$on rmapsEventConstants.map.mainMap.redraw, => @redraw()
-
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>

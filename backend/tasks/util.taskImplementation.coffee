@@ -16,26 +16,26 @@ _getTaskCode = (taskName) ->
       .where(id: taskName)
       .then (mlsConfigs) ->
         if mlsConfigs?[0]?
-          return require("./task.default.mls")
+          return require("./task.default.mls")(taskName)
         throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
 
 
 class TaskImplementation
 
-  constructor: (@subtasks, @ready) ->
+  constructor: (@taskName, @subtasks, @ready) ->
     @name = 'TaskImplementation'
 
   executeSubtask: (subtask) -> Promise.try () =>
     # call the handler for the subtask
-    subtaskBaseName = subtask.name.replace(/[^_]+_/g,'')
+    subtaskBaseName = subtask.name.substring(@taskName.length+1)  # subtask name format is: taskname_subtaskname
     if !(subtaskBaseName of @subtasks)
       throw new Error("Can't find subtask code for #{subtask.name}")
     @subtasks[subtaskBaseName](subtask)
 
-  initialize: (transaction, batchId, task) -> Promise.try () =>
+  initialize: (transaction, batchId) -> Promise.try () =>
     tables.jobQueue.subtaskConfig(transaction: transaction)
     .where
-      task_name: task.name
+      task_name: @taskName
       auto_enqueue: true
       active: true
     .then (subtasks) ->
@@ -44,7 +44,7 @@ class TaskImplementation
       require('../services/service.jobQueue').queueSubtasks({transaction, batchId, subtasks})
     .then (count) ->
       if count == 0
-        throw new Error("0 subtasks enqueued for #{task.name}")
+        throw new Error("0 subtasks enqueued for #{@taskName}")
       count
 
   ready: null  # to properly set prototype
