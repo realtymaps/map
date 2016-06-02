@@ -14,7 +14,12 @@ describe 'service.properties.filterSummary', ->
     @subject = svc
 
   it 'geojsonPolys returns valid geojson', (done) ->
-    @subject.getFilterSummary { state: mocks.map.state, req: mocks.map.filter }
+    @subject.getFilterSummary
+      state: mocks.map.state
+      req:
+        validBody: mocks.map.filter
+        user:
+          is_superuser: false
     .then (data) ->
       gjv.valid(data).should.be.ok
       done()
