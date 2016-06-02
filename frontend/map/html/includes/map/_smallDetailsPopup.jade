@@ -1,7 +1,7 @@
 include ../mixins/property/_propertyAttributes.jade
 
 .property-card(ng-controller="rmapsSmallDetailsCtrl")
-  property-images(property="property" imageWidth="275")
+  property-images(property="property" image-width="275")
   +propertyAttributes('property')
   property-buttons(
     property='property'

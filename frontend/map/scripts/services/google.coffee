@@ -2,7 +2,9 @@ app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsGoogleService', ($http) ->
+app.service 'rmapsGoogleService', ($http, $log) ->
+
+  $log = $log.spawn 'rmapsGoogleService'
 
   _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
@@ -80,6 +82,14 @@ app.service 'rmapsGoogleService', ($http) ->
           heading = "&heading=#{heading}"
 
         unless lonLat
+          return
+
+        if !width && height
+          width = height//0.75
+        if width && !height
+          height = width//1.33
+        if !width || !height
+          $log.warn 'size parameter required for streetview'
           return
 
         "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +

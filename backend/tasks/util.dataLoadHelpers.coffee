@@ -16,6 +16,8 @@ rets = require 'rets-client'
 parcelUtils = require '../utils/util.parcel'
 keystore = require '../services/service.keystore'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+util = require 'util'
+moment = require 'moment'
 
 
 DELETE =
@@ -318,6 +320,26 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .then (normalizedData) ->
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
+
+        # Data in groups does not need to be searchable, so it gets pre-formatted here
+        preformat = (group) ->
+          for field in group
+            if _.isDate field.value
+              field.value = moment(field.value).format 'MMMM Do, YYYY'
+              logger.debug "Normalized a date #{field.name} = #{field.value}"
+            else if !isNaN(Number(field.value)) && field.name.toLowerCase().indexOf('price') != -1
+              field.value = "$" + field.value
+              logger.debug "Normalized a price #{field.name} = #{field.value}"
+            else if _.isBoolean field.value
+              field.value = if field.value then 'yes' else 'no'
+              logger.debug "Normalized a boolean #{field.name} = #{field.value}"
+
+        for groupName, group of updateRow.shared_groups
+          preformat(group)
+
+        for groupName, group of updateRow.subscriber_groups
+          preformat(group)
+
         updateRecord({
           updateRow
           stats
@@ -333,8 +355,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         #  .where(rm_raw_id: row.rm_raw_id)
         #  .update(rm_valid: true)
         .catch analyzeValue.isKnexError, (err) ->
-          jsonData = JSON.stringify(updateRow,null,2)
-          logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+          jsonData = util.inspect(updateRow, depth: null)
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
           .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
@@ -402,10 +423,6 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
 
       updateRow.deleted = null
       updateRow.change_history = result.change_history ? []
-      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
-      if !Array.isArray(updateRow.change_history)
-        updateRow.change_history = [updateRow.change_history]
-      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
       if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
         updateRow.change_history.push changes

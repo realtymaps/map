@@ -113,4 +113,5 @@ subtasks = {
 }
 
 
-module.exports = new TaskImplementation(subtasks, ready)
+module.exports = (taskName) ->
+  new TaskImplementation(taskName, subtasks, ready)

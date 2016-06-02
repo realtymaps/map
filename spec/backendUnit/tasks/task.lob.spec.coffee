@@ -59,7 +59,7 @@ describe 'task.lob', ->
     expect(svc).to.be.ok
 
   it 'should find letters and enqueue them as subtasks', ->
-    svc.executeSubtask(@subtasks.findLetters, '<test>')
+    svc.executeSubtask(@subtasks.findLetters)
     .then () =>
       @tables.mail.letters().selectSpy.callCount.should.equal 2
       @tables.mail.letters().whereSpy.args[0].should.deep.equal ['status', 'ready']
@@ -70,7 +70,7 @@ describe 'task.lob', ->
       @jobQueue.queueSubsequentSubtask.args[0][0].manualData.should.equal mockLetter
 
   it 'send a letter and capture LOB response', ->
-    svc.executeSubtask(@subtasks.createLetter, '<test>')
+    svc.executeSubtask(@subtasks.createLetter)
     .then () =>
       @lobSvc.sendLetter.callCount.should.equal 1
       @lobSvc.sendLetter.args[0][0].should.equal mockLetter

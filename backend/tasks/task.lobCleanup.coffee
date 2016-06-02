@@ -107,4 +107,4 @@ subtasks =
   updateLetters: updateLetters
   getLetter: getLetter
 
-module.exports = new TaskImplementation(subtasks)
+module.exports = new TaskImplementation('lobCleanup', subtasks)

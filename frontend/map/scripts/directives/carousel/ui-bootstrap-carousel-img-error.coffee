@@ -1,6 +1,6 @@
-mod = require '../module.coffee'
+app = require '../../app.coffee'
 
-mod.directive 'carouselImageError', ($parse, $log) ->
+app.directive 'carouselImageError', ($parse, $log) ->
   $log = $log.spawn 'carouselImageError'
   $log.debug 'init'
 

@@ -19,7 +19,7 @@ NUM_ROWS_TO_PAGINATE = 25
 
 findStripeErrors = (subtask) ->
   numRowsToPageFindErrors = subtask.data.numRowsToPageFindErrors || NUM_ROWS_TO_PAGINATE
-  
+
   unless stripe
     logger.debug "stripe api is not ready in jobtask"
     return
@@ -112,4 +112,4 @@ class StipeTask extends TaskImplementation
     require('../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
     super(arguments...)
 
-module.exports = new StipeTask(subtasks)
+module.exports = new StipeTask('stripe', subtasks)

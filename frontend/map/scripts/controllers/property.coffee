@@ -54,9 +54,6 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
     name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'
   ]
 
-  $scope.isoDate = (value) ->
-    return !!value?.match? /(\d{4})-0?(\d+)-0?(\d+)[T ]0?(\d+):0?(\d+):0?(\d+)(\.\d+)?Z?$/
-
   $scope.previewLetter = (mail) ->
     $modal.open
       template: require('../../html/views/templates/modal-mailPreview.tpl.jade')()

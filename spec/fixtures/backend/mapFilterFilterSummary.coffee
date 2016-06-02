@@ -1,6 +1,6 @@
 _ = require 'lodash'
 
-module.exports = (type = 'geojsonPolys') ->
+module.exports = (type = 'clusterOrDefault') ->
   _.merge require('./mapFilter'),
     returnType: type
     state:

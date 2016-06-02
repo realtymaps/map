@@ -289,7 +289,7 @@ recordChangeCounts = (subtask) ->
 #     #WHAT ELSE IS THERE TO DO?
 
 
-module.exports = new TaskImplementation {
+module.exports = new TaskImplementation 'digimaps', {
   loadRawDataPrep
   loadRawData
   normalizeData
