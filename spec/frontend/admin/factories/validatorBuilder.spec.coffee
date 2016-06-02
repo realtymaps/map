@@ -23,7 +23,7 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.float({}),validators.nullify({"value":0})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Character"}
-       transform: '[validators.string({}),validators.nullify({"value":""})]'
+       transform: '[validators.string({"trim":true}),validators.nullify({"value":""})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": {"DataType": "DateTime", "format": 'asdf'}}
        transform: '[validators.datetime({"format":"asdf"})]'
@@ -58,7 +58,7 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.float({}),validators.nullify({"value":0})]'
       ,
        field: _buildBaseRule {"output": "parcel_id"}
-       transform: '[validators.string({"stripFormatting":true}),validators.nullify({"value":""})]'
+       transform: '[validators.string({"stripFormatting":true,"trim":true}),validators.nullify({"value":""})]'
     ]
 
     expect(obj.field.getTransformString()).to.equal obj.transform for obj in rules

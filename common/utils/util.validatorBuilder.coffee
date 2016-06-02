@@ -367,6 +367,7 @@ typeRules =
       name: 'string'
     config:
       nullEmpty: true
+      trim: true
   DateTime:
     type:
       name: 'datetime'

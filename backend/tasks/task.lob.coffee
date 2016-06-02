@@ -167,4 +167,4 @@ subtasks =
   findLetters: findLetters
   createLetter: createLetter
 
-module.exports = new TaskImplementation(subtasks)
+module.exports = new TaskImplementation('lob', subtasks)

@@ -27,7 +27,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
     .orderByRaw('close_date DESC NULLS LAST')
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
-        throw new HardFail("No tax entries found for: #{id}")
+        return null  # sometimes this might cover up a real error, but there are semi-legitimate cases where this can happen
       if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
         logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
         # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority

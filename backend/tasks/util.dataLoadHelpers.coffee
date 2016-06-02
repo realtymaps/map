@@ -16,7 +16,9 @@ rets = require 'rets-client'
 parcelUtils = require '../utils/util.parcel'
 keystore = require '../services/service.keystore'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+util = require 'util'
 moment = require 'moment'
+
 
 DELETE =
   UNTOUCHED: 'untouched'
@@ -353,8 +355,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         #  .where(rm_raw_id: row.rm_raw_id)
         #  .update(rm_valid: true)
         .catch analyzeValue.isKnexError, (err) ->
-          jsonData = JSON.stringify(updateRow,null,2)
-          logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+          jsonData = util.inspect(updateRow, depth: null)
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
           .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
@@ -422,10 +423,6 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
 
       updateRow.deleted = null
       updateRow.change_history = result.change_history ? []
-      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
-      if !Array.isArray(updateRow.change_history)
-        updateRow.change_history = [updateRow.change_history]
-      # ~~~~~~~~~~~~~ TODO: these 2 lines are not needed after the next data_combined wipe ~~~~~~~~~~~~~
       if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
         updateRow.change_history.push changes
