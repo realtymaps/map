@@ -2,7 +2,7 @@ _ = require 'lodash'
 through = require 'through'
 through2 = require 'through2'
 logger = require '../config/logger'
-{toGeoFeature} = require './util.geomToGeoJson'
+{toGeoFeature} = require '../../common/utils/util.geomToGeoJson'
 {Readable} = require 'stream'
 split = require 'split'
 

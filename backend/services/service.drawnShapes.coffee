@@ -1,5 +1,5 @@
 ReturningServiceEzCrud = require '../utils/crud/util.ezcrud.service.returning'
-{toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
+{toGeoFeatureCollection} = require '../../common/utils/util.geomToGeoJson'
 {basicColumns} = require '../utils/util.sql.columns'
 
 module.exports =
@@ -10,11 +10,12 @@ module.exports =
 
     toGeoJson: (query) ->
       query
-      .then toGeoFeatureCollection
-        toMove: @drawnShapeCols
-        geometry: ['geom_point_json', 'geom_polys_json', 'geom_line_json']
-        deletes: ['rm_inserted_time', 'rm_modified_time',
-          'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
+      .then (rows) ->
+        toGeoFeatureCollection rows,
+          toMove: @drawnShapeCols
+          geometry: ['geom_point_json', 'geom_polys_json', 'geom_line_json']
+          deletes: ['rm_inserted_time', 'rm_modified_time',
+            'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
 
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true
