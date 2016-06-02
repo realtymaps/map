@@ -13,7 +13,7 @@ inconsistencies:
   Example:
   "customer.subscription.created" -> "customer_subscription_created"
 
-- New Campaign View: All underscores and periods will displayed as periods.
+- New Campaign View: All underscores and periods will displayed as spaces.
   Also the first letter will be capitalized.
 
   Example:
@@ -31,6 +31,10 @@ IMPORTANT:
 
 The below list should be kept in sync with what events are in the vero system. This way we can easily
 tell what the actual named events are in vero to limit the confusion.
+
+Lastly old events can not be renamed or deleted. Therefore creating "customer_subscription_created" to copy/replace
+"customer.subscription.created" would result in a duplicate drop down selection of "Customer subscription created". Therefore
+it is suggested here that we leave the events we have alone and stay consistent with a chosen format.
 ###
 
 events = [
@@ -41,7 +45,8 @@ events = [
   "customer.subscription.deleted"
   "customer.subscription.updated"
   "customer.subscription.trial_will_end"
-  #NOTE UNDERSCORES ARE THE WAY FORWARD, ignore the above events as they can not be deleted in VERO
+  #NOTE UNDERSCORES ARE THE WAY FORWARD
+  # if switch the above to periods to underscores in vero then we will have duplicates in the New Campaign view.
   "notification_favorite"
   "notification_pinned"
   "client_created"
