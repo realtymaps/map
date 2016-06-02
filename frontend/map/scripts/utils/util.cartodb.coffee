@@ -4,9 +4,8 @@ routes = require '../../../../common/config/routes.backend.coffee'
 baseRoute = routes.config.protectedConfig
 
 wakeUp = (cartodb) ->
-  if cartodb?.WAKE_URLS?
-    cartodb.WAKE_URLS.forEach (url) ->
-      http.post url, true
+  cartodb?.WAKE_URLS?.forEach (url) ->
+    http.post url, true
 
 initCartodb = () ->
   try
