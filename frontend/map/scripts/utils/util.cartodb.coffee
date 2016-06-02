@@ -1,14 +1,24 @@
 http = require './util.http.coffee'
 routes = require '../../../../common/config/routes.backend.coffee'
 
-module.exports = ->
-  try
-    _cartodb = JSON.parse http.get routes.config.cartodb
+baseRoute = routes.config.protectedConfig
 
-  ret =  {}
-
-  ret = _cartodb if _cartodb
-  if _cartodb?.WAKE_URLS?
-    _cartodb.WAKE_URLS.forEach (url) ->
+wakeUp = (cartodb) ->
+  if cartodb?.WAKE_URLS?
+    cartodb.WAKE_URLS.forEach (url) ->
       http.post url, true
-  ret
+
+initCartodb = () ->
+  try
+    {cartodb} = JSON.parse http.get baseRoute
+
+  cartodb ?= {}
+
+  wakeUp(cartodb)
+
+  cartodb
+
+initCartodb.baseRoute = baseRoute
+initCartodb.wakeUp = wakeUp
+
+module.exports = initCartodb
