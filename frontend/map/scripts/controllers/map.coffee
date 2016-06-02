@@ -25,7 +25,9 @@ app.controller 'rmapsMapCtrl', (
   $state,
   $timeout,
   $window,
+  rmapsDrawnUtilsService,
   rmapsEventConstants,
+  rmapsLeafletHelpers,
   rmapsMainOptions,
   rmapsMapFactory,
   rmapsParcelEnums,
@@ -87,10 +89,24 @@ app.controller 'rmapsMapCtrl', (
       $location.search 'property_id', undefined
 
   #
+  # Center on an area if requested
+  #
+  checkCenterOnArea = () ->
+    $log.debug "!!!!!! AREA ID #{$state.params.area_id}"
+    if $state.params.area_id || $location.search().area_id
+      #zoom to bounds on shapes
+      #handle polygons, circles, and points
+      $log.debug "!!!!!! AREA has property id"
+#      featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(model)
+#      feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
+#      $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, feature.getBounds()
+
+  #
   # Set $scope variables for the Project selector tool
   #
   setScopeVariables = () ->
     $scope.loadProperty rmapsProfilesService.currentProfile
+    checkCenterOnArea()
 
   #
   # Watch for changes to the current profile. This is necessary since the map state is sticky

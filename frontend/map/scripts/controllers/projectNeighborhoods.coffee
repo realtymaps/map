@@ -1,5 +1,25 @@
 app = require '../app.coffee'
-module.exports = app
 
-app.controller 'rmapsProjectAreasCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:projectAreas")
+app.controller 'rmapsProjectAreasCtrl', (
+  $log
+  $scope
+
+  rmapsDrawnUtilsService
+) ->
+  $log = $log.spawn('rmapsProjectAreasCtrl')
+
+  drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+
+  #
+  # Data access
+  #
+
+  getAll = (cache) ->
+    drawnShapesSvc.getAreasNormalized(cache)
+    .then (data) ->
+      $scope.areas = data
+
+  #
+  # Initial data load
+  #
+  getAll()

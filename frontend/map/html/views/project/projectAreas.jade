@@ -1,11 +1,12 @@
 #project-area-container
-  .area.col-sm-6(ng-repeat="area in project.areas")
-    .item.item-border.item-card
-      a.map
-        span View Area
-        img(src="/assets/test_map.jpg")
-      .data
-        h3 {{area.name}}
-      button.btn.btn-link(rmaps-require-project-editor)
-        i.fa.fa-trash-o
-        span Delete
+  .area.col-sm-6(ng-repeat="area in areas")
+    .item.item-border.item-card.content-block
+        .content-heading.content-lg {{area.area_name}}
+        .content-body
+          button.btn.btn-white.btn-dashboard(ng-click="page.goToMap({area_id: area.id})")
+            i.icon.icon-location
+            span View Area
+          button.btn.btn-white.btn-dashboard(rmaps-require-project-editor)
+            i.fa.fa-trash-o
+            span Delete
+

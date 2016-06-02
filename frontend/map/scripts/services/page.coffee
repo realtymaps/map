@@ -78,9 +78,10 @@ app.provider 'rmapsPageService', () ->
         else
           @goToMap()
 
-      goToMap: () ->
+      goToMap: (params = {}) ->
         if rmapsProfilesService.currentProfile?.project_id?
-          $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
+          params = _.extend(params, { project_id: rmapsProfilesService.currentProfile?.project_id })
+          $state.go 'map', params
         else
           $state.go 'main'
 
