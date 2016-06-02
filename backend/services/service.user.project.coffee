@@ -3,11 +3,10 @@ logger = require('../config/logger').spawn('service:project')
 frontendRoutes = require '../../common/config/routes.frontend'
 {profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
-{basicColumns, joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
+{basicColumns, joinColumns} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 DrawnShapesCrud = require './service.drawnShapes'
 dbs = require '../config/dbs'
-userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 permissionsService = require './service.permissions'
 profileSvc = require './service.profiles'
 keystoreSvc = require '../services/service.keystore'
@@ -17,9 +16,6 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 
 safeProject = basicColumns.project
-safeProfile = basicColumns.profile
-safeNotes = basicColumns.notes
-safeUser = sqlHelpers.columns.user
 vero = null
 require('../services/email/vero').then (svc) -> vero = svc.vero
 
@@ -110,7 +106,7 @@ class ProjectCrud extends ThenableCrud
           filters: {}
           map_results: {}
           map_position: {}
-          properties_selected: {}
+          pins: {}
 
         # Reset the sandbox (profile and project fields)
         promises.push profileSvc.update(_merge(reset, id: profile.id), idObj.auth_user_id)
@@ -129,7 +125,7 @@ class ProjectCrud extends ThenableCrud
         true
 
   addClient: (clientEntryValue) ->
-    {user, parent, project, evtdata} = clientEntryValue
+    {user, project, evtdata} = clientEntryValue
     dbs.transaction 'main', (trx) ->
       # get the invited user if exists
       tables.auth.user(transaction: trx)

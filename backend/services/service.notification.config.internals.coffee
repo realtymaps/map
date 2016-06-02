@@ -6,13 +6,24 @@ getColumns = [
   'type'
   'method'
   'frequency'
-  'bubble_direction'
   'max_attempts'
 ]
 
-explicitGetColumns = "#{tables.config.notification}.#{col}" for col in getColumns
+userColumns = [
+  'first_name'
+  'last_name'
+  'email'
+  'cell_phone'
+  'work_phone'
+]
+
+allColumns = getColumns.concat userColumns
+
+explicitGetColumns = "#{tables.user.notificationConfig}.#{col}" for col in getColumns
 
 module.exports = {
+  allColumns
+  userColumns
   getColumns
   explicitGetColumns
 }

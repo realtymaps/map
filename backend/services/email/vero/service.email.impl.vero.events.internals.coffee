@@ -61,11 +61,10 @@ module.exports = (vero) ->
   ###
   notificationProperties = ({opts, attempt, recallFn, name, errorName, eventName}) ->
 
-    {authUser, properties, plan} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
+    {authUser, properties} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
 
     opts = {
       authUser
-      plan
       eventData: {
         properties
       }

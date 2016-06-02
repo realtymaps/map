@@ -2,6 +2,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 utilsGeoJson =  require '../../../../common/utils/util.geomToGeoJson.coffee'
+analyzeValue = require  '../../../../common/utils/util.analyzeValue.coffee'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFactory, rmapsPrincipalService,
   rmapsEventConstants, rmapsPromiseThrottlerFactory, $log) ->
@@ -28,10 +29,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   _detailThrottler = new rmapsPromiseThrottlerFactory('detailThrottler')
   _filterThrottler = new rmapsPromiseThrottlerFactory('filterThrottler')
-  _filterThrottlerGeoJson = new rmapsPromiseThrottlerFactory('filterThrottlerGeoJson')
   _filterThrottlerCluster = new rmapsPromiseThrottlerFactory('filterThrottlerCluster')
   _parcelThrottler = new rmapsPromiseThrottlerFactory('parcelThrottler')
-  _saveThrottler = new rmapsPromiseThrottlerFactory('saveThrottler')
   _addressThrottler = new rmapsPromiseThrottlerFactory('addressThrottler')
 
   #
@@ -40,21 +39,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   # Reset the properties hash when switching profiles
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-    propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
-
-    service.getProperties propertyIds, 'filter'
-    .then ({data}) ->
-      service.pins = {}
-      service.favorites = {}
-
-      for detail in data
-        if model = profile.properties_selected[detail.rm_property_id]
-          _.extend model, detail
-          _saveProperty model
-        if model = profile.favorites?[detail.rm_property_id]
-          _.extend model, detail
-          _favoriteProperty model
-
+    _loadProperties()
+    .then () ->
       $rootScope.$emit rmapsEventConstants.update.properties.pin, properties: service.pins
       $rootScope.$emit rmapsEventConstants.update.properties.favorite, properties: service.favorites
 
@@ -101,37 +87,57 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
 
-  _saveProperty = (model, save = true) ->
-    return if !model or !model.rm_property_id
-    rm_property_id = model.rm_property_id
-
-    model.savedDetails ?= new rmapsPropertyFactory(rm_property_id)
-
-    prop = service.pins[rm_property_id]
-
+  _pinForMap = (model, save = true) ->
     if save
-      if !prop
-        _.extend model, service.pins[rm_property_id]
-        service.pins[rm_property_id] = model
-      model.savedDetails.isPinned = true
+      _.merge model, savedDetails: isPinned: true
     else
-      delete service.pins[rm_property_id]
-      model.savedDetails.isPinned = false
+      delete model.savedDetails?.isPinned
+
+  _pinProperty = (model, save = true) ->
+    if !model?.rm_property_id?
+      return $q.resolve()
+    {rm_property_id} = model
+
+    promise = if save
+      $http.post backendRoutes.properties.pin, {rm_property_id}
+      .then () ->
+        service.pins[rm_property_id] = _pinForMap model
+    else
+      $http.post backendRoutes.properties.unPin, {rm_property_id}
+      .then () ->
+        _pinForMap model, false
+        delete service.pins[rm_property_id]
+
+    promise
+    .catch (error) -> #our state is messed up force refresh
+      $log.error "Pin/unPin failed with error: #{analyzeValue(error)}. Forcing refresh!"
+      _loadProperties(true)
+
+  _favoriteForMap = (model, save = true) ->
+    if save
+      _.merge model, savedDetails: isFavorite: true
+    else
+      delete model.savedDetails?.isFavorite
 
   _favoriteProperty = (model) ->
-    return if !model or !model.rm_property_id
-    rm_property_id = model.rm_property_id
+    if !model?.rm_property_id
+      return $q.resolve()
+    {rm_property_id} = model
 
-    if !model.savedDetails
-      model.savedDetails = new rmapsPropertyFactory(rm_property_id)
-
-    prop = service.favorites[rm_property_id]
-    if !prop
-      service.favorites[rm_property_id] = model
-      model.savedDetails.isFavorite = true
+    promise = if !service.favorites[rm_property_id]?
+      $http.post backendRoutes.properties.favorite, {rm_property_id}
+      .then () ->
+        service.favorites[rm_property_id] = _favoriteForMap model
     else
-      delete service.favorites[rm_property_id]
-      model.savedDetails.isFavorite = false
+      $http.post backendRoutes.properties.unFavorite, {rm_property_id}
+      .then () ->
+        _favoriteForMap model, false
+        delete service.favorites[rm_property_id]
+
+    promise
+    .catch (error) -> #our state is messed up force refresh
+      $log.error "Favorite/unFavorite failed with error: #{analyzeValue(error)}. Forcing refresh!"
+      _loadProperties(true)
 
   _setFlags = (model) ->
     return if !model or !model.rm_property_id
@@ -141,37 +147,37 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     model.savedDetails.isPinned = !!service.pins[rm_property_id]
     model.savedDetails.isFavorite = !!service.favorites[rm_property_id]
 
-  _loadProperties = (col = service.pins) ->
-    service.getProperties (_.pluck _.filter(col, (p) -> !p.rm_status?), 'rm_property_id'), 'filter'
+  _loadProperties = (force) ->
+    service.getSaves()
     .then (response) ->
-      for result in response.data
-        _.extend col[result.rm_property_id], result
+      if (!Object.keys(service.pins).length && !Object.keys(service.favorites).length) || force
+        #fresh initial load
+        service.pins = response.pins
+        service.favorites = response.favorites
+        propertyIds = _.keys(service.pins).concat _.keys(service.favorites)
 
-  _processPropertyPins = (models, needLoad) ->
-    if needLoad
-      _loadProperties()
-      .then () ->
-        $rootScope.$emit rmapsEventConstants.update.properties.pin,
-          property: models[0],
-          properties: service.pins
-    else
-      $rootScope.$emit rmapsEventConstants.update.properties.pin,
-        property: models[0],
-        properties: service.pins
+        service.getProperties propertyIds, 'filter'
+        .then ({data}) ->
 
-    #post state to database
-    toSave = _.mapValues service.pins, (model) -> model.savedDetails
-    statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
-    _saveThrottler.invokePromise statePromise
-    statePromise.error (data, status) ->
-      $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
+          for detail in data
+            if model = service.pins[detail.rm_property_id]
+              _.extend model, detail
+              _pinForMap model
+            if model = service.favorites?[detail.rm_property_id]
+              _.extend model, detail
+              _favoriteForMap model
 
-  #
-  # Service API Definition
-  #
+  _processPropertyPins = (models) ->
+    $rootScope.$emit rmapsEventConstants.update.properties.pin,
+      property: models[0],
+      properties: service.pins
 
-  # will receive results from backend, which will be organzed either as
-  #   standard results or cluster results, determined in backend by #of results returned
+  ###
+   Service API Definition
+
+   will receive results from backend, which will be organzed either as
+   standard results or cluster results, determined in backend by #of results returned
+  ###
   service.getFilterResults = (hash, mapState, filters, cache = true) ->
     _getFilterSummary(hash, mapState, 'clusterOrDefault', filters, cache)
 
@@ -187,7 +193,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
       service.getFilterResults(hash, mapState, filters, true)
     else
       $q.resolve data
-      
+
     promise.then (data) ->
       utilsGeoJson.toGeoFeatureCollection(data)
 
@@ -216,56 +222,28 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   service.getProperties = (ids, columns) ->
     $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
-  service.pinProperty = (models) ->
-    if !_.isArray models
-      models = [ models ]
-
-    # In case this is a list of models, determine if *any* of them are being pinned... if so, invoke the _loadProperties()
-    needLoad = false
-    _.each models, (model) ->
-      if !model.savedDetails?.isPinned
-        needLoad = true
-
-      _saveProperty model, true
-
-    _processPropertyPins models, needLoad
-
-  service.unpinProperty = (models) ->
-    if !_.isArray models
-      models = [ models ]
-
-    _.each models, (model) ->
-      _saveProperty model, false
-
-    _processPropertyPins models, false
+  service.getSaves = () ->
+    $http.getData backendRoutes.properties.saves
 
   service.pinUnpinProperty = (models) ->
     if !_.isArray models
       models = [ models ]
 
-    # In case this is a list of models, determine if *any* of them are being pinned...
-    # if so, invoke the _loadProperties()
-    needLoad = false
-    _.each models, (model) ->
-      if !model.savedDetails?.isPinned
-        needLoad = true
+    for m in models
+      _.merge  m, service.pins[m.rm_property_id] || service.favorites[m.rm_property_id]
 
-      _saveProperty model, !model.savedDetails?.isPinned
+    $q.all _.map models, (model) ->
+      _pinProperty model, !model.savedDetails?.isPinned
 
-    _processPropertyPins models, needLoad
+    .then () ->
+      _processPropertyPins models
 
   service.favoriteProperty = (model) ->
-    _favoriteProperty model
-    $rootScope.$emit rmapsEventConstants.update.properties.favorite,
-      property: model,
-      properties: service.favorites
-
-    #post state to database
-    toSave = _.mapValues service.favorites, (model) -> model.savedDetails
-    statePromise = $http.post(backendRoutes.userSession.updateState, favorites: toSave)
-    _saveThrottler.invokePromise statePromise
-    statePromise.error (data, status) ->
-      $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
+    _favoriteProperty(model)
+    .then () ->
+      $rootScope.$emit rmapsEventConstants.update.properties.favorite,
+        property: model,
+        properties: service.favorites
 
   service.isPinnedProperty = (propertyId) ->
     !!service.pins[propertyId]

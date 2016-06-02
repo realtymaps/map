@@ -54,20 +54,20 @@ describe "rmapsLayerFormattersService", ->
             it 'savedDetails is undefined', ->
               @subject.isVisible(@mockScope, {rm_property_id:4}).should.be.not.ok
 
-            it 'savedDetails isSaved undefined', ->
+            it 'savedDetails isPinned undefined', ->
               @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:undefined}}).should.be.not.ok
 
-            it 'savedDetails isSaved false', ->
+            it 'savedDetails isPinned false', ->
               @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:false}}).should.be.not.ok
 
         describe 'in filterSummary', ->
-          it 'savedDetails isSaved false', ->
+          it 'savedDetails isPinned false', ->
             @subject.isVisible(@mockScope, rm_property_id:1).should.be.not.ok
 
-          it 'savedDetails isSaved undefined', ->
+          it 'savedDetails isPinned undefined', ->
             @subject.isVisible(@mockScope, rm_property_id:5).should.be.not.ok
 
-          it 'savedDetails isSaved false', ->
+          it 'savedDetails isPinned false', ->
             @subject.isVisible(@mockScope, rm_property_id:3).should.be.not.ok
 
       describe 'true', ->
@@ -76,7 +76,7 @@ describe "rmapsLayerFormattersService", ->
             @subject.isVisible(@mockScope, {rm_property_id:2}, true).should.be.ok
 
         describe 'in filterSummary', ->
-          it 'savedDetails isSaved', ->
+          it 'savedDetails isPinned', ->
             @subject.isVisible(@mockScope, {rm_property_id:4, savedDetails:{isPinned:true}}).should.be.ok
 
     describe 'MLS', ->
