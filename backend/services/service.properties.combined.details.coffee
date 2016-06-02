@@ -36,6 +36,9 @@ _getDetailByPropertyId = (queryParams) ->
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
+  if queryParams.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 _getDetailByPropertyIds = (queryParams) ->
   query = sqlHelpers.select(
@@ -47,6 +50,9 @@ _getDetailByPropertyIds = (queryParams) ->
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
+  if queryParms.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 _getDetailByGeomPointJson = (queryParams) ->
   query = sqlHelpers.select(
@@ -58,13 +64,18 @@ _getDetailByGeomPointJson = (queryParams) ->
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
-
+  if queryParams.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 module.exports =
 
-  getDetail: (queryParams) -> Promise.try () ->
+  getDetail: (req) -> Promise.try () ->
+    queryParams = req.validBody
     validation.validateAndTransform(queryParams, transforms)
     .then (validRequest) ->
+      if !req.user.is_superuser
+        validRequest.fips_codes = req.user.fips_codes
 
       if validRequest.rm_property_id?
         _getDetailByPropertyId(validRequest)
@@ -78,8 +89,12 @@ module.exports =
         result[row.data_source_type].push(row)
       result
 
-  getDetails: (queryParams) ->
+  getDetails: (req) ->
+    queryParams = req.validBody
     Promise.try () ->
+      if !req.user.is_superuser
+        queryParams.fips_codes = req.user.fips_codes
+
       if queryParams.rm_property_id?
         _getDetailByPropertyIds(queryParams)
       else

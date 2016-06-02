@@ -3,7 +3,6 @@ base = require './service.properties.base.filterSummary'
 combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
-sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:filterSummary')
 propMerge = require '../utils/util.properties.merge'
@@ -51,9 +50,9 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
       props
 
   cluster = ->
-    filterSummaryImpl.getFilterSummary(queryParams, limit, sqlCluster.clusterQuery(state.map_position.center.zoom))
+    filterSummaryImpl.getFilterSummary(queryParams, limit, filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom))
     .then (properties) ->
-      sqlCluster.fillOutDummyClusterIds(properties)
+      filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
 
@@ -76,10 +75,12 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
 
   clusterOrDefault = () ->
     _limitByPinnedProps(filterSummaryImpl.getResultCount(queryParams), state, queryParams)
-    .then (data) ->
-      if data[0].count > config.backendClustering.resultThreshold
+    .then ([result]) ->
+      if result.count > config.backendClustering.resultThreshold
+        logger.debug "Cluster query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
         return cluster()
       else
+        logger.debug "Default query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
         return defaultFn()
 
   handles = {
@@ -110,13 +111,18 @@ module.exports =
   getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
     limit ?= 2000
     if !filterSummaryImpl
-      if req.state?.filters?.combinedData == true
+      if req.validBody.state?.filters?.combinedData == true
         filterSummaryImpl = combined
       else
         filterSummaryImpl = base
 
     Promise.try ->
-      _validateAndTransform({req, state, localTransforms: filterSummaryImpl.transforms})
+      _validateAndTransform({req: req.validBody, state, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
       return [] unless queryParams
+
+      # Limit to FIPS codes allowed for this user
+      if !req.user.is_superuser
+        queryParams.state.filters.fips_codes = req.user.fips_codes
+
       _handleReturnType({filterSummaryImpl, state, queryParams, limit})

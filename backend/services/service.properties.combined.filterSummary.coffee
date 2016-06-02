@@ -7,6 +7,7 @@ filterAddress = require "../enums/filterAddress"
 filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
+cluster = require '../utils/util.sql.manual.cluster.combined'
 
 dbFn = tables.property.combined
 
@@ -171,6 +172,9 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   if filters.hasImages
     query.where("photos", "!=", "{}")
 
+  if filters.fips_codes
+    query.whereIn("fips_code", filters.fips_codes)
+
   # If full address available, include matched property in addition to other matches regardless of filters
   filters.address = _.pick filters.address, filterAddress.keys
   filters.address = _.omit filters.address, _.isEmpty
@@ -212,3 +216,5 @@ module.exports =
   getFilterSummary: (filters, limit, query) ->
     Promise.try () ->
       _getFilterSummaryAsQuery(filters, limit, query)
+
+  cluster: cluster
