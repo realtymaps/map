@@ -197,6 +197,7 @@ loadRawData = (subtask) ->
       dataType: subtask.data.dataType
       action: subtask.data.action
       normalSubid: subtask.data.normalSubid
+      debug: true  # TODO: remove
     if subtask.data.fileType == constants.DELETE
       laterSubtaskName = "deleteData"
       numRowsToPage = subtask.data?.numRowsToPageDelete || constants.NUM_ROWS_TO_PAGINATE
@@ -351,4 +352,4 @@ subtasks = {
   activateNewData: dataLoadHelpers.activateNewData
   saveProcessDates
 }
-module.exports = new TaskImplementation(subtasks, ready)
+module.exports = new TaskImplementation('blackknight', subtasks, ready)

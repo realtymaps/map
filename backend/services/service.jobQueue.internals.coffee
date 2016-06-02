@@ -382,7 +382,8 @@ buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
   subtasksQueued = 0
   countHandled = 0
 
-  data = for i in [1..subtasks]
+  data = []
+  for i in [1..subtasks]
     datum =
       offset: countHandled
       count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
@@ -394,8 +395,10 @@ buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
       _.extend(datum, mergeData)
     subtasksQueued += 1
     countHandled += datum.count
-    datum
-
+    if mergeData?.debug
+      if (datum.dataType == 'tax' && datum.i != 56) || (datum.dataType == 'deed' && datum.i != 35) || (datum.dataType == 'mortgage' && datum.i != 12)
+        continue
+    data.push(datum)
   data
 
 module.exports = {

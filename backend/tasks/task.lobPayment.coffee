@@ -110,4 +110,4 @@ subtasks =
   findCampaigns: findCampaigns
   chargeCampaign: chargeCampaign
 
-module.exports = new TaskImplementation(subtasks)
+module.exports = new TaskImplementation('lobPayment', subtasks)

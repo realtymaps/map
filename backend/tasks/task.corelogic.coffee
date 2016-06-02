@@ -149,11 +149,12 @@ finalizeData = (subtask) ->
     countyHelpers.finalizeData({subtask, id})
 
 
-module.exports = new TaskImplementation
-  checkFtpDrop: checkFtpDrop
-  loadRawData: loadRawData
-  normalizeData: normalizeData
+module.exports = new TaskImplementation 'corelogic', {
+  checkFtpDrop
+  loadRawData
+  normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
-  finalizeDataPrep: finalizeDataPrep
-  finalizeData: finalizeData
+  finalizeDataPrep
+  finalizeData
   activateNewData: dataLoadHelpers.activateNewData
+}

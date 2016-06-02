@@ -15,6 +15,4 @@ wake = (subtask) -> Promise.try ->
         request.post(url)
 
 
-module.exports = new TaskImplementation {
-  wake
-}
+module.exports = new TaskImplementation('cartodb', {wake})  # this file isn't named correctly
