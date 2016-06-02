@@ -1,6 +1,7 @@
 ###globals _###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+utilsGeoJson =  require '../../../../common/utils/util.geomToGeoJson.coffee'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, rmapsPrincipalService,
   rmapsEventConstants, rmapsPromiseThrottlerFactory, $log) ->
@@ -183,11 +184,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, cache) ->
     service.getFilterResults(hash, mapState, filters, cache)
     .then (data) ->
-      type: 'FeatureCollection'
-      features: _.values(data).map (d) ->
-        d.type = 'Feature'
-        d.properties = {}
-        d
+      utilsGeoJson.filterSummaryToGeoFeatureCollection(data)
 
   service.getParcelBase = (hash, mapState, cache = true) ->
     _parcelThrottler.invokePromise _getPropertyData(
