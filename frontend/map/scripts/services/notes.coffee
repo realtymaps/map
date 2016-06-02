@@ -13,7 +13,8 @@ app.service 'rmapsNotesService', ($rootScope, $http, $log, rmapsEventConstants, 
     getList: (force = false) ->
       $log.debug 'Get notes from API, force?', force
       if !getPromise || force
-        getPromise = $http.get(backendRoutes.notesSession.apiBase, cache: false).then ({data}) ->
+        project_id = rmapsPrincipalService.getCurrentProjectId()
+        getPromise = $http.get(backendRoutes.notesSession.apiBase, {cache: false, params: project_id: project_id}).then ({data}) ->
           _notes = data
           data
       else
