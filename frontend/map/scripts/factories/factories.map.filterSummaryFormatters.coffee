@@ -80,9 +80,6 @@ app.factory 'rmapParcelResultsMutation',
       .then (data) =>
         return if @isEmptyData()
 
-        for key, model of data
-          rmapsPropertiesService.updateProperty model
-
         @scope.map.geojson.filterSummaryPoly =
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle

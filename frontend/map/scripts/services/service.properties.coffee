@@ -11,11 +11,11 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   # Service Instance
   #
   service = {}
-  
+
   #
   # Pins and Favorites cache
   #
-  
+
   #HASH to properties by rm_property_id
   #we may want to save details beyond just saving there fore it will be a hash pointing to an object
   service.pins = {}
@@ -24,7 +24,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   #
   # API throttling
   #
-  
+
   _detailThrottler = new rmapsPromiseThrottlerFactory('detailThrottler')
   _filterThrottler = new rmapsPromiseThrottlerFactory('filterThrottler')
   _filterThrottlerGeoJson = new rmapsPromiseThrottlerFactory('filterThrottlerGeoJson')
@@ -36,7 +36,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   #
   # Service Implementation
   #
-  
+
   # Reset the properties hash when switching profiles
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
     propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
@@ -168,7 +168,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   #
   # Service API Definition
   #
-  
+
   # will receive results from backend, which will be organzed either as
   #   standard results or cluster results, determined in backend by #of results returned
   service.getFilterResults = (hash, mapState, filters, cache = true) ->
@@ -180,8 +180,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   service.getFilterSummaryAsCluster = (hash, mapState, filters, cache = true) ->
     _getFilterSummary(hash, mapState, 'cluster', filters, cache, _filterThrottlerCluster)
 
-  service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, cache = true) ->
-    _getFilterSummary(hash, mapState, 'geojsonPolys', filters, cache, _filterThrottlerGeoJson)
+  service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, cache) ->
+    service.getFilterResults(hash, mapState, filters, cache)
+    .then (data) ->
+      type: 'FeatureCollection'
+      features: _.values(data).map (d) ->
+        d.type = 'Feature'
+        d.properties = {}
+        d
 
   service.getParcelBase = (hash, mapState, cache = true) ->
     _parcelThrottler.invokePromise _getPropertyData(

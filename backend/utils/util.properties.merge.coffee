@@ -1,11 +1,9 @@
-config = require '../config/config'
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
-logger = require '../config/logger'
 _ = require 'lodash'
 
 # merge details of data in memory; no db call
-_updateSavedProperties = (state, properties) ->
+updateSavedProperties = (state, properties) ->
   _.each properties, (prop) ->
     # ensure saved details are part of the saved props
     if state.properties_selected?[prop.rm_property_id]?
@@ -13,7 +11,7 @@ _updateSavedProperties = (state, properties) ->
   properties
 
 
-_getMissingProperties = (state, properties) ->
+getMissingProperties = (state, properties) ->
   return [] if !properties?.length
   matchingSavedProps = {}
   properties.forEach (row) ->
@@ -26,7 +24,7 @@ _getMissingProperties = (state, properties) ->
     !matchingSavedProps[rm_property_id]
 
 
-_savedPropertiesQuery = (limit, filters, missingProperties) ->
+savedPropertiesQuery = (limit, filters, missingProperties) ->
   query = sqlHelpers.select(tables.property.propertyDetails(), 'filter', false)
 
   if limit
@@ -36,24 +34,25 @@ _savedPropertiesQuery = (limit, filters, missingProperties) ->
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
   query
 
-_maybeMergeSavedProperties = (state, filters, filteredProperties, limit) ->
+maybeMergeSavedProperties = (state, filters, filteredProperties, limit) ->
   if !state?.properties_selected || _.keys(state.properties_selected).length == 0 || !filters?.bounds?
     return filteredProperties
 
-  missingProperties = _getMissingProperties(state, filteredProperties)
+  missingProperties = getMissingProperties(state, filteredProperties)
   if missingProperties.length == 0
     # shortcut out if we've handled them all
     return filteredProperties
 
-  _savedPropertiesQuery(limit, filters, missingProperties).then (savedProperties) ->
+  savedPropertiesQuery(limit, filters, missingProperties).then (savedProperties) ->
     savedProperties.forEach (row) ->
       # logger.debug row
       row.savedDetails = state.properties_selected[row.rm_property_id]
     return filteredProperties.concat(savedProperties)
 
 
-module.exports =
-  updateSavedProperties: _updateSavedProperties
-  maybeMergeSavedProperties: _maybeMergeSavedProperties
-  getMissingProperties: _getMissingProperties
-  savedPropertiesQuery: _savedPropertiesQuery
+module.exports = {
+  updateSavedProperties
+  maybeMergeSavedProperties
+  getMissingProperties
+  savedPropertiesQuery
+}
