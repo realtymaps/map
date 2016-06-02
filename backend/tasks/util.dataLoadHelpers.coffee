@@ -308,10 +308,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
-      if options.dataSourceId != 'blackknight' || row["Assessor’s Parcel Number"] != '37068400000'
-        return
-      logger.warn('\n\n\n\n\n\n\n\n\n\n\n\n\n'+subtask.data.dataType+'\n')
-      logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{subtask.data.dataType}} 1) raw row: #{util.inspect(row, depth: null)}")
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
@@ -322,7 +318,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
       Promise.props(_.mapValues(validationInfo.validationMap, validateSingleField))
       .cancellable()
       .then (normalizedData) ->
-        logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{subtask.data.dataType}} 2) validated row: #{util.inspect(normalizedData, depth: null)}")
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
 
@@ -345,7 +340,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
         for groupName, group of updateRow.subscriber_groups
           preformat(group)
 
-        logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{subtask.data.dataType}} 3) built row: #{util.inspect(updateRow, depth: null)}")
         updateRecord({
           updateRow
           stats
@@ -355,7 +349,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
           dataSourceType: options.dataSourceType
         })
         .then (rm_property_id) ->
-          logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{subtask.data.dataType}} 5) write success: #{rm_property_id}")
           successes.push(rm_property_id)
         #.then () ->
         #  tables.temp(subid: rawSubid)
@@ -363,7 +356,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
         #  .update(rm_valid: true)
         .catch analyzeValue.isKnexError, (err) ->
           jsonData = util.inspect(updateRow, depth: null)
-          logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
           .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
@@ -405,18 +397,14 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
       data_source_id: updateRow.data_source_id
   .then (result) ->
     if !result?.length
-      logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{dataType}} 4a) doing insert")
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
       if !_specialUpdates[dataType]?
-        q = tables.property[dataType](subid: subid)
+        ables.property[dataType](subid: subid)
         .insert(updateRow)
-        logger.warn("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #{q.toString().replace(/\\"/g,'"').replace(/{/g,'\n{')}")
-        q
       else
         _specialUpdates[dataType].insert({subid, row: updateRow})
     else
-      logger.warn("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {#{dataType}} 4b) doing update")
       # found an existing row, so need to update, but include change log
       result = result[0]
 
@@ -441,13 +429,11 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
       updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
 
       if !_specialUpdates[dataType]?
-        q = tables.property[dataType](subid: subid)
+        tables.property[dataType](subid: subid)
         .where
           data_source_uuid: updateRow.data_source_uuid
           data_source_id: updateRow.data_source_id
         .update(updateRow)
-        logger.warn("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #{q.toString().replace(/\\"/g,'"').replace(/{/g,'\n{')}")
-        q
       else
         _specialUpdates[dataType].update({subid, row: updateRow})
   .then () ->

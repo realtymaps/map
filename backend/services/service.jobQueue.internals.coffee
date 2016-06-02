@@ -395,9 +395,6 @@ buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
       _.extend(datum, mergeData)
     subtasksQueued += 1
     countHandled += datum.count
-    if mergeData?.debug
-      if (datum.dataType == 'tax' && datum.i != 56) || (datum.dataType == 'deed' && datum.i != 35) || (datum.dataType == 'mortgage' && datum.i != 12)
-        continue
     data.push(datum)
   data
 
