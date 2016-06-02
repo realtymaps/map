@@ -34,6 +34,6 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
                 p.title {{model.properties.area_name}}
                 //- p.text {{model.properties.area_details}}
 
-              span.actions
+              span.actions(rmaps-require-project-editor)
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
                 span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

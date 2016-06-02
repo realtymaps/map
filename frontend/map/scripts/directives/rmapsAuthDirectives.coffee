@@ -49,15 +49,15 @@ restrictElement = (scope, element, attrs, options) ->
           template: require('../../html/views/templates/modals/confirm.jade')()
 
       # hijack ng-click to give us a modal and auth message
-      attrs.ngClick = "authModal('#{options.message}')"
+      attrs.ngClick = "authModal('#{options.message}'); $event.stopPropagation();"
       element.attr('ng-click', attrs.ngClick)
 
     # if we don't want modal, disable the button
     else
       # omit any existing angular ng-click (if not a button that we can disable, this is helpful)
       if 'ngClick' of attrs
-        attrs.ngClick = null # clear
-        element.removeAttr('ng-click')
+        attrs.ngClick = "$event.stopPropagation()" # clear
+        element.attr('ng-click', attrs.ngClick)
 
       if 'ngDisabled' of attrs
         savedExpression = attrs.ngDisabled
@@ -108,12 +108,11 @@ restrictElement = (scope, element, attrs, options) ->
 
 # return an options object parsed from directive attribute value
 getOptions = (flags = "") ->
-  {
+  options =
     disable: /disable/.test flags
     noModal: /^(?=.*disable)(?=.*noModal).*$/.test flags # noModal used with `disable` option (any order)
     hide: /hide/.test flags
     omit: !flags # default, expect something on element like `ng-if="false"`
-  }
 
 
 # require the logged user to be a designated editor on current project
@@ -125,7 +124,7 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $modal) 
     if !$rootScope.principal.isProjectEditor()
 
       # options and services to pass around
-      optionalFlags = attrs.rmapsRequireProjectEditor
+      optionalFlags = if attrs.rmapsRequireProjectEditor == 'rmaps-require-project-editor' then "" else attrs.rmapsRequireProjectEditor
       options = _.merge getOptions(optionalFlags),
         message: "You must be the editor of your current project to do that."
         $modal: $modal
@@ -147,7 +146,7 @@ app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $modal) ->
     if !$rootScope.principal.isSubscriber()
 
       # options and services to pass around
-      optionalFlags = attrs.rmapsRequireSubscriber
+      optionalFlags = if attrs.rmapsRequireSubscriber == 'rmaps-require-subscriber' then "" else attrs.rmapsRequireSubscriber
       options = _.merge getOptions(optionalFlags),
         message: "You must have a paid subscription to do that."
         $modal: $modal

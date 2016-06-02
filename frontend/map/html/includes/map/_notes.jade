@@ -35,6 +35,6 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
                 span.comment
                   a(href="#comment") Leave a comment
 
-            span.actions
-              span.icon.icon-remove(rmaps-require-project-editor="disable" ng-click="remove(note); $event.stopPropagation()")
-              span.fa.fa-edit(rmaps-require-project-editor="disable" ng-click="update(note); $event.stopPropagation()")
+            span.actions(rmaps-require-project-editor)
+              span.icon.icon-remove(ng-click="remove(note); $event.stopPropagation()")
+              span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
