@@ -15,6 +15,7 @@ fields = [
 
 module.exports = (options = {}) ->
   if options.format
+    format = options.format
     match = /M+/.exec(format)
     if match
       monthStart = match.index
@@ -33,13 +34,14 @@ module.exports = (options = {}) ->
     if !value? or value == ''
       return null
 
-    if value.substr(monthStart, 2) == '00'
-      value = value.slice(0, monthStart) + '01' + value.slice(monthStart+monthLength)
-    if value.substr(dayStart, 2) == '00'
-      value = value.slice(0, dayStart) + '01' + value.slice(dayStart+dayLength)
-    datetime = moment.utc(value, format, options.locale, options.strict)
+    fixedValue = value
+    if fixedValue.substr(monthStart, 2) == '00'
+      fixedValue = fixedValue.slice(0, monthStart) + '01' + fixedValue.slice(monthStart+monthLength)
+    if fixedValue.substr(dayStart, 2) == '00'
+      fixedValue = fixedValue.slice(0, dayStart) + '01' + fixedValue.slice(dayStart+dayLength)
+    datetime = moment.utc(fixedValue, format, options.locale, options.strict)
     if !datetime.isValid()
-      throw new DataValidationError("invalid data type given for date field (problem determining value for `#{fields[datetime.invalidAt()]}`)", param, value)
+      throw new DataValidationError("invalid data given for date field (problem determining value for `#{fields[datetime.invalidAt()]}` with format #{format})", param, value)
 
     if options.utcOffset
       datetime = datetime.utcOffset(options.utcOffset)
