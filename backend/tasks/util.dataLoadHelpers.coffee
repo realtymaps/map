@@ -400,7 +400,7 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
       if !_specialUpdates[dataType]?
-        ables.property[dataType](subid: subid)
+        tables.property[dataType](subid: subid)
         .insert(updateRow)
       else
         _specialUpdates[dataType].insert({subid, row: updateRow})
