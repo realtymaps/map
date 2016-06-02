@@ -184,7 +184,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, cache) ->
     service.getFilterResults(hash, mapState, filters, cache)
     .then (data) ->
-      utilsGeoJson.filterSummaryToGeoFeatureCollection(data)
+      utilsGeoJson.toGeoFeatureCollection(data)
 
   service.getParcelBase = (hash, mapState, cache = true) ->
     _parcelThrottler.invokePromise _getPropertyData(

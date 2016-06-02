@@ -22,21 +22,18 @@ toGeoFeature = (row, opts) ->
 
   row
 
-toGeoFeatureCollection = (rows, opts = {}) ->
-  if !rows?.length
-    return type: 'FeatureCollection', features: []
+toGeoFeatureCollection = (rows = [], opts = {}) ->
   if opts?.uniqueKey?
     rows = _.uniq rows, (r) ->
       r[opts.uniqueKey]
 
-  toGeoFeature(row, opts) for row in rows
-  type: 'FeatureCollection', features: rows
+  rows = for key, row of rows
+    toGeoFeature(row, opts)
 
-filterSummaryToGeoFeatureCollection = (data) ->
-  toGeoFeatureCollection(_.values(data))
+  type: 'FeatureCollection'
+  features: rows
 
 module.exports = {
   toGeoFeature
   toGeoFeatureCollection
-  filterSummaryToGeoFeatureCollection
 }
