@@ -60,10 +60,10 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
     _limitByPinnedProps(filterSummaryImpl.getResultCount(queryParams), state, queryParams)
     .then ([result]) ->
       if result.count > config.backendClustering.resultThreshold
-        logger.debug "Cluster query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
+        logger.debug -> "Cluster query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
         return cluster()
       else
-        logger.debug "Default query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
+        logger.debug -> "Default query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
         return defaultFn()
 
   handles = {
@@ -75,17 +75,17 @@ _handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
   handle = handles[returnAs] || handles.default
   handle()
 
-_validateAndTransform = ({req, state, localTransforms}) ->
+_validateAndTransform = ({validBody, state, localTransforms}) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
-  if _isOnlyPinned(req) && _isNothingPinned(state)
+  if _isOnlyPinned(validBody) && _isNothingPinned(state)
     # we know there is absolutely nothing to select, GTFO before we do any real work
     logger.debug 'GTFO'
     return Promise.resolve()
 
   logger.debug 'validating transforms'
-  validatedQuery = validation.validateAndTransform(req, localTransforms)
+  validatedQuery = validation.validateAndTransform(validBody, localTransforms)
   logger.debug 'validated transforms'
   validatedQuery
 
@@ -99,7 +99,7 @@ module.exports =
         filterSummaryImpl = base
 
     Promise.try ->
-      _validateAndTransform({req: req.validBody, state, localTransforms: filterSummaryImpl.transforms})
+      _validateAndTransform({validBody: req.validBody, state, localTransforms: filterSummaryImpl.transforms})
     .then (queryParams) ->
       return [] unless queryParams
 
