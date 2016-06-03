@@ -25,6 +25,7 @@ app.controller 'rmapsMapCtrl', (
   $state,
   $timeout,
   $window,
+
   rmapsDrawnUtilsService,
   rmapsEventConstants,
   rmapsLeafletHelpers,
@@ -92,14 +93,22 @@ app.controller 'rmapsMapCtrl', (
   # Center on an area if requested
   #
   checkCenterOnArea = () ->
-    $log.debug "!!!!!! AREA ID #{$state.params.area_id}"
-    if $state.params.area_id || $location.search().area_id
+    areaId = $state.params.area_id || $location.search().area_id
+
+    if areaId
       #zoom to bounds on shapes
       #handle polygons, circles, and points
-      $log.debug "!!!!!! AREA has property id"
-#      featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(model)
-#      feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
-#      $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, feature.getBounds()
+      drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+      drawnShapesSvc.getAreaByIdNormalized(rmapsProfilesService.currentProfile.project_id, areaId)
+      .then (area) ->
+        $timeout(() ->
+          featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(area)
+          feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
+          bounds = feature.getBounds()
+
+          $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, bounds
+        , 10)
+
 
   #
   # Set $scope variables for the Project selector tool
