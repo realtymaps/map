@@ -37,9 +37,11 @@ module.exports =
       if ! queryParams
         return []
 
-      # Limit to FIPS codes allowed for this user
+      # Limit to FIPS codes and verified MLS for this user
+      # TODO: Proxied MLS data (county data does not need to be proxied since it is only available for Pinned properties)
       if !req.user.is_superuser
         queryParams.state.filters.fips_codes = req.user.fips_codes
+        queryParams.state.filters.mlses_verified = req.user.mlses_verified
 
       _limitByPinnedProps = (query, state, queryParams) ->
         # include saved id's in query so no need to touch db later
@@ -75,10 +77,10 @@ module.exports =
 
           query.then ([result]) ->
             if result.count > config.backendClustering.resultThreshold
-              logger.debug -> "Cluster query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
+              logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
               return cluster()
             else
-              logger.debug -> "Default query for #{result.count} properties - greater than threshold #{config.backendClustering.resultThreshold}"
+              logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
               return summary()
 
         when 'cluster'

@@ -43,7 +43,7 @@ _getDetailByPropertyId = (queryParams) ->
 _getDetailByPropertyIds = (queryParams) ->
   query = sqlHelpers.select(
     tables.property.combined()
-    'detail_with_disclaimer'
+    'detail_with_disclaimer' # TODO: restrict to filter columns
     null)
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
   query.where(active: true)
@@ -70,10 +70,15 @@ _getDetailByGeomPointJson = (queryParams) ->
 
 module.exports =
 
+  # TODO: combine getDetail and getDetails? They are essentially the same logic except
+  #       getDetails() should restrict results to filter columns
   getDetail: (req) -> Promise.try () ->
     queryParams = req.validBody
     validation.validateAndTransform(queryParams, transforms)
     .then (validRequest) ->
+      # TODO: leverage permissions logic found in filterSummary
+      # TODO: Proxied MLS data
+      # TODO: Proxy county data for Pinned properties
       if !req.user.is_superuser
         validRequest.fips_codes = req.user.fips_codes
 
@@ -87,11 +92,15 @@ module.exports =
       for row in data
         result[row.data_source_type] ?= []
         result[row.data_source_type].push(row)
+        # TODO: prune subscriber groups and owner info where appropriate
       result
 
   getDetails: (req) ->
     queryParams = req.validBody
     Promise.try () ->
+      # TODO: leverage permissions logic found in filterSummary
+      # TODO: Proxied MLS data
+      # TODO: Proxy county data for Pinned properties
       if !req.user.is_superuser
         queryParams.fips_codes = req.user.fips_codes
 
@@ -105,4 +114,5 @@ module.exports =
         result[row.rm_property_id] ?= { county: null, mls: null }
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
+        # TODO: prune subscriber groups and owner info where appropriate
       result
