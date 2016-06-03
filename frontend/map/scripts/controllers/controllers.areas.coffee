@@ -87,8 +87,7 @@ rmapsLeafletHelpers) ->
   # Listen for updates to the list by create/remove
   #
 
-  $scope.$onRootScope rmapsEventConstants.areas, () -> 
-    $log.debug "!!!!!! Received Event"
+  $scope.$onRootScope rmapsEventConstants.areas, () ->
     getAll()
 
   #
