@@ -18,6 +18,7 @@ keystore = require '../services/service.keystore'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 moment = require 'moment'
+jobQueue = require '../services/service.jobQueue'
 
 
 DELETE =
@@ -361,7 +362,18 @@ normalizeData = (subtask, options) -> Promise.try () ->
     Promise.each(rows, processRow)
   Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
-    successes
+    if successes.length == 0
+      logger.debug("No successful data updates from #{subtask.task_name} normalize subtask: "+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
+      return
+    manualData =
+      cause: subtask.data.dataType
+      i: subtask.data.i
+      of: subtask.data.of
+      rawTableSuffix: subtask.data.rawTableSuffix
+      count: successes.length
+      ids: successes
+      normalSubid: subtask.data.normalSubid
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 
 _specialUpdates =
