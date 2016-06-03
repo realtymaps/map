@@ -78,10 +78,6 @@ _getResultCount = (validatedQuery) ->
   query
 
 _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
-  logger.debug -> query.toString()
-
-  # TODO: permissions
-
   {bounds, state} = validatedQuery
   {filters} = state
   return query if !filters?.status?.length
@@ -185,7 +181,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     query.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
     query.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
 
-  logger.debug query.toString()
+  logger.debug -> query.toString()
 
   query
 
