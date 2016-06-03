@@ -24,15 +24,13 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
             span New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
-          li(ng-repeat="(key, model) in areas" ng-click="centerOn(model)")
+          li(ng-repeat="model in areas | orderBy:'area_name'" ng-click="centerOn(model)")
             div
               span.enity
                 +circleNrMixin("{{$index+1}}")
 
               span.content
-                //- h3.title {{model.properties.area_name}}
-                p.title {{model.properties.area_name}}
-                //- p.text {{model.properties.area_details}}
+                p.title {{model.area_name}}
 
               span.actions
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

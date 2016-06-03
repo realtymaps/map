@@ -45,9 +45,9 @@ rmapsLeafletHelpers) ->
     create: (model) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
-        if !model?.properties?.area_name
+        if !model?.area_name
           #makes the model an area with a defined empty string
-          model.properties.area_name = ''
+          model.area_name = ''
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
         _signalUpdate(drawnShapesSvc.create model)
 
@@ -57,7 +57,7 @@ rmapsLeafletHelpers) ->
         _signalUpdate drawnShapesSvc.update model
 
     remove: (model) ->
-      $scope.areas = _.omit $scope.areas, model.properties.id
+      _.remove($scope.areas, model)
       _signalUpdate drawnShapesSvc.delete model
       .then () ->
         $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
@@ -74,13 +74,23 @@ rmapsLeafletHelpers) ->
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
   $log = $log.spawn("map:areas")
 
-  $scope.getAll = (cache) ->
+  getAll = (cache) ->
     drawnShapesSvc.getAreasNormalized(cache)
     .then (data) ->
-      $scope.areas = _.indexBy data, 'properties.id'
+      $scope.areas = data
 
   $scope.areaListToggled = (isOpen) ->
-    $scope.getAll()
+    getAll()
     $rootScope.$emit rmapsEventConstants.areas.dropdownToggled, isOpen
 
-  $scope.getAll()
+  #
+  # Listen for updates to the list by create/remove
+  #
+
+  $scope.$onRootScope rmapsEventConstants.areas, () ->
+    getAll()
+
+  #
+  # Load the area list
+  #
+  getAll()

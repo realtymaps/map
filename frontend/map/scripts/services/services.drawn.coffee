@@ -40,12 +40,12 @@ rmapsLeafletHelpers) ->
       normal = {}
       normal[_getGeomName(shape.geometry.type)] = shape.geometry
       normal.project_id = profile.project_id
-      if shape.properties?.id?
-        normal.id = shape.properties.id
-      if shape.properties?.shape_extras?
-        normal.shape_extras = shape.properties.shape_extras
-      normal.area_name = if shape.properties.area_name? then shape.properties.area_name else null
-      normal.area_details = shape.properties.area_details || null
+      if shape.id?
+        normal.id = shape.id
+      if shape.shape_extras?
+        normal.shape_extras = shape.shape_extras
+      normal.area_name = if shape.area_name? then shape.area_name else null
+      normal.area_details = shape.area_details || null
       normal
 
     _normalizedList = (geojson) ->
