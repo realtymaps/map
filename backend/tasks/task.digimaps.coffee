@@ -157,8 +157,13 @@ loadRawData = (subtask) -> Promise.try () ->
       recordChangeCountsPromise = jobQueue.queueSubsequentSubtask {
         subtask
         laterSubtaskName: "recordChangeCounts"
-        #rawDataType fixes lookup of rawtable for change counts
-        manualData: parcelHelpers.getRecordChangeCountsData(fipsCode)
+        manualData:
+          deletes: dataLoadHelpers.DELETE.UNTOUCHED
+          dataType: "normParcel"
+          rawDataType: "parcel"  # fixes lookup of rawtable for change counts
+          rawTableSuffix: fipsCode
+          subset:
+            fips_code: fipsCode
         replace: true
       }
       Promise.join normalizeDataPromise, recordChangeCountsPromise, () ->  # no-op

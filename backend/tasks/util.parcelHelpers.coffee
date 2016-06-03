@@ -166,16 +166,6 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
     if numRawRows?
       numRawRows
 
-getRecordChangeCountsData = (fipsCode) ->
-  {
-    deletes: dataLoadHelpers.DELETE.UNTOUCHED
-    dataType: "normParcel"
-    rawDataType: "parcel"
-    rawTableSuffix: fipsCode
-    subset:
-      fips_code: fipsCode
-  }
-
 getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
@@ -191,6 +181,5 @@ module.exports = {
   activateNewData
   handleOveralNormalizeError
   column: internals.column
-  getRecordChangeCountsData
   getParcelsPromise
 }
