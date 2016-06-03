@@ -86,7 +86,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
       ids: successes
-      normalSubid: subtask.data.normalSubid
+      normalSubid: fipsCode  # required for countyHelpers.finalizeData
+      deletedParcel: false
     jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 
@@ -175,17 +176,6 @@ getRecordChangeCountsData = (fipsCode) ->
       fips_code: fipsCode
   }
 
-getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize, deletedParcel}) ->
-  {
-    subtask
-    totalOrList: ids
-    maxPage: numRowsToPageFinalize
-    laterSubtaskName: "finalizeData"
-    mergeData:
-      normalSubid: fipsCode #required for countyHelpers.finalizeData
-      deletedParcel: deletedParcel
-  }
-
 getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
@@ -202,6 +192,5 @@ module.exports = {
   handleOveralNormalizeError
   column: internals.column
   getRecordChangeCountsData
-  getFinalizeSubtaskData
   getParcelsPromise
 }

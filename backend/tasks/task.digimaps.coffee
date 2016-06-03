@@ -200,9 +200,14 @@ finalizeDataPrep = (subtask) ->
     fips_code: fipsCode
   .then (ids) ->
     ids  = _.pluck(ids, 'rm_property_id')
-    jobQueue.queueSubsequentPaginatedSubtask(
-      parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})
-    )
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: ids
+      maxPage: numRowsToPageFinalize
+      laterSubtaskName: "finalizeData"
+      mergeData:
+        normalSubid: fipsCode #required for countyHelpers.finalizeData
+    }
 
 ###
 This step is an in-between to protect a following step from being run.
@@ -258,15 +263,15 @@ recordChangeCounts = (subtask) ->
 
   dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
   .then (deletedIds) ->
-    jobQueue.queueSubsequentPaginatedSubtask(
-      parcelHelpers.getFinalizeSubtaskData({
-        subtask
-        ids: deletedIds
-        fipsCode: subtask.data.subset.fips_code,
-        numRowsToPageFinalize
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: deletedIds
+      maxPage: numRowsToPageFinalize
+      laterSubtaskName: "finalizeData"
+      mergeData:
+        normalSubid: subtask.data.subset.fips_code  # required for countyHelpers.finalizeData
         deletedParcel: true
-      })
-    )
+    }
 
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data
