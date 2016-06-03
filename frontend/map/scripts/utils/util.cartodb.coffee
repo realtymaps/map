@@ -1,21 +1,23 @@
-http = require './util.http.coffee'
 routes = require '../../../../common/config/routes.backend.coffee'
+http = require './util.http.coffee'
 
 baseRoute = routes.config.protectedConfig
 
 wakeUp = (cartodb) ->
   cartodb?.WAKE_URLS?.forEach (url) ->
-    http.post url, true
+    #TODO: this call can dissapear if the job task of waking cartodb is fixed
+    #needed to get around COORS same origin policy for now
+    http.post {url, isAsync: true}
 
-initCartodb = () ->
-  try
-    {cartodb} = JSON.parse http.get baseRoute
+initCartodb = ($http) ->
+  $http.getData baseRoute
+  .then ({cartodb}) ->
 
-  cartodb ?= {}
+    cartodb ?= {}
 
-  wakeUp(cartodb)
+    wakeUp(cartodb)
 
-  cartodb
+    cartodb
 
 initCartodb.baseRoute = baseRoute
 initCartodb.wakeUp = wakeUp

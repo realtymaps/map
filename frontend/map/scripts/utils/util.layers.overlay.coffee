@@ -29,20 +29,27 @@ _overlays =
     type: 'group'
     visible: false
 
-module.exports = ($log) ->
-  _cartodb = do require './util.cartodb.coffee'
-  #only call function post login
-  if _cartodb?.MAPS?
-    _cartodb.MAPS.forEach (map) ->
-      _overlays[map.name] =
-        visible: false
-        name: map.name
-        url: _cartodb.TILE_URL
-        type: 'xyz'
-        layerOptions:
-          apikey: _cartodb.API_KEY
-          account: _cartodb.ACCOUNT
-          mapid: map.mapId
-          attribution: ''
-          maxZoom: 21
-  _overlays
+module.exports = ($log, $http) ->
+  $log = $log.spawn('util:layers:overlays')
+
+  $log.debug 'getting cartodb'
+  require('./util.cartodb.coffee')($http)
+  .then (cartodb) ->
+    $log.debug 'cartodb successful'
+    #only call function post login
+    if cartodb?.MAPS?
+      cartodb.MAPS.forEach (map) ->
+        _overlays[map.name] =
+          visible: false
+          name: map.name
+          url: cartodb.TILE_URL
+          type: 'xyz'
+          layerOptions:
+            apikey: cartodb.API_KEY
+            account: cartodb.ACCOUNT
+            mapid: map.mapId
+            attribution: ''
+            maxZoom: 21
+
+    $log.debug 'cartodb merged into overlays'
+    _overlays

@@ -149,12 +149,18 @@ _http = (opts, cb) ->
 
   return xhr.responseText unless cb?
 
+get = ({url, isAsync}, cb) ->
+  isAsync ?= false
+  _http({method:'GET', url, isAsync}, cb)
 
-module.exports =
-  get: (theUrl, isAsync = false, cb) ->
-    _http({method:'GET', url:theUrl, isAsync:isAsync}, cb)
-  post: (theUrl, isAsync = false, data, cb) ->
-    opts = {method:'POST', url:theUrl, isAsync:isAsync}
-    if data?
-      _.extend opts, data: data
-    _http opts, cb
+post = ({url, isAsync, data}, cb) ->
+  isAsync ?= false
+
+  opts = {method:'POST', url, isAsync, data}
+  _http opts, cb
+
+
+module.exports = {
+  get
+  post
+}

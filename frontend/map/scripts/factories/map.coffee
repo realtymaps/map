@@ -37,6 +37,12 @@ app.factory 'rmapsMapFactory',
     rmapsZoomLevelService,
     rmapsZoomLevelStateFactory,
   ) ->
+    overlays = null
+     #don't get overlays until your logged in
+    getOverlaysPromise = require '../utils/util.layers.overlay.coffee'
+    getOverlaysPromise($log, $http)
+    .then (ovr) ->
+      overlays = ovr
 
     leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
@@ -57,7 +63,6 @@ app.factory 'rmapsMapFactory',
         @constructor.currentMainMap = @
 
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
-        _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
 
         _initToggles $scope, limits.toggles
@@ -161,8 +166,7 @@ app.factory 'rmapsMapFactory',
             getMail: () ->
               $q.resolve() #place holder for rmapsMapMailCtrl so we can access it here in this parent directive
 
-            layers:
-              overlays: _overlays($log)
+            layers: {overlays}
 
             listingDetail: undefined
 
