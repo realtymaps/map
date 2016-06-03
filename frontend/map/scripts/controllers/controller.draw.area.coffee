@@ -71,7 +71,7 @@ leafletData) ->
       if newVal
         return _drawCtrlFactory(_handles)
       _drawCtrlFactory()
-      
+
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, model) ->
       leafletData.getMap(mapId)
       .then (map) ->
@@ -79,7 +79,7 @@ leafletData) ->
         keyToRemove = null
 
         for key, val of drawnItems._layers
-          if val.model.properties.id == model.properties.id
+          if val.model?.id == model.id
             toRemove = val
             keyToRemove = key
             break
