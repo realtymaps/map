@@ -292,7 +292,7 @@ finalizeDataPrep = (subtask) ->
     }
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids || subtask.data.values, (id) ->
+  Promise.map (subtask.data.ids || subtask.data.values), (id) ->
     countyHelpers.finalizeData({subtask, id})
 
 
