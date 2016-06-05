@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-qs = require 'qs'
 
 
 app.controller 'rmapsSatMapCtrl',
@@ -15,10 +14,10 @@ app.controller 'rmapsSatMapCtrl',
   rmapsMainOptions,
   rmapsOverlays
 ) ->
-  overlays = null
+
   rmapsOverlays
-  .then (ovr) ->
-    overlays = ovr
+  .then (overlays) ->
+    _.merge $scope.satMap, layers: {overlays}
 
   limits = rmapsMainOptions.map
   _mapId = 'detailSatMap'
@@ -29,7 +28,6 @@ app.controller 'rmapsSatMapCtrl',
   rmapsMapEventsHandlerService(@satMapFactory, 'satMap')
   _.merge $scope,
     satMap:
-      layers: {overlays}
       markers:
         filterSummary:{}
         backendPriceCluster:{}

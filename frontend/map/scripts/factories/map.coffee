@@ -3,6 +3,7 @@ app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
+
 _encode = require('geohash64').encode
 _emptyGeoJsonData =
   type: 'FeatureCollection'
@@ -38,11 +39,6 @@ app.factory 'rmapsMapFactory',
     rmapsZoomLevelStateFactory,
     rmapsOverlays
   ) ->
-    overlays = null
-     #don't get overlays until your logged in
-    rmapsOverlays
-    .then (ovr) ->
-      overlays = ovr
 
     leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
@@ -60,6 +56,11 @@ app.factory 'rmapsMapFactory',
       @currentMainMap: null
 
       constructor: ($scope) ->
+        rmapsOverlays
+        .then (overlays) ->
+          #using merge to not clobber objects
+          _.merge $scope.map, layers: {overlays}
+
         @constructor.currentMainMap = @
 
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
@@ -165,8 +166,6 @@ app.factory 'rmapsMapFactory',
 
             getMail: () ->
               $q.resolve() #place holder for rmapsMapMailCtrl so we can access it here in this parent directive
-
-            layers: {overlays}
 
             listingDetail: undefined
 

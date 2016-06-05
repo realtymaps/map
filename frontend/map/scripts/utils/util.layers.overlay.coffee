@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 pieUtil = require './util.piechart.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
-analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
+analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
@@ -31,7 +31,7 @@ _overlays =
     type: 'group'
     visible: false
 
-app.module 'rmapsOverlays', (
+app.factory 'rmapsOverlays', (
   $http,
   $log,
   rmapsEventConstants,

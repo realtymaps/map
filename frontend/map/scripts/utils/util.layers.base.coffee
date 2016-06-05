@@ -4,7 +4,7 @@ app = require '../app.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
+analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 _mapboxKey = ''
 

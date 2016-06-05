@@ -11,14 +11,15 @@ _mapClassContainerName = 'angular-leaflet-map'
 _mapDrawEvents = ['resize','moveend', 'zoomend']
 
 module.exports = app.factory 'rmapsBaseMapFactory', (
-$http,
-nemSimpleLogger,
-$timeout,
-leafletData,
-rmapsNgLeafletHelpersService,
-rmapsUtilLayersBase) ->
+  $http,
+  nemSimpleLogger,
+  $timeout,
+  leafletData,
+  rmapsNgLeafletHelpersService,
+  rmapsUtilLayersBase
+) ->
   _baseLayers = null
-  
+
   rmapsUtilLayersBase
   .then (data) ->
     _baseLayers = data
@@ -35,7 +36,7 @@ rmapsUtilLayersBase) ->
         doWatch:false
         isDeep: false
         individual:
-          doWatch:false
+          doWatch: false
           isDeep: false
 
       settings[mapPath] =
