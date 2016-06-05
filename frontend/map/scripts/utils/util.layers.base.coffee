@@ -1,10 +1,10 @@
-### APP ###
 app = require '../app.coffee'
 
 ###globals _###
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
 
 _mapboxKey = ''
 
@@ -43,10 +43,9 @@ _baseLayers =
       continuousWorld: true
 
 #
-# Define Module Exports for require()
+# Also define as AngularJS service
 #
-module.exports = ($http) ->
-
+app.factory 'rmapsUtilLayersBase', ($http, $rootScope, rmapsEventConstants) ->
   $http.getData(backendRoutes.config.protectedConfig)
   .then ({mapbox} = {}) ->
     _mapboxKey = mapbox
@@ -57,9 +56,6 @@ module.exports = ($http) ->
       _baseLayers.mapbox_dark = _mapBoxFactory 'Dark', 'mapbox.dark'
 
     _baseLayers
-
-#
-# Also define as AngularJS service
-#
-app.factory 'rmapsUtilLayersBase', ($http) ->
-  return module.exports($http)
+  .catch (err) ->
+    msgPart = analyzeValue err
+    $rootScope.$emit rmapsEventConstants.alert.spawn, msg: "Overlays failed to load with error #{msgPart}."

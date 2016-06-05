@@ -36,11 +36,11 @@ app.factory 'rmapsMapFactory',
     rmapsMapTogglesFactory,
     rmapsZoomLevelService,
     rmapsZoomLevelStateFactory,
+    rmapsOverlays
   ) ->
     overlays = null
      #don't get overlays until your logged in
-    getOverlaysPromise = require '../utils/util.layers.overlay.coffee'
-    getOverlaysPromise($log, $http)
+    rmapsOverlays
     .then (ovr) ->
       overlays = ovr
 

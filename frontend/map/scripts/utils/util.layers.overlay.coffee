@@ -1,5 +1,7 @@
+app = require '../app.coffee'
 pieUtil = require './util.piechart.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
+analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
@@ -29,7 +31,12 @@ _overlays =
     type: 'group'
     visible: false
 
-module.exports = ($log, $http) ->
+app.module 'rmapsOverlays', (
+  $http,
+  $log,
+  rmapsEventConstants,
+  $rootScope
+) ->
   $log = $log.spawn('util:layers:overlays')
 
   $log.debug 'getting cartodb'
@@ -53,3 +60,6 @@ module.exports = ($log, $http) ->
 
     $log.debug 'cartodb merged into overlays'
     _overlays
+  .catch (err) ->
+    msgPart = analyzeValue err
+    $rootScope.$emit rmapsEventConstants.alert.spawn, msg: "Overlays failed to load with error #{msgPart}."
