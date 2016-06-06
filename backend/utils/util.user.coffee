@@ -32,8 +32,12 @@ cacheUserValues = (req, reload = {}) ->
 
   if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
+
+    # if user is subscriber, use service endpoint that includes sandbox creation and display
     if isSubscriber(req)
       promise = userSessionService.getProfiles req.user.id
+
+    # user is a client, and unallowed to deal with sandboxes
     else
       promise = userSessionService.getClientProfiles req.user.id
 

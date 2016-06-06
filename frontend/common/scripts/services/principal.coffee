@@ -79,7 +79,6 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   ##
 
   isSubscriber: () ->
-    console.log "isSubscriber()\n_identity.subscription:#{_identity.subscription}"
     return (_identity and _identity.subscription? and
       _identity.subscription != 'canceled' and _identity.subscription != 'unpaid')
 

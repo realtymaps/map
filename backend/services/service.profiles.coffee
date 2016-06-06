@@ -51,7 +51,6 @@ _getProfileWhere = (where = {}) ->
 
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
 getProfiles = (auth_user_id) -> Promise.try () ->
-  console.log "getProfiles()"
   _getProfileWhere
     "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
   .then (profiles) ->
