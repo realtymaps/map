@@ -28,12 +28,22 @@ class CancelPlanError extends PayloadError
   constructor: (payload, args...) ->
     super(payload, 'CancelPlan', args...)
 
+class NotificationFavoriteError extends PayloadError
+  constructor: (payload, args...) ->
+    super(payload, 'NotificationFavorite', args...)
 
-module.exports =
-  SubscriptionSignUpError: SubscriptionSignUpError
-  SubscriptionCreatedError: SubscriptionCreatedError
-  SubscriptionVerifiedError: SubscriptionVerifiedError
-  SubscriptionDeletedError: SubscriptionDeletedError
-  SubscriptionUpdatedError: SubscriptionUpdatedError
-  SubscriptionTrialEndedError: SubscriptionTrialEndedError
-  CancelPlanError: CancelPlanError
+class NotificationPinnedError extends PayloadError
+  constructor: (payload, args...) ->
+    super(payload, 'NotificationPinned', args...)
+
+module.exports = {
+  SubscriptionSignUpError
+  SubscriptionCreatedError
+  SubscriptionVerifiedError
+  SubscriptionDeletedError
+  SubscriptionUpdatedError
+  SubscriptionTrialEndedError
+  CancelPlanError
+  NotificationFavoriteError
+  NotificationPinnedError
+}

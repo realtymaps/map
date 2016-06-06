@@ -7,6 +7,22 @@ _ = require 'lodash'
   https://realtymaps.atlassian.net/wiki/display/RD/Authorization
 ###
 
+###
+options =
+  # flags via attr value
+  disable   # permits element to show up, but disabled
+  noModal   # supresses the modal if disabled element is clicked (requires disable option)
+  hide      # `ng-hide` element instead of the default `ng-if` (also accounts for ng-show)
+
+  omit      # default `ng-if`, overridden if an above option is specified
+
+  # messaging
+  message   # message to display to user
+  $modal    # exposed bootstrap modal service
+
+###
+
+
 # when a user fails a directive permission below, modify the sensitive element according to options
 # somewhat based on http://stackoverflow.com/questions/19224028/add-directives-from-directive-in-angularjs
 restrictElement = (scope, element, attrs, options) ->
@@ -20,17 +36,35 @@ restrictElement = (scope, element, attrs, options) ->
 
   # disable option
   if options.disable
-    if 'ngDisabled' of attrs
-      savedExpression = attrs.ngDisabled
-      attrs.ngDisabled = "authDisabled() || (#{savedExpression});" # include former expression to help readability
-    else
-      attrs.ngDisabled = "authDisabled();"
-    element.attr('ng-disabled', attrs.ngDisabled)
 
-    # remove existing angular ng-click (necessary if not an input / button)
-    if 'ngClick' of attrs
-      attrs.ngClick = null # clear
-      element.removeAttr('ng-click')
+    # if we want modal (default), attached handle and click functionality
+    # Dont disable it b/c then we cant click it for modal (can still apply disabled class though, below)
+    if !options.noModal
+      # define auth modal
+      scope.authModal = (message) ->
+        scope.modalTitle = "Restricted"
+        scope.modalBody = message
+        modalInstance = options.$modal.open
+          scope: scope
+          template: require('../../html/views/templates/modals/confirm.jade')()
+
+      # hijack ng-click to give us a modal and auth message
+      attrs.ngClick = "authModal('#{options.message}'); $event.stopPropagation();"
+      element.attr('ng-click', attrs.ngClick)
+
+    # if we don't want modal, disable the button
+    else
+      # omit any existing angular ng-click (if not a button that we can disable, this is helpful)
+      if 'ngClick' of attrs
+        attrs.ngClick = "$event.stopPropagation()" # clear
+        element.attr('ng-click', attrs.ngClick)
+
+      if 'ngDisabled' of attrs
+        savedExpression = attrs.ngDisabled
+        attrs.ngDisabled = "authDisabled() || (#{savedExpression});" # include former expression to help readability
+      else
+        attrs.ngDisabled = "authDisabled();"
+      element.attr('ng-disabled', attrs.ngDisabled)
 
     # account for ui-router clicking
     if element.attr('ui-sref')
@@ -72,40 +106,55 @@ restrictElement = (scope, element, attrs, options) ->
     element.attr('ng-if', attrs.ngIf)
 
 
+# return an options object parsed from directive attribute value
+getOptions = (flags = "") ->
+  options =
+    disable: /disable/.test flags
+    noModal: /^(?=.*disable)(?=.*noModal).*$/.test flags # noModal used with `disable` option (any order)
+    hide: /hide/.test flags
+    omit: !flags # default, expect something on element like `ng-if="false"`
+
+
 # require the logged user to be a designated editor on current project
-app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile) ->
+app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $modal) ->
   restrict: 'A'
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
     if !$rootScope.principal.isProjectEditor()
-      # options assemble
-      optionalFlags = attrs.rmapsRequireProjectEditor
-      options =
-        disable: /disable/.test optionalFlags
-        hide: /hide/.test optionalFlags
-        omit: !optionalFlags # default, expect something on element like `ng-if="false"`
+
+      # options and services to pass around
+      optionalFlags = if attrs.rmapsRequireProjectEditor == 'rmaps-require-project-editor' then "" else attrs.rmapsRequireProjectEditor
+      options = _.merge getOptions(optionalFlags),
+        message: "You must be the editor of your current project to do that."
+        $modal: $modal
+
+      # restriction logic
       restrictElement(scope, element, attrs, options)
 
+    # suppress recursive calls, then compile
     element.removeAttr('rmaps-require-project-editor')
     $compile(element)(scope)
 
 
 # require the logged user to be an active subscriber
-app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile) ->
+app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $modal) ->
   restrict: 'A'
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
     if !$rootScope.principal.isSubscriber()
-      # options assemble
-      optionalFlags = attrs.rmapsRequireSubscriber
-      options =
-        disable: /disable/.test optionalFlags
-        hide: /hide/.test optionalFlags
-        omit: !optionalFlags # default, expect something on element like `ng-if="false"`
+
+      # options and services to pass around
+      optionalFlags = if attrs.rmapsRequireSubscriber == 'rmaps-require-subscriber' then "" else attrs.rmapsRequireSubscriber
+      options = _.merge getOptions(optionalFlags),
+        message: "You must have a paid subscription to do that."
+        $modal: $modal
+
+      # restriction logic
       restrictElement(scope, element, attrs, options)
 
+    # suppress recursive calls, then compile
     element.removeAttr('rmaps-require-subscriber')
     $compile(element)(scope)
 

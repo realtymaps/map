@@ -9,7 +9,7 @@ db = dbs.get('main')
 {customerSubscriptionCreated
 customerSubscriptionDeleted
 customerSubscriptionUpdated
-customerSubscriptionTrialWillEnd} = require '../../../enums/enum.payment.events'
+customerSubscriptionTrialWillEnd} = require '../../../enums/enum.vero.events'
 logger = require('../../../config/logger').spawn('stripe')
 
 

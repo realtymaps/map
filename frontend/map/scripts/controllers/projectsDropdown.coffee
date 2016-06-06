@@ -32,6 +32,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       $scope.projects = _.values identity.profiles
       $log.debug $scope.projects
       $scope.totalProjects = $scope.projects.length
+
       _.each $scope.projects, (project) ->
         project.modified = moment(project.rm_modified_time)
         project.totalProperties = (_.keys project.properties_selected)?.length
