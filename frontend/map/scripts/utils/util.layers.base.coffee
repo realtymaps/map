@@ -1,11 +1,10 @@
-### APP ###
 app = require '../app.coffee'
 
 ###globals _###
-httpSync = require './util.http.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 _mapboxKey = ''
 
@@ -44,24 +43,19 @@ _baseLayers =
       continuousWorld: true
 
 #
-# Define Module Exports for require()
-#
-module.exports = ->
-  try
-    _mapboxKey = httpSync.get(backendRoutes.config.protectedConfig)?.mapbox
-  catch
-    _mapboxKey = ''
-
-  if _mapboxKey
-    _.extend _baseLayers,
-      mapbox_street: _mapBoxFactory 'Street', 'realtymaps.f33ce76e'
-      mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
-      mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
-
-  _baseLayers
-
-#
 # Also define as AngularJS service
 #
-app.factory 'rmapsUtilLayersBase', () ->
-  return module.exports()
+app.factory 'rmapsUtilLayersBase', ($http, $rootScope, rmapsEventConstants) ->
+  $http.getData(backendRoutes.config.protectedConfig)
+  .then ({mapbox} = {}) ->
+    _mapboxKey = mapbox
+
+    if _mapboxKey
+      _baseLayers.mapbox_street = _mapBoxFactory 'Street', 'realtymaps.f33ce76e'
+      _baseLayers.mapbox_comic =  _mapBoxFactory 'Comic', 'mapbox.comic'
+      _baseLayers.mapbox_dark = _mapBoxFactory 'Dark', 'mapbox.dark'
+
+    _baseLayers
+  .catch (err) ->
+    msgPart = analyzeValue err
+    $rootScope.$emit rmapsEventConstants.alert.spawn, msg: "Overlays failed to load with error #{msgPart}."

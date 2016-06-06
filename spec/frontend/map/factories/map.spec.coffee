@@ -33,7 +33,6 @@ describe "rmapsMapFactory factory", ->
       @subject = new rmapsMapFactory($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
-      $httpBackend.when( 'POST', backendRoutes.config.google).respond( undefined )
       $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
         data = JSON.parse dataString
 

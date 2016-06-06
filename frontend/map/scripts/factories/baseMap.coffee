@@ -1,7 +1,6 @@
 ###globals angular,L,_###
 app = require '../app.coffee'
 _eventThrottler = require '../utils/util.event-throttler.coffee'
-_baseLayers = require '../utils/util.layers.base.coffee'
 
 ###
   This base map is primarily to deal with basic functionality of zoom and dragg issues.
@@ -11,10 +10,25 @@ _baseLayers = require '../utils/util.layers.base.coffee'
 _mapClassContainerName = 'angular-leaflet-map'
 _mapDrawEvents = ['resize','moveend', 'zoomend']
 
-module.exports = app.factory 'rmapsBaseMapFactory', (nemSimpleLogger, $timeout, leafletData, rmapsNgLeafletHelpersService) ->
+module.exports = app.factory 'rmapsBaseMapFactory', (
+  $http,
+  nemSimpleLogger,
+  $timeout,
+  leafletData,
+  rmapsNgLeafletHelpersService,
+  rmapsUtilLayersBase
+) ->
+  _baseLayers = null
+
+  rmapsUtilLayersBase
+  .then (data) ->
+    _baseLayers = data
+
   $log = nemSimpleLogger.spawn("map:baseFactory")
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
+      baseLayers ?= _baseLayers
+
       settings =
         options: options
 
@@ -22,7 +36,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (nemSimpleLogger, $timeout, 
         doWatch:false
         isDeep: false
         individual:
-          doWatch:false
+          doWatch: false
           isDeep: false
 
       settings[mapPath] =
@@ -54,7 +68,8 @@ module.exports = app.factory 'rmapsBaseMapFactory', (nemSimpleLogger, $timeout, 
 
       angular.extend @scope, settings
 
-    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers = _baseLayers(), mapEvents = _mapDrawEvents.concat ['click'])->
+    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers, mapEvents = _mapDrawEvents.concat ['click']) ->
+
       _throttler =  _eventThrottler($log, options)
       @initScopeSettings(options, mapPath, baseLayers, mapEvents)
 

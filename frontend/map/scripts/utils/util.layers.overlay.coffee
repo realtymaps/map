@@ -1,5 +1,7 @@
+app = require '../app.coffee'
 pieUtil = require './util.piechart.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
+analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
@@ -29,20 +31,35 @@ _overlays =
     type: 'group'
     visible: false
 
-module.exports = ($log) ->
-  _cartodb = do require './util.cartodb.coffee'
-  #only call function post login
-  if _cartodb?.MAPS?
-    _cartodb.MAPS.forEach (map) ->
-      _overlays[map.name] =
-        visible: false
-        name: map.name
-        url: _cartodb.TILE_URL
-        type: 'xyz'
-        layerOptions:
-          apikey: _cartodb.API_KEY
-          account: _cartodb.ACCOUNT
-          mapid: map.mapId
-          attribution: ''
-          maxZoom: 21
-  _overlays
+app.factory 'rmapsOverlays', (
+  $http,
+  $log,
+  rmapsEventConstants,
+  $rootScope
+) ->
+  $log = $log.spawn('util:layers:overlays')
+
+  $log.debug 'getting cartodb'
+  require('./util.cartodb.coffee')($http)
+  .then (cartodb) ->
+    $log.debug 'cartodb successful'
+    #only call function post login
+    if cartodb?.MAPS?
+      cartodb.MAPS.forEach (map) ->
+        _overlays[map.name] =
+          visible: false
+          name: map.name
+          url: cartodb.TILE_URL
+          type: 'xyz'
+          layerOptions:
+            apikey: cartodb.API_KEY
+            account: cartodb.ACCOUNT
+            mapid: map.mapId
+            attribution: ''
+            maxZoom: 21
+
+    $log.debug 'cartodb merged into overlays'
+    _overlays
+  .catch (err) ->
+    msgPart = analyzeValue err
+    $rootScope.$emit rmapsEventConstants.alert.spawn, msg: "Overlays failed to load with error #{msgPart}."
