@@ -105,9 +105,18 @@ updateState = (req, res, next) ->
 profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
-      userSessionService.getProfiles req.user.id
-      .then (result) ->
+
+      # if user is subscriber, use service endpoint that includes sandbox creation and display
+      if userUtils.isSubscriber(req)
+        promise = userSessionService.getProfiles req.user.id
+
+      # user is a client, and unallowed to deal with sandboxes
+      else
+        promise = userSessionService.getClientProfiles req.user.id
+
+      promise.then (result) ->
         res.json result
+
     PUT: () ->
       validation.validateAndTransformRequest(req.body, transforms.profiles.PUT)
       .then (validBody) ->

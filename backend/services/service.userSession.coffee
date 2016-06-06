@@ -124,6 +124,7 @@ module.exports = {
   updateCurrentProfile: profileSvc.updateCurrent
   updateProfile: profileSvc.update
   getProfiles: profileSvc.getProfiles
+  getClientProfiles: profileSvc.getClientProfiles
   getImage
   upsertImage
   upsertCompanyImage
