@@ -5,7 +5,7 @@ Promise = require 'bluebird'
 rewire = require 'rewire'
 emailEvents = rewire "#{basePath}/services/email/vero/service.email.impl.vero.events"
 subject = rewire "#{basePath}/services/payment/stripe/service.payment.impl.stripe.events"
-paymentEvents = require "#{basePath}/enums/enum.payment.events"
+paymentEvents = require "#{basePath}/enums/enum.vero.events"
 
 subject.__set__ 'clsFullUrl', (arg) -> arg
 SqlMock = require '../../../../specUtils/sqlMock'

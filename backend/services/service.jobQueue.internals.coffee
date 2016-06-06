@@ -17,7 +17,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 sendNotification = notifications.notification {
   type: 'jobQueue'
-  frequency: 'immediate'
+  method: 'email'
 }
 
 
