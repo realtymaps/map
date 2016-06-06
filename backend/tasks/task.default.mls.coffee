@@ -34,11 +34,10 @@ loadRawData = (subtask) ->
     # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
     # on whether this is a dump or an update)
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: {deletes, dataType: 'listing'}, replace: true})
-    finalizePrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeDataPrep", replace: true})
     storePhotosPrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "storePhotosPrep", replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes, startTime: now}, replace: true})
     normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
-    Promise.join(recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, normalizePromise, () ->)
+    Promise.join(recordCountsPromise, storePhotosPrepPromise, activatePromise, normalizePromise, () ->)
     .then () ->
       return numRawRows
 
@@ -48,6 +47,9 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
 
+
+# not used as a task since it is in normalizeData
+# however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 

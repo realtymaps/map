@@ -7,7 +7,7 @@ dataLoadHelpers = rewire("#{basePath}/tasks/util.dataLoadHelpers")
 _diff = dataLoadHelpers.__get__('_diff')
 _flattenRow = dataLoadHelpers.__get__('_flattenRow')
 
-describe 'utils/dataLoadHelpers'.ns().ns('Backend'), () ->
+describe 'util.dataLoadHelpers', () ->
 
   describe '_diff', () ->
 
@@ -163,3 +163,20 @@ describe 'utils/dataLoadHelpers'.ns().ns('Backend'), () ->
         base4: 24
       flattened = _flattenRow(row, 'test', 'type1')
       flattened.should.deep.equal(a: 1, b: 2, i: 11, j: 12, base1: 21)
+
+
+  describe 'buildUniqueSubtaskName', () ->
+    it 'should build the correct subid string', () ->
+      subid = null
+      expectedSubid = 'abcde_digimaps_parcel_1234'
+      subid = dataLoadHelpers.buildUniqueSubtaskName
+        batch_id: 'abcde'
+        task_name: 'digimaps'
+        data:
+          deletes: dataLoadHelpers.DELETE.UNTOUCHED
+          dataType: "normParcel"
+          rawDataType: "parcel"
+          rawTableSuffix: '1234'
+          subset:
+            fips_code: '1234'
+      subid.should.be.eql expectedSubid

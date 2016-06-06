@@ -18,6 +18,7 @@ keystore = require '../services/service.keystore'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 moment = require 'moment'
+jobQueue = require '../services/service.jobQueue'
 
 
 DELETE =
@@ -46,6 +47,18 @@ _countInvalidRows = (subid, assignedFalse) ->
   query
   .then (results) ->
     results?[0].count ? 0
+
+
+_updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid) ->
+  tables.jobQueue.dataLoadHistory()
+  .where(raw_table_name: tables.temp.buildTableName(subid))
+  .update
+    invalid_rows: invalidCount ? 0
+    unvalidated_rows: unvalidatedCount ? 0
+    inserted_rows: insertedCount[0]?.count ? 0
+    updated_rows: updatedCount[0]?.count ? 0
+    deleted_rows: deletedCount[0]?.count ? 0
+    touched_rows: null  # query was too expensive to run
 
 
 recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
@@ -110,23 +123,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
   .count('*')
   ###
 
-  updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount) ->
-    args = arguments
-    ['invalidCount', 'unvalidatedCount', 'insertedCount', 'updatedCount', 'touchedCount'].forEach (val, i) ->
-      logger.debug val
-      logger.debug args[i+1]
-
-    tables.jobQueue.dataLoadHistory()
-    .where(raw_table_name: tables.temp.buildTableName(subid))
-    .update
-      invalid_rows: invalidCount ? 0
-      unvalidated_rows: unvalidatedCount ? 0
-      inserted_rows: insertedCount[0]?.count ? 0
-      updated_rows: updatedCount[0]?.count ? 0
-      deleted_rows: deletedCount[0]?.count ? 0
-      touched_rows: null  # query was too expensive to run
-
-  Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, updateDataLoadHistory)
+  Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, _updateDataLoadHistory)
   .then () ->
     if !opts.indicateDeletes
       return
@@ -134,10 +131,10 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
     .select('rm_property_id', 'data_source_id', 'batch_id')
     .where(subset)
-    .where(batch_id: subtask.batch_id)
+    .whereNot(batch_id: subtask.batch_id)
     .then (results) ->
       Promise.map results, (r) ->
-        tables.deletes.property()
+        tables.deletes[opts.deletesTable]()
         .returning('rm_property_id')
         .insert(r)
 
@@ -320,7 +317,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .then (normalizedData) ->
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
-
         # Data in groups does not need to be searchable, so it gets pre-formatted here
         preformat = (group) ->
           for field in group
@@ -366,7 +362,18 @@ normalizeData = (subtask, options) -> Promise.try () ->
     Promise.each(rows, processRow)
   Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then () ->
-    successes
+    if successes.length == 0
+      logger.debug("No successful data updates from #{subtask.task_name} normalize subtask: "+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
+      return
+    manualData =
+      cause: subtask.data.dataType
+      i: subtask.data.i
+      of: subtask.data.of
+      rawTableSuffix: subtask.data.rawTableSuffix
+      count: successes.length
+      ids: successes
+      normalSubid: subtask.data.normalSubid
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 
 _specialUpdates =

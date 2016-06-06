@@ -1,4 +1,5 @@
-util = require 'util'
+util = require('util')
+_ = require('lodash')
 
 
 analysisToString = (includeVerbose) ->
@@ -61,24 +62,44 @@ analyzeValue = (value, fullJson=false) ->
 isKnexError = (err) -> (err.hasOwnProperty('isOperational') && err.name == 'error')
 
 
-getSimpleDetails = (err) ->
+getSimpleDetails = (err, opts) ->
+  inspectOpts = _.close(opts)
+  showUndefined = inspectOpts.showUndefined ? false
+  delete inspectOpts.showUndefined
+  showNull = inspectOpts.showNull ? true
+  delete inspectOpts.showNull
+
   if !err?.hasOwnProperty?
     return JSON.stringify(err)
   if isKnexError(err) || (!err.stack && err.toString() == '[object Object]')
     inspect = util.inspect(err, depth: null)
-    return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields
+    if !showUndefined
+      inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
+    if !showNull
+      inspect = inspect.replace(/,?\n +\w+: null/g, '')
+    return inspect
   else
     return err.stack || "#{err}"
 
 
-getSimpleMessage = (err) ->
+getSimpleMessage = (err, opts) ->
+  inspectOpts = _.close(opts)
+  showUndefined = inspectOpts.showUndefined ? false
+  delete inspectOpts.showUndefined
+  showNull = inspectOpts.showNull ? true
+  delete inspectOpts.showNull
+
   if !err?
     return JSON.stringify(err)
   if err.message
     return err.message
   if err.toString() == '[object Object]'
     inspect = util.inspect(err, depth: null)
-    return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields
+    if !showUndefined
+      inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
+    if !showNull
+      inspect = inspect.replace(/,?\n +\w+: null/g, '')
+    return inspect
   else
     return err.toString()
 

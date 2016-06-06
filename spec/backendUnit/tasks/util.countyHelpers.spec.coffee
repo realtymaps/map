@@ -1,84 +1,54 @@
-###
-{basePath} = require '../globalSetup'
+{should, expect}= require('chai')
+should()
+# sinon = require 'sinon'
+logger = require('../../specUtils/logger').spawn('util:parcelHelpers')
 rewire = require 'rewire'
-countyHelpers = rewire "#{basePath}/tasks/util.countyHelpers"
-_listExtend = countyHelpers.__get__('_listExtend')
+countyHelpers = rewire '../../../backend/tasks/util.countyHelpers'
+countyHelpersInternals = rewire '../../../backend/tasks/util.countyHelpers.internals'
+parcelHelpers = rewire '../../../backend/tasks/util.parcelHelpers'
+SqlMock = require '../../specUtils/sqlMock'
 
-describe 'countyHelpers', () ->
-  describe '_listExtend', () ->
-    it 'should merge 2 specially-formatted lists', () ->
-      list1 = [
-        name: 'item1'
-        value: 'list1-value1'
-      ,
-        name: 'item2'
-        value: 'list1-value2'
-      ,
-        name: 'item3'
-        value: 'list1-value3'
-      ,
-        name: 'item5'
-        value: 'list1-value5'
-      ,
-        name: 'item9'
-        value: 'list1-value9'
-      ,
-        name: 'item10'
-        value: 'list1-value10'
-      ]
-      list2 = [
-        name: 'item1'
-        value: 'list2-value1'
-      ,
-        name: 'item3'
-        value: 'list2-value3'
-      ,
-        name: 'item4'
-        value: 'list2-value4'
-      ,
-        name: 'item5'
-        value: 'list2-value5'
-      ,
-        name: 'item6'
-        value: 'list2-value6'
-      ,
-        name: 'item7'
-        value: 'list2-value7'
-      ,
-        name: 'item8'
-        value: 'list2-value8'
-      ]
-      expected = [
-        name: 'item1'
-        value: 'list1-value1'
-      ,
-        name: 'item2'
-        value: 'list1-value2'
-      ,
-        name: 'item3'
-        value: 'list1-value3'
-      ,
-        name: 'item4'
-        value: 'list2-value4'
-      ,
-        name: 'item5'
-        value: 'list1-value5'
-      ,
-        name: 'item6'
-        value: 'list2-value6'
-      ,
-        name: 'item7'
-        value: 'list2-value7'
-      ,
-        name: 'item8'
-        value: 'list2-value8'
-      ,
-        name: 'item9'
-        value: 'list1-value9'
-      ,
-        name: 'item10'
-        value: 'list1-value10'
-      ]
-      _listExtend(list1, list2)
-      list1.should.eql(expected)
-###
+
+describe "util.countyHelpers", () ->
+
+  describe "finalizeData", () ->
+
+    propTaxMock = null
+
+    before ->
+      subtask =
+        data:
+          dataType: "normParcel"
+          rawDataType: "parcel"
+          normalSubid: '1234'
+          rawTableSuffix: '1234'
+          subset:
+            fips_code: '1234'
+
+      propTaxMock = new SqlMock 'property', 'tax', result: [{rm_property_id: 1}]
+      mortgagePropMock = new SqlMock 'property', 'mortgage', result: []
+      deedPropMock = new SqlMock 'property', 'deed', result: []
+      parcelPropMock = new SqlMock 'property', 'parcel', result: []
+
+      deletesPropMock = new SqlMock 'deletes', 'property', result: []
+
+
+      tables =
+        property:
+          tax: propTaxMock.dbFn()
+          mortgage: mortgagePropMock.dbFn()
+          deed: deedPropMock.dbFn()
+          parcel: parcelPropMock.dbFn()
+        deletes:
+          property: deletesPropMock.dbFn()
+
+      countyHelpersInternals.__set__ 'tables', tables
+      countyHelpers.__set__ 'internals', countyHelpersInternals
+      parcelHelpers.__set__ 'tables', tables
+      countyHelpers.__set__ 'parcelHelpers', parcelHelpers
+
+      countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county'})
+
+
+    it 'should query table with subid', () ->
+      expect(propTaxMock.toString()).to.include('tax_1234')

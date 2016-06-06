@@ -140,31 +140,9 @@ loadRawData = (subtask) -> Promise.try () ->
     .then (numRawRows) ->
       if numRawRows == 0
         return 0
-      # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-      # on whether this is a dump or an update)
-      #TODO: the right way later
-      Promise.all [
-        jobQueue.queueSubsequentSubtask {
-          subtask
-          laterSubtaskName: "recordChangeCounts"
-          #rawDataType fixes lookup of rawtable for change counts
-          manualData: parcelHelpers.getRecordChangeCountsData(fipsCode)
-          replace: true
-        }
-
-        jobQueue.queueSubsequentSubtask {
-          subtask
-          laterSubtaskName: "finalizeDataPrep"
-          manualData: {fipsCode}
-        }
-      ]
-      .then () ->
-        numRawRows
-    .then (numRows) ->
-      if numRows == 0
-        return
+      # now that we know we have data, queue up the rest of the subtasks
       logger.debug("num rows to normalize: #{numRows}")
-      jobQueue.queueSubsequentPaginatedSubtask {
+      normalizeDataPromise = jobQueue.queueSubsequentPaginatedSubtask {
         subtask
         totalOrList: numRows
         maxPage: numRowsToPageNormalize
@@ -176,6 +154,19 @@ loadRawData = (subtask) -> Promise.try () ->
           startTime: subtask.data.startTime
         }
       }
+      recordChangeCountsPromise = jobQueue.queueSubsequentSubtask {
+        subtask
+        laterSubtaskName: "recordChangeCounts"
+        manualData:
+          deletes: dataLoadHelpers.DELETE.UNTOUCHED
+          dataType: "normParcel"
+          rawDataType: "parcel"  # fixes lookup of rawtable for change counts
+          rawTableSuffix: fipsCode
+          subset:
+            fips_code: fipsCode
+        replace: true
+      }
+      Promise.join normalizeDataPromise, recordChangeCountsPromise, () ->  # no-op
 
 normalizeData = (subtask) ->
   logger.debug util.inspect(subtask, depth: null)
@@ -185,9 +176,9 @@ normalizeData = (subtask) ->
   dataLoadHelpers.getRawRows subtask
   .then (rows) ->
     if !rows?.length
-      logger.debug "no raw rows found for rm_raw_id #{subtask.data.offset+1} to #{subtask.data.offset+subtask.data.count}"
+      logger.debug () -> "no raw rows found for rm_raw_id #{subtask.data.offset+1} to #{subtask.data.offset+subtask.data.count}"
       return
-    logger.debug "got #{rows.length} raw rows"
+    logger.debug () -> "got #{rows.length} raw rows"
 
     parcelHelpers.saveToNormalDb {
       subtask
@@ -196,6 +187,8 @@ normalizeData = (subtask) ->
       delay: delay ? DELAY_MILLISECONDS
     }
 
+# not used as a task since it is in normalizeData
+# however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
   fipsCode = subtask.data?.fipsCode
@@ -212,10 +205,14 @@ finalizeDataPrep = (subtask) ->
     fips_code: fipsCode
   .then (ids) ->
     ids  = _.pluck(ids, 'rm_property_id')
-    # ids = _.uniq(_.pluck(ids, 'rm_property_id')) #not needed as it is a primary_key at the moment
-    jobQueue.queueSubsequentPaginatedSubtask(
-      parcelHelpers.getFinalizeSubtaskData({subtask, ids, fipsCode, numRowsToPageFinalize})
-    )
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: ids
+      maxPage: numRowsToPageFinalize
+      laterSubtaskName: "finalizeData"
+      mergeData:
+        normalSubid: fipsCode #required for countyHelpers.finalizeData
+    }
 
 ###
 This step is an in-between to protect a following step from being run.
@@ -271,15 +268,15 @@ recordChangeCounts = (subtask) ->
 
   dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
   .then (deletedIds) ->
-    jobQueue.queueSubsequentPaginatedSubtask(
-      parcelHelpers.getFinalizeSubtaskData({
-        subtask
-        ids: deletedIds
-        fipsCode: subtask.data.subset.fips_code,
-        numRowsToPageFinalize
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: deletedIds
+      maxPage: numRowsToPageFinalize
+      laterSubtaskName: "finalizeData"
+      mergeData:
+        normalSubid: subtask.data.subset.fips_code  # required for countyHelpers.finalizeData
         deletedParcel: true
-      })
-    )
+    }
 
 # syncCartoDb: (subtask) -> Promise.try ->
 #   fipsCode = String.numeric path.basename subtask.task_data

@@ -112,6 +112,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.tr
         normalSubid: loadData.normalSubid
         dataType: file.type
         deletes: dataLoadHelpers.DELETE.INDICATED
+        action: action
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: loadDataList, replace: true, concurrency: 10})
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: countDataList, replace: true})
@@ -258,22 +259,10 @@ normalizeData = (subtask) ->
     dataSourceId: 'blackknight'
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
-  .then (successes) ->
-    if successes.length == 0
-      logger.debug('No successful data updates from normalize subtask: '+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
-      return
-    manualData =
-      cause: subtask.data.dataType
-      i: subtask.data.i
-      of: subtask.data.of
-      rawTableSuffix: subtask.data.rawTableSuffix
-      count: successes.length
-      ids: successes
-      normalSubid: subtask.data.normalSubid
-    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
+
 
 # not used as a task since it is in normalizeData
-# however this makes finalizeData accesible via the subtask script
+# however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
   {normalSubid} = subtask.data
   if !normalSubid?
@@ -292,7 +281,7 @@ finalizeDataPrep = (subtask) ->
     }
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.ids || subtask.data.values, (id) ->
+  Promise.map (subtask.data.ids || subtask.data.values), (id) ->
     countyHelpers.finalizeData({subtask, id})
 
 
@@ -337,7 +326,8 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'property')
+  indicateDeletes = (subtask.data.action == constants.REFRESH)  # only set this flag for refreshes, not updates
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes, deletesTable: 'property'})
 
 
 subtasks = {

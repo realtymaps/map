@@ -1,5 +1,6 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
+util = require 'util'
 
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers')
 parcelUtils = require '../utils/util.parcel'
@@ -16,6 +17,7 @@ transforms = require '../utils/transforms/transform.parcel'
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
+  successes = []
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   delay ?= 100
 
@@ -56,13 +58,15 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           diffExcludeKeys: internals.diffExcludeKeys
           diffBooleanKeys: internals.diffBooleanKeys
         }
+        .then (rm_property_id) ->
+          successes.push(rm_property_id)
       #removed for performance
       #.then () ->
       #  tables.temp(subid: rawSubid)
       #  .where({rm_raw_id})
       #  .update(rm_valid: true, rm_error_msg: null)
       .catch analyzeValue.isKnexError, (err) ->
-        jsonData = JSON.stringify(row,null,2)
+        jsonData = util.inspect(row, depth: null)
         logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
         throw new HardFail(err.message)
       .catch validation.DataValidationError, (err) ->
@@ -71,6 +75,20 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
         .update(rm_valid: false, rm_error_msg: err.toString())
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'problem saving normalized data')
+  .then () ->
+    if successes.length == 0
+      logger.debug("No successful data updates from #{subtask.task_name} normalize subtask: "+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
+      return
+    manualData =
+      cause: 'parcel'
+      i: subtask.data.i
+      of: subtask.data.of
+      rawTableSuffix: subtask.data.rawTableSuffix
+      count: successes.length
+      ids: successes
+      normalSubid: fipsCode  # required for countyHelpers.finalizeData
+      deletedParcel: false
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 
 finalizeData = (subtask, id, delay) -> Promise.try () ->
@@ -148,27 +166,6 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
     if numRawRows?
       numRawRows
 
-getRecordChangeCountsData = (fipsCode) ->
-  {
-    deletes: dataLoadHelpers.DELETE.UNTOUCHED
-    dataType: "normParcel"
-    rawDataType: "parcel"
-    rawTableSuffix: fipsCode
-    subset:
-      fips_code: fipsCode
-  }
-
-getFinalizeSubtaskData = ({subtask, ids, fipsCode, numRowsToPageFinalize, deletedParcel}) ->
-  {
-    subtask
-    totalOrList: ids
-    maxPage: numRowsToPageFinalize
-    laterSubtaskName: "finalizeData"
-    mergeData:
-      normalSubid: fipsCode #required for countyHelpers.finalizeData
-      deletedParcel: deletedParcel
-  }
-
 getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
@@ -184,7 +181,5 @@ module.exports = {
   activateNewData
   handleOveralNormalizeError
   column: internals.column
-  getRecordChangeCountsData
-  getFinalizeSubtaskData
   getParcelsPromise
 }

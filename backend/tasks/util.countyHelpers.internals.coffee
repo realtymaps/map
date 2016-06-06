@@ -6,6 +6,7 @@ tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 {HardFail} = require '../utils/errors/util.error.jobQueue'
 
+
 _documentFinalize = (fnName, cbPromise) ->
   logger.spawn('verbose').debug () -> "#{fnName} STARTED"
 
@@ -55,7 +56,6 @@ finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
         # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
         return null
       return deedEntries
-
 
 
 finalizeDataMortgage = ({subtask, id, data_source_id}) ->
