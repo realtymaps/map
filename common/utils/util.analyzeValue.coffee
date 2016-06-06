@@ -63,7 +63,7 @@ isKnexError = (err) -> (err.hasOwnProperty('isOperational') && err.name == 'erro
 
 
 getSimpleDetails = (err, opts) ->
-  inspectOpts = _.close(opts)
+  inspectOpts = _.clone(opts)
   showUndefined = inspectOpts.showUndefined ? false
   delete inspectOpts.showUndefined
   showNull = inspectOpts.showNull ? true
