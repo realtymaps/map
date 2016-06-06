@@ -203,6 +203,7 @@ class ProjectRouteCrud extends RouteCrud
     .then (project) ->
       if not project?
         # Look for viewer profile
+        console.log "profile byIdGET"
         userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": req.user.id, project_id: req.params.id
         .then sqlHelpers.singleRow
       else

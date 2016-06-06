@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 
 logger = require '../config/logger'
-userSessionService = require '../services/service.userSession'
+profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
 
 # caches permission and group membership values on the user session; we could
@@ -27,9 +27,9 @@ cacheUserValues = (req, reload = {}) ->
 
   if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
-    profilesPromise = userSessionService.getProfiles req.user.id
+    profilesPromise = profileSvc.getProfiles req.user.id
     .then (profiles) ->
-      logger.debug 'userSessionService.getProfiles.then'
+      logger.debug 'profileSvc.getProfiles.then'
       req.session.profiles = profiles
       # logger.debug profiles
     promises.push profilesPromise
