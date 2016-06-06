@@ -1,12 +1,12 @@
 #project-area-container
-  .area.col-sm-6(ng-repeat="area in areas")
+  .area.col-sm-6(ng-repeat="area in projectModel.areas")
     .item.item-border.item-card.content-block
         .content-heading.content-lg {{area.area_name}}
         .content-body
           button.btn.btn-white.btn-dashboard(ng-click="page.goToMap({area_id: area.id})")
             i.icon.icon-location
             span View Area
-          button.btn.btn-white.btn-dashboard(rmaps-require-project-editor)
+          button.btn.btn-white.btn-dashboard(ng-click="remove(area)" rmaps-require-project-editor)
             i.fa.fa-trash-o
             span Delete
 

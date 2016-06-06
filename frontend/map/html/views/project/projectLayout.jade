@@ -68,7 +68,7 @@
           .widget-background
             span.icon.icon-area
           a(ui-sref="projectAreas({ id: project.id})")
-            .widget-count {{project.areas.length || 0}}
+            .widget-count {{projectModel.areas.length || 0}}
             .widget-title Areas
 
       .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")

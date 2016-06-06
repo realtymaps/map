@@ -16,6 +16,7 @@ app.controller 'rmapsProjectCtrl',
 
   rmapsClientsFactory,
   rmapsEventConstants
+  rmapsDrawnUtilsService
 
   rmapsMapAccess,
   rmapsPropertyMarkerGroup,
@@ -63,6 +64,11 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.$state = $state
   $scope.project = null
+
+  # Scope model object allowing the children to manipulate data loaded by this parent controller
+  $scope.projectModel = projectModel = {}
+  projectModel.areas = []
+
   $scope.newNotes = {}
   $scope.notes = []
   $scope.loadedProperties = false
@@ -198,10 +204,13 @@ app.controller 'rmapsProjectCtrl',
     else
       $scope.loadedProperties = true
 
+    #
+    # Load supporting data
+    #
     clientsService = new rmapsClientsFactory project.id unless clientsService
     loadClients()
-
     loadNotes()
+    loadAreas()
 
     $scope.project = project
 
@@ -226,11 +235,17 @@ app.controller 'rmapsProjectCtrl',
     .finally () ->
       $scope.loadedProperties = true
 
+  #
+  # Load Clients
+  #
   loadClients = () ->
     clientsService.getAll()
     .then (clients) ->
       $scope.project.clients = clients
 
+  #
+  # Load Notes
+  #
   loadNotes = () ->
     rmapsNotesService.getList()
     .then (notes) ->
@@ -239,4 +254,18 @@ app.controller 'rmapsProjectCtrl',
   $rootScope.$onRootScope rmapsEventConstants.notes, () ->
     loadProject() unless !$state.params.id
 
+  #
+  # Load Areas
+  #
+
+  drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+
+  loadAreas = (cache) ->
+    drawnShapesSvc.getAreasNormalized(cache)
+    .then (data) ->
+      projectModel.areas = data
+
+  #
+  # Start initial data load
+  #
   loadProject()

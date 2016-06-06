@@ -2,6 +2,7 @@ app = require '../app.coffee'
 
 app.controller 'rmapsProjectAreasCtrl', (
   $log
+  $rootScope
   $scope
 
   rmapsDrawnUtilsService
@@ -10,16 +11,11 @@ app.controller 'rmapsProjectAreasCtrl', (
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
-  #
-  # Data access
-  #
+  $scope.remove = (model) ->
+    _.remove($scope.projectModel.areas, model)
 
-  getAll = (cache) ->
-    drawnShapesSvc.getAreasNormalized(cache)
-    .then (data) ->
-      $scope.areas = data
-
-  #
-  # Initial data load
-  #
-  getAll()
+    drawnShapesSvc.delete model
+    .then () ->
+      $rootScope.emit rmapsEventConstants.areas
+      $rootScope.$emit rmapsEventConstants.areas.removeDrawItem, model
+      $rootScope.$emit rmapsEventConstants.map.mainMap.redraw, false
