@@ -32,7 +32,6 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       $scope.projects = _.values identity.profiles
       $log.debug $scope.projects
       $scope.totalProjects = $scope.projects.length
-      console.log "projects:\n#{JSON.stringify($scope.projects, null, 2)}"
 
       _.each $scope.projects, (project) ->
         project.modified = moment(project.rm_modified_time)
