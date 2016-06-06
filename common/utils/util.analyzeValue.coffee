@@ -62,7 +62,7 @@ analyzeValue = (value, fullJson=false) ->
 isKnexError = (err) -> (err.hasOwnProperty('isOperational') && err.name == 'error')
 
 
-getSimpleDetails = (err, opts) ->
+getSimpleDetails = (err, opts={}) ->
   inspectOpts = _.clone(opts)
   showUndefined = inspectOpts.showUndefined ? false
   delete inspectOpts.showUndefined
@@ -82,7 +82,7 @@ getSimpleDetails = (err, opts) ->
     return err.stack || "#{err}"
 
 
-getSimpleMessage = (err, opts) ->
+getSimpleMessage = (err, opts={}) ->
   inspectOpts = _.clone(opts)
   showUndefined = inspectOpts.showUndefined ? false
   delete inspectOpts.showUndefined
