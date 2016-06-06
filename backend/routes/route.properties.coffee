@@ -101,7 +101,7 @@ module.exports =
       handleRoute res, next, () ->
         filterSummaryService.getFilterSummary(
           state: currentProfile(req)
-          req: req.validBody
+          req: req
         )
 
   parcelBase:
@@ -132,7 +132,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        detailService.getDetail(req.validBody)
+        detailService.getDetail(req)
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
             throw new ExpressResponse(
@@ -159,9 +159,9 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        validBody = _appendProjectId(req, req.validBody)
+        _appendProjectId(req, req.validBody)
         filterSummaryService.getFilterSummary(
           state: currentProfile(req),
-          req: validBody,
+          req: req,
           filterSummaryImpl: DrawnShapesFiltSvc
         )

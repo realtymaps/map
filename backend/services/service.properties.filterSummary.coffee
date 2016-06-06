@@ -3,7 +3,6 @@ base = require './service.properties.base.filterSummary'
 combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
-sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:filterSummary')
 propMerge = require '../utils/util.properties.merge'
@@ -17,88 +16,75 @@ _isOnlyPinned = (queryParams) ->
 _isNothingPinned = (state) ->
   !state?.properties_selected || _.size(state.properties_selected) == 0
 
-_limitByPinnedProps = (query, state, queryParams) ->
-  # include saved id's in query so no need to touch db later
-  propertiesIds = _.keys(state.properties_selected)
-  if propertiesIds.length > 0
-    whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
-    logger.debug "whereClause: #{whereClause}"
-    sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
-    # logger.debug.cyan query.toString()
-
-  query
-
-_handleReturnType = ({filterSummaryImpl, state, queryParams, limit}) ->
-  returnAs = queryParams.returnType
-  logger.debug "_handleReturnType: " + returnAs
-
-  defaultFn = () ->
-    logger.debug queryParams
-    query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 800)
-    query = _limitByPinnedProps(query, state, queryParams)
-    # remove dupes
-    # include "savedDetails" for saved props
-    query.then (properties) ->
-      propMerge.updateSavedProperties(state, properties)
-
-    # more data arranging
-    .then (properties) ->
-
-      filterSummaryImpl.transformProperties?(properties)
-
-      properties = toLeafletMarker properties
-      props = indexBy(properties, false)
-      props
-
-  cluster = ->
-    filterSummaryImpl.getFilterSummary(queryParams, limit, sqlCluster.clusterQuery(state.map_position.center.zoom))
-    .then (properties) ->
-      sqlCluster.fillOutDummyClusterIds(properties)
-    .then (properties) ->
-      properties
-
-  clusterOrDefault = () ->
-    _limitByPinnedProps(filterSummaryImpl.getResultCount(queryParams), state, queryParams)
-    .then (data) ->
-      if data[0].count > config.backendClustering.resultThreshold
-        return cluster()
-      else
-        return defaultFn()
-
-  handles = {
-    cluster
-    default: defaultFn
-    clusterOrDefault
-  }
-
-  handle = handles[returnAs] || handles.default
-  handle()
-
-_validateAndTransform = ({req, state, localTransforms}) ->
-  # note this is looking at the pre-transformed status filter
-  # logger.debug.cyan rawFilters?.state?.filters?.status
-  # logger.debug.green state?.properties_selected
-  if _isOnlyPinned(req) && _isNothingPinned(state)
-    # we know there is absolutely nothing to select, GTFO before we do any real work
-    logger.debug 'GTFO'
-    return Promise.resolve()
-
-  logger.debug 'validating transforms'
-  validatedQuery = validation.validateAndTransform(req, localTransforms)
-  logger.debug 'validated transforms'
-  validatedQuery
-
 module.exports =
   getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
     limit ?= 2000
+
+    # This block can be removed once mv_property_details is gone
     if !filterSummaryImpl
-      if req.state?.filters?.combinedData == true
+      if req.validBody.state?.filters?.combinedData == true
         filterSummaryImpl = combined
       else
         filterSummaryImpl = base
 
     Promise.try ->
-      _validateAndTransform({req, state, localTransforms: filterSummaryImpl.transforms})
+      # Note: this is looking at the pre-transformed status filter
+      if !(_isOnlyPinned(req.validBody) && _isNothingPinned(state))
+        validation.validateAndTransform(req.validBody, filterSummaryImpl.transforms)
+
     .then (queryParams) ->
-      return [] unless queryParams
-      _handleReturnType({filterSummaryImpl, state, queryParams, limit})
+      # We know there is absolutely nothing to select, GTFO before we do any real work
+      if ! queryParams
+        return []
+
+      # Limit to FIPS codes and verified MLS for this user
+      # TODO: Proxied MLS data (county data does not need to be proxied since it is only available for Pinned properties)
+      if !req.user.is_superuser
+        queryParams.state.filters.fips_codes = req.user.fips_codes
+        queryParams.state.filters.mlses_verified = req.user.mlses_verified
+
+      _limitByPinnedProps = (query, state, queryParams) ->
+        # include saved id's in query so no need to touch db later
+        propertiesIds = _.keys(state.properties_selected)
+        if propertiesIds.length > 0
+          whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
+          sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
+
+      cluster = () ->
+        clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
+        filterSummaryImpl.getFilterSummary(queryParams, limit, clusterQuery)
+        .then (properties) ->
+          filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
+
+      summary = () ->
+        query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 800)
+        _limitByPinnedProps(query, state, queryParams)
+
+        # Remove dupes and include "savedDetails" for saved props
+        query.then (properties) ->
+          propMerge.updateSavedProperties(state, properties)
+
+        .then (properties) ->
+          filterSummaryImpl.transformProperties?(properties)
+          properties = toLeafletMarker properties
+          props = indexBy(properties, false)
+
+      switch queryParams.returnType
+        when 'clusterOrDefault'
+          # Count the number of properties and do clustering if
+          query = filterSummaryImpl.getResultCount(queryParams)
+          _limitByPinnedProps(query, state, queryParams)
+
+          query.then ([result]) ->
+            if result.count > config.backendClustering.resultThreshold
+              logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
+              return cluster()
+            else
+              logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
+              return summary()
+
+        when 'cluster'
+          cluster()
+
+        else
+          summary()

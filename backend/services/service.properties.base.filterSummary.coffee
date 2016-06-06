@@ -6,6 +6,7 @@ filterStatuses = require "../enums/filterStatuses"
 filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
+cluster = require '../utils/util.sql.manual.cluster'
 
 dbFn = tables.property.propertyDetails
 
@@ -142,3 +143,5 @@ module.exports =
   getFilterSummary: (filters, limit, query) ->
     Promise.try () ->
       _getFilterSummaryAsQuery(filters, limit, query)
+
+  cluster: cluster

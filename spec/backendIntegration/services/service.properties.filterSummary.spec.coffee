@@ -15,7 +15,12 @@ describe 'service.properties.filterSummary', ->
     @subject = svc
 
   it 'clusterOrDefault returned works with geoJson', (done) ->
-    @subject.getFilterSummary { state: mocks.map.state, req: mocks.map.filter }
+    @subject.getFilterSummary
+      state: mocks.map.state
+      req:
+        validBody: mocks.map.filter
+        user:
+          is_superuser: false
     .then (data) ->
       data = utilsGeoJson.toGeoFeatureCollection(data)
       gjv.valid(data).should.be.ok

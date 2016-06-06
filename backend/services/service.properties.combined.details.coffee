@@ -36,17 +36,23 @@ _getDetailByPropertyId = (queryParams) ->
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
+  if queryParams.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 _getDetailByPropertyIds = (queryParams) ->
   query = sqlHelpers.select(
     tables.property.combined()
-    'detail_with_disclaimer'
+    'detail_with_disclaimer' # TODO: restrict to filter columns
     null)
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
   query.where(active: true)
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
+  if queryParms.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 _getDetailByGeomPointJson = (queryParams) ->
   query = sqlHelpers.select(
@@ -58,13 +64,23 @@ _getDetailByGeomPointJson = (queryParams) ->
   .leftOuterJoin("#{tables.config.mls.tableName}", () ->
     this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
   )
-
+  if queryParams.fips_codes?
+    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
+  query
 
 module.exports =
 
-  getDetail: (queryParams) -> Promise.try () ->
+  # TODO: combine getDetail and getDetails? They are essentially the same logic except
+  #       getDetails() should restrict results to filter columns
+  getDetail: (req) -> Promise.try () ->
+    queryParams = req.validBody
     validation.validateAndTransform(queryParams, transforms)
     .then (validRequest) ->
+      # TODO: leverage permissions logic found in filterSummary
+      # TODO: Proxied MLS data
+      # TODO: Proxy county data for Pinned properties
+      if !req.user.is_superuser
+        validRequest.fips_codes = req.user.fips_codes
 
       if validRequest.rm_property_id?
         _getDetailByPropertyId(validRequest)
@@ -76,10 +92,18 @@ module.exports =
       for row in data
         result[row.data_source_type] ?= []
         result[row.data_source_type].push(row)
+        # TODO: prune subscriber groups and owner info where appropriate
       result
 
-  getDetails: (queryParams) ->
+  getDetails: (req) ->
+    queryParams = req.validBody
     Promise.try () ->
+      # TODO: leverage permissions logic found in filterSummary
+      # TODO: Proxied MLS data
+      # TODO: Proxy county data for Pinned properties
+      if !req.user.is_superuser
+        queryParams.fips_codes = req.user.fips_codes
+
       if queryParams.rm_property_id?
         _getDetailByPropertyIds(queryParams)
       else
@@ -90,4 +114,5 @@ module.exports =
         result[row.rm_property_id] ?= { county: null, mls: null }
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
+        # TODO: prune subscriber groups and owner info where appropriate
       result
