@@ -287,7 +287,7 @@ requireSubscriber = ({methods} = {}) ->
 
     # there are a variety of statuses that imply grace periods,
     # trial, type of plan, etc so we just test for the inactive statuses.
-    if userUtils.isSubscriber(req)
+    if !userUtils.isSubscriber(req)
       return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, httpStatus.UNAUTHORIZED)
 
     return process.nextTick(next)
