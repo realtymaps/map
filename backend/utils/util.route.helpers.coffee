@@ -10,6 +10,7 @@ logger = require('../config/logger').spawn('util.route.helpers')
 clsFactory = require './util.cls'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
+
 class CurrentProfileError extends Error
 class NotFoundError extends Error
 
@@ -43,7 +44,11 @@ handleQuery = (q, res, lHandleQuery) ->
     return q.stringify().pipe(res)
 
   q.then (result) ->
-    res.json(result)
+    Promise.try () ->
+      res.json(result)
+    .catch TypeError, (err) ->
+      logger.error("#############  Circular reference detected in JSON response?  #############\n#{analyzeValue.getSimpleMessage(result)}")
+      throw err
 
 handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->
