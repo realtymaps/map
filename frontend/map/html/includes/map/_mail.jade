@@ -3,6 +3,7 @@ include ../mixins/_circleNrMixin.jade
 
 span.pinned-list.dropdown.btn-group(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapMailCtrl" dropdown)
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
+    rmaps-require-project-editor="disable"
     dropdown-toggle
     popover-placement="bottom"
     popover="Mailings"
