@@ -83,7 +83,7 @@ getSimpleDetails = (err, opts) ->
 
 
 getSimpleMessage = (err, opts) ->
-  inspectOpts = _.close(opts)
+  inspectOpts = _.clone(opts)
   showUndefined = inspectOpts.showUndefined ? false
   delete inspectOpts.showUndefined
   showNull = inspectOpts.showNull ? true
