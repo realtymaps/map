@@ -141,10 +141,10 @@ loadRawData = (subtask) -> Promise.try () ->
       if numRawRows == 0
         return 0
       # now that we know we have data, queue up the rest of the subtasks
-      logger.debug("num rows to normalize: #{numRows}")
+      logger.debug("num rows to normalize: #{numRawRows}")
       normalizeDataPromise = jobQueue.queueSubsequentPaginatedSubtask {
         subtask
-        totalOrList: numRows
+        totalOrList: numRawRows
         maxPage: numRowsToPageNormalize
         laterSubtaskName: "normalizeData"
         mergeData: {
