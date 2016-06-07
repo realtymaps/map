@@ -170,6 +170,7 @@ class ProjectRouteCrud extends RouteCrud
     super arguments...
 
   findProjectData: (projects, req, res, next) ->
+    console.log "ProjectRouteCrud findProjectData()"
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
@@ -203,7 +204,7 @@ class ProjectRouteCrud extends RouteCrud
     .then (project) ->
       if not project?
         # Look for viewer profile
-        console.log "profile byIdGET"
+        console.log "ProjectRouteCrud profile byIdGET"
         userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": req.user.id, project_id: req.params.id
         .then sqlHelpers.singleRow
       else

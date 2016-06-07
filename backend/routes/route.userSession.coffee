@@ -95,6 +95,7 @@ currentProfile = (req, res, next) -> Promise.try () ->
     updateCache(req, res, next)
 
 updateState = (req, res, next) ->
+  console.log "route.userSession updateState()"
   profileService.updateCurrent(req.session, req.body)
   .then () ->
     res.send()
@@ -118,6 +119,7 @@ profiles = (req, res, next) ->
         res.json result
 
     PUT: () ->
+      console.log "route.userSession profiles.PUT"
       validation.validateAndTransformRequest(req.body, transforms.profiles.PUT)
       .then (validBody) ->
         profileService.update(validBody, req.user.id)

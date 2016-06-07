@@ -14,9 +14,9 @@ class UserCrud extends RouteCrud
     @groups = @groupsCrud.root
     @groupsById = @groupsCrud.byId
 
-    @profilesCrud = hasManyRouteCrud(@svc.profiles, 'profile_id', 'auth_user_id', 'ProfilesHasManyRouteCrud')
-    @profiles = @profilesCrud.root
-    @profilesById = @profilesCrud.byId
+    # @profilesCrud = hasManyRouteCrud(@svc.profiles, 'profile_id', 'auth_user_id', 'ProfilesHasManyRouteCrud')
+    # @profiles = @profilesCrud.root
+    # @profilesById = @profilesCrud.byId
 
     super()
 
@@ -60,16 +60,16 @@ module.exports = mergeHandles new UserCrud(user),
       auth.requireLogin(redirectOnFail: true)
       auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
     ]
-  #might want to twerk permissions required
-  profiles:
-    methods: ['get', 'post']
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
-    ]
-  profilesById:
-    methods: ['get', 'post', 'put', 'delete']
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
-    ]
+  # #might want to twerk permissions required
+  # profiles:
+  #   methods: ['get', 'post']
+  #   middleware: [
+  #     auth.requireLogin(redirectOnFail: true)
+  #     auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+  #   ]
+  # profilesById:
+  #   methods: ['get', 'post', 'put', 'delete']
+  #   middleware: [
+  #     auth.requireLogin(redirectOnFail: true)
+  #     auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+  #   ]

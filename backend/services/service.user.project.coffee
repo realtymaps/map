@@ -96,6 +96,7 @@ class ProjectCrud extends ThenableCrud
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
+    console.log "service.user.project.coffee delete()"
     @profiles.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id, doLogQuery
     .then sqlHelpers.singleRow
     .then (profile) =>

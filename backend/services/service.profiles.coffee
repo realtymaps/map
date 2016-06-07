@@ -42,14 +42,27 @@ _getProfileWhere = (where = {}) ->
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
   )
   .where(where)
-  .join("#{tables.user.project.tableName}", () ->
+  .join(tables.user.project.tableName, () ->
     this.on("#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
   )
-  .leftOuterJoin("#{tables.auth.user.tableName}", () ->
+  .leftOuterJoin(tables.auth.user.tableName, () ->
     this.on("#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
   )
 
+_updateProfileWhere = (profile, where) ->
+  console.log "_updateProfileWhere()"
+  console.log "safeProfile:\n#{JSON.stringify(safeProfile,null,2)}"
+  safeUpdate = _.pick(profile, safeProfile)
+  console.log "safeUpdate:\n#{JSON.stringify(safeUpdate,null,2)}"
+  q = tables.user.profile()
+  .update(safeUpdate)
+  .where(where)
+  console.log "query:\n#{q.toString()}"
+  q
+
+
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
+# Note: this differs from a usual "getAll" endpoint in that we bundle some project fields with profile results
 getProfiles = (auth_user_id) -> Promise.try () ->
   _getProfileWhere
     "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
@@ -61,7 +74,10 @@ getProfiles = (auth_user_id) -> Promise.try () ->
       logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
       create auth_user_id: auth_user_id, sandbox: true, can_edit: true
       .then () ->
-        userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+        # re-fetch for full list w/ ids
+        _getProfileWhere
+          "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+
   .then (profiles) ->
     _.indexBy profiles, 'id'
 
@@ -73,42 +89,37 @@ getClientProfiles = (auth_user_id) -> Promise.try () ->
   .then (profiles) ->
     _.indexBy profiles, 'id'
 
-getFirst = (userId) ->
-  tables.user.profile()
-  .where(auth_user_id: userId)
-  .then singleRow
-  .then (userState) ->
-    if not userState
-      tables.user.profile()
-      .insert
-        auth_user_id: userId
-      .then () ->
-        return {}
-    else
-      result = userState
-      delete result.id
-      return result
-
 getCurrentSessionProfile = (session) ->
   currentProfile(session)
 
-update = (profile, auth_user_id, safe = safeProfile) ->
+# The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
+update = (profile, auth_user_id) ->
+  console.log "profile update(), profile:\n#{JSON.stringify(profile,null,2)}\n\n"
   Promise.throw("auth_usr_id is undefined") unless auth_user_id
+  updatePromises = []
 
-  userProfileSvc.getById profile.id
-  .then (profileProject) ->
-    if profileProject? and !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
-      projectSvc.update profileProject.project_id, toUpdate
-  .then () ->
-    # logger.debug "profile update"
-    # logger.debug profile, true
-    userProfileSvc.update {id: profile.id, auth_user_id: auth_user_id}, profile, safe
-  .then (userState) ->
-    if not userState
-      return {}
-    result = userState
-    delete result.id
-    return result
+
+  # update the project model `properties_selected` portion of the profileProject data
+  if !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
+    updatePromises.push projectSvc.update(profile.project_id, toUpdate)
+
+  # userProfileSvc.update {id: profile.id, auth_user_id: auth_user_id}, profile, safe
+  # update the profile model portion of the profileProject data
+  where = {id: profile.id, auth_user_id: auth_user_id}
+  updatePromises.push _updateProfileWhere(profile, where)
+
+  Promise.all(updatePromises)
+  .catch (err) ->
+    logger.error "error while updating profile id #{profile.id}: #{err}"
+    Promise.reject(err)
+
+  # .then (userState) ->
+  #   console.log "userState:\n#{JSON.stringify(userState,null,2)}"
+  #   if not userState
+  #     return {}
+  #   result = userState
+  #   delete result.id
+  #   return result
 
 _hasProfileStateChanged = (profile, partialState) ->
   #avoid unnecessary saves as there is the possibility for race conditions
@@ -120,6 +131,7 @@ _hasProfileStateChanged = (profile, partialState) ->
   needsSave
 
 updateCurrent = (session, partialState, safe) ->
+  console.log "profile updateCurrent()"
   sessionProfile = getCurrentSessionProfile(session)
   saveSessionPromise = null
 #  logger.debug "service.user needsSave: #{needsSave}"
@@ -138,6 +150,5 @@ module.exports =
   getCurrentSessionProfile: getCurrentSessionProfile
   updateCurrent: updateCurrent
   update: update
-  getFirst: getFirst
   create: create
   createForProject: createForProject
