@@ -71,12 +71,11 @@ transforms = do ->
 _getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filterCombined", true)
 
-_getResultCount = (validatedQuery) ->
+getResultCount = ({queryParams, permissions}) ->
   # obtain a count(*)-style select query
   query = sqlHelpers.selectCountDistinct(dbFn())
-  # apply the validatedQuery (mostly "where" clause stuff)
-  query = _getFilterSummaryAsQuery(validatedQuery, null, query)
-  query
+  # apply the queryParams (mostly "where" clause stuff)
+  query = getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPermissions = (req) -> Promise.try ->
   # Skip permissions for superusers
@@ -106,32 +105,35 @@ getPermissions = (req) -> Promise.try ->
 queryPermissions = (query, permissions) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
   query.where ->
-    if permissions.fips && mls
+    if permissions.fips?.length && mls?.length
       @.where ->
         @.where("data_source_type", "county")
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
       @.orWhere ->
         @.where("data_source_type", "mls")
         sqlHelpers.whereIn(@, "data_source_id", mls)
-    else if mls
+    else if mls?.length
       @.where("data_source_type", "mls")
       sqlHelpers.whereIn(@, "data_source_id", mls)
-    else if permissions.fips
+    else if permissions.fips?.length
       @.where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
     else if !permissions.superuser
       @.whereRaw("FALSE")
 
 scrubPermissions = (data, permissions) ->
-  if (data.data_source_type == 'county' && permissions.fips.indexOf(data.fips_code) == -1) ||
-      (data.data_source_type == 'mls' && permissions.mls.indexOf(data.data_source_id) == -1)
-    delete data.subscriber_groups
-    delete data.owner_name
-    delete data.owner_name_2
-    delete data.owner_address
+  if !permissions.superuser
+    for row in data
+      if (row.data_source_type == 'county' && permissions.fips.indexOf(row.fips_code) == -1) ||
+           (row.data_source_type == 'mls' && permissions.mls.indexOf(row.data_source_id) == -1)
+        delete row.subscriber_groups
+        delete row.owner_name
+        delete row.owner_name_2
+        delete row.owner_address
 
-_getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
-  {bounds, state, permissions} = validatedQuery
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+  query ?= _getDefaultQuery()
+  {bounds, state} = queryParams
   {filters} = state
   return query if !filters?.status?.length
   throw new Error('knex starting query missing!') if !query
@@ -239,16 +241,14 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   logger.debug -> query.toString()
   query
 
+# This can be removed once mv_property_details is gone. Note: front-end will need updating
 transformProperties = (properties) ->
   streetRe = /^(\d+)\s*(.+)/
   cityRe = /^(.+),\s*(.+)/
   for prop in properties
-    scrubPermissions(prop)
-
-    # This can be removed once mv_property_details is gone. Note: front-end will need updating
-    if prop.address?
-      # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
-      lines = prop.address.lines.slice(-3)
+    # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
+    lines = prop.address?.lines?.slice(-3)
+    if lines?.length >= 2
       streetLine = lines[0].match(streetRe)
       cityLine = lines[1].match(cityRe)
       prop.street_address_num = streetLine[1]
@@ -260,16 +260,8 @@ transformProperties = (properties) ->
 module.exports =
   transforms: transforms
   transformProperties: transformProperties
-
-  getDefaultQuery: _getDefaultQuery
-
-  getFilterSummaryAsQuery: _getFilterSummaryAsQuery
-  getResultCount: _getResultCount
-
-  getFilterSummary: (filters, limit, query) ->
-    Promise.try () ->
-      _getFilterSummaryAsQuery(filters, limit, query)
-
+  getFilterSummaryAsQuery: getFilterSummaryAsQuery
+  getResultCount: getResultCount
   cluster: cluster
   getPermissions: getPermissions
   queryPermissions: queryPermissions

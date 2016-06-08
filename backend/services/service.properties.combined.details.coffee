@@ -38,13 +38,14 @@ _detailQuery = (queryParams, req) ->
 
     query.then (data = []) ->
       result = {}
+
+      # Prune subscriber groups and owner info where appropriate
+      scrubPermissions(data, permissions)
+
       for row in data
         result[row.rm_property_id] ?= { county: null, mls: null }
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
-
-        # Prune subscriber groups and owner info where appropriate
-        scrubPermissions(row, permissions)
 
       result
 
