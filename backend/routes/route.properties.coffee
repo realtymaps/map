@@ -45,8 +45,8 @@ _appendProjectId = (req, obj) ->
   obj.project_id = currentProfile(req).project_id
   obj
 
+# NOTE: this called a ton of times throughout a session or update for some reason
 captureMapFilterState =  (opts) -> (req, res, next) -> Promise.try () ->
-  console.log "captureMapFilterState()"
   {handleStr, saveState, transforms} = opts
   saveState ?= true
   transforms ?= _transforms

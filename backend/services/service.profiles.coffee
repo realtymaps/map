@@ -6,7 +6,6 @@ db = require('../config/dbs').get('main')
 {singleRow} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
-userProfileSvc = (require './services.user').user.profiles
 projectSvc = (require './services.user').project
 
 safeProject = basicColumns.project
@@ -96,7 +95,6 @@ getCurrentSessionProfile = (session) ->
 
 # The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
 update = (profile, auth_user_id) ->
-  console.log "profile update(), profile:\n#{JSON.stringify(profile,null,2)}\n\n"
   Promise.throw("auth_user_id is undefined") unless auth_user_id
   updatePromises = []
 
@@ -123,7 +121,6 @@ _hasProfileStateChanged = (profile, partialState) ->
   needsSave
 
 updateCurrent = (session, partialState, safe) ->
-  console.log "profile updateCurrent()"
   sessionProfile = getCurrentSessionProfile(session)
   saveSessionPromise = null
 #  logger.debug "service.user needsSave: #{needsSave}"
