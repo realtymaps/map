@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:property:details:combined')
 validation = require '../utils/util.validation'
 {validators} = validation
@@ -7,7 +6,7 @@ tables = require '../config/tables'
 {getPermissions, queryPermissions, scrubPermissions} = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 
-_getDetail = (queryParams, req) ->
+_detailQuery = (queryParams, req) ->
   getPermissions(req)
   .then (permissions) ->
     logger.debug permissions
@@ -41,7 +40,6 @@ _getDetail = (queryParams, req) ->
       result = {}
       for row in data
         result[row.rm_property_id] ?= { county: null, mls: null }
-        logger.debug "data_source_type is #{JSON.stringify row.data_source_type}"
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
 
@@ -50,44 +48,45 @@ _getDetail = (queryParams, req) ->
 
       result
 
+# Retrieve a single property by rm_property_id OR geom_point_json
+getDetail = (req) ->
+  validation.validateAndTransform req.validBody,
+    rm_prop_id_or_geom_json:
+      input: ["rm_property_id", "geom_point_json"]
+      transform: validators.pickFirst()
+      required: true
 
-module.exports =
+    rm_property_id:
+      transform: validators.string(minLength: 1)
 
-  # Retrieve a single property by rm_property_id OR geom_point_json
-  getDetail: (req) ->
-    validation.validateAndTransform req.validBody,
-      rm_prop_id_or_geom_json:
-        input: ["rm_property_id", "geom_point_json"]
-        transform: validators.pickFirst()
-        required: true
+    geom_point_json:
+      transform: [validators.object(), validators.geojson(toCrs: true)]
 
-      rm_property_id:
-        transform: validators.string(minLength: 1)
+    columns:
+      transform: validators.choice(choices: ['filter', 'address', 'detail', 'all'])
+      required: true
 
-      geom_point_json:
-        transform: [validators.object(), validators.geojson(toCrs: true)]
+  .then (queryParams) ->
+    _detailQuery(queryParams, req)
 
-      columns:
-        transform: validators.choice(choices: ['filter', 'address', 'detail', 'all'])
-        required: true
+  .then (result) ->
+    _.map(result)[0]
 
-    .then (queryParams) ->
-      logger.debug queryParams
-      _getDetail(queryParams, req)
+# Retrieve a set of properties by rm_property_id (filter data only)
+getDetails = (req) ->
+  validation.validateAndTransform req.validBody,
+    columns:
+      transform: validators.choice(choices: ['filter'])
+      required: true
 
-    .then (result) ->
-      _.map(result)[0]
+    rm_property_id:
+      transform: validators.array()
+      required: true
 
-  # Retrieve a set of properties by rm_property_id (filter data only)
-  getDetails: (req) ->
-    validation.validateAndTransform req.validBody,
-      columns:
-        transform: validators.choice(choices: ['filter'])
-        required: true
+  .then (queryParams) ->
+    _detailQuery(queryParams, req)
 
-      rm_property_id:
-        transform: validators.array()
-        required: true
-
-    .then (queryParams) ->
-      _getDetail(queryParams, req)
+module.exports = {
+  getDetail
+  getDetails
+}

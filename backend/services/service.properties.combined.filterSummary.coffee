@@ -98,7 +98,7 @@ getPermissions = (req) -> Promise.try ->
       return tables.auth.user()
         .select('mlses_verified')
         .where('id', profile.parent_auth_user_id).then ([owner]) ->
-          permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitilzation mismatches may exist
+          permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
           permissions
 
     return permissions
