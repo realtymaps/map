@@ -61,17 +61,15 @@ transforms = do ->
 _getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true, "distinct on (rm_property_id)")
 
-_getResultCount = (validatedQuery) ->
+getResultCount = ({queryParams}) ->
   # obtain a count(*)-style select query
   query = sqlHelpers.selectCountDistinct(dbFn())
-  # apply the validatedQuery (mostly "where" clause stuff)
-  query = _getFilterSummaryAsQuery(validatedQuery, null, query)
-  query
+  # apply the queryParams (mostly "where" clause stuff)
+  query = getFilterSummaryAsQuery({queryParams, query})
 
-_getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
-  logger.debug -> validatedQuery
-
-  {bounds, state} = validatedQuery
+getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
+  query ?= _getDefaultQuery()
+  {bounds, state} = queryParams
   {filters} = state
   return query if !filters?.status?.length
   throw new Error('knex starting query missing!') if !query
@@ -134,14 +132,6 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
 module.exports =
   transforms: transforms
-
-  getDefaultQuery: _getDefaultQuery
-
-  getFilterSummaryAsQuery: _getFilterSummaryAsQuery
-  getResultCount: _getResultCount
-
-  getFilterSummary: (filters, limit, query) ->
-    Promise.try () ->
-      _getFilterSummaryAsQuery(filters, limit, query)
-
+  getFilterSummaryAsQuery: getFilterSummaryAsQuery
+  getResultCount: getResultCount
   cluster: cluster
