@@ -55,12 +55,12 @@ class ProjectCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
-  profilesFact: (dbFn = tables.user.project, joinCrud = profile) ->
-    logger.debug dbFn.tableName
-    thenableHasManyCrud dbFn, joinColumns.profile, joinCrud,
-      "#{tables.user.profile.tableName}.project_id",
-      "#{tables.user.project.tableName}.id",
-      "#{tables.user.profile.tableName}.id"
+  # profilesFact: (dbFn = tables.user.project, joinCrud = profile) ->
+  #   logger.debug dbFn.tableName
+  #   thenableHasManyCrud dbFn, joinColumns.profile, joinCrud,
+  #     "#{tables.user.profile.tableName}.project_id",
+  #     "#{tables.user.project.tableName}.id",
+  #     "#{tables.user.profile.tableName}.id"
 
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
     logger.debug dbFn.tableName
@@ -90,14 +90,14 @@ class ProjectCrud extends ThenableCrud
     @drawnShapes = @drawnShapesFact()
     # @drawnShapes.doLogQuery = true
 
-    @profiles = @profilesFact().init(arguments...)
+    # @profiles = @profilesFact().init(arguments...)
 
     super(arguments...)
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
     console.log "service.user.project.coffee delete()"
-    @profiles.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id, doLogQuery
+    profileSvc.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id, doLogQuery
     .then sqlHelpers.singleRow
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
@@ -122,11 +122,11 @@ class ProjectCrud extends ThenableCrud
           map_position: {}
           properties_selected: {}
 
-        # Reset the sandbox (project fields)
-        promises.push @update profile.project_id, reset, safeProject, doLogQuery
+        # Reset the sandbox (profile and project fields)
+        #promises.push profileSvc.update profile.id, reset, safeProfile, doLogQuery
+        promises.push profileSvc.update(_merge(reset, id: profile.id), idObj.auth_user_id)
 
-        # Reset the sandbox (profile fields)
-        promises.push @profiles.update profile.id, reset, safeProfile, doLogQuery
+        # profile.id, reset, safeProfile, doLogQuery
 
       else
         # Delete client profiles (not the users themselves)

@@ -86,16 +86,16 @@ class TestServiceCrudProject extends ServiceCrudProject
     # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
     toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
 
-  profilesFact: () ->
-    profileSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
-    profileSvcCrud.resetSpies = () =>
-      @svc.resetSpies()
-      @joinCrud.svc.resetSpies()
+  # profilesFact: () ->
+  #   profileSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
+  #   profileSvcCrud.resetSpies = () =>
+  #     @svc.resetSpies()
+  #     @joinCrud.svc.resetSpies()
 
-    # console.log.cyan  "profileSvcCrud: #{profileSvcCrud.dbFn().tableName}"
-    # console.log.cyan  "profileSvcCrud: joinCrud: #{profileSvcCrud.joinCrud.dbFn().tableName}"
+  #   # console.log.cyan  "profileSvcCrud: #{profileSvcCrud.dbFn().tableName}"
+  #   # console.log.cyan  "profileSvcCrud: joinCrud: #{profileSvcCrud.joinCrud.dbFn().tableName}"
 
-    toTestThenableCrudInstance profileSvcCrud, profilesResponses
+  #   toTestThenableCrudInstance profileSvcCrud, profilesResponses
 
 
   resetSpies: () ->
@@ -156,6 +156,7 @@ describe 'route.projectSession', ->
     it 'project', ->
       @subject.rootGET(@mockRequest,mockRes,(->))
       .then (projects) =>
+        console.log "project resolved"
         @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
         logger.debug.green @subject.svc.getAllStub.args[0], true

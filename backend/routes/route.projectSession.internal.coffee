@@ -8,9 +8,8 @@ db = require('../config/dbs').get('main')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
+profileSvc = require '../services/service.profiles'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
-profileSvc = (require '../services/services.user').profile
-userProfileSvc = (require '../services/services.user').user.profiles
 keystoreSvc = require '../services/service.keystore'
 userUtils = require '../utils/util.user'
 ProjectSvcClass = require('../services/service.user.project')
@@ -156,35 +155,29 @@ class ProjectRouteCrud extends RouteCrud
         params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
         query: validators.object isEmptyProtect: true
 
-    @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
-    @profilesCrud.doLogRequest = ['params', 'body']
-    @profilesCrud.rootGETTransforms =
-      params: [
-        validators.mapKeys id: "#{tables.user.profile.tableName}.project_id"
-        validators.reqId toKey: "#{tables.user.profile.tableName}.auth_user_id"
-      ]
-
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
 
     super arguments...
 
   findProjectData: (projects, req, res, next) ->
-    console.log "ProjectRouteCrud findProjectData()"
+    # pull project structures
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
       drawnShapes:
         @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
-      favorites: @profilesCrud.rootGET req, res, next
+      profiles: profileSvc.getAll(auth_user_id: req.user.id)
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
       _.each projects, (project) ->
         project.clients = grouped.clients[project.id] or []
         project.notes = grouped.notes[project.id] or []
         project.drawnShapes = grouped.drawnShapes[project.id] or []
+
+        # update the favorites from the project profile structure
         project.favorites = _.merge {},
-          _.pluck(grouped.favorites[project.id], 'favorites')...,
+          _.pluck(grouped.profiles[project.id], 'favorites')...,
           _.pluck(project.clients, 'favorites')...
       projects
 
@@ -204,8 +197,7 @@ class ProjectRouteCrud extends RouteCrud
     .then (project) ->
       if not project?
         # Look for viewer profile
-        console.log "ProjectRouteCrud profile byIdGET"
-        userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": req.user.id, project_id: req.params.id
+        profileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": req.user.id, project_id: req.params.id
         .then sqlHelpers.singleRow
       else
         project
