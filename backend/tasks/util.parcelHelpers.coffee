@@ -85,7 +85,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       of: subtask.data.of
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
-      ids: successes
+      values: successes
       normalSubid: fipsCode  # required for countyHelpers.finalizeData
       deletedParcel: false
     jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
