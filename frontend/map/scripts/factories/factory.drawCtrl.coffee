@@ -5,6 +5,8 @@ app.factory "rmapsDrawCtrlFactory", (
 $rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
 leafletData, leafletDrawEvents) ->
 
+  ngLog = $log
+
   ({$scope, mapId, handles, drawnItems, postDrawAction, name, itemsOptions, drawOptions}) ->
 
     if itemsOptions?
@@ -15,11 +17,11 @@ leafletData, leafletDrawEvents) ->
       ready: false
 
     # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
-    $log = $log.spawn("map:rmapsDrawCtrlFactory:#{name}")
+    $log = ngLog.spawn("map:rmapsDrawCtrlFactory:#{name}")
 
 
     if drawnItems?._layers?
-      $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
+      ngLog.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     mapPromise = leafletData.getMap(mapId)
 
