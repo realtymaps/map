@@ -87,7 +87,7 @@ class ProjectCrud extends ThenableCrud
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
-    profileSvc.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id, doLogQuery
+    profileSvc.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
     .then sqlHelpers.singleRow
     .then (profile) =>
       throw new Error 'Project not found' unless profile?

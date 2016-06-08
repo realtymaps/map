@@ -185,7 +185,6 @@ class ProjectRouteCrud extends RouteCrud
     super(req, res, next)
     .then (projects) =>
       newReq = @cloneRequest(req)
-
       #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
       _.extend newReq.params, id: _.pluck(projects, 'id') #set to id since it gets mapped to user_profile.project_id
 
