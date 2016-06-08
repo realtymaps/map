@@ -20,11 +20,10 @@ util = require 'util'
 
 
 NUM_ROWS_TO_PAGINATE = 250
-HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: HALF_YEAR_MILLISEC})
+  dataLoadHelpers.getLastUpdateTimestamp(subtask)
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
@@ -144,7 +143,7 @@ loadRawData = (subtask) -> Promise.try () ->
       logger.debug("num rows to normalize: #{numRows}")
       normalizeDataPromise = jobQueue.queueSubsequentPaginatedSubtask {
         subtask
-        totalOrList: numRows
+        totalOrList: numRawRows
         maxPage: numRowsToPageNormalize
         laterSubtaskName: "normalizeData"
         mergeData: {
@@ -162,6 +161,7 @@ loadRawData = (subtask) -> Promise.try () ->
           dataType: "normParcel"
           rawDataType: "parcel"  # fixes lookup of rawtable for change counts
           rawTableSuffix: fipsCode
+          indicateDeletes: true
           subset:
             fips_code: fipsCode
         replace: true
@@ -266,7 +266,7 @@ finalizeData = (subtask) ->
 recordChangeCounts = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
+  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel')
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask

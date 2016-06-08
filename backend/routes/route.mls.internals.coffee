@@ -128,7 +128,7 @@ getDataDump = (mlsId, query, next) ->
         limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
       validation.validateAndTransformRequest(query, validations)
       .then (result) ->
-        retsService.getDataStream(mlsConfig, result.limit)
+        retsService.getDataStream(mlsConfig, searchOptions: {limit: result.limit})
       .then (retsStream) ->
         columns = null
         # consider just streaming the file as building up data takes up a considerable amount of memory
