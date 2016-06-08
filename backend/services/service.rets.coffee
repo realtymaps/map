@@ -211,11 +211,11 @@ getDataChunks = (mlsInfo, handler, opts={}) ->
                 searchOptions.limit = fullLimit - total
                 if opts.subLimit
                   searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
-              handler(response.results)
+              handlerPromise = handler(response.results)
               .catch errorHandlingUtils.isUnhandled, (err) ->
                 throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
-              .then () ->
-                searchIteration()
+              nextIterationPromise = searchIteration()
+              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
             else
               handler(response.results)
               .then () ->
