@@ -161,13 +161,18 @@ class ProjectRouteCrud extends RouteCrud
     super arguments...
 
   findProjectData: (projects, req, res, next) ->
+    # setup an entity and filter for profileSvc call
+    # `whereIn` means `req.params.id` could be a list of project_ids to pull from
+    entity = auth_user_id: req.user.id
+    whereInItems = project_id: req.params.id 
+
     # pull project structures
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
       drawnShapes:
         @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
-      profiles: profileSvc.getAll(auth_user_id: req.user.id)
+      profiles: profileSvc.getAllBulk(entity, whereInItems)
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
       _.each projects, (project) ->

@@ -3,7 +3,7 @@ _ = require 'lodash'
 logger = require '../config/logger'
 tables = require '../config/tables'
 db = require('../config/dbs').get('main')
-{singleRow} = require '../utils/util.sql.helpers'
+{singleRow, whereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
 projectSvc = (require './services.user').project
@@ -61,6 +61,17 @@ getAll = (entity) ->
   tables.user.profile()
   .select(safeProfile)
   .where(entity)
+
+getAllBulk = (entity, whereInFields) ->
+  query = tables.user.profile()
+  .select(safeProfile)
+  .where(entity)
+
+  for column of whereInFields
+    values = if _.isArray whereInFields[column] then whereInFields[column] else [whereInFields[column]]
+    query = whereIn(query, column, values)
+
+  query
 
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
 # Note: this differs from a usual "getAll" endpoint in that we bundle some project fields with profile results
@@ -135,6 +146,7 @@ updateCurrent = (session, partialState, safe) ->
 
 module.exports =
   getAll: getAll
+  getAllBulk: getAllBulk
   getProfiles: getProfiles
   getClientProfiles: getClientProfiles
   getCurrentSessionProfile: getCurrentSessionProfile
