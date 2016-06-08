@@ -91,7 +91,6 @@ getDataStream = (mlsInfo, opts={}) ->
         for field in columnData
           fieldMappings[field.SystemName] = field.LongName
         total = 0
-        opts.searchOptions.limit = 100
         searchQuery = internals.buildSearchQuery(mlsInfo, opts)
         searchOptions =
           count: 0
@@ -191,7 +190,6 @@ getDataChunks = (mlsInfo, handler, opts={}) ->
       if !mlsInfo.listing_data.field
         throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
       total = 0
-      opts.searchOptions.limit = 90
       searchQuery = internals.buildSearchQuery(mlsInfo, opts)
       searchOptions =
         count: 0
