@@ -136,7 +136,7 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
       markers:
         notes:[]
 
-  leafletData.getMap(@mapId).then (lMap) ->
+  leafletData.getMap('mainMap').then (lMap) ->
     _markerGeoJsonHandle =
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
         return if model.markerType != 'note'
