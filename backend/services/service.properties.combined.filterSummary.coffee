@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('service:filterSummary:combined')
+logger = require('../config/logger').spawn('service:property:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
@@ -8,6 +8,7 @@ filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
 cluster = require '../utils/util.sql.manual.cluster.combined'
+{currentProfile} = require '../../common/utils/util.profile'
 
 dbFn = tables.property.combined
 
@@ -77,30 +78,68 @@ _getResultCount = (validatedQuery) ->
   query = _getFilterSummaryAsQuery(validatedQuery, null, query)
   query
 
+getPermissions = (req) -> Promise.try ->
+  # Skip permissions for superusers
+  if req.user.is_superuser
+    return superuser: true
+  else
+    permissions =
+      fips: []
+      mls: []
+
+    # Limit to FIPS codes and verified MLS for this user
+    permissions.fips.push(req.user.fips_codes...)
+    permissions.mls.push(req.user.mlses_verified...)
+
+    # Include by proxy MLS available to project owner
+    profile = currentProfile(req.session)
+
+    if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
+      return tables.auth.user()
+        .select('mlses_verified')
+        .where('id', profile.parent_auth_user_id).then ([owner]) ->
+          permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitilzation mismatches may exist
+          permissions
+
+    return permissions
+
+queryPermissions = (query, permissions) ->
+  mls = _.union(permissions.mls, permissions.mls_proxy)
+  query.where ->
+    if permissions.fips && mls
+      @.where ->
+        @.where("data_source_type", "county")
+        sqlHelpers.whereIn(@, "fips_code", permissions.fips)
+      @.orWhere ->
+        @.where("data_source_type", "mls")
+        sqlHelpers.whereIn(@, "data_source_id", mls)
+    else if mls
+      @.where("data_source_type", "mls")
+      sqlHelpers.whereIn(@, "data_source_id", mls)
+    else if permissions.fips
+      @.where("data_source_type", "county")
+      sqlHelpers.whereIn(@, "fips_code", permissions.fips)
+    else if !permissions.superuser
+      @.whereRaw("FALSE")
+
+scrubPermissions = (data, permissions) ->
+  if (data.data_source_type == 'county' && permissions.fips.indexOf(data.fips_code) == -1) ||
+      (data.data_source_type == 'mls' && permissions.mls.indexOf(data.data_source_id) == -1)
+    delete data.subscriber_groups
+    delete data.owner_name
+    delete data.owner_name_2
+    delete data.owner_address
+
 _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
-  {bounds, state} = validatedQuery
+  {bounds, state, permissions} = validatedQuery
   {filters} = state
   return query if !filters?.status?.length
   throw new Error('knex starting query missing!') if !query
 
-  # Permissions
-  query.where ->
-    if filters.fips_codes && filters.mlses_verified
-      @.where ->
-        @.where("data_source_type", "county")
-        sqlHelpers.whereIn(@, "fips_code", filters.fips_codes)
-      @.orWhere ->
-        @.where("data_source_type", "mls")
-        sqlHelpers.whereIn(@, "data_source_id", filters.mlses_verified)
-    else if filters.mlses_verified
-      sqlHelpers.whereIn(@, "fips_code", filters.fips_codes)
-      @.where("data_source_type", "mls")
-    else if filters.fips_codes
-      sqlHelpers.whereIn(@, "fips_code", filters.fips_codes)
-      @.where("data_source_type", "mls")
-    else
+  # Add permissions
+  queryPermissions(query, permissions)
 
-  # Everything else is wrapped so the result is (permissions) AND (filters)
+  # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
   query.where ->
     @.whereNotNull('geometry')
 
@@ -204,6 +243,9 @@ transformProperties = (properties) ->
   streetRe = /^(\d+)\s*(.+)/
   cityRe = /^(.+),\s*(.+)/
   for prop in properties
+    scrubPermissions(prop)
+
+    # This can be removed once mv_property_details is gone. Note: front-end will need updating
     if prop.address?
       # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
       lines = prop.address.lines.slice(-3)
@@ -229,3 +271,6 @@ module.exports =
       _getFilterSummaryAsQuery(filters, limit, query)
 
   cluster: cluster
+  getPermissions: getPermissions
+  queryPermissions: queryPermissions
+  scrubPermissions: scrubPermissions

@@ -25,6 +25,7 @@ basicColumns = do ->
       'owner_zip'
     ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     filterCombined: [
+      'data_source_type',
       'rm_property_id',
       'address',
       'geometry',

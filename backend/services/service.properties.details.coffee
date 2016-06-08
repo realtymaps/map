@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:property:details')
 validation = require '../utils/util.validation'
 {validators} = validation
 sqlHelpers = require './../utils/util.sql.helpers'

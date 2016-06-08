@@ -4,7 +4,7 @@ combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('service:filterSummary')
+logger = require('../config/logger').spawn('service:property:filterSummary')
 propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
@@ -33,15 +33,21 @@ module.exports =
         validation.validateAndTransform(req.validBody, filterSummaryImpl.transforms)
 
     .then (queryParams) ->
-      # We know there is absolutely nothing to select, GTFO before we do any real work
-      if ! queryParams
-        return []
 
-      # Limit to FIPS codes and verified MLS for this user
-      # TODO: Proxied MLS data (county data does not need to be proxied since it is only available for Pinned properties)
-      if !req.user.is_superuser
-        queryParams.state.filters.fips_codes = req.user.fips_codes
-        queryParams.state.filters.mlses_verified = req.user.mlses_verified
+      if filterSummaryImpl.getPermissions
+        # Calculate permissions for the current user
+        filterSummaryImpl.getPermissions(req)
+        .then (permissions) ->
+          queryParams.permissions = permissions
+          logger.debug queryParams.permissions
+          queryParams
+      else
+        queryParams
+
+    .then (queryParams) ->
+      # We know there is absolutely nothing to select, GTFO before we do any real work
+      if !queryParams
+        return []
 
       _limitByPinnedProps = (query, state, queryParams) ->
         # include saved id's in query so no need to touch db later
@@ -54,6 +60,7 @@ module.exports =
         clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
         filterSummaryImpl.getFilterSummary(queryParams, limit, clusterQuery)
         .then (properties) ->
+          filterSummaryImpl.transformProperties?(properties)
           filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
       summary = () ->
@@ -71,7 +78,7 @@ module.exports =
 
       switch queryParams.returnType
         when 'clusterOrDefault'
-          # Count the number of properties and do clustering if
+          # Count the number of properties and do clustering if there are enough
           query = filterSummaryImpl.getResultCount(queryParams)
           _limitByPinnedProps(query, state, queryParams)
 
