@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 template = require './leafletDraw.jade'
 LeafletDrawApi = require './api.draw.js'
 
-app.directive 'rmapsLeafletDraw', ($log, $timeout, leafletData,
+app.directive 'rmapsLeafletDraw', ($log, $timeout, $q, leafletData,
 leafletDrawEvents, leafletIterators,
 rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
@@ -34,6 +34,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     events: '=?'
     enabled: '=?'
     ngShow: '=?'
+    control: '=?'
 
   template: template()
   replace: false
@@ -44,11 +45,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     _optionsEditedInDirective = false
 
     _scopeContext = scopeContext(scope, attrs)
-
-    _enableHandle = (handle) ->
-      handle.handler.enable()
-      scope.enabled = true
-      _currentHandler = handle.handler
 
     angular.extend scope,
       button: _scopeContext 'button'
@@ -81,13 +77,11 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         _attachEvents()
 
       _create = () ->
+        _deferred = $q.defer()
 
         return if _optionsEditedInDirective
 
         options = scope.options or {}
-
-        if options.control?.promises?
-          options.control.promised _deferred.promise
 
         if !L.Control.Draw?
           $log.error "#{errorHeader} Leaflet.Draw is not loaded as a plugin."
@@ -113,11 +107,25 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
+        enableHandle = (handle) ->
+          if typeof(handle) == 'string'
+            handle = drawModeHandles[handle] || editModeHandles[handle]
+          handle.handler.enable()
+          scope.enabled = true
+          _currentHandler = handle.handler
+
+        if options.control?
+          options.control _deferred.promise
+
+          _deferred.resolve {
+            enableHandle
+          }
+
         ###eslint-disable###
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
             scope['clicked' + handleName.toInitCaps()] = (event) ->
-              _enableHandle legacyHandle, scope
+              enableHandle legacyHandle, scope
 
 
         scope.clickedPen = (event) ->
@@ -131,11 +139,11 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
 
         scope.clickedEdit = (event) ->
-          _enableHandle editModeHandles?.edit, scope
+          enableHandle editModeHandles?.edit, scope
           scope.canSave = true
 
         scope.clickedTrash = (event) ->
-          _enableHandle editModeHandles?.remove, scope
+          enableHandle editModeHandles?.remove, scope
           scope.canSave = true
 
         ###eslint-enable###
