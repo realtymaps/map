@@ -34,7 +34,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     events: '=?'
     enabled: '=?'
     ngShow: '=?'
-    control: '=?'
 
   template: template()
   replace: false
