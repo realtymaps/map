@@ -2,7 +2,6 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 rets = require 'rets-client'
-moment = require('moment')
 logger = require('../config/logger').spawn('service:rets')
 require '../config/promisify'
 through2 = require 'through2'
@@ -80,33 +79,25 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
         response.results[0].metadata
 
 
-getDataStream = (mlsInfo, limit, minDate=0) ->
+getDataStream = (mlsInfo, opts={}) ->
   externalAccounts.getAccountInfo(mlsInfo.id)
   .then (creds) ->
     internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClient) ->
-      if !mlsInfo.listing_data.queryTemplate || !mlsInfo.listing_data.field
-        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
-      retsClient.metadata.getTable(mlsInfo.listing_data.db, mlsInfo.listing_data.table)
-      .catch errorHandlingUtils.isUnhandled, (error) ->
-        throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS columns')
+      if !mlsInfo.listing_data.field
+        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
+      getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
       .then (columnData) ->
         fieldMappings = {}
-        reverseMappings = {}
-        for field in columnData.results[0].metadata
-          fieldMappings[field.SystemName] = field.LongName.replace(/\./g, '').trim()
-          # handle LongName collisions
-          if reverseMappings[fieldMappings[field.SystemName]]?
-            i=2
-            baseName = fieldMappings[field.SystemName]
-            while reverseMappings["#{baseName} (#{i})"]?
-              i++
-            fieldMappings[field.SystemName] = "#{baseName} (#{i})"
-          reverseMappings[fieldMappings[field.SystemName]] = field.SystemName
-        momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.listing_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.listing_data.field))
-        options =
-          limit: limit
-          count: 0
+        for field in columnData
+          fieldMappings[field.SystemName] = field.LongName
         total = 0
+        searchQuery = internals.buildSearchQuery(mlsInfo, opts)
+        searchOptions =
+          count: 0
+        _.extend(searchOptions, opts.searchOptions)
+        fullLimit = opts.searchOptions.limit
+        if opts.subLimit
+          searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
 
         columns = null
         delimiter = null
@@ -123,7 +114,7 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             resolved = false
             internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClientIteration) ->
               new Promise (resolve2, reject2) ->
-                retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, options, true)
+                retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions, true)
                 retsStream.pipe(resultStream, end: false)
                 retsStream.on 'end', resolve2
                 resolved = true
@@ -160,10 +151,12 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
               callback()
             when 'done'
               total += event.payload.rowsReceived
-              if event.payload.maxRowsExceeded && (!limit || total < limit)
-                options.offset = total
-                if limit
-                  options.limit = limit-total
+              if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
+                searchOptions.offset = total
+                if fullLimit
+                  searchOptions.limit = fullLimit - total
+                  if opts.subLimit
+                    searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
                 streamIteration()
                 .catch (err) =>
                   finish(this, err)
@@ -190,6 +183,54 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
 
 
+getDataChunks = (mlsInfo, handler, opts={}) ->
+  externalAccounts.getAccountInfo(mlsInfo.id)
+  .then (creds) ->
+    internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClient) ->
+      if !mlsInfo.listing_data.field
+        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
+      total = 0
+      searchQuery = internals.buildSearchQuery(mlsInfo, opts)
+      searchOptions =
+        count: 0
+      _.extend(searchOptions, opts.searchOptions)
+      fullLimit = opts.searchOptions.limit
+      if opts.subLimit
+        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+
+      searchIteration = () ->
+        internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClientIteration) ->
+          retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
+          .then (response) ->
+            total += response.results.length
+            if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
+              searchOptions.offset = total
+              if fullLimit
+                searchOptions.limit = fullLimit - total
+                if opts.subLimit
+                  searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+              handlerPromise = handler(response.results)
+              .catch errorHandlingUtils.isUnhandled, (err) ->
+                throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
+              nextIterationPromise = searchIteration()
+              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
+            else
+              handler(response.results)
+              .then () ->
+                return total
+          .catch rets.RetsReplyError, (err) ->
+            if err.replyTag == "NO_RECORDS_FOUND" && total > 0
+              # code for 0 results, not really an error (DMQL is a clunky language)
+              return total
+            else
+              throw err
+
+      searchIteration()
+
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
+
+
 getPhotosObject = ({serverInfo, databaseName, photoIds, objectsOpts, photoType}) ->
   objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
   photoType ?= 'Photo'
@@ -206,6 +247,7 @@ module.exports = {
   getColumnList
   getLookupTypes
   getDataStream
+  getDataChunks
   getPhotosObject
   getObjectList
   isTransientRetsError: internals.isTransientRetsError

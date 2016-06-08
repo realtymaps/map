@@ -41,10 +41,24 @@ module.exports =
     kill_timeout_seconds: 3600
     auto_enqueue: false
 
+  subtask_markUpToDate:
+    step_num: 3
+    queue_name: 'mls'
+    data: null
+    retry_delay_seconds: 30
+    retry_max_count: 100
+    hard_fail_timeouts: false
+    hard_fail_after_retries: true
+    hard_fail_zombies: false
+    warn_timeout_seconds: 30
+    kill_timeout_seconds: 45
+    auto_enqueue: false
+    active: true
+
   subtask_storePhotosPrep:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_normalizeData"
-    step_num: 3
+    step_num: 4
     queue_name: 'mls'
     data: null
     retry_delay_seconds: 30
@@ -60,7 +74,7 @@ module.exports =
   subtask_storePhotos:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_normalizeData"
-    step_num: 4
+    step_num: 5
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -76,7 +90,7 @@ module.exports =
   subtask_recordChangeCounts:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_recordChangeCounts"
-    step_num: 5
+    step_num: 10006
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -92,7 +106,7 @@ module.exports =
   subtask_finalizeDataPrep:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_finalizeDataPrep"
-    step_num: 6
+    step_num: 10007
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -108,7 +122,7 @@ module.exports =
   subtask_finalizeData:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_finalizeData"
-    step_num: 7
+    step_num: 10008
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -124,7 +138,7 @@ module.exports =
   subtask_activateNewData:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_activateNewData"
-    step_num: 8
+    step_num: 10009
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null

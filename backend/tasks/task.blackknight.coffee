@@ -113,6 +113,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.tr
         dataType: file.type
         deletes: dataLoadHelpers.DELETE.INDICATED
         action: action
+        indicateDeletes: (action == constants.REFRESH)  # only set this flag for refreshes, not updates
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: loadDataList, replace: true, concurrency: 10})
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: countDataList, replace: true})
@@ -281,7 +282,7 @@ finalizeDataPrep = (subtask) ->
     }
 
 finalizeData = (subtask) ->
-  Promise.map (subtask.data.ids || subtask.data.values), (id) ->
+  Promise.map subtask.data.values, (id) ->
     countyHelpers.finalizeData({subtask, id})
 
 
@@ -326,8 +327,7 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  indicateDeletes = (subtask.data.action == constants.REFRESH)  # only set this flag for refreshes, not updates
-  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes, deletesTable: 'property'})
+  dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'property'})
 
 
 subtasks = {
