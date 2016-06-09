@@ -80,7 +80,7 @@ normalizeData = (subtask) ->
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.property.listing()
+  tables.normalized.listing()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
@@ -94,7 +94,7 @@ finalizeData = (subtask) ->
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
 
-  tables.property.listing()
+  tables.normalized.listing()
   .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
   .then (rows) ->

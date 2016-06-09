@@ -18,23 +18,22 @@ describe "util.countyHelpers", () ->
     before ->
       subtask =
         data:
-          dataType: "normParcel"
-          rawDataType: "parcel"
+          dataType: "parcel"
           normalSubid: '1234'
           rawTableSuffix: '1234'
           subset:
             fips_code: '1234'
 
-      propTaxMock = new SqlMock 'property', 'tax', result: [{rm_property_id: 1}]
-      mortgagePropMock = new SqlMock 'property', 'mortgage', result: []
-      deedPropMock = new SqlMock 'property', 'deed', result: []
-      parcelPropMock = new SqlMock 'property', 'parcel', result: []
+      propTaxMock = new SqlMock('normalized', 'tax', result: [{rm_property_id: 1}])
+      mortgagePropMock = new SqlMock('normalized', 'mortgage', result: [])
+      deedPropMock = new SqlMock('normalized', 'deed', result: [])
+      parcelPropMock = new SqlMock('normalized', 'parcel', result: [])
 
-      deletesPropMock = new SqlMock 'deletes', 'property', result: []
+      deletesPropMock = new SqlMock('deletes', 'property', result: [])
 
 
       tables =
-        property:
+        normalized:
           tax: propTaxMock.dbFn()
           mortgage: mortgagePropMock.dbFn()
           deed: deedPropMock.dbFn()

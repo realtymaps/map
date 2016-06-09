@@ -1,13 +1,15 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('util:parcel')
-tables = require '../config/tables'
-sqlHelpers = require '../utils/util.sql.helpers'
+dbs = require '../config/dbs'
 {DataValidationError} = require '../utils/util.validation'
 transforms = require '../utils/transforms/transform.parcel'
 
 
-formatParcel = (feature) -> Promise.try ->
+_toReplace = 'REPLACE_ME'
+
+
+_formatParcel = (feature) -> Promise.try ->
   ###
     parcelapn: '48066001',
     fips: '06009',
@@ -50,7 +52,7 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
   for row in stringRows
     do (row) ->
       #feature is a string, make it a JSON obj
-      formatParcel JSON.parse row.feature
+      _formatParcel JSON.parse row.feature
       .then (obj) ->
         # logger.debug obj
 
@@ -81,70 +83,16 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
             up_to_date: startTime
           }
 
-_toReplace = 'REPLACE_ME'
 
-_fixTableName = (database, tableName) ->
-  normStr = ''
-  if database == 'norm' || database == 'normalized'
-    normStr = 'norm'
-    tableName = normStr + tableName.toInitCaps()
-  tableName
-
-_prepEntityForGeomReplace = (row) ->
-  # logger.debug val.geometry
-  toReplaceWith = "st_geomfromgeojson( '#{JSON.stringify(row.geometry)}')"
-  toReplaceWith = "ST_Multi(#{toReplaceWith})" if row.geometry.type == 'Polygon'
-
-  key = if row.geometry.type == 'Point' then 'geom_point_raw' else 'geom_polys_raw'
-
+prepRowForRawGeom = (row) ->
+  if row.geometry.type == 'Point'
+    row.geom_point_raw = dbs.get('normalized').raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
+  else  # 'Polygon'
+    row.geom_polys_raw = dbs.get('normalized').raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
   delete row.geometry
 
-  row[key] = _toReplace
-
-  {row, toReplaceWith}
-
-_insertOrUpdate = (method, {row, tableName, database}) ->
-  method ?= 'insert'
-  tableName = _fixTableName database, tableName
-  {row, toReplaceWith} = _prepEntityForGeomReplace row
-
-  q = tables.property[tableName]()[method](row)
-
-  if method == 'update'
-    q = q.where(rm_property_id: row.rm_property_id)
-
-  raw = q.toString()
-  raw = raw.replace("'#{_toReplace}'", toReplaceWith)
-    .replace(/\\/g,'') #hack to deal with change_history and json knex issues
-
-  logger.debug raw
-  raw
-
-
-insertParcelStr = _insertOrUpdate.bind(null, 'insert')
-
-updateParcelStr = _insertOrUpdate.bind(null, 'update')
-
-upsertParcelSqlString = ({row, tableName, database}) ->
-
-  tableName = _fixTableName database, tableName
-  {row, toReplaceWith} = _prepEntityForGeomReplace {row, tableName, database}
-
-  q = sqlHelpers.upsert
-    idObj: rm_property_id: row.rm_property_id
-    entityObj: _.omit(row, 'rm_property_id'),
-    dbFn: tables.property[tableName]
-
-  raw = q.toString()
-  raw = raw.replace(new RegExp("'#{_toReplace}'", "g"), toReplaceWith)
-
-  logger.debug raw
-  raw
 
 module.exports = {
-  formatParcel
   normalize
-  upsertParcelSqlString
-  insertParcelStr
-  updateParcelStr
+  prepRowForRawGeom
 }

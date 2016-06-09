@@ -44,7 +44,7 @@ Promise.try () ->
 
 
     dbs = require "#{basePath}/config/dbs"
-    dbs.get('main').transaction (transaction) ->
+    dbs.transaction 'main', (transaction) ->
       Promise.try () ->
         logger.info "#{prefix} changing key for sanity check..."
         keystore.setValue('ENCRYPTION_AT_REST', newEncryptor.encrypt('you are using the correct key!'), namespace: 'sanity', transaction: transaction)

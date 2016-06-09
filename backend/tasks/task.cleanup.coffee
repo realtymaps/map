@@ -35,7 +35,7 @@ subtaskErrors = (subtask) ->
     logger.debug "Deleted #{count} rows from subtask error history"
 
 deleteMarkers = (subtask) ->
-  tables.deletes.property()
+  tables.deletes.combined()
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
@@ -49,7 +49,7 @@ deleteParcels = (subtask) ->
     logger.debug "Deleted #{count} rows from delete parcels table"
 
 deleteInactiveRows = (subtask) ->
-  tables.property.combined()
+  tables.finalized.combined()
   .where(active: false)
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
   .delete()
@@ -60,12 +60,12 @@ deletePhotosPrep = (subtask) ->
   numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
 
   tables.deletes.photos()
-  .select('id')
-  .then (ids) ->
-    ids = _.pluck(ids, 'id')
+  .select('keys')
+  .then (keys) ->
+    keys = _.pluck(ids, 'key')
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
-      totalOrList: ids
+      totalOrList: keys
       maxPage: numRowsToPageDeletePhotos
       laterSubtaskName: "deletePhotos"
     }
@@ -73,8 +73,8 @@ deletePhotosPrep = (subtask) ->
 deletePhotos = (subtask) ->
   logger.debug subtask
 
-  Promise.map subtask.data.values, (id) ->
-    mlsHelpers.deleteOldPhoto(subtask, id)
+  Promise.map subtask.data.values, (key) ->
+    mlsHelpers.deleteOldPhoto(subtask, key)
 
 
 module.exports = new TaskImplementation 'cleanup', {

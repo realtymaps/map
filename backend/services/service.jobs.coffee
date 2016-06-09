@@ -101,7 +101,7 @@ healthDbFn = () ->
       .as('s1')
     )
     .leftJoin(
-      tables.property.combined().select(
+      tables.finalized.combined().select(
         db.raw('data_source_id as combined_id'),
         db.raw('SUM(CASE WHEN active = true THEN 1 ELSE 0 END) AS active_count'),
         db.raw('SUM(CASE WHEN active = false THEN 1 ELSE 0 END) AS inactive_count'),
