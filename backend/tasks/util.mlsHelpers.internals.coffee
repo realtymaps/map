@@ -32,7 +32,10 @@ makeInsertPhoto = ({data_source_id, data_source_uuid, cdnPhotoStr, jsonObjStr, i
     return query.toString()
   query
 
-
+###
+# this function works backwards from the validation for data_source_uuid to determine the LongName and then the SystemName
+# of the UUID field
+###
 getUuidField = (mlsInfo) ->
   columnDataPromise = retsCacheService.getColumnList(mlsId: mlsInfo.id, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
   validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsInfo.id, 'listing', 'base', 'data_source_uuid')
