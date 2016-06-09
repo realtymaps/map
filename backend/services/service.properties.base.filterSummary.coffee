@@ -58,7 +58,7 @@ transforms = do ->
   ]
   returnType: validators.string()
 
-_getDefaultQuery = ->
+getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true, "distinct on (rm_property_id)")
 
 getResultCount = ({queryParams}) ->
@@ -68,7 +68,7 @@ getResultCount = ({queryParams}) ->
   query = getFilterSummaryAsQuery({queryParams, query})
 
 getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
-  query ?= _getDefaultQuery()
+  query ?= getDefaultQuery()
   {bounds, state} = queryParams
   {filters} = state
   return query if !filters?.status?.length
@@ -133,5 +133,6 @@ getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
 module.exports =
   transforms: transforms
   getFilterSummaryAsQuery: getFilterSummaryAsQuery
+  getDefaultQuery: getDefaultQuery
   getResultCount: getResultCount
   cluster: cluster
