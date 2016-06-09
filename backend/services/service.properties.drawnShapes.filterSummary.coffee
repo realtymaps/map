@@ -37,25 +37,25 @@ getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
-getFilterSummaryAsQuery = (filters, limit, query = getDefaultQuery()) ->
-  # logger.debug.green filters, true
-  query = BaseFilterSummaryService.getFilterSummaryAsQuery(filters, limit, query)
-  .where("#{drawnShapesName}.project_id", filters.project_id)
+getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
+  query ?= getDefaultQuery()
+  # logger.debug.green queryParams, true
+  query = BaseFilterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
+  .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
-  if filters.isArea?
-    if filters.isArea
-      query = query.whereNotNull("#{drawnShapesName}.area_name", filters.project_id)
+  if queryParams.isArea?
+    if queryParams.isArea
+      query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
 
   query
 
-getResultCount = (filters) ->
+getResultCount = ({queryParams}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
-  q = getFilterSummaryAsQuery(filters,null, query)
+  q = getFilterSummaryAsQuery({queryParams, query})
   logger.debug q.toString()
   q
 
 module.exports =
-  getDefaultQuery: getDefaultQuery
   getResultCount: getResultCount
   getFilterSummaryAsQuery: getFilterSummaryAsQuery
   transforms: _.merge {}, BaseFilterSummaryService.transforms,
