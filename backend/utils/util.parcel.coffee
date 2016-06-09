@@ -6,9 +6,6 @@ dbs = require '../config/dbs'
 transforms = require '../utils/transforms/transform.parcel'
 
 
-_toReplace = 'REPLACE_ME'
-
-
 _formatParcel = (feature) -> Promise.try ->
   ###
     parcelapn: '48066001',
