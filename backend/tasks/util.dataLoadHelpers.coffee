@@ -376,7 +376,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
       cause: subtask.data.dataType
       i: subtask.data.i
       of: subtask.data.of
-      rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
       values: successes
       normalSubid: subtask.data.normalSubid
@@ -651,8 +650,8 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               donePayload = event.payload
               callback()
             when 'error'
-              if !event.payload instanceof rets.RetsReplyError || !event.payload.replyTag == "NO_RECORDS_FOUND"
-                # not a true error, just no records returned
+              if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
+                # make sure it is a true error, not just no records returned
                 onError(event.payload)
               callback()
             else
