@@ -10,6 +10,14 @@ then
     exit 0
 fi
 
+
+if [[ "$IS_HEROKU" != "" && "$DYNO" == web.* && "$DYNO" != "web.1" ]]
+then
+    $SCRIPT_DIR/misc/dbsyncLock wait
+    exit 0
+fi
+
+
 DBSYNC_RESULT=/tmp/dbsync.result
 S3_BUCKET=rmaps-dropbox
 
@@ -40,6 +48,10 @@ source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
 $DBSYNC --path migrations/$MIGRATION_FOLDER --client pg --connection $DST_URL --reminder 1 --recursive | tee "$DBSYNC_RESULT"
+if [[ "$IS_HEROKU" != "" ]]
+then
+    $SCRIPT_DIR/misc/dbsyncLock release
+fi
 
 
 if [[ "$NODE_ENV" == "production" ]]
