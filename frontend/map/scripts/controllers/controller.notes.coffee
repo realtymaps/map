@@ -116,8 +116,20 @@ leafletIterators, toastr, $log) ->
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
-rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapEventsLinkerService) ->
+.controller 'rmapsMapNotesCtrl', (
+  $rootScope,
+  $scope,
+  $http,
+  $log,
+  leafletData,
+  leafletIterators,
+  rmapsEventConstants,
+  rmapsLayerFormattersService,
+  rmapsMapEventsLinkerService,
+  rmapsMapIds,
+  rmapsNotesService,
+  rmapsPopupLoaderService
+) ->
 
   mapId = rmapsMapIds.mainMap()
   setMarkerNotesOptions = rmapsLayerFormattersService.MLS.setMarkerNotesOptions
