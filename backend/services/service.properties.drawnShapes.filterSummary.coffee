@@ -40,7 +40,7 @@ getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
 getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
   query ?= getDefaultQuery()
   # logger.debug.green queryParams, true
-  query = BaseFilterSummaryService.getFilterSummaryAsQuery(queryParams, limit, query)
+  query = BaseFilterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea?
