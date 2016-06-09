@@ -43,7 +43,7 @@ getUuidField = (mlsInfo) ->
     for field in columnData
       if field.LongName == validationInfo.validationMap.base[0].input
         uuidField = field.SystemName
-        break;
+        break
     if !uuidField
       throw new Error("can't locate uuidField for #{mlsInfo.id} (SystemName for #{validationInfo.validationMap.base[0].input})")
     return uuidField
