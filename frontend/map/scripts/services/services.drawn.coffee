@@ -44,6 +44,7 @@ rmapsLeafletHelpers) ->
         normal.id = shape.id
       if shape.shape_extras?
         normal.shape_extras = shape.shape_extras
+        
       normal.area_name = if shape.area_name? then shape.area_name else null
       normal.area_details = shape.area_details || null
       normal

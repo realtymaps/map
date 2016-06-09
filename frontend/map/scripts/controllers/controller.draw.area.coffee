@@ -5,6 +5,7 @@ color = 'red'
 app.controller "rmapsDrawAreaCtrl", (
 $scope,
 $log,
+$q,
 $rootScope,
 rmapsEventConstants,
 rmapsDrawnUtilsService
@@ -13,7 +14,7 @@ rmapsDrawCtrlFactory,
 leafletData) ->
 
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
-
+  isReadyPromise = $q.defer()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItemsAreas()
@@ -56,6 +57,9 @@ leafletData) ->
           color: color
           fillColor: color
         drawOptions:
+          control: (promisedControl) ->
+            promisedControl.then (control) ->
+              isReadyPromise.resolve(control)
           draw:
             polyline:
               shapeOptions: {color}
@@ -69,7 +73,10 @@ leafletData) ->
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
       if newVal
-        return _drawCtrlFactory(_handles)
+        _drawCtrlFactory(_handles)
+        isReadyPromise.promise.then (control) ->
+          control.enableHandle 'rectangle'
+        return
       _drawCtrlFactory()
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, model) ->
