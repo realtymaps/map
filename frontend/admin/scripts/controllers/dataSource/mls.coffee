@@ -294,7 +294,7 @@ app.controller 'rmapsMlsCtrl',
 
     # test for whether MLS is ready and eligible for task activation and normalization
     $scope.isReady = (mlsObj) ->
-      _.every ['queryTemplate', 'db', 'table', 'field'], (k) ->
+      _.every ['db', 'table', 'field'], (k) ->
         return mlsObj.listing_data? and k of mlsObj.listing_data and mlsObj.listing_data[k] != ''
 
     # modal for Create mlsData
