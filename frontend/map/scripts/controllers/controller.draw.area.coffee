@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-mapId = 'mainMap'
 color = 'red'
 
 app.controller "rmapsDrawAreaCtrl", (
@@ -10,11 +9,15 @@ $rootScope,
 rmapsEventConstants,
 rmapsDrawnUtilsService
 rmapsMapDrawHandlesFactory,
+rmapsMapIds,
 rmapsDrawCtrlFactory,
-leafletData) ->
+leafletData
+) ->
 
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
   isReadyPromise = $q.defer()
+
+  mapId = rmapsMapIds.mainMap()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItemsAreas()

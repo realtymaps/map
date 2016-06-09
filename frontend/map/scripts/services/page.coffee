@@ -17,7 +17,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $log, rmapsProfilesService) ->
+  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsMapIds, rmapsProfilesService, leafletData) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -80,8 +80,16 @@ app.provider 'rmapsPageService', () ->
 
       goToMap: (params = {}) ->
         if rmapsProfilesService.currentProfile?.project_id?
+
+          ## Clear the current map if any
+          $log.debug("PPPPPPP - Page is flushing Main Map")
+#          leafletData.unresolveMap(rmapsMapIds.mainMap())
+          rmapsMapIds.incrementMainMap()
+
           params = _.extend(params, { project_id: rmapsProfilesService.currentProfile?.project_id })
-          $state.go 'map', params
+
+          $stickyState.reset('map')
+          $state.go 'map', params, { reload: true }
         else
           $state.go 'main'
 
@@ -117,6 +125,14 @@ app.provider 'rmapsPageService', () ->
     #
     $rootScope.$on "$stateChangeStart", (event, toState) ->
       return if event.defaultPrevented
+
+      console.warn("%")
+      console.warn("%")
+      console.warn("%")
+      console.warn("% STATE CHANGE #{toState.name}")
+      console.warn("%")
+      console.warn("%")
+      console.warn("%")
 
       if toState.url?
         # Reset the Page related data
