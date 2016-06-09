@@ -29,7 +29,7 @@ describe "util.countyHelpers", () ->
       deedPropMock = new SqlMock('normalized', 'deed', result: [])
       parcelPropMock = new SqlMock('normalized', 'parcel', result: [])
 
-      deletesPropMock = new SqlMock('deletes', 'property', result: [])
+      deletesPropMock = new SqlMock('deletes', 'combined', result: [])
 
 
       tables =
