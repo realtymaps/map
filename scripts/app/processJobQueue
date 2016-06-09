@@ -9,6 +9,7 @@ source $SCRIPT_DIR/app/syncVars
 
 if [[ "$IS_HEROKU" != "" ]]
 then
+    $SCRIPT_DIR/misc/dbsyncLock wait
     bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
 else
     coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"

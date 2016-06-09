@@ -1,0 +1,25 @@
+#!/usr/bin/env coffee
+
+
+Promise = require('bluebird')
+shutdown = require('../../backend/config/shutdown')
+dbsyncLock = require('../../backend/utils/util.dbsyncLock')
+analyzeValue = require('../../common/utils/util.analyzeValue')
+
+actionPromise = switch process.argv[2]
+  when 'wait'
+    console.log("SYNC: Waiting for web.1 to perform dbsync...")
+    dbsyncLock.waitForUnlock()
+    .then () ->
+      console.log("SYNC: dbsync complete, continuing.")
+  when 'release'
+    dbsyncLock.releaseLock()
+  else
+    console.log('USAGE: dbsyncLock [wait|release]')
+    Promise.resolve()
+
+actionPromise
+.catch (err) ->
+  console.log('dbsyncLock ERROR: '+analyzeValue.getSimpleMessage(err))
+.finally () ->
+  shutdown.exit()
