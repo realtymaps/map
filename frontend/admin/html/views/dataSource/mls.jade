@@ -140,9 +140,6 @@
                     label.data-label Formatting:
                 .row
                   .col-md-12
-                    input(type="text" ng-model="mlsData.current.listing_data.queryTemplate").max-width
-                .row
-                  .col-md-12
                     button(ng-click="assignConfigDefault(mlsData.current, 'listing_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
 
               accordion-group(is-disabled="!mlsData.current.id")
@@ -222,11 +219,6 @@
                       label.data-label Update Timestamp Column:
                     td
                       span.data-entry {{fieldNameMap.columnNames[mlsData.current.listing_data.field]}}
-                  tr
-                    td
-                      label.data-label Formatting:
-                    td
-                      span.data-entry {{mlsData.current.listing_data.queryTemplate}}
             tr
               td
                 label.data-label Objects:
