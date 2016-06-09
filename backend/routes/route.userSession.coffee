@@ -105,7 +105,6 @@ updateState = (req, res, next) ->
 profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
-
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if userUtils.isSubscriber(req)
         promise = profileService.getProfiles req.user.id

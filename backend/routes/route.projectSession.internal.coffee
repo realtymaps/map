@@ -164,7 +164,7 @@ class ProjectRouteCrud extends RouteCrud
     # setup an entity and filter for profileSvc call
     # `whereIn` means `req.params.id` could be a list of project_ids to pull from
     entity = auth_user_id: req.user.id
-    whereInItems = project_id: req.params.id 
+    whereInItems = project_id: _.map(projects, 'project_id')  # sometimes list
 
     # pull project structures
     Promise.props

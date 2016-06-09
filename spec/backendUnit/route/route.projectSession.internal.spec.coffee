@@ -40,6 +40,8 @@ userUtils =
 profileSvc =
   getAll: () ->
     Promise.resolve(profilesResponses.getAll)
+  getAllBulk: () ->
+    Promise.resolve(profilesResponses.getAll)
   delete: () -> profilesResponses.delete
 
 routeCrudToTest.__set__ 'userUtils', userUtils
