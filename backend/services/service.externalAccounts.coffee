@@ -28,6 +28,9 @@ _decrypt = (sourceObj, destObj, fieldName, cipherKey) ->
   destObj[fieldName] = if cipherText == null then null else _getEncryptor(cipherKey).decrypt(cipherText)
 
 _transform = (fieldTransform, cipherKey, accountInfo) ->
+  cipherKey ?= config.ENCRYPTION_AT_REST
+  if !cipherKey
+    return accountInfo
   result =
     name: accountInfo.name
     environment: accountInfo.environment
@@ -54,7 +57,6 @@ _logResult = (opts, result) ->
   result
 
 getAccountInfo = (name, opts={}) -> Promise.try () ->
-  cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   environment = opts.environment ? config.ENV
   tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: name)
@@ -65,29 +67,27 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
   .then (accountInfo) ->
     expectSingleRow(accountInfo)
   .then (accountInfo) ->
-    _transform(_decrypt, cipherKey, accountInfo)
+    _transform(_decrypt, opts.cipherKey, accountInfo)
   .then (decryptedInfo) ->
     _logResult(opts, decryptedInfo)
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   accountInfo = _handleAccountInfoTypes(accountInfo)
-  cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
-  .insert(_transform(_encrypt, cipherKey, accountInfo))
+  .insert(_transform(_encrypt, opts.cipherKey, accountInfo))
   if opts.logOnly
     return console.log(query.toString())
   query
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   accountInfo = _handleAccountInfoTypes(accountInfo)
-  cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: accountInfo.name)
   if !accountInfo.environment?
     query = query.whereNull('environment')
   else
     query = query.where(environment: accountInfo.environment)
-  query = query.update(_transform(_encrypt, cipherKey, accountInfo))
+  query = query.update(_transform(_encrypt, opts.cipherKey, accountInfo))
   if opts.logOnly
     return console.log(query.toString())
   query
