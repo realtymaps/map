@@ -4,7 +4,7 @@ combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('service:filterSummary')
+logger = require('../config/logger').spawn('service:property:filterSummary')
 propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
@@ -33,58 +33,64 @@ module.exports =
         validation.validateAndTransform(req.validBody, filterSummaryImpl.transforms)
 
     .then (queryParams) ->
-      # We know there is absolutely nothing to select, GTFO before we do any real work
-      if ! queryParams
-        return []
 
-      # Limit to FIPS codes and verified MLS for this user
-      # TODO: Proxied MLS data (county data does not need to be proxied since it is only available for Pinned properties)
-      if !req.user.is_superuser
-        queryParams.state.filters.fips_codes = req.user.fips_codes
-        queryParams.state.filters.mlses_verified = req.user.mlses_verified
+      Promise.try ->
+        # Calculate permissions for the current user
+        filterSummaryImpl.getPermissions?(req)
+        .then (permissions) ->
+          logger.debug permissions
+          permissions
 
-      _limitByPinnedProps = (query, state, queryParams) ->
-        # include saved id's in query so no need to touch db later
-        propertiesIds = _.keys(state.properties_selected)
-        if propertiesIds.length > 0
-          whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
-          sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
+      .then (permissions) ->
+        # We know there is absolutely nothing to select, GTFO before we do any real work
+        if !queryParams
+          return []
 
-      cluster = () ->
-        clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
-        filterSummaryImpl.getFilterSummary(queryParams, limit, clusterQuery)
-        .then (properties) ->
-          filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
+        _limitByPinnedProps = (query, state, queryParams) ->
+          # include saved id's in query so no need to touch db later
+          propertiesIds = _.keys(state.properties_selected)
+          if propertiesIds.length > 0
+            whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
+            sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
 
-      summary = () ->
-        query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 800)
-        _limitByPinnedProps(query, state, queryParams)
+        cluster = () ->
+          clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
+          filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
+          .then (properties) ->
+            filterSummaryImpl.transformProperties?(properties)
+            filterSummaryImpl.scrubPermissions?(properties, permissions)
+            filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
-        # Remove dupes and include "savedDetails" for saved props
-        query.then (properties) ->
-          propMerge.updateSavedProperties(state, properties)
-
-        .then (properties) ->
-          filterSummaryImpl.transformProperties?(properties)
-          properties = toLeafletMarker properties
-          props = indexBy(properties, false)
-
-      switch queryParams.returnType
-        when 'clusterOrDefault'
-          # Count the number of properties and do clustering if
-          query = filterSummaryImpl.getResultCount(queryParams)
+        summary = () ->
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: 800, permissions})
           _limitByPinnedProps(query, state, queryParams)
 
-          query.then ([result]) ->
-            if result.count > config.backendClustering.resultThreshold
-              logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
-              return cluster()
-            else
-              logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
-              return summary()
+          # Remove dupes and include "savedDetails" for saved props
+          query.then (properties) ->
+            propMerge.updateSavedProperties(state, properties)
 
-        when 'cluster'
-          cluster()
+          .then (properties) ->
+            filterSummaryImpl.transformProperties?(properties)
+            filterSummaryImpl.scrubPermissions?(properties, permissions)
+            properties = toLeafletMarker properties
+            props = indexBy(properties, false)
 
-        else
-          summary()
+        switch queryParams.returnType
+          when 'clusterOrDefault'
+            # Count the number of properties and do clustering if there are enough
+            query = filterSummaryImpl.getResultCount({queryParams, permissions})
+            _limitByPinnedProps(query, state, queryParams)
+
+            query.then ([result]) ->
+              if result.count > config.backendClustering.resultThreshold
+                logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
+                return cluster()
+              else
+                logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
+                return summary()
+
+          when 'cluster'
+            cluster()
+
+          else
+            summary()
