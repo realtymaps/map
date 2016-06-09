@@ -51,7 +51,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
 
 getResultCount = ({queryParams}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
-  q = getFilterSummaryAsQuery(queryParams, null, query)
+  q = getFilterSummaryAsQuery({queryParams, query})
   logger.debug q.toString()
   q
 
