@@ -68,6 +68,7 @@ app.controller 'rmapsProjectCtrl',
   # Scope model object allowing the children to manipulate data loaded by this parent controller
   $scope.projectModel = projectModel = {}
   projectModel.areas = []
+  projectModel.loadedAreas = false
 
   $scope.newNotes = {}
   $scope.notes = []
@@ -264,6 +265,7 @@ app.controller 'rmapsProjectCtrl',
     drawnShapesSvc.getAreasNormalized(cache)
     .then (data) ->
       projectModel.areas = data
+      projectModel.loadedAreas = true
 
   #
   # Start initial data load
