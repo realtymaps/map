@@ -57,7 +57,6 @@ module.exports =
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
           filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
           .then (properties) ->
-            filterSummaryImpl.transformProperties?(properties)
             filterSummaryImpl.scrubPermissions?(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
@@ -70,7 +69,6 @@ module.exports =
             propMerge.updateSavedProperties(state, properties)
 
           .then (properties) ->
-            filterSummaryImpl.transformProperties?(properties)
             filterSummaryImpl.scrubPermissions?(properties, permissions)
             properties = toLeafletMarker properties
             props = indexBy(properties, false)
