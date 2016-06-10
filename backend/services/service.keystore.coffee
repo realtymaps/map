@@ -43,7 +43,8 @@ setValue = (key, value, options={}) ->
   if options.transaction?
     _setValueImpl(key, value, options, options.transaction)
   else
-    dbs.get('main').transaction _setValueImpl.bind(null, key, value, options)
+    dbs.transaction 'main', (transaction) ->
+      _setValueImpl(key, value, options, transaction)
 
 _setValueImpl = (key, value, options, transaction) ->
   query = tables.config.keystore(transaction: transaction)
@@ -86,7 +87,7 @@ setValuesMap = (map, options={}) -> Promise.try () ->
   if options.transaction?
     return handler(options.transaction)
   else
-    return dbs.get('main').transaction(handler)
+    return dbs.transaction('main', handler)
 
 
 _cached = {}

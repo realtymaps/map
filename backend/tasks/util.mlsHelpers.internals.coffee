@@ -12,7 +12,7 @@ makeInsertPhoto = ({data_source_id, data_source_uuid, cdnPhotoStr, jsonObjStr, i
     cdnPhotoQueryPartStr = ',cdn_photo = :cdn_photo'
 
   query =
-    tables.property.listing()
+    tables.normalized.listing()
     .raw("""
       UPDATE listing set
       photos=jsonb_set(photos, '{#{imageId}}', :json_str, true)#{cdnPhotoQueryPartStr}

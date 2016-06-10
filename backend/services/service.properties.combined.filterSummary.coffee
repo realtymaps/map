@@ -10,7 +10,7 @@ tables = require "../config/tables"
 cluster = require '../utils/util.sql.manual.cluster.combined'
 {currentProfile} = require '../../common/utils/util.profile'
 
-dbFn = tables.property.combined
+dbFn = tables.finalized.combined
 
 validators = validation.validators
 

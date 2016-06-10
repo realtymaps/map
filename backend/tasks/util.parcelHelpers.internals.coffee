@@ -42,21 +42,21 @@ finalizeParcelEntry = ({entries, subtask}) ->
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   parcel = finalizeParcelEntry({entries: parcels, subtask})
 
-  tables.property.parcel(transaction: transaction)
+  tables.finalized.parcel(transaction: transaction)
   .where
     rm_property_id: id
     data_source_id: subtask.task_name
     active: false
   .delete()
   .then () ->
-    tables.property.parcel(transaction: transaction)
+    tables.finalized.parcel(transaction: transaction)
     .insert(parcel)
   .then () ->
     return parcel
 
 
 finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
-  tables.property.combined(transaction: transaction)
+  tables.finalized.combined(transaction: transaction)
   .where
     rm_property_id: id
     active: true
