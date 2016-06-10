@@ -164,7 +164,7 @@ class ProjectRouteCrud extends RouteCrud
     # setup an entity and filter for profileSvc call
     # `whereIn` means `req.params.id` could be a list of project_ids to pull from
     entity = auth_user_id: req.user.id
-    whereInItems = project_id: _.map(projects, 'project_id')  # sometimes list
+    entity.project_id = _.map(projects, 'id')  # sometimes list
 
     # pull project structures
     Promise.props
@@ -172,7 +172,7 @@ class ProjectRouteCrud extends RouteCrud
       notes: @notesCrud.rootGET req, res, next
       drawnShapes:
         @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
-      profiles: profileSvc.getAllBulk(entity, whereInItems)
+      profiles: profileSvc.getAllBulk(entity)
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
       _.each projects, (project) ->

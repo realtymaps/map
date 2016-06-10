@@ -1,9 +1,9 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:profiles')
 tables = require '../config/tables'
 db = require('../config/dbs').get('main')
-{singleRow, whereIn} = require '../utils/util.sql.helpers'
+{singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
 projectSvc = (require './services.user').project
@@ -62,15 +62,13 @@ getAll = (entity) ->
   .select(safeProfile)
   .where(entity)
 
-getAllBulk = (entity, whereInFields) ->
+getAllBulk = (entity) ->
   query = tables.user.profile()
   .select(safeProfile)
-  .where(entity)
 
-  for column of whereInFields
-    values = if _.isArray whereInFields[column] then whereInFields[column] else [whereInFields[column]]
-    query = whereIn(query, column, values)
+  query = whereAndWhereIn(query, entity)
 
+  logger.debug () -> "query:\n#{query.toString()}"
   query
 
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
