@@ -23,7 +23,7 @@ formatPieDataBackend = (cluster) ->
   return [
     {key: 'pending', values: {'length': cluster.pending}}, # feign 'length' attribute of array
     {key: 'for sale', values: {'length': cluster.forsale}},
-    {key: 'sold', values: {'length': cluster.recentlysold}},
+    {key: 'sold', values: {'length': cluster.sold}},
     {key: 'not for sale', values: {'length': cluster.notforsale}}
   ]
 
