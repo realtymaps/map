@@ -126,14 +126,6 @@ app.provider 'rmapsPageService', () ->
     $rootScope.$on "$stateChangeStart", (event, toState) ->
       return if event.defaultPrevented
 
-      console.warn("%")
-      console.warn("%")
-      console.warn("%")
-      console.warn("% STATE CHANGE #{toState.name}")
-      console.warn("%")
-      console.warn("%")
-      console.warn("%")
-
       if toState.url?
         # Reset the Page related data
         page.reset()

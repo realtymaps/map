@@ -45,7 +45,6 @@ app.controller 'rmapsMapCtrl', (
   $scope.mapId = mapId = rmapsMapIds.mainMap()
 
   $log = $log.spawn("map:controller")
-  $log.debug("!!!!!! Map Controller init")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -59,11 +58,7 @@ app.controller 'rmapsMapCtrl', (
   # Create the Map Factory
   #
   if !map? or !$scope.map?
-    $log.debug "!!!!! Creating new Map Factory"
     map = new rmapsMapFactory($scope)
-
-  $scope.$on "$destroy", () ->
-    $log.debug "!!!!! Map Controller Destroyed"
 
   #
   # Utility functions to load a new Project and optional Property from the Map based selection tool

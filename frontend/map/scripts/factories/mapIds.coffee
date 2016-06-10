@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-console.log "!!!!!!!! MAP IDS FACTORY"
 
 app.service 'rmapsMapIds', () ->
   mainMapIndex = 1
