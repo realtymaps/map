@@ -7,7 +7,6 @@ finePhotologger = logger.spawn('photos.fine')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
-retsCacheService = require '../services/service.retsCache'
 dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
@@ -19,6 +18,7 @@ externalAccounts = require '../services/service.externalAccounts'
 config = require '../config/config'
 internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+jobQueue = require '../services/service.jobQueue'
 
 
 ONE_YEAR_MILLIS = 365*24*60*60*1000
@@ -27,15 +27,18 @@ ONE_YEAR_MILLIS = 365*24*60*60*1000
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options={}) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  .then (updateThreshold) ->
-    tables.config.mls()
-    .where(id: subtask.task_name)
-    .then (mlsInfo) ->
-      mlsInfo = mlsInfo?[0]
-      retsService.getDataStream(mlsInfo, minDate: updateThreshold, searchOptions: {limit: options.limit})
-      .catch retsService.isTransientRetsError, (error) ->
-        throw new SoftFail(error, "Transient RETS error; try again later")
+  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  mlsInfoPromise = tables.config.mls()
+  .where(id: subtask.task_name)
+  .then (mlsInfo) ->
+    mlsInfo = mlsInfo?[0]
+    internals.getUuidField(mlsInfo)
+    .then (uuidField) ->
+      {mlsInfo, uuidField}
+  Promise.join updateThresholdPromise, mlsInfoPromise, (updateThreshold, {mlsInfo, uuidField}) ->
+    retsService.getDataStream(mlsInfo, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
+    .catch retsService.isTransientRetsError, (error) ->
+      throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
@@ -84,7 +87,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.property.listing()
+  listingsPromise = tables.normalized.listing()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -98,11 +101,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
     if listings.length == 0
       logger.spawn(subtask.task_name).debug "No listings found for rm_property_id: #{id}"
       # might happen if a singleton listing is changed to hidden during the day
-      deleteInfo =
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
-      return dataLoadHelpers.markForDelete(deleteInfo, {transaction})
+      return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
     listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
     listing.data_source_type = 'mls'
@@ -116,7 +115,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       if listing.fips_code != '12021'
         return
       # need to query the tax table to get values to promote
-      tables.property.tax(subid: listing.fips_code)
+      tables.normalized.tax(subid: listing.fips_code)
       .select('promoted_values')
       .where
         rm_property_id: id
@@ -125,21 +124,21 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
           # promote values into this listing
           listing.extend(results[0].promoted_values)
           # save back to the listing table to avoid making checks in the future
-          tables.property.listing()
+          tables.normalized.listing()
           .where
             data_source_id: listing.data_source_id
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
       dbs.ensureTransaction transaction, 'main', (transaction) ->
-        tables.property.combined(transaction: transaction)
+        tables.finalized.combined(transaction: transaction)
         .where
           rm_property_id: id
           data_source_id: data_source_id || subtask.task_name
           active: false
         .delete()
         .then () ->
-          tables.property.combined(transaction: transaction)
+          tables.finalized.combined(transaction: transaction)
           .insert(listing)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
@@ -148,7 +147,7 @@ _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   .then (results) ->
     sqlHelpers.expectSingleRow(results)
 
-  query = tables.property.listing().where listingRow
+  query = tables.normalized.listing().where listingRow
 
   Promise.all [mlsConfigQuery, query]
 
@@ -201,7 +200,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
 
     .catch (error) ->
       logger.spawn(subtask.task_name).error error
-      logger.spawn(subtask.task_name).debug 'Handling error by enqueing photo to be deleted.'
+      logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       _enqueuePhotoToDelete obj.key, subtask.batch_id
 
 _enqueuePhotoToDelete = (key, batch_id) ->
@@ -327,7 +326,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
               logger.spawn(subtask.task_name).debug 'photo upload success'
               successCtr++
 
-              tables.property.listing()
+              tables.normalized.listing()
               .where(listingRow)
               .update(photo_import_error: null)
               .then () ->
@@ -336,7 +335,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
               logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
               logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
               #record the error and move on
-              tables.property.listing()
+              tables.normalized.listing()
               .where(listingRow)
               .update(photo_import_error: analyzeValue.getSimpleDetails(error))
               .then () ->
@@ -350,61 +349,59 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
-      tables.property.listing()
+      tables.normalized.listing()
       .where(listingRow)
       .update photo_import_error: analyzeValue.getSimpleDetails(error)
 
-deleteOldPhoto = (subtask, id) -> Promise.try () ->
-  tables.deletes.photos()
-  .where {id}
-  .then (results) ->
-    if !results?.length
-      return
+deleteOldPhoto = (subtask, key) -> Promise.try () ->
+  logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
 
-    [{id, key}] = results
-    logger.spawn(subtask.task_name).debug "deleting: id: #{id}, key: #{key}"
+  awsService.deleteObject
+    extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
+    Key: key
+  .then () ->
+    logger.spawn(subtask.task_name).debug 'successful deletion of aws photo ' + key
 
-    awsService.deleteObject
-      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
-      Key: key
-    .then () ->
-      logger.spawn(subtask.task_name).debug 'succesful deletion of aws photo ' + key
-
-      tables.deletes.photos()
-      .where {id}
-      .del()
-      .catch (error) ->
-        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+    tables.deletes.photos()
+    .where {key}
+    .del()
     .catch (error) ->
-      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+      throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+  .catch (error) ->
+    throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
 
 markUpToDate = (subtask) ->
   mlsInfoPromise = tables.config.mls()
   .where(id: subtask.task_name)
   .then (mlsInfo) ->
-    mlsInfo?[0]
-  .then (mlsInfo) ->
-    retsCacheService.getColumnList(mlsId: subtask.task_name, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
-    .then (columnData) ->
-      {mlsInfo, columnData}
-  validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', subtask.task_name, 'listing', 'base', 'data_source_uuid')
-  Promise.join mlsInfoPromise, validationInfoPromise, ({mlsInfo, columnData}, validationInfo) ->
-    for field in columnData
-      if field.LongName == validationInfo.validationMap.base[0].input
-        uuidField = field.SystemName
-        break;
-    if !uuidField
-      throw new Error("can't locate uuidField for #{subtask.task_name} (SystemName for #{validationInfo.validationMap.base[0].input})")
-    doMarks = (chunk) -> Promise.try () ->
-      if !chunk?.length
-        return
-      ids = _.pluck(chunk, uuidField)
-      tables.property.listing()
-      .where(data_source_id: subtask.task_name)
-      .whereIn('data_source_uuid', ids)
-      .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
-    retsService.getDataChunks(mlsInfo, doMarks, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField})
+    mlsInfo = mlsInfo[0]
+    internals.getUuidField(mlsInfo)
+    .then (uuidField) ->
+      doMarks = (chunk) -> Promise.try () ->
+        logger.debug("doMarks chunk: #{chunk.length}")
+        if !chunk?.length
+          return
+        ids = _.pluck(chunk, uuidField)
+        tables.normalized.listing()
+        .select('rm_property_id')
+        .where(data_source_id: subtask.task_name)
+        .whereIn('data_source_uuid', ids)
+        .whereNotNull('deleted')
+        .then (undeleteIds=[]) ->
+          markPromise = tables.normalized.listing()
+          .where(data_source_id: subtask.task_name)
+          .whereIn('data_source_uuid', ids)
+          .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+          if undeleteIds.length == 0
+            undeletePromise = Promise.resolve()
+          else
+            undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
+            undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
+          Promise.join markPromise, undeletePromise, () ->  # no-op
+      retsService.getDataChunks(mlsInfo, doMarks, minDate: 0, uuidField: uuidField, searchOptions: {limit: subtask.data.limit, Select: uuidField})
+      .then (count) ->
+        logger.debug("getDataChunks total: #{count}")
     .catch retsService.isTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->

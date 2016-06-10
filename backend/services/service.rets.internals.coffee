@@ -64,9 +64,9 @@ buildSearchQuery = (mlsInfo, opts) ->
   for key,val of opts.criteria
     criteria.push("(#{key}=#{val})")
   if opts.maxDate?
-    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss')}-)")
+    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}-)")
   if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
-    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss')}+)")
+    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}+)")
   return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
 
 

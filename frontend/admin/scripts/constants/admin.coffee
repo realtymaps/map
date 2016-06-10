@@ -1,9 +1,6 @@
 app = require '../app.coffee'
 
-_queryTemplate = '[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]'
-
 admin =
-  queryTemplate: _queryTemplate
   dtColumnRegex: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
   defaults:
     base:
@@ -19,7 +16,7 @@ admin =
       dcma_contact_name: null
       dcma_contact_address: null
     propertySchema:
-      listing_data: {'queryTemplate': _queryTemplate}
+      listing_data: {}
     otherConfig:
       static_ip: false
     task:

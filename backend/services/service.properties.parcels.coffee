@@ -18,7 +18,7 @@ transforms =
 
 
 _getBaseParcelQueryByBounds = (bounds, limit) ->
-  query = sqlHelpers.select(tables.property.parcel(), 'parcel', false)
+  query = sqlHelpers.select(tables.finalized.parcel(), 'parcel', false)
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
   query.where(active: true)
   query.limit(limit) if limit?
@@ -33,6 +33,7 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
 _upsert = (obj, insertCb, updateCb) ->
   throw new Error('rm_property_id must be of type String') unless _.isString obj.rm_property_id
   #nmccready - note this might not be unique enough, I think parcels has dupes
+  # TODO: this must be dead code, safe to delete?
   tables.property.rootParcel()
   .where rm_property_id: obj.rm_property_id
   .then (rows) ->

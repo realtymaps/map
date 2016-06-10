@@ -12,7 +12,7 @@ mlsPhotoUtil = require '../../../backend/utils/util.mls.photos'
 describe 'util.mlsHelpers.internals', ->
   beforeEach ->
 
-    listing = new SqlMock 'property', 'listing'
+    listing = new SqlMock('normalized', 'listing')
 
     @tables =
       property:

@@ -158,8 +158,7 @@ loadRawData = (subtask) -> Promise.try () ->
         laterSubtaskName: "recordChangeCounts"
         manualData:
           deletes: dataLoadHelpers.DELETE.UNTOUCHED
-          dataType: "normParcel"
-          rawDataType: "parcel"  # fixes lookup of rawtable for change counts
+          dataType: "parcel"
           rawTableSuffix: fipsCode
           indicateDeletes: true
           subset:
@@ -198,7 +197,7 @@ finalizeDataPrep = (subtask) ->
 
   logger.debug util.inspect(subtask, depth: null)
 
-  tables.property.normParcel()
+  tables.normalized.parcel()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id

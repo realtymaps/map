@@ -1,118 +1,93 @@
-Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:property:details:combined')
 validation = require '../utils/util.validation'
 {validators} = validation
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
-{toLeafletMarker} = (require './../utils/crud/extensions/util.crud.extension.user').route
+{getPermissions, queryPermissions, scrubPermissions} = require './service.properties.combined.filterSummary'
+_ = require 'lodash'
 
-columnSets = ['filter', 'address', 'detail', 'all']
+_detailQuery = (queryParams, req) ->
+  getPermissions(req)
+  .then (permissions) ->
+    logger.debug permissions
 
-transforms =
-  rm_prop_id_or_geom_json:
-    input: ["rm_property_id", "geom_point_json"]
-    transform: validators.pickFirst()
-    required: true
+    # This can be removed once mv_property_details is gone
+    columnMap =
+      'filter': 'filterCombined'
+      'address': 'filterCombined'
+      'detail': 'detail_with_disclaimer'
+      'all': 'new_all'
 
-  columns:
-    transform: validators.choice(choices: columnSets)
-    required: true
+    query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
+    .leftOuterJoin "#{tables.config.mls.tableName}", ->
+      @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
 
-  rm_property_id:
-    transform: any: [validators.string(minLength:1), validators.array()]
+    queryPermissions(query, permissions)
 
-  geom_point_json:
-    transform: [validators.object(),validators.geojson(toCrs:true)]
-
-
-_getDetailByPropertyId = (queryParams) ->
-  query = sqlHelpers.select(
-    tables.property.combined()
-    'detail_with_disclaimer'  # queryParams.columns was used before, probably will be again
-    null)
-  .where
-    active: true
-    rm_property_id: queryParams.rm_property_id
-  .leftOuterJoin("#{tables.config.mls.tableName}", () ->
-    this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
-  )
-  if queryParams.fips_codes?
-    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
-  query
-
-_getDetailByPropertyIds = (queryParams) ->
-  query = sqlHelpers.select(
-    tables.property.combined()
-    'detail_with_disclaimer' # TODO: restrict to filter columns
-    null)
-  sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
-  query.where(active: true)
-  .leftOuterJoin("#{tables.config.mls.tableName}", () ->
-    this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
-  )
-  if queryParms.fips_codes?
-    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
-  query
-
-_getDetailByGeomPointJson = (queryParams) ->
-  query = sqlHelpers.select(
-    tables.property.combined()
-    'detail_with_disclaimer'
-    null)
-  sqlHelpers.whereIntersects(query, queryParams.geom_point_json, 'geometry_raw')
-  query.where(active: true)
-  .leftOuterJoin("#{tables.config.mls.tableName}", () ->
-    this.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
-  )
-  if queryParams.fips_codes?
-    sqlHelpers.whereIn(query, 'fips_code', queryParams.fips_codes)
-  query
-
-module.exports =
-
-  # TODO: combine getDetail and getDetails? They are essentially the same logic except
-  #       getDetails() should restrict results to filter columns
-  getDetail: (req) -> Promise.try () ->
-    queryParams = req.validBody
-    validation.validateAndTransform(queryParams, transforms)
-    .then (validRequest) ->
-      # TODO: leverage permissions logic found in filterSummary
-      # TODO: Proxied MLS data
-      # TODO: Proxy county data for Pinned properties
-      if !req.user.is_superuser
-        validRequest.fips_codes = req.user.fips_codes
-
-      if validRequest.rm_property_id?
-        _getDetailByPropertyId(validRequest)
-      else
-        _getDetailByGeomPointJson(validRequest)
-    .then (data=[]) ->
-
-      result = { county: null, mls: null }
-      for row in data
-        result[row.data_source_type] ?= []
-        result[row.data_source_type].push(row)
-        # TODO: prune subscriber groups and owner info where appropriate
-      result
-
-  getDetails: (req) ->
-    queryParams = req.validBody
-    Promise.try () ->
-      # TODO: leverage permissions logic found in filterSummary
-      # TODO: Proxied MLS data
-      # TODO: Proxy county data for Pinned properties
-      if !req.user.is_superuser
-        queryParams.fips_codes = req.user.fips_codes
+    # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
+    query.where ->
+      @.where(active: true)
 
       if queryParams.rm_property_id?
-        _getDetailByPropertyIds(queryParams)
-      else
-        []
-    .then (data=[]) ->
+        sqlHelpers.whereIn(@, 'rm_property_id', queryParams.rm_property_id)
+      else if queryParams.geom_point_json?
+        sqlHelpers.whereIntersects(@, queryParams.geom_point_json, 'geometry_raw')
+        @.limit(1)
+
+    logger.debug query.toString()
+
+    query.then (data = []) ->
       result = {}
+
+      # Prune subscriber groups and owner info where appropriate
+      scrubPermissions(data, permissions)
+
       for row in data
         result[row.rm_property_id] ?= { county: null, mls: null }
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
-        # TODO: prune subscriber groups and owner info where appropriate
+
       result
+
+# Retrieve a single property by rm_property_id OR geom_point_json
+getDetail = (req) ->
+  validation.validateAndTransform req.validBody,
+    rm_prop_id_or_geom_json:
+      input: ["rm_property_id", "geom_point_json"]
+      transform: validators.pickFirst()
+      required: true
+
+    rm_property_id:
+      transform: validators.string(minLength: 1)
+
+    geom_point_json:
+      transform: [validators.object(), validators.geojson(toCrs: true)]
+
+    columns:
+      transform: validators.choice(choices: ['filter', 'address', 'detail', 'all'])
+      required: true
+
+  .then (queryParams) ->
+    _detailQuery(queryParams, req)
+
+  .then (result) ->
+    _.map(result)[0]
+
+# Retrieve a set of properties by rm_property_id (filter data only)
+getDetails = (req) ->
+  validation.validateAndTransform req.validBody,
+    columns:
+      transform: validators.choice(choices: ['filter'])
+      required: true
+
+    rm_property_id:
+      transform: validators.array()
+      required: true
+
+  .then (queryParams) ->
+    _detailQuery(queryParams, req)
+
+module.exports = {
+  getDetail
+  getDetails
+}

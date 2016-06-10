@@ -174,8 +174,7 @@ describe 'util.dataLoadHelpers', () ->
         task_name: 'digimaps'
         data:
           deletes: dataLoadHelpers.DELETE.UNTOUCHED
-          dataType: "normParcel"
-          rawDataType: "parcel"
+          dataType: "parcel"
           rawTableSuffix: '1234'
           subset:
             fips_code: '1234'
