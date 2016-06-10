@@ -23,6 +23,15 @@
           span(style="text-transform: capitalize;") Campaign Review
 
         button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()" ng-disabled="!review.pdf") View Letter
+        button.btn.review-preview-button(
+          ng-if="wizard.mail.campaign.recipients.length > 0 && !wizard.mail.isSubmitted()"
+          ng-disabled="review.data.alert.msg || !review.pdf"
+          ng-click="sendMail()"
+          ng-class="{'btn-success': !review.data.alert.msg, 'btn-danger': review.data.alert.msg}"
+          )
+            span(ng-show="review.data.alert.msg") Issues Exist
+            span(ng-show="!review.data.alert.msg") Send Letters
+
       .row.review-items
         div
           .row.separator
@@ -57,8 +66,14 @@
                 h2 Recipients
               .row
                 .col-md-12
-                  p.recipient-link(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-pluralize count="wizard.mail.campaign.recipients.length"
+                  p.recipient-link(
+                    ng-click="showAddresses(wizard.mail.campaign.recipients)"
+                    ng-pluralize
+                    count="wizard.mail.campaign.recipients.length"
                     when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
+              .row
+                .col-md-12
+                  include ../../includes/pricing_table.jade
 
           .row.separator.errors(ng-show="review.data.alert.msg")
             .col-md-12
@@ -77,19 +92,19 @@
                 .col-md-2
                   button.btn.btn-primary.pull-right(ng-click="viewMap()" ng-show="wizard.mail.isSubmitted()") View Map
 
-          .row.separator(ng-hide="wizard.mail.isSubmitted()")
-            .col-md-12
-              .row
-                h2 Price Quote
-              .row
-                .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
-                .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
-                .btn.btn-success(
-                  ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
-                  tooltip-trigger="mousehover"
-                  uib-tooltip="Click to submit this mailing!"
-                  tooltip-enable="true"
-                  ng-disabled="review.data.alert.msg"
-                  ng-click="sendMail()")
-                    span(ng-show="review.data.alert.msg") Issues Exist
-                    span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}
+          //- .row.separator(ng-hide="wizard.mail.isSubmitted()")
+          //-   .col-md-12
+          //-     .row
+          //-       h2 Price Quote
+          //-     .row
+          //-       .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
+          //-       .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
+          //-       .btn.btn-success(
+          //-         ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
+          //-         tooltip-trigger="mousehover"
+          //-         uib-tooltip="Click to submit this mailing!"
+          //-         tooltip-enable="true"
+          //-         ng-disabled="review.data.alert.msg"
+          //-         ng-click="sendMail()")
+          //-           span(ng-show="review.data.alert.msg") Issues Exist
+          //-           span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}
