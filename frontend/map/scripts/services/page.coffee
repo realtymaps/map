@@ -82,8 +82,6 @@ app.provider 'rmapsPageService', () ->
         if rmapsProfilesService.currentProfile?.project_id?
 
           ## Clear the current map if any
-          $log.debug("PPPPPPP - Page is flushing Main Map")
-#          leafletData.unresolveMap(rmapsMapIds.mainMap())
           rmapsMapIds.incrementMainMap()
 
           params = _.extend(params, { project_id: rmapsProfilesService.currentProfile?.project_id })
