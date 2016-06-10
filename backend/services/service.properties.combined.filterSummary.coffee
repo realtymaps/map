@@ -243,7 +243,6 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
 module.exports =
   transforms: transforms
-  transformProperties: transformProperties
   getFilterSummaryAsQuery: getFilterSummaryAsQuery
   getResultCount: getResultCount
   cluster: cluster
