@@ -9,8 +9,8 @@ ageOrDaysFromStartToNow = (listingAge, beginDate) ->
 basicColumns = do ->
   _parcel = [
     'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry',
-    '\'Feature\' AS type',
-    'fips_code', '\'{}\'::json AS properties'
+    "'Feature' AS type",
+    'fips_code', "'{}'::json AS properties"
   ]
 
   _commonProjectCols = ['id', 'auth_user_id', 'project_id']
