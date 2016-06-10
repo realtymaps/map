@@ -88,8 +88,6 @@ module.exports =
     permissionsById: "#{apiBaseUsers}/:id/permissions/:permission_id"
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
-    profiles: "#{apiBaseUsers}/:id/profiles"
-    profilesById: "#{apiBaseUsers}/:id/profiles/:profile_id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"
@@ -113,10 +111,6 @@ module.exports =
     apiBase: apiBaseProjects
     root: apiBaseProjects
     byId: "#{apiBaseProjects}/:id"
-  user_profiles:
-    apiBase: apiBaseProfiles
-    root: apiBaseProfiles
-    byId: "#{apiBaseProfiles}/:id"
   user_subscription:
     apiBase: apiBaseUserSubscription
     getSubscription: apiBaseUserSubscription

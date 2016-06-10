@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 
 logger = require '../config/logger'
-userSessionService = require '../services/service.userSession'
+profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
 
 # tests subscription status of the (if active) req.session
@@ -35,14 +35,14 @@ cacheUserValues = (req, reload = {}) ->
 
     # if user is subscriber, use service endpoint that includes sandbox creation and display
     if isSubscriber(req)
-      promise = userSessionService.getProfiles req.user.id
+      promise = profileSvc.getProfiles req.user.id
 
     # user is a client, and unallowed to deal with sandboxes
     else
-      promise = userSessionService.getClientProfiles req.user.id
+      promise = profileSvc.getClientProfiles req.user.id
 
     profilesPromise = promise.then (profiles) ->
-      logger.debug 'userSessionService.getProfiles.then'
+      logger.debug 'profileSvc.getProfiles.then'
       req.session.profiles = profiles
       # logger.debug profiles
     promises.push profilesPromise
