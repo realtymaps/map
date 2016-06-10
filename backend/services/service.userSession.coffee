@@ -120,11 +120,6 @@ module.exports = {
   createPasswordHash
   verifyPassword
   verifyValidAccount
-  getProfile: profileSvc.getFirst
-  updateCurrentProfile: profileSvc.updateCurrent
-  updateProfile: profileSvc.update
-  getProfiles: profileSvc.getProfiles
-  getClientProfiles: profileSvc.getClientProfiles
   getImage
   upsertImage
   upsertCompanyImage

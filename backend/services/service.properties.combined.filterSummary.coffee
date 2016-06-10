@@ -253,10 +253,10 @@ transformProperties = (properties) ->
     if lines?.length >= 2
       streetLine = lines[0].match(streetRe)
       cityLine = lines[1].match(cityRe)
-      prop.street_address_num = streetLine[1]
-      prop.street_address_name = streetLine[2]
-      prop.city = cityLine[1]
-      prop.state = cityLine[2]
+      prop.street_address_num = streetLine?[1]
+      prop.street_address_name = streetLine?[2]
+      prop.city = cityLine?[1]
+      prop.state = cityLine?[2]
       prop.zip = lines[2] ? '99999'
 
 module.exports =

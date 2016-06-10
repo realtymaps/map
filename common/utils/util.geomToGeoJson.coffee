@@ -1,4 +1,6 @@
 _ = require 'lodash'
+#note we could use _.clone, but it is known to be slow in 3.X, 4.X is very fast
+clone = require 'clone'
 
 toGeoFeature = (row, opts) ->
   opts.deletes?.forEach (prop) ->
@@ -23,6 +25,7 @@ toGeoFeature = (row, opts) ->
   row
 
 toGeoFeatureCollection = (rows = [], opts = {}) ->
+  rows = clone rows
   if opts?.uniqueKey?
     rows = _.uniq rows, (r) ->
       r[opts.uniqueKey]
