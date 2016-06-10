@@ -51,7 +51,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
         dataLoadHelpers.updateRecord {
           stats
-          dataType: 'normParcel'
+          dataType: 'parcel'
           updateRow: row
           delay
           flattenRows: false
@@ -85,7 +85,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       of: subtask.data.of
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
-      ids: successes
+      values: successes
       normalSubid: fipsCode  # required for countyHelpers.finalizeData
       deletedParcel: false
     jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
@@ -100,10 +100,10 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
   Promise.delay(delay)
   .then () ->
     if subtask.data.deletedParcel
-      dbs.get('main').transaction (transaction) ->
+      dbs.transaction 'main', (transaction) ->
         internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel: false}
     else
-      tables.property.normParcel()
+      tables.normalized.parcel()
       .select('*')
       .where(rm_property_id: id)
       .whereNull('deleted')
@@ -113,7 +113,7 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
         if parcels.length == 0
           throw new HardFail("No parcel entries found for: #{id}")
 
-        dbs.get('main').transaction (transaction) ->
+        dbs.transaction 'main', (transaction) ->
           internals.finalizeNewParcel {parcels, id, subtask, transaction}
           .then (finalizedParcel) ->
             transforms.execFinalizeParcelAsDataCombined(finalizedParcel)
@@ -129,13 +129,12 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
 activateNewData = (subtask) -> Promise.try () ->
   logger.debug subtask
 
-  dbs.get('main').transaction (transaction) ->
+  dbs.transaction 'main', (transaction) ->
 
     activateParcels = dataLoadHelpers.activateNewData(subtask, {
-      propertyPropName: 'parcel',
-      deletesPropName: 'parcel'
-      transaction}
-    )
+      tableProp: 'parcel'
+      transaction
+    })
     activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
     Promise.join activateParcels, activateDataCombined, () ->  # noop
 
@@ -169,7 +168,7 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
 getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
-  tables.property.parcel(transaction: transaction)
+  tables.finalized.parcel(transaction: transaction)
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where({rm_property_id, active})
 

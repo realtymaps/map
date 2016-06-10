@@ -2,12 +2,12 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 rets = require 'rets-client'
-moment = require('moment')
 logger = require('../config/logger').spawn('service:rets')
 require '../config/promisify'
 through2 = require 'through2'
 externalAccounts = require './service.externalAccounts'
 internals = require './service.rets.internals'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 
 
 getDatabaseList = (serverInfo) ->
@@ -80,35 +80,33 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
         response.results[0].metadata
 
 
-getDataStream = (mlsInfo, limit, minDate=0) ->
+getDataStream = (mlsInfo, opts={}) ->
   externalAccounts.getAccountInfo(mlsInfo.id)
   .then (creds) ->
     internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClient) ->
-      if !mlsInfo.listing_data.queryTemplate || !mlsInfo.listing_data.field
-        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
-      retsClient.metadata.getTable(mlsInfo.listing_data.db, mlsInfo.listing_data.table)
-      .catch errorHandlingUtils.isUnhandled, (error) ->
-        throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS columns')
+      if !mlsInfo.listing_data.field
+        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
+      getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
       .then (columnData) ->
         fieldMappings = {}
-        reverseMappings = {}
-        for field in columnData.results[0].metadata
-          fieldMappings[field.SystemName] = field.LongName.replace(/\./g, '').trim()
-          # handle LongName collisions
-          if reverseMappings[fieldMappings[field.SystemName]]?
-            i=2
-            baseName = fieldMappings[field.SystemName]
-            while reverseMappings["#{baseName} (#{i})"]?
-              i++
-            fieldMappings[field.SystemName] = "#{baseName} (#{i})"
-          reverseMappings[fieldMappings[field.SystemName]] = field.SystemName
-        momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.listing_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.listing_data.field))
-        options =
-          limit: limit
-          count: 0
+        for field in columnData
+          fieldMappings[field.SystemName] = field.LongName
         total = 0
+        overlap = 0
+        lastId = null
+        currentPayload = null
+        found = null
+        counter = 0
+        searchQuery = internals.buildSearchQuery(mlsInfo, opts)
+        searchOptions =
+          count: 0
+        _.extend(searchOptions, opts.searchOptions)
+        fullLimit = opts.searchOptions.limit
+        if opts.subLimit
+          searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
 
         columns = null
+        uuidColumn = null
         delimiter = null
         done = false
         retsStream = null
@@ -119,11 +117,13 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             that.push(type: 'error', payload: error)
           resultStream.end()
         streamIteration = () ->
+          found = null
+          counter = 0
           new Promise (resolve, reject) ->
             resolved = false
             internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClientIteration) ->
               new Promise (resolve2, reject2) ->
-                retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, options, true)
+                retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions, true)
                 retsStream.pipe(resultStream, end: false)
                 retsStream.on 'end', resolve2
                 resolved = true
@@ -133,61 +133,156 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
                 resolved = true
                 reject(error)
         resultStream = through2.obj (event, encoding, callback) ->
-          if done
-            return
-          switch event.type
-            when 'delimiter'
-              if !delimiter
-                delimiter = event.payload
-                @push(event)
-              else if event.payload != delimiter
-                finish(this, new Error('rets delimiter changed during iteration'))
-              callback()
-            when 'columns'
-              if !columns
-                columns = event.payload
-                columnList = event.payload.split(delimiter)[1..-2]
-                for column,i in columnList
-                  if fieldMappings[column]?
-                    columnList[i] = fieldMappings[column]
-                @push(type: 'columns', payload: columnList)
-              else if event.payload != columns
-                finish(this, new Error('rets columns changed during iteration'))
-              callback()
-            when 'data'
-              event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
-              @push(event)
-              callback()
-            when 'done'
-              total += event.payload.rowsReceived
-              if event.payload.maxRowsExceeded && (!limit || total < limit)
-                options.offset = total
-                if limit
-                  options.limit = limit-total
-                streamIteration()
-                .catch (err) =>
-                  finish(this, err)
-                .then () ->
-                  callback()
-              else
-                @push(type: 'done', payload: total)
-                resultStream.end()
+          try
+            if done
+              return
+            switch event.type
+              when 'delimiter'
+                if !delimiter
+                  delimiter = event.payload
+                  @push(event)
+                else if event.payload != delimiter
+                  finish(this, new Error('rets delimiter changed during iteration'))
                 callback()
-            when 'error'
-              if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
-                # code for 0 results, not really an error (DMQL is a clunky language)
-                @push(type: 'done', payload: total)
-                resultStream.end()
+              when 'columns'
+                if !columns
+                  columns = event.payload
+                  columnList = event.payload.split(delimiter)[1..-2]
+                  for column,i in columnList
+                    if opts.uuidField && column == opts.uuidField
+                      uuidColumn = i
+                    if fieldMappings[column]?
+                      columnList[i] = fieldMappings[column]
+                  if opts.uuidField && !uuidColumn?
+                    finish(this, new Error('failed to locate specificed UUID column'))
+                  @push(type: 'columns', payload: columnList)
+                else if event.payload != columns
+                  finish(this, new Error('rets columns changed during iteration'))
+                callback()
+              when 'data'
+                event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
+                if !lastId || found
+                  if opts.uuidField
+                    currentPayload = event.payload
+                  @push(event)
+                else
+                  if lastId == event.payload.split(delimiter)[uuidColumn]
+                    found = counter
+                  else
+                    counter++
+                callback()
+              when 'done'
+                if lastId && !found
+                  finish(this, new SoftFail('failed to locate RETS overlap record'))
+                  callback()
+                else
+                  received = event.payload.rowsReceived
+                  if lastId
+                    received -= found+1
+                  total += received
+                  logger.debug("stream chunk: #{received}")
+                  if opts.uuidField?
+                    lastId = currentPayload.split(delimiter)[uuidColumn]
+                    if !overlap
+                      overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
+                  if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
+                    searchOptions.offset = total-overlap
+                    if fullLimit
+                      searchOptions.limit = fullLimit - searchOptions.offset
+                      if opts.subLimit
+                        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+                    streamIteration()
+                    .catch (err) =>
+                      finish(this, err)
+                    .then () ->
+                      callback()
+                  else
+                    @push(type: 'done', payload: total)
+                    resultStream.end()
+                    callback()
+              when 'error'
+                if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
+                  # code for 0 results, not really an error (DMQL is a clunky language)
+                  @push(type: 'done', payload: total)
+                  resultStream.end()
+                else
+                  finish(this, event.payload)
+                callback()
               else
-                finish(this, event.payload)
-              callback()
-            else
-              callback()
+                callback()
+          catch error
+            finish(this, error)
+            callback()
         streamIteration()
         .then () ->
           resultStream
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
+
+
+getDataChunks = (mlsInfo, handler, opts={}) ->
+  externalAccounts.getAccountInfo(mlsInfo.id)
+  .then (creds) ->
+    internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClient) ->
+      if !mlsInfo.listing_data.field
+        throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
+      total = 0
+      overlap = 0
+      lastId = null
+      searchQuery = internals.buildSearchQuery(mlsInfo, opts)
+      searchOptions =
+        count: 0
+      _.extend(searchOptions, opts.searchOptions)
+      fullLimit = opts.searchOptions.limit
+      if opts.subLimit
+        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+
+      searchIteration = () ->
+        internals.getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClientIteration) ->
+          retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
+          .then (response) ->
+            if lastId?
+              found = null
+              for listing,i in response.results
+                if listing[opts.uuidField] == lastId
+                  found = i
+                  break
+              if !found?
+                throw new SoftFail('failed to locate RETS overlap record')
+              results = response.results.slice(found+1)
+            else
+              results = response.results
+            if opts.uuidField?
+              lastId = results[results.length-1][opts.uuidField]
+              if !overlap
+                overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
+            total += results.length
+            if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
+              searchOptions.offset = total-overlap
+              if fullLimit
+                searchOptions.limit = fullLimit - searchOptions.offset
+                if opts.subLimit
+                  searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+              handlerPromise = handler(results)
+              .catch errorHandlingUtils.isUnhandled, (err) ->
+                throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
+              nextIterationPromise = searchIteration()
+              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
+            else
+              handler(results)
+          .then () ->
+            return total
+          .catch rets.RetsReplyError, (err) ->
+            if err.replyTag == "NO_RECORDS_FOUND" && total > 0
+              # code for 0 results, not really an error (DMQL is a clunky language)
+              return total
+            else
+              throw err
+
+      searchIteration()
+
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
 
 
 getPhotosObject = ({serverInfo, databaseName, photoIds, objectsOpts, photoType}) ->
@@ -206,6 +301,7 @@ module.exports = {
   getColumnList
   getLookupTypes
   getDataStream
+  getDataChunks
   getPhotosObject
   getObjectList
   isTransientRetsError: internals.isTransientRetsError

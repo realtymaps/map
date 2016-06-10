@@ -118,10 +118,10 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'health service', ->
     beforeEach ->
-      @jobQueue_taskHistory = new SqlMock 'jobQueue', 'taskHistory'
-      @jobQueue_dataLoadHistory = new SqlMock 'jobQueue', 'dataLoadHistory'
-      @property_combined = new SqlMock 'property', 'combined'
-      @dbs_main = new SqlMock 'dbs', 'main'
+      @jobQueue_taskHistory = new SqlMock('jobQueue', 'taskHistory')
+      @jobQueue_dataLoadHistory = new SqlMock('jobQueue', 'dataLoadHistory')
+      @property_combined = new SqlMock('finalized', 'combined')
+      @dbs_main = new SqlMock('dbs', 'main')
 
       @tables =
         jobQueue:
@@ -130,7 +130,7 @@ describe 'service.jobs.spec.coffee', ->
           dataLoadHistory: () =>
             @jobQueue_dataLoadHistory
 
-        property:
+        finalized:
           combined: () =>
             @property_combined
 

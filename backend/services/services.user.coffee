@@ -43,10 +43,6 @@ class UserCrud extends ThenableCrud
       module.exports.m2m_user_group, 'group_id', undefined,
       "#{tables.auth.m2m_user_group.tableName}.id").init(arguments...)
 
-    @profiles = thenableHasManyCrud(tables.user.project, joinColumns.profile,
-      module.exports.profile, "#{tables.user.profile.tableName}.project_id",
-      undefined, "#{tables.user.profile.tableName}.id").init(arguments...)
-
     @clients = thenableHasManyCrud(tables.auth.user, joinColumns.client,
       module.exports.profile, undefined, undefined,
       "#{tables.user.profile.tableName}.id").init(arguments...)

@@ -27,7 +27,7 @@ summary = (subtask) ->
 
 withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
-  dbs.get('main').transaction (transaction) ->
+  dbs.transaction 'main', (transaction) ->
     logger.spawn('dbLock').debug () -> "---- <#{id}>   Getting lock: #{lockId}"
     transaction
     .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
@@ -317,7 +317,7 @@ cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
 # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
 # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
-  dbs.get('main').transaction (transaction) ->
+  dbs.transaction 'main', (transaction) ->
     tables.jobQueue.taskHistory(transaction: transaction)
     .where
       name: taskName

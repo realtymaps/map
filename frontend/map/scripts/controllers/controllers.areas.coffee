@@ -42,7 +42,8 @@ rmapsLeafletHelpers) ->
 
       modalInstance.result
 
-    create: (model) ->
+    #uses modal
+    oldCreate: (model) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
         if !model?.area_name
@@ -50,6 +51,12 @@ rmapsLeafletHelpers) ->
           model.area_name = ''
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
         _signalUpdate(drawnShapesSvc.create model)
+
+    #create with no modal and default a name
+    create: (model) ->
+      model.area_name = "Untitled Area"
+      rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+      _signalUpdate(drawnShapesSvc.create model)
 
     update: (model) ->
       $scope.createModal(model).then (modalModel) ->

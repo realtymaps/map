@@ -17,7 +17,7 @@ _documentFinalize = (fnName, cbPromise) ->
 
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataTax", () ->
-    tables.property.tax(subid: subtask.data.normalSubid)
+    tables.normalized.tax(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -41,7 +41,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
 
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   _documentFinalize "finalizeDataDeed", () ->
-    tables.property.deed(subid: subtask.data.normalSubid)
+    tables.normalized.deed(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -60,7 +60,7 @@ finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
 
 finalizeDataMortgage = ({subtask, id, data_source_id}) ->
   _documentFinalize "finalizeDataMortgage", () ->
-    tables.property.mortgage(subid: subtask.data.normalSubid)
+    tables.normalized.mortgage(subid: subtask.data.normalSubid)
     .select('*')
     .where
       rm_property_id: id
@@ -78,6 +78,8 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
 
   # all county data gets 'not for sale' status -- it will be differentiated into 'sold' vs 'not for sale' at query time
   tax.status = 'not for sale'
+  tax.substatus = 'not for sale'
+  tax.status_display = 'not for sale'
 
   # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
   # TODO: static data fields?
@@ -112,7 +114,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   {promotedValues,tax}
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
-  tables.property.combined(transaction: transaction)
+  tables.finalized.combined(transaction: transaction)
   .where
     rm_property_id: id
     data_source_id: data_source_id || subtask.task_name
@@ -120,7 +122,7 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
   .delete()
   .then () ->
     logger.spawn(subtask.task_name).debug () -> "@@@@@@@@@@@ data_combined update --- rm_property_id: #{id}, geometry: #{tax.geometry?}"
-    tables.property.combined(transaction: transaction)
+    tables.finalized.combined(transaction: transaction)
     .insert(tax)
 
 finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
@@ -134,7 +136,7 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, de
     .then () ->
       if !_.isEqual(promotedValues, tax.promoted_values)
         # need to save back promoted values to the normal table
-        tables.property.tax(subid: subtask.data.normalSubid)
+        tables.normalized.tax(subid: subtask.data.normalSubid)
         .where
           data_source_id: data_source_id || subtask.task_name
           data_source_uuid: tax.data_source_uuid

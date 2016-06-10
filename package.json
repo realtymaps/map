@@ -212,7 +212,6 @@
     "touch": "0.0.3",
     "twilio": "2.X",
     "unzip2": "^0.2.5",
-    "uuid": "^2.0.1",
     "vero-promise": "1.0.7",
     "verror": "^1.6.0",
     "vinyl-buffer": "^1.0.0",

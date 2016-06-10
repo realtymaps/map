@@ -42,13 +42,13 @@ basicColumns = do ->
       'owner_address'
       'cdn_photo'
       'photo_count'
-    ].map((name)-> tables.property.combined.tableName + '.' + name)
+    ].map((name)-> tables.finalized.combined.tableName + '.' + name)
     .concat [
-      "floor(#{tables.property.combined.tableName}.baths_total)::int as baths_full",
-      "(case when (#{tables.property.combined.tableName}.baths_total::int - #{tables.property.combined.tableName}.baths_total) > 0 then 1 else 0 end) as baths_half"
+      "floor(#{tables.finalized.combined.tableName}.baths_total)::int as baths_full",
+      "(case when (#{tables.finalized.combined.tableName}.baths_total::int - #{tables.finalized.combined.tableName}.baths_total) > 0 then 1 else 0 end) as baths_half"
       """(CASE
-      WHEN #{tables.property.combined.tableName}.status = 'not for sale' AND #{tables.property.combined.tableName}.close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold'
-      ELSE #{tables.property.combined.tableName}.status
+      WHEN #{tables.finalized.combined.tableName}.status = 'not for sale' AND #{tables.finalized.combined.tableName}.close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold'
+      ELSE #{tables.finalized.combined.tableName}.status
       END) AS rm_status"""
     ].join(', ')
     # columns returned for additional detail results

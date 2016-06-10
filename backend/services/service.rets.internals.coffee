@@ -4,6 +4,7 @@ rets = require 'rets-client'
 logger = require('../config/logger').spawn('service:rets:internals')
 require '../config/promisify'
 memoize = require 'memoizee'
+moment = require('moment')
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -55,7 +56,22 @@ isTransientRetsError = (error) ->
   return false
 
 
+buildSearchQuery = (mlsInfo, opts) ->
+  if opts.fullQuery
+    return opts.fullQuery
+
+  criteria = []
+  for key,val of opts.criteria
+    criteria.push("(#{key}=#{val})")
+  if opts.maxDate?
+    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}-)")
+  if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
+    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}+)")
+  return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
+
+
 module.exports = {
   getRetsClient
   isTransientRetsError
+  buildSearchQuery
 }

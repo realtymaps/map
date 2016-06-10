@@ -81,7 +81,7 @@ checkFtpDrop = (subtask) ->
       # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
       # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
       # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-      dbs.get('main').transaction (transaction) ->
+      dbs.transaction 'main', (transaction) ->
         taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
         deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
         finalizePrep = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "finalizeDataPrep", manualData: {sources: _.keys(todo)}, replace: true})
@@ -136,7 +136,7 @@ finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
   Promise.map subtask.data.sources, (source) ->
-    tables.property[source]()
+    tables.normalized[source]()
     .select('rm_property_id')
     .where(batch_id: subtask.batch_id)
     .then (ids) ->

@@ -15,6 +15,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsClientButtonCtrl" cl
         a(ng-show="clientTotal" ui-sref="projectClients({id: principal.getCurrentProfile().project_id})") {{clientTotal}} Collaborator
         span(ng-show="!clientTotal") No Collaborators
       span.results-btn(
+        rmaps-require-project-editor
         popover-placement="right"
         popover-trigger="mouseenter"
         popover="Add Client"
@@ -32,6 +33,6 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsClientButtonCtrl" cl
                 p.text {{client.first_name}} {{client.last_name}}
                 p.text {{client.email}}
 
-            span.actions
+            span.actions(rmaps-require-project-editor)
               span.icon.icon-remove(ng-click="remove(client); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="edit(client); $event.stopPropagation()")

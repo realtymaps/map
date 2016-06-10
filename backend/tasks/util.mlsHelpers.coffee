@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
-logger = require('../config/logger').spawn('util.mlsHelpers')
+logger = require('../config/logger').spawn('task:mls')
 finePhotologger = logger.spawn('photos.fine')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -18,23 +18,27 @@ externalAccounts = require '../services/service.externalAccounts'
 config = require '../config/config'
 internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+jobQueue = require '../services/service.jobQueue'
 
 
 ONE_YEAR_MILLIS = 365*24*60*60*1000
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
-loadUpdates = (subtask, options) ->
+loadUpdates = (subtask, options={}) ->
   # figure out when we last got updates from this table
-  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: ONE_YEAR_MILLIS})
-  .then (updateThreshold) ->
-    tables.config.mls()
-    .where(id: subtask.task_name)
-    .then (mlsInfo) ->
-      mlsInfo = mlsInfo?[0]
-      retsService.getDataStream(mlsInfo, options?.limit, updateThreshold)
-      .catch retsService.isTransientRetsError, (error) ->
-        throw new SoftFail(error, "Transient RETS error; try again later")
+  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  mlsInfoPromise = tables.config.mls()
+  .where(id: subtask.task_name)
+  .then (mlsInfo) ->
+    mlsInfo = mlsInfo?[0]
+    internals.getUuidField(mlsInfo)
+    .then (uuidField) ->
+      {mlsInfo, uuidField}
+  Promise.join updateThresholdPromise, mlsInfoPromise, (updateThreshold, {mlsInfo, uuidField}) ->
+    retsService.getDataStream(mlsInfo, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
+    .catch retsService.isTransientRetsError, (error) ->
+      throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
@@ -46,14 +50,6 @@ loadUpdates = (subtask, options) ->
       dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, retsStream)
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-    .then (numRawRows) ->
-      result = {numRawRows}
-      if updateThreshold == 0
-        result.deletes = dataLoadHelpers.DELETE.UNTOUCHED
-        result.setRefreshTimestamp = true
-      else
-        result.deletes = dataLoadHelpers.DELETE.NONE
-      return result
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to load RETS data for update')
 
@@ -91,7 +87,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.property.listing()
+  listingsPromise = tables.normalized.listing()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -100,19 +96,12 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   .orderBy('deleted')
   .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
-
-
-
-  Promise.join listingsPromise
-  , if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
-  , (listings=[], parcel=[]) ->
+  parcelPromise = if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
+  Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
+      logger.spawn(subtask.task_name).debug "No listings found for rm_property_id: #{id}"
       # might happen if a singleton listing is changed to hidden during the day
-      return tables.deletes.property(transaction: transaction)
-      .insert
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
+      return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
     listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
     listing.data_source_type = 'mls'
@@ -126,7 +115,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       if listing.fips_code != '12021'
         return
       # need to query the tax table to get values to promote
-      tables.property.tax(subid: listing.fips_code)
+      tables.normalized.tax(subid: listing.fips_code)
       .select('promoted_values')
       .where
         rm_property_id: id
@@ -135,21 +124,21 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
           # promote values into this listing
           listing.extend(results[0].promoted_values)
           # save back to the listing table to avoid making checks in the future
-          tables.property.listing()
+          tables.normalized.listing()
           .where
             data_source_id: listing.data_source_id
             data_source_uuid: listing.data_source_uuid
           .update(results[0].promoted_values)
     .then () ->
       dbs.ensureTransaction transaction, 'main', (transaction) ->
-        tables.property.combined(transaction: transaction)
+        tables.finalized.combined(transaction: transaction)
         .where
           rm_property_id: id
           data_source_id: data_source_id || subtask.task_name
           active: false
         .delete()
         .then () ->
-          tables.property.combined(transaction: transaction)
+          tables.finalized.combined(transaction: transaction)
           .insert(listing)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
@@ -158,13 +147,13 @@ _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   .then (results) ->
     sqlHelpers.expectSingleRow(results)
 
-  query = tables.property.listing().where listingRow
+  query = tables.normalized.listing().where listingRow
 
   Promise.all [mlsConfigQuery, query]
 
 _updatePhoto = (subtask, opts) -> Promise.try () ->
   if !opts
-    logger.debug 'GTFO: _updatePhoto'
+    logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
     return
 
   onMissingArgsFail
@@ -210,8 +199,8 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
       }
 
     .catch (error) ->
-      logger.error error
-      logger.debug 'Handling error by enqueing photo to be deleted.'
+      logger.spawn(subtask.task_name).error error
+      logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       _enqueuePhotoToDelete obj.key, subtask.batch_id
 
 _enqueuePhotoToDelete = (key, batch_id) ->
@@ -245,7 +234,7 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
         reject error
 
       upload.once 'uploaded', (details) ->
-        logger.debug details
+        logger.spawn(row.data_source_id).debug details
         resolve(details)
 
       upload.once 'error', (error) ->
@@ -271,7 +260,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     finePhotologger.debug "id: data_source_id: #{listingRow.data_source_id} data_source_uuid: #{listingRow.data_source_uuid}"
 
     #if the photo set is not updated GTFO
-    logger.debug row.photo_last_mod_time
+    logger.spawn(subtask.task_name).debug row.photo_last_mod_time
 
     if row.photo_last_mod_time? && row.photo_download_last_mod_time? &&
     row.photo_last_mod_time == row.photo_download_last_mod_time
@@ -304,16 +293,16 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
 
           if err
-            logger.debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
+            logger.spawn(subtask.task_name).debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
             return reject err
 
           if isEnd
             return resolve(
               Promise.all promises
               .then (args...) ->
-                logger.debug "Uploaded #{successCtr} photos to aws bucket."
-                logger.debug "Skipped #{skipsCtr} photos to aws bucket."
-                logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
+                logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
+                logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
+                logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
                 args
             )
 
@@ -322,7 +311,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
           {imageId, objectData} = payload
 
-          logger.debug _.omit payload, 'data'
+          logger.spawn(subtask.task_name).debug _.omit payload, 'data'
 
           if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
             skipsCtr++
@@ -334,19 +323,19 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
             .then () ->
               _enqueuePhotoToDelete row.photos[imageId]?.key, subtask.batch_id
             .then () ->
-              logger.debug 'photo upload success'
+              logger.spawn(subtask.task_name).debug 'photo upload success'
               successCtr++
 
-              tables.property.listing()
+              tables.normalized.listing()
               .where(listingRow)
               .update(photo_import_error: null)
               .then () ->
                 {newFileName, imageId, photo_id, objectData, data_source_uuid: listingRow.data_source_uuid}
             .catch (error) ->
-              logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
-              logger.debug analyzeValue.getSimpleDetails(error)
+              logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
+              logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
               #record the error and move on
-              tables.property.listing()
+              tables.normalized.listing()
               .where(listingRow)
               .update(photo_import_error: analyzeValue.getSimpleDetails(error))
               .then () ->
@@ -360,33 +349,63 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
-      tables.property.listing()
+      tables.normalized.listing()
       .where(listingRow)
       .update photo_import_error: analyzeValue.getSimpleDetails(error)
 
-deleteOldPhoto = (subtask, id) -> Promise.try () ->
-  tables.deletes.photos()
-  .where {id}
-  .then (results) ->
-    if !results?.length
-      return
+deleteOldPhoto = (subtask, key) -> Promise.try () ->
+  logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
 
-    [{id, key}] = results
-    logger.debug "deleting: id: #{id}, key: #{key}"
+  awsService.deleteObject
+    extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
+    Key: key
+  .then () ->
+    logger.spawn(subtask.task_name).debug 'successful deletion of aws photo ' + key
 
-    awsService.deleteObject
-      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
-      Key: key
-    .then () ->
-      logger.debug 'succesful deletion of aws photo ' + key
-
-      tables.deletes.photos()
-      .where {id}
-      .del()
-      .catch (error) ->
-        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+    tables.deletes.photos()
+    .where {key}
+    .del()
     .catch (error) ->
-      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+      throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+  .catch (error) ->
+    throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+
+
+markUpToDate = (subtask) ->
+  mlsInfoPromise = tables.config.mls()
+  .where(id: subtask.task_name)
+  .then (mlsInfo) ->
+    mlsInfo = mlsInfo[0]
+    internals.getUuidField(mlsInfo)
+    .then (uuidField) ->
+      doMarks = (chunk) -> Promise.try () ->
+        logger.debug("doMarks chunk: #{chunk.length}")
+        if !chunk?.length
+          return
+        ids = _.pluck(chunk, uuidField)
+        tables.normalized.listing()
+        .select('rm_property_id')
+        .where(data_source_id: subtask.task_name)
+        .whereIn('data_source_uuid', ids)
+        .whereNotNull('deleted')
+        .then (undeleteIds=[]) ->
+          markPromise = tables.normalized.listing()
+          .where(data_source_id: subtask.task_name)
+          .whereIn('data_source_uuid', ids)
+          .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+          if undeleteIds.length == 0
+            undeletePromise = Promise.resolve()
+          else
+            undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
+            undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
+          Promise.join markPromise, undeletePromise, () ->  # no-op
+      retsService.getDataChunks(mlsInfo, doMarks, minDate: 0, uuidField: uuidField, searchOptions: {limit: subtask.data.limit, Select: uuidField})
+      .then (count) ->
+        logger.debug("getDataChunks total: #{count}")
+    .catch retsService.isTransientRetsError, (error) ->
+      throw new SoftFail(error, "Transient RETS error; try again later")
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 
 
 module.exports = {
@@ -395,4 +414,5 @@ module.exports = {
   finalizeData
   storePhotos
   deleteOldPhoto
+  markUpToDate
 }

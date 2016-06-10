@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-_updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']
+_updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected', 'project_id']
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 

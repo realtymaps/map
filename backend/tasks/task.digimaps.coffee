@@ -20,11 +20,10 @@ util = require 'util'
 
 
 NUM_ROWS_TO_PAGINATE = 250
-HALF_YEAR_MILLISEC = moment.duration(year:1).asMilliseconds() / 2
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
-  dataLoadHelpers.getUpdateThreshold({subtask, fullRefreshMillis: HALF_YEAR_MILLISEC})
+  dataLoadHelpers.getLastUpdateTimestamp(subtask)
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
@@ -141,10 +140,10 @@ loadRawData = (subtask) -> Promise.try () ->
       if numRawRows == 0
         return 0
       # now that we know we have data, queue up the rest of the subtasks
-      logger.debug("num rows to normalize: #{numRows}")
+      logger.debug("num rows to normalize: #{numRawRows}")
       normalizeDataPromise = jobQueue.queueSubsequentPaginatedSubtask {
         subtask
-        totalOrList: numRows
+        totalOrList: numRawRows
         maxPage: numRowsToPageNormalize
         laterSubtaskName: "normalizeData"
         mergeData: {
@@ -159,9 +158,9 @@ loadRawData = (subtask) -> Promise.try () ->
         laterSubtaskName: "recordChangeCounts"
         manualData:
           deletes: dataLoadHelpers.DELETE.UNTOUCHED
-          dataType: "normParcel"
-          rawDataType: "parcel"  # fixes lookup of rawtable for change counts
+          dataType: "parcel"
           rawTableSuffix: fipsCode
+          indicateDeletes: true
           subset:
             fips_code: fipsCode
         replace: true
@@ -198,7 +197,7 @@ finalizeDataPrep = (subtask) ->
 
   logger.debug util.inspect(subtask, depth: null)
 
-  tables.property.normParcel()
+  tables.normalized.parcel()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
@@ -266,7 +265,7 @@ finalizeData = (subtask) ->
 recordChangeCounts = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: true, deletesTable: 'parcel')
+  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel')
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask

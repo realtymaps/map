@@ -23,15 +23,21 @@ module.exports =
     mls: 'lookup_mls'
     mls_m2m_fips_code_county: 'lookup_mls_m2m_fips_code_county'
   property:
+    # once we remove the mv_property_details table, this whole table group should be removed
+    propertyDetails: 'mv_property_details'
+  normalized:
     listing: 'normalized.listing'
     tax: 'normalized.tax'
     deed: 'normalized.deed'
     mortgage: 'normalized.mortgage'
-    normParcel: 'normalized.parcel'
+    parcel: 'normalized.parcel'
+  finalized:
     combined: 'data_combined'
-    parcel: 'parcel'
-    # the following are deprecated, so I'm not bothering to standardize their names
-    propertyDetails: 'mv_property_details'
+    parcel: 'data_parcel'
+  deletes:
+    photos: 'deletes_photos'
+    combined: 'deletes_combined'
+    parcel: 'deletes_parcel'
   jobQueue:
     dataLoadHistory: 'jq_data_load_history'
     taskConfig: 'jq_task_config'
@@ -68,10 +74,6 @@ module.exports =
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
     pdfUpload: 'user_pdf_uploads'
-  deletes:
-    photos: 'delete_photos'
-    property: 'data_combined_deletes'
-    parcel: 'parcel_deletes'
   temp: 'raw_temp.raw'
   event:
     history: 'data_event_history'

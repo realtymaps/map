@@ -18,9 +18,9 @@ _detailQuery = (queryParams, req) ->
       'detail': 'detail_with_disclaimer'
       'all': 'new_all_explicit'
 
-    query = sqlHelpers.select(tables.property.combined(), columnMap[queryParams.columns])
+    query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
     .leftOuterJoin "#{tables.config.mls.tableName}", ->
-      @.on("#{tables.config.mls.tableName}.id", "#{tables.property.combined.tableName}.data_source_id")
+      @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
 
     queryPermissions(query, permissions)
 

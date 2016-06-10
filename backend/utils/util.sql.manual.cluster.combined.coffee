@@ -9,7 +9,7 @@ _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
   "round(ST_#{xy}(ST_CENTROID(geometry_raw))::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
-  query = tables.property.combined().select(
+  query = tables.finalized.combined().select(
     dbs.get('main').raw('count(*)'),
     dbs.get('main').raw("count(case when status='not for sale' then 1 end) as notforsale"),
     dbs.get('main').raw("count(case when status='pending' then 1 end) as pending"),

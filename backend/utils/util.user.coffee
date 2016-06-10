@@ -1,8 +1,13 @@
 Promise = require 'bluebird'
 
 logger = require '../config/logger'
-userSessionService = require '../services/service.userSession'
+profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
+
+# tests subscription status of the (if active) req.session
+# This is leveraged in middleware, but can be used in route code for business logic needs
+isSubscriber = (req) ->
+  return req?.session?.subscription? and req?.session?.subscription != 'canceled' and req?.session?.subscription != 'unpaid'
 
 # caches permission and group membership values on the user session; we could
 # get into unexpected states if those values change during a session, so we
@@ -27,9 +32,17 @@ cacheUserValues = (req, reload = {}) ->
 
   if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
-    profilesPromise = userSessionService.getProfiles req.user.id
-    .then (profiles) ->
-      logger.debug 'userSessionService.getProfiles.then'
+
+    # if user is subscriber, use service endpoint that includes sandbox creation and display
+    if isSubscriber(req)
+      promise = profileSvc.getProfiles req.user.id
+
+    # user is a client, and unallowed to deal with sandboxes
+    else
+      promise = profileSvc.getClientProfiles req.user.id
+
+    profilesPromise = promise.then (profiles) ->
+      logger.debug 'profileSvc.getProfiles.then'
       req.session.profiles = profiles
       # logger.debug profiles
     promises.push profilesPromise
@@ -42,3 +55,4 @@ cacheUserValues = (req, reload = {}) ->
 
 module.exports =
   cacheUserValues: cacheUserValues
+  isSubscriber: isSubscriber
