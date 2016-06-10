@@ -16,7 +16,7 @@ _detailQuery = (queryParams, req) ->
       'filter': 'filterCombined'
       'address': 'filterCombined'
       'detail': 'detail_with_disclaimer'
-      'all': 'new_all'
+      'all': 'new_all_explicit'
 
     query = sqlHelpers.select(tables.property.combined(), columnMap[queryParams.columns])
     .leftOuterJoin "#{tables.config.mls.tableName}", ->
