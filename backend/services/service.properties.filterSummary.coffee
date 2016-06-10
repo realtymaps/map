@@ -5,7 +5,6 @@ sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:property:filterSummary')
-propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 validation = require '../utils/util.validation'
