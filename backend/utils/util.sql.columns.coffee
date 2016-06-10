@@ -29,7 +29,7 @@ basicColumns = do ->
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center AS geom_point_json',
+      'geometry_center',
       'owner_name',
       'owner_name_2 as owner_name2',
       'year_built',
