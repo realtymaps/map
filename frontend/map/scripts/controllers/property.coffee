@@ -79,6 +79,7 @@ rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService,
     .then (property) ->
       $scope.selectedResult = property
       $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
-      $scope.tab.selected = (property.mls[0] || property.county[0])?.data_source_id || 'raw'
+      $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
+      $log.debug $scope.tab.selected
 
   getPropertyDetail $stateParams.id

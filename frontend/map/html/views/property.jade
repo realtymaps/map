@@ -72,7 +72,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value {{formatters.property.orNa(property.sqft_finished)}}
                   .content-label Sq Ft
                 .col-xs-6
-                  .content-value {{formatters.property.getYear(property.year_built.value)}}
+                  .content-value {{property.year_built.value}}
                   .content-label {{property.year_built.label}}
 
               .row.content-row

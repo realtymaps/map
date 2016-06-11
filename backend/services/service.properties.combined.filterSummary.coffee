@@ -241,25 +241,8 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   logger.debug -> query.toString()
   query
 
-# This can be removed once mv_property_details is gone. Note: front-end will need updating
-transformProperties = (properties) ->
-  streetRe = /^(\d+)\s*(.+)/
-  cityRe = /^(.+),\s*(.+)/
-  for prop in properties
-    # Remove the first line if there are more than 3 -- it will be a "care of so-and-so" line
-    lines = prop.address?.lines?.slice(-3)
-    if lines?.length >= 2
-      streetLine = lines[0].match(streetRe)
-      cityLine = lines[1].match(cityRe)
-      prop.street_address_num = streetLine?[1]
-      prop.street_address_name = streetLine?[2]
-      prop.city = cityLine?[1]
-      prop.state = cityLine?[2]
-      prop.zip = lines[2] ? '99999'
-
 module.exports =
   transforms: transforms
-  transformProperties: transformProperties
   getFilterSummaryAsQuery: getFilterSummaryAsQuery
   getResultCount: getResultCount
   cluster: cluster

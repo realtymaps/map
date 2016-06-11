@@ -2,9 +2,9 @@ mixin propertyAttributes(propName)
   p.price(ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(#{propName}.price)}}
   div.property-attr
     ul.attr
-      li.bedrooms(ng-if="#{propName}.bedrooms") {{#{propName}.bedrooms}} bed
-      li.baths_total(ng-if="#{propName}.baths_total") {{#{propName}.baths_total}} bath
-      li.finished_sqft(ng-if="#{propName}.finished_sqft") {{#{propName}.finished_sqft}} Sq Ft
-      li.year_built(ng-if="#{propName}.year_built") {{formatters.property.getYear(#{propName}.year_built)}} built
-  h4.title(ng-if="#{propName}.street_address_num || #{propName}.street_address_name || #{propName}.street_address_unit", ng-cloak) {{#{propName}.street_address_num}} {{#{propName}.street_address_name}} {{#{propName}.street_address_unit}}
-  p.location(ng-if="#{propName}.city || #{propName}.state") {{formatters.property.getCityStateZip(#{propName})}}
+      li.bedrooms {{formatters.property.orNa(#{propName}.bedrooms)}} beds
+      li.baths_total {{formatters.property.orNa(#{propName}.baths.value)}} baths
+      li.finished_sqft(ng-if="#{propName}.sqft_finished") {{#{propName}.sqft_finished}} Sq Ft
+      li.year_built(ng-if="#{propName}.year_built.value") {{#{propName}.year_built.value}}
+  h4.title(ng-if="property.address.lines[0]") {{property.address.lines[0]}}
+  p.location(ng-repeat="line in property.address.lines.slice(1)") {{line}}
