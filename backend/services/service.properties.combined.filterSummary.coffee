@@ -138,8 +138,6 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   {filters} = state
   if !filters?.status?.length
     return query
-  if !query
-    throw new Error('knex starting query missing!')
   if !bounds
     throw new Error('query must have bounds')
 
