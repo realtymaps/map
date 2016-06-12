@@ -8,7 +8,7 @@ analyzeValue = require('../../common/utils/util.analyzeValue')
 
 actionPromise = switch process.argv[2]
   when 'wait'
-    console.log("SYNC: Waiting for web.1 to perform dbsync...")
+    console.log("SYNC: Waiting for dbsync to finish (HEROKU_SLUG_COMMIT: #{process.env.HEROKU_SLUG_COMMIT})...")
     dbsyncLock.waitForUnlock()
     .then () ->
       console.log("SYNC: dbsync complete, continuing.")

@@ -14,7 +14,7 @@ serializeXmlNode = (xmlNode) ->
 formatPieData = (data) ->
   d3.nest()
   .key (k) ->
-    k.options.rm_status
+    k.options.rm_status || k.options.status
   .sortValues (v) ->
     v.length
   .entries data, d3.map
@@ -23,7 +23,7 @@ formatPieDataBackend = (cluster) ->
   return [
     {key: 'pending', values: {'length': cluster.pending}}, # feign 'length' attribute of array
     {key: 'for sale', values: {'length': cluster.forsale}},
-    {key: 'sold', values: {'length': cluster.recentlysold}},
+    {key: 'sold', values: {'length': cluster.sold}},
     {key: 'not for sale', values: {'length': cluster.notforsale}}
   ]
 

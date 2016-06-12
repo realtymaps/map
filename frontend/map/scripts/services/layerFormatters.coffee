@@ -112,7 +112,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
       if model.savedDetails?.isPinned
         status = 'saved'
       else
-        status = model.rm_status
+        status = model.rm_status || model.status
 
       _.extend model,
         markerType: 'price'

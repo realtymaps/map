@@ -95,7 +95,7 @@ currentProfile = (req, res, next) -> Promise.try () ->
     updateCache(req, res, next)
 
 updateState = (req, res, next) ->
-  userSessionService.updateCurrentProfile(req.session, req.body)
+  profileService.updateCurrent(req.session, req.body)
   .then () ->
     res.send()
   .catch (err) ->
@@ -105,14 +105,13 @@ updateState = (req, res, next) ->
 profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
-
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if userUtils.isSubscriber(req)
-        promise = userSessionService.getProfiles req.user.id
+        promise = profileService.getProfiles req.user.id
 
       # user is a client, and unallowed to deal with sandboxes
       else
-        promise = userSessionService.getClientProfiles req.user.id
+        promise = profileService.getClientProfiles req.user.id
 
       promise.then (result) ->
         res.json result
@@ -120,7 +119,7 @@ profiles = (req, res, next) ->
     PUT: () ->
       validation.validateAndTransformRequest(req.body, transforms.profiles.PUT)
       .then (validBody) ->
-        userSessionService.updateProfile(validBody, req.user.id)
+        profileService.update(validBody, req.user.id)
         .then () ->
           logger.debug 'SESSION: clearing profiles'
           delete req.session.profiles#to force profiles refresh in cache

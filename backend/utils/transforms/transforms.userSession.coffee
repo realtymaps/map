@@ -35,6 +35,7 @@ root =
 
 profiles =
   PUT:
+    project_id: validators.integer()
     account_image_id: validators.integer()
     filters: validators.object()
     favorites: validators.object()

@@ -1,12 +1,11 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:profiles')
 tables = require '../config/tables'
 db = require('../config/dbs').get('main')
-{singleRow} = require '../utils/util.sql.helpers'
+{singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
-userProfileSvc = (require './services.user').user.profiles
 projectSvc = (require './services.user').project
 
 safeProject = basicColumns.project
@@ -42,14 +41,38 @@ _getProfileWhere = (where = {}) ->
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
   )
   .where(where)
-  .join("#{tables.user.project.tableName}", () ->
+  .join(tables.user.project.tableName, () ->
     this.on("#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
   )
-  .leftOuterJoin("#{tables.auth.user.tableName}", () ->
+  .leftOuterJoin(tables.auth.user.tableName, () ->
     this.on("#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
   )
 
+# internal profile update
+_updateProfileWhere = (profile, where) ->
+  safeUpdate = _.pick(profile, safeProfile)
+  q = tables.user.profile()
+  .update(safeUpdate)
+  .where(where)
+  q
+
+# general purpose getAll endpoint for profile model (no project fields)
+getAll = (entity) ->
+  tables.user.profile()
+  .select(safeProfile)
+  .where(entity)
+
+getAllBulk = (entity) ->
+  query = tables.user.profile()
+  .select(safeProfile)
+
+  query = whereAndWhereIn(query, entity)
+
+  logger.debug () -> "query:\n#{query.toString()}"
+  query
+
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
+# Note: this differs from a usual "getAll" endpoint in that we bundle some project fields with profile results
 getProfiles = (auth_user_id) -> Promise.try () ->
   _getProfileWhere
     "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
@@ -61,7 +84,10 @@ getProfiles = (auth_user_id) -> Promise.try () ->
       logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
       create auth_user_id: auth_user_id, sandbox: true, can_edit: true
       .then () ->
-        userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+        # re-fetch for full list w/ ids
+        _getProfileWhere
+          "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+
   .then (profiles) ->
     _.indexBy profiles, 'id'
 
@@ -73,42 +99,26 @@ getClientProfiles = (auth_user_id) -> Promise.try () ->
   .then (profiles) ->
     _.indexBy profiles, 'id'
 
-getFirst = (userId) ->
-  tables.user.profile()
-  .where(auth_user_id: userId)
-  .then singleRow
-  .then (userState) ->
-    if not userState
-      tables.user.profile()
-      .insert
-        auth_user_id: userId
-      .then () ->
-        return {}
-    else
-      result = userState
-      delete result.id
-      return result
-
 getCurrentSessionProfile = (session) ->
   currentProfile(session)
 
-update = (profile, auth_user_id, safe = safeProfile) ->
-  Promise.throw("auth_usr_id is undefined") unless auth_user_id
+# The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
+update = (profile, auth_user_id) -> Promise.try () ->
+  if !auth_user_id? then throw new Error("auth_user_id is undefined")
+  updatePromises = []
 
-  userProfileSvc.getById profile.id
-  .then (profileProject) ->
-    if profileProject? and !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
-      projectSvc.update profileProject.project_id, toUpdate
-  .then () ->
-    # logger.debug "profile update"
-    # logger.debug profile, true
-    userProfileSvc.update {id: profile.id, auth_user_id: auth_user_id}, profile, safe
-  .then (userState) ->
-    if not userState
-      return {}
-    result = userState
-    delete result.id
-    return result
+  # update the project model `properties_selected` portion of the profileProject data
+  if !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
+    updatePromises.push projectSvc.update(profile.project_id, toUpdate)
+
+  # update the profile model portion of the profileProject data
+  where = {id: profile.id, auth_user_id: auth_user_id}
+  updatePromises.push _updateProfileWhere(profile, where)
+
+  Promise.all(updatePromises)
+  .catch (err) ->
+    logger.error "error while updating profile id #{profile.id}: #{err}"
+    Promise.reject(err)
 
 _hasProfileStateChanged = (profile, partialState) ->
   #avoid unnecessary saves as there is the possibility for race conditions
@@ -133,11 +143,12 @@ updateCurrent = (session, partialState, safe) ->
     update(sessionProfile, session.userid, safe)
 
 module.exports =
+  getAll: getAll
+  getAllBulk: getAllBulk
   getProfiles: getProfiles
   getClientProfiles: getClientProfiles
   getCurrentSessionProfile: getCurrentSessionProfile
   updateCurrent: updateCurrent
   update: update
-  getFirst: getFirst
   create: create
   createForProject: createForProject

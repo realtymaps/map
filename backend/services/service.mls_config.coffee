@@ -19,13 +19,11 @@ class MlsConfigService extends ServiceCrud
       if entity.schemaReady == 'true'
 
         # for "schemaReady" to be true, the listing_data json fields
-        # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
-        #TODO: schemaReady could be a column with an eventTrigger
+        # "db", "table", and "field" need to exist and have length > 0
         query
         .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
-        .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
       delete entity.schemaReady
 
     super(entity, query: query)

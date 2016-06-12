@@ -19,8 +19,7 @@ sinon = require 'sinon'
 require "#{basePath}/extensions"
 _ = require 'lodash'
 
-
-ServiceCrudProject = require "#{basePath}/services/service.user.project"
+ServiceCrudProject = rewire "#{basePath}/services/service.user.project"
 
 projectResponses =
   getAll:[id:1]
@@ -38,7 +37,16 @@ drawnShapesRsponses =
 userUtils =
   cacheUserValues: sinon.stub()
 
+profileSvc =
+  getAll: () ->
+    Promise.resolve(profilesResponses.getAll)
+  getAllBulk: () ->
+    Promise.resolve(profilesResponses.getAll)
+  delete: () -> profilesResponses.delete
+
 routeCrudToTest.__set__ 'userUtils', userUtils
+routeCrudToTest.__set__ 'profileSvc', profileSvc
+ServiceCrudProject.__set__ 'profileSvc', profileSvc
 
 mockRes =
   json: ->

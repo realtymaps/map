@@ -13,7 +13,6 @@ httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
 {currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
-{basicColumns} = require '../utils/util.sql.columns'
 _ = require 'lodash'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
@@ -46,6 +45,7 @@ _appendProjectId = (req, obj) ->
   obj.project_id = currentProfile(req).project_id
   obj
 
+# NOTE: this called a ton of times throughout a session or update for some reason
 captureMapFilterState =  (opts) -> (req, res, next) -> Promise.try () ->
   {handleStr, saveState, transforms} = opts
   saveState ?= true
@@ -60,7 +60,7 @@ captureMapFilterState =  (opts) -> (req, res, next) -> Promise.try () ->
     if state? and saveState
       _appendProjectId(req, state)
       state.auth_user_id =  req.user.id
-      profileService.updateCurrent(req.session, state, basicColumns.profile)
+      profileService.updateCurrent(req.session, state)
     body
   .then (body) ->
     req.validBody = body

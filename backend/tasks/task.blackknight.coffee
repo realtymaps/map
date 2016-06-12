@@ -164,7 +164,7 @@ checkFtpDrop = (subtask) ->
     # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
     # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
     # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-    dbs.get('main').transaction (transaction) ->
+    dbs.transaction 'main', (transaction) ->
       if processInfo.hasFiles
         deletes = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.DELETE], constants.DELETE)
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH, now)
@@ -215,7 +215,7 @@ saveProcessDates = (subtask) ->
 
 
 deleteData = (subtask) ->
-  normalDataTable = tables.property[subtask.data.dataType]
+  normalDataTable = tables.normalized[subtask.data.dataType]
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
@@ -269,7 +269,7 @@ finalizeDataPrep = (subtask) ->
   if !normalSubid?
     throw new SoftFail "normalSubid required"
 
-  tables.property.tax(subid: normalSubid)
+  tables.normalized.tax(subid: normalSubid)
   .select('rm_property_id')
   .then (results) ->
     jobQueue.queueSubsequentPaginatedSubtask {

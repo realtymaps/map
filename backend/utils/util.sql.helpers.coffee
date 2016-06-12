@@ -102,6 +102,17 @@ whereNotIn = (query, column, values) ->
 orWhereNotIn = (query, column, values) ->
   query.orWhere () -> whereNotIn(@, column, values)
 
+# iterate through entity object, and append either a `where` or `whereIn` clause based
+# on whether that field value is an array
+# Note: entity is a map of columns->values
+whereAndWhereIn = (query, entity) ->
+  for column, value of entity
+    if _.isArray(value)
+      query = whereIn(query, column, value)
+    else
+      query = query.where(column, value)
+  query
+
 between = (query, column, min, max) ->
   if min and max
     query.whereBetween(column, [min, max])
@@ -276,6 +287,7 @@ module.exports = {
   orWhereIn
   whereNotIn
   orWhereNotIn
+  whereAndWhereIn
   whereInBounds
   getClauseString
   safeJsonArray

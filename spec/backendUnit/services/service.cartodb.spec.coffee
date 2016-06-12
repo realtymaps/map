@@ -27,7 +27,7 @@ describe 'service.cartodb', ->
 
     @subject.__set__ sqlHelpers: @sqlHelpersMock
     @subject.__set__ cartodbConfig: @cartodbConfigMock
-    @subject.__set__ tables: property: parcel: () ->
+    @subject.__set__ tables: finalized: parcel: () ->
 
 
   describe 'restful', ->

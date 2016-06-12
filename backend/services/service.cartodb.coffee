@@ -42,9 +42,10 @@ _upload = (stream, fileName) -> Promise.try ->
           uploadFileName: fileName
 
 _fipsCodeQuery = (opts) -> Promise.try () ->
-  throw new Error('opts.fipscode required!') unless opts?.fipscode?
+  if !opts?.fipscode?
+    throw new Error('opts.fipscode required!')
   query =
-  sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false)
+  sqlHelpers.select(tables.finalized.parcel(), 'cartodb_parcel', false)
   .where
     fips_code: opts.fipscode
     active: true

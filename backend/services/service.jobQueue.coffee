@@ -82,7 +82,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
 queueManualTask = (taskName, initiator) ->
   if !taskName
     throw new Error('Task name required!')
-  dbs.get('main').transaction (transaction) ->
+  dbs.transaction 'main', (transaction) ->
     # need to be sure it's not already running
     tables.jobQueue.taskHistory(transaction: transaction)
     .select()
