@@ -20,10 +20,16 @@ rmapsLeafletHelpers) ->
     getAreas = (cache = false) ->
       $http.getData areaUrl, cache: cache
 
-    _byIdUrl = (shape) ->
+    getAreaById = (projectId, drawnShapeId, cache = false) ->
+      $http.get _byIdUrl(projectId, drawnShapeId)
+
+    _byIdUrl = (projectId, drawnShapeId) ->
       backendRoutes.projectSession.drawnShapesById
-      .replace(":id", profile.project_id)
-      .replace(":drawn_shapes_id", shape.id || shape.properties.id)
+      .replace(":id", projectId)
+      .replace(":drawn_shapes_id", drawnShapeId)
+
+    _byIdUrlFromShape = (shape) ->
+      _byIdUrl(profile.project_id, shape.id || shape.properties.id)
 
     _getGeomName = (type) ->
       switch type
@@ -58,8 +64,16 @@ rmapsLeafletHelpers) ->
 
     getAreas: getAreas
 
+    getAreaById: getAreaById
+
     getAreasNormalized: (cache) ->
       getAreas(cache).then _normalizedList
+
+    getAreaByIdNormalized: (id, cache = false) ->
+      getAreaById(id, cache)
+      .then ({data}) ->
+        features = _normalizedList(data)
+        return features[0]
 
     getListNormalized: (cache = false) ->
       getList(cache).then _normalizedList
@@ -68,10 +82,10 @@ rmapsLeafletHelpers) ->
       $http.post rootUrl, _normalize shape
 
     update: (shape) ->
-      $http.put _byIdUrl(shape), _normalize shape
+      $http.put _byIdUrlFromShape(shape), _normalize shape
 
     delete: (shape) ->
-      $http.delete _byIdUrl(shape)
+      $http.delete _byIdUrlFromShape(shape)
 
     getDrawnItems: (cache = false, mainFn = 'getList') ->
       @[mainFn](cache)

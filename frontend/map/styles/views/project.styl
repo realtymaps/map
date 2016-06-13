@@ -24,6 +24,14 @@
   padding-left: 0;
   padding-right: 0;
 
+  .btn-dashboard
+    font-size: 12px;
+    padding: 3px;
+    height: 30px;
+    display: inline-block;
+    margin: 25px 0 0 0;
+    vertical-align: top;
+
   .project-header
     position: relative;
     background-color: white
@@ -32,15 +40,6 @@
 
     .pageTitle
       display: inline-block;
-
-    .btn
-      font-size: 12px;
-      padding: 3px;
-      height: 30px;
-      display: inline-block;
-      margin: 25px 0 0 0;
-      vertical-align: top;
-
 
   .project-tools
     position: absolute;
@@ -181,6 +180,7 @@
   #dashboardMap
     height: 415px;
     width: 100%;
+    position: relative;
 
   $mapIconSize = 35px;
 
@@ -221,13 +221,16 @@
   .project-instructions
     text-align: center;
     font-size: 20px;
-    max-width: 400px;
+    max-width: 460px;
     margin: 0 auto;
+    background: white;
+    padding: 30px;
 
   .project-instruction-image
     width: 250px;
     display: block;
     margin: 0 auto;
+    border: solid $darker_white 1px;
 
   .project-instruction-details
     font-size: 14px;
@@ -235,6 +238,13 @@
 
   .project-instruction-icon
     padding-left: 5px;
+
+  #project-area-container
+    .project-instruction-image
+      margin-bottom: 15px;
+
+    .project-instruction-details
+      text-align: left;
 
   //
   // Notes
@@ -396,6 +406,7 @@
     .area
       padding-right: 15px;
       padding-bottom: 15px;
+
 
   //
   // CLIENTS

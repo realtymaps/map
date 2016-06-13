@@ -1,5 +1,21 @@
 app = require '../app.coffee'
-module.exports = app
 
-app.controller 'rmapsProjectAreasCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:projectAreas")
+app.controller 'rmapsProjectAreasCtrl', (
+  $log
+  $rootScope
+  $scope
+
+  rmapsDrawnUtilsService
+) ->
+  $log = $log.spawn('rmapsProjectAreasCtrl')
+
+  drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+
+  $scope.remove = (model) ->
+    _.remove($scope.projectModel.areas, model)
+
+    drawnShapesSvc.delete model
+    .then () ->
+      $rootScope.emit rmapsEventConstants.areas
+      $rootScope.$emit rmapsEventConstants.areas.removeDrawItem, model
+      $rootScope.$emit rmapsEventConstants.map.mainMap.redraw, false

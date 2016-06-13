@@ -10,6 +10,12 @@ app.factory 'rmapsMapContext', (
 ) ->
   $log = $log.spawn('RmapsMapContext')
 
+  _baseLayers = {}
+
+  rmapsUtilLayersBase
+  .then (data) ->
+    _.extend(_baseLayers, data)
+
   #
   # This class represents the Leaflet configuration values placed in the scope and access by the Leaflet directive
   #
@@ -31,7 +37,7 @@ app.factory 'rmapsMapContext', (
     events: {}
     geojson: null
     layers:
-      baselayers: rmapsUtilLayersBase
+      baselayers: _baseLayers
       overlays: {}
 
     markers: {}
@@ -44,8 +50,7 @@ app.factory 'rmapsMapContext', (
     #
     # Constructor
     #
-    contructor: (mapId) ->
-      $log.debug('Construct Map Scope')
+    constructor: (mapId) ->
       @mapId = mapId
 
     #

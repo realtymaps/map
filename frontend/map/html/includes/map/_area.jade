@@ -10,11 +10,11 @@ span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
     popover="Areas"
     popover-trigger="click mouseenter")
       span.icon.icon-area
-    .dropdown-menu.whiteblock
+    .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
       .fixed-header
         span
-          a(ng-show="areas.length" ui-sref="projectAreas({id: principal.getCurrentProfile().project_id})") {{areas.length}} Areas
-          span(ng-show="!areas.length") No Areas
+          a(ng-show="_.keys(areas).length" ui-sref="projectAreas({id: principal.getCurrentProfile().project_id})") {{_.keys(areas).length}} Areas
+          span(ng-show="!_.keys(areas).length") No Areas
         span.results-btn(
           popover-placement="right"
           popover-trigger="mouseenter"

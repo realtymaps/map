@@ -5,7 +5,6 @@ sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:property:filterSummary')
-propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 validation = require '../utils/util.validation'
@@ -64,14 +63,25 @@ module.exports =
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: 800, permissions})
           _limitByPinnedProps(query, state, queryParams)
 
-          # Remove dupes and include "savedDetails" for saved props
           query.then (properties) ->
-            propMerge.updateSavedProperties(state, properties)
-
-          .then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
-            properties = toLeafletMarker properties
-            props = indexBy(properties, false)
+
+            result = {}
+            for property in properties
+              existing = result[property.rm_property_id]
+              # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
+              if !property.data_source_type? || # Backward-compatibility
+                 !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
+                  (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
+                    moment(existing.up_to_date).isBefore(property.up_to_date))
+
+                result[property.rm_property_id] = toLeafletMarker property
+
+                # Ensure saved details are part of the saved props
+                if state.properties_selected?[property.rm_property_id]?
+                  property.savedDetails = state.properties_selected[property.rm_property_id]
+
+            result
 
         switch queryParams.returnType
           when 'clusterOrDefault'

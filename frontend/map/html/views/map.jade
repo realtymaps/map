@@ -5,7 +5,7 @@ section.map(ng-cloak ng-init="init('page-map')" ng-if="principal.getCurrentProfi
 
   div(ng-if="map.isReady" id="map")
     div(ng-if="!Toggles.showOldToolbar")
-      +leafletMixin('map', 'mainMap')
+      +leafletMixin('map', '{{mapId}}')
 
   include ../includes/map/_properties.jade
   include ../includes/map/_searchbox.jade
