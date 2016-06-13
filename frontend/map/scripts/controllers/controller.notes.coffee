@@ -11,9 +11,13 @@ $modal,
 rmapsNotesService,
 rmapsMainOptions,
 rmapsEventConstants,
-rmapsPrincipalService) ->
+rmapsPrincipalService
+rmapsMapTogglesFactory
+) ->
 
+  # Turn on the Notes map layer then zoom to the property
   $scope.centerOn = (model) ->
+    rmapsMapTogglesFactory.currentToggles.showNotes = true
     $rootScope.$emit rmapsEventConstants.map.zoomToProperty, model
 
   _signalUpdate = (promise) ->
@@ -46,6 +50,9 @@ rmapsPrincipalService) ->
           rm_property_id : property.rm_property_id || undefined
           geom_point_json : property.geom_point_json
           project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
+
+        # Turn the Notes layer on so that the user will see the new note
+        rmapsMapTogglesFactory.currentToggles.showNotes = true
         _signalUpdate rmapsNotesService.create note
 
     update: (note, property) ->
@@ -177,23 +184,26 @@ leafletIterators, toastr, $log) ->
       leafletIterators.each markersUnSubs, (unsub) ->
         unsub()
 
-  getNotes = () ->
-    rmapsNotesService.getList().then (data) ->
+  getNotes = (force = false) ->
+    rmapsNotesService.getList(true).then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
       $scope.map.markers.notes = setDataOptions data, setMarkerNotesOptions
 
-  $scope.map.getNotes = getNotes
-
-  $scope.$watch 'Toggles.showNotes', (newVal) ->
-    $scope.map.layers.overlays.notes.visible = newVal
-
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
-    getNotes().then ->
+    $log.debug "Notes Changed"
+    getNotes(true).then ->
+      $log.debug "Get Notes Then"
       ###
         NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
         in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
         #https://github.com/tombatossals/angular-leaflet-directive/issues/820
       ###
       directiveControls.markers.create($scope.map.markers)#<-- me dangerous
+
+  $scope.map.getNotes = getNotes
+
+  $scope.$watch 'Toggles.showNotes', (newVal) ->
+    $scope.map.layers.overlays.notes.visible = newVal
+
 
   getNotes()

@@ -129,7 +129,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         icon:
           type: 'div'
           iconSize: [30, 30]
-          html: require('../../html/includes/_circleNr.jade')(number+1)
+          html: "<div class='note-marker'><i class='fa fa-sticky-note'></i><div class='note-marker-inner'><span>#{number+1}</span></div></div>"
 
     setMarkerMailOptions: (model, number) ->
       _.extend model,
