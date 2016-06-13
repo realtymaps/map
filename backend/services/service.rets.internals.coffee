@@ -5,6 +5,9 @@ logger = require('../config/logger').spawn('service:rets:internals')
 require '../config/promisify'
 memoize = require 'memoizee'
 moment = require('moment')
+externalAccounts = require './service.externalAccounts'
+mlsConfigService = require './service.mls_config'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -35,16 +38,22 @@ referenceBuster = {}
 _getRetsClientInternalWrapper = (args...) -> _getRetsClientInternal(args..., referenceBuster[args.join('__')]||0)
 
 
-getRetsClient = (loginUrl, username, password, static_ip, handler) ->
-  _getRetsClientInternalWrapper(loginUrl, username, password, static_ip)
-  .then (retsClient) ->
-    handler(retsClient)
-  .catch isTransientRetsError, (error) ->
-    referenceId = [loginUrl, username, password, static_ip].join('__')
-    referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
-    throw error
-  .finally () ->
-    setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
+getRetsClient = (mlsId, handler) ->
+  Promise.join externalAccounts.getAccountInfo(mlsId), mlsConfigService.getByIdCached(mlsId), (creds, serverInfo) ->
+    if !creds || !serverInfo
+      throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
+    _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
+    .then (retsClient) ->
+      handler(retsClient, serverInfo)
+    .catch isTransientRetsError, (error) ->
+      referenceId = [serverInfo.url, creds.username, creds.password, serverInfo.static_ip].join('__')
+      referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
+      throw error
+    .finally () ->
+      setTimeout (() -> _getRetsClientInternal.deleteRef(serverInfo.url, creds.username, creds.password, serverInfo.static_ip)), 60000
+  .catch (err) ->
+    logger.error analyzeValue.getSimpleDetails(err)
+    throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
 
 
 isTransientRetsError = (error) ->
@@ -56,7 +65,7 @@ isTransientRetsError = (error) ->
   return false
 
 
-buildSearchQuery = (mlsInfo, opts) ->
+buildSearchQuery = (datetimeField, opts) ->
   if opts.fullQuery
     return opts.fullQuery
 
@@ -64,9 +73,9 @@ buildSearchQuery = (mlsInfo, opts) ->
   for key,val of opts.criteria
     criteria.push("(#{key}=#{val})")
   if opts.maxDate?
-    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}-)")
+    criteria.push("(#{datetimeField}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}-)")
   if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
-    criteria.push("(#{mlsInfo.listing_data.field}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}+)")
+    criteria.push("(#{datetimeField}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}+)")
   return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
 
 

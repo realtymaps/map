@@ -7,10 +7,21 @@ tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
+memoize = require 'memoizee'
 
 mlsServerFields = ['url', 'username', 'password']
 
 class MlsConfigService extends ServiceCrud
+
+  constructor: (args...) ->
+    super(args...)
+    getByIdCachedImpl = (entity, opts) =>
+      @getById(entity, opts)
+      .then (mlsConfig) ->
+        if !mlsConfig?.length
+          return null
+        return mlsConfig[0]
+    @getByIdCached = memoize(getByIdCachedImpl, primitive: true, length: 1, maxAge: 60*60*1000)  # cached for 1 hour
 
   getAll: (entity = {}) ->
     query = @dbFn()
@@ -101,6 +112,8 @@ class MlsConfigService extends ServiceCrud
       Promise.join(jobService.tasks.create(taskObj), jobService.subtasks.create(subtaskObjs), () ->)
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
+
+  getByIdCached: null  # this is to make it show up in the prototype chain; see constructor for implementation
 
 
 instance = new MlsConfigService tables.config.mls
