@@ -69,9 +69,12 @@ module.exports =
             result = {}
             for property in properties
               existing = result[property.rm_property_id]
-              if property.data_source_type == 'mls' &&
-                  (existing?.data_source_type != 'mls' || moment(existing.up_to_date).isBefore(property.up_to_date))
-                result[rm_property_id] = toLeafletMarker property, 'geometry_center' # promote coordinate fields
+              # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
+              if !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
+                  (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
+                    moment(existing.up_to_date).isBefore(property.up_to_date))
+
+                result[property.rm_property_id] = toLeafletMarker property, 'geometry_center' # promote coordinate fields
 
                 # Ensure saved details are part of the saved props
                 if state.properties_selected?[property.rm_property_id]?
