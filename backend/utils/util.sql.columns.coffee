@@ -29,7 +29,7 @@ basicColumns = do ->
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center',
+      'geometry_center as geom_point_json', # can be removed once mv_property_details is gone
       'owner_name',
       'owner_name_2 as owner_name2',
       'year_built',
