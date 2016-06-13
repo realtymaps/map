@@ -19,6 +19,7 @@ config = require '../config/config'
 internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 jobQueue = require '../services/service.jobQueue'
+mlsConfigService = require '../services/service.mls_config'
 
 
 ONE_YEAR_MILLIS = 365*24*60*60*1000
@@ -28,15 +29,9 @@ ONE_YEAR_MILLIS = 365*24*60*60*1000
 loadUpdates = (subtask, options={}) ->
   # figure out when we last got updates from this table
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  mlsInfoPromise = tables.config.mls()
-  .where(id: subtask.task_name)
-  .then (mlsInfo) ->
-    mlsInfo = mlsInfo?[0]
-    internals.getUuidField(mlsInfo)
-    .then (uuidField) ->
-      {mlsInfo, uuidField}
-  Promise.join updateThresholdPromise, mlsInfoPromise, (updateThreshold, {mlsInfo, uuidField}) ->
-    retsService.getDataStream(mlsInfo, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
+  uuidPromise = internals.getUuidField(subtask.task_name)
+  Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
+    retsService.getDataStream(subtask.task_name, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
     .catch retsService.isTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
@@ -141,15 +136,6 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
           tables.finalized.combined(transaction: transaction)
           .insert(listing)
 
-_getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
-  mlsConfigQuery = tables.config.mls()
-  .where(id: subtask.task_name)
-  .then (results) ->
-    sqlHelpers.expectSingleRow(results)
-
-  query = tables.normalized.listing().where listingRow
-
-  Promise.all [mlsConfigQuery, query]
 
 _updatePhoto = (subtask, opts) -> Promise.try () ->
   if !opts
@@ -249,8 +235,10 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
   finePhotologger.debug listingRow, true
 
-  _getPhotoSettings(subtask, listingRow)
-  .then ([mlsConfig, rows]) ->
+  mlsConfigPromise = mlsConfigService.getByIdCached(subtask.task_name)
+  listingRowPromise = tables.normalized.listing()
+  .where(listingRow)
+  Promise.join mlsConfigPromise, listingRowPromise, (mlsConfig, rows) ->
 
     if !rows.length
       finePhotologger.debug 'No rows GTFO'
@@ -278,7 +266,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     {photoRes} = mlsConfig.listing_data
 
     retsService.getPhotosObject {
-      serverInfo: mlsConfig
+      mlsId: subtask.task_name
       databaseName: 'Property'
       photoIds
       photoType
@@ -372,38 +360,34 @@ deleteOldPhoto = (subtask, key) -> Promise.try () ->
 
 
 markUpToDate = (subtask) ->
-  mlsInfoPromise = tables.config.mls()
-  .where(id: subtask.task_name)
-  .then (mlsInfo) ->
-    mlsInfo = mlsInfo[0]
-    internals.getUuidField(mlsInfo)
-    .then (uuidField) ->
-      doMarks = (chunk) -> Promise.try () ->
-        logger.debug("doMarks chunk: #{chunk.length}")
-        if !chunk?.length
-          return
-        ids = _.pluck(chunk, uuidField)
-        tables.normalized.listing()
-        .select('rm_property_id')
+  internals.getUuidField(subtask.task_name)
+  .then (uuidField) ->
+    doMarks = (chunk) -> Promise.try () ->
+      logger.debug("doMarks chunk: #{chunk.length}")
+      if !chunk?.length
+        return
+      ids = _.pluck(chunk, uuidField)
+      tables.normalized.listing()
+      .select('rm_property_id')
+      .where(data_source_id: subtask.task_name)
+      .whereIn('data_source_uuid', ids)
+      .whereNotNull('deleted')
+      .then (undeleteIds=[]) ->
+        markPromise = tables.normalized.listing()
         .where(data_source_id: subtask.task_name)
         .whereIn('data_source_uuid', ids)
-        .whereNotNull('deleted')
-        .then (undeleteIds=[]) ->
-          markPromise = tables.normalized.listing()
-          .where(data_source_id: subtask.task_name)
-          .whereIn('data_source_uuid', ids)
-          .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
-          if undeleteIds.length == 0
-            undeletePromise = Promise.resolve()
-          else
-            undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
-            undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
-          Promise.join markPromise, undeletePromise, () ->  # no-op
-      retsService.getDataChunks(mlsInfo, doMarks, minDate: 0, uuidField: uuidField, searchOptions: {limit: subtask.data.limit, Select: uuidField})
-      .then (count) ->
-        logger.debug("getDataChunks total: #{count}")
-    .catch retsService.isTransientRetsError, (error) ->
-      throw new SoftFail(error, "Transient RETS error; try again later")
+        .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+        if undeleteIds.length == 0
+          undeletePromise = Promise.resolve()
+        else
+          undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
+          undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
+        Promise.join markPromise, undeletePromise, () ->  # no-op
+    retsService.getDataChunks(subtask.task_name, doMarks, minDate: 0, uuidField: uuidField, searchOptions: {limit: subtask.data.limit, Select: uuidField})
+    .then (count) ->
+      logger.debug("getDataChunks total: #{count}")
+  .catch retsService.isTransientRetsError, (error) ->
+    throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 

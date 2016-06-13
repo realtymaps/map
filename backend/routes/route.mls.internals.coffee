@@ -57,24 +57,16 @@ _getPhoto = ({entity, res, next, photoType}) ->
   if photoIds == 'null' or photoIds  == 'empty'
     photoIds = null
 
-  mlsConfigService.getById(mlsId)
-  .then ([mlsConfig]) ->
-    if !mlsConfig
-      next new ExpressResponse
-        alert:
-          msg: "Config not found for MLS #{mlsId}, try adding it first"
-        404
-    else
-      retsService.getPhotosObject({
-        serverInfo:mlsConfig
-        databaseName:databaseId
-        photoIds
-        photoType
-      })
-      .then (object) ->
-        _handleRetsObjectResponse(res, next, photoIds, mlsId, object)
-      .catch (error) ->
-        next new ExpressResponse error, 500
+  retsService.getPhotosObject({
+    mlsId
+    databaseName:databaseId
+    photoIds
+    photoType
+  })
+  .then (object) ->
+    _handleRetsObjectResponse(res, next, photoIds, mlsId, object)
+  .catch (error) ->
+    next new ExpressResponse error, 500
 
 
 getParamPhoto = ({req, res, next, photoType}) ->
@@ -116,48 +108,40 @@ getQueryPhoto = ({req, res, next, photoType}) ->
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a
 # sample of e.g. 1000 rows of data to look at when figuring out how to configure a new MLS
 getDataDump = (mlsId, query, next) ->
-  mlsConfigService.getById(mlsId)
-  .then ([mlsConfig]) ->
-    if !mlsConfig
-      next new ExpressResponse
-        alert:
-          msg: "Config not found for MLS #{mlsId}, try adding it first"
-        404
-    else
-      validations =
-        limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
-      validation.validateAndTransformRequest(query, validations)
-      .then (result) ->
-        retsService.getDataStream(mlsConfig, searchOptions: {limit: result.limit})
-      .then (retsStream) ->
-        columns = null
-        # consider just streaming the file as building up data takes up a considerable amount of memory
-        data = []
-        new Promise (resolve, reject) ->
-          delimiter = null
-          csvStreamer = through2.obj (event, encoding, callback) ->
-            switch event.type
-              when 'data'
-                data.push(event.payload[1..-1].split(delimiter))
-              when 'delimiter'
-                delimiter = event.payload
-              when 'columns'
-                columns = event.payload
-              when 'done'
-                resolve(data)
-                retsStream.unpipe(csvStreamer)
-                csvStreamer.end()
-              when 'error'
-                reject(event.payload)
-                retsStream.unpipe(csvStreamer)
-                csvStreamer.end()
-            callback()
-          retsStream.pipe(csvStreamer)
-        .then () ->
-          data: data
-          options:
-            columns: columns
-            header: true
+  validations =
+    limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
+  validation.validateAndTransformRequest(query, validations)
+  .then (result) ->
+    retsService.getDataStream(mlsId, searchOptions: {limit: result.limit})
+  .then (retsStream) ->
+    columns = null
+    # consider just streaming the file as building up data takes up a considerable amount of memory
+    data = []
+    new Promise (resolve, reject) ->
+      delimiter = null
+      csvStreamer = through2.obj (event, encoding, callback) ->
+        switch event.type
+          when 'data'
+            data.push(event.payload[1..-1].split(delimiter))
+          when 'delimiter'
+            delimiter = event.payload
+          when 'columns'
+            columns = event.payload
+          when 'done'
+            resolve(data)
+            retsStream.unpipe(csvStreamer)
+            csvStreamer.end()
+          when 'error'
+            reject(event.payload)
+            retsStream.unpipe(csvStreamer)
+            csvStreamer.end()
+        callback()
+      retsStream.pipe(csvStreamer)
+    .then () ->
+      data: data
+      options:
+        columns: columns
+        header: true
 
 
 

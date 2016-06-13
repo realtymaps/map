@@ -3,6 +3,8 @@ tables = require '../config/tables'
 logger = require('../config/logger').spawn('util.mlsHelpers.internals')
 retsCacheService = require '../services/service.retsCache'
 dataLoadHelpers = require './util.dataLoadHelpers'
+mlsConfigService = require '../services/service.mls_config'
+
 
 makeInsertPhoto = ({data_source_id, data_source_uuid, cdnPhotoStr, jsonObjStr, imageId, photo_id, doReturnStr}) ->
   doReturnStr ?= false
@@ -36,17 +38,19 @@ makeInsertPhoto = ({data_source_id, data_source_uuid, cdnPhotoStr, jsonObjStr, i
 # this function works backwards from the validation for data_source_uuid to determine the LongName and then the SystemName
 # of the UUID field
 ###
-getUuidField = (mlsInfo) ->
-  columnDataPromise = retsCacheService.getColumnList(mlsId: mlsInfo.id, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
-  validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsInfo.id, 'listing', 'base', 'data_source_uuid')
-  Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->
-    for field in columnData
-      if field.LongName == validationInfo.validationMap.base[0].input
-        uuidField = field.SystemName
-        break
-    if !uuidField
-      throw new Error("can't locate uuidField for #{mlsInfo.id} (SystemName for #{validationInfo.validationMap.base[0].input})")
-    return uuidField
+getUuidField = (mlsId) ->
+  mlsConfigService.getByIdCached(mlsId)
+  .then (mlsInfo) ->
+    columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
+    validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, 'listing', 'base', 'data_source_uuid')
+    Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->
+      for field in columnData
+        if field.LongName == validationInfo.validationMap.base[0].input
+          uuidField = field.SystemName
+          break
+      if !uuidField
+        throw new Error("can't locate uuidField for #{mlsId} (SystemName for #{validationInfo.validationMap.base[0].input})")
+      return uuidField
 
 
 module.exports = {

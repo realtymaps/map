@@ -33,33 +33,28 @@ decideIfRefreshNecessary = (opts) -> Promise.try () ->
 cacheCanonicalData = (opts) ->
   {callName, mlsId, otherIds, cacheSpecs, forceRefresh} = opts
   now = Date.now()  # save the timestamp of when we started the request
-  mlsConfigService.getById(mlsId)
-  .catch (err) ->
-    logger.error analyzeValue.getSimpleDetails(err)
-    throw new UnhandledNamedError("Can't get MLS config for #{mlsId}: #{err.message || err}")
-  .then ([mlsConfig]) ->
-    logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
-    retsService[callName](mlsConfig, otherIds...)
-    .then (list) ->
-      if !list?.length
-        logger.error "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): no canonical data returned"
-        throw new UnhandledNamedError('RetsDataError', "No canonical data returned for #{mlsId}/#{callName}/#{otherIds.join('/')}")
-      logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
-      cacheSpecs.dbFn.transaction (query, transaction) ->
-        query
-        .where(cacheSpecs.datasetCriteria)
-        .delete()
-        .then () ->
-          Promise.map list, (row) ->
-            entity = _.extend(row, cacheSpecs.datasetCriteria, cacheSpecs.extraEntityFields)
-            cacheSpecs.dbFn(transaction: transaction)
-            .insert(entity)
-          .all()
+  logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
+  retsService[callName](mlsId, otherIds...)
+  .then (list) ->
+    if !list?.length
+      logger.error "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): no canonical data returned"
+      throw new UnhandledNamedError('RetsDataError', "No canonical data returned for #{mlsId}/#{callName}/#{otherIds.join('/')}")
+    logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
+    cacheSpecs.dbFn.transaction (query, transaction) ->
+      query
+      .where(cacheSpecs.datasetCriteria)
+      .delete()
       .then () ->
-        keystore.setValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
-      .then () ->
-        logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): data cached successfully"
-        return list
+        Promise.map list, (row) ->
+          entity = _.extend(row, cacheSpecs.datasetCriteria, cacheSpecs.extraEntityFields)
+          cacheSpecs.dbFn(transaction: transaction)
+          .insert(entity)
+        .all()
+    .then () ->
+      keystore.setValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
+    .then () ->
+      logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): data cached successfully"
+      return list
   .catch errorHandlingUtils.isCausedBy(retsService.RetsError), (err) ->
     msg = "Problem making call to RETS server for #{mlsId}: #{err.message}"
     if forceRefresh

@@ -19,6 +19,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
+mlsConfigService = require '../services/service.mls_config'
 
 
 DELETE =
@@ -219,9 +220,7 @@ _getUsedInputFields = (validationDefinition) ->
 getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
   if dataSourceType == 'mls'
     dataSourcePromise = Promise.try () ->
-      tables.config.mls()
-      .where
-        id: dataSourceId
+      mlsConfigService.getByIdCached(dataSourceId)
       .then (mlsConfig) ->
         mlsConfig.data_rules
   else if dataSourceType == 'county'
