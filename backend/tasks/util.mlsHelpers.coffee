@@ -111,8 +111,10 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       # do owner name and zoning promotion logic
       if listing.owner_name? || listing.owner_name_2? || listing.zoning
         # keep previously-promoted values
-        return
-      if listing.fips_code != '12021'
+        return false
+      dataLoadHelpers.checkTableExists(tables.normalized.tax.buildTableName(listing.fips_code))
+    .then (checkPromotedValues) ->
+      if !checkPromotedValues
         return
       # need to query the tax table to get values to promote
       tables.normalized.tax(subid: listing.fips_code)

@@ -70,6 +70,7 @@ transforms = do ->
 
 _getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filterCombined", true)
+  .where(active: true)
 
 getResultCount = ({queryParams, permissions}) ->
   # obtain a count(*)-style select query
@@ -135,19 +136,18 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= _getDefaultQuery()
   {bounds, state} = queryParams
   {filters} = state
-  return query if !filters?.status?.length
-  throw new Error('knex starting query missing!') if !query
+  if !filters?.status?.length
+    return query
+  if !bounds
+    throw new Error('query must have bounds')
 
-  # Add permissions
+# Add permissions
   queryPermissions(query, permissions)
 
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
   query.where ->
-    @.whereNotNull('geometry')
-
     @.limit(limit) if limit
-    if bounds
-      sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
+    sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
     # handle property status filtering
     # 4 possible status options (see parcelEnums.coffee): 'for sale', 'pending', 'sold', 'not for sale'
