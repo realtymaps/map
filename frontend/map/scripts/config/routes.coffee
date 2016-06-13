@@ -119,6 +119,9 @@ module.exports = app.config (
       property_id:
         value: null
         squash: true
+      area_id:
+        value: null
+        squash: false
 
   buildState 'onboarding',
     abstract: true
@@ -201,7 +204,7 @@ module.exports = app.config (
   # Project child states
   buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, templateUrl: './views/project/projectClients.jade'
   buildChildState 'projectNotes', 'projectLayout', projectParam: 'id', page: { title: 'Notes' }, templateUrl: './views/project/projectNotes.jade'
-  buildChildState 'projectFavorites', 'projectLayout', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
+  buildChildState 'projectFavorites', 'projectLayout', controller: 'rmapsProjectAreasCtrl', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
   buildChildState 'projectAreas', 'projectLayout', projectParam: 'id', page: { title: 'Areas' }, templateUrl: './views/project/projectAreas.jade'
   buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'
 

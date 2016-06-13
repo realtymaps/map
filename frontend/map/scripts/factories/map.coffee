@@ -28,6 +28,7 @@ app.factory 'rmapsMapFactory',
     rmapsLeafletObjectFetcherFactory,
     rmapsMainOptions,
     rmapsMapEventsHandlerService,
+    rmapsMapIds,
     rmapsPopupLoaderService,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
@@ -40,7 +41,6 @@ app.factory 'rmapsMapFactory',
     rmapsOverlays
   ) ->
 
-    leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
 
     normal = $log.spawn("map:factory:normal")
@@ -62,9 +62,11 @@ app.factory 'rmapsMapFactory',
           _.merge $scope.map, layers: {overlays}
 
         @constructor.currentMainMap = @
+        @mapId = rmapsMapIds.mainMap()
+        leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
 
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
-        super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
+        super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map', @mapId
 
         _initToggles $scope, limits.toggles
 
@@ -104,7 +106,7 @@ app.factory 'rmapsMapFactory',
         #
         # This promise is resolved when Leaflet has finished setting up the Map
         #
-        leafletData.getMap('mainMap').then () =>
+        leafletData.getMap(@mapId).then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal

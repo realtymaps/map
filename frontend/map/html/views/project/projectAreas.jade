@@ -1,11 +1,39 @@
 #project-area-container
-  .area.col-sm-6(ng-repeat="area in project.areas")
-    .item.item-border.item-card
-      a.map
-        span View Area
-        img(src="/assets/test_map.jpg")
-      .data
-        h3 {{area.name}}
-      button.btn.btn-link(rmaps-require-project-editor)
-        i.fa.fa-trash-o
-        span Delete
+  .area.col-sm-6(ng-repeat="area in projectModel.areas")
+    .item.item-border.item-card.content-block
+        .content-heading.content-lg {{area.area_name}}
+        .content-body
+          button.btn.btn-white.btn-dashboard(ng-click="page.goToMap({area_id: area.id})")
+            i.icon.icon-location
+            span View Area
+          button.btn.btn-white.btn-dashboard(ng-click="remove(area)" rmaps-require-project-editor)
+            i.fa.fa-trash-o
+            span Delete
+
+  .project-instructions(ng-if="!projectModel.areas.length && projectModel.loadedAreas")
+    span You don't have any Areas
+    span.icon.icon-area
+
+    .project-instruction-details Areas are a way to filter the properties that you are looking at.
+      | For example, you might create an Area for a specific neighborhood.
+
+      p
+        ol
+          li Open the Areas tool on the Map page
+          li Click the "New Area" button
+
+        img.project-instruction-image(src='/assets/project/area-instruction-1.png')
+
+      p
+        ol(start="3")
+          li Drag a rectangle (or other shape) to the desired area
+          li Click the "Close" button
+
+        img.project-instruction-image(src='/assets/project/area-instruction-2.png')
+
+      p
+        ol(start="5")
+          li Click the Edit icon to name your Area
+
+        img.project-instruction-image(src='/assets/project/area-instruction-3.png')
+

@@ -25,9 +25,13 @@ app.controller 'rmapsMapCtrl', (
   $state,
   $timeout,
   $window,
+
+  rmapsDrawnUtilsService,
   rmapsEventConstants,
+  rmapsLeafletHelpers,
   rmapsMainOptions,
   rmapsMapFactory,
+  rmapsMapIds,
   rmapsParcelEnums,
   rmapsProfilesService
   rmapsProjectsService,
@@ -38,8 +42,9 @@ app.controller 'rmapsMapCtrl', (
   currentProfile
 ) ->
 
+  $scope.mapId = mapId = rmapsMapIds.mainMap()
+
   $log = $log.spawn("map:controller")
-  $log.debug("Map Controller init")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -47,7 +52,7 @@ app.controller 'rmapsMapCtrl', (
     $scope.pageClass = pageClass
   #end inits
 
-  rmapsSearchboxService('mainMap')
+  rmapsSearchboxService(mapId)
 
   #
   # Create the Map Factory
@@ -87,10 +92,32 @@ app.controller 'rmapsMapCtrl', (
       $location.search 'property_id', undefined
 
   #
+  # Center on an area if requested
+  #
+  checkCenterOnArea = () ->
+    areaId = $state.params.area_id || $location.search().area_id
+
+    if areaId
+      #zoom to bounds on shapes
+      #handle polygons, circles, and points
+      drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+      drawnShapesSvc.getAreaByIdNormalized(rmapsProfilesService.currentProfile.project_id, areaId)
+      .then (area) ->
+        $timeout(() ->
+          featureGroup = rmapsLeafletHelpers.geoJsonToFeatureGroup(area)
+          feature = featureGroup._layers[Object.keys(featureGroup._layers)[0]]
+          bounds = feature.getBounds()
+
+          $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, bounds
+        , 10)
+
+
+  #
   # Set $scope variables for the Project selector tool
   #
   setScopeVariables = () ->
     $scope.loadProperty rmapsProfilesService.currentProfile
+    checkCenterOnArea()
 
   #
   # Watch for changes to the current profile. This is necessary since the map state is sticky

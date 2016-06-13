@@ -6,20 +6,6 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
 
   _mockData = (project) ->
 
-    project.areas = []
-    project.areas.push
-      name: 'Hill Valley'
-      description: 'A friendly area for families and scientists alike'
-    project.areas.push
-      name: 'Park Place'
-      description: 'Kinda expensive...'
-    project.areas.push
-      name: 'South Park'
-      description: 'A great place to live if you like comedy'
-    project.areas.push
-      name: 'Monticello'
-      description: 'Not the famous one'
-
     _.defaults project,
       sqft: 2000
       beds: 3
