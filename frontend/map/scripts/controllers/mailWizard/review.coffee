@@ -17,7 +17,8 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       controller: 'rmapsModalSendMailCtrl'
       keyboard: false
       backdrop: 'static'
-      windowClass: 'confirm-mail-modal'
+      # windowClass: 'confirm-mail-modal'
+      scope: $scope
       resolve:
         mail: -> $scope.wizard.mail
 
@@ -40,18 +41,13 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
+      scope: $scope
       resolve:
         template: -> $scope.wizard.mail.review
 
   $scope.viewMap = () ->
     rmapsMapTogglesFactory.currentToggles?.showMail = true
     $state.go 'map'
-
-  $scope.refreshColorPrice = () ->
-    $scope.review = null
-    $scope.wizard.mail.refreshColorPrice()
-    .then (review) ->
-      $scope.review = review
 
   $scope.wizard.mail.getReviewDetails()
   .then (review) ->

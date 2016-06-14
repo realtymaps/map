@@ -54,12 +54,6 @@
                 .col-md-9
                   p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
 
-              .row.color-toggle(ng-class="{'disabled': !wizard.mail.campaign.aws_key}" title="Only PDF content can be printed in color." data-toggle="tooltip")
-                .col-md-3
-                  label Print in Color?
-                .col-md-9
-                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key" ng-change="refreshColorPrice()")
-
           .row.separator.recipients
             .col-md-12
               .row
@@ -71,9 +65,34 @@
                     ng-pluralize
                     count="wizard.mail.campaign.recipients.length"
                     when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
+
+          .row.separator
+            .col-md-12
+              .row
+                h2 Pricing
               .row
                 .col-md-12
-                  include ../../includes/pricing_table.jade
+                  .color-selector.btn-group(ng-class="{'disabled': !wizard.mail.campaign.aws_key}")
+                    span.to-bnw.btn.btn-default(ng-disabled="!wizard.mail.campaign.aws_key")
+                      label B &amp; W
+                      br
+                      input(
+                        type="radio"
+                        ng-model="wizard.mail.campaign.options.color"
+                        ng-value="false"
+                        ng-disabled="!wizard.mail.campaign.aws_key")
+
+                    span.to-color.btn.btn-primary(ng-disabled="!wizard.mail.campaign.aws_key")
+                      label Color
+                      br
+                      input(
+                        type="radio"
+                        ng-model="wizard.mail.campaign.options.color"
+                        ng-value="true"
+                        ng-disabled="!wizard.mail.campaign.aws_key")
+
+                  .mail-prices-review-container
+                    include ../../includes/mail_pricing_table.jade
 
           .row.separator.errors(ng-show="review.data.alert.msg")
             .col-md-12

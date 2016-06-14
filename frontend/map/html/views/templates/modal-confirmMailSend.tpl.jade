@@ -10,7 +10,10 @@
 .modal-footer(ng-class="{'faded': sendingFlag}")
   .row.confirm-widgets(ng-hide="failedFlag || successFlag")
     input.sentinel(type="checkbox" ng-model="sentinel" ng-disabled="sendingFlag")
-    | Check this box to commit to pay {{review.price | currency}}
+    | Check this box to commit to pay the amount that corresponds to the number of pages of your document.
+    //- .mail-prices-modal-container
+    //-   include ../../includes/mail_pricing_table.jade
+
     span(style="font-weight: bold;") and
     | click submit.
   .row.confirm-widgets

@@ -1,0 +1,11 @@
+div
+  .mail-prices
+    .pages(ng-class="{'color-chart': wizard.mail.campaign.options.color, 'bnw-chart': !wizard.mail.campaign.options.color}")
+      span.head Pages
+      each val in [1, 2, 3, 4]
+        span.value= val
+
+    .prices(ng-class="{'color-chart': wizard.mail.campaign.options.color, 'bnw-chart': !wizard.mail.campaign.options.color}")
+      span.head Price
+      each val in [1, 2, 3, 4]
+        span.value(ng-bind="wizard.mail.getPrice({'pages':#{val}}) | currency")
