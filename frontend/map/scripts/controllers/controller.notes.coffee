@@ -75,9 +75,15 @@ rmapsMapTogglesFactory
       else
         _signalUpdate rmapsNotesService.remove note.id
 
-.controller 'rmapsMapNotesTapCtrl',
-($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService,
-leafletIterators, toastr, $log) ->
+.controller 'rmapsMapNotesTapCtrl',(
+  $log
+  $scope,
+  leafletIterators,
+  rmapsMapEventsLinkerService,
+  rmapsMapIds,
+  rmapsNgLeafletEventGateService,
+  toastr
+) ->
 
   mapId = rmapsMapIds.mainMap()
   linker = rmapsMapEventsLinkerService

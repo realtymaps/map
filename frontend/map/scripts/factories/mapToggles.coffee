@@ -23,7 +23,6 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
 
       @showAddresses = true
       @showPrices = true
-      @showAreaTap = false
       @showNotes = false
       @showMail = false
       @propertiesInShapes = false
@@ -36,6 +35,9 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @isSketchMode = false
       @isAreaDraw = false
       @showOldToolbar = false
+
+      @showAreaTap = false
+      @showNoteTap = false
 
       @enableNoteTap = () =>
         @showNoteTap = true
