@@ -235,7 +235,6 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
       profile = req.rmapsProfile
 
       # auth-ing
-      logger.warn "!!!!!!! PROFILE CAN EDIT", profile
       if !profile?.can_edit
         return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, httpStatus.UNAUTHORIZED)
 

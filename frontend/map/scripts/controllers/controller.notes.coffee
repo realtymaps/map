@@ -196,9 +196,7 @@ rmapsMapTogglesFactory
       $scope.map.markers.notes = setDataOptions data, setMarkerNotesOptions
 
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
-    $log.debug "Notes Changed"
     getNotes(true).then ->
-      $log.debug "Get Notes Then"
       ###
         NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
         in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
