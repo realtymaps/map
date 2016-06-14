@@ -29,9 +29,51 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 li
                   button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
                 li
-                  button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
-                li
-                  button.btn.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
+                  .btn-group.dropdown(dropdown)
+                    button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold within..
+                    //- button.btn.btn-default(dropdown-toggle)
+                    //-   span {{selectedFilters.soldRange}}
+                    //- ul.dropdown-menu(dropdown-menu role="menu" aria-labelledby="split-button" ng-model="selectedFilters.soldRange")
+                    //-   li(ng-click="selectedFilters.soldRange = '10 day'") 10 Days
+                    //-   li(ng-click="selectedFilters.soldRange = '30 day'") 30 Days
+                    //-   li(ng-click="selectedFilters.soldRange = '60 day'") 60 Days
+                    //-   li(ng-click="selectedFilters.soldRange = '90 day'") 90 Days
+                    //-   li(ng-click="selectedFilters.soldRange = '120 day'") 120 Days
+                    //-   li(ng-click="selectedFilters.soldRange = '6 month'") 6 Months
+                    //-   li(ng-click="selectedFilters.soldRange = '9 month'") 9 Months
+                    //-   li(ng-click="selectedFilters.soldRange = '1 year'") 1 Year
+                    //-   li(ng-click="selectedFilters.soldRange = '2 year'") 2 Years
+                    //-   li(ng-click="selectedFilters.soldRange = '3 year'") 3 Years
+                    //-   li(ng-click="selectedFilters.soldRange = ''") All of Time
+                    //-   li.divider
+                    //-   li
+                    //-     input(placeholder="enter days" ng-model="selectedFilters.soldRange" style="margin:5px 5px 5px 15px")
+                    //-   li.divider
+
+          //- li.row
+          //-   span.label.col-md-3 Sold Range
+          //-   .col-md-9
+          //-     .btn-group.dropdown(dropdown)
+          //-       button.btn.btn-default(dropdown-toggle)
+          //-         span {{selectedFilters.soldRange}}
+          //-       ul.dropdown-menu(dropdown-menu role="menu" aria-labelledby="split-button" ng-model="selectedFilters.soldRange")
+          //-         li(ng-click="selectedFilters.soldRange = '10 day'") 10 Days
+          //-         li(ng-click="selectedFilters.soldRange = '30 day'") 30 Days
+          //-         li(ng-click="selectedFilters.soldRange = '60 day'") 60 Days
+          //-         li(ng-click="selectedFilters.soldRange = '90 day'") 90 Days
+          //-         li(ng-click="selectedFilters.soldRange = '120 day'") 120 Days
+          //-         li(ng-click="selectedFilters.soldRange = '6 month'") 6 Months
+          //-         li(ng-click="selectedFilters.soldRange = '9 month'") 9 Months
+          //-         li(ng-click="selectedFilters.soldRange = '1 year'") 1 Year
+          //-         li(ng-click="selectedFilters.soldRange = '2 year'") 2 Years
+          //-         li(ng-click="selectedFilters.soldRange = '3 year'") 3 Years
+          //-         li(ng-click="selectedFilters.soldRange = ''") All of Time
+
+          li.row
+            span.label.col-md-3 Sold Range
+            .col-md-9
+              input(placeholder="enter days" ng-model="selectedFilters.soldRange" style="margin:5px 5px 5px 15px")
+              select.form-control(ng-model="selectedFilters.soldRange" ng-options='c.value as c.name disable when (!selectedFilters.sold) for c in filterValues.soldRangeValues')
 
           li.row
             span.label.col-md-3 Property Type
