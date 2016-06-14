@@ -166,7 +166,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
         if sold
           @.orWhere () ->
-            @.where("#{dbFn.tableName}.status", 'not for sale')
+            @.where("#{dbFn.tableName}.status", 'sold')
             if filters.soldRange
               @.whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 

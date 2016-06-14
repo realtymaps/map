@@ -9,7 +9,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
   _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
   _forSaleClass[rmapsParcelEnums.status.pending] = 'pending'
   _forSaleClass[rmapsParcelEnums.status.forSale] = 'forsale'
-  _forSaleClass[rmapsParcelEnums.status.notForSale] = 'sold'
+  _forSaleClass[rmapsParcelEnums.status.notForSale] = 'notsale'
   _forSaleClass['saved'] = 'saved'
   _forSaleClass['default'] = ''
 
@@ -17,7 +17,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
   _statusLabelClass[rmapsParcelEnums.status.sold] = 'label-sold-property'
   _statusLabelClass[rmapsParcelEnums.status.pending] = 'label-pending-property'
   _statusLabelClass[rmapsParcelEnums.status.forSale] = 'label-sale-property'
-  _statusLabelClass[rmapsParcelEnums.status.notForSale] = 'label-sold-property'
+  _statusLabelClass[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
   _statusLabelClass['saved'] = 'label-saved-property'
   _statusLabelClass['default'] = ''
 
