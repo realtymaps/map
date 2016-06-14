@@ -53,3 +53,10 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
 
   $scope.onChange = ->
     $log.debug $scope.selectedFilters
+
+  $scope.datepickers = {}
+  $scope.openDatepicker = (id) ->
+    # close all the others, and open this one
+    for key of $scope.datepickers
+      $scope.datepickers[key] = false
+    $scope.datepickers[id] = true

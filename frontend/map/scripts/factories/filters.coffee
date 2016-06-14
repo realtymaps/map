@@ -15,14 +15,12 @@ app.factory 'rmapsFiltersFactory', () ->
       { name: 'Not For Sale', value:'notForSale' }
     ]
     propertyTypes: [
-      { name: '', value: undefined }
       { name: 'Single Family', value: 'Single Family' }
       { name: 'Condo / Townhome', value: 'Condo / Townhome' }
       { name: 'Lots', value: 'Lots' }
       { name: 'Multi-Family', value: 'Multi-Family' }
     ]
     acresValues: [
-      { value: undefined, name: '' }
       { value: '0.1', name: '.10 acres' }
       { value: '0.2', name: '.20 acres' }
       { value: '0.3', name: '.30 acres' }
@@ -40,7 +38,6 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: 'false', name: 'no' }
     ]
     listedDays: [
-      { value: undefined, name: '' }
       { value: 15, name: '15+' }
       { value: 30, name: '30+' }
       { value: 60, name: '60+' }

@@ -1,7 +1,8 @@
 $fnMakeMapSettings()
-  .settings-list
+  .settings-tool
 
     .dropdown-menu
+      overflow: visible
       &.showAdvanced
         width calc(100% + 450px)
 
@@ -61,56 +62,102 @@ $fnMakeMapSettings()
             margin 0 3px
 
 
-  .settings-slider
+    .settings-slider
 
-    rzslider
-      margin: 16px 0 16px
+      rzslider
+        margin: 16px 0 16px
 
-    .rz-bubble
-      display: none;
+      .rz-bubble
+        display: none;
 
-    .rz-bar-wrapper
-      padding-top: 10px;
+      .rz-bar-wrapper
+        padding-top: 10px;
 
-    .rz-bar
-      height: 12px;
-      background-color: $rm-slider-bar-color;
+      .rz-bar
+        height: 12px;
+        background-color: $rm-slider-bar-color;
 
-      &.rz-selection
-        background-color: $rm-slider-bar-selected-color;
+        &.rz-selection
+          background-color: $rm-slider-bar-selected-color;
 
-    .rz-pointer
-      width: 18px;
-      height: 23px;
-      -moz-border-radius: 2px;
-      border-radius: 2px;
-      background-color: white;
-      border: solid 1px $rm-slider-handle-color;
-      margin-top 2px
+      .rz-pointer
+        width: 18px;
+        height: 23px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        background-color: white;
+        border: solid 1px $rm-slider-handle-color;
+        margin-top 2px
 
-      &:hover
-        background: $rm-slider-bar-selected-color;
+        &:hover
+          background: $rm-slider-bar-selected-color;
 
-    .rz-pointer:after
-      display: none;
+      .rz-pointer:after
+        display: none;
 
-    .settings-slider-handle
-    .settings-slider-handle:before
-    .settings-slider-handle:after
-      background-color: $rm-slider-handle-color;
-      width: 2px;
-      height: 12px;
-      content: '';
+      .settings-slider-handle
+      .settings-slider-handle:before
+      .settings-slider-handle:after
+        background-color: $rm-slider-handle-color;
+        width: 2px;
+        height: 12px;
+        content: '';
 
-    .settings-slider-handle
-      position: relative;
-      margin-left: 7px;
-      margin-top: 4px;
+      .settings-slider-handle
+        position: relative;
+        margin-left: 7px;
+        margin-top: 4px;
 
-      &:before
-        position: absolute;
-        right: 4px;
+        &:before
+          position: absolute;
+          right: 4px;
 
-      &:after
-        position: absolute;
-        left: 4px;
+        &:after
+          position: absolute;
+          left: 4px;
+
+    .slider-label
+      margin-left: -15px
+
+
+    .datepicker-widget
+
+      button.datepicker-calendar
+        padding: 0 6px
+        height: 34px
+        margin-left: -1px
+
+      .dropdown-menu
+        overflow: visible
+        width: auto
+        margin-top: 0
+
+      button
+        height: 35px
+
+      ul
+        padding: 10px
+        li
+          margin: 0
+
+      th,
+      th button,
+      td,
+      td button
+        height: 25px
+        padding: 0
+        width: 25px
+
+    .range-input
+      width: 34%
+      &.range-start
+        padding-right: 0
+      &.range-end
+        padding-left: 0
+      input
+        padding: 6px
+
+    .range-to
+      width: 7%
+      padding-right: 0
+      padding-left: 0
