@@ -27,3 +27,8 @@ module.exports =
 
     areas: (query, options) ->
       @getAllBase query, options, 'whereNotNull'
+
+    getById: (query, options = {}, nullClause = 'whereNotNull') ->
+      options.returnKnex = true
+      @toGeoJson(ReturningServiceEzCrud::getById.call(@, query, options)
+        .knex[nullClause]('area_name'))

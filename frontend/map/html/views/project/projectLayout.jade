@@ -19,14 +19,14 @@
           .content-value {{project.sqft | number:0}}+
           .content-label Sq Ft
 
-      button.btn.btn-white(rmaps-require-project-editor ng-click="editProject(project, $event)")
+      button.btn.btn-white.btn-dashboard(rmaps-require-project-editor ng-click="editProject(project, $event)")
         i.fa.fa-pencil-square-o
         span Edit
-      button.btn.btn-white(rmaps-require-project-editor ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
+      button.btn.btn-white.btn-dashboard(rmaps-require-project-editor ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
         span.icon.icon-save_on_disk
         span(ng-if="!project.archived") Archive
         span(ng-show="!project.sandbox" ng-if="project.archived") Unarchive
-      button.btn.btn-white(ng-show="project.sandbox" ng-click="resetProject(project, $event)")
+      button.btn.btn-white.btn-dashboard(ng-show="project.sandbox" ng-click="resetProject(project, $event)")
         span.icon.fa.fa-undo
         span Reset
 
@@ -68,7 +68,7 @@
           .widget-background
             span.icon.icon-area
           a(ui-sref="projectAreas({ id: project.id})")
-            .widget-count {{project.areas.length || 0}}
+            .widget-count {{projectModel.areas.length || 0}}
             .widget-title Areas
 
       .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")

@@ -2,7 +2,6 @@
 app = require '../app.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
-mapId = 'mainMap'
 originator = 'map'
 
 app.controller 'rmapsNotesModalCtrl', (
@@ -73,6 +72,7 @@ rmapsPrincipalService) ->
 ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService,
 leafletIterators, toastr, $log) ->
 
+  mapId = rmapsMapIds.mainMap()
   linker = rmapsMapEventsLinkerService
   $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
   createFromModal = $scope.create
@@ -116,9 +116,22 @@ leafletIterators, toastr, $log) ->
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
-rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapEventsLinkerService) ->
+.controller 'rmapsMapNotesCtrl', (
+  $rootScope,
+  $scope,
+  $http,
+  $log,
+  leafletData,
+  leafletIterators,
+  rmapsEventConstants,
+  rmapsLayerFormattersService,
+  rmapsMapEventsLinkerService,
+  rmapsMapIds,
+  rmapsNotesService,
+  rmapsPopupLoaderService
+) ->
 
+  mapId = rmapsMapIds.mainMap()
   setMarkerNotesOptions = rmapsLayerFormattersService.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormattersService.setDataOptions
   linker = rmapsMapEventsLinkerService
@@ -126,7 +139,7 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
   popup = rmapsPopupLoaderService
   markersUnSubs = null
 
-  leafletData.getDirectiveControls('mainMap').then (controls) ->
+  leafletData.getDirectiveControls(mapId).then (controls) ->
     directiveControls = controls
 
   $log = $log.spawn("map:notes")
@@ -136,7 +149,7 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
       markers:
         notes:[]
 
-  leafletData.getMap(@mapId).then (lMap) ->
+  leafletData.getMap(mapId).then (lMap) ->
     _markerGeoJsonHandle =
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
         return if model.markerType != 'note'

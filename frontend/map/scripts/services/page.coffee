@@ -17,7 +17,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $log, rmapsProfilesService) ->
+  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsMapIds, rmapsProfilesService, leafletData) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -78,9 +78,16 @@ app.provider 'rmapsPageService', () ->
         else
           @goToMap()
 
-      goToMap: () ->
+      goToMap: (params = {}) ->
         if rmapsProfilesService.currentProfile?.project_id?
-          $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
+
+          ## Clear the current map if any
+          rmapsMapIds.incrementMainMap()
+
+          params = _.extend(params, { project_id: rmapsProfilesService.currentProfile?.project_id })
+
+          $stickyState.reset('map')
+          $state.go 'map', params, { reload: true }
         else
           $state.go 'main'
 

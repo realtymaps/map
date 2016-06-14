@@ -2,7 +2,6 @@
 app = require '../app.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
-mapId = 'mainMap'
 originator = 'map'
 
 app.controller 'rmapsClientButtonCtrl', (
@@ -14,6 +13,7 @@ $stateParams,
 rmapsPrincipalService,
 rmapsClientsFactory
 ) ->
+  
   profile = rmapsPrincipalService.getCurrentProfile()
   clientsService = new rmapsClientsFactory profile.project_id
 

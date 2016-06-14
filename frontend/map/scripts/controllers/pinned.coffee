@@ -13,7 +13,6 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
   getFavorites = (event, eventData) ->
     favorites = eventData.properties if favorites
 
-    $log.debug "!!!!! Favorites", rmapsPropertiesService.favorites
     $scope.favoriteProperties = favorites or rmapsPropertiesService.favorites
     $scope.favoriteTotal = _.keys($scope.favoriteProperties).length
 

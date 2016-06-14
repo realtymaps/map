@@ -1,13 +1,20 @@
 app = require '../app.coffee'
-mapId = 'mainMap'
 color = 'blue'
 
 app.controller "rmapsDrawSketchCtrl", (
-$scope, $log, $rootScope, rmapsEventConstants, rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
+  $scope,
+  $log,
+  $rootScope,
+  rmapsEventConstants,
+  rmapsDrawnUtilsService
+  rmapsMapDrawHandlesFactory,
+  rmapsMapIds
+  rmapsDrawCtrlFactory
+) ->
 
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
+  mapId = rmapsMapIds.mainMap()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->

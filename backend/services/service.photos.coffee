@@ -7,6 +7,7 @@ tables = require '../config/tables'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 sqlHelpers = require '../utils/util.sql.helpers'
 internals = require './service.photos.internals'
+mlsConfigService = require './service.mls_config'
 
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
@@ -53,12 +54,10 @@ getResizedPayload = (opts) -> Promise.try () ->
           width: payload.meta.width
           height: payload.meta.height
       else
-        tables.config.mls()
-        .where id: data_source_id
-        .then (rows) ->
-          {photoRes} = sqlHelpers.expectSingleRow(rows).listing_data
-          logger.debug "Using MLS photores for originalSize: #{photoRes.width} x #{photoRes.height}"
-          photoRes
+        mlsConfigService.getByIdCached(data_source_id)
+        .then (mlsInfo) ->
+          logger.debug "Using MLS photores for originalSize: #{mlsInfo.listing_data.photoRes.width} x #{mlsInfo.listing_data.photoRes.height}"
+          mlsInfo.listing_data.photoRes
 
     .catch (err) ->
       logger.warn err
