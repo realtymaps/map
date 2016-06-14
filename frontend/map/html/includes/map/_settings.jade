@@ -70,9 +70,9 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
           //-         li(ng-click="selectedFilters.soldRange = ''") All of Time
 
           li.row
-            span.label.col-md-3 Sold Range
+            span.label.col-md-3 Sold Within
             .col-md-9
-              input(placeholder="enter days" ng-model="selectedFilters.soldRange" style="margin:5px 5px 5px 15px")
+              //- input(placeholder="enter days" ng-model="selectedFilters.soldRange")
               select.form-control(ng-model="selectedFilters.soldRange" ng-options='c.value as c.name disable when (!selectedFilters.sold) for c in filterValues.soldRangeValues')
 
           li.row

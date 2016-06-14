@@ -27,9 +27,7 @@
         li
           button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
         li
-          button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
-        li
-          button.btn.btn-offmarket(rmaps-require-subscriber="disable" ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
+          button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold within..
 
   script(type="text/ng-template" id="LayersPopoverMobile")
     .list
