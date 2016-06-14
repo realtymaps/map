@@ -34710,8 +34710,8 @@
     },
     "sharp": {
       "version": "0.14.0",
-      "from": "https://registry.npmjs.org/sharp/-/sharp-0.14.0.tgz",
-      "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.14.0.tgz",
+      "from": "https://registry.npmjs.org/sharp/-/sharp-0.15.0.tgz",
+      "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.15.0.tgz",
       "dependencies": {
         "bluebird": {
           "version": "3.3.4",
