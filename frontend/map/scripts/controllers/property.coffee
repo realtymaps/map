@@ -1,85 +1,111 @@
 app = require '../app.coffee'
 _ = require 'lodash'
+moment = require 'moment'
 
-app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPropertiesService, rmapsFormattersService,
-rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsGoogleService, rmapsMailCampaignService) ->
-  $log = $log.spawn 'rmapsPropertyCtrl'
-  $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
+app.controller 'rmapsPropertyCtrl',
+  (
+    $scope,
+    $stateParams,
+    $log,
+    $modal,
+    rmapsPropertiesService,
+    rmapsFormattersService,
+    rmapsResultsFormatterService,
+    rmapsPropertyFormatterService,
+    rmapsGoogleService,
+    rmapsMailCampaignService,
+    rmapsFilterManagerService
+  ) ->
 
-  _.extend $scope, rmapsFormattersService.Common,
+    $log = $log.spawn 'rmapsPropertyCtrl'
+    $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
 
-  $scope.google = rmapsGoogleService
+    _.extend $scope, rmapsFormattersService.Common,
 
-  $scope.getMail = () ->
-    rmapsMailCampaignService.getMail $stateParams.id
+    $scope.google = rmapsGoogleService
 
-  $scope.tab = selected: ''
+    $scope.getMail = () ->
+      rmapsMailCampaignService.getMail $stateParams.id
 
-  $scope.formatters =
-    results: new rmapsResultsFormatterService scope: $scope
-    property: new rmapsPropertyFormatterService
+    $scope.tab = selected: ''
 
-  _.merge @scope,
-    streetViewPanorama:
-      status: 'OK'
-    control: {}
+    $scope.formatters =
+      results: new rmapsResultsFormatterService scope: $scope
+      property: new rmapsPropertyFormatterService
 
-  $scope.groups = [
-    name: 'general', label: 'General Info', subscriber: 'shared_groups'
-   ,
-    name: 'details', label: 'Details', subscriber: 'shared_groups'
-   ,
-    name: 'listing', label: 'Listing', subscriber: 'shared_groups'
-   ,
-    name: 'building', label: 'Building', subscriber: 'shared_groups'
-   ,
-    name: 'dimensions', label: 'Room Dimensions', subscriber: 'shared_groups'
-   ,
-    name: 'lot', label: 'Lot', subscriber: 'shared_groups'
-   ,
-    name: 'location', label: 'Location & Schools', subscriber: 'shared_groups'
-   ,
-    name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'
-   ,
-    name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'
-   ,
-    name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'
-   ,
-    name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',
-  ,
-    name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'
-   ,
-    name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'
-   ,
-    name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'
-  ]
+    _.merge @scope,
+      streetViewPanorama:
+        status: 'OK'
+      control: {}
 
-  $scope.previewLetter = (mail) ->
-    $modal.open
-      template: require('../../html/views/templates/modal-mailPreview.tpl.jade')()
-      controller: 'rmapsReviewPreviewCtrl'
-      openedClass: 'preview-mail-opened'
-      windowClass: 'preview-mail-window'
-      windowTopClass: 'preview-mail-windowTop'
-      resolve:
-        template: () ->
-          pdf: mail.lob.url
-          title: 'Mail Review'
+    $scope.groups = [
+      name: 'general', label: 'General Info', subscriber: 'shared_groups'
+     ,
+      name: 'details', label: 'Details', subscriber: 'shared_groups'
+     ,
+      name: 'listing', label: 'Listing', subscriber: 'shared_groups'
+     ,
+      name: 'building', label: 'Building', subscriber: 'shared_groups'
+     ,
+      name: 'dimensions', label: 'Room Dimensions', subscriber: 'shared_groups'
+     ,
+      name: 'lot', label: 'Lot', subscriber: 'shared_groups'
+     ,
+      name: 'location', label: 'Location & Schools', subscriber: 'shared_groups'
+     ,
+      name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'
+     ,
+      name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'
+     ,
+      name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'
+     ,
+      name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',
+    ,
+      name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'
+     ,
+      name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'
+     ,
+      name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'
+    ]
 
-  $scope.showDCMA = (mls) ->
-    $modal.open
-      template: require('../../html/views/templates/modal-dmca.tpl.jade')()
-      controller: 'rmapsModalInstanceCtrl'
-      resolve: model: -> mls
+    $scope.previewLetter = (mail) ->
+      $modal.open
+        template: require('../../html/views/templates/modal-mailPreview.tpl.jade')()
+        controller: 'rmapsReviewPreviewCtrl'
+        openedClass: 'preview-mail-opened'
+        windowClass: 'preview-mail-window'
+        windowTopClass: 'preview-mail-windowTop'
+        resolve:
+          template: () ->
+            pdf: mail.lob.url
+            title: 'Mail Review'
 
-  getPropertyDetail = (propertyId) ->
-    $log.debug "Getting property detail for #{propertyId}"
+    $scope.showDCMA = (mls) ->
+      $modal.open
+        template: require('../../html/views/templates/modal-dmca.tpl.jade')()
+        controller: 'rmapsModalInstanceCtrl'
+        resolve: model: -> mls
 
-    rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
-    .then (property) ->
-      $scope.selectedResult = property
-      $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
-      $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
-      $log.debug $scope.tab.selected
+    getPropertyDetail = (propertyId) ->
+      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
+      .then (property) ->
+        $scope.selectedResult = property
+        $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
+        $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
-  getPropertyDetail $stateParams.id
+    $scope.getStatus = (property) ->
+      if property.status == 'sold'
+        soldRange = rmapsFilterManagerService.getFilters()?.status?.soldRange || '1 year'
+        try
+          qty = parseInt(soldRange)
+          units = soldRange.match(/^\d+ ([a-z])/)[1]
+          if moment().subtract(qty, units).isBefore(moment(property.close_date))
+            return label: "Sold within #{soldRange}", class: 'label-sold-property'
+          else
+            return label: "Not Sold witin #{soldRange}", class: 'label-notsale-property'
+        catch ex
+          return label: "Not Sold", class: 'label-notsale-property'
+      else
+        return label: property.status, class: $scope.formatters.property.getStatusLabelClass(property, true)
+
+    getPropertyDetail $stateParams.id
