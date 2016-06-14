@@ -57,6 +57,7 @@ transforms = do ->
               validators.choice(choices: propertyTypes)
             ]
             hasImages: validators.boolean(truthy: true, falsy: false)
+            soldRange: validators.string()
           validators.defaults(defaultValue: {})
       ]
   bounds:
@@ -150,40 +151,27 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
     # handle property status filtering
-    # 4 possible status options (see parcelEnums.coffee): 'for sale', 'pending', 'sold', 'not for sale'
-    if filters.status.length < statuses.length
-      # only need to do any filtering if not all available statuses are selected
+    # 3 possible status options (see parcelEnums.coffee): 'for sale', 'pending', 'sold'
+    # only need to do any filtering if not all available statuses are selected or all statuses
+    #   are selected and sold date range is provided
+    if filters.status.length < statuses.length || filters.soldRange
       @.where () ->
-        # in the data, there are actually only 3 possible status options: 'sold' and 'not for sale' are both lumped
-        # together as 'not for sale' in the data, and are differentiated here based on whether the close_date is within 1
-        # year of now
         sold = false
-        offMarket = false
         hardStatuses = []
         for status in filters.status
           if status == 'sold'
             sold = true
-          else if status == 'not for sale'
-            offMarket = true
           else
             hardStatuses.push(status)
 
-        if sold && offMarket
-          # in this case, we don't actually need to differentiate them
-          hardStatuses.push('not for sale')
-        else if sold
-          this.orWhere () ->
-            this.where("#{dbFn.tableName}.status", 'not for sale')
-            this.whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '1 year'::INTERVAL)")
-        else if offMarket
-          this.orWhere () ->
-            this.where("#{dbFn.tableName}.status", 'not for sale')
-            this.where () ->
-              this.whereRaw("#{dbFn.tableName}.close_date < (now()::DATE - '1 year'::INTERVAL)")
-              this.orWhereNull("#{dbFn.tableName}.close_date")
+        if sold
+          @.orWhere () ->
+            @.where("#{dbFn.tableName}.status", 'not for sale')
+            if filters.soldRange
+              @.whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
         if hardStatuses.length > 0
-          sqlHelpers.orWhereIn(this, "#{dbFn.tableName}.status", hardStatuses)
+          sqlHelpers.orWhereIn(@, "#{dbFn.tableName}.status", hardStatuses)
 
     sqlHelpers.between(@, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
     sqlHelpers.between(@, "#{dbFn.tableName}.sqft_finished", filters.sqftMin, filters.sqftMax)
