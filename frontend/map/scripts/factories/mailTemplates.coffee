@@ -1,8 +1,17 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.service 'rmapsMailTemplateFactory', ($rootScope, $log, $q, $modal, rmapsMailCampaignService,
-rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmapsMainOptions) ->
+app.service 'rmapsMailTemplateFactory', (
+  $rootScope,
+  $log,
+  $q,
+  $modal,
+  rmapsMailCampaignService,
+  rmapsPrincipalService,
+  rmapsMailTemplateTypeService,
+  rmapsUsStatesService,
+  rmapsMainOptions
+) ->
   $log = $log.spawn 'mail:mailTemplate'
 
   campaignDefaults =

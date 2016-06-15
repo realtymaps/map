@@ -1,7 +1,13 @@
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 app = require '../../app.coffee'
 
-app.controller 'rmapsModalSendMailCtrl', ($scope, $state, $log, wizard, rmapsMailCampaignService) ->
+app.controller 'rmapsModalSendMailCtrl', (
+  $scope,
+  $state,
+  $log,
+  wizard,
+  rmapsMailCampaignService
+) ->
   $scope.sendingFlag = false
   $scope.bodyMessage = 'There\'s no turning back!'
   $scope.statusMessage = ''
