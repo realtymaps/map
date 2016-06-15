@@ -10,7 +10,8 @@ app.service 'rmapsMailTemplateFactory', (
   rmapsPrincipalService,
   rmapsMailTemplateTypeService,
   rmapsUsStatesService,
-  rmapsMainOptions
+  rmapsMainOptions,
+  rmapsPriceService
 ) ->
   $log = $log.spawn 'mail:mailTemplate'
 
@@ -108,18 +109,6 @@ app.service 'rmapsMailTemplateFactory', (
 
     getQuoteAndPdf: () ->
       @_getReview 'getQuoteAndPdf'
-
-    # get price based on given # of pages
-    getPrice: ({pages}) ->
-      pricings = rmapsMainOptions.mail.pricing
-
-      price = "N/A"
-      if @campaign.options.color
-        price = (pricings.colorPage + ((pages-1) * pricings.colorExtra)) * @campaign.recipients.length
-      else
-        price = (pricings.bnwPage + ((pages-1) * pricings.bnwExtra)) * @campaign.recipients.length
-
-      price
 
     save: (options) ->
       if !@dirty and !options?.force

@@ -79,11 +79,9 @@ commonConfig =
     getKey: () -> "#{Math.round((Math.pow(36, 17) - Math.random() * Math.pow(36, 16))).toString(36).slice(1)}.pdf"
 
   mail:
-    pricing:
-      bnwPage: 0.95
-      colorPage: 1.15
-      bnwExtra: 0.10
-      colorExtra: 0.20
+    # pricing formula for a mail campaign
+    getPrice: ({firstPage, extraPage, pages, recipientCount}) ->
+      return (firstPage + ((pages-1) * extraPage)) * recipientCount
 
   validation: validation
   regexes: validation
