@@ -24,7 +24,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
             property-images(property="property" image-height="350")
 
-            .prop-image-status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
+            .prop-image-status(ng-class="getStatus(property).class") {{getStatus(property).label}}
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
