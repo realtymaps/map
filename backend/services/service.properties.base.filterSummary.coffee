@@ -2,7 +2,6 @@ Promise = require "bluebird"
 logger = require('../config/logger').spawn('service:filterSummary:base')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
-filterStatuses = require "../enums/filterStatuses"
 filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
@@ -12,7 +11,7 @@ dbFn = tables.property.propertyDetails
 
 validators = validation.validators
 
-statuses = filterStatuses.keys
+statuses = ['for sale', 'pending', 'sold', 'not for sale', 'saved']
 
 minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]

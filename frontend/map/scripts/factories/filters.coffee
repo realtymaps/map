@@ -47,3 +47,16 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: 580, name: '~ 1.5 years+'}
       { value: 730, name: '2 years+'}
     ]
+    soldRangeValues: [
+      { value: undefined, name: 'All of time' }
+      { value: '10 day', name: '10 days' }
+      { value: '30 day', name: '30 days' }
+      { value: '60 day', name: '60 days' }
+      { value: '90 day', name: '90 days' }
+      { value: '120 day', name: '120 days' }
+      { value: '6 month', name: '6 months' }
+      { value: '9 month', name: '9 months' }
+      { value: '1 year', name: '1 year' }
+      { value: '2 year', name: '2 years' }
+      { value: '3 year', name: '3 years' }
+    ]
