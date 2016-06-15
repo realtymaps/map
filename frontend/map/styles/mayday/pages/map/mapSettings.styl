@@ -124,6 +124,45 @@ $fnMakeMapSettings()
 
     .datepicker-widget
 
+      .btn.btn-info
+        background-color: $light_blue
+
+      table
+        &:focus
+          outline: none
+        .btn
+          background-color: $white
+          border: 1px solid $gray_medium
+          .text-info
+            color: $light_blue
+            font-weight: bold;
+          .text-muted
+            color: $gray
+          &.active,
+          &:focus
+            color: $text_gray
+          &.btn-info
+            color: $text_gray
+            background-color: $pastel_blue
+            font-weight: bold
+            border-color: $gray
+        th small
+          color: $text_gray
+
+      table[ng-switch-when="month"]
+        th,
+        th button,
+        td,
+        td button
+          width: 80px
+
+      table[ng-switch-when="year"]
+        th,
+        th button,
+        td,
+        td button
+          width: 40px
+
       button.datepicker-calendar
         padding: 0 6px
         height: 34px
@@ -133,6 +172,9 @@ $fnMakeMapSettings()
         overflow: visible
         width: auto
         margin-top: 0
+        background-color: $contrast_white
+        border: 1px solid $gray_medium
+        box-shadow: 0 2px 2px $black_30
 
       button
         height: 35px

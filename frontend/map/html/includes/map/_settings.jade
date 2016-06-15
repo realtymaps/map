@@ -121,14 +121,34 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             span.label.col-md-3 Close Date
             .col-md-4.range-input.range-start
               p.input-group.datepicker-widget
-                input.form-control(ng-model="selectedFilters.closeDateMin" type="text" ng-focus="openDatepicker('closeDateMin')" max-date="selectedFilters.closeDateMax" datepicker-popup="MM/dd/yyyy" is-open="datepickers.closeDateMin" placeholder="No start date")
+                input.form-control(
+                  ng-model="selectedFilters.closeDateMin"
+                  type="text"
+                  ng-focus="openDatepicker('closeDateMin')"
+                  max-date="selectedFilters.closeDateMax"
+                  datepicker-popup="MM/dd/yyyy"
+                  is-open="datepickers.closeDateMin"
+                  show-weeks="false"
+                  format-month="MMM"
+                  placeholder="No start date"
+                )
                 span.input-group-btn
                   button.btn.btn-default.datepicker-calendar(type="button" ng-click="openDatepicker('closeDateMin')")
                     i.glyphicon.glyphicon-calendar
             span.col-md-1.label.range-to to
             .col-md-4.range-input.range-end
               p.input-group.datepicker-widget
-                input.form-control(ng-model="selectedFilters.closeDateMax" type="text" ng-focus="openDatepicker('closeDateMax')" min-date="selectedFilters.closeDateMin" datepicker-popup="MM/dd/yyyy" is-open="datepickers.closeDateMax" placeholder="No end date")
+                input.form-control(
+                  ng-model="selectedFilters.closeDateMax"
+                  type="text"
+                  ng-focus="openDatepicker('closeDateMax')"
+                  min-date="selectedFilters.closeDateMin"
+                  datepicker-popup="MM/dd/yyyy"
+                  is-open="datepickers.closeDateMax"
+                  show-weeks="false"
+                  format-month="MMM"
+                  placeholder="No end date"
+                )
                 span.input-group-btn
                   button.btn.btn-default.datepicker-calendar(type="button" ng-click="openDatepicker('closeDateMax')")
                     i.glyphicon.glyphicon-calendar
