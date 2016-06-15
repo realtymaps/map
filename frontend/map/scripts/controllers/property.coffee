@@ -95,8 +95,6 @@ app.controller 'rmapsPropertyCtrl',
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
     $scope.getStatus = (property) ->
-      $log.debug $rootScope.selectedFilters
-      $log.debug rmapsFiltersFactory.values.soldRange
       if property.status == 'sold'
         soldRange = rmapsFiltersFactory.values.soldRange[$rootScope.selectedFilters?.soldRange] || '1 year'
         try
