@@ -42,10 +42,9 @@ basicColumns = do ->
       'owner_address'
       'cdn_photo'
       'photo_count'
+      'status'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name)
-    .concat [
-      "(CASE WHEN status = 'not for sale' AND close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold' ELSE status END) AS status"
-    ].join(', ')
+    .join(', ')
     # columns returned for additional detail results
     detail: [
       'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',

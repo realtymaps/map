@@ -76,10 +76,10 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   tax.data_source_type = 'county'
   _.extend(tax, parcelEntries[0])
 
-  # all county data gets 'not for sale' status -- it will be differentiated into 'sold' vs 'not for sale' at query time
-  tax.status = 'not for sale'
-  tax.substatus = 'not for sale'
-  tax.status_display = 'not for sale'
+  # all county data gets 'sold' status -- it will be differentiated by the frontend's sold timeframe filter
+  tax.status = 'sold'
+  tax.substatus = 'sold'
+  tax.status_display = 'sold'
 
   # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
   # TODO: static data fields?
