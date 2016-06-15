@@ -176,11 +176,11 @@ requireLogin = (options = {}) ->
 # route-specific middleware that requires profile and project for the user
 # optional: methods
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireProject = ({methods, projectIdParam} = {}) ->
+requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam = 'id' if _.isUndefined(projectIdParam)
+  projectIdParam ?= 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -191,7 +191,7 @@ requireProject = ({methods, projectIdParam} = {}) ->
 
     # get profile based on project param.  some endpoints will not have this,
     # so if project is not present, get it via `current_profile_id` off session
-    if req.params? and projectIdParam of req.params
+    if getProjectFromSession != true and req.params? and projectIdParam of req.params
       project_id = req.params[projectIdParam]
       profile = _.find(req.session.profiles, project_id: Number(project_id))
     else
@@ -214,11 +214,11 @@ requireProject = ({methods, projectIdParam} = {}) ->
 # parent but not always) of the given project being acted upon.  implies `requireProject` automatically
 # optional: methods
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireProjectEditor = ({methods, projectIdParam} = {}) ->
+requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam = 'id' if _.isUndefined(projectIdParam)
+  projectIdParam ?= 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -228,7 +228,7 @@ requireProjectEditor = ({methods, projectIdParam} = {}) ->
     return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
     # ensure project
-    proj = requireProject({methods, projectIdParam})
+    proj = requireProject({methods, projectIdParam, getProjectFromSession})
     proj(req, res, () ->
 
       # profile is on req courtesy of `requireProject`
@@ -245,11 +245,11 @@ requireProjectEditor = ({methods, projectIdParam} = {}) ->
 # being acted upon.  implies `requireProject` automatically
 # optional: methods
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireProjectParent = ({methods, projectIdParam} = {}) ->
+requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam = 'id' if _.isUndefined(projectIdParam)
+  projectIdParam ?= 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -259,7 +259,7 @@ requireProjectParent = ({methods, projectIdParam} = {}) ->
     return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
     # ensure project
-    proj = requireProject({methods, projectIdParam})
+    proj = requireProject({methods, projectIdParam, getProjectFromSession})
     proj(req, res, () ->
 
       # profile is on req courtesy of `requireProject`

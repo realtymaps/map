@@ -183,5 +183,32 @@ img.manual-cluster{
       &:after
         border-color $rm_saved transparent transparent $rm_saved !important
 
-  .mail-marker:hover
-    color $gray
+//
+// MAP MARKERS
+//
+
+// Mail
+.mail-marker:hover
+  color $gray
+
+// Notes
+.note-marker
+  position: relative;
+  display: inline-block;
+  color: $black;
+
+  .note-marker-inner
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+
+  i
+    font-size: 32px;
+
+  span
+    color: $white
+    line-height: 32px;
+    font-weight: bold;
