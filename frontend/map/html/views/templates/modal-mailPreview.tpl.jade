@@ -8,8 +8,6 @@
     img(src="assets/icon_loading_earth.gif")
 
 .modal-body(ng-hide="mediaType != 'pdf' || processing ")
-  .mail-prices-modal-container(ng-if="template.pdf")
-    include ../../includes/mail_pricing_table.jade
   embed#mail-preview-pdf.pdf-preview-letter(embed-src="{{template.pdf}}" src="{{template.pdf}}")
 
 .modal-body(ng-hide="mediaType != 'iframe' || processing ")

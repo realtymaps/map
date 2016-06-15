@@ -17,10 +17,9 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       controller: 'rmapsModalSendMailCtrl'
       keyboard: false
       backdrop: 'static'
-      # windowClass: 'confirm-mail-modal'
-      scope: $scope
+      windowClass: 'confirm-mail-modal'
       resolve:
-        mail: -> $scope.wizard.mail
+        wizard: -> $scope.wizard
 
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
@@ -41,9 +40,8 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
-      scope: $scope
       resolve:
-        template: -> $scope.wizard.mail.review
+        wizard: -> $scope.wizard
 
   $scope.viewMap = () ->
     rmapsMapTogglesFactory.currentToggles?.showMail = true

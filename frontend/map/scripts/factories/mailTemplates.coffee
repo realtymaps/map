@@ -28,7 +28,6 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
     _makeDirty: () ->
       @dirty = true
       @review = {}
-      # @_priceForColorFlag = {true: null, false: null}
 
     getSenderData: () ->
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
@@ -78,25 +77,14 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
     isSubmitted: () ->
       @campaign.status != 'ready'
 
-    # refreshColorPrice: () ->
-    #   # color was changed, so need to save this change
-    #   @save(force: true)
-    #   .then () =>
-    #     if !@_priceForColorFlag[@campaign.options.color]?
-    #       return @_getReview('getQuoteAndPdf')
-    #     @review.price = @_priceForColorFlag[@campaign.options.color]
-    #     @review
-
     _getReview: (serviceMethod) ->
       return if !@campaign.id
-      # @review.price = @getPrice
       if @reviewPromise
         return @reviewPromise
 
       @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
       .then (review) =>
         _.merge @review, review
-        # @_priceForColorFlag[@campaign.options.color] = review.price
         @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
       .catch (err) =>
         if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
@@ -104,7 +92,6 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
         else
           errorMsg = err.data?.alert?.msg
         @review =
-          # price: "N/A"
           errorMsg: errorMsg
 
     getReviewDetails: () ->

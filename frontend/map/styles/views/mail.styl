@@ -15,9 +15,11 @@
   width 400px
 
 .mail-prices-modal-container
+  text-align center
+  margin auto
   width 400px
 
-// mail-price sheet stylings
+// mail-price sheet stylings (mail_pricing_table.jade)
 .mail-prices
   .head, .value
     padding 10px
@@ -38,70 +40,39 @@
 
   .pages.color-chart
     color $black
-    :nth-child(1)
-      background-color $white
     :nth-child(2)
       border-top-left-radius 4px
-      background-color $blue_gradient_25
-    :nth-child(3)
-      background-color $blue_gradient_50
-    :nth-child(4)
-      background-color $blue_gradient_75
     :nth-child(5)
       border-top-right-radius 4px
-      background-color $blue
       
   .prices.color-chart
     color $black
-    :nth-child(1)
-      background-color $white
     :nth-child(2)
       border-bottom-left-radius 4px
-      background-color $green_gradient_25
-    :nth-child(3)
-      background-color $green_gradient_50
-    :nth-child(4)
-      background-color $green_gradient_75
     :nth-child(5)
       border-bottom-right-radius 4px
-      background-color $green
+    :nth-child(n+2)
+      background-color $transparent_blue
 
   .pages.bnw-chart
-    :nth-child(1)
-      color $black
-      background-color $white
+    color $black
     :nth-child(2)
-      color $white
       border-top-left-radius 4px
-      background-color $black_gradient_70
-    :nth-child(3)
-      color $white
-      background-color $black_gradient_80
-    :nth-child(4)
-      color $white
-      background-color $black_gradient_90
     :nth-child(5)
-      color $white
       border-top-right-radius 4px
-      background-color $black
-      
+
   .prices.bnw-chart
     color $black
-    :nth-child(1)
-      background-color $white
     :nth-child(2)
       border-bottom-left-radius 4px
-      background-color $black_gradient_10
-    :nth-child(3)
-      background-color $black_gradient_20
-    :nth-child(4)
-      background-color $black_gradient_30
     :nth-child(5)
       border-bottom-right-radius 4px
-      background-color $black_gradient_40
+    :nth-child(n+2)
+      background-color $black_gradient_10
+
 
 //
-// color widget on review page
+// bnw and color buttons on review page
 //
 
 .color-selector
@@ -110,10 +81,10 @@
   text-align center
   
   .btn
-    padding 2px 4px
+    padding 2px 14px
 
   label
-    font-size 10px
+    font-size 14px
     
   .disabled
     cursor not-allowed
@@ -124,10 +95,13 @@
 .confirm-mail-modal
   .faded
     opacity 0.4
-  .sentinel
-    margin-right 10px
+
   .confirm-widgets
     text-align center
+
+  .sentinel-message
+    text-align left
+
   .modal-footer
     border-top 1px solid $gray_lighter !important
 
@@ -227,6 +201,10 @@
     -webkit-transition opacity 4s
     transition opacity 4s
     opacity 0
+
+//
+// main mail stylings, and wizard
+//
 
 .mail
   @extends .font-regular

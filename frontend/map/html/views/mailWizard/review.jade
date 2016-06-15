@@ -74,7 +74,7 @@
                 .col-md-12
                   .color-selector.btn-group(ng-class="{'disabled': !wizard.mail.campaign.aws_key}")
                     span.to-bnw.btn.btn-default(ng-disabled="!wizard.mail.campaign.aws_key")
-                      label B &amp; W
+                      label Black and White
                       br
                       input(
                         type="radio"
@@ -82,7 +82,7 @@
                         ng-value="false"
                         ng-disabled="!wizard.mail.campaign.aws_key")
 
-                    span.to-color.btn.btn-primary(ng-disabled="!wizard.mail.campaign.aws_key")
+                    span.to-color.btn.btn-default(ng-disabled="!wizard.mail.campaign.aws_key")
                       label Color
                       br
                       input(
@@ -110,20 +110,3 @@
                   p Mailing submitted for {{(wizard.mail.campaign.stripe_charge.amount/100) | currency}}
                 .col-md-2
                   button.btn.btn-primary.pull-right(ng-click="viewMap()" ng-show="wizard.mail.isSubmitted()") View Map
-
-          //- .row.separator(ng-hide="wizard.mail.isSubmitted()")
-          //-   .col-md-12
-          //-     .row
-          //-       h2 Price Quote
-          //-     .row
-          //-       .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
-          //-       .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
-          //-       .btn.btn-success(
-          //-         ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
-          //-         tooltip-trigger="mousehover"
-          //-         uib-tooltip="Click to submit this mailing!"
-          //-         tooltip-enable="true"
-          //-         ng-disabled="review.data.alert.msg"
-          //-         ng-click="sendMail()")
-          //-           span(ng-show="review.data.alert.msg") Issues Exist
-          //-           span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}

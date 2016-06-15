@@ -7,15 +7,22 @@
   p {{bodyMessage}}
   p {{statusMessage}}
 
-.modal-footer(ng-class="{'faded': sendingFlag}")
-  .row.confirm-widgets(ng-hide="failedFlag || successFlag")
-    input.sentinel(type="checkbox" ng-model="sentinel" ng-disabled="sendingFlag")
-    | Check this box to commit to pay the amount that corresponds to the number of pages of your document.
-    //- .mail-prices-modal-container
-    //-   include ../../includes/mail_pricing_table.jade
 
-    span(style="font-weight: bold;") and
-    | click submit.
+.modal-footer(ng-class="{'faded': sendingFlag}")
+
+  .row.confirm-widgets(ng-hide="failedFlag || successFlag")
+    .col-md-1.sentinel
+      input(type="checkbox" ng-model="sentinel" ng-disabled="sendingFlag")
+    .col-md-11.sentinel-message
+      | Check this box to commit to pay the amount that corresponds to
+      |  the number of pages of your document #[span(style="font-weight: bold;") and ] click submit.
+
+.modal-footer(ng-class="{'faded': sendingFlag}")
+
+  .row.mail-prices-modal-container
+    include ../../includes/mail_pricing_table.jade
+
+.modal-footer(ng-class="{'faded': sendingFlag}")
   .row.confirm-widgets
     button.btn.btn-primary(ng-hide="failedFlag || successFlag" ng-disabled="sendingFlag" ng-click="send()") Submit
     button.btn.btn-danger(ng-hide="failedFlag || successFlag" ng-disabled="sendingFlag" ng-click="cancel()") No, cancel!

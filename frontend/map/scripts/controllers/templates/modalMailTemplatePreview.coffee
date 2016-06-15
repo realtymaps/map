@@ -41,10 +41,11 @@ app.controller 'rmapsUploadedPdfPreviewCtrl',
 
 
 app.controller 'rmapsReviewPreviewCtrl',
-  ($scope, $modalInstance, $log, $sce, template) ->
-    $scope.template = template
+  ($scope, $modalInstance, $log, $sce, wizard) ->
+    $scope.template = {}
+    $scope.wizard = wizard
     $scope.mediaType = 'pdf'
-    $scope.template.pdf = $sce.trustAsResourceUrl($scope.template.pdf)
+    $scope.template.pdf = $sce.trustAsResourceUrl($scope.wizard.mail.review.pdf)
 
     $scope.close = () ->
       $modalInstance.dismiss()
