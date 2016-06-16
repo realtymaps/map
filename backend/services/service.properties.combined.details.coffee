@@ -5,6 +5,8 @@ sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
 {getPermissions, queryPermissions, scrubPermissions} = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
+mlsConfigSvc = require './service.mls_config'
+Promise = require 'bluebird'
 
 _detailQuery = (queryParams, req) ->
   getPermissions(req)
@@ -42,12 +44,18 @@ _detailQuery = (queryParams, req) ->
       # Prune subscriber groups and owner info where appropriate
       scrubPermissions(data, permissions)
 
-      for row in data
+      Promise.map data, (row) ->
         result[row.rm_property_id] ?= { county: null, mls: null }
         result[row.rm_property_id][row.data_source_type] ?= []
         result[row.rm_property_id][row.data_source_type].push(row)
 
-      result
+        if row.data_source_type == 'mls'
+          mlsConfigSvc.getByIdCached(row.data_source_id)
+          .then (mlsConfig) ->
+            row.mls_formal_name = mlsConfig?.formal_name
+
+      .then ->
+        result
 
 # Retrieve a single property by rm_property_id OR geom_point_json
 getDetail = (req) ->

@@ -26,15 +26,16 @@ basicColumns = do ->
     ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     filterCombined: [
       'data_source_type',
+      'data_source_id',
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center as geom_point_json', # can be removed once mv_property_details is gone
+      'geometry_center as geom_point_json', # alias can be removed once mv_property_details is gone
       'owner_name',
-      'owner_name_2 as owner_name2',
+      'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
       'year_built',
       'acres',
-      'sqft_finished as finished_sqft',
+      'sqft_finished as finished_sqft',  # alias can be removed once mv_property_details is gone
       'baths_total',
       "baths"
       'bedrooms',
@@ -116,8 +117,7 @@ basicColumns = do ->
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
       'property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time',
-      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price',
-      """(CASE WHEN status = 'not for sale' AND close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold' ELSE status END) AS status"""
+      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
     ]
 
     company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',

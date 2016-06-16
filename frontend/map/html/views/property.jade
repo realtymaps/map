@@ -9,7 +9,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
         .col-sm-2
           ul.nav
             li(ng-repeat="mls in selectedResult.mls")
-              a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") Property Detail
+              a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") {{mls.mls_formal_name}} Property Detail
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
             li
