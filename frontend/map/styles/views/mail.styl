@@ -2,13 +2,106 @@
 @import '../mailTemplates/template-frags.styl'
 @import '../mailTemplates/template-classes.styl'
 
+
+//
+// mail-price sheet
+// import: pricing_table.jade
+// controller: rmapsMailPricingsCtrl
+//
+
+// govern the width of the mail-price-sheet wherever it's imported
+.mail-prices-review-container
+  float left
+  width 400px
+
+.mail-prices-modal-container
+  text-align center
+  margin auto
+  width 400px
+
+// mail-price sheet stylings (mail_pricing_table.jade)
+.mail-prices
+  .head, .value
+    padding 10px
+    width 20%
+    display flex
+    align-items center
+
+  .head
+    justify-content flex-end
+    
+  .value
+    border 1px solid black
+    justify-content center
+
+  .pages, .prices
+    display flex
+    flex-direction row
+
+  .pages.color-chart
+    color $black
+    :nth-child(2)
+      border-top-left-radius 4px
+    :nth-child(5)
+      border-top-right-radius 4px
+      
+  .prices.color-chart
+    color $black
+    :nth-child(2)
+      border-bottom-left-radius 4px
+    :nth-child(5)
+      border-bottom-right-radius 4px
+    :nth-child(n+2)
+      background-color $transparent_blue
+
+  .pages.bnw-chart
+    color $black
+    :nth-child(2)
+      border-top-left-radius 4px
+    :nth-child(5)
+      border-top-right-radius 4px
+
+  .prices.bnw-chart
+    color $black
+    :nth-child(2)
+      border-bottom-left-radius 4px
+    :nth-child(5)
+      border-bottom-right-radius 4px
+    :nth-child(n+2)
+      background-color $black_gradient_10
+
+
+//
+// bnw and color buttons on review page
+//
+
+.color-selector
+  float left
+  margin-top 10px
+  text-align center
+  
+  .btn
+    padding 2px 14px
+
+  label
+    font-size 14px
+    
+  .disabled
+    cursor not-allowed
+
+// 
+// modals
+//
 .confirm-mail-modal
   .faded
     opacity 0.4
-  .sentinel
-    margin-right 10px
+
   .confirm-widgets
     text-align center
+
+  .sentinel-message
+    text-align left
+
   .modal-footer
     border-top 1px solid $gray_lighter !important
 
@@ -108,6 +201,10 @@
     -webkit-transition opacity 4s
     transition opacity 4s
     opacity 0
+
+//
+// main mail stylings, and wizard
+//
 
 .mail
   @extends .font-regular
@@ -349,7 +446,9 @@
 
       .review-edit-button, .review-preview-button
         margin-top 30px
+        margin-left 10px
         float right
+        border none
 
       .review-items
         margin-left 0
