@@ -30,6 +30,7 @@ handles = wrapHandleRoutes
 
           res.type = contentType
           res.setHeader 'Content-type', contentType
+          res.setHeader 'Cache-Control', 'public, max-age=31557600'
 
           if payload.meta.width
             res.setHeader 'X-ImageWidth', payload.meta.width
