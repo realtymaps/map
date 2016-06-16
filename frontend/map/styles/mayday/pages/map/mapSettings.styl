@@ -124,12 +124,17 @@ $fnMakeMapSettings()
 
     .datepicker-widget
 
+      li
+        padding: 10px 0 0 !important
+
       .btn.btn-info
         background-color: $light_blue
 
       table
         &:focus
           outline: none
+        th .btn[disabled="disabled"]
+          background-color: $white
         .btn
           background-color: $white
           border: 1px solid $gray_medium
