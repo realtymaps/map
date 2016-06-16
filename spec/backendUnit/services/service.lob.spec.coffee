@@ -63,6 +63,14 @@ describe "service.lob", ->
       return "http://aws-pdf-downloads/#{Key}"
     buckets: PDF: 'aws-pdf-downloads'
 
+  svc.__set__ 'pdfService',
+    getUrlPageCount: (url) -> Promise.try ->
+      return 3
+
+  svc.__set__ 'priceService',
+    getPriceForLetter: () -> Promise.try ->
+      return 3.41
+
   beforeEach ->
     user.resetSpies()
     campaigns.resetSpies()

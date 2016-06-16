@@ -13,6 +13,7 @@ dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
 pdfService = require('./service.pdf')
+priceService = require('./service.prices')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -164,6 +165,7 @@ getLetter = (lobId, apiName = 'live') ->
 # Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
 #
 getPriceQuote = (userId, campaignId) ->
+  console.log "config:\n#{JSON.stringify(config.mail,null,2)}"
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
@@ -176,16 +178,26 @@ getPriceQuote = (userId, campaignId) ->
       address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
       logger.debug "Checking #{address}"
       letter = buildLetter campaign, r
+
       sendLetter letter, 'test'
       .then (lobResponse) ->
-        logger.debug "Address was valid: #{address}"
-        console.log "\n\ngetting Price via PDF service..."
-        price = pdfService.getPdfPrice(lobResponse.url)
-        result =
-          pdf: lobResponse.url
-          price: lobResponse.price * campaign.recipients.length
-          lobResponse: lobResponse
-        throw new Error("Stop checking addresses") # no need to check more addresses
+        console.log "letter:\n#{JSON.stringify(letter,null,2)}"
+        pdfService.getUrlPageCount(lobResponse.url)
+        .then (count) ->
+          console.log "got pagecount: #{count}"
+
+          priceService.getPriceForLetter(letter)
+          .then (price) ->
+            console.log "got price: #{price}"
+            logger.debug "Address was valid: #{address}"
+            # price = config.mail.getPrice()
+            result =
+              pdf: lobResponse.url
+              # price: lobResponse.price * campaign.recipients.length
+              price: price
+              lobResponse: lobResponse
+
+            throw new Error("Stop checking addresses") # no need to check more addresses
       .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
         logger.debug "Invalid address: #{address}. Trying next recipient"
     .catch ->
