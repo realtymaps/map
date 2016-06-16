@@ -15,7 +15,13 @@ if [[ "$unamestr" == 'Linux' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
   echo "installing libpoppler-cpp-dev..."
-  apt-get install pkg-config libpoppler-cpp-dev
+  cd /tmp/
+  wget http://poppler.freedesktop.org/poppler-0.44.0.tar.xz
+  tar -xf poppler-0.44.0.tar.xz
+  cd poppler-0.44.0
+  ./configure && make
+
+  # apt-get install pkg-config libpoppler-cpp-dev
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
