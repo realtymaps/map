@@ -10,8 +10,7 @@ app.service 'rmapsMailTemplateFactory', (
   rmapsPrincipalService,
   rmapsMailTemplateTypeService,
   rmapsUsStatesService,
-  rmapsMainOptions,
-  rmapsPriceService
+  rmapsMainOptions
 ) ->
   $log = $log.spawn 'mail:mailTemplate'
 
