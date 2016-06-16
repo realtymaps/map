@@ -179,6 +179,7 @@
     "pg-query-stream": "^0.7.0",
     "phantomjs-polyfill": "0.0.1",
     "phantomjs-prebuilt": "2.1.7",
+    "poppler-simple": "0.2.4",
     "pretty-hrtime": "^0.2.1",
     "promise-ftp": "^1.2.12",
     "promise-ftp-common": "^1.1.5",

@@ -12,6 +12,7 @@ logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
+pdfService = require('./service.pdf')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -178,6 +179,8 @@ getPriceQuote = (userId, campaignId) ->
       sendLetter letter, 'test'
       .then (lobResponse) ->
         logger.debug "Address was valid: #{address}"
+        console.log "\n\ngetting Price via PDF service..."
+        price = pdfService.getPdfPrice(lobResponse.url)
         result =
           pdf: lobResponse.url
           price: lobResponse.price * campaign.recipients.length
