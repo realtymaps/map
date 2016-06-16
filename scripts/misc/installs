@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ev
 set -o pipefail
 
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
@@ -14,6 +14,7 @@ unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+  echo "installing libpoppler-cpp-dev..."
   apt-get install pkg-config libpoppler-cpp-dev
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
