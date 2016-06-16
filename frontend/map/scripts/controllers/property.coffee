@@ -5,6 +5,7 @@ moment = require 'moment'
 app.controller 'rmapsPropertyCtrl',
   (
     $scope,
+    $rootScope,
     $stateParams,
     $log,
     $modal,
@@ -14,7 +15,7 @@ app.controller 'rmapsPropertyCtrl',
     rmapsPropertyFormatterService,
     rmapsGoogleService,
     rmapsMailCampaignService,
-    rmapsFilterManagerService
+    rmapsFiltersFactory
   ) ->
 
     $log = $log.spawn 'rmapsPropertyCtrl'
@@ -95,10 +96,11 @@ app.controller 'rmapsPropertyCtrl',
 
     $scope.getStatus = (property) ->
       if property.status == 'sold'
-        soldRange = rmapsFilterManagerService.getFilters()?.status?.soldRange || '1 year'
+        soldRange = rmapsFiltersFactory.values.soldRange[$rootScope.selectedFilters?.soldRange] || '1 year'
         try
           qty = parseInt(soldRange)
           units = soldRange.match(/^\d+ ([a-z])/)[1]
+          units = if units == 'm' then 'M' else units
           if moment().subtract(qty, units).isBefore(moment(property.close_date))
             return label: "Sold within #{soldRange}", class: 'label-sold-property'
           else
