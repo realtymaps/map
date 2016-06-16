@@ -48,7 +48,7 @@ app.use helmet.nocache()
 # ensure all assets and data are compressed - above static
 app.use compress()
 
-app.use serveStatic config.FRONTEND_ASSETS_PATH
+app.use serveStatic(config.FRONTEND_ASSETS.PATH, { maxAge: "#{config.FRONTEND_ASSETS.MAX_AGE_SEC}s", cacheControl: true })
 
 # cookie parser - above session
 app.use cookieParser config.SESSION.secret
@@ -124,7 +124,7 @@ app.use (data, req, res, next) ->
     res.status(status.INTERNAL_SERVER_ERROR).json alert:
       msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
       id: "500-#{req.path}"
-      
+
   next()
 
 if config.USE_ERROR_HANDLER
