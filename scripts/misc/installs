@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ev
 set -o pipefail
 
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
