@@ -17,7 +17,7 @@ _detailQuery = (queryParams, req) ->
     columnMap =
       'filter': 'filterCombined'
       'address': 'filterCombined'
-      'detail': 'detail_with_disclaimer'
+      'detail': 'new_all_explicit'
       'all': 'new_all_explicit'
 
     query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
@@ -52,7 +52,12 @@ _detailQuery = (queryParams, req) ->
         if row.data_source_type == 'mls'
           mlsConfigSvc.getByIdCached(row.data_source_id)
           .then (mlsConfig) ->
-            row.mls_formal_name = mlsConfig?.formal_name
+            if mlsConfig
+              row.mls_formal_name = mlsConfig.formal_name
+              row.disclaimer_logo = mlsConfig.disclaimer_logo
+              row.disclaimer_text = mlsConfig.disclaimer_text
+              row.dcma_contact_name = mlsConfig.dcma_contact_name
+              row.dcma_contact_address = mlsConfig.dcma_contact_address
 
       .then ->
         result

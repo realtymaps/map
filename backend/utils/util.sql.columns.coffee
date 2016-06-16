@@ -107,9 +107,6 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
-    mls_disclaimer: ['config_mls.dcma_contact_name', 'config_mls.dcma_contact_address', 'config_mls.formal_name'
-      'disclaimer_text', 'disclaimer_logo']
-
     new_all: '*'
 
     new_all_explicit: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
@@ -125,7 +122,6 @@ basicColumns = do ->
     ]
 
   ret.all = "#{ret.filter}, #{ret.detail}"
-  ret.detail_with_disclaimer = "#{ret.new_all_explicit}, #{ret.mls_disclaimer}"
   ret
 
 
