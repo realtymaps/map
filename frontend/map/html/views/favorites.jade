@@ -16,7 +16,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                                 li(ng-repeat="enity in favoritesList" class="col-md-6")
                                     div.property-card
                                         div.property-img
-                                            img(src="static/img/{{enity.image}}")
+                                            img(rmaps-cdn-image src="static/img/{{enity.image}}")
                                             span.property-status(ng-class="enity.status")
                                                 | {{enity.status}}
                                         div.property-data
@@ -52,7 +52,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                                             div.col-sm-3.col-xs-5
                                                 div.property-img
                                                     span(class="status" ng-class="favoritesData[id].status") {{favoritesData[id].status}}
-                                                    img(src="static/img/{{favoritesData[id].image}}" alt="Property Image")
+                                                    img(rmaps-cdn-image src="static/img/{{favoritesData[id].image}}" alt="Property Image")
                                             div.col-sm-9.col-xs-7
                                                 div.info
                                                     p(class="price" ng-class="favoritesData[id].status") ${{favoritesData[id].price}}

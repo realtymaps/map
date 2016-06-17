@@ -43,6 +43,6 @@
               .tmpl-item(ng-mouseenter="hovered = $index" ng-mouseleave="hovered = -1")
                 .tmpl-data
                   h3.tmpl-title {{template.name}}
-                  img.tmpl-image(ng-src="{{template.thumb}}" ng-class="{'selected':wizard.mail.campaign.template_type == template.type}" ng-click="selectTemplate($index)")
+                  img.tmpl-image(rmaps-cdn-image ng-src="{{template.thumb}}" ng-class="{'selected':wizard.mail.campaign.template_type == template.type}" ng-click="selectTemplate($index)")
                   .delete-button(ng-show="template.category == 'pdf' && hovered == $index" ng-click="deletePdf(template)")
               .btn(ng-click="previewTemplate(template)") Preview

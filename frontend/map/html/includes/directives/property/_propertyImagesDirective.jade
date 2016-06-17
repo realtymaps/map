@@ -1,7 +1,7 @@
 .property-img
   div(ng-show="!imageLoaded")
-    img(ng-src="/assets/progress-big.gif")
-  img(ng-cloak ng-if="!property.photos.length" ng-src="{{formatters.property.google.StreetView.getUrl(property, imageWidth, imageHeight)}}" title="{{property.title}}")
+    img(rmaps-cdn-image ng-src="/assets/progress-big.gif")
+  img(ng-cloak ng-if="!property.photos.length" rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, imageWidth, imageHeight)}}" title="{{property.title}}")
   div.carousel.carousel-standard(carousel carousel-image-error="/assets/mls_unavailable.png" ng-if="property.photos.length" ng-show="imageLoaded")
     div(slide ng-repeat="photo in property.photos" index="slide.key")
       img(ng-src="{{photo.url}}" style="margin:auto;")
