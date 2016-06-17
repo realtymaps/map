@@ -165,7 +165,7 @@ getLetter = (lobId, apiName = 'live') ->
 # Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
 #
 getPriceQuote = (userId, campaignId) ->
-  console.log "config:\n#{JSON.stringify(config.mail,null,2)}"
+
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
@@ -181,23 +181,24 @@ getPriceQuote = (userId, campaignId) ->
 
       sendLetter letter, 'test'
       .then (lobResponse) ->
-        console.log "letter:\n#{JSON.stringify(letter,null,2)}"
-        pdfService.getUrlPageCount(lobResponse.url)
-        .then (count) ->
-          console.log "got pagecount: #{count}"
 
-          priceService.getPriceForLetter(letter)
+        # get number of pages (needed for price)
+        pdfService.getUrlPageCount(lobResponse.url.toString())
+        .then (pages) ->
+
+          # get price
+          priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: letter.color})
           .then (price) ->
-            console.log "got price: #{price}"
             logger.debug "Address was valid: #{address}"
-            # price = config.mail.getPrice()
+
             result =
               pdf: lobResponse.url
-              # price: lobResponse.price * campaign.recipients.length
               price: price
               lobResponse: lobResponse
 
             throw new Error("Stop checking addresses") # no need to check more addresses
+        .catch pdfService.PdfUrlMaxAttemptError, (err) ->
+          logger.error "Error getting pageCount: #{err}"
       .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
         logger.debug "Invalid address: #{address}. Trying next recipient"
     .catch ->
