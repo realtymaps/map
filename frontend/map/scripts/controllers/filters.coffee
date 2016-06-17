@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-require '../factories/filters.coffee'
 
 ###
   Our Filters Controller
@@ -42,7 +41,12 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
     $scope.selectedFilters.ownerName = null
     $scope.selectedFilters.propertyType = null
 
-  $scope.toggled = ->
+  $scope.tooltipOpen = false
+  $scope.filtersOpen = false
+  $scope.filtersFullyOpen = false
+  $scope.toggled = () ->
+    #$scope.tooltipOpen = false
+    $scope.filtersFullyOpen = $scope.filtersOpen
     $log.debug 'forceRender'
     $timeout (->
       $scope.$broadcast 'reCalcViewDimensions'
