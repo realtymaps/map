@@ -6,7 +6,7 @@ app = require '../app.coffee'
 app.factory 'rmapsFiltersFactory', () ->
 
   # query filters
-  values:
+  values =
     propertyStatus: [
       { name: '', value: undefined }
       { name: 'For Sale', value: 'forSale' }
@@ -60,3 +60,7 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: '2 year', name: '2 years' }
       { value: '3 year', name: '3 years' }
     ]
+
+  values.soldRange = _.zipObject(_.map(values.soldRangeValues, 'value'), _.map(values.soldRangeValues, 'name'))
+
+  {values}

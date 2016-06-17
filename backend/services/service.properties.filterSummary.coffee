@@ -8,6 +8,7 @@ logger = require('../config/logger').spawn('service:property:filterSummary')
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 validation = require '../utils/util.validation'
+mlsConfigSvc = require './service.mls_config'
 
 _isOnlyPinned = (queryParams) ->
   !queryParams?.state?.filters?.status?.length
@@ -67,7 +68,7 @@ module.exports =
             filterSummaryImpl.scrubPermissions?(properties, permissions)
 
             result = {}
-            for property in properties
+            Promise.map properties, (property) ->
               existing = result[property.rm_property_id]
               # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
               if !property.data_source_type? || # Backward-compatibility
@@ -81,7 +82,13 @@ module.exports =
                 if state.properties_selected?[property.rm_property_id]?
                   property.savedDetails = state.properties_selected[property.rm_property_id]
 
-            result
+                if property.data_source_type == 'mls'
+                  mlsConfigSvc.getByIdCached(property.data_source_id)
+                  .then (mlsConfig) ->
+                    property.mls_formal_name = mlsConfig?.formal_name
+
+            .then ->
+              result
 
         switch queryParams.returnType
           when 'clusterOrDefault'

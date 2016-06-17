@@ -40,6 +40,7 @@ apiBasePaymentMethod = "#{apiBase}/paymentMethod"
 apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
+apiBasePrices = "#{apiBase}/prices"
 
 module.exports =
   views:
@@ -256,5 +257,8 @@ module.exports =
   photos:
     apiBase: apiBasePhotos
     getResized: "#{apiBasePhotos}/resize"
+  prices:
+    apiBase: apiBasePrices
+    mail: "#{apiBasePrices}/mail"
 
   # hirefire secret value set from within backend/config/config.coffee
