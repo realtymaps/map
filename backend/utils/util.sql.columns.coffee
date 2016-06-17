@@ -26,15 +26,16 @@ basicColumns = do ->
     ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     filterCombined: [
       'data_source_type',
+      'data_source_id',
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center as geom_point_json', # can be removed once mv_property_details is gone
+      'geometry_center as geom_point_json', # alias can be removed once mv_property_details is gone
       'owner_name',
-      'owner_name_2 as owner_name2',
+      'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
       'year_built',
       'acres',
-      'sqft_finished as finished_sqft',
+      'sqft_finished as finished_sqft',  # alias can be removed once mv_property_details is gone
       'baths_total',
       "baths"
       'bedrooms',
@@ -106,9 +107,6 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
-    mls_disclaimer: ['config_mls.dcma_contact_name', 'config_mls.dcma_contact_address', 'config_mls.formal_name'
-      'disclaimer_text', 'disclaimer_logo']
-
     new_all: '*'
 
     new_all_explicit: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
@@ -116,8 +114,7 @@ basicColumns = do ->
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
       'property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time',
-      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price',
-      """(CASE WHEN status = 'not for sale' AND close_date >= (now()::DATE - '1 year'::INTERVAL) THEN 'sold' ELSE status END) AS status"""
+      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
     ]
 
     company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',
@@ -125,7 +122,6 @@ basicColumns = do ->
     ]
 
   ret.all = "#{ret.filter}, #{ret.detail}"
-  ret.detail_with_disclaimer = "#{ret.new_all_explicit}, #{ret.mls_disclaimer}"
   ret
 
 
