@@ -1,8 +1,17 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.service 'rmapsMailTemplateFactory', ($rootScope, $log, $q, $modal, rmapsMailCampaignService,
-rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmapsMainOptions) ->
+app.service 'rmapsMailTemplateFactory', (
+  $rootScope,
+  $log,
+  $q,
+  $modal,
+  rmapsMailCampaignService,
+  rmapsPrincipalService,
+  rmapsMailTemplateTypeService,
+  rmapsUsStatesService,
+  rmapsMainOptions
+) ->
   $log = $log.spawn 'mail:mailTemplate'
 
   campaignDefaults =
@@ -27,7 +36,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
 
     _makeDirty: () ->
       @dirty = true
-      @_priceForColorFlag = {true: null, false: null}
+      @review = {}
 
     getSenderData: () ->
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
@@ -77,15 +86,6 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
     isSubmitted: () ->
       @campaign.status != 'ready'
 
-    refreshColorPrice: () ->
-      # color was changed, so need to save this change
-      @save(force: true)
-      .then () =>
-        if !@_priceForColorFlag[@campaign.options.color]?
-          return @_getReview('getQuoteAndPdf')
-        @review.price = @_priceForColorFlag[@campaign.options.color]
-        @review
-
     _getReview: (serviceMethod) ->
       return if !@campaign.id
       if @reviewPromise
@@ -93,15 +93,14 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmaps
 
       @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
       .then (review) =>
-        @_priceForColorFlag[@campaign.options.color] = review.price
-        @review = _.assign review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
+        _.merge @review, review
+        @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
       .catch (err) =>
         if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
           errorMsg = rmapsMainOptions.mail.sizeErrorMsg
         else
           errorMsg = err.data?.alert?.msg
         @review =
-          price: "N/A"
           errorMsg: errorMsg
 
     getReviewDetails: () ->

@@ -45,5 +45,6 @@ module.exports = routeHelpers.mergeHandles instance,
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      auth.requireProjectEditor(methods: ['put', 'delete'])
+      auth.requireProjectEditor(methods: ['put'])
+      auth.requireProjectEditor({ methods: ['delete'], getProjectFromSession: true })
     ]

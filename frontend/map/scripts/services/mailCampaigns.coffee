@@ -2,7 +2,15 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPrincipalService, rmapsProfilesService, rmapsEventConstants) ->
+app.service 'rmapsMailCampaignService', (
+  $log,
+  $http,
+  $sce,
+  $rootScope,
+  rmapsPrincipalService,
+  rmapsProfilesService,
+  rmapsEventConstants
+) ->
   $log = $log.spawn 'mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 

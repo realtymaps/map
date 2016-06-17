@@ -4,8 +4,17 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $state, $modal,
-rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory) ->
+app.controller 'rmapsReviewCtrl', (
+  $rootScope,
+  $scope,
+  $log,
+  $state,
+  $modal,
+  rmapsMailCampaignService,
+  rmapsMailTemplateTypeService,
+  rmapsMainOptions,
+  rmapsMapTogglesFactory
+) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -19,7 +28,7 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       backdrop: 'static'
       windowClass: 'confirm-mail-modal'
       resolve:
-        mail: -> $scope.wizard.mail
+        wizard: -> $scope.wizard
 
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
@@ -41,17 +50,11 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
-        template: -> $scope.wizard.mail.review
+        wizard: -> $scope.wizard
 
   $scope.viewMap = () ->
     rmapsMapTogglesFactory.currentToggles?.showMail = true
     $state.go 'map'
-
-  $scope.refreshColorPrice = () ->
-    $scope.review = null
-    $scope.wizard.mail.refreshColorPrice()
-    .then (review) ->
-      $scope.review = review
 
   $scope.wizard.mail.getReviewDetails()
   .then (review) ->
