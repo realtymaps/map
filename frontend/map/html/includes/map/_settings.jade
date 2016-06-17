@@ -2,18 +2,19 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
   span.desktop-only
     span.dropdown.btn-group.settings-list(
       ng-controller="rmapsFiltersCtrl"
-      ng-class="{open: filtersFullyOpen}"
+      ng-class="{open: isOpens.settings}"
       popover-placement="bottom"
       popover-trigger="mouseenter"
       popover="Property Filters"
-      popover-is-open="tooltipOpen"
+      popover-enable="!isOpens.settings"
     )
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
         popover-template="'SettingsPopoverDesktop'"
-        popover-is-open="filtersOpen"
+        popover-is-open="isOpens.settings"
         popover-placement="bottom"
         popover-trigger="click"
-        ng-click="toggled()")
+        ng-click="togglePanel('settings'); toggled()"
+      )
         span.icon.icon-settings
 
   script(type="text/ng-template" id="SettingsPopoverDesktop")

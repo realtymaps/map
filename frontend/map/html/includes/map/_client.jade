@@ -1,7 +1,14 @@
 include ../mixins/_circleNrMixin.jade
 
-span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsClientButtonCtrl" class="dropdown btn-group notes-list"
- dropdown on-toggle="toggled(open)" auto-close="disabled")
+span(
+  ng-hide="Toggles.getHideAnyDraw()"
+  ng-controller="rmapsClientButtonCtrl"
+  class="dropdown btn-group notes-list"
+  dropdown
+  auto-close="disabled"
+  is-open="isOpens.client"
+  on-toggle="togglePanel('client')"
+)
   button.btn.btn-transparent.nav-btn.dropdown-toggle.client.toggle-active(
     dropdown-toggle
     popover-placement="bottom"

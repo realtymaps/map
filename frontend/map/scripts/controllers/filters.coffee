@@ -42,11 +42,8 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
     $scope.selectedFilters.propertyType = null
 
   $scope.tooltipOpen = false
-  $scope.filtersOpen = false
-  $scope.filtersFullyOpen = false
   $scope.toggled = () ->
-    #$scope.tooltipOpen = false
-    $scope.filtersFullyOpen = $scope.filtersOpen
+    $scope.tooltipOpen = false
     $log.debug 'forceRender'
     $timeout (->
       $scope.$broadcast 'reCalcViewDimensions'
