@@ -8,3 +8,4 @@ mixin propertyAttributes(propName)
       li.year_built(ng-if="#{propName}.year_built.value") {{#{propName}.year_built.value}}
   h4.title(ng-if="property.address.lines[0]") {{property.address.lines[0]}}
   p.location(ng-repeat="line in property.address.lines.slice(1)") {{line}}
+  p.location(ng-if="property.mls_formal_name") {{property.mls_formal_name}}
