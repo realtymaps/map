@@ -16,8 +16,10 @@ header.site-header
       .container-fluid
         include ./header/_burger
         include ./header/_logo
-        div(ng-if="principal.isAuthenticated()")
-          include ./header/_search
+
+        .site-header-right
+          div(ng-if="principal.isAuthenticated()")
+            include ./header/_search
 
 .mobile-only
   div(ng-if='rmapsPageService.showMobileModalHeader()')
