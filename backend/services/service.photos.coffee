@@ -69,14 +69,14 @@ getResizedPayload = (opts) -> Promise.try () ->
         if Number(width) != Number(originalSize?.width) || Number(height) != Number(originalSize?.height)
           logger.debug "Resizing to #{width}px x #{height}px"
 
-          # stream = stream.pipe((require 'sharp')().resize(width, height))
-          # meta = _.extend {}, payload.meta, {width, height}
+          stream = stream.pipe((require 'sharp')().resize(width, height))
+          meta = _.extend {}, payload.meta, {width, height}
 
           #Using this method seems to cause 504 gateway timeout.
-          internals.resize {stream, width, height}
-          .then (resizeStream) ->
-            stream = resizeStream
-            meta = _.extend {}, payload.meta, {width, height}
+          # internals.resize {stream, width, height}
+          # .then (resizeStream) ->
+          #   stream = resizeStream
+          #   meta = _.extend {}, payload.meta, {width, height}
 
       Promise.try ->
         if originalSize?.width && originalSize?.height # we can get aspect
