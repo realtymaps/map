@@ -48,7 +48,12 @@ app.use helmet.nocache()
 # ensure all assets and data are compressed - above static
 app.use compress()
 
-app.use serveStatic(config.FRONTEND_ASSETS.PATH, { maxAge: "#{config.FRONTEND_ASSETS.MAX_AGE_SEC}s", cacheControl: true })
+app.use serveStatic(config.FRONTEND_ASSETS.PATH, {
+  setHeaders: (res, path) ->
+    # Turn on caching headers for images
+    if path.match(/\.(png|jpg|svg|gif)$/)
+      res.setHeader('Cache-Control', "public, max-age=#{config.FRONTEND_ASSETS.MAX_AGE_SEC}")
+})
 
 # cookie parser - above session
 app.use cookieParser config.SESSION.secret
