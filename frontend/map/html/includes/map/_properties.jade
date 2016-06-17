@@ -21,7 +21,7 @@ include ../mixins/property/_propertyAttributes.jade
             .property-card
               div.property-img
                 span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-                img(ng-cloak rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+                img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
               +propertyAttributes('property')
               property-buttons(property='property'
                               pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
