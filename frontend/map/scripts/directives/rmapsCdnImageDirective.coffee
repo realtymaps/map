@@ -17,24 +17,23 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
       $log.warn 'rmaps-cdn-image was used on a non-image tag!'
       return
 
-    remap = (srcAttr, attr) ->
-      $log.debug srcAttr
-      originalSrc = attrs[srcAttr]
-      $log.debug originalSrc
+    remap = (srcAttr) ->
+      originalSrc = element.attr(srcAttr)
 
       if originalSrc?.indexOf('http') != 0
-        element.attr(attr, 'http://prodpull1.realtymapsterllc.netdna-cdn.com' + originalSrc)
-        $log.debug element.attr(attr)
+        element.attr(srcAttr, 'http://prodpull1.realtymapsterllc.netdna-cdn.com' + originalSrc)
+        $log.debug element.attr(srcAttr)
 
         element.bind 'error', ->
-          $log.debug 'error'
           element.unbind 'error'
           element.attr('src', originalSrc)
 
     if 'src' of attrs
       remap 'src'
     else if 'ngSrc' of attrs
-      remap 'ngSrc', 'ng-src'
+      remap 'ng-src'
+    else
+      return
 
     element.removeAttr('rmaps-cdn-image')
     $compile(element)(scope)
