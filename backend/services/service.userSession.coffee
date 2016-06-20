@@ -1,14 +1,11 @@
 Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
-_ = require 'lodash'
 
 logger = require '../config/logger'
 keystore = require '../services/service.keystore'
 {singleRow} = require '../utils/util.sql.helpers'
-profileSvc = require './service.profiles'
 accountImagesSvc = require('./services.user').accountImages
 tables = require '../config/tables'
-config = require '../config/config'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
 
 _getUser = (attributes) ->

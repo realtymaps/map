@@ -57,7 +57,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       @origLen = 0
       @postRepeat = null
       @mapCtrl.scope.resultsRepeatPerf =
-        init: (postRepeat, scope) =>
+        init: (postRepeat) =>
           @postRepeat = postRepeat
         doDeleteLastTime: false
 

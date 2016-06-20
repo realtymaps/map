@@ -87,12 +87,7 @@ currentProfile = (req, res, next) -> Promise.try () ->
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-  profile = req.session.profiles[req.session.current_profile_id]
-  profile.rm_modified_time = moment()
-  # Note it doesn't really matter what value rm_modified_time is set to since it gets updated via trigger anyway
-  tables.user.profile().update(rm_modified_time: profile.rm_modified_time).where('id', profile.id)
-  .then ->
-    updateCache(req, res, next)
+  updateCache(req, res, next)
 
 updateState = (req, res, next) ->
   profileService.updateCurrent(req.session, req.body)
@@ -145,7 +140,7 @@ newProject = (req, res, next) ->
     # Otherwise create a new profile
     else
       if req.body.copyCurrent is true
-        _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results', 'properties_selected'])
+        _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
 
       profileService.create toSave
 

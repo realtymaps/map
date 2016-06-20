@@ -22,6 +22,7 @@ methodExec = (req, methods, next) ->
 
 currentProfile = (req) ->
   try
+    req ?= clsFactory().namespace.get 'req'
     profileUtil.currentProfile(req.session)
   catch error
     throw new CurrentProfileError(error.message)

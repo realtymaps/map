@@ -6,7 +6,7 @@ db = require('../config/dbs').get('main')
 {singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
-projectSvc = (require './services.user').project
+util = require 'util'
 
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
@@ -107,12 +107,11 @@ update = (profile, auth_user_id) -> Promise.try () ->
   if !auth_user_id? then throw new Error("auth_user_id is undefined")
   updatePromises = []
 
-  # update the project model `properties_selected` portion of the profileProject data
-  if !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
-    updatePromises.push projectSvc.update(profile.project_id, toUpdate)
-
   # update the profile model portion of the profileProject data
   where = {id: profile.id, auth_user_id: auth_user_id}
+  profile = _.omit profile, ['favorites', 'pins']
+
+  # logger.debug () -> "updating profile with: #{util.inspect profile, depth: null}"
   updatePromises.push _updateProfileWhere(profile, where)
 
   Promise.all(updatePromises)
@@ -129,26 +128,26 @@ _hasProfileStateChanged = (profile, partialState) ->
       break
   needsSave
 
-updateCurrent = (session, partialState, safe) ->
+updateCurrent = (session, partialState = {}, safe) ->
   sessionProfile = getCurrentSessionProfile(session)
-  saveSessionPromise = null
-#  logger.debug "service.user needsSave: #{needsSave}"
-  if _hasProfileStateChanged(sessionProfile, partialState)
+
+  saveSessionPromise = if _hasProfileStateChanged(sessionProfile, partialState)
     _.extend(sessionProfile, partialState)
-    saveSessionPromise = session.saveAsync() #save immediately to prevent problems from overlapping AJAX calls
+    session.saveAsync() #save immediately to prevent problems from overlapping AJAX calls
   else
-    saveSessionPromise = Promise.resolve()
+    Promise.resolve()
 
   saveSessionPromise.then () ->
     update(sessionProfile, session.userid, safe)
 
-module.exports =
-  getAll: getAll
-  getAllBulk: getAllBulk
-  getProfiles: getProfiles
-  getClientProfiles: getClientProfiles
-  getCurrentSessionProfile: getCurrentSessionProfile
-  updateCurrent: updateCurrent
-  update: update
-  create: create
-  createForProject: createForProject
+module.exports = {
+  getAll
+  getAllBulk
+  getProfiles
+  getClientProfiles
+  getCurrentSessionProfile
+  updateCurrent
+  update
+  create
+  createForProject
+}

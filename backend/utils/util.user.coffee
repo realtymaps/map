@@ -16,39 +16,38 @@ isSubscriber = (req) ->
 # or we'll need to log out the user and let them get refreshed when they log
 # back in.
 cacheUserValues = (req, reload = {}) ->
-  promises = []
+
   if not req.session.permissions or reload?.permissions
     logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
       req.session.permissions = permissionsHash
-    promises.push permissionsPromise
+
   if not req.session.groups or reload?.groups
     logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
       req.session.groups = groupsHash
-    promises.push groupsPromise
+
 
   if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
 
     # if user is subscriber, use service endpoint that includes sandbox creation and display
     if isSubscriber(req)
-      promise = profileSvc.getProfiles req.user.id
+      profilesPromise = profileSvc.getProfiles req.user.id
 
     # user is a client, and unallowed to deal with sandboxes
     else
-      promise = profileSvc.getClientProfiles req.user.id
+      profilesPromise = profileSvc.getClientProfiles req.user.id
 
-    profilesPromise = promise.then (profiles) ->
+    profilesPromise = profilesPromise
+    .then (profiles) ->
       logger.debug 'profileSvc.getProfiles.then'
       req.session.profiles = profiles
-      # logger.debug profiles
-    promises.push profilesPromise
-  return Promise.all(promises)
-  #.then () ->
-  #  logger.debug "all user values cached for user: #{req.user.username}"
+
+
+  Promise.all([permissionsPromise, groupsPromise, profilesPromise])
   .catch (err) ->
     logger.error "error caching user values for user: #{req.user.username}"
     Promise.reject(err)
