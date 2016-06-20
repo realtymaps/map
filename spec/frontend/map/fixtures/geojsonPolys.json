@@ -195,9 +195,7 @@
     "owner_zip": "34103-2721",
     "passedFilters": true,
     "savedDetails": {
-      "rm_property_id": "12021_13034800001_001",
-      "isSaved": true,
-      "isHidden": false
+      "rm_property_id": "12021_13034800001_001"
     },
     "type": "Feature",
     "properties": {}

@@ -1,11 +1,6 @@
 /* Set some basic rules */
 
 @import "./responsive"
-@import "./header/navigation"
-@import "./header/notices"
-@import "./header/search-field"
-@import "./header/userblock"
-@import "./mobile-nav"
 
 .verticle-center
   position absolute
@@ -73,28 +68,6 @@ p
   top 0
   width 100%
   height 100%
-
-header.site-header, mobile-header
-  display block
-  position absolute
-  z-index $rm-header-zindex
-  left 0
-  top 0
-  right 0
-  height 50px
-  background $dark_blue
-
-  .inner
-    float left
-    width 100%
-
-header.site-header
-  box-shadow inset 0px -3px 0px $gray_lighter
-  .inner
-    $fnMakeNav()
-    $fnMakeSearchField()
-    $fnMakeNotices()
-    $fnMakeUserBlock()
 
 //@media screen and (-webkit-min-device-pixel-ratio:0)
 //  .site-main

@@ -1,20 +1,66 @@
 $fnMakeMapSettings()
-  .settings-list
+  .settings-tool
 
-    .dropdown-menu
+    .icon-settings
+      display: block
+      padding: 10px
+      margin: -10px
+
+    .settings-popover
+      display: block
+      width: 460px
+      height: 466px
+      position: relative
+      overflow: visible
+      margin: 0
+      z-index $rm-modal-header-zindex + 1
+      @extends .no-animation
       &.showAdvanced
-        width calc(100% + 450px)
+        width 920px
+
+    .settings-list
+
+      &.open
+        + .popover,
+        + .popover *
+          display: none !important
+          overflow: hidden !important
+          height: 0 !important
+          width: 0 !important
+          border: none !important
+
+        .toggle-active
+          .icon
+            color $white !important
+
+          &:before
+            opacity 1
+            transform scale(1)
+
+      > .popover
+        @extends .fallDown
+        left: 0 !important
+        box-shadow: none
+        padding: 0
+        .arrow
+          left: 435px
+          z-index: $rm-modal-header-zindex + 2
+          &::after
+            border-bottom-color: $dark_white
+        .popover-content
+          padding: 0
 
     .fixed-header
+      padding: 0 15px
       margin 0
       .results-btn
         min-width 45px
       .title-right
-        width 450px
+        width 460px
         text-align right
 
     ul
-      padding 10px 20px 0px
+      padding 10px 20px 0
       list-style none
       display inline-block
       vertical-align top
@@ -44,7 +90,7 @@ $fnMakeMapSettings()
 
 
     .basic, .advanced
-      width 450px
+      width 460px
       background-color $white
 
     .property-status
@@ -63,56 +109,151 @@ $fnMakeMapSettings()
             width 100px
 
 
-  .settings-slider
+    .settings-slider
 
-    rzslider
-      margin: 16px 0 16px
+      rzslider
+        margin: 16px 0 16px
 
-    .rz-bubble
-      display: none;
+      .rz-bubble
+        display: none;
 
-    .rz-bar-wrapper
-      padding-top: 10px;
+      .rz-bar-wrapper
+        padding-top: 10px;
 
-    .rz-bar
-      height: 12px;
-      background-color: $rm-slider-bar-color;
+      .rz-bar
+        height: 12px;
+        background-color: $rm-slider-bar-color;
 
-      &.rz-selection
-        background-color: $rm-slider-bar-selected-color;
+        &.rz-selection
+          background-color: $rm-slider-bar-selected-color;
 
-    .rz-pointer
-      width: 18px;
-      height: 23px;
-      -moz-border-radius: 2px;
-      border-radius: 2px;
-      background-color: white;
-      border: solid 1px $rm-slider-handle-color;
-      margin-top 2px
+      .rz-pointer
+        width: 18px;
+        height: 23px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        background-color: white;
+        border: solid 1px $rm-slider-handle-color;
+        margin-top 2px
 
-      &:hover
-        background: $rm-slider-bar-selected-color;
+        &:hover
+          background: $rm-slider-bar-selected-color;
 
-    .rz-pointer:after
-      display: none;
+      .rz-pointer:after
+        display: none;
 
-    .settings-slider-handle
-    .settings-slider-handle:before
-    .settings-slider-handle:after
-      background-color: $rm-slider-handle-color;
-      width: 2px;
-      height: 12px;
-      content: '';
+      .settings-slider-handle
+      .settings-slider-handle:before
+      .settings-slider-handle:after
+        background-color: $rm-slider-handle-color;
+        width: 2px;
+        height: 12px;
+        content: '';
 
-    .settings-slider-handle
-      position: relative;
-      margin-left: 7px;
-      margin-top: 4px;
+      .settings-slider-handle
+        position: relative;
+        margin-left: 7px;
+        margin-top: 4px;
 
-      &:before
-        position: absolute;
-        right: 4px;
+        &:before
+          position: absolute;
+          right: 4px;
 
-      &:after
-        position: absolute;
-        left: 4px;
+        &:after
+          position: absolute;
+          left: 4px;
+
+    .slider-label
+      margin-left: -15px
+
+
+    .datepicker-widget
+
+      li
+        padding: 10px 0 0 !important
+
+      .btn.btn-info
+        background-color: $light_blue
+
+      table
+        &:focus
+          outline: none
+        th .btn[disabled="disabled"]
+          background-color: $white
+        .btn
+          background-color: $white
+          border: 1px solid $gray_medium
+          .text-info
+            color: $light_blue
+            font-weight: bold;
+          .text-muted
+            color: $gray
+          &.active,
+          &:focus
+            color: $text_gray
+          &[disabled="disabled"]
+            background-color: $contrast_white
+          &.btn-info
+            color: $text_gray
+            background-color: $pastel_blue
+            font-weight: bold
+            border-color: $gray
+        th small
+          color: $text_gray
+
+      table[ng-switch-when="month"]
+        th,
+        th button,
+        td,
+        td button
+          width: 80px
+
+      table[ng-switch-when="year"]
+        th,
+        th button,
+        td,
+        td button
+          width: 40px
+
+      button.datepicker-calendar
+        padding: 0 6px
+        height: 34px
+        margin-left: -1px
+
+      .dropdown-menu
+        overflow: visible
+        width: auto
+        margin-top: 0
+        background-color: $contrast_white
+        border: 1px solid $gray_medium
+        box-shadow: 0 2px 2px $black_30
+
+      button
+        height: 35px
+
+      ul
+        padding: 10px
+        li
+          margin: 0
+
+      th,
+      th button,
+      td,
+      td button
+        height: 25px
+        padding: 0
+        width: 25px
+
+    .range-input
+      width: 34%
+      &.range-start
+        padding-right: 0
+      &.range-end
+        padding-left: 0
+      input
+        padding: 6px
+
+    .range-to
+      width: 7%
+      padding-right: 0
+      padding-left: 0

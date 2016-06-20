@@ -1,6 +1,7 @@
+###global _###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-_updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected', 'project_id']
+_updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'project_id']
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 
@@ -84,7 +85,7 @@ app.service 'rmapsProfilesService', (
       if @currentProfile
         @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
         @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-        @currentProfile.properties_selected = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
+        @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
 
         # Get the center of the main map if it has been created
         if rmapsMapFactory.currentMainMap

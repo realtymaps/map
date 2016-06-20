@@ -4,18 +4,22 @@ header.site-header
       .container-fluid
         include ./header/_logo
         include ./header/_navigation
-        div(ng-if="principal.isAuthenticated()")
-          include ./header/_notices
-          include ./header/_userblock
-          include ./header/_search
-        include ./header/_rightnav
+
+        .site-header-right
+          div(ng-if="principal.isAuthenticated()")
+            include ./header/_notices
+            include ./header/_userblock
+            include ./header/_search
+          include ./header/_rightnav
   .mobile-only
     .inner(ng-if='!rmapsPageService.showMobileModalHeader()')
       .container-fluid
         include ./header/_burger
         include ./header/_logo
-        div(ng-if="principal.isAuthenticated()")
-          include ./header/_search
+
+        .site-header-right
+          div(ng-if="principal.isAuthenticated()")
+            include ./header/_search
 
 .mobile-only
   div(ng-if='rmapsPageService.showMobileModalHeader()')

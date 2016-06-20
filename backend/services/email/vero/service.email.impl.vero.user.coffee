@@ -4,15 +4,15 @@ _ = require 'lodash'
 VeroUser = (vero) ->
 
   createOrUpdate = (opts) ->
-    onMissingArgsFail args: opts, required: ['authUser', 'eventName', 'plan']
+    onMissingArgsFail args: opts, required: ['authUser', 'eventName']
 
-    {authUser, subscriptionStatus, eventName, eventData, plan} = opts
+    {authUser, subscriptionStatus, eventName, eventData} = opts
 
     vero.createUserAndTrackEvent(
       authUser.email, authUser.email,
         _.extend(
           _.pick(authUser, ['first_name','last_name']),
-          subscription_status: subscriptionStatus or 'trial'
+          subscription_status: subscriptionStatus || 'trial'
         ), eventName, eventData)
 
   deleteMe = (id) ->

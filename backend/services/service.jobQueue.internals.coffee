@@ -15,7 +15,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-sendNotification = notifications.notification {
+enqueueNotification = notifications.notifyFlat {
   type: 'jobQueue'
   method: 'email'
 }
@@ -119,10 +119,11 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
     .insert errorSubtask
   .then () ->
     if hard
-      Promise.join cancelTaskImpl(subtask.task_name, 'hard fail'), sendNotification
-        subject: 'subtask: hard fail'
-        subtask: subtask
-        error: "subtask: #{error}"
+      Promise.join cancelTaskImpl(subtask.task_name, 'hard fail'), enqueueNotification
+        payload:
+          subject: 'subtask: hard fail'
+          subtask: subtask
+          error: "subtask: #{error}"
 
 
 getQueueLockId = (queueName) ->
@@ -142,10 +143,11 @@ sendLongTaskWarnings = (transaction=null) ->
   .where(current: true)
   .whereRaw("started + warn_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
-    sendNotification
-      subject: 'task: long run warning'
-      tasks: tasks
-      error: 'tasks have been running for longer than expected'
+    enqueueNotification
+      payload:
+        subject: 'task: long run warning'
+        tasks: tasks
+        error: 'tasks have been running for longer than expected'
 
 
 killLongTasks = (transaction=null) ->
@@ -159,7 +161,7 @@ killLongTasks = (transaction=null) ->
     cancelPromise = Promise.map tasks, (task) ->
       logger.warn("Task for batchId #{task.batch_id} has timed out: #{task.name}")
       cancelTaskImpl(task.name, 'timeout')
-    notificationPromise = sendNotification
+    notificationPromise = enqueueNotification payload:
       subject: 'task: long run killed'
       tasks: tasks
       error: 'tasks have been running for longer than expected'
@@ -284,7 +286,7 @@ executeSubtask = (subtask, prefix) ->
         handleSubtaskError({prefix, subtask, status: 'timeout', hard: subtask.hard_fail_timeouts, error: 'timeout'})
     if subtask.warn_timeout_seconds
       doNotification = () ->
-        sendNotification
+        enqueueNotification payload:
           subject: 'subtask: long run warning'
           subtask: subtask
           error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
@@ -306,7 +308,7 @@ executeSubtask = (subtask, prefix) ->
     handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
   .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
     logger.error("#{prefix} Error caught while handling errors; major db problem likely!  subtask: #{subtask.name}")
-    sendNotification
+    enqueueNotification payload:
       subject: 'major db interaction problem'
       subtask: subtask
       error: err
@@ -413,7 +415,7 @@ module.exports = {
   runWorkerImpl
   cancelTaskImpl
   executeSubtask
-  sendNotification
+  enqueueNotification
   buildQueueSubtaskDatas
   buildQueuePaginatedSubtaskDatas
 }

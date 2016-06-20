@@ -3,10 +3,10 @@ currentProfile = (obj, currentProfileStr = 'current_profile_id') ->
     throw new Error('No Profile has been selected!')
   obj.profiles[obj[currentProfileStr]]
 
-currentUiProfile = (identity) ->
+uiProfile = (identity) ->
   currentProfile(identity, 'currentProfileId')
 
-module.exports =
-  currentProfile: currentProfile
-  currentUiProfile: currentUiProfile
-  uiProfile: currentUiProfile
+module.exports = {
+  currentProfile
+  uiProfile
+}

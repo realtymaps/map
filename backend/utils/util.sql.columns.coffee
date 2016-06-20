@@ -86,7 +86,7 @@ basicColumns = do ->
     notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
-      'sqft', 'properties_selected', 'status']
+      'sqft', 'status']
 
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
       'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash',
@@ -96,7 +96,7 @@ basicColumns = do ->
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
-      'map_position', 'map_results', 'favorites']
+      'map_position', 'map_results']
 
     drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
       'area_name', 'area_details']
@@ -154,7 +154,6 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.map_toggles"
     "#{tables.user.profile.tableName}.map_position"
     "#{tables.user.profile.tableName}.map_results"
-    "#{tables.user.profile.tableName}.favorites"
     "#{tables.user.profile.tableName}.project_id"
     "#{tables.user.profile.tableName}.rm_modified_time"
 
@@ -166,7 +165,6 @@ joinColumns = do ->
     "#{tables.user.project.tableName}.beds"
     "#{tables.user.project.tableName}.baths"
     "#{tables.user.project.tableName}.sqft"
-    "#{tables.user.project.tableName}.properties_selected"
   ]
 
   client: [

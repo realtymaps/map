@@ -1,12 +1,19 @@
 include ../mixins/property/_propertyAttributes.jade
 include ../mixins/_circleNrMixin.jade
 
-span.pinned-list.dropdown.btn-group(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" dropdown)
+span.pinned-list.dropdown.btn-group(
+  ng-hide="Toggles.getHideAnyDraw()"
+  ng-controller="rmapsPinnedCtrl"
+  dropdown
+  is-open="isOpens.pinned"
+  on-toggle="togglePanel('pinned')"
+)
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
     dropdown-toggle
     popover-placement="bottom"
     popover="Pinned Properties"
-    popover-trigger="click mouseenter")
+    popover-trigger="mouseenter"
+  )
     span.icon.icon-pin
 
   .dropdown-menu.whiteblock

@@ -33,6 +33,9 @@ validateAndTransformSingleOutput = require './util.impl.validateAndTransformSing
 ###########
 
 module.exports = (params, definitions) -> Promise.try () ->
+  if !definitions?
+    throw new Error 'validateAndTransform: required transform definitions!'
+    
   if _.isArray(definitions)
     promiseList = for definition in definitions
       do (definition) ->

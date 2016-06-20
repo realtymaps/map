@@ -5,6 +5,7 @@ _ = require 'lodash'
 module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsEventConstants) ->
   $log = $log.spawn("map:search")
 
+  $scope.openSearchTools = false
   $scope.searchScope = 'Places'
 
   $scope.result = googlePlace: null

@@ -1,10 +1,16 @@
 .mobile-view
   header.site-header
-    .inner
-      .search-field
-        margin 0
+    .search-field
+      margin 0
 
-$fnMakeSearchField()
+      &.search-open
+        width: 100vw;
+
+      .search
+        .search-input
+          width: calc(100vw - 140px);
+
+header.site-header
   .search-field
     float right
     margin 0 20px 0 0
@@ -16,39 +22,22 @@ $fnMakeSearchField()
       padding 8px
       min-width auto
       float left
+
     .search
       float left
-      border-bottom 1px solid $gray
       padding 4px 0
       margin 8px 0
-      width 0px
+      border-bottom 1px solid $light_blue
       position relative
       z-index 0
-      @extends .global-transition
-
-      &:after
-        content ''
-        right -300px
-        position absolute
-        top 0
-        height 30px
-        background $dark_blue
-        width 300px
-        pointer-events none
-        z-index 0
-
-      &.opened
-        width 400px
-        border-bottom 1px solid $light_blue
 
       .search-content
         display block
         float left
-        width 400px
 
       .search-type
         float left
-        min-width 100px
+        min-width 85px
         .dropdown
 
           .dropdown-menu
@@ -62,7 +51,7 @@ $fnMakeSearchField()
               background $white
               border-bottom 1px solid $gray_lighter
               color $black
-              @extends .global-transition
+
               span.icon
                 font-size 16px
                 margin-right 5px
@@ -96,18 +85,21 @@ $fnMakeSearchField()
                 border-right 5px solid transparent
                 border-top 5px dashed
                 z-index 0
-      input.search-input
-        font-size 13px
-        background transparent
+
+      .search-input
         float left
-        width 285px
-        border-radius 0
-        border 0 none
-        height 21px
-        line-height 12px
-        padding 0
-        color $white
-        &:hover
-        &:focus
-        &:active
-          box-shadow 0 0 0 $black_0
+        width 200px
+
+        input
+          font-size 13px
+          background transparent
+          border-radius 0
+          border 0 none
+          height 21px
+          line-height 12px
+          padding 0
+          color $white
+          &:hover
+          &:focus
+          &:active
+            box-shadow 0 0 0 $black_0

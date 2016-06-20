@@ -63,7 +63,7 @@ app.factory 'rmapsMapFactory',
 
         @constructor.currentMainMap = @
         @mapId = rmapsMapIds.mainMap()
-        leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
+        @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
 
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map', @mapId
@@ -381,15 +381,15 @@ app.factory 'rmapsMapFactory',
         result = eventData.property
 
         if result
-          wasSaved = result?.savedDetails?.isPinned
+          wasPinned = result?.savedDetails?.isPinned
 
           # Handle the leaflet objects
           #update markers immediately
-          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
           #update polygons immediately
-          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
+          lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
           lObject.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
 
           #make sure selectedResult is updated if it exists
@@ -398,7 +398,7 @@ app.factory 'rmapsMapFactory',
             delete @scope.selectedResult.savedDetails
             angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
 
-          if wasSaved and !@scope.results[result.rm_property_id]
+          if wasPinned and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
 
         @redraw(false)
@@ -411,7 +411,7 @@ app.factory 'rmapsMapFactory',
           if wasFavorite and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
 
-          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
 

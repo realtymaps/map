@@ -10,7 +10,6 @@ module.exports =
     mls: 'config_mls'
     keystore: 'config_keystore'
     externalAccounts: 'config_external_accounts'
-    notification: 'config_notification'
     dataSourceFields: 'config_data_source_fields'
     dataSourceLookups: 'config_data_source_lookups'
     dataSourceDatabases: 'config_data_source_databases'
@@ -69,7 +68,9 @@ module.exports =
     creditCards: 'user_credit_cards'
     shellHistory: 'user_shell_history'
     errors: 'user_errors'
-    notification: 'user_notification'
+    notificationQueue: 'user_notification_queue'
+    notificationConfig: 'user_notification_config'
+    eventsQueue: 'user_events_queue'
   mail:
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
@@ -77,6 +78,8 @@ module.exports =
   temp: 'raw_temp.raw'
   event:
     history: 'data_event_history'
+  handlers:
+    eventMap: 'handlers_event_map'
 
 
 _setup = (baseObject) ->

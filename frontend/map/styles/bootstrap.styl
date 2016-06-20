@@ -83,7 +83,6 @@ main
       padding 5px 20px
       color $gray
       text-transform capitalize
-      @extends .global-transition
       &:hover
       &:focus
         background $dark_blue_active
@@ -145,15 +144,13 @@ button
   right 20px
   top 50%
   width 0
-  z-index 999
-  @extends .global-transition
+  z-index 10
 
   &:hover
     border-top-color $light_blue
 
 .btn
   border none
-  @extends .global-transition
   &:hover
   &:focus
     border none
@@ -241,7 +238,6 @@ button
       right 5px
       z-index 0
       transform scale(.2)
-      @extends .global-transition
 
     &[aria-expanded="true"]
     &.active
@@ -347,7 +343,6 @@ button
       border-radius 3px
       opacity 0
       transform scale(0)
-      @extends .global-transition
 
     &[aria-expanded="true"]
       .icon
@@ -458,8 +453,6 @@ p.required
       border-right 1px solid $black_10
       &:last-child
         border 0 none
-    .caret
-      @extends .global-transition
 
   &.open
     .dropdown-toggle
@@ -625,7 +618,6 @@ div.select
     border-right 4px solid transparent
     border-top 4px solid $black
     margin 16px
-    @extends .global-transition
 
   &:hover
     &:after

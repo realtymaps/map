@@ -1,14 +1,20 @@
 include ../mixins/_circleNrMixin.jade
 
-span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group area-list"
-  ng-controller="rmapsMapAreasCtrl" ng-model="isOpen"
-  dropdown on-toggle="areaListToggled(open);isOpen = open" auto-close="disabled")
+span(
+  ng-hide="Toggles.getHideAnyDraw()"
+  class="dropdown btn-group area-list"
+  ng-controller="rmapsMapAreasCtrl"
+  dropdown
+  auto-close="disabled"
+  is-open="isOpens.area"
+  on-toggle="areaListToggled(open); togglePanel('area')"
+)
     div(ng-if="isOpen" ng-controller="rmapsDrawAreaCtrl")
     button.btn.btn-transparent.dropdown-toggle.area.nav-btn.toggle-active(
     dropdown-toggle
     popover-placement="bottom"
     popover="Areas"
-    popover-trigger="click mouseenter")
+    popover-trigger="mouseenter")
       span.icon.icon-area
     .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
       .fixed-header

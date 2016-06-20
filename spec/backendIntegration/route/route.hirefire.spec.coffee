@@ -31,7 +31,7 @@ describe "route.hirefire", ->
       if !emailConfig.getMailer.called
         return
 
-      tables.config.notification()
+      tables.user.notificationConfig()
       .where {type: 'jobQueue', method: 'email'}
       .count()
       .then ([{count}]) ->
