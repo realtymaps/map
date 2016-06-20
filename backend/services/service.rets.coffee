@@ -119,7 +119,7 @@ getDataStream = (mlsId, opts={}) ->
           resolved = false
           internals.getRetsClient mlsId, (retsClientIteration) ->
             new Promise (resolve2, reject2) ->
-              retsStream = retsClientIteration.search.stream.query(mlsInfo, mlsInfo.listing_data.table, searchQuery, searchOptions, true)
+              retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions, true)
               retsStream.pipe(resultStream, end: false)
               retsStream.on 'end', resolve2
               resolved = true
