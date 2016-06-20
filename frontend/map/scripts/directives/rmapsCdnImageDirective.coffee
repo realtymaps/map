@@ -11,17 +11,20 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
 
   restrict: 'A'
   priority: 1000
+  scope:
+    'ngSrcValue': '@ngSrc'
 
   link: (scope, element, attrs) ->
     if element[0].tagName != 'IMG'
       $log.warn 'rmaps-cdn-image was used on a non-image tag!'
       return
 
-    remap = (srcAttr) ->
-      originalSrc = element.attr(srcAttr)
+    remap = (srcAttr, originalSrc = element.attr(srcAttr)) ->
+      $log.debug originalSrc
 
       if originalSrc?.indexOf('http') != 0
-        element.attr(srcAttr, 'http://prodpull1.realtymapsterllc.netdna-cdn.com' + originalSrc)
+        shard = (originalSrc.match(/.*\/(\w+)\.\w+/)?[1]?.charCodeAt(0) || 0) % 2
+        element.attr(srcAttr, "http://prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{originalSrc}")
         $log.debug element.attr(srcAttr)
 
         element.bind 'error', ->
@@ -31,7 +34,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
     if 'src' of attrs
       remap 'src'
     else if 'ngSrc' of attrs
-      remap 'ng-src'
+      remap 'ng-src', scope.ngSrcValue
     else
       return
 
