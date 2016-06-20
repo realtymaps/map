@@ -12,6 +12,7 @@ logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
+pdfService = require('./service.pdf')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -169,6 +170,9 @@ getPriceQuote = (userId, campaignId) ->
 
   .then ([campaign]) ->
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
+
+    if !campaign.aws_key? ## and if manually created content
+      pdfService.htmlToPdf()
 
     result = null
     Promise.each campaign.recipients, (r) ->

@@ -73,6 +73,11 @@ app.service 'rmapsMailCampaignService', (
         $log.debug () -> "getQuoteAndPdf response: #{JSON.stringify(data)}"
         data
 
+    getPdf: (campaignId) ->
+      $http.get(backendRoutes.mail.getPdf.replace(':id', campaignId), cache: false)
+      .then ({data}) ->
+        console.log "getPdf()\ndata:\n#{JSON.stringify(data,null,2)}"
+
     create: (entity) ->
       $http.post mailAPI, entity
       .then (result) ->
