@@ -1,0 +1,35 @@
+@import "./header/mobile-nav"
+@import "./header/navigation"
+@import "./header/notices"
+@import "./header/search-field"
+@import "./header/userblock"
+
+header.site-header, mobile-header
+  display block
+  position absolute
+  z-index $rm-header-zindex
+  left 0
+  top 0
+  right 0
+  height $navbarHeight
+  background $dark_blue
+
+  .inner
+    float left
+    width 100%
+
+header.site-header
+  box-shadow inset 0px -3px 0px $gray_lighter
+  .inner
+    $fnMakeNav()
+    $fnMakeNotices()
+    $fnMakeUserBlock()
+
+  .site-header-right
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: $navbarHeight - 3;
+    background $dark_blue;
+    z-index: $rm-header-zindex + 11;   // One higher than the project dropdown .caret in bootstrap.styl
+
