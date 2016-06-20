@@ -1,7 +1,7 @@
-.map-navigation
+.map-navigation(ng-controller="rmapsNavigationCtrl")
   .btn-group.mobile-only
     include ./_settings.jade
-  .btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
+  .btn-group.desktop-only(ng-class="{opened: isOpened}")
     //- Todo: conditionally show pinned or favorites depending on user role
     include ./_pinned.jade
     include ./_favorites.jade

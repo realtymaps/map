@@ -60,9 +60,9 @@ deletePhotosPrep = (subtask) ->
   numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
 
   tables.deletes.photos()
-  .select('keys')
+  .select('key')
   .then (keys) ->
-    keys = _.pluck(ids, 'key')
+    keys = _.pluck(keys, 'key')
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
       totalOrList: keys

@@ -64,7 +64,7 @@ cacheCanonicalData = (opts) ->
       logger.warn(msg)
       return null
   .catch (err) ->
-    logger.err "Couldn't refresh data cache for #{mlsId}/#{callName}/#{otherIds.join('/')}"
+    logger.error "Couldn't refresh data cache for #{mlsId}/#{callName}/#{otherIds.join('/')}"
     throw err
 
 

@@ -1,160 +1,201 @@
 span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
   span.desktop-only
-    span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
+    span.dropdown.btn-group.settings-list(
+      ng-controller="rmapsFiltersCtrl"
+      ng-class="{open: isOpens.settings}"
+      popover-placement="bottom"
+      popover-trigger="mouseenter"
+      popover="Property Filters"
+      popover-enable="!isOpens.settings"
+    )
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
-        dropdown-toggle
+        popover-template="'SettingsPopoverDesktop'"
+        popover-is-open="isOpens.settings"
         popover-placement="bottom"
-        popover-trigger="click mouseenter"
-        popover="Property Filters")
+        popover-trigger="click"
+        ng-click="togglePanel('settings'); toggled()"
+      )
         span.icon.icon-settings
-      .dropdown-menu.whiteblock(ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
-        h4.fixed-header
-          span Property Filters
-          span
-            a.results-btn(ng-click="reset()")
-              .fa.fa-undo
-              span Reset
-            a.results-btn(ng-click="showAdvanced = !showAdvanced")
-              span(ng-if="!showAdvanced" ng-cloak) More
-              span(ng-if="showAdvanced" ng-cloak) Less
-            span.title-right(ng-if="showAdvanced" ng-cloak) Advanced Filters
 
-        ul.basic
-          li.row
-            span.label.col-md-3 Property Status
-            .col-md-9.property-status
-              ul
-                li
-                  button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
-                li
-                  button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
-                li
-                  .btn-group
-                    button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold within..
+  script(type="text/ng-template" id="SettingsPopoverDesktop")
+    .dropdown-menu.whiteblock.settings-popover(ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
+      h4.fixed-header
+        span Property Filters
+        span
+          a.results-btn(ng-click="reset()")
+            .fa.fa-undo
+            span Reset
+          a.results-btn(ng-click="showAdvanced = !showAdvanced")
+            span(ng-if="!showAdvanced" ng-cloak) More
+            span(ng-if="showAdvanced" ng-cloak) Less
+          span.title-right(ng-if="showAdvanced" ng-cloak) Advanced Filters
 
-          li.row
-            span.label.col-md-3 Sold Within
-            .col-md-9
-              select.form-control(ng-model="selectedFilters.soldRange" ng-options='c.value as c.name for c in filterValues.soldRangeValues' ng-disabled="!selectedFilters.sold")
+      ul.basic
+        li.row
+          span.label.col-md-3 Property Status
+          .col-md-9.property-status
+            ul
+              li
+                button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
+              li
+                button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
+              li
+                .btn-group
+                  button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold within..
 
-          li.row
-            span.label.col-md-3 Property Type
-            .col-md-9
-              select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes')
+        li.row
+          span.label.col-md-3 Sold Within
+          .col-md-9
+            select.form-control(ng-model="selectedFilters.soldRange" ng-options='c.value as c.name for c in filterValues.soldRangeValues' ng-disabled="!selectedFilters.sold")
 
-          li.row
-            span.label.col-md-3 Price
-            .col-md-4
-              input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="Minimum")
-            span.col-md-1.label to
-            .col-md-4
-              input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="Maximum")
+        li.row
+          span.label.col-md-3 Property Type
+          .col-md-9
+            select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes')
+              option(value='') All
 
-          li.row
-            span.label.col-md-3 Beds
-            .col-md-7.settings-row
-              .settings-slider
-                rzslider(rz-slider-model="selectedFilters.bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-            .col-md-1.label {{selectedFilters.bedsMin}}+
-          li.row
-            span.label.col-md-3 Baths
-            .col-md-7.settings-row
-              .settings-slider
-                rzslider(rz-slider-model="selectedFilters.bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-            .col-md-1.label {{selectedFilters.bathsMin}}+
+        li.row
+          span.label.col-md-3 Price
+          .col-md-4.range-input.range-start
+            input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="No minimum")
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="No maximum")
 
-          li.row
-            span.label.col-md-3 Sqft
-            .col-md-4
-              input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="Minimum")
-            span.col-md-1.label to
-            .col-md-4
-              input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="Maximum")
+        li.row
+          span.label.col-md-3 Beds
+          .col-md-8
+            .settings-slider
+              rzslider(rz-slider-model="selectedFilters.bedsMin" rz-slider-options="bedsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+          .col-md-1.label.slider-label {{selectedFilters.bedsMin}}+
+        li.row
+          span.label.col-md-3 Baths
+          .col-md-8
+            .settings-slider
+              rzslider(rz-slider-model="selectedFilters.bathsMin" rz-slider-options="bathsSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+          .col-md-1.label.slider-label {{selectedFilters.bathsMin}}+
 
-          li.row
-            span.label.col-md-3 Acres
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name disable when (selectedFilters.acresMax != null && c.value > selectedFilters.acresMax) for c in filterValues.acresValues')
-            span.col-md-1.label to
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name disable when (selectedFilters.acresMin != null && c.value < selectedFilters.acresMin) for c in filterValues.acresValues')
+        li.row
+          span.label.col-md-3 Sqft
+          .col-md-4.range-input.range-start
+            input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="No minimum")
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="No maximum")
 
-          li.row
-            span.label.col-md-5 In Shapes / Areas
-            .col-md-7
-              .btn-group.pull-right
-                label.btn.btn-white.btn-checkbox(
-                  ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
-                  ng-repeat="c in ['on', 'off']"
-                  ng-model="Toggles.propertiesInShapes"
-                  btn-radio="{{c == 'on'}}"
-                  uncheckable) {{c}}
+        li.row
+          span.label.col-md-3 Acres
+          .col-md-4.range-input.range-start
+            select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name disable when (selectedFilters.acresMax != null && c.value > selectedFilters.acresMax) for c in filterValues.acresValues')
+              option(value='') No minimum
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name disable when (selectedFilters.acresMin != null && c.value < selectedFilters.acresMin) for c in filterValues.acresValues')
+              option(value='') No maximum
 
-        ul.advanced(ng-if="showAdvanced" ng-cloak)
-          li.row
-            span.label.col-md-3 Owner Name
-            .col-md-9
-              input.form-control(type="text" ng-model="selectedFilters.ownerName")
+        li.row
+          span.label.col-md-5 In Shapes / Areas
+          .col-md-7
+            .btn-group.pull-right
+              label.btn.btn-white.btn-checkbox(
+                ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
+                ng-repeat="c in ['on', 'off']"
+                ng-model="Toggles.propertiesInShapes"
+                btn-radio="{{c == 'on'}}"
+                uncheckable) {{c}}
 
-          li.row
-            span.label.col-md-3 Listed Days
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMax != null && c.value > selectedFilters.listedDaysMax) for c in filterValues.listedDays')
-            span.col-md-1.label to
-            .col-md-4
-              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMin != null && c.value < selectedFilters.listedDaysMin) for c in filterValues.listedDays')
+      ul.advanced(ng-if="showAdvanced" ng-cloak)
+        li.row
+          span.label.col-md-3 Owner Name
+          .col-md-9
+            input.form-control(type="text" ng-model="selectedFilters.ownerName")
 
-          li.row
-            span.label.col-md-3 Close Price
-            .col-md-4
-              input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
-            span.col-md-1.label to
-            .col-md-4
-                  input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
+        li.row
+          span.label.col-md-3 Days on Market
+          .col-md-4.range-input.range-start
+            select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMax != null && c.value > selectedFilters.listedDaysMax) for c in filterValues.listedDays')
+              option(value='') No minimum
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name disable when (selectedFilters.listedDaysMin != null && c.value < selectedFilters.listedDaysMin) for c in filterValues.listedDays')
+              option(value='') No maximum
 
-          li.row
-            span.label.col-md-3 Close Date
-            .col-md-3.label start
-            .col-md-6
-              input.form-control(ng-model="selectedFilters.closeDateMin" type="date" max="{{selectedFilters.closeDateMax | date:'yyyy-MM-dd'}}" ng-max="selectedFilters.closeDateMax" placeholder="yyyy-MM-dd")
+        li.row
+          span.label.col-md-3 Close Price
+          .col-md-4.range-input.range-start
+            input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="No minimum")
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="No maximum")
 
-          li.row
-            span.label.col-md-3 Close Date
-            .col-md-3.label end
-            .col-md-6
-              input.form-control(ng-model="selectedFilters.closeDateMax" type="date" min="{{selectedFilters.closeDateMin | date:'yyyy-MM-dd'}}" ng-min="selectedFilters.closeDateMin" placeholder="yyyy-MM-dd")
+        li.row
+          span.label.col-md-3 Close Date
+          .col-md-4.range-input.range-start
+            p.input-group.datepicker-widget
+              input.form-control(
+                ng-model="selectedFilters.closeDateMin"
+                type="text"
+                ng-focus="openDatepicker('closeDateMin')"
+                max-date="selectedFilters.closeDateMax"
+                datepicker-popup="MM/dd/yyyy"
+                is-open="datepickers.closeDateMin"
+                show-weeks="false"
+                format-month="MMM"
+                placeholder="No start date"
+              )
+              span.input-group-btn
+                button.btn.btn-default.datepicker-calendar(type="button" ng-click="openDatepicker('closeDateMin')")
+                  i.glyphicon.glyphicon-calendar
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            p.input-group.datepicker-widget
+              input.form-control(
+                ng-model="selectedFilters.closeDateMax"
+                type="text"
+                ng-focus="openDatepicker('closeDateMax')"
+                min-date="selectedFilters.closeDateMin"
+                datepicker-popup="MM/dd/yyyy"
+                is-open="datepickers.closeDateMax"
+                show-weeks="false"
+                format-month="MMM"
+                placeholder="No end date"
+              )
+              span.input-group-btn
+                button.btn.btn-default.datepicker-calendar(type="button" ng-click="openDatepicker('closeDateMax')")
+                  i.glyphicon.glyphicon-calendar
 
-          li.row
-            span.label.col-md-5 Old DrawToolbar
-            .col-md-7
-              .btn-group.pull-right
-                label.btn.btn-white.btn-checkbox(
-                  ng-class="{active: Toggles.showOldToolbar == (c == 'show')}"
-                  ng-repeat="c in ['show', 'hide']"
-                  ng-model="Toggles.showOldToolbar"
-                  btn-radio="{{c == 'show'}}"
-                  uncheckable) {{c}}
-          li.row
-            span.label.col-md-5 Combined Data
-            .col-md-7
-              .btn-group.pull-right
-                label.btn.btn-white.btn-checkbox(
-                  ng-class="{active: selectedFilters.combinedData == (c == 'on')}"
-                  ng-repeat="c in ['on', 'off']"
-                  ng-model="selectedFilters.combinedData"
-                  btn-radio="{{c == 'on'}}"
-                  uncheckable) {{c}}
+        li.row
+          span.label.col-md-5 Old DrawToolbar
+          .col-md-7
+            .btn-group.pull-right
+              label.btn.btn-white.btn-checkbox(
+                ng-class="{active: Toggles.showOldToolbar == (c == 'show')}"
+                ng-repeat="c in ['show', 'hide']"
+                ng-model="Toggles.showOldToolbar"
+                btn-radio="{{c == 'show'}}"
+                uncheckable) {{c}}
+        li.row
+          span.label.col-md-5 Combined Data
+          .col-md-7
+            .btn-group.pull-right
+              label.btn.btn-white.btn-checkbox(
+                ng-class="{active: selectedFilters.combinedData == (c == 'on')}"
+                ng-repeat="c in ['on', 'off']"
+                ng-model="selectedFilters.combinedData"
+                btn-radio="{{c == 'on'}}"
+                uncheckable) {{c}}
 
-          li.row
-            span.label.col-md-5 Has Images
-            .col-md-7
-              .btn-group.pull-right
-                label.btn.btn-white.btn-checkbox(
-                  ng-class="{active: selectedFilters.hasImages == (c == true)}"
-                  ng-repeat="c in [true, false]"
-                  ng-model="selectedFilters.hasImages"
-                  btn-radio="{{c == true}}"
-                  uncheckable) {{c}}
+        li.row
+          span.label.col-md-5 Has Images
+          .col-md-7
+            .btn-group.pull-right
+              label.btn.btn-white.btn-checkbox(
+                ng-class="{active: selectedFilters.hasImages == (c == true)}"
+                ng-repeat="c in [true, false]"
+                ng-model="selectedFilters.hasImages"
+                btn-radio="{{c == true}}"
+                uncheckable) {{c}}
+
   .mobile-only
     button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
       span.icon.icon-settings
@@ -167,6 +208,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         .item.settings-row
           .settings-header Property Type
           select.form-control(ng-model="selectedFilters.propertyType" ng-options='c.value as c.name for c in filterValues.propertyTypes' ng-change="makeDirty()")
+            option(value='') All
 
         .item.settings-row
           .settings-header Price
