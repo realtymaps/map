@@ -3,12 +3,14 @@ tables = require '../config/tables'
 Promise = require 'bluebird'
 require '../config/promisify'
 memoize = require 'memoizee'
-mlsConfigService = require '../services/service.mls_config'
+mlsConfigService = null
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
 # if it can't find one and there is an MLS config with the task name as its id, then use the default MLS implementation
 _getTaskCode = (taskName) ->
+  if !mlsConfigService
+    mlsConfigService = require '../services/service.mls_config'
   Promise.try () ->
     try
       return Promise.resolve(require("./task.#{taskName}"))
