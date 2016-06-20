@@ -1,4 +1,4 @@
-_delay = 100 #ms
+_delay = 400 #ms
 
 ###globals L###
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)

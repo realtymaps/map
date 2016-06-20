@@ -12,7 +12,7 @@ getColumns = [
   'error'
 ]
 
-explicitGetColumns = "#{tables.user.notification}.#{col}" for col in getColumns
+explicitGetColumns = "#{tables.user.notificationQueue}.#{col}" for col in getColumns
 
 explicitGetColumnsWithUserConfig = explicitGetColumns.concat(
   _.without notificationConfigInternals, ['id']

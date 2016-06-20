@@ -187,12 +187,12 @@ app.controller 'rmapsProjectCtrl',
 
   loadProject = () ->
     # It is important to load property details before properties are added to scope to prevent template breaking
-    toLoad = _.merge {}, project.properties_selected, project.favorites
+    toLoad = _.merge {}, project.pins, project.favorites
     if not _.isEmpty toLoad
       loadProperties toLoad
       .then (loaded) ->
         properties = loaded
-        $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
+        $scope.pins = _.values(_.pick(properties, _.keys(project.pins)))
         $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
 
         # Highlight the first carousel property on the map

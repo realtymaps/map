@@ -1,76 +1,86 @@
-Promise = require 'bluebird'
 _ = require 'lodash'
 logger = require('../config/logger').spawn('service:notifications')
-analyzeValue = require '../../common/utils/util.analyzeValue'
+# tables = require '../config/tables'
+# analyzeValue = require '../../common/utils/util.analyzeValue'
 errorHelpers = require '../utils/errors/util.error.partiallyHandledError'
 internals = require './service.notifications.internals'
+notificationConfigService = require('./service.notification.config').instance
 internalsNotificationConfig = require './service.notification.config.internals'
-notificationConfigService =  require('./service.notifcation.config').instance
-notificationUserService =  require('./service.notifcation.user').instance
-internalsNotificationUser = require './service.notification.user.internals'
+sqlHelpers = require '../utils/util.sql.helpers'
 ###
   Intended to be the workflow service which combines business logic of
   config_notification with user_notification. This is mainly intended for queing
   and actually sending notifications.
 ###
+sendNotificationNow = (row, options) ->
+  handle = internals.sendHandles[row.method] || internals.sendHandles.default
 
-
-sendNotificationNow = ({configRows, options}) ->
-  emails = []
-  emailIds = []
-  smsPromises = []
-
-  # loop to build emails as well as send sms
-  # if notification lists grow large, we may need to refine this loop
-  for datum in configRows
-    do (datum) ->
-      if datum.email and datum.method == 'email'
-        emails.push datum.email
-        emailIds.push datum.id
-
-      # sms currently required to send one by one; If we implement
-      # an async or bulk method, we can handle it similar to email
-      if datum.cell_phone and datum.method == 'sms'
-        smsPromises.push internals.sendSmsNowPromise {datum, options}
-
-  Promise.join(
-    internals.sendBasicEmailNowPromise({emailIds, emails, options}),
-    Promise.all(smsPromises)
-  )
+  handle(row, options)
   .catch errorHelpers.isUnhandled, (err) ->
     throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
-  .catch (err) ->
-    logger.error "notification error: #{analyzeValue.getSimpleDetails(err)}"
 
 ###
-  Adds a row to user_notification.
-  First gets the config attributes and then merges the options to fill out
-  other columns.
+  Public: enqueues notifcations to user_notifcation_queue.
+
+  The intent is to match up users to their user_notification_config.
+  Once they are matched up we can create user_notification_queue for each user.
+
+  This is used more for subscriptions and distributions.
+
+  - `opts`:   The opts as {object}.
+    - `to`    see internals.direction.getUsers (where to go)
+    - `id`    see internals.direction.getUsers(id of the auth_user initiating the notification)
+    - `type`  The type of notification as {string or Array<string>} (pinned, favorite).
+    - `project_id`  {int}
+    - `payload` The options column for a specific notificaiton. {object}.
+        This is a json blob to put into a user_notification to be processed by whatever
+        notification handler.
+
+  Returns a {Promise}.
 ###
-sendNotificationEventually = ({configRows, options}) ->
-  Promise.all Promise.map configRows, (row) ->
-    entity =
-      config_notification_id: row.id
+notifyByUser = ({opts, payload}) ->
+  internals.direction.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
+  .then (users) ->
+    entity = auth_user_id: _.pluck(users, 'id')
+    _.extend entity, _.pick opts, ['type', 'method']
 
-    _.extend entity, _.pick options, internalsNotificationUser.getColumns
-    notificationUserService.create entity
+    query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
 
-notificationHandles =
-  email: sendNotificationNow
-  sms: sendNotificationNow
-  emailVero: sendNotificationEventually
+    internals.enqueue {
+      configRowsQuery: query
+      options: payload
+    }
 
-notification = ({type, method}) ->
-  (options) ->
-    safeFields = _.pick options, internalsNotificationConfig.getColumns
+###
+  Grab specific notification configs by type and or method
+
+ - `type`  The type of notification as {string or Array<string>} (pinned, favorite).
+ - `method` The method of notification as {string}.
+
+  Returns a function to actually execute the enqueueing of a notification.
+
+###
+notifyFlat = ({type, method}) ->
+  ###
+   - `payload`      The user_notification options payload {object}.
+   - `queryOptions` The query entity to narrow the query {object}.
+
+    Returns Promise.
+  ###
+  ({payload, queryOptions}) ->
+    safeFields = _.pick queryOptions, internalsNotificationConfig.getColumns
     entity = _.extend safeFields, {type, method}
 
     logger.debug entity
 
-    notificationConfigService
-    .getAllWithUser(entity)
-    .then (configRows) ->
-      notificationHandles[method] {configRows, options}
+    internals.enqueue {
+      configRowsQuery: notificationConfigService.getAllWithUser(entity)
+      options: payload
+    }
 
-module.exports =
-  notification: notification
+
+module.exports = {
+  sendNotificationNow
+  notifyByUser
+  notifyFlat
+}

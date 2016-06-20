@@ -18,13 +18,3 @@ module.exports = (app) ->
 
     $scope.toggled = (open) ->
       $scope.isOpened = open
-
-  .controller 'rmapsHistoryCtrl', ($scope, $http) ->
-    $scope.historyArray = []
-
-    ###emails json###
-
-    $http.get(frontendRoutes.mocks.history).success((response) ->
-      $scope.historyArray = response
-    ).error (data, status, headers, config) ->
-      alert status

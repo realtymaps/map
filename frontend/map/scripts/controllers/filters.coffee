@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-require '../factories/filters.coffee'
 
 ###
   Our Filters Controller
@@ -42,7 +41,9 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
     $scope.selectedFilters.ownerName = null
     $scope.selectedFilters.propertyType = null
 
-  $scope.toggled = ->
+  $scope.tooltipOpen = false
+  $scope.toggled = () ->
+    $scope.tooltipOpen = false
     $log.debug 'forceRender'
     $timeout (->
       $scope.$broadcast 'reCalcViewDimensions'
@@ -53,3 +54,10 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
 
   $scope.onChange = ->
     $log.debug $scope.selectedFilters
+
+  $scope.datepickers = {}
+  $scope.openDatepicker = (id) ->
+    # close all the others, and open this one
+    for key of $scope.datepickers
+      $scope.datepickers[key] = false
+    $scope.datepickers[id] = true

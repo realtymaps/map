@@ -1,11 +1,9 @@
 module.exports =
   filters: {}
-  properties_selected:
+  pins:
     '12021_11031760007_001':
       rm_property_id: '12021_11031760007_001'
-      isSaved: true
       isFavorite: true
-      isHidden: false
 
   map_toggles:
     showResults: 'false'

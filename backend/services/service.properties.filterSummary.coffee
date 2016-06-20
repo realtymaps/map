@@ -14,7 +14,7 @@ _isOnlyPinned = (queryParams) ->
   !queryParams?.state?.filters?.status?.length
 
 _isNothingPinned = (state) ->
-  !state?.properties_selected || _.size(state.properties_selected) == 0
+  !state?.pins || _.size(state.pins) == 0
 
 module.exports =
   getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
@@ -48,7 +48,7 @@ module.exports =
 
         _limitByPinnedProps = (query, state, queryParams) ->
           # include saved id's in query so no need to touch db later
-          propertiesIds = _.keys(state.properties_selected)
+          propertiesIds = _.keys(state.pins)
           if propertiesIds.length > 0
             whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
             sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
@@ -79,8 +79,8 @@ module.exports =
                 result[property.rm_property_id] = toLeafletMarker property
 
                 # Ensure saved details are part of the saved props
-                if state.properties_selected?[property.rm_property_id]?
-                  property.savedDetails = state.properties_selected[property.rm_property_id]
+                if state.pins?[property.rm_property_id]?
+                  property.savedDetails = state.pins[property.rm_property_id]
 
                 if property.data_source_type == 'mls'
                   mlsConfigSvc.getByIdCached(property.data_source_id)

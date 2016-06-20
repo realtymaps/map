@@ -107,7 +107,7 @@ orWhereNotIn = (query, column, values) ->
 # Note: entity is a map of columns->values
 whereAndWhereIn = (query, entity) ->
   for column, value of entity
-    if _.isArray(value)
+    if Array.isArray(value)
       query = whereIn(query, column, value)
     else
       query = query.where(column, value)

@@ -183,24 +183,15 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
     if filters.bathsMin
       @.where("#{dbFn.tableName}.baths_total", ">=", filters.bathsMin)
 
-    if filters.hasOwner?
-      # only checking owner_name here and now owner_name2 because we do normalization in the property summary
-      # table that ensures we never have owner_name2 if we don"t have owner_name -- therefore checking
-      # only owner_name does the same thing and creates a more efficient query
-      if filters.hasOwner
-        @.whereNotNull("#{dbFn.tableName}.owner_name")
-      else
-        @.whereNull("#{dbFn.tableName}.owner_name")
-
     if filters.ownerName
       # need to avoid any characters that have special meanings in regexes
       # then split on whitespace and commas to get chunks to search for
       patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
         if !chunk
           return
-        # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
+        # make dashes and apostrophes optional, can be missing or replaced with a space in the name text
         # since this is after the split, a space here will be an actual part of the search
-        result.push chunk.replace(/(["-])/g, "[$1 ]?")
+        result.push chunk.replace(/(['-])/g, "[$1 ]?")
       sqlHelpers.allPatternsInAnyColumn(@, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name_2"])
 
     if filters.listedDaysMin

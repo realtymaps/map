@@ -5,7 +5,7 @@ Promise = require 'bluebird'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.lob'
 SqlMock = require '../../specUtils/sqlMock.coffee'
-logger = require('../../specUtils/logger').spawn('service.lob')
+logger = require('../../specUtils/logger').spawn('service:lob')
 _ = require 'lodash'
 
 mockAuthUser =

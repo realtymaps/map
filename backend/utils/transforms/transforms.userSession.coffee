@@ -44,7 +44,7 @@ profiles =
     map_results: validators.object()
     auth_user_id: validators.integer()
     parent_auth_user_id: validators.integer()
-    properties_selected: validators.object()
+    pins: validators.object()
     id:
       transforms: [validators.integer()]
       required: true

@@ -2,6 +2,10 @@
  * Utility Functions
  */
 
+.no-animation
+  $fnMakeAnimation(none)
+  $fnMakeTransition(none)
+
 // Create the browser specific animation entries
 $fnMakeAnimation(args)
   -webkit-animation args
@@ -11,10 +15,6 @@ $fnMakeAnimation(args)
 $fnMakeTransition(args)
   transition args
   -webkit-transition args
-
-/* Global Transitions */
-.global-transition
-  //$fnMakeTransition(all 250ms ease 0ms)
 
 //.page.ng-leave
 //  z-index:8888

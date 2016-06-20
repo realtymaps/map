@@ -1,12 +1,19 @@
 include ../mixins/_noteMixin.jade
 
-span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list"
- dropdown on-toggle="toggled(open)" auto-close="disabled")
+span(
+  ng-hide="Toggles.getHideAnyDraw()"
+  ng-controller="rmapsMapNotesCtrl"
+  class="dropdown btn-group notes-list"
+  dropdown
+  auto-close="disabled"
+  is-open="isOpens.notes"
+  on-toggle="togglePanel('notes')"
+)
   button.btn.btn-transparent.nav-btn.dropdown-toggle.notes.toggle-active(
     dropdown-toggle
     popover-placement="bottom"
     popover="Notes"
-    popover-trigger="click mouseenter")
+    popover-trigger="mouseenter")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header

@@ -36,7 +36,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
       _.each $scope.projects, (project) ->
         project.modified = moment(project.rm_modified_time)
-        project.totalProperties = (_.keys project.properties_selected)?.length
+        project.totalProperties = (_.keys project.pins)?.length
         project.totalFavorites = (_.keys project.favorites)?.length
 
   setScopeVariables()
