@@ -109,6 +109,7 @@ base =
     LIVE_MODE: process.env.MAILING_IS_LIVE or false
     CAMPAIGN_BILLING_DELAY_DAYS: 1
     LOB_MAX_RETRIES: 5
+    S3_UPLOAD: _.merge common.pdfUpload, common.mail.s3_upload
 
   ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS or false
 

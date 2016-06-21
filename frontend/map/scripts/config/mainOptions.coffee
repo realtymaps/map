@@ -44,23 +44,5 @@ app.constant 'rmapsMainOptions', do () ->
       # cancelQuietMillis is how long to prevent alerts when we expect an HTTP cancel
       cancelQuietMillis: 1000 # 1 second, just in case of a really bogged down browser; on my laptop, only 8ms is necessary
 
-    mail:
-      macros:
-        address: '{{address}}'
-        name: '{{name}}'
-      s3_upload:
-        host: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
-        AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
-        #base64 encoded policy: to enforce upload restriction to pdf only
-        #https://aws.amazon.com/articles/1434
-        #decode w https://www.npmjs.com/package/js-base64
-        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgeyJidWNrZXQiOiAicm1hcHMtcGRmLXVwbG9hZHMifS' +
-          'wgCiAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgIiJdLAogIHsiYWNsIjogInByaXZhdGUifSwKICBbInN0YXJ0cy13aXRoIiwgIiRDb250ZW50LVR5cGUiLCAiYXBwbGlj' +
-          'YXRpb24vcGRmIl0sCiAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
-        signature: 'nsvK9QD1CpVXA8mUpA4JXNS5OQ0='
-      statusNames:
-        ready: 'draft'
-        sending: 'pending'
-        paid: 'sent'
-      sizeErrorMsg: 'Please select/upload a file that has correct dimensions for its type: 8.5" x 11" for Letters.'
+
   res

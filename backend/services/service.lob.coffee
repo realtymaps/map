@@ -171,31 +171,44 @@ getPriceQuote = (userId, campaignId) ->
   .then ([campaign]) ->
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
 
-    if !campaign.aws_key? ## and if manually created content
-      pdfService.htmlToPdf()
-
-    result = null
-    Promise.each campaign.recipients, (r) ->
-      address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
-      logger.debug "Checking #{address}"
-      letter = buildLetter campaign, r
-      sendLetter letter, 'test'
-      .then (lobResponse) ->
-        logger.debug "Address was valid: #{address}"
+    # manually created content might not have aws_key, so get one (error checking if not?)
+    (if !campaign.aws_key? then pdfService.htmlToPdf(campaign) else Promise.resolve(campaign.aws_key))
+    .then (aws_key) ->
+      console.log "aws_key: #{JSON.stringify(aws_key, null, 2)}"
+      console.log "aws_key keys: #{Object.keys(aws_key)}"
+      awsService.getTimedDownloadUrl
+        extAcctName: awsService.buckets.PDF
+        Key: aws_key
+      .then (file) ->
+        console.log "got file:\n#{file}"
         result =
-          pdf: lobResponse.url
-          price: lobResponse.price * campaign.recipients.length
-          lobResponse: lobResponse
-        throw new Error("Stop checking addresses") # no need to check more addresses
-      .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
-        logger.debug "Invalid address: #{address}. Trying next recipient"
-    .catch ->
-      result # Probably got a valid address
-    .then ->
-      if result
-        return result
-      else
-        throw new Error("No valid addresses were found")
+          pdf: file
+          price: 0.0
+    .catch (err) ->
+      console.log "err:\n#{err}"
+
+    # result = null
+    # Promise.each campaign.recipients, (r) ->
+    #   address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
+    #   logger.debug "Checking #{address}"
+    #   letter = buildLetter campaign, r
+    #   sendLetter letter, 'test'
+    #   .then (lobResponse) ->
+    #     logger.debug "Address was valid: #{address}"
+    #     result =
+    #       pdf: lobResponse.url
+    #       price: lobResponse.price * campaign.recipients.length
+    #       lobResponse: lobResponse
+    #     throw new Error("Stop checking addresses") # no need to check more addresses
+    #   .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
+    #     logger.debug "Invalid address: #{address}. Trying next recipient"
+    # .catch ->
+    #   result # Probably got a valid address
+    # .then ->
+    #   if result
+    #     return result
+    #   else
+    #     throw new Error("No valid addresses were found")
 
 # Retrieves LOB letters by metadata
 #  https://lob.com/docs#letters_retrieve
