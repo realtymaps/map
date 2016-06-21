@@ -79,9 +79,12 @@ module.exports =
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
-                encodedCenter = geohash.encode([property.geometry_center])
-                propertyIdsByCenterPoint[encodedCenter] ?= []
-                propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
+                encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
+
+                if encodedCenter
+                  logger.debug "#{property.rm_property_id} encodedCenter = #{encodedCenter}"
+                  propertyIdsByCenterPoint[encodedCenter] ?= []
+                  propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
 
                 resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
@@ -94,7 +97,7 @@ module.exports =
                   .then (mlsConfig) ->
                     property.mls_formal_name = mlsConfig?.formal_name
             .then () ->
-              Promise.each propertyIdsByCenterPoint, (rm_property_ids, encodedCenter) ->
+              for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
                 if rm_property_ids.length > 0
                   for rm_property_id in rm_property_ids
                     resultGroups[encodedCenter] ?= {}
@@ -102,8 +105,7 @@ module.exports =
                     delete resultsByPropertyId[rm_property_id]
                 else
                   delete propertyIdsByCenterPoint[encodedCenter]
-            .then () ->
-              {singletons: resultsByPropertyId, groups: resultGroups}
+              return {singletons: resultsByPropertyId, groups: resultGroups}
 
         switch queryParams.returnType
           when 'clusterOrDefault'
