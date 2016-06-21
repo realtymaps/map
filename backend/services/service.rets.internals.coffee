@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 rets = require 'rets-client'
-logger = require('../config/logger').spawn('service:rets:internals')
+logger = require('../config/logger').spawn('rets:internals')
 require '../config/promisify'
 memoize = require 'memoizee'
 moment = require('moment')
@@ -23,6 +23,9 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter)
   .then (retsClient) ->
     logger.debug 'Logging in client ', loginUrl
     retsClient.login()
+    .then () ->
+      logger.debug () -> "Logged in to RETS server at #{loginUrl}: #{retsClient.systemData.retsVersion} [#{retsClient.systemData.retsServer}]"
+      retsClient
     .catch errorHandlingUtils.isUnhandled, (error) ->
       _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
       throw new errorHandlingUtils.PartiallyHandledError(error, 'RETS login failed')
@@ -65,17 +68,21 @@ isTransientRetsError = (error) ->
   return false
 
 
-buildSearchQuery = (datetimeField, opts) ->
+buildSearchQuery = (tableData, utcOffset, opts) ->
   if opts.fullQuery
     return opts.fullQuery
 
   criteria = []
   for key,val of opts.criteria
     criteria.push("(#{key}=#{val})")
+  if tableData.field_type == 'Date'
+    format = 'YYYY-MM-DD'
+  else  # tableData.field_type == 'DateTime'
+    format = 'YYYY-MM-DD[T]HH:mm:ss[Z]'
   if opts.maxDate?
-    criteria.push("(#{datetimeField}=#{moment.utc(new Date(opts.maxDate)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}-)")
+    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
   if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
-    criteria.push("(#{datetimeField}=#{moment.utc(new Date(opts.minDate ? 0)).format('YYYY-MM-DD[T]HH:mm:ss[Z]')}+)")
+    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.minDate ? 0)).utcOffset(utcOffset).format(format)}+)")
   return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
 
 

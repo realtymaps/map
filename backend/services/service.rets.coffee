@@ -2,12 +2,16 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 rets = require 'rets-client'
-logger = require('../config/logger').spawn('service:rets')
+logger = require('../config/logger').spawn('rets')
 require '../config/promisify'
 through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 
+
+getSystemData = (mlsId) ->
+  internals.getRetsClient mlsId, (retsClient) ->
+    retsClient.metadata.getSystem()
 
 getDatabaseList = (mlsId) ->
   internals.getRetsClient mlsId, (retsClient) ->
@@ -72,9 +76,14 @@ getLookupTypes = (mlsId, databaseName, lookupId) ->
 getDataStream = (mlsId, opts={}) ->
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     if !mlsInfo.listing_data.field
-      throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
-    getColumnList(mlsId, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
-    .then (columnData) ->
+      throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
+    offsetPromise = Promise.try () ->
+      if mlsInfo.listing_data.field_type != 'Date'
+        return 0
+      getSystemData(mlsId)
+      .then (systemData) ->
+        return parseInt(systemData.TimeZoneOffset) || 0
+    Promise.join offsetPromise, getColumnList(mlsId, mlsInfo.listing_data.db, mlsInfo.listing_data.table), (utcOffset, columnData) ->
       fieldMappings = {}
       for field in columnData
         fieldMappings[field.SystemName] = field.LongName
@@ -84,7 +93,7 @@ getDataStream = (mlsId, opts={}) ->
       currentPayload = null
       found = null
       counter = 0
-      searchQuery = internals.buildSearchQuery(mlsInfo.listing_data.field, opts)
+      searchQuery = internals.buildSearchQuery(mlsInfo.listing_data, utcOffset, opts)
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)
@@ -210,61 +219,68 @@ getDataStream = (mlsId, opts={}) ->
 getDataChunks = (mlsId, handler, opts={}) ->
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     if !mlsInfo.listing_data.field
-      throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config field "Update Timestamp Column")')
-    total = 0
-    overlap = 0
-    lastId = null
-    searchQuery = internals.buildSearchQuery(mlsInfo.listing_data.field, opts)
-    searchOptions =
-      count: 0
-    _.extend(searchOptions, opts.searchOptions)
-    fullLimit = opts.searchOptions.limit
-    if opts.subLimit
-      searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+      throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
+    Promise.try () ->
+      if mlsInfo.listing_data.field_type != 'Date'
+        return 0
+      getSystemData(mlsId)
+      .then (systemData) ->
+        return parseInt(systemData.TimeZoneOffset) || 0
+    .then (utcOffset) ->
+      total = 0
+      overlap = 0
+      lastId = null
+      searchQuery = internals.buildSearchQuery(mlsInfo.listing_data, utcOffset, opts)
+      searchOptions =
+        count: 0
+      _.extend(searchOptions, opts.searchOptions)
+      fullLimit = opts.searchOptions.limit
+      if opts.subLimit
+        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
 
-    searchIteration = () ->
-      internals.getRetsClient mlsId, (retsClientIteration) ->
-        retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
-        .then (response) ->
-          if lastId?
-            found = null
-            for listing,i in response.results
-              if listing[opts.uuidField] == lastId
-                found = i
-                break
-            if !found?
-              throw new SoftFail('failed to locate RETS overlap record')
-            results = response.results.slice(found+1)
-          else
-            results = response.results
-          if opts.uuidField?
-            lastId = results[results.length-1][opts.uuidField]
-            if !overlap
-              overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
-          total += results.length
-          if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
-            searchOptions.offset = total-overlap
-            if fullLimit
-              searchOptions.limit = fullLimit - searchOptions.offset
-              if opts.subLimit
-                searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
-            handlerPromise = handler(results)
-            .catch errorHandlingUtils.isUnhandled, (err) ->
-              throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
-            nextIterationPromise = searchIteration()
-            Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
-          else
-            handler(results)
-        .then () ->
-          return total
-        .catch rets.RetsReplyError, (err) ->
-          if err.replyTag == "NO_RECORDS_FOUND" && total > 0
-            # code for 0 results, not really an error (DMQL is a clunky language)
+      searchIteration = () ->
+        internals.getRetsClient mlsId, (retsClientIteration) ->
+          retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
+          .then (response) ->
+            if lastId?
+              found = null
+              for listing,i in response.results
+                if listing[opts.uuidField] == lastId
+                  found = i
+                  break
+              if !found?
+                throw new SoftFail('failed to locate RETS overlap record')
+              results = response.results.slice(found+1)
+            else
+              results = response.results
+            if opts.uuidField?
+              lastId = results[results.length-1][opts.uuidField]
+              if !overlap
+                overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
+            total += results.length
+            if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
+              searchOptions.offset = total-overlap
+              if fullLimit
+                searchOptions.limit = fullLimit - searchOptions.offset
+                if opts.subLimit
+                  searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+              handlerPromise = handler(results)
+              .catch errorHandlingUtils.isUnhandled, (err) ->
+                throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
+              nextIterationPromise = searchIteration()
+              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
+            else
+              handler(results)
+          .then () ->
             return total
-          else
-            throw err
+          .catch rets.RetsReplyError, (err) ->
+            if err.replyTag == "NO_RECORDS_FOUND" && total > 0
+              # code for 0 results, not really an error (DMQL is a clunky language)
+              return total
+            else
+              throw err
 
-    searchIteration()
+      searchIteration()
 
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
@@ -279,6 +295,7 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
 
 
 module.exports = {
+  getSystemData
   getDatabaseList
   getTableList
   getColumnList
