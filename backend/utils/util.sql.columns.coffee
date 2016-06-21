@@ -103,7 +103,7 @@ basicColumns = do ->
 
     creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
 
-    mailCampaigns: ['id', 'auth_user_id', 'project_id', 'lob_batch_id', 'name', 'count', 'status', 'content', 'template_type', 'submitted', 'sender_info', 'lob_content', 'recipients']
+    mailCampaigns: ['id', 'auth_user_id', 'project_id', 'lob_batch_id', 'name', 'count', 'status', 'custom_content', 'content', 'template_type', 'submitted', 'sender_info', 'lob_content', 'recipients']
 
     mls: ['id', 'state', 'full_name', 'mls']
 

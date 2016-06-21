@@ -26,6 +26,7 @@ app.service 'rmapsMailTemplateFactory', (
     recipients: []
     aws_key: null
     project_id: null
+    custom_content: false
     options:
       color: false
 
@@ -68,9 +69,11 @@ app.service 'rmapsMailTemplateFactory', (
       @campaign.content = rmapsMailTemplateTypeService.getMailContent(type)
       if @getCategory() == 'pdf'
         @campaign.aws_key = type
+        @campaign.custom_content = false
       else
         @campaign.aws_key = null
         @campaign.options.color = false
+        @campaign.custom_content = true
       @_makeDirty()
 
     unsetTemplateType: () ->

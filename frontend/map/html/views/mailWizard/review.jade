@@ -72,24 +72,24 @@
                 h2 Pricing
               .row
                 .col-md-12
-                  .color-selector.btn-group(ng-class="{'disabled': !wizard.mail.campaign.aws_key}")
-                    span.to-bnw.btn.btn-default(ng-disabled="!wizard.mail.campaign.aws_key")
+                  .color-selector.btn-group(ng-class="{'disabled': wizard.mail.campaign.custom_content}")
+                    span.to-bnw.btn.btn-default(ng-disabled="wizard.mail.campaign.custom_content")
                       label Black and White
                       br
                       input(
                         type="radio"
                         ng-model="wizard.mail.campaign.options.color"
                         ng-value="false"
-                        ng-disabled="!wizard.mail.campaign.aws_key")
+                        ng-disabled="wizard.mail.campaign.custom_content")
 
-                    span.to-color.btn.btn-default(ng-disabled="!wizard.mail.campaign.aws_key")
+                    span.to-color.btn.btn-default(ng-disabled="wizard.mail.campaign.custom_content")
                       label Color
                       br
                       input(
                         type="radio"
                         ng-model="wizard.mail.campaign.options.color"
                         ng-value="true"
-                        ng-disabled="!wizard.mail.campaign.aws_key")
+                        ng-disabled="wizard.mail.campaign.custom_content")
 
                   .mail-prices-review-container
                     include ../../includes/mail_pricing_table.jade
