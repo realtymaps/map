@@ -98,7 +98,7 @@ module.exports =
                     property.mls_formal_name = mlsConfig?.formal_name
             .then () ->
               for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
-                if rm_property_ids.length > 0
+                if rm_property_ids.length > 1
                   for rm_property_id in rm_property_ids
                     resultGroups[encodedCenter] ?= {}
                     resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]

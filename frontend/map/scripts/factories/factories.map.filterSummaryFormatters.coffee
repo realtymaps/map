@@ -53,13 +53,13 @@ app.factory 'rmapSummaryResultsMutation',
       Toggles = @scope.Toggles
 
       @scope.map.markers.backendPriceCluster = {}
-      setDataOptions(@data, MLS.setMarkerPriceOptions)
+      setDataOptions(@data?.singletons, MLS.setMarkerPriceOptions)
 
-      for key, model of @data
+      for key, model of @data?.singletons
         _wrapGeomPointJson model
         rmapsPropertiesService.updateProperty model
 
-      @scope.map.markers.filterSummary = @data
+      @scope.map.markers.filterSummary = @data?.singletons
 
       if !@isAnyParcel()
         overlays?.parcels?.visible = false
@@ -76,7 +76,7 @@ app.factory 'rmapParcelResultsMutation',
 
   stampit.methods
     handleGeoJsonResults: (data) ->
-      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data)
+      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data?.singletons)
       .then (data) =>
         return if @isEmptyData()
 
