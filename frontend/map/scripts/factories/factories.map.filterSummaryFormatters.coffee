@@ -33,7 +33,9 @@ app.factory 'rmapClusterMutation', ($q, rmapsLayerFormattersService, rmapsProper
   .compose(rmapsEmptyFilterData)
 
 app.factory 'rmapSummaryResultsMutation',
-($q, rmapsLayerFormattersService, rmapsPropertiesService, rmapsZoomLevelStateFactory) ->
+($q, $log, rmapsLayerFormattersService, rmapsPropertiesService, rmapsZoomLevelStateFactory) ->
+  $log = $log.spawn 'rmapSummaryResultsMutation'
+
   {setDataOptions, MLS} = rmapsLayerFormattersService
 
   _wrapGeomPointJson = (obj) ->
@@ -59,7 +61,26 @@ app.factory 'rmapSummaryResultsMutation',
         _wrapGeomPointJson model
         rmapsPropertiesService.updateProperty model
 
-      @scope.map.markers.filterSummary = @data?.singletons
+      for key, group of @data?.groups
+        group.grouped = properties: _.values(group)
+        group.grouped.name = key
+        group.grouped.count = group.grouped.properties.length + 'C'
+        group.grouped.forsale = _.filter(group.grouped.properties, 'status', 'forsale').length
+        group.grouped.pending = _.filter(group.grouped.properties, 'status', 'pending').length
+        group.grouped.sold = _.filter(group.grouped.properties, 'status', 'sold').length
+        group.grouped.notforsale = 0
+        $log.debug group.grouped
+
+        first = _.find(group)
+        group.coordinates = first.coordinates
+        group.type = first.type
+        _wrapGeomPointJson(group)
+
+      setDataOptions(@data?.groups, MLS.setMarkerCondoOptions)
+
+      @scope.map.markers.filterSummary = _.assign(@data?.singletons, @data?.groups)
+
+      $log.debug @scope.map.markers.filterSummary
 
       if !@isAnyParcel()
         overlays?.parcels?.visible = false

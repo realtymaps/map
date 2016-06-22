@@ -122,6 +122,19 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           iconSize: [60, 30]
           html: priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{markersBSLabel[status]}#{hovered}")
 
+    setMarkerCondoOptions: (models) ->
+      $log.debug _.keys(models).length
+      return {} unless models
+
+      _.extend models,
+        markerType: 'price'
+        riseOnHover: true
+        icon:
+          type: 'div'
+          iconSize: [60, 30]
+          # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Condos (#{models.grouped.name}", priceClasses: "label-saved-property")
+          html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
+
     setMarkerNotesOptions: (model, number) ->
       _.extend model,
         $index: number
