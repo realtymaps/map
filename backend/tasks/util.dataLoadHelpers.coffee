@@ -693,6 +693,7 @@ ensureNormalizedTable = (dataType, subid) ->
         table.integer('sqft_finished')
         table.json('year_built')
         table.json('promoted_values')
+        table.timestamp('assessment_date', true)
       else if dataType == 'deed'
         table.text('property_type')
         table.text('zoning')

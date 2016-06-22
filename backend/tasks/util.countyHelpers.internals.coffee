@@ -5,6 +5,7 @@ logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 {HardFail} = require '../utils/errors/util.error.jobQueue'
+moment = require 'moment'
 
 
 _documentFinalize = (fnName, cbPromise) ->
@@ -86,9 +87,9 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
 
   # now that we have an ordered sales history, overwrite that into the tax record
   saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
-  tax.subscriber_groups.mortgage = mortgageEntries
-  lastSale = deedEntries.pop()
-  if lastSale?
+  tax.subscriber_groups.mortgageHistory = mortgageEntries
+  lastSale = deedEntries[0]
+  if lastSale? && moment(lastSale.close_date).isAfter(tax.assessmentDate)
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields
@@ -104,12 +105,10 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
       owner_name: tax.owner_name
       owner_name_2: tax.owner_name_2
       zoning: tax.zoning
-  tax.shared_groups.sale = []
-  tax.subscriber_groups.deedHistory = []
-
+  tax.subscriber_groups.deedHistory = deedEntries
+  tax.shared_groups.saleHistory = []
   for deedInfo in deedEntries
-    tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
-    tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
+    tax.shared_groups.saleHistory.push(price: deedInfo.price, close_date: deedInfo.close_date)
 
   {promotedValues,tax}
 
@@ -121,7 +120,6 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
     active: false
   .delete()
   .then () ->
-    logger.spawn(subtask.task_name).debug () -> "@@@@@@@@@@@ data_combined update --- rm_property_id: #{id}, geometry: #{tax.geometry?}"
     tables.finalized.combined(transaction: transaction)
     .insert(tax)
 
