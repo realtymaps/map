@@ -278,6 +278,7 @@ _rules =
         alias: 'Baths'
         type: name: 'bathrooms'
         input: {}
+        config: {autodetect: true, implicit: total: 2}
         valid: () ->
           @input.half? && @input.full? || @input.total?
 

@@ -19,6 +19,8 @@ tableIdMap =
   Deed: 'deed'
   SAM: 'mortgage'
 
+
+columns = {}
 columns[DELETE] = {}
 columns[DELETE][REFRESH] = {}
 columns[DELETE][REFRESH][TAX] = [
@@ -160,8 +162,6 @@ queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.try
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
     fipsCodes
 
-
-columns = {}
 
 _getColumnsImpl = (fileType, action, dataType) ->
   svc.exposeKnex()
