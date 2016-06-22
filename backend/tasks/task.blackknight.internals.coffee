@@ -2,6 +2,8 @@ _ = require 'lodash'
 Promise = require "bluebird"
 svc = require '../services/service.dataSource'
 logger = require('../config/logger').spawn('task:blackknight:internals')
+dataLoadHelpers = require './util.dataLoadHelpers'
+jobQueue = require '../services/service.jobQueue'
 
 
 NUM_ROWS_TO_PAGINATE = 2500
@@ -132,7 +134,6 @@ queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.try
   if !files?.length
     return
   loadDataList = []
-  deleteDataList = []
   countDataList = []
   fipsCodes = {}
   for file in files
