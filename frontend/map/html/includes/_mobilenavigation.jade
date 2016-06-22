@@ -57,7 +57,7 @@ include mixins/_avatarMixin.jade
                         a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
                             span.icon.menu-icon.icon-area
                             span.menu-label Areas
-                            span.menu-badge.count {{project.areas.length}}
+                            span.menu-badge.count {{areas.length}}
 
                 #client-section(ng-show="clients")
                     #client-header.menu-label My Clients
