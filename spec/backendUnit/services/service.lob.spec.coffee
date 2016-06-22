@@ -46,6 +46,9 @@ describe "service.lob", ->
       get: -> Promise.try -> mockCustomer
       charge: -> Promise.try -> mockCharge
 
+  svc.__set__ 'pdfService',
+    getUrlPageCount: () -> 1
+
   svc.__set__ 'externalAccounts',
     getAccountInfo: -> Promise.try ->
       apiKey: 'abc123'
