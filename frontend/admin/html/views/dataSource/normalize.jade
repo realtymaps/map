@@ -215,18 +215,6 @@
         .row
           .col-md-2 RealtyMaps Address
         .row
-          .col-md-2 City and State
-          .col-md-10
-            .field(rmaps-droppable="'city'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.city }")
-              span(ng-show="fieldData.current.input.city") {{fieldData.current.input.city}}:
-              span City
-              span.remove-icon(ng-show="fieldData.current.input.city" ng-click="removeBaseInput('city')") X
-            span.sep AND
-            .field(rmaps-droppable="'state'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.state }")
-              span(ng-show="fieldData.current.input.state") {{fieldData.current.input.state}}:
-              span State
-              span.remove-icon(ng-show="fieldData.current.input.state" ng-click="removeBaseInput('state')") X
-        .row
           .col-md-2 Street Address
           .col-md-10
             .field(rmaps-droppable="'streetNum'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNum }")
@@ -243,16 +231,34 @@
               span Full Street
               span.remove-icon(ng-show="fieldData.current.input.streetFull" ng-click="removeBaseInput('streetFull')") X
         .row
+          .col-md-2 City and State
+          .col-md-10
+            .field(rmaps-droppable="'city'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.city }")
+              span(ng-show="fieldData.current.input.city") {{fieldData.current.input.city}}:
+              span City
+              span.remove-icon(ng-show="fieldData.current.input.city" ng-click="removeBaseInput('city')") X
+            span.sep AND
+            .field(rmaps-droppable="'state'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.state }")
+              span(ng-show="fieldData.current.input.state") {{fieldData.current.input.state}}:
+              span State
+              span.remove-icon(ng-show="fieldData.current.input.state" ng-click="removeBaseInput('state')") X
+        .row
           .col-md-2 Zip Code
           .col-md-10
+            span.sep (
             .field(rmaps-droppable="'zip'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.zip }")
               span(ng-show="fieldData.current.input.zip") {{fieldData.current.input.zip}}:
-              span Zip
+              span Zip5
               span.remove-icon(ng-show="fieldData.current.input.zip" ng-click="removeBaseInput('zip')") X
-            span.sep OR
+            span.sep AND (optional)
+            .field(rmaps-droppable="'zip4'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.zip4 }")
+              span(ng-show="fieldData.current.input.zip4") {{fieldData.current.input.zip4}}:
+              span Zip4
+              span.remove-icon(ng-show="fieldData.current.input.zip4" ng-click="removeBaseInput('zip4')") X
+            span.sep ) OR
             .field(rmaps-droppable="'zip9'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.zip9 }")
               span(ng-show="fieldData.current.input.zip9") {{fieldData.current.input.zip9}}:
-              span Zip + 4
+              span Zip5 + Zip4
               span.remove-icon(ng-show="fieldData.current.input.zip9" ng-click="removeBaseInput('zip9')") X
         .row
           .col-md-2 Optional

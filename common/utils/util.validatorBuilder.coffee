@@ -121,7 +121,7 @@ _rules =
         @input.fipsCode || (@input.stateCode && @input.county)
 
     address:
-      alias: 'Address'
+      alias: 'Property Address'
       input: {}
       type: name: 'address'
       valid: () ->
