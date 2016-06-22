@@ -1,3 +1,4 @@
+https://github.com/dscout/wkhtmltopdf-buildpack
 https://github.com/ddollar/heroku-buildpack-apt.git
 https://github.com/alex88/heroku-buildpack-vips.git
 https://github.com/realtymaps/heroku-buildpack-pgbouncer.git

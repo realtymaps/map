@@ -18,6 +18,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   if ! hash vips &> /dev/null || [[ $IS_HEROKU = 1 ]];then
     brew install homebrew/science/vips --with-imagemagick --with-webp
+    brew install Caskroom/cask/wkhtmltopdf
   fi
 fi
 
