@@ -133,6 +133,7 @@
                           type="text"
                           ng-model="mlsData.current.listing_data.field"
                           ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions"
+                          ng-change="mlsData.current.listing_data.field_type = fieldNameMap.columnTypes[mlsData.current.listing_data.field]"
                           ng-disabled="formItems[3].disabled")
                             option(value="" disabled)
                 .row
@@ -215,7 +216,7 @@
                     td
                       label.data-label Update Timestamp Column:
                     td
-                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.listing_data.field]}}
+                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.listing_data.field]}} ({{mlsData.current.listing_data.field_type}})
             tr
               td
                 label.data-label Objects:

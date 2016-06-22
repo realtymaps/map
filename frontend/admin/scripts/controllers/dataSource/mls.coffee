@@ -61,6 +61,7 @@ app.controller 'rmapsMlsCtrl',
       dbNames: {}
       tableNames: {}
       columnNames: {}
+      columnTypes: {}
       objects: {}
 
     # simple tracking for listing_data dropdowns
@@ -205,8 +206,10 @@ app.controller 'rmapsMlsCtrl',
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == 'string' && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == 'string' && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
           $scope.fieldNameMap.columnNames = {}
+          $scope.fieldNameMap.columnTypes = {}
           for datum in data
             $scope.fieldNameMap.columnNames[datum.SystemName] = datum.LongName
+            $scope.fieldNameMap.columnTypes[datum.SystemName] = datum.DataType
           data
         .catch () ->
           $scope.columnOptions = []
@@ -263,6 +266,7 @@ app.controller 'rmapsMlsCtrl',
         $scope.columnOptions = []
         $scope.mlsData.current.listing_data.table = ''
         $scope.mlsData.current.listing_data.field = ''
+        $scope.mlsData.current.listing_data.field_type = ''
         $scope.formItems[2].disabled = true
         $scope.formItems[3].disabled = true
         promise = getTableOptions()
@@ -270,6 +274,7 @@ app.controller 'rmapsMlsCtrl',
       else if toStep == 2 # table option just changed, reset table and fields
         $scope.columnOptions = []
         $scope.mlsData.current.listing_data.field = ''
+        $scope.mlsData.current.listing_data.field_type = ''
         $scope.formItems[3].disabled = true
         promise = getColumnOptions()
 
