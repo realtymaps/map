@@ -89,7 +89,8 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
   tax.subscriber_groups.mortgageHistory = mortgageEntries
   lastSale = deedEntries[0]
-  if lastSale? && moment(lastSale.close_date).isAfter(tax.assessmentDate)
+  if lastSale? && moment(lastSale.close_date).isAfter(tax.close_date)
+    deedEntries.pop()
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields
