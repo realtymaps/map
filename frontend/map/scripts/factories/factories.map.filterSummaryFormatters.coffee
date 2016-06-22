@@ -65,7 +65,7 @@ app.factory 'rmapSummaryResultsMutation',
         group.grouped = properties: _.values(group)
         group.grouped.name = key
         group.grouped.count = group.grouped.properties.length + 'C'
-        group.grouped.forsale = _.filter(group.grouped.properties, 'status', 'forsale').length
+        group.grouped.forsale = _.filter(group.grouped.properties, 'status', 'for sale').length
         group.grouped.pending = _.filter(group.grouped.properties, 'status', 'pending').length
         group.grouped.sold = _.filter(group.grouped.properties, 'status', 'sold').length
         group.grouped.notforsale = 0
@@ -75,10 +75,11 @@ app.factory 'rmapSummaryResultsMutation',
         group.coordinates = first.coordinates
         group.type = first.type
         _wrapGeomPointJson(group)
+        group.geometry = group.geom_point_json
 
       setDataOptions(@data?.groups, MLS.setMarkerCondoOptions)
 
-      @scope.map.markers.filterSummary = _.assign(@data?.singletons, @data?.groups)
+      @scope.map.markers.filterSummary = _.assign({}, @data?.singletons, @data?.groups)
 
       $log.debug @scope.map.markers.filterSummary
 
@@ -93,19 +94,20 @@ app.factory 'rmapSummaryResultsMutation',
   .compose rmapsZoomLevelStateFactory
 
 app.factory 'rmapParcelResultsMutation',
-($q, rmapSummaryResultsMutation, rmapsZoomLevelStateFactory, rmapsPropertiesService, rmapsLayerFormattersService, rmapsEmptyFilterData) ->
-
+($q, $log, rmapSummaryResultsMutation, rmapsZoomLevelStateFactory, rmapsPropertiesService, rmapsLayerFormattersService, rmapsEmptyFilterData) ->
+  $log = $log.spawn 'rmapParcelResultsMutation'
   stampit.methods
     handleGeoJsonResults: (data) ->
-      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data?.singletons)
+      rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data)
       .then (data) =>
         return if @isEmptyData()
 
+        $log.debug data
         @scope.map.geojson.filterSummaryPoly =
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle
 
-    mutateParcel: (data) ->
+    mutateParcel: () ->
       if @promise
         return @
 
@@ -119,7 +121,7 @@ app.factory 'rmapParcelResultsMutation',
       Toggles.showAddresses = @isAddressParcel()
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
-      @promise = @handleGeoJsonResults(data)
+      @promise = @handleGeoJsonResults(@data?.singletons)
       @
 
   .compose rmapsZoomLevelStateFactory, rmapsEmptyFilterData
@@ -133,7 +135,7 @@ app.factory 'rmapsResultsFlow',
   ({scope, filters, hash, mapState, data, cache}) ->
     flow = flowFact({scope, filters, hash, mapState, data})
 
-    promise = flow.mutateCluster().mutateSummary().mutateParcel(data).promise
+    promise = flow.mutateCluster().mutateSummary().mutateParcel().promise
 
     #make the promise apparent as an undefined promise will just pass through and make
     #q.all a nightmare to debug. This was the main big bug originally in here

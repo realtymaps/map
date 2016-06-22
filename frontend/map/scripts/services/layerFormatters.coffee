@@ -123,7 +123,6 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           html: priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{markersBSLabel[status]}#{hovered}")
 
     setMarkerCondoOptions: (models) ->
-      $log.debug _.keys(models).length
       return {} unless models
 
       _.extend models,

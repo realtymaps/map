@@ -84,16 +84,16 @@ pieCreateFunction = (cluster) ->
     html: serializeXmlNode(makeSvg(data, children.length))
 
 expandGroups = (children) ->
-  console.log "EXPANDING", children
+  # console.log "EXPANDING", children
   result = []
   for child in children
     if child.options.grouped
       result.push(child.options.grouped.properties...)
-      console.log "EXPANDED GROUP #{child.options.grouped.count} #{child.options.grouped.name}", child
+      # console.log "EXPANDED GROUP #{child.options.grouped.count} #{child.options.grouped.name}", child
     else
       result.push child.options
-      console.log "EXPANDED SINGLETON", child
-  console.log "EXPANDED TOTAL", result.length
+      # console.log "EXPANDED SINGLETON", child
+  # console.log "EXPANDED TOTAL", result.length
   result
 
 pieCreateFunctionBackend = (cluster, pieClass) ->
