@@ -79,12 +79,12 @@ module.exports =
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
-                encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
+                if filterSummaryImpl == combined
+                  encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
 
-                if encodedCenter
-                  logger.debug "#{property.rm_property_id} encodedCenter = #{encodedCenter}"
-                  propertyIdsByCenterPoint[encodedCenter] ?= []
-                  propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
+                  if encodedCenter
+                    propertyIdsByCenterPoint[encodedCenter] ?= []
+                    propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
 
                 resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
@@ -97,15 +97,18 @@ module.exports =
                   .then (mlsConfig) ->
                     property.mls_formal_name = mlsConfig?.formal_name
             .then () ->
-              for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
-                if rm_property_ids.length > 1
-                  for rm_property_id in rm_property_ids
-                    resultGroups[encodedCenter] ?= {}
-                    resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
-                    delete resultsByPropertyId[rm_property_id]
-                else
-                  delete propertyIdsByCenterPoint[encodedCenter]
-              return {singletons: resultsByPropertyId, groups: resultGroups}
+              if filterSummaryImpl == combined
+                for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
+                  if rm_property_ids.length > 1
+                    for rm_property_id in rm_property_ids
+                      resultGroups[encodedCenter] ?= {}
+                      resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
+                      delete resultsByPropertyId[rm_property_id]
+                  else
+                    delete propertyIdsByCenterPoint[encodedCenter]
+                return {singletons: resultsByPropertyId, groups: resultGroups}
+              else
+                resultsByPropertyId
 
         switch queryParams.returnType
           when 'clusterOrDefault'
