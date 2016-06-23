@@ -213,7 +213,7 @@
 
   .project-content
     width: "calc(100% - %s)" % $project-content-width
-    height: 100%
+    min-height: 100vh
     margin-left: $project-content-width;
     padding: $project-gutter-width
     background-color: $darker_white
@@ -392,6 +392,10 @@
 
     textarea
       resize: none;
+      border-radius: 0;
+
+    .input-group-addon
+      border-radius: 0;
 
     .btn-actions
       top: -5px;
@@ -448,3 +452,7 @@
 
       textarea
         resize: none;
+        border-radius: 0;
+
+      .input-group-addon
+        border-radius: 0;
