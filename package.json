@@ -167,7 +167,6 @@
     "numeral": "^1.5.3",
     "object-assign": "4.0.1",
     "open": "0.0.5",
-    "pdfkit": "^0.7.0",
     "pg": "^4.4.1",
     "pg-copy-streams": "^0.3.0",
     "phantomjs-polyfill": "0.0.1",

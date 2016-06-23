@@ -1,5 +1,0 @@
-ALTER TABLE lookup_us_states
-	ALTER COLUMN code SET NOT NULL,
-	ALTER COLUMN name SET NOT NULL;
-ALTER TABLE lookup_us_states ADD CONSTRAINT lookup_us_states_unique_code UNIQUE (code) NOT DEFERRABLE INITIALLY IMMEDIATE,
-	ADD CONSTRAINT lookup_us_states_unique_name UNIQUE (name) NOT DEFERRABLE INITIALLY IMMEDIATE;

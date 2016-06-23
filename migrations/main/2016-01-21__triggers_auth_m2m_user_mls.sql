@@ -1,6 +1,0 @@
-DROP TRIGGER IF EXISTS insert_modified_auth_m2m_user_mls_to_auth_user_fips_codes
-on auth_m2m_user_mls;
-
-CREATE TRIGGER insert_modified_auth_m2m_user_mls_to_auth_user_fips_codes
-AFTER INSERT ON auth_m2m_user_mls
-FOR EACH ROW EXECUTE PROCEDURE f_update_fips_codes();

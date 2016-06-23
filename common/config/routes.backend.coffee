@@ -161,9 +161,6 @@ module.exports =
     unPin: "#{apiBase}/properties/unPin/"
     favorite: "#{apiBase}/properties/favorite/"
     unFavorite: "#{apiBase}/properties/unFavorite/"
-  snail:
-    quote: "#{apiBase}/snail/quote/:campaign_id"
-    send: "#{apiBase}/snail/send/:campaign_id"
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
     getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"
@@ -225,6 +222,9 @@ module.exports =
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"
+  snail:
+    quote: "#{apiBase}/snail/quote/:campaign_id"
+    send: "#{apiBase}/snail/send/:campaign_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf

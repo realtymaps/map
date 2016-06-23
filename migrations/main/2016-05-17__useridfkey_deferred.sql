@@ -1,2 +1,0 @@
-ALTER TABLE IF EXISTS auth_m2m_user_permissions ALTER CONSTRAINT auth_user_permissions_user_id_fkey DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE IF EXISTS user_profile ALTER CONSTRAINT auth_profile_auth_user_id_fkey DEFERRABLE INITIALLY DEFERRED;
