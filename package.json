@@ -117,7 +117,6 @@
     "gulp-util": "3.0.X",
     "gulp-watch": "4.X",
     "gulp-wrap": "0.11.X",
-    "heapdump": "^0.3.7",
     "helmet": "0.4.X",
     "heroku-client": "^2.0.0",
     "hyperquest": "^1.2.0",
