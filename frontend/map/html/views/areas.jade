@@ -23,7 +23,7 @@
                                 li(ng-repeat="enity in areaList" class="col-md-6")
                                     a(class="map" href="#/areas/{{enity.id}}")
                                         span View Area
-                                        img(src="static/img/{{enity.mapImg}}")
+                                        img(rmaps-cdn-image src="static/img/{{enity.mapImg}}")
                                     div.data
                                         h3 Area {{enity.id}}
                                         button(class="btn btn-link") Delete
@@ -32,12 +32,12 @@
     .mobile-only
         header
             a(class="subnav" href="#map")
-                img(src='static/img/base/icons/mobile_back_icon.png', width='23px' height='23px' alt='back')
+                img(rmaps-cdn-image src='static/img/base/icons/mobile_back_icon.png', width='23px' height='23px' alt='back')
                 | Areas
             .menu
                 a(href="#map")
                     | Filter
-                    img(src='static/img/base/icons/mobile_main_navigation.png', alt='option')
+                    img(rmaps-cdn-image src='static/img/base/icons/mobile_main_navigation.png', alt='option')
 
         .inner
             .container
@@ -48,7 +48,7 @@
                                 ul.area-list
                                     li(ng-repeat="id in enity.areas")
                                         div.mapimg
-                                            img(src="static/img/{{areaData[id].mapImg}}" alt="Area map")
+                                            img(rmaps-cdn-image src="static/img/{{areaData[id].mapImg}}" alt="Area map")
                                         div.info
                                             div.content
                                                 h2.title
@@ -61,4 +61,4 @@
 
                                             div.tools
                                                 a(href="#/area/{{areaData[id].id}}")
-                                                    img(src='static/img/base/icons/mobile_next_2_icon.png', width='23px' height='23px' alt='next')
+                                                    img(rmaps-cdn-image src='static/img/base/icons/mobile_next_2_icon.png', width='23px' height='23px' alt='next')

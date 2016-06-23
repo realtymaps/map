@@ -36,7 +36,7 @@ include ../mixins/property/_propertyAttributes.jade
       ng-click="cardClick($index, property)")
         .property-img
           .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-          img(ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
+          img(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
         .card-info
           a.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}" ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin

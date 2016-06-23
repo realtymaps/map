@@ -14,7 +14,7 @@
                             li(ng-repeat="enity in notesList" class="row")
                                 div.col-md-2
                                     a(class="note-img" href="/map")
-                                        img(src="static/img/test_map.jpg")
+                                        img(rmaps-cdn-image src="static/img/test_map.jpg")
                                 div.col-md-8
                                     div.data
                                         h4 {{enity.title}}
@@ -44,7 +44,7 @@
                                         div.row
                                             div.col-xs-3
                                                 div.note-img
-                                                    img(src="static/img/test_property.jpg" alt="Note Image")
+                                                    img(rmaps-cdn-image src="static/img/test_property.jpg" alt="Note Image")
                                             div.col-xs-9
                                                 div.info
                                                     h2.title

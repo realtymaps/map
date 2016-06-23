@@ -4,7 +4,7 @@
   h4 Card Info
   .row
     .col-md-1
-      img(ng-src="assets/cc/{{payment.brand}}Icon.png")
+      img(rmaps-cdn-image ng-src="assets/cc/{{payment.brand}}Icon.png")
     .col-md-5
       p {{ payment.brand }} ending in {{ payment.last4 }}
       p {{ ('00'+payment.exp_month).slice(-2) }}/{{ payment.exp_year }}
