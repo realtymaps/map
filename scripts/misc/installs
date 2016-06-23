@@ -14,6 +14,8 @@ unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+  sudo apt-get install -y wkhtmltopdf
+
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   if ! hash vips &> /dev/null || [[ $IS_HEROKU = 1 ]];then
