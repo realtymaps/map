@@ -1,4 +1,3 @@
-wkhtmltopdf = require 'wkhtmltopdf'
 htmltopdf = require 'html-pdf'
 fs = require 'fs'
 Buffer = require('buffer').Buffer
