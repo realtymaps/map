@@ -1,4 +1,5 @@
 wkhtmltopdf = require 'wkhtmltopdf'
+htmltopdf = require 'html-pdf'
 fs = require 'fs'
 Buffer = require('buffer').Buffer
 Promise = require('bluebird')
@@ -16,7 +17,7 @@ htmlToPdf = (campaign) ->
     # draft key and options
     key = config.MAILING_PLATFORM.S3_UPLOAD.getKey()
     opts =
-      extAcctName: awsService.buckets.PDF
+      extAcctName: awsService.buckets.PDFUploads
       Key: key
       ContentType: 'application/pdf'
 
@@ -36,12 +37,17 @@ htmlToPdf = (campaign) ->
         reject(uploadErr)
 
       # pipe pdf data through the s3 upload
-      wkhtmltopdf(html, { pageSize: 'letter' })
-      .on 'error', (pdfErr) ->
-        logger.error "error while creating pdf from mail campaign #{campaign.id}: #{pdfErr}"
-        reject(pdfErr)
-      .pipe(upload)
+      htmltopdf.create(html, { format: 'Letter' })
+      .toStream (htmltopdfErr, stream) ->
+        if htmltopdfErr
+          logger.error "There is an issue with making a pdf from the html content of campaign #{campaign.id}: #{htmltopdfErr}"
+          reject(htmltopdfErr)
 
+        stream.on 'error', (pdfErr) ->
+          logger.error "Error while creating pdf from mail campaign #{campaign.id}: #{pdfErr}"
+          reject(pdfErr)
+        .pipe(upload)
 
-module.exports =
-  htmlToPdf: htmlToPdf
+module.exports = {
+  htmlToPdf
+}

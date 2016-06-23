@@ -12,6 +12,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 buckets =
   PDF: 'aws-pdf-downloads'
+  PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
 
 

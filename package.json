@@ -122,6 +122,7 @@
     "heapdump": "^0.3.7",
     "helmet": "0.4.X",
     "heroku-client": "^2.0.0",
+    "html-pdf": "^2.0.1",
     "hyperquest": "^1.2.0",
     "ignore": "^2.2.16",
     "image-size": "^0.3.5",
@@ -214,7 +215,6 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.3.1",
     "winston": "0.8.X",
-    "wkhtmltopdf": "^0.3.1",
     "yargs": "^3.29.0"
   }
 }
