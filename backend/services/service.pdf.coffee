@@ -10,16 +10,13 @@ tables = require('../config/tables')
 awsService = require('./service.aws')
 
 htmlToPdf = (campaign) ->
-  console.log "@@@@@@@ htmlToPdf()"
-  console.log "campaign:\n#{JSON.stringify(campaign,null,2)}"
-
   return new Promise (resolve, reject) ->
     html = campaign.lob_content
 
     # draft key and options
     key = config.MAILING_PLATFORM.S3_UPLOAD.getKey()
     opts =
-      extAcctName: 'aws-pdf-uploads'
+      extAcctName: awsService.buckets.PDF
       Key: key
       ContentType: 'application/pdf'
 
