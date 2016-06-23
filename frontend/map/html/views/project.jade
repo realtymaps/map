@@ -14,8 +14,8 @@ include ../includes/mixins/_leafletMixin.jade
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
             .pin-image.prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-              img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
-              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+              img(ng-if="property.geom_point_json.coordinates" rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
+              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" rmaps-cdn-image ng-src="/assets/test_property.jpg" title="{{property.title}}")
             .pin-attributes.content-block
               property-attributes(property="property")
 
@@ -28,8 +28,8 @@ include ../includes/mixins/_leafletMixin.jade
           slide.project-card.bordered(ng-repeat="property in pins" active="property.activeSlide" actual="property")
             .pin-image.prop-image
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
-              img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
-              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+              img(ng-if="property.geom_point_json.coordinates" rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
+              img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" rmaps-cdn-image ng-src="/assets/test_property.jpg" title="{{property.title}}")
             .pin-attributes.content-block
               property-attributes(property="property")
 
@@ -43,10 +43,10 @@ include ../includes/mixins/_leafletMixin.jade
           | Pins and Favorites are ways to save properties.
           | As the project owner you will Pin properties to add them to this project.
           | Your clients will mark properties as Favorites.
-        img.project-instruction-image(src='/assets/project/pin-favorite-instruction.png')
+        img.project-instruction-image(rmaps-cdn-image src='/assets/project/pin-favorite-instruction.png')
 
     .col-sm-6.hidden-xs
-      //img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+      //img.bordered(rmaps-cdn-image src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
       .dashboardMap
         leaflet(
         id="dashboardMap"

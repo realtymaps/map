@@ -1,11 +1,12 @@
 photosService = require '../services/service.photos'
-logger = require('../config/logger').spawn('route.photos')
+logger = require('../config/logger').spawn('route:photos')
 {mergeHandles, wrapHandleRoutes} = require '../utils/util.route.helpers'
 transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 {HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
+config = require '../config/config'
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -30,6 +31,7 @@ handles = wrapHandleRoutes
 
           res.type = contentType
           res.setHeader 'Content-type', contentType
+          res.setHeader 'Cache-Control', "public, max-age=#{config.FRONTEND_ASSETS.MAX_AGE_SEC}"
 
           if payload.meta.width
             res.setHeader 'X-ImageWidth', payload.meta.width
