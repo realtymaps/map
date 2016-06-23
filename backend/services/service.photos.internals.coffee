@@ -1,9 +1,8 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('service.photos')
 sharp = require 'sharp'
 through2 = require 'through2'
 errors = require '../utils/errors/util.errors.photos'
-logger = require('../config/logger').spawn('service.photos.internals')
+logger = require('../config/logger').spawn('service:photos:internals')
 
 resize = ({stream, width, height}) -> new Promise (resolve, reject) ->
 

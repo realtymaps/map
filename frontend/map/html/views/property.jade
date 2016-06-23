@@ -151,7 +151,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .row
                   .col-lg-3
                     .mls-icon
-                      img(ng-show="property.disclaimer_logo" ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
+                      img(ng-show="property.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
                   .col-lg-9
                     .mls-disclaimer {{property.disclaimer_text}}
             .col-sm-6(ng-show="property.dcma_contact_name && property.dcma_contact_address")
@@ -197,7 +197,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 script(type="text/ng-template" id="MailReview")
                   .preview-mail-window
                     .modal-body
-                      img(ng-src="{{mail.lob.thumbnails[0].medium}}")
+                      img(rmaps-cdn-image ng-src="{{mail.lob.thumbnails[0].medium}}")
 
         .content-block.prop-attrs.border-bottom
           .content-heading Property Info
