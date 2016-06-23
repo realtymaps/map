@@ -82,12 +82,10 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   tax.substatus = 'sold'
   tax.status_display = 'sold'
 
-  # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
-  # TODO: static data fields?
-
   # now that we have an ordered sales history, overwrite that into the tax record
   saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
-  tax.subscriber_groups.mortgageHistory = mortgageEntries
+  # TODO:  ideally, this probably needs to examine the list and do "last sale" stuff with the most recent sale that matches
+  # TODO:  the tax data's legal unit number
   lastSale = deedEntries[0]
   if lastSale? && moment(lastSale.close_date).isAfter(tax.close_date)
     deedEntries.pop()
@@ -95,17 +93,15 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields
       tax[field] = lastSale[field]
-    # save the MLS promoted values for easier access
-    promotedValues =
-      owner_name: lastSale.owner_name
-      owner_name_2: lastSale.owner_name_2
-      zoning: lastSale.zoning
-  else
-    # save the MLS promoted values for easier access
-    promotedValues =
-      owner_name: tax.owner_name
-      owner_name_2: tax.owner_name_2
-      zoning: tax.zoning
+  # save the values promoted to MLS for easier access
+  promotedValues =
+    owner_name: tax.owner_name
+    owner_name_2: tax.owner_name_2
+    zoning: tax.zoning
+
+  # TODO: consider going through salesHistory / deedHistory / mortgageHistory to make them essentially diffs, with
+  # TODO: changed values only for certain static data fields?
+  tax.subscriber_groups.mortgageHistory = mortgageEntries
   tax.subscriber_groups.deedHistory = deedEntries
   tax.shared_groups.saleHistory = []
   for deedInfo in deedEntries
