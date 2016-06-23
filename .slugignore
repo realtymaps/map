@@ -1,2 +1,17 @@
 migrations/ci_main_data
 migrations/ci_normalized_data
+node_modules/stylusify
+node_modules/watchify
+node_modules/less
+node_modules/istanbul
+node_modules/gulp-nodemon
+node_modules/gulp-less
+node_modules/gulp-minify-html
+node_modules/gulp-minify-css
+node_modules/gulp-ng-annotate
+node_modules/gulp-complexity
+node_modules/gulp-coffee-istanbul
+node_modules/flamegraph
+node_modules/browserify
+node_modules/browserify-ngannotate
+node_modules/brfs
