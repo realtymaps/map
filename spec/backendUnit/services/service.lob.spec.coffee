@@ -63,6 +63,11 @@ describe "service.lob", ->
       return "http://aws-pdf-downloads/#{Key}"
     buckets: PDF: 'aws-pdf-downloads'
 
+  svc.__set__ 'pdfService',
+    htmlToPdf: () -> Promise.try ->
+      return mockCampaign.aws_key
+
+
   beforeEach ->
     user.resetSpies()
     campaigns.resetSpies()
