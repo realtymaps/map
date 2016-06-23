@@ -55,11 +55,13 @@ app.factory 'rmapSummaryResultsMutation',
       Toggles = @scope.Toggles
 
       @scope.map.markers.backendPriceCluster = {}
-      setDataOptions(@data?.singletons, MLS.setMarkerPriceOptions)
+
+      singletons = @data?.singletons || @data
+      setDataOptions(singletons, MLS.setMarkerPriceOptions)
 
       filterSummary = {}
 
-      for key, model of @data?.singletons
+      for key, model of singletons
         _wrapGeomPointJson model
         rmapsPropertiesService.updateProperty model
         filterSummary[key] = model
