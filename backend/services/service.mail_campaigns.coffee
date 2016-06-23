@@ -186,7 +186,6 @@ class MailService extends ServiceCrud
       .then (data) ->
         expectSingleRow(data)
       .then (result) ->
-        console.log "result:\n#{JSON.stringify(result,null,2)}"
         pdfService.htmlToPdf()
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
