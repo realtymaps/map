@@ -42,6 +42,7 @@ transforms = do ->
                 ]
               validators.defaults(defaultValue: [])
             ]
+            soldRange: validators.string()
           validators.defaults(defaultValue: {})
       ]
   bounds:
@@ -77,8 +78,26 @@ getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
   if bounds
     sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geom_polys_raw", bounds)
 
-  if filters.status.length < statuses.length
-    sqlHelpers.whereIn(query, "#{dbFn.tableName}.rm_status", filters.status)
+  if filters.status.length < statuses.length || filters.soldRange
+    query.where () ->
+      sold = false
+      hardStatuses = []
+      for status in filters.status
+        if status == 'sold'
+          sold = true
+        else
+          hardStatuses.push(status)
+
+      if sold
+        @.orWhere () ->
+          @.where () ->
+            @.where("#{dbFn.tableName}.rm_status", 'sold')
+            @.orWhere("#{dbFn.tableName}.rm_status", 'not for sale')
+          if filters.soldRange
+            @.whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
+
+      if hardStatuses.length > 0
+        sqlHelpers.orWhereIn(@, "#{dbFn.tableName}.rm_status", hardStatuses)
 
   sqlHelpers.between(query, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
   sqlHelpers.between(query, "#{dbFn.tableName}.finished_sqft", filters.sqftMin, filters.sqftMax)
