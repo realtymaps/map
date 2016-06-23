@@ -57,9 +57,12 @@ app.factory 'rmapSummaryResultsMutation',
       @scope.map.markers.backendPriceCluster = {}
       setDataOptions(@data?.singletons, MLS.setMarkerPriceOptions)
 
+      filterSummary = {}
+
       for key, model of @data?.singletons
         _wrapGeomPointJson model
         rmapsPropertiesService.updateProperty model
+        filterSummary[key] = model
 
       for key, group of @data?.groups
         group.grouped = properties: _.values(group)
@@ -77,9 +80,11 @@ app.factory 'rmapSummaryResultsMutation',
         _wrapGeomPointJson(group)
         group.geometry = group.geom_point_json
 
+        filterSummary["#{group.grouped.name}:#{group.grouped.forsale}:#{group.grouped.pending}:#{group.grouped.sold}"] = group
+
       setDataOptions(@data?.groups, MLS.setMarkerCondoOptions)
 
-      @scope.map.markers.filterSummary = _.assign({}, @data?.singletons, @data?.groups)
+      @scope.map.markers.filterSummary = filterSummary
 
       $log.debug @scope.map.markers.filterSummary
 
