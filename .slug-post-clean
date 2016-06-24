@@ -1,4 +1,4 @@
-# This file follows the format of rm parameters (allowing wildcards like *.log).  The intent is to indicate files that
+# This file follows the format of bash globs (allowing wildcards like *.log).  The intent is to indicate files that
 # are used for the build, but are unneeded by the runtime; they're removed at the end of the build process by our
 # buildpack at https://github.com/realtymaps/heroku-buildpack-post-build-clean  (This helps reduce slug size and speeds
 # up deploy.)
