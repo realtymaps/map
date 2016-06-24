@@ -16,4 +16,4 @@
         td {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'never' }}
       tr
         td(colspan=2)
-          img(ng-src="{{mail.lob.thumbnails[0].small}}")
+          img(rmaps-cdn-image ng-src="{{mail.lob.thumbnails[0].small}}")
