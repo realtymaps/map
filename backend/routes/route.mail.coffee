@@ -60,8 +60,3 @@ module.exports = routeHelpers.mergeHandles instance,
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
-  getPdf:
-    methods: ['get']
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-    ]
