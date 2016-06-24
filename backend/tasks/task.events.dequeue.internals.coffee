@@ -216,7 +216,7 @@ processEvent = (subtask) -> Promise.try () ->
 
     logger.debug "processEvent: handle options: #{util.inspect options, depth: null}"
 
-    tables.user.eventsQueue.transaction (transaction) ->
+    dbs.get("main").transaction (transaction) ->
       #TODO: add transaction to revert dequeuing when any error ocurrs
       handle options
       .then () ->

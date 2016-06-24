@@ -55,12 +55,13 @@ module.exports = (vero) ->
     logger.debug "@@@@@@@@ notificationProperties @@@@@@@@"
     logger.debug {opts, name, errorName, eventName}
     logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    {authUser, properties} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
+    {authUser, properties, type} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
 
     opts = {
       authUser
       eventData: {
         properties
+        type
       }
     }
 

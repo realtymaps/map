@@ -82,21 +82,23 @@ VeroEvents = (vero) ->
     }
 
 
-  notificationFavorite = (opts) ->
+  notificationFavorited = (opts) ->
+    opts.type = 'Favorited'
     internals.notificationProperties {
       opts
       name: "notificationFavorite"
       errorName: "NotificationFavoriteError"
-      eventName: "notificationFavorite"
+      eventName: "notificationPropertiesSaved"
     }
 
 
   notificationPinned = (opts) ->
+    opts.type = 'Pinned'
     internals.notificationProperties {
       opts
       name: "notificationPinned"
       errorName: "NotificationPinnedError"
-      eventName: "notificationPinned"
+      eventName: "notificationPropertiesSaved"
     }
 
 
@@ -106,7 +108,7 @@ VeroEvents = (vero) ->
     subscriptionTrialEnding
     subscriptionUpdated
     subscriptionDeleted
-    notificationFavorite
+    notificationFavorited
     notificationPinned
   }
 

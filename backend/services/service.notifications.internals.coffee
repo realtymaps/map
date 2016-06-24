@@ -120,12 +120,13 @@ sendEmailVero = (row, options) -> Promise.try () ->
     options.authUser =
         first_name: row.first_name
         last_name: row.last_name
+        email: row.email
 
     options.notificationType = switch options.type
       when 'pin'
         'notificationPinned'
       when 'favorite'
-        'notificationFavorite'
+        'notificationFavorited'
       else
         null
 
@@ -172,13 +173,13 @@ getChildUsers = ({id, project_id}) ->
 
 # Public: [Description]
 #
-# * `{to` Whom to send a notification to. as {[string]}.
+# * `to` Whom to send a notification to. as {[string]}.
 #   children, childrenSelf,
 #   parents, parentsSelf,
 #   all, allSelf
 #
-# * `configRow}` The config_notifcation row as {[object]}.
-#
+# * `id` - parentId or childId that is targeted to send to
+# * `project_id` - project relevant to this notification
 # Returns the [Description] as `undefined`.
 getUsers = ({to, id, project_id}) ->
   logger.debug "@@@@ getUsers opts @@@@"

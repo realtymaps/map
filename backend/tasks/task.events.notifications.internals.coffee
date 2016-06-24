@@ -1,13 +1,14 @@
 Promise = require 'bluebird'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
+dbs = require '../config/dbs'
 logger = require('../config/logger.coffee').spawn('task:events:notifications:internals')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 notifyQueueSvc = require('../services/service.notification.queue').instance
 notificationsSvc = require '../services/service.notifications'
-sqlHelpers = require '../utils/util.sql.helpers'
+
 
 NUM_ROWS_TO_PAGINATE = 100
 # DELAY_MILLISECONDS = 50
@@ -72,14 +73,16 @@ sendNotifications = (subtask) ->
       - fail, remove pending column so it is retried by job task
 
     ###
-    tables.user.notificationQueue.transaction (transaction) ->
+    dbs.get("main").transaction (transaction) ->
       notificationsSvc.sendNotificationNow {row, options: row.options, transaction}
       .then () ->
-        logger.debug 'notification send success'
-
-        tables.user.notificationQueue({transaction})
+        logger.debug '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
+        # logger.debug row.id
+        q = tables.user.notificationQueue({transaction})
         .where id: row.id
         .delete()
+        logger.debug q.toString()
+        q
       .catch (err) ->
         throw err
 
