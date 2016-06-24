@@ -5,7 +5,6 @@ require './express'
 require './minify'
 require './gzip'
 require './complexity'
-require './checkdir'
 require './clean'
 require './otherAssets'
 require './watch'
@@ -29,7 +28,7 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series('prodAssetCheck', 'otherAssets',
+gulp.task 'prod', gulp.series('otherAssets',
   'angularProd', 'angularAdminProd', 'minify', 'gzip')
 
 gulp.task 'default', gulp.parallel 'develop'

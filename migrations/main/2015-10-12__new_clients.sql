@@ -1,7 +1,0 @@
-ALTER TABLE auth_user ALTER COLUMN last_login DROP NOT NULL;
-ALTER TABLE auth_user ALTER COLUMN date_joined DROP NOT NULL;
-ALTER TABLE auth_user ALTER COLUMN username DROP NOT NULL;
-ALTER TABLE auth_user ALTER COLUMN password DROP NOT NULL;
-ALTER TABLE auth_user ALTER COLUMN is_superuser SET DEFAULT false;
-ALTER TABLE auth_user ALTER COLUMN is_staff SET DEFAULT false;
-ALTER TABLE auth_user ALTER COLUMN is_active SET DEFAULT false;

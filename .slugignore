@@ -1,0 +1,10 @@
+# This file follows the general format of .gitignore rules (allowing wildcards like *.log), except that not-rules
+# (starting with !) don't work here.  The intent is to indicate files that are in VCS, but are unneeded for the build
+# and/or the runtime app; they're removed BEFORE the buildpacks are run automatically by heroku.  (This helps reduce
+# slug size and speeds up deploy.)
+
+# To indicate files needed for the build but not for the runtime app, see .slugclean
+
+migrations/ci_main_data
+migrations/ci_normalized_data
+frontend/map/original_assets
