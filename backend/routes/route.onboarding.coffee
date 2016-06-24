@@ -70,7 +70,7 @@ handles = wrapHandleRoutes handles:
                 id
           .then (id) ->
             logger.debug "new user (#{id}) inserted SUCCESS"
-            tables.auth.user(transaction: trx).select(basicColumns.user.concat(["id"])...)
+            tables.auth.user(transaction: trx).select(basicColumns.user.concat("id")...)
             .where id: parseInt id
           .then (authUser) ->
             expectSingleRow(authUser)
@@ -79,18 +79,17 @@ handles = wrapHandleRoutes handles:
             if !fips_code and !(mls_code and mls_id)
               throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
 
-            promise = null
+            promises = []
             if fips_code
-              promise = tables.auth.m2m_user_locations(transaction: trx)
-              .insert(auth_user_id: authUser.id, fips_code: fips_code)
+              promises.push(tables.auth.m2m_user_locations(transaction: trx)
+              .insert(auth_user_id: authUser.id, fips_code: fips_code))
 
             if mls_id and mls_code and plan == 'pro'
-              promise = tables.auth.m2m_user_mls(transaction: trx)
-              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id
-            else
-              promise = Promise.reject new Error 'invalid plan for mls setup'
+              promises.push(tables.auth.m2m_user_mls(transaction: trx)
+              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id)
 
-            promise.then () -> authUser
+            Promise.all promises
+            .then () -> authUser
 
           .then (authUser) ->
             submitPaymentPlan {plan, token, authUser, trx}

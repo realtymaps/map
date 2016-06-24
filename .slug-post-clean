@@ -1,0 +1,40 @@
+# This file follows the format of bash globs (allowing wildcards like *.log).  The intent is to indicate files that
+# are used for the build, but are unneeded by the runtime; they're removed at the end of the build process by our
+# buildpack at https://github.com/realtymaps/heroku-buildpack-post-build-clean  (This helps reduce slug size and speeds
+# up deploy.)
+
+# To indicate files not needed for the build or for the runtime app, see .slugclean
+
+# all frontend files have been built and/or copied to _public
+frontend
+
+# spec-related files
+spec
+
+# misc build and script related deps
+node_modules/less
+node_modules/istanbul
+node_modules/chai
+node_modules/coffee-script-mapped
+node_modules/coffeelint
+node_modules/coffeelint-stylish
+node_modules/globby
+node_modules/jasmine-core
+node_modules/phantomjs*
+node_modules/rewire
+node_modules/stylus
+node_modules/vinyl-*
+node_modules/yargs
+
+# karma deps
+node_modules/karma*
+
+# browserify deps
+node_modules/browserify*
+node_modules/coffeeify
+node_modules/jadeify
+node_modules/stylusify
+node_modules/watchify
+
+# gulp deps
+node_modules/gulp-*

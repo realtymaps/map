@@ -1,1 +1,0 @@
-ALTER TABLE user_project ADD COLUMN status text DEFAULT 'active';

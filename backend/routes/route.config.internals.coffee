@@ -29,27 +29,34 @@ protectedConfigPromise = () ->
   .then (accountInfo) ->
     ret.google = accountInfo?.api_key ? null
 
-  stripePromise = externalAccounts.getAccountInfo 'stripe'
-  .then ({other}) ->
-    ret.stripe = _.pick other, ['public_live_api_key', 'public_test_api_key']
-
   Promise.all [
     mapBoxPromise
     cartoDbPromise
     googlePromise
-    stripePromise
   ]
   .then () ->
     ret
 
-
-# if safe config becomes more complicated we may want to make this memoizee function
-# NOTE: NEVER send over the whole config object as many field values should not be exposed
 safeConfig =
   ANGULAR: config.ANGULAR
   debugLevels: config.LOGGING.ENABLE
+  stripe: {}
+
+# if safe config becomes more complicated we may want to make this memoizee function
+# NOTE: NEVER send over the whole config object as many field values should not be exposed
+safeConfigPromise = () ->
+  externalAccounts = hiddenRequire '../../backend/services/service.externalAccounts'
+
+  stripePromise = externalAccounts.getAccountInfo 'stripe'
+  .then ({other}) ->
+    _.pick other, ['public_live_api_key', 'public_test_api_key']
+
+  Promise.join stripePromise, (stripe) ->
+    safeConfig.stripe = stripe
+    safeConfig
 
 module.exports = {
   safeConfig
+  safeConfigPromise: memoize.promise(safeConfigPromise, maxAge: 10*60*1000)
   protectedConfigPromise: memoize.promise(protectedConfigPromise, maxAge: 10*60*1000)
 }

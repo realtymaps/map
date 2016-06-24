@@ -13,6 +13,7 @@ stateDefaults =
 module.exports = app.config (
   $stateProvider,
   $stickyStateProvider,
+  $uiViewScrollProvider,
   $urlRouterProvider,
   rmapsOnboardingOrderServiceProvider,
   rmapsOnboardingProOrderServiceProvider,
@@ -20,6 +21,8 @@ module.exports = app.config (
   rmapsRouteIdentityResolve,
   rmapsRouteProfileResolve
 ) ->
+
+  $uiViewScrollProvider.useAnchorScroll()
 
 #  $stickyStateProvider.enableDebug(true)
 
@@ -32,6 +35,10 @@ module.exports = app.config (
       controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl" # we can have CamelCase yay!
     _.extend(state, overrides)
     _.defaults(state, stateDefaults)
+
+    # Scroll To param
+    state.params ?= {}
+    state.params.scrollTo = null
 
     # Evaluate resolves
     if state.loginRequired
@@ -203,7 +210,7 @@ module.exports = app.config (
 
   # Project child states
   buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, templateUrl: './views/project/projectClients.jade'
-  buildChildState 'projectNotes', 'projectLayout', projectParam: 'id', page: { title: 'Notes' }, templateUrl: './views/project/projectNotes.jade'
+  buildChildState 'projectNotes', 'projectLayout', controller: 'rmapsProjectNotesCtrl', projectParam: 'id', page: { title: 'Notes' }, templateUrl: './views/project/projectNotes.jade'
   buildChildState 'projectFavorites', 'projectLayout', controller: 'rmapsProjectAreasCtrl', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
   buildChildState 'projectAreas', 'projectLayout', projectParam: 'id', page: { title: 'Areas' }, templateUrl: './views/project/projectAreas.jade'
   buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'

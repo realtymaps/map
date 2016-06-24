@@ -1,1 +1,0 @@
-DROP TABLE IF EXISTS mls_config;
