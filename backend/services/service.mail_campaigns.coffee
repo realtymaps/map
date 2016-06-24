@@ -9,7 +9,6 @@ db = dbs.get('main')
 propertySvc = require './service.properties.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
 lobSvc = require './service.lob'
-pdfService = require './service.pdf'
 LobErrors = require '../utils/errors/util.errors.lob'
 Promise = require 'bluebird'
 
@@ -177,16 +176,6 @@ class MailService extends ServiceCrud
           id: letter.id
         .then () ->
           lobResponse
-
-  getPdf: (user_id, campaign_id) -> Promise.try ->
-    dbs.transaction 'main', (trx) ->
-      tables.mail.campaign(trx)
-      .select('aws_key')
-      .where(auth_user_id: user_id, id: campaign_id)
-      .then (data) ->
-        expectSingleRow(data)
-      .then (result) ->
-        pdfService.htmlToPdf()
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance

@@ -225,7 +225,6 @@ module.exports =
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"
-    getPdf: "#{apiBaseMailCampaigns}/:id/pdf"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf
