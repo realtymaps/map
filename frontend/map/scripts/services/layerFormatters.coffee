@@ -93,6 +93,12 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     markersBSLabel[rmapsParcelEnums.status.notForSale] = 'notsale-property'
     markersBSLabel['saved'] = 'saved-property'
 
+    setMarkerOptions: (marker) ->
+      switch marker.type
+        when 'price' then setMarkerPriceOptions(marker)
+        when 'price-group' then setMarkerPriceGroupOptions(marker)
+        when 'note' then setMarkerNotesOptions(marker)
+
     setMarkerPriceOptions: (model) ->
       return {} unless model
       if !model.price
@@ -122,16 +128,16 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           iconSize: [60, 30]
           html: priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{markersBSLabel[status]}#{hovered}")
 
-    setMarkerCondoOptions: (models) ->
+    setMarkerPriceGroupOptions: (models) ->
       return {} unless models
 
       _.extend models,
-        markerType: 'price'
+        markerType: 'price-group'
         riseOnHover: true
         icon:
           type: 'div'
           iconSize: [60, 30]
-          # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Condos (#{models.grouped.name}", priceClasses: "label-saved-property")
+          # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Units (#{models.grouped.name}", priceClasses: "label-saved-property")
           html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
 
     setMarkerNotesOptions: (model, number) ->

@@ -171,7 +171,6 @@ rmapsMapTogglesFactory
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
         return if model.markerType != 'note'
         popup.load({
-          popupType: 'note'
           map: lMap
           model
           templateVars:
