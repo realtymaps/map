@@ -14,9 +14,9 @@ objectValidation = require './util.validation.object'
 module.exports = (options = {}) ->
   composite = objectValidation
     subValidateSeparate:
-      full: integerValidation()
-      half: integerValidation()
-      total: floatValidation()
+      full: integerValidation(implicitDecimals: options.implicit?.full)
+      half: integerValidation(implicitDecimals: options.implicit?.half)
+      total: floatValidation(implicitDecimals: options.implicit?.total)
 
   (param, value) -> Promise.try () ->
     if !value
@@ -24,22 +24,25 @@ module.exports = (options = {}) ->
 
     composite(param, value)
     .then (bareValues) ->
-      if bareValues.full? && bareValues.half?
+      {full, half, total} = bareValues
+      if options.autodetect && half
+        full = total
+      if full? && half?
         result =
           label: 'Baths (Full / Half)'
-          value: "#{bareValues.full} / #{bareValues.half}"
-        result.filter = bareValues.full
-        if bareValues.half > 0
+          value: "#{full} / #{half}"
+        result.filter = full
+        if half > 0
           result.filter += 0.5
         return result
-      else if bareValues.total?
-        numStr = Math.floor(bareValues.total*10).toString()
+      else if total?
+        numStr = Math.floor(total*10).toString()
         numStr = numStr[0...-1]+'.'+numStr[-1..]
         result =
           label: 'Baths'
           value: numStr
-        result.filter = Math.floor(bareValues.total)
-        if bareValues.total - result.filter > 0
+        result.filter = Math.floor(total)
+        if total - result.filter > 0
           result.filter += 0.5
         return result
       else
