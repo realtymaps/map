@@ -16,7 +16,6 @@ node_modules/coffee-script-mapped
 node_modules/coffeelint
 node_modules/coffeelint-stylish
 node_modules/globby
-node_modules/jade
 node_modules/jasmine-core
 node_modules/phantomjs*
 node_modules/rewire
