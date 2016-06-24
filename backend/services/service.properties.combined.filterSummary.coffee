@@ -220,11 +220,12 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   logger.debug -> query.toString()
   query
 
-module.exports =
-  transforms: transforms
-  getFilterSummaryAsQuery: getFilterSummaryAsQuery
-  getResultCount: getResultCount
-  cluster: cluster
-  getPermissions: getPermissions
-  queryPermissions: queryPermissions
-  scrubPermissions: scrubPermissions
+module.exports = {
+  transforms
+  getFilterSummaryAsQuery
+  getResultCount
+  cluster
+  getPermissions
+  queryPermissions
+  scrubPermissions
+}
