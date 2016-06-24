@@ -3,7 +3,7 @@
   .row
     .col-lg-3
       .mls-icon
-        img(ng-show="mls.disclaimer_logo" ng-src="/assets/mlsicons/{{mls.disclaimer_logo}}")
+        img(ng-show="mls.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{mls.disclaimer_logo}}")
     .col-lg-9
       .mls-disclaimer {{mls.disclaimer_text}}
   .btn.btn-white(ng-show="mls.dcma_contact_name && mls.dcma_contact_address" ng-click="showDCMA(mls)") DCMA for {{mls.formal_name}}

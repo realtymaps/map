@@ -119,7 +119,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       .then (results=[]) ->
         if results[0]?.promoted_values
           # promote values into this listing
-          listing.extend(results[0].promoted_values)
+          _.extend(listing, results[0].promoted_values)
           # save back to the listing table to avoid making checks in the future
           tables.normalized.listing()
           .where

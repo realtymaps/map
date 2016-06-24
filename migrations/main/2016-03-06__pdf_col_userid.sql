@@ -1,1 +1,0 @@
-ALTER TABLE user_pdf_uploads ADD COLUMN auth_user_id int4 NOT NULL;

@@ -1,6 +1,16 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResponsiveViewService, rmapsPageService) ->
+module.exports = app.controller 'rmapsMobilePageCtrl', (
+  $scope,
+  $state,
+  $window,
+  rmapsClientsFactory,
+  rmapsDrawnUtilsService,
+  rmapsPageService,
+  rmapsPrincipalService,
+  rmapsProjectsService,
+  rmapsResponsiveViewService
+) ->
   #
   # Scope variables
   #
@@ -39,6 +49,12 @@ module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window,
           project.propertiesTotal = _.keys(project.pins)?.length
           project.favoritesTotal = _.keys(project.favorites)?.length
           $scope.project = project
+
+        # Load Areas
+        drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
+        drawnShapesSvc.getAreasNormalized(true)
+        .then (data) ->
+          $scope.areas = data
 
         # If Editor, retrieve the clients for the project
         $scope.clients = null
