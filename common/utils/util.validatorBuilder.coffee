@@ -306,6 +306,9 @@ _rules =
         valid: () ->
           @input.year || @input.age
 
+      legal_unit_number:
+        alias: 'Legal Unit Number'
+
     deed:
       address:
         group: 'deed'
@@ -328,6 +331,9 @@ _rules =
         alias: 'Zoning'
         getTransform: () ->
           name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
+
+      legal_unit_number:
+        alias: 'Legal Unit Number'
 
     mortgage:
       address:

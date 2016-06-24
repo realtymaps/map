@@ -84,11 +84,13 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
 
   # now that we have an ordered sales history, overwrite that into the tax record
   saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
-  # TODO:  ideally, this probably needs to examine the list and do "last sale" stuff with the most recent sale that matches
-  # TODO:  the tax data's legal unit number
-  lastSale = deedEntries[0]
-  if lastSale? && moment(lastSale.close_date).isAfter(tax.close_date)
-    deedEntries.pop()
+
+  lastSale = null
+  for deedEntry,i in deedEntries
+    if tax.legal_unit_number == deedEntry.legal_unit_number
+      lastSale = i
+  if lastSale? && moment(deedEntries[lastSale].close_date).isAfter(tax.close_date)
+    [lastSale] = deedEntries.splice(lastSale, 1)
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields

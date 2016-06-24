@@ -118,6 +118,7 @@
     "gulp-util": "3.0.X",
     "gulp-watch": "4.X",
     "gulp-wrap": "0.11.X",
+    "gulp-wrap-commonjs": "^0.1.13",
     "heapdump": "^0.3.7",
     "helmet": "0.4.X",
     "heroku-client": "^2.0.0",
@@ -170,6 +171,7 @@
     "pdfkit": "^0.7.0",
     "pg": "^4.4.1",
     "pg-copy-streams": "^0.3.0",
+    "pg-query-stream": "^1.0.0",
     "phantomjs-polyfill": "0.0.1",
     "phantomjs-prebuilt": "2.1.7",
     "pretty-hrtime": "^0.2.1",
@@ -183,6 +185,7 @@
     "require-dir": "^0.1.0",
     "require-directory": "^2.1.1",
     "rets-client": "^4.3.0",
+    "rewire": "2.X",
     "rework-plugin-url": "^1.0.1",
     "rimraf": "^2.4.3",
     "s3-upload-stream": "1.0.7",
@@ -196,6 +199,7 @@
     "stack-trace": "0.0.9",
     "stampit": "2.1.1",
     "stripe": "4.X",
+    "stripe-debug": "2.X",
     "stylus": "^0.49.3",
     "stylusify": "^2.0.0",
     "swagger-tools": "0.X",
@@ -211,9 +215,6 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.3.1",
     "winston": "0.8.X",
-    "yargs": "^3.29.0",
-    "gulp-wrap-commonjs": "^0.1.13",
-    "rewire": "2.X",
-    "stripe-debug": "2.X"
+    "yargs": "^3.29.0"
   }
 }
