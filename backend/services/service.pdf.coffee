@@ -9,7 +9,7 @@ NamedError = require('../utils/errors/util.error.named')
 tables = require('../config/tables')
 awsService = require('./service.aws')
 
-htmlToPdf = (campaign) ->
+createFromCampaign = (campaign) ->
   return new Promise (resolve, reject) ->
     html = campaign.lob_content
 
@@ -35,8 +35,12 @@ htmlToPdf = (campaign) ->
         logger.error "error while uploading pdf for mail campaign #{campaign.id}: #{uploadErr}"
         reject(uploadErr)
 
+      pdfOptions =
+        format: 'Letter'
+        orientation: 'portrait'
+
       # pipe pdf data through the s3 upload
-      htmltopdf.create(html, { format: 'Letter' })
+      htmltopdf.create(html, pdfOptions)
       .toStream (htmltopdfErr, stream) ->
         if htmltopdfErr
           logger.error "There is an issue with making a pdf from the html content of campaign #{campaign.id}: #{htmltopdfErr}"
@@ -48,5 +52,5 @@ htmlToPdf = (campaign) ->
         .pipe(upload)
 
 module.exports = {
-  htmlToPdf
+  createFromCampaign
 }

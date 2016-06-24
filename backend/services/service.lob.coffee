@@ -173,7 +173,7 @@ getPriceQuote = (userId, campaignId) ->
       throw new Error("recipients must be an array")
 
     # manually created content might not have aws_key: so make one if not, return the key if so
-    (if !campaign.aws_key? then pdfService.htmlToPdf(campaign) else Promise.resolve(campaign.aws_key))
+    (if !campaign.aws_key? then pdfService.createFromCampaign(campaign) else Promise.resolve(campaign.aws_key))
     .then (aws_key) ->
       awsService.getTimedDownloadUrl
         extAcctName: awsService.buckets.PDF
