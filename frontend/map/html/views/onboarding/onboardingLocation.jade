@@ -83,8 +83,8 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                     select.form-control(ng-model="user.fips_code" validator="required" name="userFipsCode")
                       option(
                         ng-repeat="entity in counties"
-                        ng-selected="{{entity.code == user.fips_code}}"
-                        value="{{entity.code}}") {{entity.county}} - {{entity.code}}
+                        ng-selected="{{entity.fips_code == user.fips_code}}"
+                        value="{{entity.fips_code}}") {{entity.county}} - {{entity.fips_code}}
             .row
               .col-md-6.col-sm-6.col-xs-12
                 .form-group

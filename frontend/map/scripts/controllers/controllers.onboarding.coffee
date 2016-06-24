@@ -167,6 +167,10 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
   $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
 
+    rmapsFipsCodesService.getAllMlsCodes state: usStateCode
+    .then (fipsCodes) ->
+      $scope.counties = fipsCodes
+
     rmapsFipsCodesService.getAllSupportedMlsCodes state: usStateCode
     .then (mlsFipsCounties) ->
       $scope.mlsFipsCounties = mlsFipsCounties
