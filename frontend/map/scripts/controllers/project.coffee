@@ -181,6 +181,10 @@ app.controller 'rmapsProjectCtrl',
       $rootScope.$emit rmapsEventConstants.notes
       delete $scope.newNotes['project']
 
+  $scope.goDashboardState = (state, params = {}) ->
+    params.scrollTo = 'project-dashboard'
+    $state.go state, params
+
   #
   # Load Project Data
   #
