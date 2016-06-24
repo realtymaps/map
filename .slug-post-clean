@@ -8,6 +8,9 @@
 # all frontend files have been built and/or copied to _public
 frontend
 
+# spec-related files
+spec
+
 # misc build and script related deps
 node_modules/less
 node_modules/istanbul
