@@ -30,7 +30,6 @@ gulp.task 'lint', () ->
     'backend/**/*.coffee'
     'common/**/*.coffee'
     # 'spec/**/*.coffee'
-    '!common/documentTemplates/**'
   ]
   .pipe coffeelint()
   .pipe coffeelint.reporter()

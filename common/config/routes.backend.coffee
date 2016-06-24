@@ -36,7 +36,6 @@ apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 apiBaseCharges = "#{apiBase}/charges"
 apiBasePaymentMethod = "#{apiBase}/paymentMethod"
-apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
@@ -161,9 +160,6 @@ module.exports =
     unPin: "#{apiBase}/properties/unPin/"
     favorite: "#{apiBase}/properties/favorite/"
     unFavorite: "#{apiBase}/properties/unFavorite/"
-  snail:
-    quote: "#{apiBase}/snail/quote/:campaign_id"
-    send: "#{apiBase}/snail/send/:campaign_id"
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
     getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"
@@ -225,6 +221,9 @@ module.exports =
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"
+  snail:
+    quote: "#{apiBase}/snail/quote/:campaign_id"
+    send: "#{apiBase}/snail/send/:campaign_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf
@@ -252,9 +251,6 @@ module.exports =
     apiBase: apiBasePaymentMethod
     getDefaultSource: "#{apiBasePaymentMethod}/defaultsource"
     replaceDefaultSource: "#{apiBasePaymentMethod}/defaultsource/:source"
-  memdump:
-    apiBase: apiBaseMemdump
-    download: "#{apiBaseMemdump}/download"
   shell:
     apiBase: apiBaseShell
     shell: apiBaseShell

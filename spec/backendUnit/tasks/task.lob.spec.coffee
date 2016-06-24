@@ -9,7 +9,7 @@ svc = rewire "../../../backend/tasks/task.lob"
 _ = require 'lodash'
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
-mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockLetter = require '../../../backend/json/mail.fakeLetter.json'
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 
 describe 'task.lob', ->

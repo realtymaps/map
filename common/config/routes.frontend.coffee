@@ -30,7 +30,7 @@ module.exports =
   userTeamMembers: '/userTeamMembers'
   userPaymentHistory: '/userPaymentHistory'
   clientEntry:   'clientEntry/:key'
-  
+
   areas:          'areas'
   notes:          'notes'
   favorites:      'favorites'

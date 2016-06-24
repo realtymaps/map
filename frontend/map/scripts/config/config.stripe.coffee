@@ -5,13 +5,19 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _stripeKeysDeferred = defer()
 _stripeKeysPromise = _stripeKeysDeferred.promise
 
-app.run ($http) ->
-  $http.get backendRoutes.config.protectedConfig
+app.run ($http, $log) ->
+  $http.get backendRoutes.config.safeConfig
   .then ({data}) ->
+    if !data?.stripe?
+      msg = "stripe setting undefined"
+      $log.error msg
+      _stripeKeysDeferred.reject new Error msg
+
     _stripeKeysDeferred.resolve data.stripe
   .catch _stripeKeysDeferred.reject
 
 
 app.config (stripeProvider) ->
-  _stripeKeysPromise.then (stripeKeys) ->
+  _stripeKeysPromise
+  .then (stripeKeys) ->
     stripeProvider.setPublishableKey stripeKeys.public_test_api_key

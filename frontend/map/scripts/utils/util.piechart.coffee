@@ -14,7 +14,7 @@ serializeXmlNode = (xmlNode) ->
 formatPieData = (data) ->
   d3.nest()
   .key (k) ->
-    k.options.rm_status || k.options.status
+    k.rm_status || k.status
   .sortValues (v) ->
     v.length
   .entries data, d3.map
@@ -27,7 +27,7 @@ formatPieDataBackend = (cluster) ->
     {key: 'not for sale', values: {'length': cluster.notforsale}}
   ]
 
-makeSvg = (data, total) ->
+makeSvg = (data, total, pieClass) ->
   # stage items for processing and creating pie data
   donut = d3.layout.pie()
   arc = d3.svg.arc().outerRadius(pieStyl.radius).innerRadius(pieStyl.innerRadius)
@@ -40,6 +40,9 @@ makeSvg = (data, total) ->
     .attr('width', pieStyl.width)
     .attr('height', pieStyl.height)
 
+  if pieClass
+    vis = vis.attr('class', pieClass)
+
   # white circle for background behind cluster number in pie (css background does not work)
   vis.append('circle')
     .attr('cx', pieStyl.radius)
@@ -49,7 +52,7 @@ makeSvg = (data, total) ->
 
   # arc data according to the parcel counts in dataset
   arcs = vis.selectAll('g.arc')
-    .data(donut.value(pieStyl.valueFunc(total)))
+    .data(donut.value(pieStyl.valueFunc()))
     .enter().append('svg:g')
     .attr('class', 'arc')
     .attr('transform', 'translate('+(pieStyl.radius+pieStyl.arcOffset)+','+(pieStyl.radius+pieStyl.arcOffset)+')')
@@ -59,6 +62,7 @@ makeSvg = (data, total) ->
     .attr('class', pieStyl.pathClassFunc)
     .attr('stroke-width', pieStyl.strokewidth)
     .attr('d', arc)
+    .attr('shape-rendering', 'optimizeQuality')
     .append('svg:title')
     .text(pieStyl.pathTitleFunc)
 
@@ -74,17 +78,25 @@ makeSvg = (data, total) ->
 
 # designed for usage as leaflet 'iconCreateFunction'
 pieCreateFunction = (cluster) ->
-  children = cluster.getAllChildMarkers()
+  children = expandGroups(cluster.getAllChildMarkers())
   data = formatPieData(children)
-  html = serializeXmlNode(makeSvg(data, children.length))
   return new L.DivIcon
-    html: html
+    html: serializeXmlNode(makeSvg(data, children.length))
 
-pieCreateFunctionBackend = (cluster) ->
+expandGroups = (children) ->
+  result = []
+  for child in children
+    if child.options.grouped
+      result.push(child.options.grouped.properties...)
+    else
+      result.push child.options
+  result
+
+pieCreateFunctionBackend = (cluster, pieClass) ->
   data = formatPieDataBackend(cluster)
-  return serializeXmlNode(makeSvg(data, cluster.count))
+  return serializeXmlNode(makeSvg(data, cluster.count, pieClass))
 
-
-module.exports =
-  pieCreateFunction: pieCreateFunction
-  pieCreateFunctionBackend: pieCreateFunctionBackend
+module.exports = {
+  pieCreateFunction
+  pieCreateFunctionBackend
+}

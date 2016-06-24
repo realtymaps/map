@@ -15,7 +15,8 @@ validators = loaders.loadSubmodules(path.join(__dirname, 'validation'), /^util\.
 ###
 validateAndTransformRequest = (params, definitions) ->
   removeMissing = (params, req) ->
-    #TODO This is not always ideal see validation.mapKeys
+    #TODO This is not always ideal see validation.mapKeys and or using input to remap
+    #thinking of adding an ignore list, with parent key
     for k, v of params
       if !req[k]?
         delete params[k]
