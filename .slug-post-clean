@@ -5,8 +5,8 @@
 
 # To indicate files needed for the build but not for the runtime app, see .slugclean
 
-# these have been copied to _public
-frontend/map/assets
+# all frontend files have been built and/or copied to _public
+frontend
 
 # misc build and script related deps
 node_modules/less
