@@ -85,17 +85,25 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   # now that we have an ordered sales history, overwrite that into the tax record
   saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
 
-  lastSale = null
+  # we need to check to see if we have a deed record that represents a sale more recent than what our tax records show,
+  # and if so, overwrite the owner, deed, and sale info with that from the deed record (since it would have the tax
+  # info by default)
+  lastSaleIndex = null
+  # look for the last deed entry that is actually the same property (i.e. same legal unit number) -- when a property
+  # gets split, it appears the initial sales all get marked on the original parcel number (or at least that's how it is
+  # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
+  # the main parcel with info from the sale of a split-off
   for deedEntry,i in deedEntries
     if tax.legal_unit_number == deedEntry.legal_unit_number
-      lastSale = i
-  if lastSale? && moment(deedEntries[lastSale].close_date).isAfter(tax.close_date)
-    [lastSale] = deedEntries.splice(lastSale, 1)
+      lastSaleIndex = i
+      break
+  if lastSaleIndex? && moment(deedEntries[lastSaleIndex].close_date).isAfter(tax.close_date)
+    [lastSale] = deedEntries.splice(lastSaleIndex, 1)
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields
       tax[field] = lastSale[field]
-  # save the values promoted to MLS for easier access
+  # save the values we will promote to MLS for easier access
   promotedValues =
     owner_name: tax.owner_name
     owner_name_2: tax.owner_name_2
