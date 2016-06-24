@@ -8,4 +8,5 @@ gulp.task 'prodAssetCheck', (cb) ->
     if !err && stats.isDirectory()
       log 'Production assets exist: exiting to avoid rebuild.'
       shutdown.exit()
-    cb()
+    else
+      cb()
