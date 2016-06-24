@@ -60,7 +60,7 @@ node_modules/karma-browserify
 node_modules/stylusify
 node_modules/watchify
 
-# gulp deps
+# gulp deps, except gulp and gulp-util
 node_modules/gulp-add-src
 node_modules/gulp-angular-templatecache
 node_modules/gulp-changed
