@@ -17,7 +17,7 @@ mockAuthUser =
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
 mockPdfCampaign = _.extend {}, mockCampaign, aws_key: 'uploads/herpderp_l337.pdf'
-mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockLetter = require '../../../backend/json/mail.fakeLetter.json'
 mockPdfLetter = _.extend {}, mockLetter, options: aws_key: 'uploads/herpderp_l337.pdf'
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
