@@ -31,25 +31,21 @@ class ClientsCrud extends RouteCrud
   init: () ->
     @svc.doLogQuery = true
     @byIdGETTransforms =
-      params:
-        keepKeys: true
-        transform: validators.mapKeys
-          id: joinColumnNames.client.project_id
-          clients_id: joinColumnNames.client.id
+      params: validators.mapKeys
+        id: joinColumnNames.client.project_id
+        clients_id: joinColumnNames.client.id
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
 
     @byIdDELETETransforms =
-      params: keepKeys: true
-      transform: validators.mapKeys
+      params: validators.mapKeys
         id: joinColumnNames.client.project_id
         clients_id: joinColumnNames.client.id
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
 
     @rootGETTransforms =
-      params: keepKeys: true
-      transform: validators.mapKeys
+      params: validators.mapKeys
         id: joinColumnNames.client.project_id
         auth_user_id: joinColumnNames.client.auth_user_id
       query: validators.object isEmptyProtect: true
@@ -109,9 +105,7 @@ class ProjectRouteCrud extends RouteCrud
     #                                          :notes_id"  :(id -> project_id)
     @notesCrud = routeCrud(@svc.notes, 'notes_id', 'NotesHasManyRouteCrud',['query','params'])
     @notesCrud.rootGETTransforms =
-      params:
-        keepKeys: true
-        transform: validators.mapKeys id: "#{tables.user.notes.tableName}.project_id"
+      params: validators.mapKeys id: "#{tables.user.notes.tableName}.project_id"
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
     @notesCrud.byIdGETTransforms =
@@ -140,39 +134,25 @@ class ProjectRouteCrud extends RouteCrud
 
     @drawnShapesCrud = new DrawnShapeCrud @svc.drawnShapes,
       rootGETTransforms:
-        params:
-          keepKeys: true
-          transform:
-            validators.mapKeys id: "project_id"
+        params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true
         body: validators.object isEmptyProtect: true
 
       rootPOSTTransforms:
-        params:
-          keepKeys: true
-          transform: validators.mapKeys id: "project_id"
+        params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true
         body: bodyTransform
 
       byIdGETTransforms:
-        params:
-          keepKeys: true
-          transform:
-            validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
 
       byIdPUTTransforms:
-        params:
-          keepKeys: true
-          transform:
-            validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
         query: validators.object isEmptyProtect: true
         body: bodyTransform
 
       byIdDELETETransforms:
-        params:
-          keepKeys: true
-          transform:
-            validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
         query: validators.object isEmptyProtect: true
 
     @drawnShapes = @drawnShapesCrud.root

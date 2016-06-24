@@ -179,24 +179,24 @@ describe 'route.projectSession', ->
         # console.log.cyan projects[0].drawnShapes, true
         projects[0].drawnShapes.length.should.be.ok
 
-  #   it 'clients', ->
-  #     @subject.rootGET(@mockRequest,mockRes,(->))
-  #     .then () =>
-  #       @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
-  #       obj = {}
-  #       obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
-  #       @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
-  #       logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
-  #
-  #       #note that if we add more project_id's then they will be in whereIn
-  #       @subject.clientsCrud.svc.clientProfileMock
-  #       .whereSpy.args.should.be.eql  [
-  #         ['user_profile.project_id', 1 ]
-  #       ]
-  #       @subject.clientsCrud.svc.clientProfileMock
-  #       .whereInSpy.args.should.be.eql []
-  #
-  #
+    it 'clients', ->
+      @subject.rootGET(@mockRequest,mockRes,(->))
+      .then () =>
+        @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
+        obj = {}
+        obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
+        @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
+        logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
+
+        #note that if we add more project_id's then they will be in whereIn
+        @subject.clientsCrud.svc.clientProfileMock
+        .whereSpy.args.should.be.eql  [
+          ['user_profile.project_id', 1 ]
+        ]
+        @subject.clientsCrud.svc.clientProfileMock
+        .whereInSpy.args.should.be.eql []
+
+
     it 'notes', ->
       @subject.rootGET(@mockRequest,mockRes,(->))
       .then () =>
@@ -214,35 +214,35 @@ describe 'route.projectSession', ->
         ]
 
         @subject.notesCrud.svc.noteMock.whereInSpy.args.length.should.be.equal 0
-  #
-  #
-  #   it 'drawnShapes', ->
-  #     @subject.rootGET(@mockRequest,mockRes,(->))
-  #     .then () =>
-  #       @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
-  #       params =
-  #         project_id: [ @mockRequest.params.id ]
-  #       #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
-  #       # obj.parent_auth_user_id = @mockRequest.user.id
-  #       @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
-  #       expect(@subject.drawnShapesCrud.svc.getAllStub.args[0][1]).to.not.be.ok
-  #
-  # describe 'byIdDELETE', ->
-  #   beforeEach ->
-  #     @makeRequest
-  #       session:
-  #         saveAsync: -> Promise.resolve()
-  #         profiles: []
-  #       user:
-  #         id: 2
-  #       params:
-  #         id:1
-  #       query:{}
-  #       body:{}
-  #
-  #   it 'clients', ->
-  #     @subject.byIdDELETE(@mockRequest,mockRes,(->))
-  #     .then =>
-  #       @subject.svc.deleteStub.called.should.be.true
-  #       userUtils.cacheUserValues.called.should.be.ok
-  #       assert.ok @subject.clientsCrud.svc.deleteStub.sqls
+
+
+    it 'drawnShapes', ->
+      @subject.rootGET(@mockRequest,mockRes,(->))
+      .then () =>
+        @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
+        params =
+          project_id: [ @mockRequest.params.id ]
+        #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
+        # obj.parent_auth_user_id = @mockRequest.user.id
+        @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
+        expect(@subject.drawnShapesCrud.svc.getAllStub.args[0][1]).to.not.be.ok
+
+  describe 'byIdDELETE', ->
+    beforeEach ->
+      @makeRequest
+        session:
+          saveAsync: -> Promise.resolve()
+          profiles: []
+        user:
+          id: 2
+        params:
+          id:1
+        query:{}
+        body:{}
+
+    it 'clients', ->
+      @subject.byIdDELETE(@mockRequest,mockRes,(->))
+      .then =>
+        @subject.svc.deleteStub.called.should.be.true
+        userUtils.cacheUserValues.called.should.be.ok
+        assert.ok @subject.clientsCrud.svc.deleteStub.sqls
