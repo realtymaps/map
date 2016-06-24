@@ -104,6 +104,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     for field in saleFields
       tax[field] = lastSale[field]
   # save the values we will promote to MLS for easier access
+  delete tax.legal_unit_number
   promotedValues =
     owner_name: tax.owner_name
     owner_name_2: tax.owner_name_2
