@@ -35,4 +35,5 @@ node_modules/stylusify
 node_modules/watchify
 
 # all our gulp deps, except gulp and gulp-util
-node_modules/gulp-{[^u]*,uglify}
+node_modules/gulp-[^u]*
+node_modules/gulp-uglify
