@@ -1,1 +1,0 @@
-insert into auth_group (name) values ('Deactivated Account');

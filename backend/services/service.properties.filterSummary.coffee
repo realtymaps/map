@@ -9,6 +9,7 @@ logger = require('../config/logger').spawn('service:property:filterSummary')
 _ = require 'lodash'
 validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
+geohash = require 'geohash64'
 
 _isOnlyPinned = (queryParams) ->
   !queryParams?.state?.filters?.status?.length
@@ -67,16 +68,25 @@ module.exports =
           query.then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
 
-            result = {}
-            Promise.map properties, (property) ->
-              existing = result[property.rm_property_id]
+            resultsByPropertyId = {}
+            propertyIdsByCenterPoint = {}
+            resultGroups = {}
+            Promise.each properties, (property) ->
+              existing = resultsByPropertyId[property.rm_property_id]
               # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
               if !property.data_source_type? || # Backward-compatibility
                  !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
-                result[property.rm_property_id] = toLeafletMarker property
+                if filterSummaryImpl == combined
+                  encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
+
+                  if encodedCenter
+                    propertyIdsByCenterPoint[encodedCenter] ?= []
+                    propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
+
+                resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
                 # Ensure saved details are part of the saved props
                 if state.pins?[property.rm_property_id]?
@@ -86,9 +96,19 @@ module.exports =
                   mlsConfigSvc.getByIdCached(property.data_source_id)
                   .then (mlsConfig) ->
                     property.mls_formal_name = mlsConfig?.formal_name
-
-            .then ->
-              result
+            .then () ->
+              if filterSummaryImpl == combined
+                for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
+                  if rm_property_ids.length > 1
+                    for rm_property_id in rm_property_ids
+                      resultGroups[encodedCenter] ?= {}
+                      resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
+                      delete resultsByPropertyId[rm_property_id]
+                  else
+                    delete propertyIdsByCenterPoint[encodedCenter]
+                return {singletons: resultsByPropertyId, groups: resultGroups}
+              else
+                resultsByPropertyId
 
         switch queryParams.returnType
           when 'clusterOrDefault'

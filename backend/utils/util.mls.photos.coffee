@@ -93,7 +93,6 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       cb(new photoErrors.NoPhotoObjectsError 'No object events')
     cb(null, null, true)
 
-  return
 
 imagesStream = (object, archive = Archiver('zip')) ->
 

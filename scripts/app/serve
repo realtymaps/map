@@ -29,7 +29,6 @@ then
 fi
 
 if [[ "$IS_HEROKU" != "" ]]; then
-  gulp $GULP_COLOR prod &
   if [[ "$DO_PERF" != "" ]]; then
     # PERF="/app/.apt/usr/lib/linux-tools-3.13.0-71/perf"
     # $PERF record -e cycles:u -g --

@@ -1,5 +1,0 @@
-
-ALTER TABLE listing DROP COLUMN IF EXISTS baths_full;
-ALTER TABLE listing DROP COLUMN IF EXISTS baths_half;
-ALTER TABLE listing DROP COLUMN IF EXISTS baths;
-ALTER TABLE listing ADD COLUMN baths JSON;

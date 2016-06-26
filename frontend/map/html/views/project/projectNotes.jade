@@ -10,4 +10,6 @@
         validator="minlength=1")
         span.input-group-addon(ng-click="createProjectNote(project)" validation-submit="createProjectNoteForm") Add
 
-  div(ng-include="'./views/project/_projectNotesInclude.jade'")
+  .list.bordered
+    .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
+      div(ng-include="'./views/project/_projectNotesInclude.jade'")

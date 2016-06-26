@@ -2,7 +2,7 @@ tables = require '../config/tables'
 awsService = require './service.aws'
 lobService = require './service.lob'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
-mockLobData = require '../../spec/fixtures/backend/services/lob/mail.letter.json'
+mockLobData = require '../json/mail.fakeLetter.json'
 
 
 class PdfUploadService extends ServiceCrud
@@ -33,7 +33,7 @@ class PdfUploadService extends ServiceCrud
         }
 
       # account for whatever could have gone really wrong since we always expect a 'message'
-      throw new Error(err, "Error enocuntered while doing file validation.")
+      throw new Error(err, "Error encountered while doing file validation.")
 
 instance = new PdfUploadService tables.mail.pdfUpload,
   idKeys: 'aws_key'

@@ -55,3 +55,31 @@ describe 'utils/validation.validators.bathrooms()'.ns().ns('Backend'), ->
         value.value.should.equal('3.9')
         value.filter.should.equal(3.5)
     ]
+
+  promiseIt 'should calculate with implict decimals when set', () ->
+    [
+      expectResolve(validation.validators.bathrooms(implicit: {full: 1})(param, {full: 20, half: 20})).then (value) ->
+        value.label.should.equal('Baths (Full / Half)')
+        value.value.should.equal('2 / 20')
+        value.filter.should.equal(2.5)
+      expectResolve(validation.validators.bathrooms(implicit: {total: 1})(param, {full: 2, total: 31})).then (value) ->
+        value.label.should.equal('Baths')
+        value.value.should.equal('3.1')
+        value.filter.should.equal(3.5)
+      expectResolve(validation.validators.bathrooms(implicit: {full: 1, half: 1})(param, {full: 20, half: 20})).then (value) ->
+        value.label.should.equal('Baths (Full / Half)')
+        value.value.should.equal('2 / 2')
+        value.filter.should.equal(2.5)
+    ]
+
+  promiseIt 'should autodetect full vs total when option is set', () ->
+    [
+      expectResolve(validation.validators.bathrooms(autodetect: true)(param, {total: 2, half: 0})).then (value) ->
+        value.label.should.equal('Baths')
+        value.value.should.equal('2.0')
+        value.filter.should.equal(2.0)
+      expectResolve(validation.validators.bathrooms(autodetect: true)(param, {total: 2, half: 1})).then (value) ->
+        value.label.should.equal('Baths (Full / Half)')
+        value.value.should.equal('2 / 1')
+        value.filter.should.equal(2.5)
+    ]

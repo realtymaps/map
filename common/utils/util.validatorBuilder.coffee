@@ -121,7 +121,7 @@ _rules =
         @input.fipsCode || (@input.stateCode && @input.county)
 
     address:
-      alias: 'Address'
+      alias: 'Property Address'
       input: {}
       type: name: 'address'
       valid: () ->
@@ -278,6 +278,7 @@ _rules =
         alias: 'Baths'
         type: name: 'bathrooms'
         input: {}
+        config: {autodetect: true, implicit: total: 2}
         valid: () ->
           @input.half? && @input.full? || @input.total?
 
@@ -305,6 +306,9 @@ _rules =
         valid: () ->
           @input.year || @input.age
 
+      legal_unit_number:
+        alias: 'Legal Unit Number'
+
     deed:
       address:
         group: 'deed'
@@ -327,6 +331,9 @@ _rules =
         alias: 'Zoning'
         getTransform: () ->
           name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
+
+      legal_unit_number:
+        alias: 'Legal Unit Number'
 
     mortgage:
       address:
