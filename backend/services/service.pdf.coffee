@@ -33,7 +33,7 @@ createFromCampaign = (campaign) ->
 
       pdfOptions =
         format: 'Letter'
-        orientation: 'portrait'
+        orientation: 'landscape'
 
       # pipe pdf data through the s3 upload
       htmltopdf.create(html, pdfOptions)
