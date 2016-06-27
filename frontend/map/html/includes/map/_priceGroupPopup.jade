@@ -1,0 +1,33 @@
+include ../mixins/property/_propertyAttributes.jade
+
+.property-group(ng-controller="rmapsSmallDetailsCtrl" style="width:375px; max-height: 375px; overflow-y: scroll;")
+  .row
+    .col-md-4
+      img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property.grouped.properties[0], 100, 100)}}")
+    .col-md-8.property-card
+      h5.title {{property.grouped.properties[0].address.lines[0]}}
+      p.location(ng-repeat="line in property.grouped.properties[0].address.lines.slice(1)") {{line}}
+      ul.status-summary
+        li.status.forsale {{property.grouped.forsale}} For Sale
+        li.status.pending {{property.grouped.pending}} Pending
+        li.status.sold {{property.grouped.sold}} Sold
+
+  .property-card.row(ng-repeat="unit in property.grouped.properties")
+    .col-md-3
+      img.cover-image(ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
+    .col-md-9
+      div
+        span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
+        span.unit-number {{$i}}
+      div.property-attr
+        ul.attr
+          li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds
+          li.baths_total {{formatters.property.orNa(unit.baths.value)}} baths
+          li.finished_sqft(ng-if="unit.finished_sqft") {{unit.finished_sqft}} Sq Ft
+          li.year_built(ng-if="unit.year_built.value") {{unit.year_built.value}}
+  .row
+    .col-md-12
+      .btn-group
+        .btn-white.btn(style="width:25%") &lt;
+        .btn-white.btn(style="width:25%") &gt;
+        .btn-white.btn(style="width:50%") → See All Units ({{property.grouped.properties.length}})
