@@ -13,6 +13,7 @@ dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
 pdfService = require('./service.pdf')
+priceService = require('./service.prices')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -164,6 +165,7 @@ getLetter = (lobId, apiName = 'live') ->
 # Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
 #
 getPriceQuote = (userId, campaignId) ->
+
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
@@ -179,9 +181,18 @@ getPriceQuote = (userId, campaignId) ->
         extAcctName: awsService.buckets.PDF
         Key: aws_key
       .then (file) ->
-        result =
-          pdf: file
-          price: 0.0  # accounted for in https://github.com/realtymaps/map/pull/1333
+
+        # get number of pages (needed for price)
+        pdfService.getUrlPageCount(file)
+        .then (pages) ->
+
+          # get price
+          priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
+          .then (price) ->
+            result =
+              pdf: file
+              price: price
+
     .catch (err) ->
       throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")
 

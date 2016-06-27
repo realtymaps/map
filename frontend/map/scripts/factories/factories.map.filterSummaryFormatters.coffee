@@ -69,7 +69,7 @@ app.factory 'rmapSummaryResultsMutation',
       for key, group of @data?.groups
         group.grouped = properties: _.values(group)
         group.grouped.name = key
-        group.grouped.count = group.grouped.properties.length + 'C'
+        group.grouped.count = group.grouped.properties.length + 'U'
         group.grouped.forsale = _.filter(group.grouped.properties, 'status', 'for sale').length
         group.grouped.pending = _.filter(group.grouped.properties, 'status', 'pending').length
         group.grouped.sold = _.filter(group.grouped.properties, 'status', 'sold').length
@@ -84,7 +84,7 @@ app.factory 'rmapSummaryResultsMutation',
 
         filterSummary["#{group.grouped.name}:#{group.grouped.forsale}:#{group.grouped.pending}:#{group.grouped.sold}"] = group
 
-      setDataOptions(@data?.groups, MLS.setMarkerCondoOptions)
+      setDataOptions(@data?.groups, MLS.setMarkerPriceGroupOptions)
 
       @scope.map.markers.filterSummary = filterSummary
 

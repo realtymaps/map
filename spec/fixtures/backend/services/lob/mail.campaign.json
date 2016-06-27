@@ -14,6 +14,9 @@
     "address_zip": "55555",
     "email": "blackhole@realtymaps.com"
   },
+  "options": {
+    "color": false
+  },
   "recipients": [
     {
       "rm_property_id": "12021_29830400000_001",

@@ -7,8 +7,7 @@ _defaultOptions =
   closeButton: false
   offset: new L.Point(0, -5)
   autoPan: false
-  maxWidth: 260
-
+  maxWidth: 9999
 
 app.service 'rmapsPopupGetOffset', () ->
 
@@ -42,8 +41,8 @@ app.factory 'rmapsPopupFactory', (
   $log = $log.spawn("map:rmapsPopupFactory")
 
   class
-    constructor: ({map, model, opts, needToCompile, popupType, templateVars}) ->
-      @popup = rmapsPopupConstants[popupType]
+    constructor: ({map, model, opts, needToCompile, templateVars}) ->
+      @popup = rmapsPopupConstants[model.markerType]
       @popup ?= rmapsPopupConstants.default
       opts ?= _defaultOptions
       template = @popup.templateFn(templateVars)
@@ -71,10 +70,10 @@ app.factory 'rmapsPopupFactory', (
 
       # generate and apply popup object
       if @lObj
-        $log.debug "L.Util.setOptions (#{popupType}): " + opts
+        $log.debug "L.Util.setOptions (#{model.markerType}):", opts
         L.Util.setOptions @lObj, opts
       else
-        $log.debug "new L.popup (#{popupType}): " + opts
+        $log.debug "new L.popup (#{model.markerType}):", opts
         @lObj = new L.popup opts
 
       @lObj.setLatLng
@@ -116,7 +115,7 @@ app.service 'rmapsPopupLoaderService',(
 
 
   load: (opts) ->
-    $log.debug "popup loading in #{_delay}ms..."
+    $log.debug "popup type #{opts.model.markerType} loading in #{_delay}ms..."
 
     $timeout.cancel _timeoutPromise if _timeoutPromise
 

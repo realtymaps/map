@@ -28,7 +28,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
     _handleHover = (model, lObject, type, layerName) ->
       return if !layerName or !type or !lObject
       if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model)
+        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
       if type == 'geojson'
         opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
         lObject.setStyle(opts)
@@ -63,11 +63,13 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
           # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
 
-        if _lastEvents.mouseover?.rm_property_id == model.rm_property_id # Detect whether this is firing from previous marker
+         # Ignore when this is firing from previous marker
+        if (_lastEvents.mouseover?.lat == model.lat) && (_lastEvents.mouseover?.lng == model.lng)
           # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
-        if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster') # Ignore these types of markers
+         # Ignore these types of markers
+        if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
           # $log.debug '[IGNORED:markertype] ' + eventInfo
           return
 

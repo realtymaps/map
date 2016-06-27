@@ -37,6 +37,7 @@ app.service 'rmapsMailTemplateFactory', (
 
     _makeDirty: () ->
       @dirty = true
+      @_priceForColorFlag = {true: null, false: null}
       @review = {}
 
     getSenderData: () ->
@@ -96,8 +97,10 @@ app.service 'rmapsMailTemplateFactory', (
 
       @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
       .then (review) =>
+        @_priceForColorFlag[@campaign.options.color] = @review.price
         _.merge @review, review
         @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
+
       .catch (err) =>
         if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
           errorMsg = rmapsMainOptions.mail.sizeErrorMsg
@@ -112,7 +115,18 @@ app.service 'rmapsMailTemplateFactory', (
     getQuoteAndPdf: () ->
       @_getReview 'getQuoteAndPdf'
 
+    refreshColorPrice: () ->
+      # color was changed, so need to save this change
+      @save(force: true)
+      .then () =>
+        console.log "@_priceForColorFlag:\n#{JSON.stringify(@_priceForColorFlag)}"
+        if !@_priceForColorFlag[@campaign.options.color]?
+          return @_getReview('getQuoteAndPdf')
+        @review.price = @_priceForColorFlag[@campaign.options.color]
+        @review
+
     save: (options) ->
+      console.log "save()"
       if !@dirty and !options?.force
         return $q.when @campaign
 
