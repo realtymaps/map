@@ -4,7 +4,7 @@ notificationConfigInternals = require './service.notification.config.internals'
 
 getColumns = [
   'id'
-  'config_notifcation_id'
+  'config_notification_id'
   'options'
   'rm_inserted_time'
   'last_attempt_time'
@@ -12,7 +12,8 @@ getColumns = [
   'error'
 ]
 
-explicitGetColumns = "#{tables.user.notificationQueue}.#{col}" for col in getColumns
+explicitGetColumns = getColumns.map (col) ->
+  "#{tables.user.notificationQueue.tableName}.#{col}"
 
 explicitGetColumnsWithUserConfig = explicitGetColumns.concat(
   _.without notificationConfigInternals, ['id']

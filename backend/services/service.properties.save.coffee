@@ -1,3 +1,4 @@
+clone = require 'clone'
 Promise = require 'bluebird'
 routeHelpers = require '../utils/util.route.helpers'
 errors = require '../utils/errors/util.errors.properties'
@@ -17,6 +18,14 @@ _pinsPromise = (profile) ->
   tables.user.project()
   .select('pins')
   .where id: profile.project_id
+
+_extendSubTypeEvent = (eventObj) ->
+  cloned = clone eventObj
+  cloned.type = eventObj.type.replace(/un/, '')
+
+  if /un/.test(eventObj.type)
+    cloned.sub_type = 'un'
+  cloned
 
 ###
   UpdateRaw function for modifying pins or favorites json atomically.
@@ -65,8 +74,9 @@ _pin = ({rm_property_id, type, doAdd}) ->
       .then () ->
         logger.debug "#@@@@@@@@@@@@@@@@ eventsQueue type: #{type}@@@@@@@@@@@@@@@@@@@@@"
         tables.user.eventsQueue()
-        .insert {
+        .insert _extendSubTypeEvent {
           auth_user_id: profile.auth_user_id
+          project_id: profile.project_id
           type
           options: {
             rm_property_id
@@ -94,8 +104,9 @@ _fave = ({rm_property_id, type, doAdd}) ->
       }
       .then () ->
         tables.user.eventsQueue()
-        .insert {
+        .insert _extendSubTypeEvent {
           auth_user_id: profile.auth_user_id
+          project_id: profile.project_id
           type
           options: {
             rm_property_id
