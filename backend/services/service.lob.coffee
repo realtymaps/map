@@ -12,6 +12,8 @@ logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
+pdfService = require('./service.pdf')
+priceService = require('./service.prices')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -163,6 +165,7 @@ getLetter = (lobId, apiName = 'live') ->
 # Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
 #
 getPriceQuote = (userId, campaignId) ->
+
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
@@ -175,14 +178,27 @@ getPriceQuote = (userId, campaignId) ->
       address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
       logger.debug "Checking #{address}"
       letter = buildLetter campaign, r
+
       sendLetter letter, 'test'
       .then (lobResponse) ->
-        logger.debug "Address was valid: #{address}"
-        result =
-          pdf: lobResponse.url
-          price: lobResponse.price * campaign.recipients.length
-          lobResponse: lobResponse
-        throw new Error("Stop checking addresses") # no need to check more addresses
+
+        # get number of pages (needed for price)
+        pdfService.getUrlPageCount(lobResponse.url.toString())
+        .then (pages) ->
+
+          # get price
+          priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: letter.color})
+          .then (price) ->
+            logger.debug "Address was valid: #{address}"
+
+            result =
+              pdf: lobResponse.url
+              price: price
+              lobResponse: lobResponse
+
+            throw new Error("Stop checking addresses") # no need to check more addresses
+        .catch pdfService.PdfUrlMaxAttemptError, (err) ->
+          logger.error "Error getting pageCount: #{err}"
       .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
         logger.debug "Invalid address: #{address}. Trying next recipient"
     .catch ->
