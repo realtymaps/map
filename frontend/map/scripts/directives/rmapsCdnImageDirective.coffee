@@ -11,8 +11,6 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
 
   restrict: 'A'
   priority: 1000
-  scope:
-    'ngSrcValue': '@ngSrc'
 
   link: (scope, element, attrs) ->
     if element[0].tagName != 'IMG'
@@ -34,7 +32,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
     if 'src' of attrs
       remap 'src'
     else if 'ngSrc' of attrs
-      remap 'ng-src', scope.ngSrcValue
+      remap 'ng-src', attrs.ngSrc
     else
       return
 

@@ -11,9 +11,20 @@ reset-font()
   vertical-align baseline
   line-height 12px
 
-$margin = 0.5in // LOB specifies min. safe printing margin is 0.03125in
-$address_margin = 2.7in // area occupied by address when template = true
-$pagewidth = 8.5in
+// to get around pdf-rendering bugs (i.e. https://github.com/ariya/phantomjs/issues/12936)
+
+// px @ 72dpi
+$margin = 36px // 0.5in // LOB specifies min. safe printing margin is 0.03125in
+$address_margin = 194px // 2.7in // area occupied by address when template = true
+$pagewidth = 612px // 8.5in
+
+
+// // px @ 96dpi
+// $margin = 48px // 0.5in // LOB specifies min. safe printing margin is 0.03125in
+// $address_margin = 259px // 2.7in // area occupied by address when template = true
+// $pagewidth = 816px // 8.5in
+
+
 
 // page itself, this gets applied to <body> of html, syncs expected width for pages
 .letter-body
