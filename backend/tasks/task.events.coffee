@@ -38,10 +38,10 @@ onDemandNotifications = (subtask) ->
 
 
 module.exports = new TaskImplementation 'events', {
-  compactEvents: internalsDequeue.compactEvents
-  processEvent: internalsDequeue.processEvent
   dailyEvents
   onDemandEvents
+  compactEvents: internalsDequeue.compactEvents
+  processEvent: internalsDequeue.processEvent
   doneEvents: internalsDequeue.doneEvents
   dailyNotifications
   onDemandNotifications

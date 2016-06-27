@@ -72,6 +72,8 @@ sendNotifications = (subtask) ->
       - success removes user_notification_queue item where pending and specific id
       - fail, remove pending column so it is retried by job task
 
+    Use webhook for emailVero, sms but not on email (node mailer).
+
     ###
     dbs.get("main").transaction (transaction) ->
       notificationsSvc.sendNotificationNow {row, options: row.options, transaction}

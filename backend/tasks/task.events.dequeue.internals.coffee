@@ -30,6 +30,15 @@ propertyCompaction = (rows) ->
       "#{type}": []
       "un#{type.toInitCaps()}": []
 
+  ### TODO
+  Pull in more data to make the email worth something.
+  https://realtymaps.atlassian.net/browse/MAPD-1097
+  Join data_combined and parcel for things like:
+  - cdn url
+  - description
+  - address
+  ###
+
   for r in rows
     if r.sub_type?
       combinedType = r.sub_type + r.type.toInitCaps()
