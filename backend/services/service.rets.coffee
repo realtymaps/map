@@ -121,7 +121,10 @@ getDataStream = (mlsId, opts={}) ->
       _.extend(searchOptions, opts.searchOptions)
       fullLimit = opts.searchOptions.limit
       if opts.subLimit
-        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+        if searchOptions.limit
+          searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+        else
+          searchOptions.limit = opts.subLimit
 
       columns = null
       uuidColumn = null
