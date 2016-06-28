@@ -366,7 +366,6 @@ markUpToDate = (subtask) ->
   .then (uuidField) ->
     dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
     retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
-      logger.debug () -> "doMarks chunk: #{chunk.length}"
       if !chunk?.length
         return
       ids = _.pluck(chunk, uuidField)
