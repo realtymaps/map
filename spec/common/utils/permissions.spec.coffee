@@ -1,3 +1,5 @@
+_ = require 'lodash'
+
 describe 'Permissions'.ns('Common'), ->
   before ->
     somePermissions = [

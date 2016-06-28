@@ -9,9 +9,9 @@ tables = require '../config/tables'
 emailConfig = require '../config/email'
 logger = require('../config/logger').spawn('service:notifications:internals')
 analyzeValue = require '../../common/utils/util.analyzeValue'
-{VeroEmailError, BasicEmailError, SmsError} = require '../utils/errors/util.error.notifcations'
+{VeroEmailError, BasicEmailError, SmsError} = require '../utils/errors/util.error.notifications'
 promisedVeroService = require '../services/email/vero'
-notifyConfigInternals = require '../services/service.notifications.internals'
+notifyConfigInternals = require '../services/service.notification.config.internals'
 
 twilioClientPromise = Promise.try () ->
   externalAccounts.getAccountInfo('twilio')
@@ -109,122 +109,153 @@ sendSms = (row, options) -> Promise.try () ->
     }
 
 sendEmailVero = (row, options) -> Promise.try () ->
-  if !options?.notificationType?
-    throw new VeroEmailError row.config_notification_id, 'notificationType required for vero email notification!'
+  if !options?.type?
+    throw new VeroEmailError row.config_notification_id, 'notfication.type required for vero email notification!'
 
   logger.debug "@@@@@@@@@@@@@@@ options @@@@@@@@@@@@@@@"
   logger.debug options
 
   promisedVeroService
   .then (vero) -> Promise.try () ->
-    opts =
-      authUser:
+    options.authUser =
         first_name: row.first_name
-        last_name: row.first_name
+        last_name: row.last_name
+        email: row.email
 
-    #extend opts to allow options like properties
-    _.extend opts, _.omit options, ['notificationType']
-
-    logger.debug "@@@@@@@@@@@@@@@ opts @@@@@@@@@@@@@@@"
-    logger.debug opts
+    options.notificationType = switch options.type
+      when 'pin'
+        'notificationPinned'
+      when 'favorite'
+        'notificationFavorited'
+      else
+        null
 
     if !vero.events[options.notificationType]?
-      throw new VeroEmailError row.config_notification_id, 'notificationType invalid for vero email notification!'
+      throw new VeroEmailError row.config_notification_id, 'notification.type invalid for vero email notification!'
+    vero.events[options.notificationType](options)
 
-    vero.events[options.notificationType](opts)
+# Build a list of users that are parents of a childId
+#
+# * `id` {[int]} childId.
+# * `project_id` {[int]}.
+#
+# Returns Array<tables.auth.user>
+getParentUsers = ({id, project_id}) ->
+  childId = id
 
-distribute = do ->
-  # Build a list of users that are parents of a childId
-  #
-  # * `childId` {[int]}.
-  # * `project_id` {[int]}.
-  #
-  # Returns Array<tables.auth.user>
-  getParentUsers = ({childId, project_id}) ->
-    tables.auth.user()
+  tables.auth.user()
+  .select(notifyConfigInternals.explicitUserColumns)
+  .innerJoin(tables.user.profile.tableName,
+    "#{tables.user.profile.tableName}.parent_auth_user_id",
+    "#{tables.auth.user.tableName}.id")
+  .where
+    "#{tables.user.profile.tableName}.auth_user_id": childId
+    "#{tables.user.profile.tableName}.project_id": project_id
+
+# Build a list of users that are children of a parent_id.
+# Based on profile rows.parent_id
+#
+# * `id` {[int]} parentId.
+# * `project_id` {[int]}.
+#
+# Returns Array<tables.auth.user>
+getChildUsers = ({id, project_id}) ->
+  parentId = id
+  tables.auth.user()
+  .select(notifyConfigInternals.explicitUserColumns)
+  .innerJoin(tables.user.profile.tableName,
+    "#{tables.user.profile.tableName}.auth_user_id",
+    "#{tables.auth.user.tableName}.id")
+  .where
+    "#{tables.user.profile.tableName}.parent_auth_user_id": parentId
+    "#{tables.user.profile.tableName}.project_id": project_id
+
+
+# Public: [Description]
+#
+# * `to` Whom to send a notification to. as {[string]}.
+#   children, childrenSelf,
+#   parents, parentsSelf,
+#   all, allSelf
+#
+# * `id` - parentId or childId that is targeted to send to
+# * `project_id` - project relevant to this notification
+# Returns the [Description] as `undefined`.
+getUsers = ({to, id, project_id}) ->
+  logger.debug "@@@@ getUsers opts @@@@"
+  logger.debug {to, id, project_id}
+  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@"
+
+  childrenPromise = Promise.resolve []
+  parentsPromise = Promise.resolve []
+
+  switch true #use regex for flex
+    when /children/.test to
+      logger.debug 'going to children'
+      parentsPromise = getChildUsers({id, project_id})
+    when /parents/.test to
+      logger.debug 'going to parents'
+      childrenPromise = getParentUsers({id, project_id})
+    when /all/.test to
+      logger.debug 'going to all'
+      parentsPromise = getChildUsers({id, project_id})
+      childrenPromise = getParentUsers({id, project_id})
+    else
+      logger.debug 'no match to distribute'
+      logger.debug 'going to noone'
+      return Promise.resolve []
+
+  selfPromise = Promise.resolve []
+
+  if to.match /self/i
+    logger.debug 'going to self'
+    selfPromise = tables.auth.user()
     .select(notifyConfigInternals.userColumns)
-    .innerJoin(tables.user.profile,
-      "#{tables.user.profile.tableName}.parent_auth_user_id",
-      "#{tables.auth.user.tableName}.id"
-    )
-    .where
-      "#{tables.user.profile.tableName}._auth_user_id": childId
-      "#{tables.user.profile.tableName}.project_id": project_id
+    .where {id}
 
-  # Build a list of users that are children of a parent_id.
-  # Based on profile rows.parent_id
-  #
-  # * `parentId` {[int]}.
-  # * `project_id` {[int]}.
-  #
-  # Returns Array<tables.auth.user>
-  getChildUsers = ({parentId, project_id}) ->
-    tables.auth.user()
-    .select(notifyConfigInternals.userColumns)
-    .innerJoin(tables.user.profile,
-      "#{tables.user.profile.tableName}.auth_user_id",
-      "#{tables.auth.user.tableName}.id"
-    )
-    .where
-      "#{tables.user.profile.tableName}.parent_auth_user_id": parentId
-      "#{tables.user.profile.tableName}.project_id": project_id
+  Promise.join parentsPromise, childrenPromise, selfPromise,
+    (downUsers=[], upUsers=[], selfUsers=[]) ->
+      downUsers.concat upUsers, selfUsers
 
 
-  # Public: [Description]
-  #
-  # * `{to` Whom to send a notification to. as {[string]}.
-  #   children, childrenSelf,
-  #   parents, parentsSelf,
-  #   all, allSelf
-  #
-  # * `configRow}` The config_notifcation row as {[object]}.
-  #
-  # Returns the [Description] as `undefined`.
-  getUsers = ({to, id, project_id}) ->
+enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows}) ->
+  logger.debug () -> "@@@@@@ #{from}: enqueue opts @@@@@@"
+  logger.debug {verify, options, verbose}
+  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-    childrenPromise = Promise.resolve []
-    parentsPromise = Promise.resolve []
+  if verbose
+    logger.debug configRowsQuery.toString()
 
-    switch to #use regex for flex
-      when to.match /children/
-        parentsPromise = getChildUsers({id, project_id})
-      when to.match /parents/
-        childrenPromise = getParentUsers({id, project_id})
-      when to.match /all/
-        parentsPromise = getChildUsers({id, project_id})
-        childrenPromise = getParentUsers({id, project_id})
-      else
-        return Promise.resolve []
-
-    selfPromise = Promise.resolve []
-
-    if to.match /self/i
-      selfPromise = tables.auth.user()
-      .select(notifyConfigInternals.userColumns)
-      .where {id}
-
-    Promise.join parentsPromise, childrenPromise, selfPromise,
-      (downUsers, upUsers, selfUsers) ->
-        downUsers.concat upUsers, selfUsers
-
-  {
-    getParentUsers
-    getChildUsers
-    getUsers
-  }
-
-enqueue = ({configRowsQuery, options}) ->
   configRowsQuery
   .returning('id')
-  .then (configsRows) ->
-    userRows = for row in configsRows
+  .then (configRows) ->
+
+    if !configRows?.length
+      if verifyConfigRows #handy for debuging
+        throw new Error('Nothing enqueued.')
+      else
+        if verbose
+          logger.warn "@@@@ Nothing enqueued into #{tables.user.notificationQueue.tableName} @@@@"
+      return
+
+    logger.debug () -> "@@@@ #{from}: mapping #{configRows.length} configRows @@@@"
+    userRows = for row in configRows
       do (row) -> {
-        config_notifcation_id: row.id
+        config_notification_id: row.id
         options
       }
 
+    logger.debug () -> "@@@@ #{from}: enqueuing to #{tables.user.notificationQueue.tableName} @@@@"
     tables.user.notificationQueue()
     .insert(userRows)
+    .returning('id')
+    .then (rows) -> Promise.try () ->
+      if verify and !rows?.length
+        throw new Error('Nothing enqueued.')
+
+      logger.debug () -> "@@@@ #{from}: SUCCESS!!!! #{rows.length} rows enqueued. @@@@"
+      rows
+
 
 
 sendHandles =
@@ -242,6 +273,10 @@ module.exports = {
   sendSms
   sendEmailVero
   sendHandles
-  distribute
+  distribute:{
+    getUsers
+    getChildUsers
+    getParentUsers
+  }
   enqueue
 }

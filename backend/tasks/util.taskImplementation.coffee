@@ -4,6 +4,7 @@ Promise = require 'bluebird'
 require '../config/promisify'
 memoize = require 'memoizee'
 mlsConfigService = null
+errors = require '../utils/errors/util.errors.task'
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
@@ -29,9 +30,13 @@ class TaskImplementation
 
   executeSubtask: (subtask) -> Promise.try () =>
     # call the handler for the subtask
-    subtaskBaseName = subtask.name.substring(@taskName.length+1)  # subtask name format is: taskname_subtaskname
+    if !subtask.name?
+      throw new errors.TaskNameError('subtask.name must be defined')
+    if subtask.name.indexOf(@taskName+'_') != 0
+      throw new errors.TaskNameError("Task name is not contained in subtask name. Where the valid format is taskname_subtaskname. For subtask: #{subtask.name}.")
+    subtaskBaseName = subtask.name.substring(@taskName.length+1)  # subtask name format is: taskname_subtaskname (in the database)
     if !(subtaskBaseName of @subtasks)
-      throw new Error("Can't find subtask code for #{subtask.name}")
+      throw new errors.MissingSubtaskError("Can't find subtask code for #{subtask.name}, subtasks: #{Object.keys(@subtasks).join(',')} aval!!")
     @subtasks[subtaskBaseName](subtask)
 
   initialize: (transaction, batchId) -> Promise.try () =>

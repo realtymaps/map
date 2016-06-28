@@ -12,15 +12,35 @@ sqlHelpers = require '../utils/util.sql.helpers'
   config_notification with user_notification. This is mainly intended for queing
   and actually sending notifications.
 ###
-sendNotificationNow = (row, options) ->
-  handle = internals.sendHandles[row.method] || internals.sendHandles.default
+sendNotificationNow = ({row, options, transaction}) ->
+  logger.debug "@@@@ sendNotificationNow prior getAllWithUser@@@@"
+  logger.debug row
+  logger.debug options
+  notificationConfigService.getAllWithUser(id: row.config_notification_id, {transaction})
+  .then (configRows) ->
+    logger.debug "@@@@ sendNotificationNow configRows @@@@"
+    logger.debug configRows
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-  handle(row, options)
-  .catch errorHelpers.isUnhandled, (err) ->
-    throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
+    if !configRows?.length
+      return
+
+    configRow = configRows[0]
+
+    # join additional data like user data
+    row = _.extend {}, row, configRow
+
+    logger.debug "sendNotificationNow, merged"
+    logger.debug "sendNotificationNow, method: #{row.method}"
+
+    handle = internals.sendHandles[row.method] || internals.sendHandles.default
+
+    handle(row, options)
+    .catch errorHelpers.isUnhandled, (err) ->
+      throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
 
 ###
-  Public: enqueues notifcations to user_notifcation_queue.
+  Public: enqueues notifications to user_notifcation_queue.
 
   The intent is to match up users to their user_notification_config.
   Once they are matched up we can create user_notification_queue for each user.
@@ -28,8 +48,8 @@ sendNotificationNow = (row, options) ->
   This is used more for subscriptions and distributions.
 
   - `opts`:   The opts as {object}.
-    - `to`    see internals.direction.getUsers (where to go)
-    - `id`    see internals.direction.getUsers(id of the auth_user initiating the notification)
+    - `to`    see internals.distribute.getUsers (where to go)
+    - `id`    see internals.distribute.getUsers(id of the auth_user initiating the notification)
     - `type`  The type of notification as {string or Array<string>} (pinned, favorite).
     - `project_id`  {int}
     - `payload` The options column for a specific notificaiton. {object}.
@@ -39,16 +59,28 @@ sendNotificationNow = (row, options) ->
   Returns a {Promise}.
 ###
 notifyByUser = ({opts, payload}) ->
-  internals.direction.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
+  logger.debug "@@@@@@ notifyByUser opts @@@@@@"
+  logger.debug opts
+  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+  internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
   .then (users) ->
     entity = auth_user_id: _.pluck(users, 'id')
     _.extend entity, _.pick opts, ['type', 'method']
 
+    logger.debug "@@@@ notifyByUser: entity @@@@"
+    logger.debug entity
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
     query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
 
+    logger.debug "@@@@ notifyByUser: internals.enqueue @@@@"
     internals.enqueue {
       configRowsQuery: query
       options: payload
+      verify: opts.verify
+      verbose: opts.verbose
+      from: 'notifyByUser'
     }
 
 ###
@@ -60,7 +92,7 @@ notifyByUser = ({opts, payload}) ->
   Returns a function to actually execute the enqueueing of a notification.
 
 ###
-notifyFlat = ({type, method}) ->
+notifyFlat = ({type, method, verify, verbose}) ->
   ###
    - `payload`      The user_notification options payload {object}.
    - `queryOptions` The query entity to narrow the query {object}.
@@ -73,9 +105,15 @@ notifyFlat = ({type, method}) ->
 
     logger.debug entity
 
+    configRowsQuery = notificationConfigService.getAllWithUser(entity)
+
+    logger.debug "@@@@ notifyFlat: internals.enqueue @@@@"
     internals.enqueue {
-      configRowsQuery: notificationConfigService.getAllWithUser(entity)
+      configRowsQuery
       options: payload
+      verify: verify
+      verbose: verbose
+      from: 'notifyFlat'
     }
 
 

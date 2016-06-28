@@ -10,9 +10,8 @@ shutdown = require '../../backend/config/shutdown'
 
 gulp.task 'spec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'frontendSpec'), 'gulpSpec'
 
-gulp.task 'rebuildSpec', gulp.series(
+gulp.task 'rebuildSpec', gulp.series( 'otherAssets', 'browserifyAll'
   gulp.parallel('commonSpec', 'backendSpec')
-  , gulp.parallel('otherAssets', 'browserifyAll')
   , 'gulpSpec'
   , 'frontendSpec'
   , () -> shutdown.exit())
