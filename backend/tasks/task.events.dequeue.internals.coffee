@@ -175,7 +175,7 @@ processEvent = (subtask) -> Promise.try () ->
   doDequeue ?= false
 
   eventMapPromise ?= memoize.promise () ->
-    tables.handlers.eventMap()
+    tables.config.handlersEventMap()
     .then (rows) ->
       _.indexBy rows, 'event_type'
   , maxAge: 15*60*1000 #15 min
