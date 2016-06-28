@@ -202,8 +202,9 @@ getDataStream = (mlsId, opts={}) ->
                 if lastId
                   received -= found+1
                 total += received
-                if mlsInfo.verify_overlap && opts.uuidField?
-                  lastId = currentPayload.split(delimiter)[uuidColumn]
+                if opts.uuidField?
+                  if mlsInfo.verify_overlap
+                    lastId = currentPayload.split(delimiter)[uuidColumn]
                   if !overlap
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
@@ -289,8 +290,9 @@ getDataChunks = (mlsId, opts, handler) ->
                 throw new SoftFail('no new results found in interation')
             else
               results = response.results
-            if mlsInfo.verify_overlap && opts.uuidField?
-              lastId = results[results.length-1][opts.uuidField]
+            if opts.uuidField?
+              if mlsInfo.verify_overlap
+                lastId = results[results.length-1][opts.uuidField]
               if !overlap
                 overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
             total += results.length
