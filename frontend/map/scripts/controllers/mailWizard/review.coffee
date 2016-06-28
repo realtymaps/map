@@ -56,6 +56,13 @@ app.controller 'rmapsReviewCtrl', (
     rmapsMapTogglesFactory.currentToggles?.showMail = true
     $state.go 'map'
 
+  $scope.refreshColorPrice = () ->
+    console.log "refreshColorPRice()"
+    $scope.review = null
+    $scope.wizard.mail.refreshColorPrice()
+    .then (review) ->
+      $scope.review = review
+
   $scope.wizard.mail.getReviewDetails()
   .then (review) ->
     $scope.review = review

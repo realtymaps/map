@@ -1,0 +1,1 @@
+ALTER TABLE user_mail_campaigns add column custom_content boolean DEFAULT true;

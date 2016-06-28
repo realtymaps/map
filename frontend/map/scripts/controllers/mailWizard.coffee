@@ -56,7 +56,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
     (_getStep($state.current.name) > 3 and !$scope.wizard.mail.campaign.content)
       $state.go 'campaignInfo'
     # if explicitly requesting edit template for pdf campaign...
-    else if $state.current.name == 'editTemplate' and $scope.wizard.mail.campaign.aws_key?
+    else if $state.current.name == 'editTemplate' and !$scope.wizard.mail.campaign.custom_content
       $state.go 'review'
 
   if $state.params.id

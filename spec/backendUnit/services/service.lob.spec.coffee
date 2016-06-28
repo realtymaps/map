@@ -67,6 +67,9 @@ describe "service.lob", ->
     buckets: PDF: 'aws-pdf-downloads'
 
   svc.__set__ 'pdfService',
+    createFromCampaign: () -> Promise.try ->
+      return mockCampaign.aws_key
+
     getUrlPageCount: (url) -> Promise.try ->
       return 3
 
