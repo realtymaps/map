@@ -15,8 +15,7 @@ toFipsCounties =
       lookup.mls_m2m_fips_code_county.tableName + '.' + key
 
     query = lookup.mls_m2m_fips_code_county()
-    .distinct('mls')
-    .select('mls', 'state')
+    .distinct('mls', 'state', "#{lookup.fipsCodes.tableName}.county", "fips_code")
     .join lookup.fipsCodes.tableName, lookup.fipsCodes.tableName + '.code',
       lookup.mls_m2m_fips_code_county.tableName + '.fips_code'
 
@@ -26,6 +25,9 @@ toFipsCounties =
 
     if Object.keys(queryObj).length
       query.where queryObj
+
+
+    logger.debug query.toString()
 
     query
 

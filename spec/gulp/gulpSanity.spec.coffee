@@ -1,7 +1,7 @@
 gulp = require 'gulp'
 require("chai").should()
 
-describe 'Gulp Sanity'.ns().ns('gulp'), ->
+describe 'Gulp Sanity', ->
 
   describe 'gulp', ->
 
