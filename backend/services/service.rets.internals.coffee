@@ -43,8 +43,13 @@ _getRetsClientInternalWrapper = (args...) -> _getRetsClientInternal(args..., ref
 
 getRetsClient = (mlsId, handler) ->
   Promise.join externalAccounts.getAccountInfo(mlsId), mlsConfigService.getByIdCached(mlsId), (creds, serverInfo) ->
+    {creds, serverInfo}
+  .catch (err) ->
+    logger.error analyzeValue.getSimpleDetails(err)
+    throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
+  .then ({creds, serverInfo}) ->
     if !creds || !serverInfo
-      throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
+      throw new Error("Can't get MLS config for #{mlsId}: {creds: #{!!creds}, serverInfo: #{!!serverInfo}}")
     _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
     .then (retsClient) ->
       handler(retsClient, serverInfo)
@@ -54,9 +59,6 @@ getRetsClient = (mlsId, handler) ->
       throw error
     .finally () ->
       setTimeout (() -> _getRetsClientInternal.deleteRef(serverInfo.url, creds.username, creds.password, serverInfo.static_ip)), 60000
-  .catch (err) ->
-    logger.error analyzeValue.getSimpleDetails(err)
-    throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
 
 
 isTransientRetsError = (error) ->

@@ -379,7 +379,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
-updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows}) -> Promise.try () ->
+updateRecord = (opts) -> Promise.try () ->
+  {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, forceUpdate} = opts
   diffExcludeKeys ?= []
   diffBooleanKeys ?= []
   delay ?= 100
@@ -391,8 +392,8 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
     tables.normalized[dataType](subid: subid)
     .select('*')
     .where
-      data_source_uuid: updateRow.data_source_uuid
       data_source_id: updateRow.data_source_id
+      data_source_uuid: updateRow.data_source_uuid
   .then (result) ->
     if !result?.length
       # no existing row, just insert
@@ -401,6 +402,13 @@ updateRecord = ({stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceTy
         parcelUtils.prepRowForRawGeom(updateRow)
       tables.normalized[dataType](subid: subid)
       .insert(updateRow)
+      .catch analyzeValue.isKnexError, (err) ->
+        if err.code == '23505'  # unique constraint
+          newOpts = _.clone(opts)
+          newOpts.forceUpdate = true
+          updateRecord(newOpts)
+        else
+          throw err
     else
       # found an existing row, so need to update, but include change log
       oldRow = result[0]

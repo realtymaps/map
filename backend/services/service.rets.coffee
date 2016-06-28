@@ -13,45 +13,61 @@ getSystemData = (mlsId) ->
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getSystem()
 
-getDatabaseList = (mlsId) ->
+getDatabaseList = (mlsId, opts={}) ->
+  logger.debug () -> "getting database list for #{mlsId}"
+  restrictFields = opts.restrictFields ? ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getResources()
     .catch (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS databases')
     .then (response) ->
-      _.map response.results[0].metadata, (r) ->
-        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+      result = response.results[0].metadata
+      if !restrictFields
+        return result
+      _.map result, (r) ->
+        _.pick(r, restrictFields)
 
-getObjectList = (mlsId) ->
+getObjectList = (mlsId, opts={}) ->
+  logger.debug () -> "getting object list for #{mlsId}"
+  restrictFields = opts.restrictFields ? ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getObject('0')
     .catch (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS objects')
     .then (response) ->
-      _.map response.results[0].metadata, (r) ->
-        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+      result = response.results[0].metadata
+      if !restrictFields
+        return result
+      _.map result, (r) ->
+        _.pick(r, restrictFields)
 
-
-getTableList = (mlsId, databaseName) ->
+getTableList = (mlsId, databaseName, opts={}) ->
+  logger.debug () -> "getting table list for #{mlsId}/#{databaseName}"
+  restrictFields = opts.restrictFields ? ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getClass(databaseName)
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS tables')
     .then (response) ->
-      _.map response.results[0].metadata, (r) ->
-        _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+      result = response.results[0].metadata
+      if !restrictFields
+        return result
+      _.map result, (r) ->
+        _.pick(r, restrictFields)
 
-getColumnList = (mlsId, databaseName, tableName) ->
+getColumnList = (mlsId, databaseName, tableName, opts={}) ->
+  logger.debug () -> "getting column list for #{mlsId}/#{databaseName}/#{tableName}"
+  restrictFields = opts.restrictFields ? ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'Failed to retrieve RETS columns')
     .then (response) ->
-      _.map response.results[0].metadata, (r) ->
-        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
-    .then (fields) ->
+      result = response.results[0].metadata
+      if restrictFields && restrictFields.indexOf('LongName') == -1
+        return result
       reverseMappings = {}
-      for field in fields
+      for field in result
         field.LongName = field.LongName.replace(/\./g, '').trim()
         # handle LongName collisions
         if reverseMappings[field.LongName]?
@@ -61,10 +77,15 @@ getColumnList = (mlsId, databaseName, tableName) ->
             i++
           field.LongName = "#{baseName} (#{i})"
         reverseMappings[field.LongName] = field.SystemName
-      fields
-
+      result
+    .then (fields) ->
+      if !restrictFields
+        return fields
+      _.map fields, (r) ->
+        _.pick(r, restrictFields)
 
 getLookupTypes = (mlsId, databaseName, lookupId) ->
+  logger.debug () -> "getting lookup for #{mlsId}/#{databaseName}/#{lookupId}"
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch errorHandlingUtils.isUnhandled, (error) ->
@@ -78,6 +99,7 @@ getDataStream = (mlsId, opts={}) ->
     if !mlsInfo.listing_data.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     offsetPromise = Promise.try () ->
+      logger.debug () -> "determining RETS time zone offset for #{mlsId}"
       if mlsInfo.listing_data.field_type != 'Date'
         return 0
       getSystemData(mlsId)
@@ -113,6 +135,7 @@ getDataStream = (mlsId, opts={}) ->
           that.push(type: 'error', payload: error)
         resultStream.end()
       streamIteration = () ->
+        logger.debug () -> "getting streamed data for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
         found = null
         counter = 0
         new Promise (resolve, reject) ->
@@ -176,8 +199,7 @@ getDataStream = (mlsId, opts={}) ->
                 if lastId
                   received -= found+1
                 total += received
-                logger.debug("stream chunk: #{received}")
-                if opts.uuidField?
+                if mlsInfo.verify_overlap && opts.uuidField?
                   lastId = currentPayload.split(delimiter)[uuidColumn]
                   if !overlap
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
@@ -216,11 +238,16 @@ getDataStream = (mlsId, opts={}) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
 
 
-getDataChunks = (mlsId, handler, opts={}) ->
+getDataChunks = (mlsId, opts, handler) ->
+  if typeof(handler) == 'undefined'
+    # syntactic sugar to allow a default opts value, but leave the handler at the end of the param list
+    handler = opts
+    opts = {}
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     if !mlsInfo.listing_data.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
+      logger.debug () -> "determining RETS time zone offset for #{mlsId}"
       if mlsInfo.listing_data.field_type != 'Date'
         return 0
       getSystemData(mlsId)
@@ -236,9 +263,13 @@ getDataChunks = (mlsId, handler, opts={}) ->
       _.extend(searchOptions, opts.searchOptions)
       fullLimit = opts.searchOptions.limit
       if opts.subLimit
-        searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+        if searchOptions.limit
+          searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
+        else
+          searchOptions.limit = opts.subLimit
 
       searchIteration = () ->
+        logger.debug () -> "getting data chunk for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
         internals.getRetsClient mlsId, (retsClientIteration) ->
           retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
           .then (response) ->
@@ -251,9 +282,11 @@ getDataChunks = (mlsId, handler, opts={}) ->
               if !found?
                 throw new SoftFail('failed to locate RETS overlap record')
               results = response.results.slice(found+1)
+              if results.length == 0
+                throw new SoftFail('no new results found in interation')
             else
               results = response.results
-            if opts.uuidField?
+            if mlsInfo.verify_overlap && opts.uuidField?
               lastId = results[results.length-1][opts.uuidField]
               if !overlap
                 overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
@@ -264,7 +297,8 @@ getDataChunks = (mlsId, handler, opts={}) ->
                 searchOptions.limit = fullLimit - searchOptions.offset
                 if opts.subLimit
                   searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
-              handlerPromise = handler(results)
+              handlerPromise = Promise.try () ->
+                handler(results)
               .catch errorHandlingUtils.isUnhandled, (err) ->
                 throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
               nextIterationPromise = searchIteration()
