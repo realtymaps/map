@@ -404,6 +404,7 @@ updateRecord = (opts) -> Promise.try () ->
       .insert(updateRow)
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
+          delete updateRow.inserted
           newOpts = _.clone(opts)
           newOpts.forceUpdate = true
           updateRecord(newOpts)
