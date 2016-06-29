@@ -33,9 +33,9 @@ app.service 'rmapsMailTemplateFactory', (
   class MailTemplateFactory
     constructor: (@campaign = {}) ->
       _.defaults @campaign, campaignDefaults
-      @_makeDirty()
+      @setDirty()
 
-    _makeDirty: () ->
+    setDirty: () ->
       @dirty = true
       @_priceForColorFlag = {true: null, false: null}
       @review = {}
@@ -75,14 +75,14 @@ app.service 'rmapsMailTemplateFactory', (
         @campaign.aws_key = null
         @campaign.options.color = false
         @campaign.custom_content = true
-      @_makeDirty()
+      @setDirty()
 
     unsetTemplateType: () ->
       @campaign.template_type = ''
       @campaign.content = null
       @campaign.aws_key = null
       @campaign.options.color = false
-      @_makeDirty()
+      @setDirty()
 
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
