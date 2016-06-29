@@ -5,8 +5,8 @@ include ../mixins/property/_propertyAttributes.jade
     .col-md-4
       img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property.grouped.properties[0], 100, 100)}}")
     .col-md-8.property-card
-      h5.title {{property.grouped.properties[0].address.lines[0]}}
-      p.location(ng-repeat="line in property.grouped.properties[0].address.lines.slice(1)") {{line}}
+      h5.title {{property.grouped.properties[0].address.street}}
+      p.location {{property.grouped.properties[0].address.citystate}} {{property.grouped.properties[0].address.zip}}
       ul.status-summary
         li.status.forsale {{property.grouped.forsale}} For Sale
         li.status.pending {{property.grouped.pending}} Pending
@@ -18,7 +18,7 @@ include ../mixins/property/_propertyAttributes.jade
     .col-md-9
       div
         span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
-        span.unit-number {{$i}}
+        span.unit-number {{unit.address.unit}}
       div.property-attr
         ul.attr
           li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds

@@ -32,8 +32,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .below-price
                 .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
-              .content-emphasis {{property.address.lines[0]}}
-              .content-muted(ng-repeat="line in property.address.lines.slice(1)") {{line}}
+              .content-emphasis {{property.address.street}} {{property.address.unit}}
+              .content-muted {{property.address.citystate}} {{property.address.zip}}
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='property')
@@ -179,8 +179,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .below-price.content-label
               .sold-date.info.title(ng-if="formatters.property.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
-          .content-emphasis.content-lg {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-          .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
+          .content-emphasis.content-lg {{selectedResult.address.street}} {{selectedResult.address.unit}}
+          .content-muted {{selectedResult.address.citystate}} {{selectedResult.address.zip}}
 
         .content-block.prop-attrs.border-bottom(ng-show="getMail()")
             .content-heading Mail Campaigns
@@ -246,9 +246,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 | {{selectedResult.owner_name2}}
           p
             .content-label Address
-            .content-lg {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
+            .content-lg {{selectedResult.address.street}} {{selectedResult.address.unit}}
               br/
-              | {{formatters.property.getCityStateZip(selectedResult,true)}}
+              | {{selectedResult.address.citystate}} {{selectedResult.address.zip}}
 
         .content-block.border-bottom(ng-if="formatters.property.showListingData(selectedResult)")
           .content-heading MLS Listing Info

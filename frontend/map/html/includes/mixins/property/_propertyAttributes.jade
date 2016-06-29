@@ -6,6 +6,7 @@ mixin propertyAttributes(propName)
       li.baths_total {{formatters.property.orNa(#{propName}.baths.value)}} baths
       li.finished_sqft(ng-if="#{propName}.finished_sqft") {{#{propName}.finished_sqft}} Sq Ft
       li.year_built(ng-if="#{propName}.year_built.value") {{#{propName}.year_built.value}}
-  h4.title(ng-if="#{propName}.address.lines[0]") {{#{propName}.address.lines[0]}}
-  p.location(ng-repeat="line in #{propName}.address.lines.slice(1)") {{line}}
+  h4.title {{#{propName}.address.street}} {{#{propName}.address.unit}}
+  p.location {{#{propName}.address.citystate}} {{#{propName}.address.zip}}
   p.location(ng-if="#{propName}.mls_formal_name") {{#{propName}.mls_formal_name}}
+  json-formatter(json="#{propName}" open="3")
