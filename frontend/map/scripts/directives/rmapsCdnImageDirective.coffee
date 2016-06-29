@@ -37,4 +37,4 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
       return
 
     element.removeAttr('rmaps-cdn-image')
-    $compile(element)(scope)
+    $compile(element.contents())(scope)

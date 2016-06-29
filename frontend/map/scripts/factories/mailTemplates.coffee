@@ -119,14 +119,12 @@ app.service 'rmapsMailTemplateFactory', (
       # color was changed, so need to save this change
       @save(force: true)
       .then () =>
-        console.log "@_priceForColorFlag:\n#{JSON.stringify(@_priceForColorFlag)}"
         if !@_priceForColorFlag[@campaign.options.color]?
           return @_getReview('getQuoteAndPdf')
         @review.price = @_priceForColorFlag[@campaign.options.color]
         @review
 
     save: (options) ->
-      console.log "save()"
       if !@dirty and !options?.force
         return $q.when @campaign
 
