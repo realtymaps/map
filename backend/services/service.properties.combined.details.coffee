@@ -7,6 +7,7 @@ tables = require '../config/tables'
 _ = require 'lodash'
 mlsConfigSvc = require './service.mls_config'
 Promise = require 'bluebird'
+moment = require 'moment'
 
 _detailQuery = (queryParams, req) ->
   getPermissions(req)
@@ -46,8 +47,12 @@ _detailQuery = (queryParams, req) ->
 
       Promise.map data, (row) ->
         result[row.rm_property_id] ?= { county: null, mls: null }
-        result[row.rm_property_id][row.data_source_type] ?= []
-        result[row.rm_property_id][row.data_source_type].push(row)
+        propertyList = result[row.rm_property_id][row.data_source_type] ?= []
+
+        if moment(row.up_to_date).isAfter(propertyList[0]?.up_to_date)
+          propertyList.unshift(row)
+        else
+          propertyList.push(row)
 
         if row.data_source_type == 'mls'
           mlsConfigSvc.getByIdCached(row.data_source_id)
@@ -99,6 +104,13 @@ getDetails = (req) ->
 
   .then (queryParams) ->
     _detailQuery(queryParams, req)
+
+  .then (result) ->
+    logger.debug result
+    for id, property of result
+      logger.debug property
+      result[id] = property.mls?[0] || property.county?[0]
+    result
 
 module.exports = {
   getDetail

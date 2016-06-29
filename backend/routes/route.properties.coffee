@@ -83,7 +83,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
-        detailServiceOld.getDetails(req.validBody)
+        detailService.getDetails(req)
 
   drawnShapes:
     method: "post"
