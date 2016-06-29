@@ -3,6 +3,7 @@ sinon = require 'sinon'
 should()
 Promise = require 'bluebird'
 rewire = require 'rewire'
+require '../../../common/extensions/strings'
 subject = rewire '../../../backend/services/service.notifications.internals'
 SqlMock = require '../../specUtils/sqlMock.coffee'
 logger = require('../../specUtils/logger').spawn('service:notifications:internals')
@@ -37,8 +38,29 @@ describe "service.notifications.internals", ->
         last_name: 'Jordan'
 
       options =
-        notificationType: 'notificationPinned'
+        type: 'pin'
 
       subject.sendEmailVero(row, options)
       .then () ->
         stubbedVeroEvents.notificationPinned.called.should.be.ok
+
+  describe 'distribute', ->
+    describe 'getUsers', ->
+      stubs = null
+      describe 'matches', ->
+        beforeEach ->
+          stubs =
+            children: sinon.stub()
+            parents: sinon.stub()
+          subject.__set__ 'getChildUsers', stubs.children
+          subject.__set__ 'getParentUsers', stubs.parents
+
+        ['children','parents','all'].forEach (name) ->
+          it name, ->
+            subject.distribute.getUsers to: name
+
+            if name != 'all'
+              stubs[name].called.should.be.ok
+            else
+              stubs.children.called.should.be.ok
+              stubs.parents.called.should.be.ok

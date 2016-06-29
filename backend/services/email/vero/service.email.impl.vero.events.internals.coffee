@@ -32,51 +32,43 @@ module.exports = (vero) ->
         cancel_plan_url: cancelPlanUrl
 
 
-  callAndRetry = ({opts, attempt, recallFn, errorName, eventName}) ->
-    attempt ?= 0
+  callAndRetry = ({opts, errorName, eventName}) ->
 
-    logger.debug.cyan "#{recallFn.name} ATTEMPT: #{attempt}"
-
-    createOrUpdate _.merge {}, opts,
+    payload = _.merge {}, opts,
       eventName: veroEvents[eventName]
       eventData:
         in_error_support_phrase: inErrorSupportPhrase
+
+    logger.debug "callAndRetry"
+    logger.debug payload
+    createOrUpdate payload
+
     .catch (err) ->
-      logger.error "#{recallFn.name} error!"
-      logger.error analyzeValue.getSimpleMessage(err)
-
-      if attempt >= EMAIL_PLATFORM.MAX_RETRIES - 1
-        logger.error "MAX_RETRIES reached for #{recallFn.name}"
-        #add to a JobQueue task to complete later?
-        throw new veroErrors[errorName](opts)
-
-      setTimeout ->
-        recallFn opts, attempt++
-      , EMAIL_PLATFORM.RETRY_DELAY_MILLI
+      throw new veroErrors[errorName](opts, analyzeValue.getSimpleDetails(err))
 
 
 
   ###
   Main goal is to move the main extra option of `properties` to eventData for the template
   ###
-  notificationProperties = ({opts, attempt, recallFn, name, errorName, eventName}) ->
-
-    {authUser, properties} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
+  notificationProperties = ({opts, name, errorName, eventName}) ->
+    logger.debug "@@@@@@@@ notificationProperties @@@@@@@@"
+    logger.debug {opts, name, errorName, eventName}
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    {authUser, properties, type} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
 
     opts = {
       authUser
       eventData: {
         properties
+        type
       }
     }
 
-    @name = name
     logger.debug "handling vero #{@name}"
 
     callAndRetry {
       opts
-      attempt
-      recallFn
       errorName
       eventName
     }

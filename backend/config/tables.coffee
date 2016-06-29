@@ -15,6 +15,7 @@ module.exports =
     dataSourceDatabases: 'config_data_source_databases'
     dataSourceObjects: 'config_data_source_objects'
     dataSourceTables: 'config_data_source_tables'
+    handlersEventMap: 'config_handlers_event_map'
   lookup:
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
@@ -78,8 +79,6 @@ module.exports =
   temp: 'raw_temp.raw'
   event:
     history: 'data_event_history'
-  handlers:
-    eventMap: 'handlers_event_map'
 
 
 _setup = (baseObject) ->

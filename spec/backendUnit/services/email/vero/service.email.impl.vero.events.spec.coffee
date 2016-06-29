@@ -137,9 +137,10 @@ describe "service.email.impl.vero.events", ->
         @vero.createUserAndTrackEvent.args[0][4].should.be.eql
           in_error_support_phrase: internals.inErrorSupportPhrase
   [
-    'notificationFavorite'
-    'notificationPinned'
-  ].forEach (testName) ->
+    'Favorited'
+    'Pinned'
+  ].forEach (type) ->
+    testName = 'notification' + type
     describe testName, ->
 
       beforeEach ->
@@ -168,9 +169,11 @@ describe "service.email.impl.vero.events", ->
           subscription_status: 'trial'
 
       it "eventName" , ->
-        @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents[testName]
+        @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.notificationPropertiesSaved
 
       it "eventData" , ->
-        @vero.createUserAndTrackEvent.args[0][4].should.be.eql
+        @vero.createUserAndTrackEvent.args[0][4].should.be.eql {
           in_error_support_phrase: internals.inErrorSupportPhrase
           properties: []
+          type: type
+        }

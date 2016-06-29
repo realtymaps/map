@@ -19,6 +19,7 @@ admin =
       listing_data: {}
     otherConfig:
       static_ip: false
+      verify_overlap: true
     task:
       active: false
   dataSource:
@@ -27,6 +28,9 @@ admin =
     otherConfig:
       static_ip:
         label: 'Use Static IP Address'
+        type: 'checkbox'
+      verify_overlap:
+        label: 'Verify Data Overlap'
         type: 'checkbox'
 
 app.constant 'rmapsAdminConstants', admin

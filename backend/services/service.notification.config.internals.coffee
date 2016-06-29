@@ -1,7 +1,6 @@
 tables = require '../config/tables'
 
 getColumns = [
-  'id'
   'auth_user_id'
   'type'
   'method'
@@ -17,13 +16,19 @@ userColumns = [
   'work_phone'
 ]
 
-allColumns = getColumns.concat userColumns
+allColumns = getColumns.concat "#{tables.user.notificationConfig.tableName}.id", userColumns
 
-explicitGetColumns = "#{tables.user.notificationConfig}.#{col}" for col in getColumns
+explicitGetColumns = getColumns.concat('id').map (col) ->
+  "#{tables.user.notificationConfig.tableName}.#{col}"
+
+
+explicitUserColumns = userColumns.concat('id').map (col) ->
+  "#{tables.auth.user.tableName}.#{col}"
 
 module.exports = {
   allColumns
   userColumns
   getColumns
   explicitGetColumns
+  explicitUserColumns
 }

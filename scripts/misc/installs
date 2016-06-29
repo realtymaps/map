@@ -2,9 +2,10 @@
 set -e
 set -o pipefail
 
+
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
   # use buildpacks if HEROKU
-  # CI skipp installs and expect specs dependent on installs to be in backendIntegration
+  # use circle.ym if CI
   exit 0
 fi
 
@@ -14,10 +15,15 @@ unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+  sudo apt-get install -y libpoppler-cpp-dev
+
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
   if ! hash vips &> /dev/null || [[ $IS_HEROKU = 1 ]];then
     brew install homebrew/science/vips --with-imagemagick --with-webp
+  fi
+  if ! hash /usr/local/Cellar/poppler &> /dev/null || [[ $IS_HEROKU = 1 ]];then
+    brew install poppler
   fi
 fi
 

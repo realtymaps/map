@@ -364,8 +364,8 @@ deleteOldPhoto = (subtask, key) -> Promise.try () ->
 markUpToDate = (subtask) ->
   internals.getUuidField(subtask.task_name)
   .then (uuidField) ->
-    doMarks = (chunk) -> Promise.try () ->
-      logger.debug("doMarks chunk: #{chunk.length}")
+    dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
+    retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
       if !chunk?.length
         return
       ids = _.pluck(chunk, uuidField)
@@ -385,9 +385,9 @@ markUpToDate = (subtask) ->
           undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
           undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
         Promise.join markPromise, undeletePromise, () ->  # no-op
-    retsService.getDataChunks(subtask.task_name, doMarks, minDate: 0, uuidField: uuidField, searchOptions: {limit: subtask.data.limit, Select: uuidField})
+
     .then (count) ->
-      logger.debug("getDataChunks total: #{count}")
+      logger.debug () -> "getDataChunks total: #{count}"
   .catch retsService.isTransientRetsError, (error) ->
     throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->

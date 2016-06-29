@@ -38,7 +38,7 @@ VeroEvents = (vero) ->
     }
 
 
-  subscriptionTrialEnding = (opts, attempt) -> Promise.try () ->
+  subscriptionTrialEnding = (opts) -> Promise.try () ->
     @name = "subscriptionTrialEnding"
     logger.debug "handling vero #{@name}"
 
@@ -46,69 +46,59 @@ VeroEvents = (vero) ->
 
     internals.callAndRetry {
       opts
-      attempt
-      recallFn: @
       errorName: "SubscriptionTrialEndedError"
       eventName: "customerSubscriptionTrialWillEnd"
     }
 
   #Purpose To send a Welcome Email stating that the account validation was successful
-  subscriptionVerified = (opts, attempt) ->
+  subscriptionVerified = (opts) ->
     @name = "subscriptionVerified"
     logger.debug "handling vero #{@name}"
 
     internals.callAndRetry {
       opts
-      attempt
-      recallFn: @
       errorName: "SubscriptionVerifiedError"
       eventName: "customerSubscriptionVerified"
     }
 
-  subscriptionUpdated = (opts, attempt) ->
+  subscriptionUpdated = (opts) ->
     @name = "subscriptionUpdated"
     logger.debug "handling vero #{@name}"
 
     internals.callAndRetry {
       opts
-      attempt
-      recallFn: @
       errorName: "SubscriptionUpdatedError"
       eventName: "customerSubscriptionUpdated"
     }
 
-  subscriptionDeleted = (opts, attempt) ->
+  subscriptionDeleted = (opts) ->
     @name = "subscriptionDeleted"
     logger.debug "handling vero #{@name}"
 
     internals.callAndRetry {
       opts
-      attempt
-      recallFn: @
       errorName: "SubscriptionDeletedError"
       eventName: "customerSubscriptionDeleted"
     }
 
 
-  notificationFavorite = (opts, attempt) ->
+  notificationFavorited = (opts) ->
+    opts.type = 'Favorited'
     internals.notificationProperties {
       opts
-      attempt
-      recallFn: @
       name: "notificationFavorite"
       errorName: "NotificationFavoriteError"
-      eventName: "notificationFavorite"
+      eventName: "notificationPropertiesSaved"
     }
 
 
-  notificationPinned = (opts, attempt) ->
+  notificationPinned = (opts) ->
+    opts.type = 'Pinned'
     internals.notificationProperties {
       opts
-      attempt
-      recallFn: @
       name: "notificationPinned"
       errorName: "NotificationPinnedError"
-      eventName: "notificationPinned"
+      eventName: "notificationPropertiesSaved"
     }
 
 
@@ -118,7 +108,7 @@ VeroEvents = (vero) ->
     subscriptionTrialEnding
     subscriptionUpdated
     subscriptionDeleted
-    notificationFavorite
+    notificationFavorited
     notificationPinned
   }
 

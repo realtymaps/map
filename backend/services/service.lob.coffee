@@ -12,6 +12,8 @@ logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
 awsService = require('./service.aws')
+pdfService = require('./service.pdf')
+priceService = require('./service.prices')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
@@ -163,35 +165,37 @@ getLetter = (lobId, apiName = 'live') ->
 # Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
 #
 getPriceQuote = (userId, campaignId) ->
+
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
-    throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
+    if !_.isArray campaign?.recipients
+      throw new Error("recipients must be an array")
 
-    result = null
-    Promise.each campaign.recipients, (r) ->
-      address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
-      logger.debug "Checking #{address}"
-      letter = buildLetter campaign, r
-      sendLetter letter, 'test'
-      .then (lobResponse) ->
-        logger.debug "Address was valid: #{address}"
-        result =
-          pdf: lobResponse.url
-          price: lobResponse.price * campaign.recipients.length
-          lobResponse: lobResponse
-        throw new Error("Stop checking addresses") # no need to check more addresses
-      .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
-        logger.debug "Invalid address: #{address}. Trying next recipient"
-    .catch ->
-      result # Probably got a valid address
-    .then ->
-      if result
-        return result
-      else
-        throw new Error("No valid addresses were found")
+    # manually created content might not have aws_key: so make one if not, return the key if so
+    (if !campaign.aws_key? then pdfService.createFromCampaign(campaign) else Promise.resolve(campaign.aws_key))
+    .then (aws_key) ->
+      awsService.getTimedDownloadUrl
+        extAcctName: awsService.buckets.PDF
+        Key: aws_key
+      .then (file) ->
+
+        # get number of pages (needed for price)
+        pdfService.getUrlPageCount(file)
+        .then (pages) ->
+
+          # get price
+          priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
+          .then (price) ->
+            result =
+              pdf: file
+              price: price
+
+    .catch (err) ->
+      throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")
+
 
 # Retrieves LOB letters by metadata
 #  https://lob.com/docs#letters_retrieve

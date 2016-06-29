@@ -1,7 +1,8 @@
 // stylings for wysiwyg editor to control look/feel of editor and associated text-angular components
 
 $template-stage-margin = 1.25in
-$wysiwyg-scale-factor = 1.0
+$wysiwyg-scale-factor = 1
+$content-scale-factor = 1.155
 
 *, *:before, *:after
   -webkit-box-sizing border-box
@@ -16,6 +17,9 @@ $wysiwyg-scale-factor = 1.0
       background-color $gray_lighter
       margin-bottom $template-stage-margin
       text-align center
+
+      .letter-body
+        zoom $content-scale-factor
 
       .letter-editor
         margin auto // centers the editor

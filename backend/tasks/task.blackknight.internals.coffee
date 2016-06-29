@@ -4,6 +4,7 @@ svc = require '../services/service.dataSource'
 logger = require('../config/logger').spawn('task:blackknight:internals')
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
+moment = require 'moment'
 
 
 NUM_ROWS_TO_PAGINATE = 2500
