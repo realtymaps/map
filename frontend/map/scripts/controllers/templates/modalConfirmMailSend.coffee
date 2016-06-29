@@ -21,8 +21,8 @@ app.controller 'rmapsModalSendMailCtrl', (
   $scope.send = () ->
     if $scope.sentinel
       $scope.sendingFlag = true
-      rmapsMailCampaignService.send(mail.campaign.id).success (response) ->
-        $scope.bodyMessage = "Mail campaign \"#{mail.campaign.name}\" submitted!"
+      rmapsMailCampaignService.send($scope.wizard.mail.campaign.id).success (response) ->
+        $scope.bodyMessage = "Mail campaign \"#{$scope.wizard.mail.campaign.name}\" submitted!"
         $scope.statusMessage = ''
         $scope.sendingFlag = false
         $scope.successFlag = true
