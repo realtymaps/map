@@ -36,7 +36,10 @@ app.controller 'rmapsEditTemplateCtrl',
   $scope.saveContent = _.debounce () ->
     $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.wizard.mail.campaign.name}"
-    $scope.wizard.mail.dirty = true
+    # content changed, we'll need to remake the pdf and aws_key
+    # (pdf isn't made until the review-preview call on review page)
+    $scope.wizard.mail.campaign.aws_key = null
+    $scope.wizard.mail.setDirty()
     $scope.wizard.mail.save()
     .then ->
       $scope.saveStatus = 'saved'
