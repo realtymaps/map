@@ -5,7 +5,7 @@
 .modal-body(ng-show="processing")
   .waiting
     p Processing preview...
-    img(rmaps-cdn-image src="assets/icon_loading_earth.gif")
+    img(rmaps-cdn-image src="/assets/icon_loading_earth.gif")
 
 .modal-body(ng-hide="mediaType != 'pdf' || processing ")
   embed#mail-preview-pdf.pdf-preview-letter(embed-src="{{template.pdf}}" src="{{template.pdf}}")
