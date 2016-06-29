@@ -13,7 +13,8 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 argv = require('yargs').argv
 rewire = require('rewire')
-task = rewire('../../backend/tasks/' + argv.task)
+taskFile = rewire('../../backend/tasks/' + argv.task)
+task = taskFile('swflmls')
 subtask = task.subtasks[argv.subtask]
 internal =  require './subtask.internal'
 
@@ -22,7 +23,7 @@ if argv.debug
 
 
 #mock jobQueue to call things directly
-task.__set__ 'jobQueue',
+taskFile.__set__ 'jobQueue',
 
   queueSubsequentSubtask: ({subtask, laterSubtaskName, manualData, replace}) ->
     subtasksToRun = 0
@@ -64,7 +65,7 @@ task.__set__ 'jobQueue',
         if chunkIndex == 0 or (chunkIndex + 1) % pagedPerProcess == 0
           promiseChunks.push internal.subtaskFork({task, chunkIndex, totalChunks, pagedPerProcess, subtask, maxPage, laterSubtaskName, mergeData})
 
-    Promise.all promiseChunks
+    Promise.each promiseChunks, (->)
     .then () ->
       "done promiseChunks"
 
