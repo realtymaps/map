@@ -57,7 +57,7 @@ createFromCampaign = (campaign) ->
         .pipe(upload)
 
 
-getUrlPageCount = (url) ->
+_getFromUrl = (url) ->
   logger.debug -> "Processing PDF url: #{url}"
 
   return new Promise (resolve, reject) ->
@@ -99,7 +99,7 @@ getUrlPageCount = (url) ->
             logger.error(msg = "Failed to open PDF data from #{url}: #{err}")
             return reject(new Error(err, msg))
 
-          resolve(httpDoc.pageCount)
+          resolve(httpDoc)
       )
 
       req.end()
@@ -107,18 +107,25 @@ getUrlPageCount = (url) ->
 
     _attempt()
 
-getFilePageCount = (file) ->
+_getFromFile = (file) ->
   return new Promise (resolve, reject) ->
     try
-      localDoc = new PopplerDocument(mylocalfile)
-      resolve(localDoc.pageCount)
+      localDoc = new PopplerDocument(file)
+      resolve(localDoc)
     catch err
-      reject(err)
+      logger.error(msg = "Failed to open PDF data from #{file}: #{err}")
+      return reject(new Error(err, msg))
 
+_getPdf = (source) ->
+  if /^http.*?/.test(source) then _getFromUrl(source) else _getFromFile(source)
+
+getPageCount = (source) ->
+  _getPdf(source)
+  .then (pdfDoc) ->
+    pdfDoc.pageCount
 
 module.exports = {
   createFromCampaign
-  getUrlPageCount
-  getFilePageCount
+  getPageCount
   PdfUrlMaxAttemptError
 }

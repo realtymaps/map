@@ -177,5 +177,9 @@ class MailService extends ServiceCrud
         .then () ->
           lobResponse
 
+  sendCampaign: (auth_user_id, campaign_id) ->
+    lobSvc.sendCampaign auth_user_id, campaign_id
+
+
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance
