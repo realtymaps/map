@@ -97,7 +97,7 @@ app.service 'rmapsMailTemplateFactory', (
 
       @reviewPromise = rmapsMailCampaignService.getReviewDetails(@campaign.id)
       .then (review) =>
-        @_priceForColorFlag[@campaign.options.color] = @review.price
+        @_priceForColorFlag[@campaign.options.color] = review.price
         _.merge @review, review
         @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
 

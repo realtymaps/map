@@ -8,7 +8,6 @@ moment = require 'moment'
 db = dbs.get('main')
 propertySvc = require './service.properties.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
-lobSvc = require './service.lob'
 LobErrors = require '../utils/errors/util.errors.lob'
 Promise = require 'bluebird'
 
@@ -163,7 +162,7 @@ class MailService extends ServiceCrud
       if !(letter.status == "ready" || letter.status == "error-transient")
         throw new PartiallyHandledError("Letter #{letter_id} must be ready or have only transient error status")
 
-      lobSvc.sendLetter letter, 'test'
+      lobService.sendLetter letter, 'test'
 
       .then (lobResponse) ->
         logger.debug -> "#{JSON.stringify lobResponse, null, 2}"
@@ -178,7 +177,8 @@ class MailService extends ServiceCrud
           lobResponse
 
   sendCampaign: (auth_user_id, campaign_id) ->
-    lobSvc.sendCampaign auth_user_id, campaign_id
+    lobService.sendCampaign auth_user_id, campaign_id
+
 
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})

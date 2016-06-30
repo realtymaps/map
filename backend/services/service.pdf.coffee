@@ -124,8 +124,27 @@ getPageCount = (source) ->
   .then (pdfDoc) ->
     pdfDoc.pageCount
 
+validateDimensions = (source) ->
+  _getPdf(source)
+  .then (pdfDoc) ->
+    for pageNum in [1..pdfDoc.pageCount]
+      page = pdfDoc.getPage(pageNum)
+
+      # "media_box" is the true pixel dimensions of the pdf content on paper.
+      # Note: `height` and `width` are NOT the pixel dims, but represent "points"
+      #   that are distinct from pixels or measure.
+      if ((page.media_box.x2 - page.media_box.x1) > (8.5 * 72.0) or (page.media_box.y2 - page.media_box.y1) > (11.0 * 72.0))
+        return false
+    return true
+
+  .catch (err) ->
+    logger.error(msg = "Unexpected outcome during pdf validation: #{err}")
+    throw new Error(err, msg)
+
+
 module.exports = {
   createFromCampaign
   getPageCount
+  validateDimensions
   PdfUrlMaxAttemptError
 }

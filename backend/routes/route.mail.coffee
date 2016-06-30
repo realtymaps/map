@@ -25,6 +25,7 @@ class MailCampaignRoute extends RouteCrud
   sendCampaign: (req, res, next) =>
     @custom @svc.sendCampaign(req.user.id, req.params.id), res
 
+
 instance = new MailCampaignRoute mailCampaignService,
   debugNS: "mailRoute"
   reqTransforms: reqTransforms

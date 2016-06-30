@@ -1,6 +1,7 @@
 tables = require '../config/tables'
 awsService = require './service.aws'
 lobService = require './service.lob'
+pdfService = require './service.pdf'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 mockLobData = require '../json/mail.fakeLetter.json'
 
@@ -14,26 +15,18 @@ class PdfUploadService extends ServiceCrud
       url
 
   validatePdf: (aws_key) ->
-    mockLobData.options.aws_key = aws_key
-    lobService.sendLetter mockLobData, 'test'
-    .then (res) ->
-      return {isValid: true}
-
-    .catch (err) ->
-      message = err.jse_summary
-      if message.indexOf("File length/width is incorrect size.") >= 0
-        # parse out the arcane codes for clean message
-        message = err.jse_summary.match(/File length\/width is incorrect size.+/)[0]
-
-      # truthy message implies err.jse_summary as expected
-      if message
+    @getSignedUrl(aws_key)
+    .then (url) ->
+      # validate dimensions.
+      # If multiple validations are needed for a letter, a suggestion would be to create separate ones in the `pdfService`
+      #   and test each one here, being able to return specific messages per validation.
+      pdfService.validateDimensions(url)
+      .then (isValid) ->
+        message = if !isValid then "Page dimensions exceed 'Letter' size. Please be sure all pages are 8.5in x 11in." else null
         return {
-          isValid: false
-          message: message
+          isValid
+          message
         }
-
-      # account for whatever could have gone really wrong since we always expect a 'message'
-      throw new Error(err, "Error encountered while doing file validation.")
 
 instance = new PdfUploadService tables.mail.pdfUpload,
   idKeys: 'aws_key'
