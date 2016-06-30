@@ -70,7 +70,7 @@ describe "service.lob", ->
     createFromCampaign: () -> Promise.try ->
       return mockCampaign.aws_key
 
-    getUrlPageCount: (url) -> Promise.try ->
+    getPageCount: (url) -> Promise.try ->
       return 3
 
   svc.__set__ 'priceService',
@@ -92,8 +92,7 @@ describe "service.lob", ->
       letters.setResult [mockLetter]
 
     it 'should update campaign status and create letters', (done) ->
-
-      svc.sendCampaign mockCampaign.id, mockAuthUser.id
+      svc.sendCampaign mockAuthUser.id, mockCampaign.id
       .then (campaign) =>
 
         tables.auth.user().selectSpy.callCount.should.equal 1
@@ -133,7 +132,7 @@ describe "service.lob", ->
 
     it 'should update campaign status and create letters', (done) ->
 
-      svc.sendCampaign mockPdfCampaign.id, mockAuthUser.id
+      svc.sendCampaign mockAuthUser.id, mockPdfCampaign.id
       .then (campaign) =>
 
         tables.auth.user().selectSpy.callCount.should.equal 1

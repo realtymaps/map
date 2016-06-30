@@ -64,17 +64,4 @@ app.controller 'rmapsEditTemplateCtrl',
       resolve:
         template: () ->
           title: 'Mail Preview'
-          pdfPromise: $scope.wizard.mail.getQuoteAndPdf()
-
-  $scope.quoteAndSend = () ->
-    $scope.wizard.mail.save()
-    .then () ->
-      $modal.open
-        template: require('../../../html/views/templates/modal-snailPrice.tpl.jade')()
-        controller: 'rmapsModalSnailPriceCtrl'
-        keyboard: false
-        backdrop: 'static'
-        windowClass: 'snail-modal'
-        resolve:
-          template: () ->
-            campaign: $scope.wizard.mail.campaign
+          pdfPromise: $scope.wizard.mail.getReviewDetails()

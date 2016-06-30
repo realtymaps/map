@@ -89,14 +89,14 @@ app.service 'rmapsMailTemplateFactory', (
     isSubmitted: () ->
       @campaign.status != 'ready'
 
-    _getReview: (serviceMethod) ->
+    getReviewDetails: () ->
       return if !@campaign.id
       if @reviewPromise
         return @reviewPromise
 
-      @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
+      @reviewPromise = rmapsMailCampaignService.getReviewDetails(@campaign.id)
       .then (review) =>
-        @_priceForColorFlag[@campaign.options.color] = @review.price
+        @_priceForColorFlag[@campaign.options.color] = review.price
         _.merge @review, review
         @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
 
@@ -108,18 +108,12 @@ app.service 'rmapsMailTemplateFactory', (
         @review =
           errorMsg: errorMsg
 
-    getReviewDetails: () ->
-      @_getReview 'getReviewDetails'
-
-    getQuoteAndPdf: () ->
-      @_getReview 'getQuoteAndPdf'
-
     refreshColorPrice: () ->
       # color was changed, so need to save this change
       @save(force: true)
       .then () =>
         if !@_priceForColorFlag[@campaign.options.color]?
-          return @_getReview('getQuoteAndPdf')
+          return @getReviewDetails()
         @review.price = @_priceForColorFlag[@campaign.options.color]
         @review
 

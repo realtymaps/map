@@ -57,7 +57,6 @@ app.controller 'rmapsReviewCtrl', (
     $state.go 'map'
 
   $scope.refreshColorPrice = () ->
-    console.log "refreshColorPRice()"
     $scope.review = null
     $scope.wizard.mail.refreshColorPrice()
     .then (review) ->
