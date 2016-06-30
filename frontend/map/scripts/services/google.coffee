@@ -10,9 +10,8 @@ app.service 'rmapsGoogleService', ($http, $log) ->
 
   _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
-    data = data.google
-    if data?.MAPS?.API_KEY
-      apiKey = "&key=#{data.MAPS.API_KEY}"
+    if data?.google
+      apiKey = "&key=#{data.google}"
 
   service =
     ConfigPromise: _googleConfigPromise
