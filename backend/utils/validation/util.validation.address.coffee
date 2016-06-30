@@ -20,7 +20,7 @@ module.exports = (options = {}) ->
         strength: 0
 
       if value.careOf
-        result.careOf = "c/o #{value.careOf.toInitCaps()}"
+        result.co = "c/o #{value.careOf.toInitCaps()}"
         result.strength += 3
 
       if !value.showStreetInfo? || value.showStreetInfo

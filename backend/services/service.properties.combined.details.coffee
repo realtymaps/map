@@ -49,7 +49,7 @@ _detailQuery = (queryParams, req) ->
         result[row.rm_property_id] ?= { county: null, mls: null }
         propertyList = result[row.rm_property_id][row.data_source_type] ?= []
 
-        if moment(row.up_to_date).isAfter(propertyList[0]?.up_to_date)
+        if propertyList[0]?.up_to_date && moment(row.up_to_date).isAfter(moment(propertyList[0].up_to_date))
           propertyList.unshift(row)
         else
           propertyList.push(row)
@@ -106,9 +106,7 @@ getDetails = (req) ->
     _detailQuery(queryParams, req)
 
   .then (result) ->
-    logger.debug result
     for id, property of result
-      logger.debug property
       result[id] = property.mls?[0] || property.county?[0]
     result
 

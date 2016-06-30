@@ -9,4 +9,3 @@ mixin propertyAttributes(propName)
   h4.title {{#{propName}.address.street}} {{#{propName}.address.unit}}
   p.location {{#{propName}.address.citystate}} {{#{propName}.address.zip}}
   p.location(ng-if="#{propName}.mls_formal_name") {{#{propName}.mls_formal_name}}
-  json-formatter(json="#{propName}" open="3")
