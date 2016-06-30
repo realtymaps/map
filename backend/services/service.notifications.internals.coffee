@@ -159,6 +159,7 @@ getParentUsers = ({id, project_id}) ->
 # Returns Array<tables.auth.user>
 getChildUsers = ({id, project_id}) ->
   parentId = id
+
   tables.auth.user()
   .select(notifyConfigInternals.explicitUserColumns)
   .innerJoin(tables.user.profile.tableName,
@@ -168,6 +169,25 @@ getChildUsers = ({id, project_id}) ->
     "#{tables.user.profile.tableName}.parent_auth_user_id": parentId
     "#{tables.user.profile.tableName}.project_id": project_id
 
+# Build a list of users that are siblings in a project
+# NOT including the calling user
+#
+# * `id` {[int]} childId.
+# * `project_id` {[int]}.
+#
+# Returns Array<tables.auth.user>
+getSiblingUsers = ({id, project_id}) ->
+  childId = id
+
+  tables.auth.user()
+  .select(notifyConfigInternals.explicitUserColumns)
+  .innerJoin(tables.user.profile.tableName,
+    "#{tables.user.profile.tableName}.auth_user_id",
+    "#{tables.auth.user.tableName}.id")
+  .where
+    "#{tables.user.profile.tableName}.project_id": project_id
+  .whereNot
+    "#{tables.user.profile.tableName}.auth_user_id": childId
 
 # Public: [Description]
 #
@@ -184,24 +204,23 @@ getUsers = ({to, id, project_id}) ->
   logger.debug {to, id, project_id}
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@"
 
-  childrenPromise = Promise.resolve []
-  parentsPromise = Promise.resolve []
-
   switch true #use regex for flex
     when /children/.test to
       logger.debug 'going to children'
-      parentsPromise = getChildUsers({id, project_id})
+      childrenPromise = getChildUsers({id, project_id})
+    when /siblings/.test to
+      logger.debug 'going to siblings'
+      siblingPromise = getSiblingUsers({id, project_id})
     when /parents/.test to
       logger.debug 'going to parents'
-      childrenPromise = getParentUsers({id, project_id})
+      parentsPromise = getParentUsers({id, project_id})
     when /all/.test to
       logger.debug 'going to all'
-      parentsPromise = getChildUsers({id, project_id})
-      childrenPromise = getParentUsers({id, project_id})
+      childrenPromise = getChildUsers({id, project_id})
+      parentsPromise = getParentUsers({id, project_id})
+      siblingPromise = getSiblingUsers({id, project_id})
     else
-      logger.debug 'no match to distribute'
-      logger.debug 'going to noone'
-      return Promise.resolve []
+      #do nothing as we can check for self as well
 
   selfPromise = Promise.resolve []
 
@@ -211,9 +230,13 @@ getUsers = ({to, id, project_id}) ->
     .select(notifyConfigInternals.userColumns)
     .where {id}
 
-  Promise.join parentsPromise, childrenPromise, selfPromise,
-    (downUsers=[], upUsers=[], selfUsers=[]) ->
-      downUsers.concat upUsers, selfUsers
+  Promise.join parentsPromise, childrenPromise, siblingPromise, selfPromise,
+    (downUsers=[], upUsers=[], siblingPromise=[], selfUsers=[]) ->
+      users = downUsers.concat upUsers, siblingPromise, selfUsers
+
+      # remove dupes as a parent request does not need siblings and children
+      # this allows us to not insert another argument of calling type (child or parent)
+      _.uniq users, "id"
 
 
 enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows}) ->
@@ -275,6 +298,7 @@ module.exports = {
     getUsers
     getChildUsers
     getParentUsers
+    getSiblingUsers
   }
   enqueue
 }
