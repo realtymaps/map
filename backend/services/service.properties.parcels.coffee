@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('map:parcels')
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'

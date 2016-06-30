@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('service:property:filterSummary:combined')
+logger = require('../config/logger').spawn('map:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
@@ -142,7 +142,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   if !bounds
     throw new Error('query must have bounds')
 
-# Add permissions
+  # Add permissions
   queryPermissions(query, permissions)
 
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
@@ -217,7 +217,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       @.orWhereRaw "? like concat('%',array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' '),'%')", [addressString]
       @.orWhereRaw "array_to_string(ARRAY(select json_array_elements_text(address->'lines')), ' ') like ?", ["%#{addressString}%"]
 
-  logger.debug -> query.toString()
+  logger.debug () -> query.toString()
   query
 
 module.exports = {

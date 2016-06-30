@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('service:filterSummary:base')
+logger = require('../config/logger').spawn('map:filterSummary:base')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterAddress = require "../enums/filterAddress"

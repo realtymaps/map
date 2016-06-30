@@ -6,7 +6,6 @@ tables = require '../config/tables'
 
 toInit = {}
 _.extend toInit, _.pick tables.lookup, [
-  'usStates'
   'accountUseTypes'
 ]
 _.extend toInit, _.pick tables.auth, [
@@ -33,7 +32,7 @@ class UserCrud extends ThenableCrud
     super(arguments...)
 
   init: () =>
-    # taking care of inits here fore internal svcs so they can be overriden
+    # taking care of inits here fore internal svcs so they can be overridden
     # logger.debug 'INIT UserCrud Service'
     @permissions = thenableHasManyCrud(tables.auth.permission, joinColumns.permission,
       module.exports.m2m_user_permission, 'permission_id', undefined,

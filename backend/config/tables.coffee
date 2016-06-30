@@ -17,7 +17,6 @@ module.exports =
     dataSourceTables: 'config_data_source_tables'
     handlersEventMap: 'config_handlers_event_map'
   lookup:
-    usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
     fipsCodes: 'lookup_fips_codes'
     mls: 'lookup_mls'
