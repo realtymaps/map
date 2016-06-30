@@ -1,7 +1,9 @@
 app = require '../app.coffee'
 module.exports = app
 
+ctrlId = 0
 app.controller 'rmapsProjectPinsCtrl', ($rootScope, $scope, $timeout, $log) ->
+  ctrlId += 1
   $log = $log.spawn("map:projectPins")
 
   $scope.pinLimit = 4
@@ -17,5 +19,6 @@ app.controller 'rmapsProjectPinsCtrl', ($rootScope, $scope, $timeout, $log) ->
   if $scope.pins?.length > 0
     incrementPinLimit()
 
-  $rootScope.$on '$stateChangeStart', () ->
-    cancelIncrementing = true
+  $rootScope.$on '$stateChangeStart', (toState) ->
+    if toState.name != 'projectPins'
+      cancelIncrementing = true
