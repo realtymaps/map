@@ -1,4 +1,4 @@
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('map:filterSummary:drawnShapes')
 BaseFilterSummaryService = require './service.properties.base.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'

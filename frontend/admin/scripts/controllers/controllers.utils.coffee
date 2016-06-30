@@ -3,7 +3,9 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.controller 'rmapsUtilsCtrl', ($scope) ->
 
-app.controller 'rmapsUtilsFipsCodesCtrl', ($scope, rmapsFipsCodesService) ->
+app.controller 'rmapsUtilsFipsCodesCtrl', ($scope, rmapsFipsCodesService, rmapsUsStates) ->
+
+  $scope.us_states = rmapsUsStates.all
 
   $scope.$watch 'location.usStateCode', (usStateCode) ->
     return unless usStateCode

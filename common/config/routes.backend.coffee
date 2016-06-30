@@ -22,7 +22,6 @@ apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
-apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseFipsCodes = "#{apiBase}/fipsCodes"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
@@ -122,10 +121,6 @@ module.exports =
     rootPost: apiBaseCompanies
     byId: "#{apiBaseCompanies}/:id"
     byIdWPerms: "#{apiBaseCompanies}/:id"
-  us_states:
-    apiBase: apiBaseUsStates
-    root: apiBaseUsStates
-    byId: "#{apiBaseUsStates}/:id"
   fipsCodes:
     apiBase: apiBaseFipsCodes
     root: apiBaseFipsCodes

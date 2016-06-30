@@ -2,10 +2,22 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnboardingCtrl', ($q, $log, $scope, $state, $stateParams, rmapsOnboardingOrderService, rmapsOnboardingOrderSelectorService,
-rmapsPlansService, rmapsOnboardingService) ->
+app.controller 'rmapsOnboardingCtrl', (
+$q,
+$log,
+$scope,
+$state,
+$stateParams,
+rmapsOnboardingOrderService,
+rmapsOnboardingOrderSelectorService,
+rmapsPlansService,
+rmapsOnboardingService,
+rmapsUsStates
+) ->
 
   $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
+
+  $scope.us_states = rmapsUsStates.all
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,

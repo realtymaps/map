@@ -13,7 +13,7 @@ rmapsEventConstants,
 rmapsPrincipalService,
 rmapsMainOptions,
 $log,
-rmapsUsStatesService
+rmapsUsStates
 ) ->
 
   {profile} = rmapsMainOptions.images.dimensions
@@ -31,9 +31,7 @@ rmapsUsStatesService
     name.replace /user(.+)/, '$1'
 
 
-  rmapsUsStatesService.getAll()
-  .then (states) ->
-    $scope.us_states = states
+  $scope.us_states = rmapsUsStates.all
 
   $http.get(backendRoutes.account_use_types.root)
   .then ({data}) ->
