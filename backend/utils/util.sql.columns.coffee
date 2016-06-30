@@ -43,7 +43,7 @@ basicColumns = do ->
       'owner_address'
       'cdn_photo'
       'photo_count'
-      'status as rm_status'
+      'status'
       'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name)
     .join(', ')
@@ -115,7 +115,7 @@ basicColumns = do ->
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
       'property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time', 'photo_download_last_mod_time',
-      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status as rm_status'
+      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
     ]
 
     company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',

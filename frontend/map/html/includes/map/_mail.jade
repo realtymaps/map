@@ -36,5 +36,5 @@ span.pinned-list.dropdown.btn-group(
             span.enity
               +circleNrMixin('{{$index+1}}')
               span.content
-                span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.rm_status}}
+                span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.status}}
                 +propertyAttributes('property')

@@ -170,7 +170,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
         //background-color:transparent; must be here to override googles meddling where it forces style via element
         ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
         include ../includes/map/_satilite.jade
-        .prop-image-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
+        .prop-image-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.status}}
 
       .container
         .content-block.prop-attrs.border-bottom
