@@ -29,7 +29,7 @@ VeroEvents = (vero) ->
       eventData:
         verify_url: verifyUrl
 
-    internals.callAndRetry {
+    internals.sendVeroMsg {
       opts
       attempt
       recallFn: @
@@ -44,7 +44,7 @@ VeroEvents = (vero) ->
 
     internals.cancelPlanOptions opts
 
-    internals.callAndRetry {
+    internals.sendVeroMsg {
       opts
       errorName: "SubscriptionTrialEndedError"
       eventName: "customerSubscriptionTrialWillEnd"
@@ -55,7 +55,7 @@ VeroEvents = (vero) ->
     @name = "subscriptionVerified"
     logger.debug "handling vero #{@name}"
 
-    internals.callAndRetry {
+    internals.sendVeroMsg {
       opts
       errorName: "SubscriptionVerifiedError"
       eventName: "customerSubscriptionVerified"
@@ -65,7 +65,7 @@ VeroEvents = (vero) ->
     @name = "subscriptionUpdated"
     logger.debug "handling vero #{@name}"
 
-    internals.callAndRetry {
+    internals.sendVeroMsg {
       opts
       errorName: "SubscriptionUpdatedError"
       eventName: "customerSubscriptionUpdated"
@@ -75,29 +75,18 @@ VeroEvents = (vero) ->
     @name = "subscriptionDeleted"
     logger.debug "handling vero #{@name}"
 
-    internals.callAndRetry {
+    internals.sendVeroMsg {
       opts
       errorName: "SubscriptionDeletedError"
       eventName: "customerSubscriptionDeleted"
     }
 
 
-  notificationFavorited = (opts) ->
-    opts.type = 'Favorited'
+  notificationPropertiesSaved = (opts) ->
     internals.notificationProperties {
       opts
-      name: "notificationFavorite"
-      errorName: "NotificationFavoriteError"
-      eventName: "notificationPropertiesSaved"
-    }
-
-
-  notificationPinned = (opts) ->
-    opts.type = 'Pinned'
-    internals.notificationProperties {
-      opts
-      name: "notificationPinned"
-      errorName: "NotificationPinnedError"
+      name: "notificationPropertiesSaved"
+      errorName: "NotificationPropertiesSavedError"
       eventName: "notificationPropertiesSaved"
     }
 
@@ -108,8 +97,7 @@ VeroEvents = (vero) ->
     subscriptionTrialEnding
     subscriptionUpdated
     subscriptionDeleted
-    notificationFavorited
-    notificationPinned
+    notificationPropertiesSaved
   }
 
 module.exports = VeroEvents

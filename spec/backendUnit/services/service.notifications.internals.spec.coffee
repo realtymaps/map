@@ -38,11 +38,11 @@ describe "service.notifications.internals", ->
         last_name: 'Jordan'
 
       options =
-        type: 'pin'
+        type: 'propertySaved'
 
       subject.sendEmailVero(row, options)
       .then () ->
-        stubbedVeroEvents.notificationPinned.called.should.be.ok
+        stubbedVeroEvents.notificationPropertiesSaved.called.should.be.ok
 
   describe 'distribute', ->
     describe 'getUsers', ->
