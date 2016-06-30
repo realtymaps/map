@@ -20,7 +20,7 @@ include ../mixins/property/_propertyAttributes.jade
           ng-click="formatters.results.click(property,property);showDetails = !showDetails")
             .property-card
               div.property-img
-                span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
+                span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
                 img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
               +propertyAttributes('property')
               property-buttons(property='property'
@@ -35,7 +35,7 @@ include ../mixins/property/_propertyAttributes.jade
       ng-class="trayPosition($index)"
       ng-click="cardClick($index, property)")
         .property-img
-          .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
+          .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
           img(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
         .card-info
           a.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}" ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
