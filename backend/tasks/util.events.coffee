@@ -1,5 +1,4 @@
 _ = require 'lodash'
-clone = require 'clone'
 require '../../common/extensions/strings'
 logger = require('../config/logger.coffee').spawn('task:util:events')
 notificationsSvc = require '../services/service.notifications'
@@ -61,17 +60,21 @@ propertyCompaction = (rows, frequency) ->
   if !rows?.length
     return
 
-  compacted = clone rows[0]
+  summary = rows[0]
 
-  compacted.options =
-    type: compacted.type
-    frequency: frequency
-    properties:
-      pin: []
-      unPin: []
-      favorite: []
-      unFavorite: []
-      notes: []
+  compacted =
+    type: summary.type
+    auth_user_id: summary.auth_user_id
+    project_id: summary.project_id
+    options:
+      type: summary.type
+      frequency: frequency
+      properties:
+        pin: []
+        unPin: []
+        favorite: []
+        unFavorite: []
+        notes: []
 
   ### TODO
   Pull in more data to make the email worth something.
