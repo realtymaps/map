@@ -116,12 +116,27 @@ $fnMakePropertyAttr()
       &.pending:before
         color $rm_pending
 
-  .cover-image
-    width 100%
-    height 100%
+  .unit-image
+    display flex
+    flex-direction column
+    justify-content center
+    img
+      width 100%
+    i
+      font-size 40px
+      color $gray
+      margin auto
+
+  .unit-details
+    display flex
+    flex-direction column
+    justify-content center
 
   .unit-number
     float right
+    text-transform uppercase
+    color $gray
+    font-weight bold
 
   .btn-actions
     overflow hidden

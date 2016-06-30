@@ -3,7 +3,7 @@ include ../mixins/property/_propertyAttributes.jade
 .property-group(ng-controller="rmapsSmallDetailsCtrl" style="width:375px; max-height: 375px; overflow-y: scroll;")
   .row
     .col-md-4
-      img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property.grouped.properties[0], 100, 100)}}")
+      img(ng-cloak ng-src="{{formatters.property.google.Satellite.getUrl(property.grouped.properties[0], 100, 100)}}")
     .col-md-8.property-card
       h5.title {{property.grouped.properties[0].address.street}}
       p.location {{property.grouped.properties[0].address.citystate}} {{property.grouped.properties[0].address.zip}}
@@ -12,14 +12,15 @@ include ../mixins/property/_propertyAttributes.jade
         li.status.pending {{property.grouped.pending}} Pending
         li.status.sold {{property.grouped.sold}} Sold
 
-  .property-card.row(ng-repeat="unit in property.grouped.properties")
-    .col-md-3
-      img.cover-image(ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
-    .col-md-9
-      div
+  .property-card.row.unit(ng-repeat="unit in property.grouped.properties | orderBy:unitComparator")
+    .col-md-3.unit-image
+      img(ng-if="unit.cdn_photo" ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
+      i.fa.fa-building-o(ng-if="!unit.cdn_photo")
+    .col-md-9.unit-details
+      .header
         span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
         span.unit-number {{unit.address.unit}}
-      div.property-attr
+      .property-attr
         ul.attr
           li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds
           li.baths_total {{formatters.property.orNa(unit.baths.value)}} baths
