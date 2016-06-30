@@ -1,6 +1,6 @@
 #project-favorite-container
   .project-top
-    .project-property-card.item.item-card.bordered(ng-repeat="property in favorites")
+    .project-property-card.item.item-card.bordered(ng-repeat="property in favorites | limitTo: favoriteLimit")
       div(ng-include='"./views/project/_propertyCardInclude.jade"')
 
     .project-instructions(ng-if="!favorites.length && loadedProperties")
