@@ -211,9 +211,9 @@ module.exports = app.config (
   # Project child states
   buildChildState 'projectClients', 'projectLayout', projectParam: 'id', page: { title: 'My Clients' }, templateUrl: './views/project/projectClients.jade'
   buildChildState 'projectNotes', 'projectLayout', controller: 'rmapsProjectNotesCtrl', projectParam: 'id', page: { title: 'Notes' }, templateUrl: './views/project/projectNotes.jade'
-  buildChildState 'projectFavorites', 'projectLayout', controller: 'rmapsProjectAreasCtrl', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
+  buildChildState 'projectFavorites', 'projectLayout', controller: 'rmapsProjectFavoritesCtrl', projectParam: 'id', page: { title: 'Favorites' }, templateUrl: './views/project/projectFavorites.jade'
   buildChildState 'projectAreas', 'projectLayout', projectParam: 'id', page: { title: 'Areas' }, templateUrl: './views/project/projectAreas.jade'
-  buildChildState 'projectPins', 'projectLayout', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'
+  buildChildState 'projectPins', 'projectLayout', controller: 'rmapsProjectPinsCtrl', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'
 
   buildState 'areas'
   buildState 'notes'
