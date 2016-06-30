@@ -28,18 +28,12 @@ $fnMakeMapPinned()
         display table-cell
         padding-left 10px
         .status
-          background $rm_forsale
           color c_white
           text-transform uppercase
           display inline-block
           padding 5px 10px
           font-size 11px
           margin-bottom 5px
-          &.label-pending-property
-            background $rm_pending
-
-          &.label-sold-property
-            background $rm_sold
 
         .price
           margin 0
@@ -50,6 +44,8 @@ $fnMakeMapPinned()
             color $rm_pending
           &.sold
             color $rm_sold
+          &.forsale
+            color $rm_forsale
 
         .property-attr
           list-style none

@@ -12,3 +12,6 @@ UPDATE data_combined SET address = jsonb_set(address::jsonb, '{zip}', to_jsonb('
 UPDATE data_combined SET address = jsonb_set(address::jsonb, '{citystate}', replace((address->'citystate')::text, replace(replace((address->'zip')::text, '''', ''), '"', ''), '')::jsonb)
   WHERE (address#>'{zip}')::text is not null;
 
+UPDATE data_combined SET address = jsonb_set(address::jsonb, '{zip}', replace((address->'zip')::text, '''', '')::jsonb)
+  WHERE (address#>'{zip}')::text is not null;
+
