@@ -191,13 +191,9 @@ getSiblingUsers = ({id, project_id}) ->
 
 # Public: [Description]
 #
-# * `to` Whom to send a notification to. as {[string]}.
-#   children, childrenSelf, childrenself, children self
-#   parents, parentsSelf, parentsself, parents self
-#   all, allSelf, allself, all self, all Self
-#   siblings, siblingsSelf, siblings self, siblings Self, siblings self
+# * `to` Whom to send a notification to. as {Array<STRING>}.
+#   [children, parents, self, all, siblings]
 #
-#  Note: the location of the self string does not matter it could be prepended or appended. caps or no caps
 #
 # * `id` - parentId or childId that is targeted to send to
 # * `project_id` - project relevant to this notification
@@ -207,27 +203,25 @@ getUsers = ({to, id, project_id}) ->
   logger.debug {to, id, project_id}
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@"
 
-  switch true #use regex for flex
-    when /children/.test to
-      logger.debug 'going to children'
-      childrenPromise = getChildUsers({id, project_id})
-    when /siblings/.test to
-      logger.debug 'going to siblings'
-      siblingPromise = getSiblingUsers({id, project_id})
-    when /parents/.test to
-      logger.debug 'going to parents'
-      parentsPromise = getParentUsers({id, project_id})
-    when /all/.test to
-      logger.debug 'going to all'
-      childrenPromise = getChildUsers({id, project_id})
-      parentsPromise = getParentUsers({id, project_id})
-      siblingPromise = getSiblingUsers({id, project_id})
-    else
-      #do nothing as we can check for self as well
+  if !to?
+    return Promise.resolve([])
 
-  selfPromise = Promise.resolve []
+  if _.includes(to, 'children')
+    logger.debug 'going to children'
+    childrenPromise = getChildUsers({id, project_id})
+  if _.includes(to, 'siblings')
+    logger.debug 'going to siblings'
+    siblingPromise = getSiblingUsers({id, project_id})
+  if _.includes(to, 'parents')
+    logger.debug 'going to parents'
+    parentsPromise = getParentUsers({id, project_id})
+  if _.includes(to, 'all')
+    logger.debug 'going to all'
+    childrenPromise = getChildUsers({id, project_id})
+    parentsPromise = getParentUsers({id, project_id})
+    siblingPromise = getSiblingUsers({id, project_id})
 
-  if to.match /self/i
+  if _.includes(to, 'self')
     logger.debug 'going to self'
     selfPromise = tables.auth.user()
     .select(notifyConfigInternals.userColumns)

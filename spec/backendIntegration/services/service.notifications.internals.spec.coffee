@@ -118,49 +118,49 @@ describe 'service.notifications.internals', ->
       describe 'getUsers', ->
         it 'all', ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'all', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['all'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 2
 
-        it 'allSelf', ->
+        it "['all', 'self']", ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'allSelf', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['all', 'self'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 3
 
         it 'parents', ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'parents', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['parents'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 0
 
-        it 'parentsSelf', ->
+        it ['parents', 'self'], ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'parentsSelf', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['parents', 'self'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 1
 
         it 'children', ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'children', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['children'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 2
 
-        it 'childrenSelf', ->
+        it "['children', 'self']", ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'childrenSelf', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['children', 'self'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 3
 
         it 'self', ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'self', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['self'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 1
 
         it 'invalid', ->
           logger.debug @parentId
-          subject.distribute.getUsers {to: 'invalid', id: @parentId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['invalid'], id: @parentId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 0
 
@@ -191,10 +191,10 @@ describe 'service.notifications.internals', ->
           .then (rows) ->
             rows.length.should.be.eql 2
 
-        it 'allSelf', ->
+        it "['all', 'self']", ->
           logger.debug @parentId
           logger.debug childId = @childrenIds[0]
-          subject.distribute.getUsers {to: 'allSelf', id: childId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['all', 'self'], id: childId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 3
 
@@ -205,10 +205,10 @@ describe 'service.notifications.internals', ->
           .then (rows) ->
             rows.length.should.be.eql 1
 
-        it 'parentsSelf', ->
+        it "['parents', 'self']", ->
           logger.debug @parentId
           logger.debug childId = @childrenIds[0]
-          subject.distribute.getUsers {to: 'parentsSelf', id: childId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['parents', 'self'], id: childId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 2
 
@@ -219,23 +219,37 @@ describe 'service.notifications.internals', ->
           .then (rows) ->
             rows.length.should.be.eql 0
 
-        it 'childrenSelf', ->
+        it "['children', 'self']", ->
           logger.debug @parentId
           logger.debug childId = @childrenIds[0]
-          subject.distribute.getUsers {to: 'childrenSelf', id: childId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['children', 'self'], id: childId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 1
 
         it 'self', ->
           logger.debug @parentId
           logger.debug childId = @childrenIds[0]
-          subject.distribute.getUsers {to: 'self', id: childId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['self'], id: childId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 1
 
         it 'invalid', ->
           logger.debug @parentId
           logger.debug childId = @childrenIds[0]
-          subject.distribute.getUsers {to: 'invalid', id: childId, project_id: @projectId}
+          subject.distribute.getUsers {to: ['invalid'], id: childId, project_id: @projectId}
+          .then (rows) ->
+            rows.length.should.be.eql 0
+
+        it 'undefined', ->
+          logger.debug @parentId
+          logger.debug childId = @childrenIds[0]
+          subject.distribute.getUsers {to: undefined, id: childId, project_id: @projectId}
+          .then (rows) ->
+            rows.length.should.be.eql 0
+
+        it 'null', ->
+          logger.debug @parentId
+          logger.debug childId = @childrenIds[0]
+          subject.distribute.getUsers {to: null, id: childId, project_id: @projectId}
           .then (rows) ->
             rows.length.should.be.eql 0
