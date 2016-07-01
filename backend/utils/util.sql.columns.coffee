@@ -40,13 +40,6 @@ basicColumns = do ->
       'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')
 
-    # columns returned internally for snail pdf render lookups
-    address: [
-      'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
-      'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
-      'zip', 'owner_zip'
-    ].join(', ')
-
     parcel: ['geom_point_json'].concat(_parcel).join(', ')
 
     #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
@@ -76,7 +69,7 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
-    new_all_explicit: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
+    all: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
       'rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished', 'substatus',
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',

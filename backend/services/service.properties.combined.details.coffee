@@ -14,13 +14,6 @@ _propertyQuery = ({queryParams, profile, limit}) ->
   .then (permissions) ->
     logger.debug permissions
 
-    # This can be removed once mv_property_details is gone
-    columnMap =
-      'filter': 'filter'
-      'address': 'filter'
-      'detail': 'new_all_explicit'
-      'all': 'new_all_explicit'
-
     query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
     .leftOuterJoin "#{tables.config.mls.tableName}", ->
       @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
@@ -62,7 +55,7 @@ getProperty = ({query, profile}) ->
       transform: [validators.object(), validators.geojson(toCrs: true)]
 
     columns:
-      transform: validators.choice(choices: ['filter', 'address', 'detail', 'all'])
+      transform: validators.choice(choices: ['filter', 'address', 'all'])
       required: true
 
   .then (queryParams) ->

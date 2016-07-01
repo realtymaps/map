@@ -81,7 +81,7 @@ getResultCount = ({queryParams, permissions}) ->
 
 getPermissions = (profile) -> Promise.try ->
   tables.auth.user()
-  .select(['id', 'is_super_user', 'fips_codes', 'mlses_verified'])
+  .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
   .where(id: profile.auth_user_id)
   .then (user) ->
     # Skip permissions for superusers
@@ -97,8 +97,6 @@ getPermissions = (profile) -> Promise.try ->
       permissions.mls.push(user.mlses_verified...)
 
       # Include by proxy MLS available to project owner
-      profile = currentProfile(req.session)
-
       if profile.parent_auth_user_id? && profile.parent_auth_user_id != user.id
         return tables.auth.user()
           .select('mlses_verified')
