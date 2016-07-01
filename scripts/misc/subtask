@@ -14,7 +14,7 @@ _ = require 'lodash'
 argv = require('yargs').argv
 rewire = require('rewire')
 taskFile = rewire('../../backend/tasks/' + argv.task)
-task = taskFile('swflmls')
+task = taskFile(argv.subtaskStateFile.match(/(.*\/)?(\w+)(\.\w+)?/)[2])
 subtask = task.subtasks[argv.subtask]
 internal =  require './subtask.internal'
 
