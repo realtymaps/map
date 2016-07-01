@@ -192,9 +192,12 @@ getSiblingUsers = ({id, project_id}) ->
 # Public: [Description]
 #
 # * `to` Whom to send a notification to. as {[string]}.
-#   children, childrenSelf,
-#   parents, parentsSelf,
-#   all, allSelf
+#   children, childrenSelf, childrenself, children self
+#   parents, parentsSelf, parentsself, parents self
+#   all, allSelf, allself, all self, all Self
+#   siblings, siblingsSelf, siblings self, siblings Self, siblings self
+#
+#  Note: the location of the self string does not matter it could be prepended or appended. caps or no caps
 #
 # * `id` - parentId or childId that is targeted to send to
 # * `project_id` - project relevant to this notification
