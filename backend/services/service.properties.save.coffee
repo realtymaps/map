@@ -19,14 +19,6 @@ _pinsPromise = (profile) ->
   .select('pins')
   .where id: profile.project_id
 
-_extendSubTypeEvent = (eventObj) ->
-  cloned = clone eventObj
-  cloned.type = eventObj.type.replace(/un/, '')
-
-  if /un/.test(eventObj.type)
-    cloned.sub_type = 'un'
-  cloned
-
 ###
   UpdateRaw function for modifying pins or favorites json atomically.
 
@@ -74,10 +66,11 @@ _pin = ({rm_property_id, type, doAdd}) ->
       .then () ->
         logger.debug "#@@@@@@@@@@@@@@@@ eventsQueue type: #{type}@@@@@@@@@@@@@@@@@@@@@"
         tables.user.eventsQueue()
-        .insert _extendSubTypeEvent {
+        .insert {
           auth_user_id: profile.auth_user_id
           project_id: profile.project_id
-          type
+          type: 'propertySaved'
+          sub_type: type
           options: {
             rm_property_id
           }
@@ -104,10 +97,11 @@ _fave = ({rm_property_id, type, doAdd}) ->
       }
       .then () ->
         tables.user.eventsQueue()
-        .insert _extendSubTypeEvent {
+        .insert {
           auth_user_id: profile.auth_user_id
           project_id: profile.project_id
-          type
+          type: 'propertySaved'
+          sub_type: type
           options: {
             rm_property_id
           }

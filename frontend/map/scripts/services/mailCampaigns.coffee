@@ -61,16 +61,10 @@ app.service 'rmapsMailCampaignService', (
 
     getReviewDetails: (id) ->
       throw new Error('entity must have id') unless id
-      url = backendRoutes.mail.getReviewDetails.replace ':id', id
+      url = backendRoutes.mail.getReviewDetails.replace(':id', id)
       $http.get url, cache: false
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
-        data
-
-    getQuoteAndPdf: (campaignId) ->
-      $http.get(backendRoutes.snail.quote.replace(':campaign_id', campaignId), alerts: false, cache: false)
-      .then ({data}) ->
-        $log.debug () -> "getQuoteAndPdf response: #{JSON.stringify(data)}"
         data
 
     create: (entity) ->
@@ -90,8 +84,8 @@ app.service 'rmapsMailCampaignService', (
       id = '/' + entity.id
       $http.put(mailAPI + id, entity)
 
-    send: (campaignId) ->
-      url = backendRoutes.snail.send.replace(':campaign_id', campaignId)
+    send: (id) ->
+      url = backendRoutes.mail.sendCampaign.replace(':id', id)
       $http.post(url, {}, alerts: false)
       .success (data) ->
         $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"

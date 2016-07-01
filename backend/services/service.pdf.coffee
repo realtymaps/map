@@ -57,7 +57,7 @@ createFromCampaign = (campaign) ->
         .pipe(upload)
 
 
-getUrlPageCount = (url) ->
+_getFromUrl = (url) ->
   logger.debug -> "Processing PDF url: #{url}"
 
   return new Promise (resolve, reject) ->
@@ -99,7 +99,7 @@ getUrlPageCount = (url) ->
             logger.error(msg = "Failed to open PDF data from #{url}: #{err}")
             return reject(new Error(err, msg))
 
-          resolve(httpDoc.pageCount)
+          resolve(httpDoc)
       )
 
       req.end()
@@ -107,18 +107,44 @@ getUrlPageCount = (url) ->
 
     _attempt()
 
-getFilePageCount = (file) ->
+_getFromFile = (file) ->
   return new Promise (resolve, reject) ->
     try
-      localDoc = new PopplerDocument(mylocalfile)
-      resolve(localDoc.pageCount)
+      localDoc = new PopplerDocument(file)
+      resolve(localDoc)
     catch err
-      reject(err)
+      logger.error(msg = "Failed to open PDF data from #{file}: #{err}")
+      return reject(new Error(err, msg))
+
+_getPdf = (source) ->
+  if /^http.*?/.test(source) then _getFromUrl(source) else _getFromFile(source)
+
+getPageCount = (source) ->
+  _getPdf(source)
+  .then (pdfDoc) ->
+    pdfDoc.pageCount
+
+validateDimensions = (source) ->
+  _getPdf(source)
+  .then (pdfDoc) ->
+    for pageNum in [1..pdfDoc.pageCount]
+      page = pdfDoc.getPage(pageNum)
+
+      # "media_box" is the true pixel dimensions of the pdf content on paper.
+      # Note: `height` and `width` are NOT the pixel dims, but represent "points"
+      #   that are distinct from pixels or measure.
+      if ((page.media_box.x2 - page.media_box.x1) > (8.5 * 72.0) or (page.media_box.y2 - page.media_box.y1) > (11.0 * 72.0))
+        return false
+    return true
+
+  .catch (err) ->
+    logger.error(msg = "Unexpected outcome during pdf validation: #{err}")
+    throw new Error(err, msg)
 
 
 module.exports = {
   createFromCampaign
-  getUrlPageCount
-  getFilePageCount
+  getPageCount
+  validateDimensions
   PdfUrlMaxAttemptError
 }

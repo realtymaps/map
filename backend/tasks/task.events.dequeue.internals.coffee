@@ -1,6 +1,5 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
-clone = require 'clone'
 memoize = require 'memoizee'
 util = require 'util'
 require '../config/promisify.coffee'
@@ -12,48 +11,9 @@ tables = require '../config/tables'
 dbs = require '../config/dbs'
 sqlHelpers = require '../utils/util.sql.helpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
-
-
-notificationsSvc = require '../services/service.notifications'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
-
-handlers =
-  notifications: notificationsSvc
-
-propertyCompaction = (rows) ->
-  compacted = clone rows[0]
-  {type} = compacted
-  compacted.options =
-    type: compacted.type
-    properties:
-      "#{type}": []
-      "un#{type.toInitCaps()}": []
-
-  ### TODO
-  Pull in more data to make the email worth something.
-  https://realtymaps.atlassian.net/browse/MAPD-1097
-  Join data_combined and parcel for things like:
-  - cdn url
-  - description
-  - address
-  ###
-
-  for r in rows
-    if r.sub_type?
-      combinedType = r.sub_type + r.type.toInitCaps()
-    compacted.options.properties[combinedType || r.type].push r.options
-
-  compacted
-
-defaultCompaction = (rows) ->
-  _.merge {}, rows...
-
-compactHandlers =
-  favorite: propertyCompaction
-  pin: propertyCompaction
-  jobQueue: defaultCompaction
-  default: defaultCompaction
+utilEvents = require './util.events.coffee'
 
 
 NUM_ROWS_TO_PAGINATE = 250
@@ -142,12 +102,17 @@ compactEvents = (subtask) -> Promise.try () ->
   Promise.map subtask.data.values, (row) ->
     sqlHelpers.whereAndWhereIn tables.user.eventsQueue(),
       id: row.ids
+    .orderBy('rm_inserted_time')
     .then (compactRows) ->
       if !compactRows?.length
         return
 
-      compactHandler = compactHandlers[compactRows[0].type] || compactHandlers.default
-      compacted = compactHandler(compactRows)
+      compactHandler = utilEvents.compactHandlers[compactRows[0].type] || utilEvents.compactHandlers.default
+      compacted = compactHandler(compactRows, frequency)
+
+      if !compacted
+        logger.debug '@@@@ nothing compacted, nothing to process @@@@'
+        return
 
       jobQueue.queueSubsequentSubtask {
         subtask
@@ -172,6 +137,7 @@ compactEvents = (subtask) -> Promise.try () ->
 ###
 processEvent = (subtask) -> Promise.try () ->
   {compacted, doDequeue, frequency, ids} = subtask.data
+  {type} = compacted
   doDequeue ?= false
 
   eventMapPromise ?= memoize.promise () ->
@@ -186,15 +152,12 @@ processEvent = (subtask) -> Promise.try () ->
     logger.debug eventMap, true
     logger.debug "Attempting to find handle for compacted.type: #{compacted.type}"
 
-    logger.debug "original type: #{compacted.type}"
-    type = compacted.type.replace(/un/,'').toLowerCase()
-    logger.debug "base type: #{type}"
-
     {handler_name, handler_method, method, to_direction} = eventMap[type]
 
     logger.debug "Destructured eventMap via type"
+    logger.debug {handler_name, handler_method, method, to_direction}
 
-    handlerObject = handlers[handler_name]
+    handlerObject = utilEvents.processHandlers[handler_name]
 
     if !frequency?
       throw new HardFail "Frequency must be defined."
@@ -263,5 +226,4 @@ module.exports = {
   compactEvents
   processEvent
   doneEvents
-  handlers
 }

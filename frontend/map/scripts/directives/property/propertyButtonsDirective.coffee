@@ -36,10 +36,21 @@ app.directive 'propertyButtons', (
     templateUrl: './includes/directives/property/_propertyButtonsDirective.jade'
     controller: ($scope) ->
 #      $log.debug "PROPERTY BUTTONS with property", $scope.propertyParent, "and project", $scope.projectParent
-      $scope.formatters = {
-        results: new rmapsResultsFormatterService  scope: $scope
-        property: new rmapsPropertyFormatterService()
-      }
+
+      # Only create the formatters at this level if they aren't already in the parent scope
+      if $scope.$parent.formatters
+        $scope.formatters = $scope.$parent.formatters
+
+        if !$scope.formatters.results
+          $scope.formatters.results = new rmapsResultsFormatterService  scope: $scope
+
+        if !$scope.formatters.property
+          $scope.formatters.property = new rmapsPropertyFormatterService()
+      else
+        $scope.formatters = {
+          results: new rmapsResultsFormatterService  scope: $scope
+          property: new rmapsPropertyFormatterService()
+        }
 
       # Copy the parent project so that it can't be accidently changed by directive code
       if $scope.propertyParent

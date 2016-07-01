@@ -123,10 +123,8 @@ sendEmailVero = (row, options) -> Promise.try () ->
         email: row.email
 
     options.notificationType = switch options.type
-      when 'pin'
-        'notificationPinned'
-      when 'favorite'
-        'notificationFavorited'
+      when 'propertySaved'
+        'notificationPropertiesSaved'
       else
         null
 

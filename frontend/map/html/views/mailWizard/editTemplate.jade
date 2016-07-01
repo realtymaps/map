@@ -26,7 +26,6 @@
                 input.form-control.name-input(ng-disabled="saveStatus != 'saved'" ng-model="wizard.mail.campaign.name" ng-change="saveContent()")
                 .btns
                   button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
-                  //- button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
                   button.btn.btn-default.miscTool(ng-click="saveContent()" ng-class="{'btn-inactive': saveStatus == 'saved', 'btn-error': saveStatus == 'error'}") {{saveButtonText[saveStatus]}}
                   //- text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
                     ta-toolbar="[['redo','undo']]")

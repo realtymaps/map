@@ -1,8 +1,8 @@
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
-stateCodeLookup = require '../util.stateCodeLookup'
 logger = require('../../config/logger').spawn('validation:address')
+usStates = require '../../../common/utils/util.usStates'
 
 module.exports = (options = {}) ->
   (param, value) ->
@@ -10,7 +10,7 @@ module.exports = (options = {}) ->
       if !value.state || value.state.length == 2
         return value.state
       else
-        return stateCodeLookup(value.state)
+        return usStates.getByName(value.state)?.code
     .then (stateCode) ->
 
       if !value

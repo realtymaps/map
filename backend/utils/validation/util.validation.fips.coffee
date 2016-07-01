@@ -5,7 +5,7 @@ require '../../../common/extensions/strings'
 tables = require '../../config/tables'
 dbs = require '../../config/dbs'
 memoize = require 'memoizee'
-stateCodeLookup = require '../util.stateCodeLookup'
+usStates = require '../../../common/utils/util.usStates'
 
 
 cached = {}
@@ -46,10 +46,9 @@ module.exports = (options = {}) ->
       if value.stateCode.length == 2
         return value.stateCode.toUpperCase()
       else
-        stateCodeLookup(value.stateCode)
-        .then (stateCode) ->
-          if !stateCode
-            throw new DataValidationError('could not look up state code', param, value)
-          return stateCode
+        stateCode = usStates.getByName(value.stateCode)?.code
+        if !stateCode
+          throw new DataValidationError('could not look up state code', param, value)
+        return stateCode
     .then (stateCode) ->
       cached[minSimilarity](stateCode, value.county.toInitCaps(), value, param)

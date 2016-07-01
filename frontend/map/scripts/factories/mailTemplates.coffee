@@ -9,7 +9,7 @@ app.service 'rmapsMailTemplateFactory', (
   rmapsMailCampaignService,
   rmapsPrincipalService,
   rmapsMailTemplateTypeService,
-  rmapsUsStatesService,
+  rmapsUsStates,
   rmapsMainOptions
 ) ->
   $log = $log.spawn 'mail:mailTemplate'
@@ -33,9 +33,9 @@ app.service 'rmapsMailTemplateFactory', (
   class MailTemplateFactory
     constructor: (@campaign = {}) ->
       _.defaults @campaign, campaignDefaults
-      @_makeDirty()
+      @setDirty()
 
-    _makeDirty: () ->
+    setDirty: () ->
       @dirty = true
       @_priceForColorFlag = {true: null, false: null}
       @review = {}
@@ -44,20 +44,19 @@ app.service 'rmapsMailTemplateFactory', (
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
       rmapsPrincipalService.getIdentity()
       .then (identity) =>
-        rmapsUsStatesService.getById(identity.user.us_state_id)
-        .then (state) =>
-          @campaign.auth_user_id = identity.user.id
-          @campaign.sender_info =
-            first_name: identity.user.first_name
-            last_name: identity.user.last_name
-            company: null
-            address_line1: identity.user.address_1
-            address_line2: identity.user.address_2
-            address_city: identity.user.city
-            address_state: state?.code
-            address_zip: identity.user.zip
-            phone: identity.user.work_phone
-            email: identity.user.email
+        state = rmapsUsStates.getById(identity.user.us_state_id)
+        @campaign.auth_user_id = identity.user.id
+        @campaign.sender_info =
+          first_name: identity.user.first_name
+          last_name: identity.user.last_name
+          company: null
+          address_line1: identity.user.address_1
+          address_line2: identity.user.address_2
+          address_city: identity.user.city
+          address_state: state?.code
+          address_zip: identity.user.zip
+          phone: identity.user.work_phone
+          email: identity.user.email
 
     createLobHtml: (content = @campaign.content, extraStyles = "") ->
       fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
@@ -75,14 +74,14 @@ app.service 'rmapsMailTemplateFactory', (
         @campaign.aws_key = null
         @campaign.options.color = false
         @campaign.custom_content = true
-      @_makeDirty()
+      @setDirty()
 
     unsetTemplateType: () ->
       @campaign.template_type = ''
       @campaign.content = null
       @campaign.aws_key = null
       @campaign.options.color = false
-      @_makeDirty()
+      @setDirty()
 
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
@@ -90,14 +89,14 @@ app.service 'rmapsMailTemplateFactory', (
     isSubmitted: () ->
       @campaign.status != 'ready'
 
-    _getReview: (serviceMethod) ->
+    getReviewDetails: () ->
       return if !@campaign.id
       if @reviewPromise
         return @reviewPromise
 
-      @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
+      @reviewPromise = rmapsMailCampaignService.getReviewDetails(@campaign.id)
       .then (review) =>
-        @_priceForColorFlag[@campaign.options.color] = @review.price
+        @_priceForColorFlag[@campaign.options.color] = review.price
         _.merge @review, review
         @review = _.assign @review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
 
@@ -109,24 +108,16 @@ app.service 'rmapsMailTemplateFactory', (
         @review =
           errorMsg: errorMsg
 
-    getReviewDetails: () ->
-      @_getReview 'getReviewDetails'
-
-    getQuoteAndPdf: () ->
-      @_getReview 'getQuoteAndPdf'
-
     refreshColorPrice: () ->
       # color was changed, so need to save this change
       @save(force: true)
       .then () =>
-        console.log "@_priceForColorFlag:\n#{JSON.stringify(@_priceForColorFlag)}"
         if !@_priceForColorFlag[@campaign.options.color]?
-          return @_getReview('getQuoteAndPdf')
+          return @getReviewDetails()
         @review.price = @_priceForColorFlag[@campaign.options.color]
         @review
 
     save: (options) ->
-      console.log "save()"
       if !@dirty and !options?.force
         return $q.when @campaign
 
