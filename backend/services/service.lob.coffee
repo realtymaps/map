@@ -192,9 +192,6 @@ getPriceQuote = (userId, campaignId) ->
             # pdf-uploaded content won't have address windows, so add a page
             pages += 1
 
-          # double-sided paper
-          pages = Math.ceil(pages/2)
-
           # get price
           priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
           .then (price) ->
