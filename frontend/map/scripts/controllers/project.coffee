@@ -185,6 +185,10 @@ app.controller 'rmapsProjectCtrl',
     params.scrollTo = 'project-dashboard'
     $state.go state, params
 
+  $scope.propertyClick = (propertyId) ->
+    if (propertyId)
+      $scope.goDashboardState('property', { id: propertyId })
+
   #
   # Load Project Data
   #

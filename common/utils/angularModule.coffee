@@ -17,4 +17,5 @@ if window?.angular?
   # Since Browserify will not pick them up if not required at least once
   #
   require('./util.bounds.coffee')
+  require('./util.usStates.coffee')
 

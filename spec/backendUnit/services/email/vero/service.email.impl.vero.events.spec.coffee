@@ -136,44 +136,39 @@ describe "service.email.impl.vero.events", ->
       it "eventData" , ->
         @vero.createUserAndTrackEvent.args[0][4].should.be.eql
           in_error_support_phrase: internals.inErrorSupportPhrase
-  [
-    'Favorited'
-    'Pinned'
-  ].forEach (type) ->
-    testName = 'notification' + type
-    describe testName, ->
 
-      beforeEach ->
-        @promise = subject(@vero)[testName] {
-          authUser: @authUser
-          plan: 'standard'
-          properties: []
-        }
+  testName = 'notificationPropertiesSaved'
+  describe testName, ->
 
-      it "can run", ->
-        @promise
+    beforeEach ->
+      @promise = subject(@vero)[testName] {
+        authUser: @authUser
+        properties: []
+      }
 
-      it "is called", ->
-        @vero.createUserAndTrackEvent.called.should.be.ok
+    it "can run", ->
+      @promise
 
-      it "id" , ->
-        @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
+    it "is called", ->
+      @vero.createUserAndTrackEvent.called.should.be.ok
 
-      it "email" , ->
-        @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
+    it "id" , ->
+      @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
 
-      it "userData" , ->
-        @vero.createUserAndTrackEvent.args[0][2].should.be.eql
-          first_name: @authUser.first_name
-          last_name: @authUser.last_name
-          subscription_status: 'trial'
+    it "email" , ->
+      @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
 
-      it "eventName" , ->
-        @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.notificationPropertiesSaved
+    it "userData" , ->
+      @vero.createUserAndTrackEvent.args[0][2].should.be.eql
+        first_name: @authUser.first_name
+        last_name: @authUser.last_name
+        subscription_status: 'trial'
 
-      it "eventData" , ->
-        @vero.createUserAndTrackEvent.args[0][4].should.be.eql {
-          in_error_support_phrase: internals.inErrorSupportPhrase
-          properties: []
-          type: type
-        }
+    it "eventName" , ->
+      @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.notificationPropertiesSaved
+
+    it "eventData" , ->
+      @vero.createUserAndTrackEvent.args[0][4].should.be.eql {
+        in_error_support_phrase: internals.inErrorSupportPhrase
+        properties: []
+      }

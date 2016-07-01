@@ -22,6 +22,10 @@ class MailCampaignRoute extends RouteCrud
   testLetter: (req, res, next) =>
     @custom @svc.testLetter(req.params.letter_id, req.user.id), res
 
+  sendCampaign: (req, res, next) =>
+    @custom @svc.sendCampaign(req.user.id, req.params.id), res
+
+
 instance = new MailCampaignRoute mailCampaignService,
   debugNS: "mailRoute"
   reqTransforms: reqTransforms
@@ -56,6 +60,11 @@ module.exports = routeHelpers.mergeHandles instance,
       auth.requireLogin(redirectOnFail: true)
     ]
   testLetter:
+    methods: ['post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  sendCampaign:
     methods: ['post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)

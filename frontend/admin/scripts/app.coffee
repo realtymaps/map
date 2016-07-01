@@ -9,6 +9,7 @@ appName = 'rmapsAdminApp'
 
 app = window.angular.module appName, [
   'rmapsCommon'
+  'rmapsCommonUtils'
   'nemLogging'
   'angular-data.DSCacheFactory'
   'rmaps-utils'

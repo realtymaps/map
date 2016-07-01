@@ -36,7 +36,10 @@ app.controller 'rmapsEditTemplateCtrl',
   $scope.saveContent = _.debounce () ->
     $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.wizard.mail.campaign.name}"
-    $scope.wizard.mail.dirty = true
+    # content changed, we'll need to remake the pdf and aws_key
+    # (pdf isn't made until the review-preview call on review page)
+    $scope.wizard.mail.campaign.aws_key = null
+    $scope.wizard.mail.setDirty()
     $scope.wizard.mail.save()
     .then ->
       $scope.saveStatus = 'saved'
@@ -61,17 +64,4 @@ app.controller 'rmapsEditTemplateCtrl',
       resolve:
         template: () ->
           title: 'Mail Preview'
-          pdfPromise: $scope.wizard.mail.getQuoteAndPdf()
-
-  $scope.quoteAndSend = () ->
-    $scope.wizard.mail.save()
-    .then () ->
-      $modal.open
-        template: require('../../../html/views/templates/modal-snailPrice.tpl.jade')()
-        controller: 'rmapsModalSnailPriceCtrl'
-        keyboard: false
-        backdrop: 'static'
-        windowClass: 'snail-modal'
-        resolve:
-          template: () ->
-            campaign: $scope.wizard.mail.campaign
+          pdfPromise: $scope.wizard.mail.getReviewDetails()

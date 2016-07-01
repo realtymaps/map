@@ -22,7 +22,6 @@ apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
-apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseFipsCodes = "#{apiBase}/fipsCodes"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
@@ -122,10 +121,6 @@ module.exports =
     rootPost: apiBaseCompanies
     byId: "#{apiBaseCompanies}/:id"
     byIdWPerms: "#{apiBaseCompanies}/:id"
-  us_states:
-    apiBase: apiBaseUsStates
-    root: apiBaseUsStates
-    byId: "#{apiBaseUsStates}/:id"
   fipsCodes:
     apiBase: apiBaseFipsCodes
     root: apiBaseFipsCodes
@@ -217,13 +212,11 @@ module.exports =
     apiBaseMailCampaigns: apiBaseMailCampaigns
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
-    getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
+    sendCampaign: "#{apiBaseMailCampaigns}/:id/sendCampaign"
+    getReviewDetails: "#{apiBaseMailCampaigns}/:id/review"
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"
-  snail:
-    quote: "#{apiBase}/snail/quote/:campaign_id"
-    send: "#{apiBase}/snail/send/:campaign_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf

@@ -203,13 +203,13 @@ app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
     $log = $log.spawn('mail:pageBreakHelper')
 
     # This is fairly conservative to try and ensure a paragraph does not overlap the margin
-    bottomMargin = (1.2*96)
+    bottomMargin = (1.0*72)
 
     # Standard letter
-    pxPerPage = (11*96)
+    pxPerPage = (11*72)
 
     # The padding/margin needs to be set on the page-break (first) element of each page.
-    topMargin = (0.5*96)
+    topMargin = (0.5*72)
 
     # It isn't necessary to subtract the top margin as long as the nearest position:relative parent is at the top of the page
     topMarginFirstPage = 0 # (2.7*96)

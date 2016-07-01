@@ -1,12 +1,15 @@
 .row
-  .col-sm-12
+  .col-sm-12.pointer(ng-click="propertyClick(note.rm_property_id)")
     .note-image
-      a(class="note-img" ng-if="note.coordinates")
-        img.desktop-only(rmaps-cdn-imag eng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+      .note-img(ng-if="note.coordinates")
+        img.desktop-only(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
         img.mobile-only(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 58, 58)}}" title="{{note.title}}")
     .note-data-wrapper
       .note-data
         .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
         .note-author {{note.first_name}} {{note.last_name}}
+        .note-address(ng-if="note.address")
+          span {{note.address.lines[0]}}
+          span(ng-repeat="line in note.address.lines.slice(1)" ng-if="line") {{line}}
         .note-text {{note.text}}
 

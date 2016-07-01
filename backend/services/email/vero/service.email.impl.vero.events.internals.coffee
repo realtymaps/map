@@ -32,14 +32,14 @@ module.exports = (vero) ->
         cancel_plan_url: cancelPlanUrl
 
 
-  callAndRetry = ({opts, errorName, eventName}) ->
+  sendVeroMsg = ({opts, errorName, eventName}) ->
 
     payload = _.merge {}, opts,
       eventName: veroEvents[eventName]
       eventData:
         in_error_support_phrase: inErrorSupportPhrase
 
-    logger.debug "callAndRetry"
+    logger.debug "sendVeroMsg"
     logger.debug payload
     createOrUpdate payload
 
@@ -55,19 +55,20 @@ module.exports = (vero) ->
     logger.debug "@@@@@@@@ notificationProperties @@@@@@@@"
     logger.debug {opts, name, errorName, eventName}
     logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    {authUser, properties, type} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
+    {authUser, properties, type, frequency} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
 
     opts = {
       authUser
       eventData: {
         properties
         type
+        frequency
       }
     }
 
     logger.debug "handling vero #{@name}"
 
-    callAndRetry {
+    sendVeroMsg {
       opts
       errorName
       eventName
@@ -75,7 +76,7 @@ module.exports = (vero) ->
 
   {
     inErrorSupportPhrase
-    callAndRetry
+    sendVeroMsg
     cancelPlanOptions
     notificationProperties
   }

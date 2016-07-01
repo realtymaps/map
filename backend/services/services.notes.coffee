@@ -10,10 +10,14 @@ toLeafletMarker = require('../utils/crud/extensions/util.crud.extension.user').r
 
 class NotesService extends ServiceCrud
   getAll: (entity = {}) ->
-    query = @dbFn().select(joinColumns.notes).select("first_name", "last_name").innerJoin(
+    query = @dbFn().select(joinColumns.notes).select("first_name", "last_name").select("address").innerJoin(
       tables.auth.user.tableName,
       "#{tables.user.notes.tableName}.auth_user_id",
       "#{tables.auth.user.tableName}.id"
+    ).leftJoin(
+      tables.finalized.combined.tableName,
+      "#{tables.user.notes.tableName}.rm_property_id",
+      "#{tables.finalized.combined.tableName}.rm_property_id"
     )
 
     super(entity, query: query).then (notes) ->

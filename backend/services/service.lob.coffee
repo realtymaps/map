@@ -180,17 +180,17 @@ getPriceQuote = (userId, campaignId) ->
       awsService.getTimedDownloadUrl
         extAcctName: awsService.buckets.PDF
         Key: aws_key
-      .then (file) ->
+      .then (uri) ->
 
         # get number of pages (needed for price)
-        pdfService.getUrlPageCount(file)
+        pdfService.getPageCount(uri)
         .then (pages) ->
 
           # get price
           priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
           .then (price) ->
             result =
-              pdf: file
+              pdf: uri
               price: price
 
     .catch (err) ->
@@ -247,7 +247,7 @@ sendLetter = (letter, apiName) ->
 # Creates a CC hold for the mail campaign and places letters in the outgoing mail table
 #  https://stripe.com/docs/api#create_charge
 #
-sendCampaign = (campaignId, userId) ->
+sendCampaign = (userId, campaignId) ->
   logger.debug "Sending campaign #{campaignId}"
   Promise.props({
 
