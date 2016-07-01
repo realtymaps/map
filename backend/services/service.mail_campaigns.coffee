@@ -47,28 +47,15 @@ class MailService extends ServiceCrud
     .select(
       # sum of letters that have been sent
       db.raw("SUM(CASE WHEN (status='sent') THEN 1 ELSE 0 END) as sent"),
-
-      # sample response from a letter to extract details, such as url
-      db.raw("(select lob_response from user_mail_letters where lob_response::text is not NULL and user_mail_campaign_id = #{campaign_id} and auth_user_id = #{user_id} limit 1)"),
-
-      # stripe_charge from campaign to extract details, such as amount charged
-      db.raw("(select stripe_charge from user_mail_campaigns where user_mail_campaigns.stripe_charge::text is not NULL and user_mail_campaigns.id = #{campaign_id} and auth_user_id = #{user_id} limit 1)")
     )
     .count '*'
     .where {'user_mail_campaign_id': campaign_id, auth_user_id: user_id}
     .then ([letterResults]) ->
 
-      Promise.try ->
-        # if it looks like lob has sent some letters...
-        if letterResults?.lob_response? and letterResults?.stripe_charge?
-          pdf: letterResults.lob_response.url
-          price: letterResults.stripe_charge.amount/100
-
-        # if lob has not sent any letters for this campaign...
-        else
-          lobService.getPriceQuote user_id, campaign_id
-
+      # fresh pdf url and price
+      lobService.getPriceQuote user_id, campaign_id
       .then (response) ->
+
         # 'sent' and 'total' statistics
         details =
           sent: letterResults.sent
