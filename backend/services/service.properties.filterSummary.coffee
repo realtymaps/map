@@ -1,5 +1,4 @@
 config = require '../../common/config/commonConfig'
-base = require './service.properties.base.filterSummary'
 combined = require './service.properties.combined.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
@@ -18,26 +17,20 @@ _isNothingPinned = (state) ->
   !state?.pins || _.size(state.pins) == 0
 
 module.exports =
-  getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
+  getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
     limit ?= 2000
-
-    # This block can be removed once mv_property_details is gone
-    if !filterSummaryImpl
-      if req.validBody.state?.filters?.combinedData == true
-        filterSummaryImpl = combined
-      else
-        filterSummaryImpl = base
+    filterSummaryImpl ?= combined
 
     Promise.try ->
       # Note: this is looking at the pre-transformed status filter
-      if !(_isOnlyPinned(req.validBody) && _isNothingPinned(state))
-        validation.validateAndTransform(req.validBody, filterSummaryImpl.transforms)
+      if !(_isOnlyPinned(validBody) && _isNothingPinned(profile))
+        validation.validateAndTransform(validBody, filterSummaryImpl.transforms)
 
     .then (queryParams) ->
 
       Promise.try ->
         # Calculate permissions for the current user
-        filterSummaryImpl.getPermissions?(req)
+        filterSummaryImpl.getPermissions(profile)
         .then (permissions) ->
           logger.debug permissions
           permissions
@@ -47,23 +40,23 @@ module.exports =
         if !queryParams
           return []
 
-        _limitByPinnedProps = (query, state, queryParams) ->
+        _limitByPinnedProps = (query, profile, queryParams) ->
           # include saved id's in query so no need to touch db later
-          propertiesIds = _.keys(state.pins)
+          propertiesIds = _.keys(profile.pins)
           if propertiesIds.length > 0
             whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
             sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
 
         cluster = () ->
-          clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
+          clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
           filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
           .then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
-          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: 800, permissions})
-          _limitByPinnedProps(query, state, queryParams)
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: config.backendClustering.resultThreshold, permissions})
+          _limitByPinnedProps(query, profile, queryParams)
 
           query.then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
@@ -74,8 +67,7 @@ module.exports =
             Promise.each properties, (property) ->
               existing = resultsByPropertyId[property.rm_property_id]
               # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
-              if !property.data_source_type? || # Backward-compatibility
-                 !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
+              if !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
@@ -114,7 +106,7 @@ module.exports =
           when 'clusterOrDefault'
             # Count the number of properties and do clustering if there are enough
             query = filterSummaryImpl.getResultCount({queryParams, permissions})
-            _limitByPinnedProps(query, state, queryParams)
+            _limitByPinnedProps(query, profile, queryParams)
 
             query.then ([result]) ->
               if result.count > config.backendClustering.resultThreshold

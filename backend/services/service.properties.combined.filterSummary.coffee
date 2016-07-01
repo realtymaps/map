@@ -70,7 +70,7 @@ transforms = do ->
   returnType: validators.string()
 
 _getDefaultQuery = ->
-  sqlHelpers.select(dbFn(), "filterCombined", true)
+  sqlHelpers.select(dbFn(), "filter", true)
   .where(active: true)
 
 getResultCount = ({queryParams, permissions}) ->
@@ -79,30 +79,34 @@ getResultCount = ({queryParams, permissions}) ->
   # apply the queryParams (mostly "where" clause stuff)
   query = getFilterSummaryAsQuery({queryParams, query, permissions})
 
-getPermissions = (req) -> Promise.try ->
-  # Skip permissions for superusers
-  if req.user.is_superuser
-    return superuser: true
-  else
-    permissions =
-      fips: []
-      mls: []
+getPermissions = (profile) -> Promise.try ->
+  tables.auth.user()
+  .select(['id', 'is_super_user', 'fips_codes', 'mlses_verified'])
+  .where(id: profile.auth_user_id)
+  .then (user) ->
+    # Skip permissions for superusers
+    if user.is_superuser
+      return superuser: true
+    else
+      permissions =
+        fips: []
+        mls: []
 
-    # Limit to FIPS codes and verified MLS for this user
-    permissions.fips.push(req.user.fips_codes...)
-    permissions.mls.push(req.user.mlses_verified...)
+      # Limit to FIPS codes and verified MLS for this user
+      permissions.fips.push(user.fips_codes...)
+      permissions.mls.push(user.mlses_verified...)
 
-    # Include by proxy MLS available to project owner
-    profile = currentProfile(req.session)
+      # Include by proxy MLS available to project owner
+      profile = currentProfile(req.session)
 
-    if profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id
-      return tables.auth.user()
-        .select('mlses_verified')
-        .where('id', profile.parent_auth_user_id).then ([owner]) ->
-          permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
-          permissions
+      if profile.parent_auth_user_id? && profile.parent_auth_user_id != user.id
+        return tables.auth.user()
+          .select('mlses_verified')
+          .where('id', profile.parent_auth_user_id).then ([owner]) ->
+            permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
+            permissions
 
-    return permissions
+      return permissions
 
 queryPermissions = (query, permissions) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
@@ -143,6 +147,8 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
     throw new Error('query must have bounds')
 
   # Add permissions
+  if !permissions
+    throw new Error('permissions must be provided')
   queryPermissions(query, permissions)
 
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)

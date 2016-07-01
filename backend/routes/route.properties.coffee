@@ -1,6 +1,5 @@
 Promise = require 'bluebird'
 
-detailServiceOld = require '../services/service.properties.details'
 detailService = require '../services/service.properties.combined.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 DrawnShapesFiltSvc = require '../services/service.properties.drawnShapes.filterSummary'
@@ -34,8 +33,8 @@ module.exports =
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
         filterSummaryService.getFilterSummary(
-          state: currentProfile(req)
-          req: req
+          profile: currentProfile(req)
+          validBody: req.validBody
         )
 
   parcelBase:
@@ -66,7 +65,10 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
-        detailService.getDetail(req)
+        detailService.getProperty(
+          query: req.validBody
+          profile: currentProfile(req)
+        )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
             throw new ExpressResponse(
@@ -83,7 +85,10 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
-        detailService.getDetails(req)
+        detailService.getProperties(
+          query: req.validBody
+          profile: currentProfile(req)
+        )
 
   drawnShapes:
     method: "post"
@@ -95,8 +100,8 @@ module.exports =
       internals.handleRoute res, next, () ->
         internals.appendProjectId(req, req.validBody)
         filterSummaryService.getFilterSummary(
-          state: currentProfile(req),
-          req: req,
+          validBody: req.validBody
+          profile: currentProfile(req)
           filterSummaryImpl: DrawnShapesFiltSvc
         )
 

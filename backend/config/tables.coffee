@@ -21,9 +21,6 @@ module.exports =
     fipsCodes: 'lookup_fips_codes'
     mls: 'lookup_mls'
     mls_m2m_fips_code_county: 'lookup_mls_m2m_fips_code_county'
-  property:
-    # once we remove the mv_property_details table, this whole table group should be removed
-    propertyDetails: 'mv_property_details'
   normalized:
     listing: 'normalized.listing'
     tax: 'normalized.tax'
