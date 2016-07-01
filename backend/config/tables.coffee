@@ -101,8 +101,8 @@ _setup = (baseObject) ->
       - major performance improvement to do that
       ###
       buildTableName = dbs.buildTableName(tableName)
+      db = dbs.get(dbName)
       query = (opts={}) ->
-        db = dbs.get(dbName)
         client = opts.transaction ? db
         if opts.subid
           fullTableName = buildTableName(opts.subid)
@@ -126,7 +126,7 @@ _setup = (baseObject) ->
       query.buildTableName = buildTableName
       query.dbName = dbName
       query.transaction = transaction
-      query.raw = (args...) -> dbs.get(dbName).raw(args...)
+      query.raw = db.raw.bind(db)
       query
 
 _setup(module.exports)
