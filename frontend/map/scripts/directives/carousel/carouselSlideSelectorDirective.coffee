@@ -7,7 +7,7 @@ app = require '../../app.coffee'
 
   carousel.carousel-standard(
     slide-selector
-    slide-selector-label="formatters.property.getStreetAddress(actual)"
+    slide-selector-label="actual.address.street"
   )
     slide(ng-repeat="property in pins" actual="property")
       div SLIDE CONTENT GOES HERE

@@ -1,8 +1,8 @@
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
+logger = require('../../config/logger').spawn('validation:address')
 usStates = require '../../../common/utils/util.usStates'
-
 
 module.exports = (options = {}) ->
   (param, value) ->
@@ -17,19 +17,14 @@ module.exports = (options = {}) ->
         return null
 
       result =
-        lines: []
         strength: 0
 
       if value.careOf
-        result.lines.push("c/o #{value.careOf.toInitCaps()}")
+        result.co = "c/o #{value.careOf.toInitCaps()}"
         result.strength += 3
-        result.careOf = true
 
       if !value.showStreetInfo? || value.showStreetInfo
-        if value.streetFull
-          result.lines.push value.streetFull.toInitCaps()
-          result.strength += 20
-        else
+        if value.streetNum && value.streetName && value.streetSuffix
           if value.streetNum
             result.strength += 10
             numParts = [value.streetNum]
@@ -59,16 +54,18 @@ module.exports = (options = {}) ->
             streetParts = []
           if nameParts
             streetParts = streetParts.concat(nameParts)
-            result.lines.push streetParts.join(' ').toInitCaps()
+            result.street = streetParts.join(' ').toInitCaps()
           else
             result.strength = 0
 
           if value.unit
             result.strength += 10
-            result.lines.push value.unit
+            result.unit = value.unit
           else if value.unitNum
             result.strength += 5
-            result.lines.push "Unit #{value.unitNum}"
+            result.unit = "Unit #{value.unitNum}"
+        else if value.streetFull
+          throw new DataValidationError("Need street num, name, & suffix. It may be necessary to parse these from streetFull.", param, value)
 
       cityParts = []
 
@@ -82,23 +79,24 @@ module.exports = (options = {}) ->
           cityParts[0] += ','
         cityParts.push(stateCode.toUpperCase())
 
+      result.citystate = cityParts.join(' ')
+
       if value.zip9
         result.strength += 7
-        cityParts.push(value.zip9)
+        result.zip = value.zip9
       else if value.zip
         result.strength += 5
-        zip = value.zip
+        result.zip = value.zip
         if value.zip4
           result.strength += 2
-          cityParts.push("#{zip}-#{value.zip4}")
-
-
-      result.lines.push cityParts.join(' ')
-
+          result.zip = "#{result.zip}-#{value.zip4}"
+      else
+        throw new DataValidationError("Need zip!", param, value)
 
       minStrength = options.minStrength ? 20
       if result.strength < minStrength
         #throw new DataValidationError("not enough address info provided; minStrength: #{minStrength} vs strength: #{result.strength}", param, value)
         return null
 
+      logger.debug result
       return result

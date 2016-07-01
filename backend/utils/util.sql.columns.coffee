@@ -44,6 +44,7 @@ basicColumns = do ->
       'cdn_photo'
       'photo_count'
       'status'
+      'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name)
     .join(', ')
     # columns returned for additional detail results
