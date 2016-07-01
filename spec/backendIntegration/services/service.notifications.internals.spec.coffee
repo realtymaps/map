@@ -6,7 +6,7 @@ subject = require '../../../backend/services/service.notifications.internals'
 logger = require('../../../backend/config/logger').spawn('service:notifications:internals')
 require("chai").should()
 uuid = require 'node-uuid'
-
+testKey = 'integration_spec_notifications'
 
 makeFakeUser = (first_name, last_name, email = '@gmail.com') ->
   unique = uuid.v4().split('-')
@@ -17,6 +17,7 @@ makeFakeUser = (first_name, last_name, email = '@gmail.com') ->
     email: unique + email
     is_active: false
     password: uuid.v4()
+    username: testKey
   }
 
 
@@ -29,17 +30,25 @@ getCounts = (cb) ->
 describe 'service.notifications.internals', ->
   describe 'distribute', ->
     before ->
-      getCounts (@userCnt, @profileCnt, @projectCnt) =>
-        logger.debug [@userCnt, @profileCnt, @projectCnt], true
+      tables.auth.user() #only need to delete users as foreign keys clean the rest yay
+      .where username: testKey
+      .delete()
+      .then () =>
+        getCounts (@userCnt, @profileCnt, @projectCnt) =>
+          logger.debug [@userCnt, @profileCnt, @projectCnt], true
 
     after ->
-      getCounts (@userCntEnd, @profileCntEnd, @projectCntEnd) =>
-        logger.debug [@userCntEnd, @profileCntEnd, @projectCntEnd], true
-        ['user', 'profile', 'project'].forEach (name) =>
-          if @[name+'Cnt'].count != @[name+'CntEnd'].count
-            throw new Error "COUNT MISMATCH: #{name}Cnt: #{@[name+'Cnt']}, #{name}CntEnd: #{@[name+'CntEnd']}"
+      tables.auth.user()
+      .where username: testKey
+      .delete()
+      .then () =>
+        getCounts (@userCntEnd, @profileCntEnd, @projectCntEnd) =>
+          logger.debug [@userCntEnd, @profileCntEnd, @projectCntEnd], true
+          ['user', 'profile', 'project'].forEach (name) =>
+            if @[name+'Cnt'].count != @[name+'CntEnd'].count
+              throw new Error "COUNT MISMATCH: #{name}Cnt: #{@[name+'Cnt']}, #{name}CntEnd: #{@[name+'CntEnd']}"
 
-    beforeEach ->
+    before ->
       #dummy accounts
       users = [
         makeFakeUser('Mc', 'Daddy')
@@ -66,7 +75,7 @@ describe 'service.notifications.internals', ->
             #make a project for them all to belong to and owned by the Parent
             tables.user.project({transaction})
             .insert {
-              name: 'dummySpec'
+              name: testKey
               auth_user_id: parent.id
             }
             .returning('id')
@@ -96,17 +105,6 @@ describe 'service.notifications.internals', ->
             logger.debug "profiles inserted ids: #{@profileIds}"
 
 
-    afterEach ->
-      tables.user.profile()
-      .whereIn 'id', @profileIds
-      .delete()
-      .then () =>
-        tables.user.project()
-        .where id: @projectId
-      .then () =>
-        tables.auth.user()
-        .whereIn 'id', @userIds
-        .delete()
 
     describe 'from parent', ->
 
