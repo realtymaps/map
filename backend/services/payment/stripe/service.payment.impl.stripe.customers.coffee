@@ -94,6 +94,8 @@ StripeCustomers = (stripe) ->
 
   get = (authUser) ->
     logger.debug "stripe.customers.retrieve #{authUser.stripe_customer_id}"
+    if !authUser.stripe_customer_id?
+      throw new Error("`stripe_customer_id` is null for user #{authUser.id}.  Ensure session is updated, frontend refreshed, and stripe account made.")
     stripe.customers.retrieve authUser.stripe_customer_id
 
   getSources = (authUser) ->
