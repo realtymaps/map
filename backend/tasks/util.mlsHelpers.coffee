@@ -148,7 +148,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     args: opts
     required: ['newFileName', 'imageId', 'photo_id', 'data_source_uuid']
 
-  {newFileName, imageId, photo_id, data_source_uuid, objectData} = opts
+  {newFileName, imageId, photo_id, listingRow, objectData} = opts
   externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
@@ -178,8 +178,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     .then (cdnPhotoStr) ->
 
       internals.makeInsertPhoto {
-        data_source_id: subtask.task_name
-        data_source_uuid
+        listingRow
         cdnPhotoStr
         jsonObjStr
         imageId
@@ -287,14 +286,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
             return reject err
 
           if isEnd
-            return resolve(
-              Promise.all promises
-              .then (args...) ->
-                logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
-                logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
-                logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-                args
-            )
+            return resolve(Promise.all promises)
 
           #file naming consideratons
           #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
@@ -306,39 +298,37 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
             skipsCtr++
             finePhotologger.debug 'photo has same updateDate GTFO.'
-            return promises.push Promise.resolve(null)
+            return
 
-          promises.push(
-            _uploadPhoto({photoRes, newFileName, payload, row})
-            .then () ->
-              _enqueuePhotoToDelete row.photos[imageId]?.key, subtask.batch_id
-            .then () ->
-              logger.spawn(subtask.task_name).debug 'photo upload success'
-              successCtr++
+          uploadPromise = _uploadPhoto({photoRes, newFileName, payload, row})
+          .then () ->
+            _enqueuePhotoToDelete row.photos[imageId]?.key, subtask.batch_id
+          .then () ->
+            logger.spawn(subtask.task_name).debug 'photo upload success'
+            _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow})
+          .then () ->
+            successCtr++
+          .catch (error) ->
+            console.log("upload error in mlsHelpers#storePhotos: #{error}")
+            logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
+            logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
+            errorsCtr++
+            #record the error and move on
+            tables.normalized.listing()
+            .where(listingRow)
+            .update(photo_import_error: analyzeValue.getSimpleDetails(error))
+          promises.push(uploadPromise)
 
-              tables.normalized.listing()
-              .where(listingRow)
-              .update(photo_import_error: null)
-              .then () ->
-                {newFileName, imageId, photo_id, objectData, data_source_uuid: listingRow.data_source_uuid}
-            .catch (error) ->
-              logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
-              logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
-              #record the error and move on
-              tables.normalized.listing()
-              .where(listingRow)
-              .update(photo_import_error: analyzeValue.getSimpleDetails(error))
-              .then () ->
-                null
-          )
-
-      savesPromise.then ([saves]) ->
-        #filter/flatMap (remove nulls / GTFOS)
-        Promise.all _.filter(saves).map _updatePhoto.bind(null, subtask)
-
+      savesPromise
+      .then () ->
+        logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
+        logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
+        # TODO: if we get a non-0 errorsCtr, record this rm_property_id for a later photo retry
+        logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
+      console.log("overall error in mlsHelpers#storePhotos: #{err}")
       tables.normalized.listing()
       .where(listingRow)
       .update photo_import_error: analyzeValue.getSimpleDetails(error)
