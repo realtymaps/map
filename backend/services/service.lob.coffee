@@ -233,7 +233,7 @@ sendLetter = (letter, apiName) ->
         letter.double_sided = true
         if letter.options.custom_content 
           letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
-          letter.options.color = false
+          letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color 
         else
           letter.options.address_placement = 'insert_blank_page'
 
