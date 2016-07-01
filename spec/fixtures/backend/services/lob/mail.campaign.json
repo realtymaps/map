@@ -5,6 +5,7 @@
   "status": "ready",
   "content": "<div class=\"letter-page\">Dear Reader...</div>",
   "lob_content": "<html><head></head><body class=\"letter-body\"><div class=\"letter-page\">Dear Reader...</div></body></html>",
+  "custom_content": true,
   "sender_info": {
     "first_name": "Spammy",
     "last_name": "McMailer",

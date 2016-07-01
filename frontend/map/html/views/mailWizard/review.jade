@@ -116,12 +116,16 @@
               .row
                 h2 Price Quote
               .row
-                .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" tootip="Only PDF content can be printed in color.")
+                .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" tooltip="Only uploaded PDF content can be printed in color." tooltip-placement="left")
                   .col-md-2
                     label Print in Color?
                   .col-md-10
                     input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="wizard.mail.campaign.custom_content" ng-change="refreshColorPrice()")
-
+                .row
+                  .col-md-2
+                    label Double Sided?
+                  .col-md-10
+                    | Yes
                 .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
                 .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
                 .btn.btn-success(
