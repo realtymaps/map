@@ -1,11 +1,8 @@
-_ = require 'lodash'
 {basePath} = require '../../globalSetup'
-sinon = require 'sinon'
 SqlMock = require '../../../specUtils/sqlMock'
 ServiceCrud = require "#{basePath}/utils/crud/util.ezcrud.service.helpers"
 {expect} = require 'chai'
 require('chai').should()
-dbs = require("#{basePath}/config/dbs")
 
 describe 'util.ezcrud.service.helpers', ->
 
@@ -40,34 +37,33 @@ describe 'util.ezcrud.service.helpers', ->
       sqlQuery = @serviceCrud.exposeKnex().getAll(@query).knex
       expect(sqlQuery).to.deep.equal @sqlMock
 
-    it 'passes getAll', (done) ->
-      @serviceCrud.getAll(@query).then (result) =>
+    it 'passes getAll', () ->
+      @serviceCrud.getAll(@query).then () =>
         @sqlMock.whereSpy.calledOnce.should.be.true
-        done()
 
-    it 'passes create', (done) ->
-      @serviceCrud.create(@query).then (result) =>
+    it 'passes create', () ->
+      @serviceCrud.create(@query).then () =>
         @sqlMock.insertSpy.calledOnce.should.be.true
-        done()
 
-    it 'passes getById', (done) ->
-      @serviceCrud.getById(@query).then (result) =>
+    it 'passes getById', () ->
+      @serviceCrud.getById(@query).then () =>
         @sqlMock.whereSpy.calledOnce.should.be.true
-        done()
 
-    it 'passes update', (done) ->
-      @serviceCrud.update(@query).then (result) =>
+    it 'passes update', () ->
+      @serviceCrud.update(@query).then () =>
         @sqlMock.whereSpy.calledOnce.should.be.true
         @sqlMock.updateSpy.calledOnce.should.be.true
-        done()
 
-    it 'passes upsert', (done) ->
-      @serviceCrud.upsert(@query).then (result) =>
+    it 'passes upsert', () ->
+      @serviceCrud.upsert(@query).then () =>
         @sqlMock.rawSpy.calledOnce.should.be.true
-        done()
 
-    it 'passes delete', (done) ->
-      @serviceCrud.delete(@query).then (result) =>
+    it 'passes delete', () ->
+      @serviceCrud.delete(@query).then () =>
         @sqlMock.whereSpy.calledOnce.should.be.true
         @sqlMock.deleteSpy.calledOnce.should.be.true
-        done()
+
+    describe '_wrapQuery', () ->
+      it 'returns knex obj', () ->
+        @serviceCrud.create(@query, returnKnex:true)
+        .knex.should.be.ok

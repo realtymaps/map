@@ -17,11 +17,12 @@ processHandlers =
 ###
 _propertiesReduce = (rows) ->
   properties =
-    pin: {}
-    unPin: {}
-    favorite: {}
-    unFavorite: {}
-    notes: {}
+    pin: nulls: []
+    unPin: nulls: []
+    favorite: nulls: []
+    unFavorite: nulls: []
+    note: nulls: []
+    unNote: nulls: []
 
   for row in rows
     oppositeType = if /un/ig.test row.sub_type
@@ -34,7 +35,10 @@ _propertiesReduce = (rows) ->
       delete properties[oppositeType][row.options.rm_property_id]
       continue
 
-    properties[row.sub_type][row.options.rm_property_id] = row
+    if row.options.rm_property_id?
+      properties[row.sub_type][row.options.rm_property_id] = row
+    else
+      properties[row.sub_type].nulls.push(row)
 
   properties
 
@@ -42,7 +46,11 @@ _propertiesFlatten = (propertiesMap) ->
   flat = []
   for k, v of propertiesMap
     for k2, row of v
+      if k2 == 'nulls'
+        flat = flat.concat row
+        continue
       flat.push row
+
   flat
 
 ###
@@ -74,7 +82,8 @@ propertyCompaction = (rows, frequency) ->
         unPin: []
         favorite: []
         unFavorite: []
-        notes: []
+        note: []
+        unNote: []
 
   ### TODO
   Pull in more data to make the email worth something.

@@ -1,4 +1,5 @@
-{should, expect}= require('chai')
+_ = require 'lodash'
+{should}= require('chai')
 should()
 # sinon = require 'sinon'
 Promise = require 'bluebird'
@@ -45,8 +46,8 @@ describe "util.events", () ->
       propertiesMap = _propertiesReduce(rows)
       logger.debug propertiesMap
 
-      Object.keys(propertiesMap.pin).length.should.be.eql 0
-      Object.keys(propertiesMap.unPin).length.should.be.eql 0
+      Object.keys(_.omit propertiesMap.pin, 'nulls').length.should.be.eql 0
+      Object.keys(_.omit propertiesMap.unPin, 'nulls').length.should.be.eql 0
 
     it 'cancels out a pin, unPin, pin is 1 pin', ->
       rows = [
@@ -66,8 +67,8 @@ describe "util.events", () ->
       propertiesMap = _propertiesReduce(rows)
       logger.debug propertiesMap
 
-      Object.keys(propertiesMap.pin).length.should.be.eql 1
-      Object.keys(propertiesMap.unPin).length.should.be.eql 0
+      Object.keys(_.omit propertiesMap.pin, 'nulls').length.should.be.eql 1
+      Object.keys(_.omit propertiesMap.unPin, 'nulls').length.should.be.eql 0
 
     it 'cancels out a unPin, pin, unPin is 1 unPin', ->
       rows = [
@@ -87,8 +88,8 @@ describe "util.events", () ->
       propertiesMap = _propertiesReduce(rows)
       logger.debug propertiesMap
 
-      Object.keys(propertiesMap.pin).length.should.be.eql 0
-      Object.keys(propertiesMap.unPin).length.should.be.eql 1
+      Object.keys(_.omit propertiesMap.pin, 'nulls').length.should.be.eql 0
+      Object.keys(_.omit propertiesMap.unPin, 'nulls').length.should.be.eql 1
 
     it 'cancels out a unFavorite, favorite, unFavorite is 1 unFavorite', ->
       rows = [
@@ -108,5 +109,25 @@ describe "util.events", () ->
       propertiesMap = _propertiesReduce(rows)
       logger.debug propertiesMap
 
-      Object.keys(propertiesMap.favorite).length.should.be.eql 0
-      Object.keys(propertiesMap.unFavorite).length.should.be.eql 1
+      Object.keys(_.omit propertiesMap.favorite, 'nulls').length.should.be.eql 0
+      Object.keys(_.omit propertiesMap.unFavorite, 'nulls').length.should.be.eql 1
+
+    it 'notes with no rm_property_id make it', ->
+      rows = [
+        {
+          options: text: '1'
+          sub_type: 'note'
+        }
+        {
+          options: text: '2'
+          sub_type: 'note'
+        }
+        {
+          options: text: '3'
+          sub_type: 'note'
+        }
+      ]
+      propertiesMap = _propertiesReduce(rows)
+      logger.debug propertiesMap
+
+      propertiesMap.note.nulls.length.should.be.eql 3
