@@ -23,7 +23,7 @@ LOB_LETTER_FIELDS = [
    'file'
    'data'
    'double_sided'
-   'template'
+   'address_placement'
    'extra_service'
    'return_envelope'
    'perforated_page'
@@ -126,6 +126,7 @@ buildLetter = (campaign, recipient) ->
     rm_property_id: recipient.rm_property_id
     options:
       aws_key: campaign.aws_key
+      custom_content: campaign.custom_content # true if via wysiwyg, or false if uploaded pdf
       color: campaign.options?.color or false
       metadata:
         campaignId: campaign.id
@@ -186,6 +187,14 @@ getPriceQuote = (userId, campaignId) ->
         pdfService.getPageCount(uri)
         .then (pages) ->
 
+          # account for extra page, and double-sided
+          if !campaign.custom_content
+            # pdf-uploaded content won't have address windows, so add a page
+            pages += 1
+
+          # double-sided paper
+          pages = Math.ceil(pages/2)
+
           # get price
           priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
           .then (price) ->
@@ -218,18 +227,18 @@ sendLetter = (letter, apiName) ->
   lobPromise()
   .then (lob) ->
     Promise.try ->
-      # assign a temporary signed url for the campaign pdf we host in s3
-      if letter.options.aws_key
-        # 10 minute expiration for url below
-        awsService.getTimedDownloadUrl
-          extAcctName: awsService.buckets.PDF
-          Key: letter.options.aws_key
-        .then (file) ->
-          letter.file = file
-          letter.options.template = false
-      else
-        letter.options.template = true
-        letter.options.color = false
+      # acquire s3 url to the content pdf
+      awsService.getTimedDownloadUrl
+        extAcctName: awsService.buckets.PDF
+        Key: letter.options.aws_key
+      .then (file) ->
+        letter.file = file
+        letter.double_sided = true
+        if letter.options.custom_content 
+          letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
+          letter.options.color = false
+        else
+          letter.options.address_placement = 'insert_blank_page'
 
     .catch (err) ->
       throw new Error(err, "Could not acquire a signed url.")

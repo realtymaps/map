@@ -17,8 +17,11 @@
     "address_state": "FL",
     "address_zip": "55555"
   },
-  "file": "<div class=\"amazing-html-5-content\">Dear Reader...</div>",
+  "file": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923.pdf?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=6UuD1E7tUcEAZJaMrkQ787wsBEk%3D",
+  "custom_content": true,
   "options": {
+    "color": true,
+    "custom_content": true,
     "metadata": {
       "campaignId": 1,
       "userId": 7,
@@ -38,6 +41,5 @@
       "sender_address_zip": "55555"
     }
   },
-  "retries": 0,
-  "color": true
+  "retries": 0
 }

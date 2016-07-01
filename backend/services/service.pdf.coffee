@@ -134,6 +134,7 @@ validateDimensions = (source) ->
       # Note: `height` and `width` are NOT the pixel dims, but represent "points"
       #   that are distinct from pixels or measure.
       if ((page.media_box.x2 - page.media_box.x1) > (8.5 * 72.0) or (page.media_box.y2 - page.media_box.y1) > (11.0 * 72.0))
+        logger.warn "PDF Upload from #{source} too large.  Mediabox dimensions: #{JSON.stringify(page.media_box)}"
         return false
     return true
 
