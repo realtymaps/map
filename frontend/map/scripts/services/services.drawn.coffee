@@ -33,8 +33,8 @@ rmapsLeafletHelpers) ->
 
     _getGeomName = (type) ->
       switch type
-        when 'Point' then 'geom_point_json'
-        when 'Polygon' then 'geom_polys_json'
+        when 'Point' then 'geometry_center'
+        when 'Polygon' then 'geometry'
         when 'LineString' then 'geom_line_json'
         else
           throw new Error 'geom type not supported'

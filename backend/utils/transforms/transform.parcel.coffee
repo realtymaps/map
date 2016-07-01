@@ -49,9 +49,9 @@ final =
     required: true
 
 finalizeParcelAsDataCombined =
-  geometry_raw: input: 'geom_polys_raw'
-  geometry: input: 'geom_polys_json'
-  geometry_center: input: 'geom_point_json'
+  geometry_raw: input: 'geometry_raw'
+  geometry: input: 'geometry'
+  geometry_center: input: 'geometry_center'
 
 execFinalizeParcelAsDataCombined = (finalizedParcel) ->
   validation.validateAndTransform finalizedParcel, finalizeParcelAsDataCombined

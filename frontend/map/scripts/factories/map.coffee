@@ -355,7 +355,7 @@ app.factory 'rmapsMapFactory',
 
       zoomTo: (result, doChangeZoom) ->
         verboseLogger.debug "CAUGHT zoomToProperty event"
-        geometry = result.geometry_center || result.geom_point_json
+        geometry = result.geometry_center || result.geometry_center
         if geometry?
           result = geometry
 

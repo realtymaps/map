@@ -29,7 +29,7 @@ getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
   #http://stackoverflow.com/questions/12204834/get-distance-in-meters-instead-of-degrees-in-spatialite
   #earth meters per degree 111195
   query.joinRaw tables.finalized.combined().raw """
-    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_raw, #{drawnShapesName}.geom_polys_raw)
+    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_raw, #{drawnShapesName}.geometry_raw)
      or
      ST_DWithin(
      #{detailsName}.geometry_raw,

@@ -66,7 +66,7 @@ whereInBounds = (query, column, bounds) ->
     results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
   _whereRawSafe query, results
 
-whereIntersects = (query, geoPointJson, column = 'geom_polys_raw') ->
+whereIntersects = (query, geoPointJson, column = 'geometry_raw') ->
   results =
     sql: "ST_INTERSECTS(ST_GeomFromGeoJSON(?::text), #{column})"
     bindings: [geoPointJson]

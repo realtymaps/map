@@ -12,7 +12,7 @@ column = 'feature'
 diffExcludeKeys = [
   'rm_inserted_time'
   'rm_modified_time'
-  'geom_polys_raw'
+  'geometry_raw'
   'geom_point_raw'
   'change_history'
   'deleted'
@@ -23,8 +23,8 @@ diffExcludeKeys = [
 ]
 
 diffBooleanKeys = [
-  'geom_polys_json'
-  'geom_point_json'
+  'geometry'
+  'geometry_center'
 ]
 
 finalizeParcelEntry = ({entries, subtask}) ->

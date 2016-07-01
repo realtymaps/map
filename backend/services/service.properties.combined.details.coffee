@@ -26,8 +26,8 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 
       if queryParams.rm_property_id?
         sqlHelpers.whereIn(@, 'rm_property_id', queryParams.rm_property_id)
-      else if queryParams.geom_point_json?
-        sqlHelpers.whereIntersects(@, queryParams.geom_point_json, 'geometry_raw')
+      else if queryParams.geometry_center?
+        sqlHelpers.whereIntersects(@, queryParams.geometry_center, 'geometry_raw')
 
     if limit
       query = query.limit(limit)
@@ -40,18 +40,18 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 
       return data
 
-# Retrieve a single property by rm_property_id OR geom_point_json
+# Retrieve a single property by rm_property_id OR geometry_center
 getProperty = ({query, profile}) ->
   validation.validateAndTransform query,
     rm_prop_id_or_geom_json:
-      input: ["rm_property_id", "geom_point_json"]
+      input: ["rm_property_id", "geometry_center"]
       transform: validators.pickFirst()
       required: true
 
     rm_property_id:
       transform: validators.string(minLength: 1)
 
-    geom_point_json:
+    geometry_center:
       transform: [validators.object(), validators.geojson(toCrs: true)]
 
     columns:

@@ -8,7 +8,7 @@ ageOrDaysFromStartToNow = (listingAge, beginDate) ->
 #TODO: Move all of SQL Helpers columns into here as another sep PR.
 basicColumns = do ->
   _parcel = [
-    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry',
+    'rm_property_id', 'street_address_num', 'geometry',
     "'Feature' AS type",
     'fips_code', "'{}'::json AS properties"
   ]
@@ -23,7 +23,7 @@ basicColumns = do ->
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center as geom_point_json', # alias can be removed once mv_property_details is gone
+      'geometry_center', # alias can be removed once mv_property_details is gone
       'owner_name',
       'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
       'year_built',
@@ -40,12 +40,12 @@ basicColumns = do ->
       'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')
 
-    parcel: ['geom_point_json'].concat(_parcel).join(', ')
+    parcel: ['geometry_center'].concat(_parcel).join(', ')
 
     #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
     cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
-    notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
+    notes: _commonProjectCols.concat ['rm_property_id', 'geometry_center', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
       'sqft', 'status']
@@ -60,7 +60,7 @@ basicColumns = do ->
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
       'map_position', 'map_results']
 
-    drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
+    drawnShapes: _commonProjectCols.concat ['geometry_center', 'geometry_raw', 'shape_extras',
       'area_name', 'area_details']
 
     creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']

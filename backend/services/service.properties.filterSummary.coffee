@@ -72,7 +72,7 @@ module.exports =
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
                 if filterSummaryImpl == combined
-                  encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
+                  encodedCenter = geohash.encode([property.geometry_center?.coordinates])
 
                   if encodedCenter
                     propertyIdsByCenterPoint[encodedCenter] ?= []

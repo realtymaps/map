@@ -35,7 +35,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     logger.debug "got #{normalPayloadsPromise.length} normalized rows"
 
     #these promises must happen in order since we might have multiple props of the same rm_property_id
-    # due to appartments; and or geom_poly_json or geom_point_json for the same prop (since they come in sep payloads)
+    # due to appartments; and or geometry or geometry_center for the same prop (since they come in sep payloads)
     #THIS FIXES insert collisions when they should be updates
     #TODO: Bluebird 3.X use mapSeries
     Promise.each normalPayloadsPromise, (payload) ->
@@ -169,7 +169,7 @@ getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
   tables.finalized.parcel(transaction: transaction)
-  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+  .select('geometry_raw', 'geometry', 'geometry_center')
   .where({rm_property_id, active})
 
 

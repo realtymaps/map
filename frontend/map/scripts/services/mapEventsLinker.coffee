@@ -30,7 +30,7 @@ app.service "rmapsMapEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNg
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           {feature} = leafletObject
           return unless feature
-          feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
+          feature.coordinates = feature.geometry_center.coordinates #makes resultsFormatter happy TODO: getCoords func ?
           if handler[name]?
             handler[name](leafletEvent, leafletObject, feature, feature.rm_property_id, layerName, 'geojson', originator)
 
