@@ -108,7 +108,7 @@ storePhotos = (subtask) -> Promise.try () ->
     taskLogger.debug 'no values to process for storePhotos'
     return
 
-  Promise.each subtask.data.values.map (row) -> ->
+  Promise.each subtask.data.values, (row) ->
     mlsHelpers.storePhotos(subtask, row)
 
 
