@@ -40,7 +40,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
         owner = {}
         for addr in data
           pAddr =
-            name: addr.owner_name ?  addr.owner_name2 ? 'Current Resident'
+            name: addr.owner_name ?  addr.owner_name_2 ? 'Current Resident'
             street_address_num: addr.street_address_num ? ''
             street_address_name: addr.street_address_name ? ''
             street_address_unit: addr.owner_street_address_unit ? ''
@@ -55,7 +55,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
             property[pKey] = pAddr
 
           oAddr =
-            name: addr.owner_name ? addr.owner_name2 ? 'Homeowner'
+            name: addr.owner_name ? addr.owner_name_2 ? 'Homeowner'
             street_address_num: addr.owner_street_address_num ? ''
             street_address_name: addr.owner_street_address_name ? ''
             street_address_unit: addr.owner_street_address_unit ? ''

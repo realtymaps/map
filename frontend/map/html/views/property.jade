@@ -210,7 +210,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .content-value {{formatters.property.orNa(selectedResult.baths_total)}}
               .content-label Baths
             .col-xs-3
-              .content-value {{formatters.property.orNa(selectedResult.finished_sqft)}}
+              .content-value {{formatters.property.orNa(selectedResult.sqft_finished)}}
               .content-label Sq Ft
             .col-xs-3
               .content-value {{formatters.property.getYear(selectedResult.year_built)}}
@@ -241,9 +241,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .content-lg
               span(ng-if="formatters.property.getCurrentOwnersTitle(selectedResult)") {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
               span {{selectedResult.owner_name}}
-              span(ng-if="selectedResult.owner_name2")
+              span(ng-if="selectedResult.owner_name_2")
                 br/
-                | {{selectedResult.owner_name2}}
+                | {{selectedResult.owner_name_2}}
           p
             .content-label Address
             .content-lg {{selectedResult.address.street}} {{selectedResult.address.unit}}

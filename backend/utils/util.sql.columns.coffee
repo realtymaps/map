@@ -25,10 +25,10 @@ basicColumns = do ->
       'geometry',
       'geometry_center',
       'owner_name',
-      'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
+      'owner_name_2',
       'year_built',
       'acres',
-      'sqft_finished as finished_sqft',  # alias can be removed once mv_property_details is gone
+      'sqft_finished',
       'baths_total',
       "baths"
       'bedrooms',
