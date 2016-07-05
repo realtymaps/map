@@ -29,14 +29,6 @@ getCounts = (cb) ->
 
 describe 'service.notifications.internals', ->
   describe 'distribute', ->
-    before ->
-      tables.auth.user() #only need to delete users as foreign keys clean the rest yay
-      .where username: testKey
-      .delete()
-      .then () =>
-        getCounts (@userCnt, @profileCnt, @projectCnt) =>
-          logger.debug [@userCnt, @profileCnt, @projectCnt], true
-
     after ->
       tables.auth.user()
       .where username: testKey
@@ -49,63 +41,70 @@ describe 'service.notifications.internals', ->
               throw new Error "COUNT MISMATCH: #{name}Cnt: #{@[name+'Cnt']}, #{name}CntEnd: #{@[name+'CntEnd']}"
 
     before ->
-      #dummy accounts
-      users = [
-        makeFakeUser('Mc', 'Daddy')
-        makeFakeUser('twoFirst', 'twoLast')
-        makeFakeUser('threeFirst', 'threeLast')
-      ]
 
-      @emails = [users[1].email, users[2].email]
+      tables.auth.user() #only need to delete users as foreign keys clean the rest yay
+      .where username: testKey
+      .delete()
+      .then () =>
+        getCounts (@userCnt, @profileCnt, @projectCnt) =>
+          logger.debug [@userCnt, @profileCnt, @projectCnt], true
 
-      dbs.transaction (transaction) =>
-        tables.auth.user({transaction})
-        .insert users
-        .returning('id')
-        .then (rows) =>
-          logger.debug "Fake users created"
-          logger.debug rows
-          @userIds = rows
-          logger.debug @userIds
-        .then () =>
+        #dummy accounts
+        users = [
+          makeFakeUser('Mc', 'Daddy')
+          makeFakeUser('twoFirst', 'twoLast')
+          makeFakeUser('threeFirst', 'threeLast')
+        ]
+
+        @emails = [users[1].email, users[2].email]
+
+        dbs.transaction (transaction) =>
           tables.auth.user({transaction})
-          .select('id')
-          .where {first_name: 'Mc', last_name: 'Daddy'}
-          .then ([parent]) =>
-            @parentId = parent.id
-            logger.debug "Fake parentId: #{@parentId}"
-            #make a project for them all to belong to and owned by the Parent
-            tables.user.project({transaction})
-            .insert {
-              name: testKey
-              auth_user_id: parent.id
-            }
-            .returning('id')
-            .then ([id]) =>
-              logger.debug "Fake project created, id: #{id}"
-              @projectId = id
-              @projectId
-        .then (project_id) =>
-          logger.debug "@parentId"
-          logger.debug @parentId
-          logger.debug "@userIds"
-          logger.debug @userIds
-          @childrenIds = _.without @userIds, @parentId
-
-          logger.debug @childrenIds
-          profiles = @childrenIds.map (id) =>
-            {auth_user_id:id, project_id, parent_auth_user_id: @parentId}
-
-          logger.debug "Attempting insert of Profiles"
-          logger.debug profiles
-          #make profiles
-          tables.user.profile({transaction})
-          .insert profiles
-          .returning 'id'
+          .insert users
+          .returning('id')
           .then (rows) =>
-            @profileIds = _.pluck rows, 'id'
-            logger.debug "profiles inserted ids: #{@profileIds}"
+            logger.debug "Fake users created"
+            logger.debug rows
+            @userIds = rows
+            logger.debug @userIds
+          .then () =>
+            tables.auth.user({transaction})
+            .select('id')
+            .where {first_name: 'Mc', last_name: 'Daddy'}
+            .then ([parent]) =>
+              @parentId = parent.id
+              logger.debug "Fake parentId: #{@parentId}"
+              #make a project for them all to belong to and owned by the Parent
+              tables.user.project({transaction})
+              .insert {
+                name: testKey
+                auth_user_id: parent.id
+              }
+              .returning('id')
+              .then ([id]) =>
+                logger.debug "Fake project created, id: #{id}"
+                @projectId = id
+                @projectId
+          .then (project_id) =>
+            logger.debug "@parentId"
+            logger.debug @parentId
+            logger.debug "@userIds"
+            logger.debug @userIds
+            @childrenIds = _.without @userIds, @parentId
 
+            logger.debug @childrenIds
+            profiles = @childrenIds.map (id) =>
+              {auth_user_id:id, project_id, parent_auth_user_id: @parentId}
+
+            logger.debug "Attempting insert of Profiles"
+            logger.debug profiles
+            #make profiles
+            tables.user.profile({transaction})
+            .insert profiles
+            .returning 'id'
+            .then (rows) =>
+              @profileIds = _.pluck rows, 'id'
+              logger.debug "profiles inserted ids: #{@profileIds}"
 
 
     describe 'from parent', ->
