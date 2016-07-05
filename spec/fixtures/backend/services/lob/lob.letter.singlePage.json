@@ -45,8 +45,8 @@
         "object": "address"
     },
     "color": true,
-    "double_sided": false,
-    "template": true,
+    "double_sided": true,
+    "address_placement": "insert_blank_page",
     "return_envelope": false,
     "perforated_page": null,
     "extra_service": null,

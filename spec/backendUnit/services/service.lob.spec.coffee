@@ -16,9 +16,9 @@ mockAuthUser =
   stripe_customer_id: 'cus_7r3jpOU0t3LQ9k'
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
-mockPdfCampaign = _.extend {}, mockCampaign, aws_key: 'uploads/herpderp_l337.pdf'
+mockPdfCampaign = _.extend {}, mockCampaign, {aws_key: 'uploads/herpderp_l337.pdf', custom_content: false}
 mockLetter = require '../../../backend/json/mail.fakeLetter.json'
-mockPdfLetter = _.extend {}, mockLetter, options: aws_key: 'uploads/herpderp_l337.pdf'
+mockPdfLetter = _.extend {}, mockLetter, {options: {aws_key: 'uploads/herpderp_l337.pdf', custom_content: false, color: true}}
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
 mockCharge = require '../../fixtures/backend/services/stripe/charge.uncaptured.json'
@@ -113,13 +113,14 @@ describe "service.lob", ->
 
         done()
 
-    it 'should send html letter with valid `file` and `template` values', (done) ->
+    it 'should send html letter with valid option values', (done) ->
       svc.sendLetter mockLetter, 'test'
       .then (result) ->
         LobFactory.prototype.letters.create.callCount.should.equal 1
         LobFactory.prototype.letters.create.args[0][0].file.should.equal mockLetter.file
-        LobFactory.prototype.letters.create.args[0][0].template.should.be.true
+        LobFactory.prototype.letters.create.args[0][0].double_sided.should.be.true
         LobFactory.prototype.letters.create.args[0][0].color.should.be.false
+        LobFactory.prototype.letters.create.args[0][0].address_placement.should.equal 'top_first_page'
         done()
 
   describe 'sending pdf campaigns', ->
@@ -154,11 +155,12 @@ describe "service.lob", ->
 
         done()
 
-    it 'should send pdf letter with valid `file` and `template` values', (done) ->
+    it 'should send pdf letter with valid option values', (done) ->
       svc.sendLetter mockPdfLetter, 'test'
       .then (result) ->
         LobFactory.prototype.letters.create.callCount.should.equal 1
         LobFactory.prototype.letters.create.args[0][0].file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
-        LobFactory.prototype.letters.create.args[0][0].template.should.be.false
+        LobFactory.prototype.letters.create.args[0][0].double_sided.should.be.true
         LobFactory.prototype.letters.create.args[0][0].color.should.be.true
+        LobFactory.prototype.letters.create.args[0][0].address_placement.should.equal 'insert_blank_page'
         done()
