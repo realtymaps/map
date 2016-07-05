@@ -56,6 +56,8 @@ describe 'service.notifications.internals', ->
         makeFakeUser('threeFirst', 'threeLast')
       ]
 
+      @emails = [users[1].email, users[2].email]
+
       dbs.transaction (transaction) =>
         tables.auth.user({transaction})
         .insert users
@@ -112,8 +114,10 @@ describe 'service.notifications.internals', ->
         logger.debug @parentId
         logger.debug @projectId
         subject.distribute.getChildUsers {id:@parentId, project_id: @projectId}
-        .then (rows) ->
+        .then (rows) =>
           rows.length.should.be.eql 2
+          rows[0].email.should.be.eql @emails[0]
+          rows[1].email.should.be.eql @emails[1]
 
       describe 'getUsers', ->
         it 'all', ->
