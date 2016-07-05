@@ -123,12 +123,20 @@ $fnOverrideSliderBackgroundColor()
 .property-group
   width 100%
   margin 0
+  .header
+    display flex
+    align-items baseline
+    justify-content space-between
   .row
     margin 0
     border-bottom 1px $gray
     > *:first-child
       padding 0
       overflow hidden
+    &.unit
+      height 90px
+      overflow hidden
+      display flex
   .btn-group
     display flex
     .btn
