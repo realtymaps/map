@@ -146,7 +146,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
 
   onMissingArgsFail
     args: opts
-    required: ['newFileName', 'imageId', 'photo_id', 'data_source_uuid']
+    required: ['newFileName', 'imageId', 'photo_id', 'listingRow']
 
   {newFileName, imageId, photo_id, listingRow, objectData} = opts
   externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
@@ -172,7 +172,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
 
     cdnPhotoStrPromise = Promise.resolve('')
     if imageId == 0
-      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(_.extend {}, opts, data_source_id: subtask.task_name)
+      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(opts)
 
     cdnPhotoStrPromise
     .then (cdnPhotoStr) ->
