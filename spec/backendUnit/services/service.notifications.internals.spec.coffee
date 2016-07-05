@@ -1,19 +1,17 @@
 sinon = require 'sinon'
-{expect, should} = require("chai")
-should()
+require("chai").should()
 Promise = require 'bluebird'
 rewire = require 'rewire'
 require '../../../common/extensions/strings'
-subject = rewire '../../../backend/services/service.notifications.internals'
 SqlMock = require '../../specUtils/sqlMock.coffee'
-logger = require('../../specUtils/logger').spawn('service:notifications:internals')
-_ = require 'lodash'
+subject = rewire '../../../backend/services/service.notifications.internals'
+# logger = require('../../specUtils/logger').spawn('service:notifications:internals')
 veroEventsFn = require '../../../backend/services/email/vero/service.email.impl.vero.events'
 stubbedVeroEvents = null
 
 describe "service.notifications.internals", ->
 
-  before () ->
+  before ->
     userNotify = new SqlMock 'user', 'notificationQueue'
 
     tables =
@@ -52,8 +50,10 @@ describe "service.notifications.internals", ->
           stubs =
             children: sinon.stub()
             parents: sinon.stub()
+            siblings: sinon.stub()
           subject.__set__ 'getChildUsers', stubs.children
           subject.__set__ 'getParentUsers', stubs.parents
+          subject.__set__ 'getSiblingUsers', stubs.siblings
 
         ['children','parents','all'].forEach (name) ->
           it name, ->

@@ -24,14 +24,14 @@ describe 'makeInsertPhoto', ->
   it 'cdnPhotoStr defined', ->
     data_source_id = 'data_source_id'
     data_source_uuid = 'uuid'
+    listingRow = {data_source_id, data_source_uuid}
     cdnPhotoStr = 'http://cdn.com'
     jsonObjStr = JSON.stringify crap: 'crap'
     imageId = 'imageId'
     photo_id = 'photo_id'
 
     queryString = subject.makeInsertPhoto {
-      data_source_id
-      data_source_uuid
+      listingRow
       cdnPhotoStr
       jsonObjStr
       imageId
@@ -40,25 +40,18 @@ describe 'makeInsertPhoto', ->
     }
 
     jsonObjStr = jsonObjStr.replace(/\"/g, "\\\"")
-    queryString.should.be.eql """
-      UPDATE listing set
-      photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true),cdn_photo = '#{cdnPhotoStr}'
-      WHERE
-       data_source_id = '#{data_source_id}' AND
-       data_source_uuid = '#{data_source_uuid}' AND
-       photo_id = '#{photo_id}';
-    """
+    queryString.should.contain("\"cdn_photo\" = '#{cdnPhotoStr}'")
 
   it 'cdnPhotoStr undefined', ->
     data_source_id = 'data_source_id'
     data_source_uuid = 'uuid'
+    listingRow = {data_source_id, data_source_uuid}
     jsonObjStr = JSON.stringify crap: 'crap'
     imageId = 'imageId'
     photo_id = 'photo_id'
 
     queryString = subject.makeInsertPhoto {
-      data_source_id
-      data_source_uuid
+      listingRow
       jsonObjStr
       imageId
       photo_id
@@ -66,26 +59,19 @@ describe 'makeInsertPhoto', ->
     }
 
     jsonObjStr = jsonObjStr.replace(/\"/g, "\\\"")
-    queryString.should.be.eql """
-      UPDATE listing set
-      photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)
-      WHERE
-       data_source_id = '#{data_source_id}' AND
-       data_source_uuid = '#{data_source_uuid}' AND
-       photo_id = '#{photo_id}';
-    """
+    queryString.should.not.contain('cdn_photo')
 
   it 'use a real cdnPhotoStr', ->
     data_source_id = 'data_source_id'
     data_source_uuid = 'uuid'
+    listingRow = {data_source_id, data_source_uuid}
     jsonObjStr = JSON.stringify crap: 'crap'
     imageId = 'imageId'
     photo_id = 'photo_id'
 
     cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard {
       newFileName: 'crap.jpg'
-      data_source_uuid
-      data_source_id
+      listingRow
       shardsPromise: Promise.resolve
         one:
           id: 0
@@ -99,8 +85,7 @@ describe 'makeInsertPhoto', ->
     .then (cdnPhotoStr) ->
 
       queryString = subject.makeInsertPhoto {
-        data_source_id
-        data_source_uuid
+        listingRow
         jsonObjStr
         imageId
         photo_id
@@ -112,11 +97,4 @@ describe 'makeInsertPhoto', ->
 
       logger.debug queryString
 
-      queryString.should.be.eql """
-        UPDATE listing set
-        photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true),cdn_photo = '#{cdnPhotoStr}'
-        WHERE
-         data_source_id = '#{data_source_id}' AND
-         data_source_uuid = '#{data_source_uuid}' AND
-         photo_id = '#{photo_id}';
-      """
+      queryString.should.contain("\"cdn_photo\" = '#{cdnPhotoStr}'")

@@ -6,7 +6,6 @@ logger = require('../config/logger').spawn('task:mls')
 mlsHelpers = require './util.mlsHelpers'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
-PromiseExt = require '../extensions/promise'
 moment = require 'moment'
 memoize = require 'memoizee'
 
@@ -109,8 +108,7 @@ storePhotos = (subtask) -> Promise.try () ->
     taskLogger.debug 'no values to process for storePhotos'
     return
 
-  #TODO: Promise.reduce / each in bluebird should work fine
-  PromiseExt.reduceSeries subtask.data.values.map (row) -> ->
+  Promise.each subtask.data.values, (row) ->
     mlsHelpers.storePhotos(subtask, row)
 
 

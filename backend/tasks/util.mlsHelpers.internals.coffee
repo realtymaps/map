@@ -6,37 +6,28 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsConfigService = require '../services/service.mls_config'
 
 
-makeInsertPhoto = ({data_source_id, data_source_uuid, cdnPhotoStr, jsonObjStr, imageId, photo_id, doReturnStr}) ->
+makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, photo_id, doReturnStr}) ->
   doReturnStr ?= false
 
-  cdnPhotoQueryPartStr = ''
+  updatedInfo =
+    photo_import_error: null
+    photos: tables.normalized.listing.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
   if cdnPhotoStr
-    cdnPhotoQueryPartStr = ',cdn_photo = :cdn_photo'
+    updatedInfo.cdn_photo = cdnPhotoStr
 
-  query =
-    tables.normalized.listing()
-    .raw("""
-      UPDATE listing set
-      photos=jsonb_set(photos, '{#{imageId}}', :json_str, true)#{cdnPhotoQueryPartStr}
-      WHERE
-       data_source_id = :data_source_id AND
-       data_source_uuid = :data_source_uuid AND
-       photo_id = :photo_id;
-    """, {
-      json_str: jsonObjStr
-      data_source_id
-      data_source_uuid
-      photo_id
-      cdn_photo: cdnPhotoStr
-    })
+  query = tables.normalized.listing()
+  .where(listingRow)
+  .update(updatedInfo)
 
   if doReturnStr
     return query.toString()
   query
 
+
 ###
 # this function works backwards from the validation for data_source_uuid to determine the LongName and then the SystemName
 # of the UUID field
+# TODO: change this to use the KeyField metadata from RETS
 ###
 getUuidField = (mlsId) ->
   mlsConfigService.getByIdCached(mlsId)

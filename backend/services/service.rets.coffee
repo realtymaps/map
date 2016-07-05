@@ -331,6 +331,12 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
 
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
+    .catch (err) ->
+      console.log("error from service.rets#retsClient.objects.stream.getObjects: #{err}")
+      throw err
+  .catch (err) ->
+    console.log("error from service.rets#internals.getRetsClient: #{err}")
+    throw err
 
 
 module.exports = {

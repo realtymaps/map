@@ -63,11 +63,14 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
   imageId = 0
 
   object.objectStream.once 'error', (error) ->
+    console.log "stream error in mls.photos#imagesHandle: #{error}"
     cb new photoErrors.ObjectsStreamError error
 
   object.objectStream.on 'data', (event) ->
 
-    return if event?.error?
+    if event?.error?
+      console.log "error received in mls.photos#imagesHandle: #{event.error}"
+      return
 
     logger.debug event.headerInfo
     listingId = event.headerInfo.contentId
@@ -79,7 +82,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
     logger.debug "fileName: #{fileName}"
 
     # not handling event.dataStream.once 'error' on purpose
-    # this makes it easier to decern overall errors vs individual photo error
+    # this makes it easier to discern overall errors vs individual photo error
     payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
     if event.headerInfo.objectData?
@@ -90,6 +93,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
   object.objectStream.once 'end', () ->
     if !everSentData and doThrowNoEvents
+      console.log "error in mls.photos#imagesHandle: No object events"
       cb(new photoErrors.NoPhotoObjectsError 'No object events')
     cb(null, null, true)
 
@@ -122,9 +126,9 @@ hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
 
 
 getCndPhotoShard = (opts) -> Promise.try () ->
-  {newFileName, data_source_uuid, data_source_id, shardsPromise} = onMissingArgsFail
+  {newFileName, listingRow, shardsPromise} = onMissingArgsFail
     args: opts
-    required: ['newFileName', 'data_source_id', 'data_source_uuid']
+    required: ['newFileName', 'listingRow']
 
   # logger.debug shardsPromise
   shardsPromise ?= keystore.cache.getValuesMap('cdn_shards')
@@ -140,7 +144,7 @@ getCndPhotoShard = (opts) -> Promise.try () ->
     if !shard?.url?
       throw new Error('Shard must have a url')
 
-    "#{shard.url}/api/photos/resize?data_source_id=#{data_source_id}&data_source_uuid=#{data_source_uuid}"
+    "#{shard.url}/api/photos/resize?data_source_id=#{listingRow.data_source_id}&data_source_uuid=#{listingRow.data_source_uuid}"
 
 module.exports = {
   isSingleImage
