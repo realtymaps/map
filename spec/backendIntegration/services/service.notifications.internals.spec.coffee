@@ -21,10 +21,10 @@ makeFakeUser = (first_name, last_name, email = '@gmail.com') ->
   }
 
 
-getCounts = (cb) ->
-  Promise.join tables.auth.user().count()
-  , tables.user.profile().count()
-  , tables.user.project().count()
+getCounts = (transaction, cb) ->
+  Promise.join tables.auth.user({transaction}).count()
+  , tables.user.profile({transaction}).count()
+  , tables.user.project({transaction}).count()
   , cb
 
 describe 'service.notifications.internals', ->
@@ -34,7 +34,7 @@ describe 'service.notifications.internals', ->
       .where username: testKey
       .delete()
       .then () =>
-        getCounts (@userCntEnd, @profileCntEnd, @projectCntEnd) =>
+        getCounts undefined, (@userCntEnd, @profileCntEnd, @projectCntEnd) =>
           logger.debug [@userCntEnd, @profileCntEnd, @projectCntEnd], true
           ['user', 'profile', 'project'].forEach (name) =>
             if @[name+'Cnt'].count != @[name+'CntEnd'].count
@@ -42,23 +42,26 @@ describe 'service.notifications.internals', ->
 
     before ->
 
-      tables.auth.user() #only need to delete users as foreign keys clean the rest yay
-      .where username: testKey
-      .delete()
-      .then () =>
-        getCounts (@userCnt, @profileCnt, @projectCnt) =>
-          logger.debug [@userCnt, @profileCnt, @projectCnt], true
+      dbs.transaction (transaction) =>
 
-        #dummy accounts
-        users = [
-          makeFakeUser('Mc', 'Daddy')
-          makeFakeUser('twoFirst', 'twoLast')
-          makeFakeUser('threeFirst', 'threeLast')
-        ]
+        tables.auth.user({transaction}) #only need to delete users as foreign keys clean the rest yay
+        .where username: testKey
+        .delete()
+        .then () =>
+          getCounts transaction, (@userCnt, @profileCnt, @projectCnt) =>
+            logger.debug [@userCnt, @profileCnt, @projectCnt], true
 
-        @emails = [users[1].email, users[2].email]
+        .then () =>
+          #dummy accounts
+          users = [
+            makeFakeUser('Mc', 'Daddy')
+            makeFakeUser('twoFirst', 'twoLast')
+            makeFakeUser('threeFirst', 'threeLast')
+          ]
 
-        dbs.transaction (transaction) =>
+          @emails = [users[1].email, users[2].email]
+
+
           tables.auth.user({transaction})
           .insert users
           .returning('id')
@@ -105,6 +108,8 @@ describe 'service.notifications.internals', ->
             .then (rows) =>
               @profileIds = _.pluck rows, 'id'
               logger.debug "profiles inserted ids: #{@profileIds}"
+              logger.debug "!!!!!!!!! DONE SETUP !!!!!!!!!"
+
 
 
     describe 'from parent', ->
