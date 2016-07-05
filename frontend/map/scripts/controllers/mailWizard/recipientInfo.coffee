@@ -34,36 +34,26 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
       .then ({data}) ->
 
         hash = (a) ->
-          "#{a.street_address_num} #{a.street_address_name} #{a.street_address_unit} #{a.city} #{a.state} #{a.zip}".trim()
+          "#{a.street ? ''} #{a.unit ? ''} #{a.citystate ? ''} #{a.zip ? ''}".trim()
 
         property = {}
         owner = {}
-        for addr in data
-          pAddr =
-            name: addr.owner_name ?  addr.owner_name_2 ? 'Current Resident'
-            street_address_num: addr.street_address_num ? ''
-            street_address_name: addr.street_address_name ? ''
-            street_address_unit: addr.owner_street_address_unit ? ''
-            city: addr.city ? ''
-            state: addr.state ? ''
-            zip: addr.zip ? ''
-            rm_property_id: addr.rm_property_id
+        for p in data
+          pAddr = _.assign
+            name: (p.owner_name ?  p.owner_name_2 ? 'Homeowner')
+            rm_property_id: p.rm_property_id
             type: 'property'
+          , p.address
 
           if pKey = hash(pAddr)
             $log.debug "Adding #{pAddr.name}'s address: #{pKey}"
             property[pKey] = pAddr
 
-          oAddr =
-            name: addr.owner_name ? addr.owner_name_2 ? 'Homeowner'
-            street_address_num: addr.owner_street_address_num ? ''
-            street_address_name: addr.owner_street_address_name ? ''
-            street_address_unit: addr.owner_street_address_unit ? ''
-            city: addr.owner_city ? ''
-            state: addr.owner_state ? ''
-            zip: addr.owner_zip ? ''
-            rm_property_id: addr.rm_property_id
+          oAddr = _.assign
+            name: (p.owner_name ?  p.owner_name_2 ? 'Homeowner')
+            rm_property_id: p.rm_property_id
             type: 'owner'
+          , p.owner_address
 
           if oKey = hash(oAddr)
             $log.debug "Adding #{oAddr.name}'s address: #{oKey}"

@@ -1,5 +1,5 @@
 .panel.panel-primary(ng-cloak)
-  .panel-heading(ng-class="statusClass") {{model.street_address_num}} {{model.street_address_name}}
+  .panel-heading(ng-class="statusClass") {{model.address.street}} {{model.address.unit}}
   .panel-body
     table(class="table table-condensed table-hover")
       tr

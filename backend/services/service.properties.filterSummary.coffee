@@ -78,7 +78,6 @@ module.exports =
                 for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
                   if _.size(rm_property_ids) > 1
                     for rm_property_id of rm_property_ids
-                      logger.debug "#{encodedCenter} #{rm_property_id}"
                       resultGroups[encodedCenter] ?= {}
                       resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
                       delete resultsByPropertyId[rm_property_id]

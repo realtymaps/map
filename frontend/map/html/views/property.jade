@@ -96,7 +96,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     | {{property.owner_name_2}}
               .col-sm-6
                 .content-label Address
-                .content-lg(ng-repeat="line in property.owner_address.lines") {{line}}
+                .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
+                .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
 
           .row.content-block.border-bottom
             .col-sm-6(ng-if="formatters.property.showListingData(property)")

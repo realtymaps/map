@@ -41,8 +41,8 @@
                     .recipient-address-window
                       .recipient-address-text
                         .address-line {{wizard.mail.campaign.recipients[0].name}}
-                        .address-line {{wizard.mail.campaign.recipients[0].street_address_num}} {{wizard.mail.campaign.recipients[0].street_address_name}}
-                        .address-line {{wizard.mail.campaign.recipients[0].city}}, {{wizard.mail.campaign.recipients[0].state}} {{wizard.mail.campaign.recipients[0].zip}}
+                        .address-line {{wizard.mail.campaign.recipients[0].address.street}} {{wizard.mail.campaign.recipients[0].address.unit}}
+                        .address-line {{wizard.mail.campaign.recipients[0].address.citystate}} {{wizard.mail.campaign.recipients[0].zip}}
                     div(text-angular
                       rmaps-macro-helper
                       rmaps-macro-event-helper
