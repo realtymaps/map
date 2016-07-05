@@ -71,8 +71,7 @@ describe 'makeInsertPhoto', ->
 
     cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard {
       newFileName: 'crap.jpg'
-      data_source_id
-      data_source_uuid
+      listingRow
       shardsPromise: Promise.resolve
         one:
           id: 0
