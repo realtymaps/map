@@ -23,7 +23,7 @@ basicColumns = do ->
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center', # alias can be removed once mv_property_details is gone
+      'geometry_center',
       'owner_name',
       'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
       'year_built',
@@ -58,7 +58,7 @@ basicColumns = do ->
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
-      'map_position', 'map_results']
+      'map_position', 'map_results', 'pins']
 
     drawnShapes: _commonProjectCols.concat ['geometry_center', 'geometry_raw', 'shape_extras',
       'area_name', 'area_details']
@@ -81,7 +81,6 @@ basicColumns = do ->
       'city', 'zip'
     ]
 
-  ret.all = "#{ret.filter}, #{ret.detail}"
   ret
 
 
@@ -125,6 +124,7 @@ joinColumns = do ->
     "#{tables.user.project.tableName}.beds"
     "#{tables.user.project.tableName}.baths"
     "#{tables.user.project.tableName}.sqft"
+    "#{tables.user.project.tableName}.pins"
   ]
 
   client: [

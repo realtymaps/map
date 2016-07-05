@@ -14,7 +14,7 @@ _propertyQuery = ({queryParams, profile, limit}) ->
   .then (permissions) ->
     logger.debug permissions
 
-    query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
+    query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
     .leftOuterJoin "#{tables.config.mls.tableName}", ->
       @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
 
