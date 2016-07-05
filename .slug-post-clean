@@ -23,7 +23,6 @@ node_modules/jasmine-core
 node_modules/rewire
 node_modules/stylus
 node_modules/vinyl-*
-node_modules/yargs
 
 # karma deps
 node_modules/karma*
