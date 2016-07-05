@@ -300,20 +300,27 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
             finePhotologger.debug 'photo has same updateDate GTFO.'
             return
 
-          uploadPromise = _uploadPhoto({photoRes, newFileName, payload, row})
-          .then () ->
-            _enqueuePhotoToDelete row.photos[imageId]?.key, subtask.batch_id
+          uploadPromise = dbs.transaction 'normalized', (transaction1) ->
+            _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+            .then () ->
+              dbs.transaction 'main', (transaction2) ->
+                _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+                .then () ->
+                  _uploadPhoto({photoRes, newFileName, payload, row})
           .then () ->
             logger.spawn(subtask.task_name).debug 'photo upload success'
-            _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow})
-          .then () ->
             successCtr++
           .catch (error) ->
-            console.log("upload error in mlsHelpers#storePhotos: #{error}")
+            # TODO: 1) investigate NO_OBJECT_FOUND error (can be detected based on ReplyCode: 20403) and figure out when
+            # TODO:    it occurs; maybe for listings with no photos?  if so, then we should not really treat it as an
+            # TODO:    error, especially for the retry logic described in a TODO below
+            # TODO: 2) investigate duplicate key error for inserts into delete_photos -- seems like that shouldn't be
+            # TODO:    possible, so it could be an indication of a deeper bug
+            console.log("upload error in mlsHelpers#storePhotos (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{error}")
             logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
             logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
             errorsCtr++
-            #record the error and move on
+            #record the error, enqueue a delete for the new version just in case, and move on
             tables.normalized.listing()
             .where(listingRow)
             .update(photo_import_error: analyzeValue.getSimpleDetails(error))
@@ -323,8 +330,13 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       .then () ->
         logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
-        # TODO: if we get a non-0 errorsCtr, record this rm_property_id for a later photo retry
         logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
+        # TODO: 3) if we had transient errors on 1 or more of the images for this listing, record this listing somehow
+        # TODO:    for a later retry.  The retry should probably be handled in storePhotosPrep, which would need to
+        # TODO:    enqueue any recorded listings for this MLS from prior batches in addition to what it does now
+        # TODO:    (listings inserted/updated during this batch).  Then we would also need another subtask at the end
+        # TODO:    of the mls task that clears out any recorded listings for this mls from prior batches (since if the
+        # TODO:    transient error was still happening, it would have been recorded again for this batch)
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
