@@ -49,7 +49,7 @@ ruleDefaults =
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
-      transformArr.push name: 'map', options: {unmapped: 'pass', lookup: {lookupName: @config.LookupName, dataSourceId: @data_source_id, dataListType: @data_type}}
+      transformArr.push name: 'map', options: {unmapped: 'pass', lookup: {lookupName: @config.LookupName, proxyName: @input, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
       transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
