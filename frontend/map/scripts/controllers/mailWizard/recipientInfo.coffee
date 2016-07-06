@@ -40,10 +40,10 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
         owner = {}
         for p in data
           pAddr = _.assign
-            name: (p.owner_name ?  p.owner_name_2 ? 'Homeowner')
+            name: (p.owner_name ? p.owner_name_2 ? 'Homeowner')
             rm_property_id: p.rm_property_id
             type: 'property'
-          , p.address
+          , _.pick(p.address, 'co', 'street', 'unit', 'citystate', 'zip')
 
           if pKey = hash(pAddr)
             $log.debug "Adding #{pAddr.name}'s address: #{pKey}"
@@ -53,7 +53,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
             name: (p.owner_name ?  p.owner_name_2 ? 'Homeowner')
             rm_property_id: p.rm_property_id
             type: 'owner'
-          , p.owner_address
+          , _.pick(p.owner_address, 'co', 'street', 'unit', 'citystate', 'zip')
 
           if oKey = hash(oAddr)
             $log.debug "Adding #{oAddr.name}'s address: #{oKey}"
