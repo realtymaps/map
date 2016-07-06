@@ -66,6 +66,7 @@ module.exports =
     shellHistory: 'user_shell_history'
     errors: 'user_errors'
     notificationQueue: 'user_notification_queue'
+    notificationExpired: 'user_notification_expired'
     notificationConfig: 'user_notification_config'
     eventsQueue: 'user_events_queue'
   mail:
