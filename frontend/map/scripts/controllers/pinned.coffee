@@ -37,7 +37,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
 
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
-      rmapsPropertiesService.pinProperty toPin
+      rmapsPropertiesService.pinUnpinProperty toPin
 
   $scope.unpinResults = ($event) ->
     toPin = $scope.formatters.results.getResultsArray()
@@ -59,7 +59,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
 
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
-      rmapsPropertiesService.unpinProperty toPin
+      rmapsPropertiesService.pinUnpinProperty toPin
 
   $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, getPinned
   $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, getFavorites
