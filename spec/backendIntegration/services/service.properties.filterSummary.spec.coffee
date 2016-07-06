@@ -25,8 +25,8 @@ describe 'service.properties.filterSummary', ->
       limit: 1
       validBody: mocks.map.filter
     .then (data) ->
-      # logger.debug data
-      data = utilsGeoJson.toGeoFeatureCollection([_.find(data.singletons)])
-      # logger.debug data
+      properties = _.values(data.singletons)
+      properties.length.should.be.above 0
+      data = utilsGeoJson.toGeoFeatureCollection(properties)
       gjv.valid(data).should.be.ok
       done()
