@@ -5,21 +5,23 @@ include ../mixins/property/_propertyAttributes.jade
     .col-md-4
       img(ng-cloak ng-src="{{formatters.property.google.Satellite.getUrl(property.grouped.properties[0], 100, 100)}}")
     .col-md-8.property-card
-      h5.title {{property.grouped.properties[0].address.street}}
+      h5.title(ng-show="!showAllAddresses") {{property.grouped.properties[0].address.street}}
+      h5.title(ng-show="showAllAddresses") Multiple Addresses
       p.location {{property.grouped.properties[0].address.citystate}} {{property.grouped.properties[0].address.zip}}
       ul.status-summary
         li.status.forsale {{property.grouped.forsale}} For Sale
         li.status.pending {{property.grouped.pending}} Pending
         li.status.sold {{property.grouped.sold}} Sold
 
-  .property-card.row.unit(ng-repeat="unit in property.grouped.properties | orderBy:unitComparator")
+  .property-card.row.unit(ng-repeat="unit in property.grouped.properties | orderBy:addressComparator")
     .col-md-3.unit-image
       img(ng-if="unit.cdn_photo" ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
       i.fa.fa-building-o(ng-if="!unit.cdn_photo")
     .col-md-9.unit-details
-      .header
+      .header(ng-class="{'flex':!showAllAddresses}")
         span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
-        span.unit-number {{unit.address.unit}}
+        span.unit-number(ng-show="!showAllAddresses") {{unit.address.unit}}
+        div.unit-number(ng-show="showAllAddresses") {{unit.address.street}} {{unit.address.unit}}
       .property-attr
         ul.attr
           li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds

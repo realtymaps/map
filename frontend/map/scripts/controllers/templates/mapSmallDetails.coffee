@@ -11,9 +11,14 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
 
   $scope.property = _.cloneDeep $scope.model
 
-  $scope.unitComparator = (unit) ->
-    unit = unit.address.unit
+  if $scope.property.grouped
+    # Uncomment to test parcel with multiple addresses
+    # $scope.property.grouped.properties[0].address.street = '123 Main St'
+    if _.uniq(_.pluck($scope.property.grouped.properties, 'address.street')).length > 1
+      $scope.showAllAddresses = true
+
+  $scope.addressComparator = (p) ->
+    unit = p.address.unit
     while "#{unit}".length < 10
       unit = "0#{unit}"
-    unit
-
+    "#{p.address.street}#{unit}"
