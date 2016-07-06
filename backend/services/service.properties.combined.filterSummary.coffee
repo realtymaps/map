@@ -211,11 +211,11 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if filters.hasImages
         @.where("photos", "!=", "{}")
 
-      if queryParams.pins
+      if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
     else
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins)
+      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
 
   logger.debug () -> query.toString()
   query
