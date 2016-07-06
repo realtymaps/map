@@ -117,24 +117,6 @@ describe "rmapsLayerFormattersService", ->
       colorOpacity = 1
       fillOpacity = .75
 
-      describe 'labelFromStreetNum', ->
-        before ->
-          @subject = @subject.Parcels.labelFromStreetNum
-
-        it 'model with nothin', ->
-          model = @subject {}
-          model.markerType.should.be.equal 'streetNum'
-          model.zIndex.should.be.equal 1
-          expect(model.icon.iconSize).to.include.members [10, 10]
-          expect(model.icon.html).to.be.equal "<span class='address-label'>#{String.orNA undefined}</span>"
-
-        it 'model with streetNum', ->
-          model = @subject street_address_num: 12
-          model.markerType.should.be.equal 'streetNum'
-          model.zIndex.should.be.equal 1
-          expect(model.icon.iconSize).to.include.members [10, 10]
-          expect(model.icon.html).to.be.equal "<span class='address-label'>12</span>"
-
       describe 'getStyle', ->
         before ->
           @subject = @subject.Parcels.getStyle
