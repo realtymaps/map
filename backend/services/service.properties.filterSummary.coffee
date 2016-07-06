@@ -41,7 +41,7 @@ module.exports =
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
-          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: config.backendClustering.resultThreshold, permissions})
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           .then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
 

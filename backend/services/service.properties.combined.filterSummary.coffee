@@ -148,9 +148,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
     throw new Error('permissions must be provided')
   queryPermissions(query, permissions)
 
+  query.limit(limit) if limit
+
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
   query.where ->
-    @.limit(limit) if limit
     if filters?.status?.length
       sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
