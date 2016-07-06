@@ -111,8 +111,8 @@ buildLetter = (campaign, recipient) ->
     company: r.co ? ''
     address_line1: r.address_line1 ? r.street ? ''
     address_line2: r.address_line2 ? r.unit ? ''
-    address_city: r.address_city ? r.citystate.match(/([ \w]+),[ \w]+/)?[1]?.trim() ? ''
-    address_state: r.address_state ? r.citystate.match(/[ \w]+,([ \w]+)/)?[1]?.trim() ? ''
+    address_city: r.address_city ? r.citystate?.match(/([ \w]+),[ \w]+/)?[1]?.trim() ? ''
+    address_state: r.address_state ? r.citystate?.match(/[ \w]+,([ \w]+)/)?[1]?.trim() ? ''
     address_zip: r.address_zip ? r.zip ? ''
 
   address_to = getAddress recipient
@@ -233,9 +233,9 @@ sendLetter = (letter, apiName) ->
       .then (file) ->
         letter.file = file
         letter.double_sided = true
-        if letter.options.custom_content 
+        if letter.options.custom_content
           letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
-          letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color 
+          letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color
         else
           letter.options.address_placement = 'insert_blank_page'
 
