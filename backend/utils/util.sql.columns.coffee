@@ -58,7 +58,7 @@ basicColumns = do ->
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
-      'map_position', 'map_results', 'pins']
+      'map_position', 'map_results']
 
     drawnShapes: _commonProjectCols.concat ['geometry_center', 'geometry_raw', 'shape_extras',
       'area_name', 'area_details']
