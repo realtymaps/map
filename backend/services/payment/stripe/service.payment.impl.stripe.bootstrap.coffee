@@ -56,7 +56,7 @@ initializePlan = (stripe, planName, settings) ->
   .catch (err) ->
     # Sometimes ECONNRESET / StripConnectionError occurs here which halts the app. In dev can this be avoided?
     logger.debug err
-    # createPlan(stripe, planName, settings)
+    createPlan(stripe, planName, settings)
 
 initializePlans = (stripe) ->
   #initialize all plans including aliases to avoid complications
