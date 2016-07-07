@@ -13,12 +13,12 @@ include ../mixins/property/_propertyAttributes.jade
         li.status.pending {{property.grouped.pending}} Pending
         li.status.sold {{property.grouped.sold}} Sold
 
-  .property-card.row.unit(ng-repeat="unit in property.grouped.properties | orderBy:addressComparator")
-    .col-md-3.unit-image
+  .property-card.row.unit(ng-repeat="unit in property.grouped.properties")
+    .col-md-3.unit-image(ui-sref="property({id:unit.rm_property_id})")
       img(ng-if="unit.cdn_photo" ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
       i.fa.fa-building-o(ng-if="!unit.cdn_photo")
     .col-md-9.unit-details
-      .header(ng-class="{'flex':!showAllAddresses}")
+      .header(ng-class="{'flex':!showAllAddresses}" ui-sref="property({id:unit.rm_property_id})" )
         span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
         span.unit-number(ng-show="!showAllAddresses") {{unit.address.unit}}
         div.unit-number(ng-show="showAllAddresses") {{unit.address.street}} {{unit.address.unit}}
@@ -28,9 +28,9 @@ include ../mixins/property/_propertyAttributes.jade
           li.baths_total {{formatters.property.orNa(unit.baths.value)}} baths
           li.finished_sqft(ng-if="unit.sqft_finished") {{unit.sqft_finished}} Sq Ft
           li.year_built(ng-if="unit.year_built.value") {{unit.year_built.value}}
-  .row
-    .col-md-12
-      .btn-group
-        .btn-white.btn(style="width:25%") &lt;
-        .btn-white.btn(style="width:25%") &gt;
-        .btn-white.btn(style="width:50%") → See All Units ({{property.grouped.properties.length}})
+  //- .row
+  //-   .col-md-12
+  //-     .btn-group
+  //-       .btn-white.btn(style="width:25%") &lt;
+  //-       .btn-white.btn(style="width:25%") &gt;
+  //-       .btn-white.btn(style="width:50%") → See All Units ({{property.grouped.properties.length}})
