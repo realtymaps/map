@@ -148,7 +148,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     args: opts
     required: ['newFileName', 'imageId', 'photo_id', 'listingRow']
 
-  {newFileName, imageId, photo_id, listingRow, objectData} = opts
+  {newFileName, imageId, photo_id, listingRow, objectData, transaction} = opts
   externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
@@ -183,16 +183,17 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
         jsonObjStr
         imageId
         photo_id
+        transaction
       }
 
     .catch (error) ->
       logger.spawn(subtask.task_name).error error
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
-      _enqueuePhotoToDelete obj.key, subtask.batch_id
+      _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
 
-_enqueuePhotoToDelete = (key, batch_id) ->
+_enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
   if key?
-    tables.deletes.photos()
+    tables.deletes.photos({transaction})
     .insert {key, batch_id}
   else
     Promise.resolve()

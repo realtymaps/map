@@ -1,4 +1,3 @@
-clone = require 'clone'
 Promise = require 'bluebird'
 routeHelpers = require '../utils/util.route.helpers'
 errors = require '../utils/errors/util.errors.properties'

@@ -73,12 +73,12 @@ class ServiceCrud extends BaseObject
   getAll: (entity = {}, options = {}) ->
     @logger.debug () -> "getAll() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
     query = options.query ? @dbFn()
-    @_wrapQuery sqlHelpers.buildQuery(knex: query, entity: entity), options
+    @_wrapQuery(sqlHelpers.buildQuery(knex: query, entity: entity), options)
 
   create: (entity, options = {}) ->
     #TODO should there be options to handle where / orWhereIn for inserts w/o the need to override?
     @logger.debug () -> "create() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapQuery (options.query ? @dbFn()).insert(entity), options
+    @_wrapQuery((options.query ? @dbFn()).insert(entity), options)
 
   # implies restrictions and forces on id matches
   getById: (entity, options = {}) ->
@@ -89,7 +89,7 @@ class ServiceCrud extends BaseObject
     throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys ids
 
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
-    @_wrapQuery (options.query ? @dbFn()).where(ids), options
+    @_wrapQuery((options.query ? @dbFn()).where(ids), options)
 
   update: (entity, options = {}) ->
     @logger.debug () -> "update() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -107,10 +107,10 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
     upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: entity, tableName: @dbFn.tableName
-    @_wrapQuery (options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options
+    @_wrapQuery((options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (entity, options = {}) ->
     @logger.debug () -> "delete() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapQuery (options.query ? @dbFn()).where(entity).delete(), options
+    @_wrapQuery((options.query ? @dbFn()).where(entity).delete(), options)
 
 module.exports = ServiceCrud

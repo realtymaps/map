@@ -84,6 +84,9 @@ getPermissions = (profile) -> Promise.try ->
   .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
   .where(id: profile.auth_user_id)
   .then ([user]) ->
+    if !user
+      return {}
+
     # Skip permissions for superusers
     if user.is_superuser
       return superuser: true
