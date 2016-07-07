@@ -47,7 +47,7 @@ initializePlan = (stripe, planName, settings) ->
     onMissingArgsFail args: settings, required: ['price', 'interval']
   catch error
     logger.error error
-    # shutdown.exit(error: true)
+    shutdown.exit(error: true)
 
   stripe.plans.retrieve planName
   .then () ->
