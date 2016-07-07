@@ -48,7 +48,7 @@ rmapsMapTogglesFactory
       $scope.createModal({}, property).then (note) ->
         _.extend note,
           rm_property_id : property.rm_property_id || undefined
-          geom_point_json : property.geom_point_json
+          geometry_center : property.geometry_center
           project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
 
         # Turn the Notes layer on so that the user will see the new note
@@ -113,7 +113,7 @@ rmapsMapTogglesFactory
     click: (event) ->
       geojson = (new L.Marker(event.latlng)).toGeoJSON()
       createFromModal
-        geom_point_json: geojson.geometry
+        geometry_center: geojson.geometry
       .finally ->
         _destroy()
 

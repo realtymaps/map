@@ -20,47 +20,26 @@
   },
   "recipients": [
     {
+      "name": "Jane Doe",
       "rm_property_id": "12021_29830400000_001",
-      "street_address_num": "2938",
-      "street_address_name": "Cypress St",
-      "city": "Naples",
-      "state": "FL",
+      "street": "2938 Cypress St",
+      "citystate": "Naples, FL",
       "zip": "34112-5814",
-      "owner_street_address_num": "6947",
-      "owner_street_address_name": "Madrid Dr",
-      "owner_city": "Demotte",
-      "owner_state": "IN",
-      "owner_zip": "46310-9411",
-      "property_address": "2938 Cypress St Naples FL 34112-5814",
-      "owner_address": "6947 Madrid Dr Demotte IN 46310-9411"
+      "type": "property"
     }, {
+      "name": "Bob Barker",
       "rm_property_id": "12021_29830840000_001",
-      "street_address_num": "2917",
-      "street_address_name": "Poplar St",
-      "city": "Naples",
-      "state": "FL",
+      "street": "2917 Poplar St",
+      "citystate": "Naples, FL",
       "zip": "34112-5830",
-      "owner_street_address_num": "2917",
-      "owner_street_address_name": "Poplar St",
-      "owner_city": "Naples",
-      "owner_state": "FL",
-      "owner_zip": "34112-5830",
-      "property_address": "2917 Poplar St Naples FL 34112-5830",
-      "owner_address": "2917 Poplar St Naples FL 34112-5830"
+      "type": "owner"
     }, {
+      "name": "Carl Smith",
       "rm_property_id": "12021_48730920506_001",
-      "street_address_num": "2370",
-      "street_address_name": "Becca Ave",
-      "city": "Naples",
-      "state": "FL",
+      "street": "2370 Becca Ave",
+      "citystate": "Naples, FL",
       "zip": "34112-5849",
-      "owner_street_address_num": "2370",
-      "owner_street_address_name": "Becca Ave",
-      "owner_city": "Naples",
-      "owner_state": "FL",
-      "owner_zip": "34112-5849",
-      "property_address": "2370 Becca Ave Naples FL 34112-5849",
-      "owner_address": "2370 Becca Ave Naples FL 34112-5849"
+      "type": "property"
     }
   ]
 }

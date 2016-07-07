@@ -6,7 +6,7 @@ dbs = require '../config/dbs'
 _ = require 'lodash'
 moment = require 'moment'
 db = dbs.get('main')
-propertySvc = require './service.properties.details'
+propertySvc = require './service.properties.combined.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
 LobErrors = require '../utils/errors/util.errors.lob'
 Promise = require 'bluebird'
@@ -93,15 +93,21 @@ class MailService extends ServiceCrud
         propertyIndex[letter.rm_property_id] ?= []
         propertyIndex[letter.rm_property_id].push letter
 
-      propertySvc.getDetails rm_property_id: _.keys propertyIndex
-      .then (details) ->
-        _.map details, (detail) ->
+      tables.user.profile().select().where({auth_user_id, project_id})
+      .then ([profile]) ->
+        propertySvc.getProperties({
+          query:
+            rm_property_id: _.keys propertyIndex
+          profile
+        })
+        .then (details) ->
+          _.map details, (detail) ->
 
-          # Combined mailing and property info
-          _.assign detail,
-            mailings: propertyIndex[detail.rm_property_id]
-            coordinates: detail.geom_point_json.coordinates
-            type: detail.geom_point_json.type
+            # Combined mailing and property info
+            _.assign detail,
+              mailings: propertyIndex[detail.rm_property_id]
+              coordinates: detail.geometry_center.coordinates
+              type: detail.geometry_center.type
 
   getLetters: (auth_user_id) ->
     tables.mail.campaign().select([

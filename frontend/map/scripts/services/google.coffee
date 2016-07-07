@@ -62,7 +62,7 @@ app.service 'rmapsGoogleService', ($http, $log) ->
 
     StreetView: do ->
       getUrl: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
-        coords = geoObj?.geom_point_json?.coordinates
+        coords = geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.coordinates
 
@@ -95,7 +95,7 @@ app.service 'rmapsGoogleService', ($http, $log) ->
 
     Satellite: do ->
       getUrl: (geoObj, width, height, zoom = 18) ->
-        coords = geoObj?.geom_point_json?.coordinates
+        coords = geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.coordinates
 

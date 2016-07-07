@@ -24,7 +24,7 @@ include ../mixins/property/_propertyAttributes.jade
         ul.attr
           li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds
           li.baths_total {{formatters.property.orNa(unit.baths.value)}} baths
-          li.finished_sqft(ng-if="unit.finished_sqft") {{unit.finished_sqft}} Sq Ft
+          li.finished_sqft(ng-if="unit.sqft_finished") {{unit.sqft_finished}} Sq Ft
           li.year_built(ng-if="unit.year_built.value") {{unit.year_built.value}}
   .row
     .col-md-12

@@ -30,9 +30,9 @@ module.exports =
       obj = {}
       #hack for unique markerid on address markers (NEED TO FIX IN LEAFLET Marker Directive)
       data.forEach (val) ->
-        val.type = val.geom_point_json.type
-        val.coordinates = val.geom_point_json.coordinates
+        val.type = val.geometry_center.type
+        val.coordinates = val.geometry_center.coordinates
         obj['addr' + val.rm_property_id] = val
-        delete val.geom_point_json
+        delete val.geometry_center
       # logger.debug obj, true
       obj

@@ -15,7 +15,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
     _isWithinBounds = (map, prop) ->
       pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon
-      .toBounds(prop.geometry or prop.geom_polys_json or prop.geom_point_json)
+      .toBounds(prop.geometry or prop.geometry or prop.geometry_center)
 
       isVisible = map.getBounds().intersects(pointBounds)
       return unless isVisible

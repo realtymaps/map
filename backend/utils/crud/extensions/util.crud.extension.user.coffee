@@ -52,7 +52,7 @@ route =
                 logger.debug "restrictFn: handle #{name}: calling wrapped.call" if doLog
                 wrapped.call @, req, res, next
 
-  toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+  toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geometry_center') ->
     if !_.isArray rows
       originallyObject = true
       rows = [rows]

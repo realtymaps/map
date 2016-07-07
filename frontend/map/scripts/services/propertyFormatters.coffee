@@ -40,7 +40,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       title
 
     hasMultipleOwners: (result) ->
-      if result.owner_name2? and result.owner_name?
+      if result.owner_name_2? and result.owner_name?
         return true
       return false
 

@@ -1,5 +1,5 @@
 logger = require('../config/logger').spawn('map:filterSummary:drawnShapes')
-BaseFilterSummaryService = require './service.properties.base.filterSummary'
+filterSummaryService = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -15,7 +15,7 @@ override:
 - tested non knex query that works
 ###
 
-detailsName = tables.property.propertyDetails.tableName
+detailsName = tables.finalized.combined.tableName
 drawnShapesName = tables.user.drawnShapes.tableName
 
 throwOnUndefined = (thing, name) ->
@@ -25,22 +25,22 @@ throwOnUndefined = (thing, name) ->
 throwOnUndefined(detailsName,"detailsName")
 throwOnUndefined(drawnShapesName,"drawnShapesName")
 
-getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
+getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
   #http://stackoverflow.com/questions/12204834/get-distance-in-meters-instead-of-degrees-in-spatialite
   #earth meters per degree 111195
-  query.joinRaw tables.property.propertyDetails().raw """
-    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geom_point_raw, #{drawnShapesName}.geom_polys_raw)
+  query.joinRaw tables.finalized.combined().raw """
+    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_raw, #{drawnShapesName}.geometry_raw)
      or
      ST_DWithin(
-     #{detailsName}.geom_point_raw,
+     #{detailsName}.geometry_raw,
      #{drawnShapesName}.geom_point_raw,
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
-getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
   # logger.debug.green queryParams, true
-  query = BaseFilterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
+  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea?
@@ -50,15 +50,16 @@ getFilterSummaryAsQuery = ({queryParams, limit, query}) ->
   query
 
 getResultCount = ({queryParams}) ->
-  query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
+  query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
   q = getFilterSummaryAsQuery({queryParams, query})
   logger.debug q.toString()
   q
 
-module.exports =
-  getResultCount: getResultCount
-  getFilterSummaryAsQuery: getFilterSummaryAsQuery
-  transforms: _.merge {}, BaseFilterSummaryService.transforms,
+module.exports = {
+  getResultCount
+  getFilterSummaryAsQuery
+  transforms: _.merge {}, filterSummaryService.transforms,
     isArea: validators.boolean(truthy: true, falsy: false)
     bounds: validators.string(null:true)
     project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
+}

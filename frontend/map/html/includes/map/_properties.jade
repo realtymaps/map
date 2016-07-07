@@ -9,8 +9,8 @@ include ../mixins/property/_propertyAttributes.jade
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
         li(ng-click="formatters.results.setOrReverseResultsPredicate('bedrooms')") Beds
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('bedrooms')")
-        li(ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')") Sq Ft
-          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
+        li(ng-click="formatters.results.setOrReverseResultsPredicate('sqft_finished')") Sq Ft
+          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('sqft_finished')")
         li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
     #results-list-container(infinite-scroll='formatters.results.loadMore(false)' infinite-scroll-distance='1' infinite-scroll-container='"#results-list-container"')

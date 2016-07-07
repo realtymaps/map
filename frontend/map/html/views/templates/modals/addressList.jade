@@ -8,5 +8,5 @@
         td
           .address-line {{address.name}}
             span.pull-right {{address.type.toInitCaps()}} address
-          .address-line {{address.street_address_num}} {{address.street_address_name}}
-          .address-line {{address.city}}, {{address.state}} {{address.zip}}
+          .address-line {{address.street}} {{address.unit}}
+          .address-line {{address.citystate}} {{address.zip}}

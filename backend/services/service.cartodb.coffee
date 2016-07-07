@@ -21,7 +21,7 @@ _upload = (stream, fileName) -> Promise.try ->
   filteredStream = stream.pipe(geoJsonFormatter([
     'rm_property_id'
     'street_address_num'
-    'geom_point_json'
+    'geometry_center'
     'passedFilters'
   ]))
 
@@ -57,7 +57,7 @@ _fipsCodeQuery = (opts) -> Promise.try () ->
     query.whereRaw("rm_property_id > '#{opts.start_rm_property_id}'")
   if opts?.nesw?
     # logger.debug opts.nesw
-    query = sqlHelpers.whereInBounds(query, 'geom_polys_raw', opts.nesw)
+    query = sqlHelpers.whereInBounds(query, 'geometry_raw', opts.nesw)
   # logger.debug query.toString()
   query
 

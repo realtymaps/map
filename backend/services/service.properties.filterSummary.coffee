@@ -1,8 +1,5 @@
 config = require '../../common/config/commonConfig'
-base = require './service.properties.base.filterSummary'
 combined = require './service.properties.combined.filterSummary'
-sqlHelpers = require './../utils/util.sql.helpers.coffee'
-indexBy = require '../../common/utils/util.indexByWLength'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('map:filterSummary')
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
@@ -11,61 +8,41 @@ validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
 geohash = require 'geohash64'
 
-_isOnlyPinned = (queryParams) ->
-  !queryParams?.state?.filters?.status?.length
-
-_isNothingPinned = (state) ->
-  !state?.pins || _.size(state.pins) == 0
-
 module.exports =
-  getFilterSummary: ({state, req, limit, filterSummaryImpl}) ->
-    limit ?= 2000
+  getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
+    limit ?= config.backendClustering.resultThreshold
+    filterSummaryImpl ?= combined
 
-    # This block can be removed once mv_property_details is gone
-    if !filterSummaryImpl
-      if req.validBody.state?.filters?.combinedData == true
-        filterSummaryImpl = combined
-      else
-        filterSummaryImpl = base
-
-    Promise.try ->
-      # Note: this is looking at the pre-transformed status filter
-      if !(_isOnlyPinned(req.validBody) && _isNothingPinned(state))
-        validation.validateAndTransform(req.validBody, filterSummaryImpl.transforms)
-
+    validation.validateAndTransform(validBody, filterSummaryImpl.transforms)
     .then (queryParams) ->
 
-      Promise.try ->
-        # Calculate permissions for the current user
-        filterSummaryImpl.getPermissions?(req)
-        .then (permissions) ->
-          logger.debug permissions
-          permissions
+      # Calculate permissions for the current user
+      filterSummaryImpl.getPermissions(profile)
+      .then (permissions) ->
+        permissions
 
       .then (permissions) ->
+        logger.debug permissions
+
         # We know there is absolutely nothing to select, GTFO before we do any real work
         if !queryParams
           return []
 
-        _limitByPinnedProps = (query, state, queryParams) ->
-          # include saved id's in query so no need to touch db later
-          propertiesIds = _.keys(state.pins)
-          if propertiesIds.length > 0
-            whereClause = if _isOnlyPinned(queryParams) then "whereIn" else "orWhereIn"
-            sqlHelpers[whereClause](query, 'rm_property_id', propertiesIds)
+        # Include saved id's in query so no need to touch db later
+        propertyIds = _.keys(profile.pins)
+        if propertyIds.length > 0
+          queryParams.pins = propertyIds
 
         cluster = () ->
-          clusterQuery = filterSummaryImpl.cluster.clusterQuery(state.map_position.center.zoom)
+          clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
           filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
           .then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
-          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit: 800, permissions})
-          _limitByPinnedProps(query, state, queryParams)
-
-          query.then (properties) ->
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
+          .then (properties) ->
             filterSummaryImpl.scrubPermissions?(properties, permissions)
 
             resultsByPropertyId = {}
@@ -74,23 +51,23 @@ module.exports =
             Promise.each properties, (property) ->
               existing = resultsByPropertyId[property.rm_property_id]
               # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
-              if !property.data_source_type? || # Backward-compatibility
-                 !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
+              if !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
                 if filterSummaryImpl == combined
-                  encodedCenter = geohash.encode([property.geom_point_json?.coordinates])
+                  encodedCenter = geohash.encode([property.geometry_center?.coordinates])
 
                   if encodedCenter
-                    propertyIdsByCenterPoint[encodedCenter] ?= []
-                    propertyIdsByCenterPoint[encodedCenter].push(property.rm_property_id)
+                    # This is a map because we only want each property once
+                    propertyIdsByCenterPoint[encodedCenter] ?= {}
+                    propertyIdsByCenterPoint[encodedCenter][property.rm_property_id] = 1
 
                 resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
                 # Ensure saved details are part of the saved props
-                if state.pins?[property.rm_property_id]?
-                  property.savedDetails = state.pins[property.rm_property_id]
+                if profile.pins?[property.rm_property_id]?
+                  property.savedDetails = profile.pins[property.rm_property_id]
 
                 if property.data_source_type == 'mls'
                   mlsConfigSvc.getByIdCached(property.data_source_id)
@@ -99,13 +76,12 @@ module.exports =
             .then () ->
               if filterSummaryImpl == combined
                 for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
-                  if rm_property_ids.length > 1
-                    for rm_property_id in rm_property_ids
+                  if _.size(rm_property_ids) > 1
+                    for rm_property_id of rm_property_ids
                       resultGroups[encodedCenter] ?= {}
                       resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
                       delete resultsByPropertyId[rm_property_id]
-                  else
-                    delete propertyIdsByCenterPoint[encodedCenter]
+
                 return {singletons: resultsByPropertyId, groups: resultGroups}
               else
                 resultsByPropertyId
@@ -113,10 +89,8 @@ module.exports =
         switch queryParams.returnType
           when 'clusterOrDefault'
             # Count the number of properties and do clustering if there are enough
-            query = filterSummaryImpl.getResultCount({queryParams, permissions})
-            _limitByPinnedProps(query, state, queryParams)
-
-            query.then ([result]) ->
+            filterSummaryImpl.getResultCount({queryParams, permissions})
+            .then ([result]) ->
               if result.count > config.backendClustering.resultThreshold
                 logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
                 return cluster()
