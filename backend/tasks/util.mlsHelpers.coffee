@@ -283,6 +283,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
 
           if err
+            console.log("error in mlsHelpers#storePhotos from imagesHandle: #{err}")
             logger.spawn(subtask.task_name).debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
             return reject err
 
@@ -303,11 +304,23 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
 
           uploadPromise = dbs.transaction 'normalized', (transaction1) ->
             _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+            .catch (error) ->
+              console.log("SPAM error catching 3: #{error}")
             .then () ->
               dbs.transaction 'main', (transaction2) ->
                 _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+                .catch (error) ->
+                  console.log("SPAM error catching 2: #{error}")
                 .then () ->
                   _uploadPhoto({photoRes, newFileName, payload, row})
+                  .catch (error) ->
+                    console.log("SPAM error catching 1: #{error}")
+              .catch (error) ->
+                console.log("SPAM error catching 4: #{error}")
+            .catch (error) ->
+              console.log("SPAM error catching 5: #{error}")
+          .catch (error) ->
+            console.log("SPAM error catching 6: #{error}")
           .then () ->
             logger.spawn(subtask.task_name).debug 'photo upload success'
             successCtr++
@@ -326,8 +339,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
             .where(listingRow)
             .update(photo_import_error: analyzeValue.getSimpleDetails(error))
           promises.push(uploadPromise)
-
+        .catch (err) ->
+          console.log("SPAM error catching 11: #{err}")
       savesPromise
+      .catch (err) ->
+        console.log("SPAM error catching 12: #{err}")
       .then () ->
         logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
