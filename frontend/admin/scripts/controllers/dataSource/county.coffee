@@ -148,10 +148,6 @@ app.controller 'rmapsCountyCtrl',
   $scope.loadLookups = (field, target) ->
     if !target
       target = field
-      console.log('@@@@@@@@@@@@@@ field.config: '+JSON.stringify(field?.config,null,2))
-    else
-      console.log('@@@@@@@@@@@@@@ field.config: '+JSON.stringify(field?.config,null,2))
-      console.log('@@@@@@@@@@@@@@ target.config: '+JSON.stringify(target?.config,null,2))
     setLookups = (lookups) ->
       target.config.Interpretation = field.config.Interpretation
       target._lookups = field._lookups = lookups
