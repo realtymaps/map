@@ -1,0 +1,9 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'data_source_uuid'")
+  .row
+    .col-md-2 Batch ID
+    .col-md-10
+      rmaps-subinput(name="Batch ID" field="batchid")
+  .row
+    .col-md-2 Batch Sequence (optional)
+    .col-md-10
+      rmaps-subinput(name="Batch Sequence" field="batchseq")

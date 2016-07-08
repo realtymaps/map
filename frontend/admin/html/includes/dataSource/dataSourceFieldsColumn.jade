@@ -1,0 +1,15 @@
+.i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
+.row-slim.row
+  .col-md-12
+    .filter-container
+      input(ng-model="fieldSearchText" placeholder="Search")
+.row-slim.row
+  .col-md-12
+    .field-container(
+    rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
+      .field(
+      ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.config.DataType }"
+      ng-click="selectField(item)"
+      rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
+      ng-repeat="item in categories.unassigned | filter:rootSearchText | filter:fieldSearchText | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
+        span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")

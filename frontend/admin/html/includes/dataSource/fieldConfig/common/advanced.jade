@@ -1,0 +1,28 @@
+.col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
+  .row.advanced
+    .col-md-2
+    .col-md-1
+      label input
+    .col-md-9
+      textarea.transform(ng-bind="JSON.stringify(fieldData.current.input)" disabled)
+.col-md-12.scroll
+  .row.advanced
+    .col-md-2
+      .btn-group
+        .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="false" ng-change="updateRule()") Simple
+        .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true" ng-change="updateRule()") Advanced
+    .col-md-1
+      label transform
+    .col-md-9
+      textarea.transform(ng-model="fieldData.current.transform" ng-show="fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
+      textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" disabled)
+.col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
+  .row.advanced
+    .col-md-2
+    .col-md-1
+      label output
+    .col-md-9
+      div
+        span alias: "{{fieldData.current.alias}}"
+        br
+        span output: {{fieldData.current.output}}

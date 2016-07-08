@@ -1,0 +1,15 @@
+.col-md-3.list-container(ng-if="!showGrid")
+  h4 Groups
+  .row-slim.row
+    .col-md-12
+      .filter-container
+        input(ng-model="groupSearchText" placeholder="Search")
+  .row-slim.row
+    .col-md-12
+      .field-container(
+      cg-busy="fieldData.category.loading")
+        .field.category-item(
+        rmaps-droppable="category.items" on-drop="onDropCategory"
+        ng-class="{ selected: category == fieldData.category }"
+        ng-click="fieldData.category = category"
+        ng-repeat="category in targetCategories | filter:rootSearchText | filter:groupSearchText | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )

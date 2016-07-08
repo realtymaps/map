@@ -45,14 +45,14 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        field: _buildBaseRule {"output": "discontinued_date"}
        transform: '[validators.datetime({})]'
       ,
-       field: _buildBaseRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
+       field: _buildBaseRule {"output": "status", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
+       transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
-       field: _buildBaseRule {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
+       field: _buildBaseRule {"output": "substatus", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
+       transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
-       field: _buildBaseRule {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.map({"map":{"Active":"for sale","Pending":"pending"},"unmapped":"pass"})]'
+       field: _buildBaseRule {"output": "status_display", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
+       transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
        field: _buildBaseRule {"output": "acres"}
        transform: '[validators.float({}),validators.nullify({"value":0})]'

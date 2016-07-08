@@ -57,8 +57,7 @@ app.controller 'rmapsCountyCtrl',
   $scope.typeOf = (val) ->
     return typeof val
 
-  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
-  $scope.zoningOptions = _.values rmapsParcelEnums.zoning
+  $scope.lookupOptions = rmapsParcelEnums.lookupOptions
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
@@ -149,7 +148,12 @@ app.controller 'rmapsCountyCtrl',
   $scope.loadLookups = (field, target) ->
     if !target
       target = field
+      console.log('@@@@@@@@@@@@@@ field.config: '+JSON.stringify(field?.config,null,2))
+    else
+      console.log('@@@@@@@@@@@@@@ field.config: '+JSON.stringify(field?.config,null,2))
+      console.log('@@@@@@@@@@@@@@ target.config: '+JSON.stringify(target?.config,null,2))
     setLookups = (lookups) ->
+      target.config.Interpretation = field.config.Interpretation
       target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         target.lookups = field.lookups = field._lookups
@@ -195,6 +199,7 @@ app.controller 'rmapsCountyCtrl',
     delete field.input[key]
     delete field.lookups
     delete field.config.map
+    delete field.config.Interpretation
     updateBase(field, removed)
 
   # Move rules to base field config

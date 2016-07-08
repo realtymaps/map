@@ -1,0 +1,40 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'address'")
+  .row
+    .col-md-2 "Care Of" (optional)
+    .col-md-10
+      rmaps-subinput(name="Care Of" field="careOf")
+  .row
+    .col-md-2 Street Address
+    .col-md-10
+      rmaps-subinput(name="Street Number" field="streetNum")
+      span.sep AND
+      rmaps-subinput(name="Street Name" field="streetName")
+      span.sep OR
+      rmaps-subinput(name="Full Street" field="streetFull")
+  .row
+    .col-md-2 City and State
+    .col-md-10
+      rmaps-subinput(name="City" field="city")
+      span.sep AND
+      rmaps-subinput(name="State" field="state")
+  .row
+    .col-md-2 Zip Code
+    .col-md-10
+      span.sep (
+      rmaps-subinput(name="Zip5" field="zip")
+      span.sep AND (optional)
+      rmaps-subinput(name="Zip4" field="zip4")
+      span.sep ) OR
+      rmaps-subinput(name="Zip5 + Zip4" field="zip9")
+  .row
+    .col-md-2 Optional
+    .col-md-10
+      rmaps-subinput(name="Unit Number" field="unitNum")
+      rmaps-subinput(name="Number Suffix" field="streetNumSuffix")
+      rmaps-subinput(name="Street Suffix" field="streetSuffix")
+  .row
+    .col-md-2 Optional
+    .col-md-10
+      rmaps-subinput(name="Direction Prefix" field="streetDirPrefix")
+      rmaps-subinput(name="Direction Suffix" field="streetDirSuffix")
+      rmaps-subinput(name="Show Street Info" field="showStreetInfo")

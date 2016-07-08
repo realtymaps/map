@@ -1,0 +1,5 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.hasDecimal")
+  .row
+    .col-md-2 Implicit Decimal Places
+    .col-md-4
+      input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")

@@ -702,8 +702,7 @@ ensureNormalizedTable = (dataType, subid) ->
         table.integer('sqft_finished')
         table.json('year_built')
         table.json('promoted_values')
-        table.text('legal_unit_number')
-      else if dataType == 'deed'
+      if dataType == 'tax' || dataType == 'deed'
         table.text('property_type')
         table.text('zoning')
         table.text('legal_unit_number')

@@ -1,0 +1,7 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'yearOrAge'")
+  .row
+    .col-md-2 Year or Age
+    .col-md-10
+      rmaps-subinput(name="Year" field="year")
+      span.sep OR
+      rmaps-subinput(name="Age" field="age")

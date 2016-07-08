@@ -1,0 +1,20 @@
+.col-md-12.scroll(ng-if="fieldData.current.config.doLookup" ng-repeat="lookup in fieldData.current.lookups")
+  .col-md-5.row.lookup
+    .col-md-8 {{lookup.LongValue}}
+    .col-md-4
+      select(
+        ng-if="lookupOptions[fieldData.current.output]"
+        ng-model="fieldData.current.config.mapping[lookup.LongValue]"
+        ng-change="updateRule()"
+        ng-disabled="fieldData.current.config.advanced"
+        ng-options="option for option in lookupOptions[fieldData.current.output]"
+      )
+      input(
+        ng-if="!lookupOptions[fieldData.current.output]"
+        ng-model="fieldData.current.config.mapping[lookup.LongValue]"
+        ng-change="updateRule()"
+        ng-disabled="fieldData.current.config.advanced"
+        type="text"
+        placeholder="Display value"
+      )
+  .col-md-6.help(ng-if="!lookupOptions[fieldData.current.output]" ng-show="$index == 0") Replace source values with more readable values where necessary
