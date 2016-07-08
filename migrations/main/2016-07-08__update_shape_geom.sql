@@ -1,4 +1,4 @@
-CREATE FUNCTION update_geom_raw_from_geom_json() RETURNS trigger
+CREATE OR REPLACE FUNCTION update_geom_raw_from_geom_json() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
