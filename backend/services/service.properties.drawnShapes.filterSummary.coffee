@@ -40,7 +40,7 @@ getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
   # logger.debug.green queryParams, true
-  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
+  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea?
@@ -49,9 +49,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   query
 
-getResultCount = ({queryParams}) ->
+getResultCount = ({queryParams, permissions}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  q = getFilterSummaryAsQuery({queryParams, query})
+  q = getFilterSummaryAsQuery({queryParams, query, permissions})
   logger.debug q.toString()
   q
 
