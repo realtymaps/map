@@ -43,7 +43,7 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 # Retrieve a single property by rm_property_id OR geometry_center
 getProperty = ({query, profile}) ->
   validation.validateAndTransform query,
-    rm_prop_id_or_geom_json:
+    rm_property_id_or_geometry_center:
       input: ["rm_property_id", "geometry_center"]
       transform: validators.pickFirst()
       required: true

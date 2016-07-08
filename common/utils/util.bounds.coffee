@@ -11,18 +11,18 @@ boundsService = {
       return
 
     _.forEach properties, (property) ->
-      if property.geom_point_json?.coordinates?
-        if property.geom_point_json.coordinates[1] > maxLat
-          maxLat = property.geom_point_json.coordinates[1]
+      if property.geometry_center?.coordinates?
+        if property.geometry_center.coordinates[1] > maxLat
+          maxLat = property.geometry_center.coordinates[1]
 
-        if property.geom_point_json.coordinates[1] < minLat
-          minLat = property.geom_point_json.coordinates[1]
+        if property.geometry_center.coordinates[1] < minLat
+          minLat = property.geometry_center.coordinates[1]
 
-        if property.geom_point_json.coordinates[0] > maxLng
-          maxLng = property.geom_point_json.coordinates[0]
+        if property.geometry_center.coordinates[0] > maxLng
+          maxLng = property.geometry_center.coordinates[0]
 
-        if property.geom_point_json.coordinates[0] < minLng
-          minLng = property.geom_point_json.coordinates[0]
+        if property.geometry_center.coordinates[0] < minLng
+          minLng = property.geometry_center.coordinates[0]
 
 
     return {

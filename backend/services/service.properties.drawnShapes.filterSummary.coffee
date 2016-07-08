@@ -33,7 +33,7 @@ getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
      or
      ST_DWithin(
      #{detailsName}.geometry_raw,
-     #{drawnShapesName}.geom_point_raw,
+     #{drawnShapesName}.geometry_center_raw,
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
