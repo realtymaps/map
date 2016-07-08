@@ -83,8 +83,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   tax.status_display = 'sold'
 
   # now that we have an ordered sales history, overwrite that into the tax record
-  saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
-  deedOnlyFields = ['property_type', 'zoning']
+  saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
 
   # we need to check to see if we have a deed record that represents a sale more recent than what our tax records show,
   # and if so, overwrite the owner, deed, and sale info with that from the deed record (since it would have the tax
@@ -98,16 +97,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     if tax.legal_unit_number == deedEntry.legal_unit_number
       lastSaleIndex = i
       break
-  if lastSaleIndex?
-    if moment(deedEntries[lastSaleIndex].close_date).isAfter(tax.close_date)
-      [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-      tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-      tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-      for field in saleFields
-        tax[field] = lastSale[field]
-    else
-      lastSale = deedEntries[lastSaleIndex]
-    for field in deedOnlyFields
+  if lastSaleIndex? && moment(deedEntries[lastSaleIndex].close_date).isAfter(tax.close_date)
+    [lastSale] = deedEntries.splice(lastSaleIndex, 1)
+    tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+    tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+    for field in saleFields
       tax[field] = lastSale[field]
   delete tax.legal_unit_number
   # save the values we will promote to MLS for easier access
