@@ -339,8 +339,6 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
             .where(listingRow)
             .update(photo_import_error: analyzeValue.getSimpleDetails(error))
           promises.push(uploadPromise)
-        .catch (err) ->
-          console.log("SPAM error catching 11: #{err}")
       savesPromise
       .catch (err) ->
         console.log("SPAM error catching 12: #{err}")
