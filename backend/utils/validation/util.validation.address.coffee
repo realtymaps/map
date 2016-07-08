@@ -16,65 +16,54 @@ module.exports = (options = {}) ->
       if !value
         return null
 
-      result =
-        strength: 0
+      result = {}
 
       if value.careOf
         result.co = "c/o #{value.careOf.toInitCaps()}"
-        result.strength += 3
 
-      if !value.showStreetInfo? || value.showStreetInfo
-        if value.streetNum && value.streetName && value.streetSuffix
-          if value.streetNum
-            result.strength += 10
-            numParts = [value.streetNum]
-            if value.streetNumPrefix
-              result.strength += 1
-              numParts.unshift(value.streetNumPrefix)
-            if value.streetNumSuffix
-              result.strength += 1
-              numParts.push(value.streetNumSuffix)
+      if value.unitNum
+          result.unit = "#{value.unitNum}".trim()
+        if value.unitType
+          result.unit = "#{value.unitType} #{result.unit}"
 
-          if value.streetName
-            result.strength += 10
-            nameParts = [value.streetName.toInitCaps()]
-            if value.streetDirPrefix
-              result.strength += 1
-              nameParts.unshift(value.streetDirPrefix)
-            if value.streetSuffix
-              result.strength += 5
-              nameParts.push(value.streetSuffix.toInitCaps())
-            if value.streetDirSuffix
-              result.strength += 1
-              nameParts.push(value.streetDirSuffix)
+      if value.streetNum && value.streetName && value.streetSuffix
+        if value.streetNum
+          numParts = [value.streetNum]
+          if value.streetNumPrefix
+            numParts.unshift(value.streetNumPrefix)
+          if value.streetNumSuffix
+            numParts.push(value.streetNumSuffix)
 
-          if numParts
-            streetParts = numParts
-          else
-            streetParts = []
-          if nameParts
-            streetParts = streetParts.concat(nameParts)
-            result.street = streetParts.join(' ').toInitCaps()
-          else
-            result.strength = 0
+        if value.streetName
+          nameParts = [value.streetName.toInitCaps()]
+          if value.streetDirPrefix
+            nameParts.unshift(value.streetDirPrefix)
+          if value.streetSuffix
+            nameParts.push(value.streetSuffix.toInitCaps())
+          if value.streetDirSuffix
+            nameParts.push(value.streetDirSuffix)
 
-          if value.unit
-            result.strength += 10
-            result.unit = value.unit
-          else if value.unitNum
-            result.strength += 5
-            result.unit = "Unit #{value.unitNum}"
-        else if value.streetFull
-          throw new DataValidationError("Need street num, name, & suffix. It may be necessary to parse these from streetFull.", param, value)
+        if numParts
+          streetParts = numParts
+        else
+          streetParts = []
+        if nameParts
+          streetParts = streetParts.concat(nameParts)
+          result.street = streetParts.join(' ').toInitCaps()
+
+      else if value.streetFull
+        result.street = value.streetFull
+        if result.unit
+          # Scrub the unit part of the street address
+          unitRe = new RegExp("\\W+#{result.unit}\\W+", 'i')
+          result.street = result.street.replace(result.street.match(unitRe)?[0], '')
 
       cityParts = []
 
       if value.city
-        result.strength += 10
         cityParts.push(value.city.toInitCaps())
 
       if stateCode
-        result.strength += 5
         if cityParts.length > 0
           cityParts[0] += ','
         cityParts.push(stateCode.toUpperCase())
@@ -82,21 +71,15 @@ module.exports = (options = {}) ->
       result.citystate = cityParts.join(' ')
 
       if value.zip9
-        result.strength += 7
         result.zip = value.zip9
       else if value.zip
-        result.strength += 5
         result.zip = value.zip
         if value.zip4
-          result.strength += 2
           result.zip = "#{result.zip}-#{value.zip4}"
-      else
-        throw new DataValidationError("Need zip!", param, value)
 
-      minStrength = options.minStrength ? 20
-      if result.strength < minStrength
-        #throw new DataValidationError("not enough address info provided; minStrength: #{minStrength} vs strength: #{result.strength}", param, value)
-        return null
+      # Clean up whitespace in all fields. This is the last step so earlier regexes can use the original values.
+      result = _.mapValues (v) ->
+        v.replace(/\s{2,}/g, ' ').trim()
 
       logger.debug result
       return result

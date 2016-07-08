@@ -127,8 +127,9 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
             if event.ctrlKey or event.metaKey
 #              return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
-            unless _lastEvents.last == 'dblclick'
-              $scope.formatters.results.showModel(model)
+            if _lastEvents.last != 'dblclick'
+              if model.markerType != 'price-group'
+                $scope.formatters.results.showModel(model)
           , limits.clickDelayMilliSeconds
 
       dblclick: (event, lObject, model, modelName, layerName, type) ->
