@@ -47,20 +47,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     hoverColors['saved'] = rmapsStylusConstants['$rm_saved_hover']
     hoverColors['default'] = 'rgba(153,153,153,.8)'
 
-
-    labelFromStreetNum = (model) ->
-      _.extend model,
-        markerType: 'streetNum'
-        icon:
-          type: 'div'
-          iconSize: [10, 10]
-          html: "<span class='address-label'>#{String.orNA model.street_address_num}</span>"
-        zIndex: 1
-
-    labelFromStreetNum: labelFromStreetNum
-
     style: _parcelBaseStyle
-
 
     getStyle : (feature, layerName) ->
       return {} unless feature

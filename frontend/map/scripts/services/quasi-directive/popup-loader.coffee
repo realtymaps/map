@@ -52,7 +52,7 @@ app.factory 'rmapsPopupFactory', (
       return if model?.markerType == 'cluster'
       content = null
 
-      coords = model.coordinates or model.geom_point_json?.coordinates
+      coords = model.coordinates or model.geometry_center?.coordinates
 
       # template for the popup box
       if needToCompile

@@ -39,8 +39,8 @@ app.factory 'rmapSummaryResultsMutation',
   {setDataOptions, MLS} = rmapsLayerFormattersService
 
   _wrapGeomPointJson = (obj) ->
-    unless obj?.geom_point_json
-      obj.geom_point_json =
+    unless obj?.geometry_center
+      obj.geometry_center =
         coordinates: obj.coordinates
         type: obj.type
     obj
@@ -80,7 +80,7 @@ app.factory 'rmapSummaryResultsMutation',
         group.coordinates = first.coordinates
         group.type = first.type
         _wrapGeomPointJson(group)
-        group.geometry = group.geom_point_json
+        group.geometry = group.geometry_center
 
         filterSummary["#{group.grouped.name}:#{group.grouped.forsale}:#{group.grouped.pending}:#{group.grouped.sold}"] = group
 

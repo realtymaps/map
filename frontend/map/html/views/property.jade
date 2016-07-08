@@ -96,7 +96,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     | {{property.owner_name_2}}
               .col-sm-6
                 .content-label Address
-                .content-lg(ng-repeat="line in property.owner_address.lines") {{line}}
+                .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
+                .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
 
           .row.content-block.border-bottom
             .col-sm-6(ng-if="formatters.property.showListingData(property)")
@@ -168,7 +169,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
       //+spinnerMixin()
       .prop-image.prop-image-md
         //background-color:transparent; must be here to override googles meddling where it forces style via element
-        ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
+        ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="selectedResult.geometry_center",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
         include ../includes/map/_satilite.jade
         .prop-image-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.status}}
 
@@ -210,7 +211,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .content-value {{formatters.property.orNa(selectedResult.baths_total)}}
               .content-label Baths
             .col-xs-3
-              .content-value {{formatters.property.orNa(selectedResult.finished_sqft)}}
+              .content-value {{formatters.property.orNa(selectedResult.sqft_finished)}}
               .content-label Sq Ft
             .col-xs-3
               .content-value {{formatters.property.getYear(selectedResult.year_built)}}
@@ -241,9 +242,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .content-lg
               span(ng-if="formatters.property.getCurrentOwnersTitle(selectedResult)") {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
               span {{selectedResult.owner_name}}
-              span(ng-if="selectedResult.owner_name2")
+              span(ng-if="selectedResult.owner_name_2")
                 br/
-                | {{selectedResult.owner_name2}}
+                | {{selectedResult.owner_name_2}}
           p
             .content-label Address
             .content-lg {{selectedResult.address.street}} {{selectedResult.address.unit}}

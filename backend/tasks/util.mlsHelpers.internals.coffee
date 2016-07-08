@@ -6,7 +6,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsConfigService = require '../services/service.mls_config'
 
 
-makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, photo_id, doReturnStr}) ->
+makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, photo_id, doReturnStr, transaction}) ->
   doReturnStr ?= false
 
   updatedInfo =
@@ -15,7 +15,7 @@ makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, photo_id, doRe
   if cdnPhotoStr
     updatedInfo.cdn_photo = cdnPhotoStr
 
-  query = tables.normalized.listing()
+  query = tables.normalized.listing({transaction})
   .where(listingRow)
   .update(updatedInfo)
 

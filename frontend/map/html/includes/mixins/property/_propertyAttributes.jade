@@ -4,7 +4,7 @@ mixin propertyAttributes(propName)
     ul.attr
       li.bedrooms {{formatters.property.orNa(#{propName}.bedrooms)}} beds
       li.baths_total {{formatters.property.orNa(#{propName}.baths_total)}} baths
-      li.finished_sqft(ng-if="#{propName}.finished_sqft") {{#{propName}.finished_sqft}} Sq Ft
+      li.finished_sqft(ng-if="#{propName}.sqft_finished") {{#{propName}.sqft_finished}} Sq Ft
       li.year_built(ng-if="#{propName}.year_built.value") {{#{propName}.year_built.value}}
   h4.title {{#{propName}.address.street}} {{#{propName}.address.unit}}
   p.location {{#{propName}.address.citystate}} {{#{propName}.address.zip}}

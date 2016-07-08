@@ -9,7 +9,6 @@
         .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
         .note-author {{note.first_name}} {{note.last_name}}
         .note-address(ng-if="note.address")
-          span {{note.address.lines[0]}}
-          span(ng-repeat="line in note.address.lines.slice(1)" ng-if="line") {{line}}
+          span {{note.address.street}} {{note.address.unit}}
+          span {{note.address.citystate}} {{note.address.zip}}
         .note-text {{note.text}}
-

@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+
+if [[ "$@" == "" ]]
+then
+    echo "Must supply dependency list to update"
+    exit 1
+fi
+
+
+# make sure nothing extraneous exists
+npm prune
+
+# make sure everything else is up-to-date
+npm install
+
+# remove the indicated deps
+for ((i=1; i<=$#; i++))
+do
+    rm -rf "./node_modules/${!i}"
+done
+
+# remove the shrinkwrap file
+rm npm-shrinkwrap.json
+
+# install new versions of removed deps
+npm install
+
+# create new shrinkwrap file
+npm shrinkwrap

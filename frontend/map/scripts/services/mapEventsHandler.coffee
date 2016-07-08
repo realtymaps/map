@@ -163,7 +163,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
-        rmapsPropertiesService.getPropertyDetail(null, geom_point_json: geojson.geometry, 'all')
+        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'all')
         .then (data) ->
           return if !data?.rm_property_id
           $scope.formatters.results.showModel(data)

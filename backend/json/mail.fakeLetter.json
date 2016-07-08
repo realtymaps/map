@@ -5,17 +5,15 @@
   "status": "ready",
   "address_to": {
     "name": "Homeowner",
-    "address_line1": "2917 Poplar St",
-    "address_city": "Naples",
-    "address_state": "FL",
-    "address_zip": "34112-5830"
+    "street": "2917 Poplar St",
+    "citystate": "Naples, FL",
+    "zip": "34112-5830"
   },
   "address_from": {
     "name": "Homeowner",
-    "address_line1": "123 Main St",
-    "address_city": "Springfield",
-    "address_state": "FL",
-    "address_zip": "55555"
+    "street": "123 Main St",
+    "citystate": "Springfield, FL",
+    "zip": "55555"
   },
   "file": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923.pdf?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=6UuD1E7tUcEAZJaMrkQ787wsBEk%3D",
   "custom_content": true,

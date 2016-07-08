@@ -9,7 +9,7 @@ routeHelpers = require '../utils/util.route.helpers'
 bodyTransform =
   validators.object
     subValidateSeparate:
-      geom_point_json: validators.geojson(toCrs:true)
+      geometry_center: validators.geojson(toCrs:true)
       text: validators.string(minLength: 1)
       title: validators.string()
       rm_property_id: validators.string()

@@ -3,6 +3,7 @@ svc = rewire '../../../backend/services/service.properties.parcels'
 Promise = require 'bluebird'
 gjv = require 'geojson-validation'
 require("chai").should()
+logger = require('../../specUtils/logger').spawn('integration:parcels')
 
 mocks =
   map:
@@ -19,5 +20,6 @@ describe 'service.properties.parcels', ->
   it 'getBaseParcelData returns valid geojson', (done) ->
     @subject.getBaseParcelData mocks.map.state, mocks.map.filter
     .then (data) ->
+      # logger.debug data
       gjv.valid(data).should.be.ok
       done()

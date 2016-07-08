@@ -106,11 +106,13 @@ lobPromise = () ->
 buildLetter = (campaign, recipient) ->
 
   getAddress = (r) ->
+    #
     name: (r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()) || 'Homeowner'
-    address_line1: r.address_line1 ? "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
-    address_line2: r.address_line2 ? r.street_address_unit ? ''
-    address_city: r.address_city ? r.city ? ''
-    address_state: r.address_state ? r.state ? ''
+    company: r.co ? ''
+    address_line1: r.address_line1 ? r.street ? ''
+    address_line2: r.address_line2 ? r.unit ? ''
+    address_city: r.address_city ? r.citystate?.match(/([ \w]+),[ \w]+/)?[1]?.trim() ? ''
+    address_state: r.address_state ? r.citystate?.match(/[ \w]+,([ \w]+)/)?[1]?.trim() ? ''
     address_zip: r.address_zip ? r.zip ? ''
 
   address_to = getAddress recipient

@@ -3,6 +3,8 @@ rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.properties.filterSummary'
 utilsGeoJson = require '../../../common/utils/util.geomToGeoJson'
 gjv = require 'geojson-validation'
+logger = require('../../specUtils/logger').spawn('integration:filterSummary')
+_ = require 'lodash'
 
 mocks =
   map:
@@ -16,12 +18,15 @@ describe 'service.properties.filterSummary', ->
 
   it 'clusterOrDefault returned works with geoJson', (done) ->
     @subject.getFilterSummary
-      state: mocks.map.state
-      req:
-        validBody: mocks.map.filter
-        user:
-          is_superuser: false
+      profile: {
+        auth_user_id: 1
+        state: mocks.map.state
+      },
+      limit: 1
+      validBody: mocks.map.filter
     .then (data) ->
-      data = utilsGeoJson.toGeoFeatureCollection(data)
+      properties = _.values(data.singletons)
+      properties.length.should.be.above 0
+      data = utilsGeoJson.toGeoFeatureCollection(properties)
       gjv.valid(data).should.be.ok
       done()

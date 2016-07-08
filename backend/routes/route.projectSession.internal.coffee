@@ -116,8 +116,8 @@ class ProjectRouteCrud extends RouteCrud
     bodyTransform =
       validators.object
         subValidateSeparate:
-          geom_point_json: validators.geojson(toCrs:true)
-          geom_polys_json: validators.geojson(toCrs:true)
+          geometry_center: validators.geojson(toCrs:true)
+          geometry: validators.geojson(toCrs:true)
           geom_line_json:  validators.geojson(toCrs:true)
           shape_extras: validators.object()
           area_name: validators.string()

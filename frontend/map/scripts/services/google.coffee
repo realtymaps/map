@@ -6,9 +6,12 @@ app.service 'rmapsGoogleService', ($http, $log) ->
 
   $log = $log.spawn 'rmapsGoogleService'
 
+  apiKey = ''
+
   _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
-    data = data.google
+    if data?.google
+      apiKey = "&key=#{data.google}"
 
   service =
     ConfigPromise: _googleConfigPromise
@@ -58,14 +61,8 @@ app.service 'rmapsGoogleService', ($http, $log) ->
         childModel = if model.model? then model.model else model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
 
     StreetView: do ->
-      apiKey = ''
-
-      _googleConfigPromise.then (data) ->
-        return unless data
-        apiKey = "&key=#{data.MAPS.API_KEY}"
-
       getUrl: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
-        coords = geoObj?.geom_point_json?.coordinates
+        coords = geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.geometry_center?.coordinates
         coords ?= geoObj?.coordinates
 
@@ -95,5 +92,25 @@ app.service 'rmapsGoogleService', ($http, $log) ->
         "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
           "&location=#{lonLat[1]},#{lonLat[0]}" +
           "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}#{apiKey}"
+
+    Satellite: do ->
+      getUrl: (geoObj, width, height, zoom = 18) ->
+        coords = geoObj?.geometry_center?.coordinates
+        coords ?= geoObj?.geometry_center?.coordinates
+        coords ?= geoObj?.coordinates
+
+        if !coords
+          return
+
+        if !width && height
+          width = height//0.75
+        if width && !height
+          height = width//1.33
+        if !width || !height
+          $log.warn 'size parameter required for streetview'
+          return
+
+        "http://maps.googleapis.com/maps/api/staticmap?center=#{coords[1]},#{coords[0]}" +
+          "&zoom=#{zoom}&size=#{width}x#{height}&maptype=satellite&format=png#{apiKey}"
 
   return service

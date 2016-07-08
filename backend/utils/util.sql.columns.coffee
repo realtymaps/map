@@ -8,7 +8,7 @@ ageOrDaysFromStartToNow = (listingAge, beginDate) ->
 #TODO: Move all of SQL Helpers columns into here as another sep PR.
 basicColumns = do ->
   _parcel = [
-    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry',
+    'rm_property_id', 'street_address_num', 'geometry',
     "'Feature' AS type",
     'fips_code', "'{}'::json AS properties"
   ]
@@ -18,24 +18,17 @@ basicColumns = do ->
   ret =
     # columns returned for filter requests
     filter: [
-      'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json AS geometry',
-      'geom_point_json', 'rm_status', 'owner_name', 'owner_name2', 'year_built', 'acres', 'finished_sqft', 'baths_full',
-      'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
-      'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
-      'owner_zip'
-    ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
-    filterCombined: [
       'data_source_type',
       'data_source_id',
       'rm_property_id',
       'address',
       'geometry',
-      'geometry_center as geom_point_json', # alias can be removed once mv_property_details is gone
+      'geometry_center',
       'owner_name',
-      'owner_name_2 as owner_name2',  # alias can be renamed once mv_property_details is gone
+      'owner_name_2',
       'year_built',
       'acres',
-      'sqft_finished as finished_sqft',  # alias can be removed once mv_property_details is gone
+      'sqft_finished',
       'baths_total',
       "baths"
       'bedrooms',
@@ -45,46 +38,14 @@ basicColumns = do ->
       'photo_count'
       'status'
       'up_to_date'
-    ].map((name)-> tables.finalized.combined.tableName + '.' + name)
-    .join(', ')
-    # columns returned for additional detail results
-    detail: [
-      'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
-      'year_modified', 'ask_price', 'prior_sale_price', 'original_price', 'close_price', 'mortgage_amount',
-      'listing_start_date', 'close_date', 'mortgage_date', 'recording_date', 'title_company_name',
-      'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc', 'heat',
-      'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
-      'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id',
-      'mls_name', 'sewer', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage',
-      'depth_footage', 'mls_close_date', 'mls_close_price', 'sale_date', 'sale_price', 'prior_sale_date',
-      "#{ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age", 'description', 'original_price'
-    ].join(', ')
-    # columns returned for full detail results, with geom_polys_json AS geometry for geojson standard
-    all_detail_geojson: [
-      'rm_property_id', 'has_mls', 'has_tax', 'has_deed', 'street_address_num', 'street_address_name', 'street_address_unit',
-      'city', 'state', 'zip', 'geom_polys_raw', 'geom_point_raw', 'geom_polys_json AS geometry', 'geom_point_json', 'close_date',
-      'owner_name', 'owner_name2_raw', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
-      'owner_city', 'owner_state', 'owner_zip', 'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name',
-      'zoning', 'year_built', 'year_modified', 'acres', 'finished_sqft', 'baths_full', 'baths_half', 'baths_total', 'bedrooms',
-      'ask_price', 'prior_sale_price', 'prior_sale_date', 'original_price', 'close_price', 'mls_close_date', 'mls_close_price',
-      'sale_date', 'sale_price', 'mortgage_amount', 'listing_start_date', 'listing_age_days', 'mortgage_date', 'recording_date',
-      'title_company_name', 'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc',
-      'heat', 'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
-      'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id', 'mls_name',
-      'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage',
-      'depth_footage', 'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
-    ].join(', ')
-    # columns returned internally for snail pdf render lookups
-    address: [
-      'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
-      'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
-      'zip', 'owner_zip'
-    ].join(', ')
-    parcel: ['geom_point_json'].concat(_parcel).join(', ')
+    ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')
+
+    parcel: ['geometry_center'].concat(_parcel).join(', ')
+
     #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
     cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
-    notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
+    notes: _commonProjectCols.concat ['rm_property_id', 'geometry_center', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
       'sqft', 'status']
@@ -99,7 +60,7 @@ basicColumns = do ->
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
       'map_position', 'map_results']
 
-    drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
+    drawnShapes: _commonProjectCols.concat ['geometry_center', 'geometry_raw', 'shape_extras',
       'area_name', 'area_details']
 
     creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
@@ -108,9 +69,7 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
-    new_all: '*'
-
-    new_all_explicit: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
+    all: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
       'rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished', 'substatus',
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
@@ -122,7 +81,6 @@ basicColumns = do ->
       'city', 'zip'
     ]
 
-  ret.all = "#{ret.filter}, #{ret.detail}"
   ret
 
 
@@ -166,6 +124,7 @@ joinColumns = do ->
     "#{tables.user.project.tableName}.beds"
     "#{tables.user.project.tableName}.baths"
     "#{tables.user.project.tableName}.sqft"
+    "#{tables.user.project.tableName}.pins"
   ]
 
   client: [

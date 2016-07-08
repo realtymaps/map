@@ -42,11 +42,11 @@ app.factory 'rmapsPropertyMarkerGroup', (
         return
 
       _.forEach properties, (property) =>
-        if property.geom_point_json?.coordinates?
+        if property.geometry_center?.coordinates?
           @markers[property.rm_property_id] = {
             rm_property_id: property.rm_property_id,
-            lat: property.geom_point_json.coordinates[1],
-            lng: property.geom_point_json.coordinates[0],
+            lat: property.geometry_center.coordinates[1],
+            lng: property.geometry_center.coordinates[0],
             draggable: false,
             focus: false,
             icon: angular.copy(@icon)
@@ -66,8 +66,8 @@ app.factory 'rmapsPropertyMarkerGroup', (
         @context.bounds = bounds
       else
         @context.center = {
-          lat: properties[0].geom_point_json.coordinates[1],
-          lng: properties[0].geom_point_json.coordinates[0],
+          lat: properties[0].geometry_center.coordinates[1],
+          lng: properties[0].geometry_center.coordinates[0],
           zoom: 15
         }
 

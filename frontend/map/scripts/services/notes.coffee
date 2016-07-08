@@ -24,7 +24,7 @@ app.service 'rmapsNotesService', ($rootScope, $http, $log, rmapsEventConstants, 
       note = {
         text: noteText,
         rm_property_id : propertyId
-        geom_point_json : geomPointJson
+        geometry_center : geomPointJson
         project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
       }
 

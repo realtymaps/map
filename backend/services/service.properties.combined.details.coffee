@@ -9,19 +9,12 @@ mlsConfigSvc = require './service.mls_config'
 Promise = require 'bluebird'
 moment = require 'moment'
 
-_detailQuery = ({queryParams, req, limit}) ->
-  getPermissions(req)
+_propertyQuery = ({queryParams, profile, limit}) ->
+  getPermissions(profile)
   .then (permissions) ->
     logger.debug permissions
 
-    # This can be removed once mv_property_details is gone
-    columnMap =
-      'filter': 'filterCombined'
-      'address': 'filterCombined'
-      'detail': 'new_all_explicit'
-      'all': 'new_all_explicit'
-
-    query = sqlHelpers.select(tables.finalized.combined(), columnMap[queryParams.columns])
+    query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
     .leftOuterJoin "#{tables.config.mls.tableName}", ->
       @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
 
@@ -33,8 +26,8 @@ _detailQuery = ({queryParams, req, limit}) ->
 
       if queryParams.rm_property_id?
         sqlHelpers.whereIn(@, 'rm_property_id', queryParams.rm_property_id)
-      else if queryParams.geom_point_json?
-        sqlHelpers.whereIntersects(@, queryParams.geom_point_json, 'geometry_raw')
+      else if queryParams.geometry_center?
+        sqlHelpers.whereIntersects(@, queryParams.geometry_center, 'geometry_raw')
 
     if limit
       query = query.limit(limit)
@@ -47,26 +40,26 @@ _detailQuery = ({queryParams, req, limit}) ->
 
       return data
 
-# Retrieve a single property by rm_property_id OR geom_point_json
-getDetail = (req) ->
-  validation.validateAndTransform req.validBody,
+# Retrieve a single property by rm_property_id OR geometry_center
+getProperty = ({query, profile}) ->
+  validation.validateAndTransform query,
     rm_prop_id_or_geom_json:
-      input: ["rm_property_id", "geom_point_json"]
+      input: ["rm_property_id", "geometry_center"]
       transform: validators.pickFirst()
       required: true
 
     rm_property_id:
       transform: validators.string(minLength: 1)
 
-    geom_point_json:
+    geometry_center:
       transform: [validators.object(), validators.geojson(toCrs: true)]
 
     columns:
-      transform: validators.choice(choices: ['filter', 'address', 'detail', 'all'])
+      transform: validators.choice(choices: ['filter', 'address', 'all'])
       required: true
 
   .then (queryParams) ->
-    _detailQuery({queryParams, req, limit: 1})
+    _propertyQuery({queryParams, profile, limit: 1})
 
   .then (data) ->
     result = {}
@@ -90,18 +83,15 @@ getDetail = (req) ->
       _.map(result)[0]
 
 # Retrieve a set of properties by rm_property_id (filter data only)
-getDetails = (req) ->
-  validation.validateAndTransform req.validBody,
-    columns:
-      transform: validators.choice(choices: ['filter'])
-      required: true
-
+getProperties = ({query, profile}) ->
+  validation.validateAndTransform query,
     rm_property_id:
       transform: validators.array()
       required: true
 
   .then (queryParams) ->
-    _detailQuery({queryParams, req})
+    queryParams.columns = 'filter'
+    _propertyQuery({queryParams, profile})
 
   .then (data) ->
     result = {}
@@ -118,6 +108,6 @@ getDetails = (req) ->
       _.map(result)
 
 module.exports = {
-  getDetail
-  getDetails
+  getProperty
+  getProperties
 }
