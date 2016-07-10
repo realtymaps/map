@@ -33,14 +33,14 @@ getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
      or
      ST_DWithin(
      #{detailsName}.geometry_raw,
-     #{drawnShapesName}.geom_point_raw,
+     #{drawnShapesName}.geometry_center_raw,
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
   # logger.debug.green queryParams, true
-  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query})
+  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea?
@@ -49,9 +49,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   query
 
-getResultCount = ({queryParams}) ->
+getResultCount = ({queryParams, permissions}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  q = getFilterSummaryAsQuery({queryParams, query})
+  q = getFilterSummaryAsQuery({queryParams, query, permissions})
   logger.debug q.toString()
   q
 

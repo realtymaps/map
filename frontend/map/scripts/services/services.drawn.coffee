@@ -35,7 +35,7 @@ rmapsLeafletHelpers) ->
       switch type
         when 'Point' then 'geometry_center'
         when 'Polygon' then 'geometry'
-        when 'LineString' then 'geom_line_json'
+        when 'LineString' then 'geometry_line'
         else
           throw new Error 'geom type not supported'
 
@@ -50,7 +50,7 @@ rmapsLeafletHelpers) ->
         normal.id = shape.id
       if shape.shape_extras?
         normal.shape_extras = shape.shape_extras
-        
+
       normal.area_name = if shape.area_name? then shape.area_name else null
       normal.area_details = shape.area_details || null
       normal

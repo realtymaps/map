@@ -69,7 +69,7 @@ transforms = do ->
     required: true
   returnType: validators.string()
 
-_getDefaultQuery = ->
+getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
   .where(active: true)
 
@@ -109,7 +109,7 @@ getPermissions = (profile) -> Promise.try ->
 
       return permissions
 
-queryPermissions = (query, permissions) ->
+queryPermissions = (query, permissions = {}) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
   query.where ->
     if permissions.fips?.length && mls?.length
@@ -139,16 +139,11 @@ scrubPermissions = (data, permissions) ->
         delete row.owner_address
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
-  query ?= _getDefaultQuery()
+  query ?= getDefaultQuery()
   {bounds, state} = queryParams
   {filters} = state
 
-  if !bounds
-    throw new Error('query must have bounds')
-
   # Add permissions
-  if !permissions
-    throw new Error('permissions must be provided')
   queryPermissions(query, permissions)
 
   query.limit(limit) if limit
@@ -156,7 +151,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
   query.where ->
     if filters?.status?.length
-      sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
+
+      if bounds?
+        sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
       # handle property status filtering
       # 3 possible status options (see parcelEnums.coffee): 'for sale', 'pending', 'sold'
@@ -226,6 +223,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
 module.exports = {
   transforms
+  getDefaultQuery
   getFilterSummaryAsQuery
   getResultCount
   cluster
