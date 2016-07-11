@@ -65,6 +65,8 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
   object.objectStream.once 'error', (error) ->
     console.log "stream error in mls.photos#imagesHandle: #{error}"
     cb(new photoErrors.ObjectsStreamError(error))
+    .catch (err) ->
+      console.log("SPAM error catching 7: #{err}")
 
   object.objectStream.on 'data', (event) ->
 
@@ -90,12 +92,18 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
     imageId++
     cb(null, payload)
+    .catch (err) ->
+      console.log("SPAM error catching 8: #{err}")
 
   object.objectStream.once 'end', () ->
     if !everSentData and doThrowNoEvents
       console.log "error in mls.photos#imagesHandle: No object events"
       cb(new photoErrors.NoPhotoObjectsError 'No object events')
+      .catch (err) ->
+        console.log("SPAM error catching 9: #{err}")
     cb(null, null, true)
+    .catch (err) ->
+      console.log("SPAM error catching 10: #{err}")
 
 
 imagesStream = (object, archive = Archiver('zip')) ->
