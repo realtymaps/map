@@ -16,8 +16,11 @@ subStatus =
 propertyType = {
   'Single Family',
   'Condo / Townhome',
-  'Lots',
   'Multi-Family'
+  'Land / Lot',
+  'Commercial'
+  'Industrial'
+  'Agricultural'
 }
 
 zoning = {
