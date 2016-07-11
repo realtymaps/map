@@ -29,9 +29,6 @@ _propertyQuery = ({queryParams, profile, limit}) ->
       else if queryParams.geometry_center?
         sqlHelpers.whereIntersects(@, queryParams.geometry_center, 'geometry_raw')
 
-    if limit
-      query = query.limit(limit)
-
     logger.debug query.toString()
 
     query.then (data = []) ->
@@ -59,7 +56,7 @@ getProperty = ({query, profile}) ->
       required: true
 
   .then (queryParams) ->
-    _propertyQuery({queryParams, profile, limit: 1})
+    _propertyQuery({queryParams, profile})
 
   .then (data) ->
     result = {}
