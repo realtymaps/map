@@ -346,16 +346,17 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-        # TODO: 3) if we had transient errors on 1 or more of the images for this listing, record this listing somehow
-        # TODO:    for a later retry.  The retry should probably be handled in storePhotosPrep, which would need to
-        # TODO:    enqueue any recorded listings for this MLS from prior batches in addition to what it does now
-        # TODO:    (listings inserted/updated during this batch).  Then we would also need another subtask at the end
-        # TODO:    of the mls task that clears out any recorded listings for this mls from prior batches (since if the
-        # TODO:    transient error was still happening, it would have been recorded again for this batch)
+        # TODO: 3) if we had transient errors on 1 or more of the images for this listing (or for
+        # TODO:    retsService.getPhotosObject overall), record this listing somehow for a later retry.  The retry
+        # TODO:    should probably be handled in storePhotosPrep, which would need to enqueue any recorded listings for
+        # TODO:    this MLS from prior batches in addition to what it does now (listings inserted/updated during this
+        # TODO:    batch).  Then we would also need another subtask at the end of the mls task that clears out any
+        # TODO:    recorded listings for this mls from prior batches (since if the transient error was still happening,
+        # TODO:    it would have been recorded again for this batch)
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
-      console.log("overall error in mlsHelpers#storePhotos: #{err}")
+      console.log("overall error in mlsHelpers#storePhotos: #{error}")
       tables.normalized.listing()
       .where(listingRow)
       .update photo_import_error: analyzeValue.getSimpleDetails(error)
