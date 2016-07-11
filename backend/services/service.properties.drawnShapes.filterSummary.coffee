@@ -43,9 +43,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
-  if queryParams.isArea?
-    if queryParams.isArea
-      query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
+  if queryParams.areaId
+    query = query.where("#{drawnShapesName}.id", queryParams.areaId)
+  else if queryParams.isArea
+    query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
 
   query
 
@@ -60,6 +61,7 @@ module.exports = {
   getFilterSummaryAsQuery
   transforms: _.merge {}, filterSummaryService.transforms,
     isArea: validators.boolean(truthy: true, falsy: false)
+    areaId: validators.integer()
     bounds: validators.string(null:true)
     project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
 }

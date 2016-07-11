@@ -141,7 +141,7 @@ scrubPermissions = (data, permissions) ->
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
   {bounds, state} = queryParams
-  {filters} = state
+  {filters} = state || {}
 
   # Add permissions
   queryPermissions(query, permissions)
@@ -215,8 +215,8 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-    else
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
+    else if filters?.status? || queryParams.pins?.length
+      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins)
 
   logger.debug () -> query.toString()
   query
