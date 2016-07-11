@@ -14,7 +14,7 @@ subStatus =
   auction: 'auction'
 
 propertyType = {
-  '',
+  '': null,
   'Single Family',
   'Condo / Townhome',
   'Multi-Family'
