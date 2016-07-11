@@ -106,7 +106,8 @@ joinColumns = do ->
 
   profile: [
     "#{tables.user.profile.tableName}.id as id"
-    "#{tables.user.profile.tableName}.auth_user_id as user_id"
+    "#{tables.user.profile.tableName}.auth_user_id as user_id" #TODO REMOVE THIS LINE
+    "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id"
     "#{tables.user.profile.tableName}.can_edit"
     "#{tables.user.profile.tableName}.filters"

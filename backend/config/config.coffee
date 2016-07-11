@@ -113,7 +113,7 @@ base =
     S3_UPLOAD: _.merge common.pdfUpload, common.mail.s3_upload
     GET_PRICE: common.mail.getPrice
   NOTIFICATIONS:
-    USE_WEBHOOKS: process.env.NOTIFICATIONS_USE_WEBHOOKS || true
+    USE_WEBHOOKS: if process.env.NOTIFICATIONS_USE_WEBHOOKS? then process.env.NOTIFICATIONS_USE_WEBHOOKS == 'true' else true
     DELIVERY_THRESH_MIN: 12
     MAX_ATTEMPTS: 10
   ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS || false

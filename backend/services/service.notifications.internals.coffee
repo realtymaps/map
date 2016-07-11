@@ -12,6 +12,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {VeroEmailError, BasicEmailError, SmsError} = require '../utils/errors/util.error.notifications'
 promisedVeroService = require '../services/email/vero'
 notifyConfigInternals = require '../services/service.notification.config.internals'
+utilEvents = null
 
 twilioClientPromise = Promise.try () ->
   externalAccounts.getAccountInfo('twilio')
@@ -132,6 +133,12 @@ sendEmailVero = (row, options) -> Promise.try () ->
       throw new VeroEmailError row.config_notification_id, 'notification.type invalid for vero email notification!'
     vero.events[options.notificationType](options)
 
+getFromUser = (id) ->
+  tables.auth.user()
+  .select(notifyConfigInternals.explicitUserColumns)
+  .where {id}
+
+
 # Build a list of users that are parents of a childId
 #
 # * `id` {[int]} childId.
@@ -236,7 +243,8 @@ getUsers = ({to, id, project_id}) ->
       _.uniq users, "id"
 
 
-enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows}) ->
+enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows, project_id, type}) ->
+  utilEvents ?= require '../tasks/util.events'
   logger.debug () -> "@@@@@@ #{from}: enqueue opts @@@@@@"
   logger.debug {verify, options, verbose}
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -257,22 +265,26 @@ enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows}) 
       return
 
     logger.debug () -> "@@@@ #{from}: mapping #{configRows.length} configRows @@@@"
-    userRows = for row in configRows
-      do (row) -> {
+    Promise.all Promise.map configRows, (row) ->
+      #maybe get different options relative to type, the user and project
+      utilEvents.userDataExtensionHandlers[type]({
+        auth_user_id: row.auth_user_id
+        project_id
+      }, options)
+      .then (permittedOptions) ->
         config_notification_id: row.id
-        options
-      }
+        options: permittedOptions
+    .then (userRows) ->
+      logger.debug () -> "@@@@ #{from}: enqueuing to #{tables.user.notificationQueue.tableName} @@@@"
+      tables.user.notificationQueue()
+      .insert(userRows)
+      .returning('id')
+      .then (rows) -> Promise.try () ->
+        if verify and !rows?.length
+          throw new Error('Nothing enqueued.')
 
-    logger.debug () -> "@@@@ #{from}: enqueuing to #{tables.user.notificationQueue.tableName} @@@@"
-    tables.user.notificationQueue()
-    .insert(userRows)
-    .returning('id')
-    .then (rows) -> Promise.try () ->
-      if verify and !rows?.length
-        throw new Error('Nothing enqueued.')
-
-      logger.debug () -> "@@@@ #{from}: SUCCESS!!!! #{rows.length} rows enqueued. @@@@"
-      rows
+        logger.debug () -> "@@@@ #{from}: SUCCESS!!!! #{rows.length} rows enqueued. @@@@"
+        rows
 
 
 
@@ -292,6 +304,7 @@ module.exports = {
   sendEmailVero
   sendHandles
   distribute:{
+    getFromUser
     getUsers
     getChildUsers
     getParentUsers

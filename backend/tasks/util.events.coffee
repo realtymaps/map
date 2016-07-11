@@ -1,7 +1,11 @@
 _ = require 'lodash'
 require '../../common/extensions/strings'
-logger = require('../config/logger.coffee').spawn('task:util:events')
+logger = require('../config/logger').spawn('task:util:events')
+tables = require('../config/tables')
 notificationsSvc = require '../services/service.notifications'
+profileService = require '../services/service.profiles'
+propertyDetailsService = require '../services/service.properties.combined.details'
+clone = require 'clone'
 
 processHandlers =
   notifications: notificationsSvc
@@ -75,6 +79,7 @@ propertyCompaction = (rows, frequency) ->
     auth_user_id: summary.auth_user_id
     project_id: summary.project_id
     options:
+      project_id: summary.project_id
       type: summary.type
       frequency: frequency
       properties:
@@ -121,6 +126,62 @@ cleanupHandlers =
   propertySaved: deleteCleanupHandle
   default: resetCleanupHandle
 
+
+_propertySavedUserDataExtension = ({auth_user_id, project_id}, options) ->
+  logger.debug  "userDataExtensionHandlers.propertySaved"
+  logger.debug "Begin _propertySavedUserDataExtension"
+
+  q = profileService.getProfileWhere {
+    "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+    project_id
+  }
+  logger.debug "@@@@@ Profiles Query @@@@@"
+  logger.debug q.toString()
+
+  q.then (profiles) ->
+    if !profiles.length
+      logger.warn "_propertySavedUserDataExtension: No profile found!"
+      #not throwing as this would mess up all other notifications
+      return Promise.resolve(options)
+
+    clonedOptions = clone(options)
+    [profile] = profiles
+
+    logger.debug "@@@@ profile @@@@"
+    logger.debug profile
+
+    promises = []
+    for key, props of clonedOptions.properties
+      for property in props
+        do (property) ->
+          if !property?.rm_property_id? and !property?.geometry_center?
+            logger.debug 'skipping property data extension'
+            return
+
+          logger.debug "getting details to extend property data"
+
+          query = clone(property)
+          query.columns = 'all'
+
+          promises.push(
+            propertyDetailsService.getProperty {
+              profile
+              query
+            }
+            .then (detail) -> #mutate / extend clonedOptions
+              property.detail = detail
+          )
+
+    Promise.all promises
+    .then () ->
+      clonedOptions
+
+userDataExtensionHandlers =
+  propertySaved: _propertySavedUserDataExtension
+  default: (auth_user_id, options) ->
+    logger.debug  "userDataExtensionHandlers.default"
+    Promise.resolve(options)
+
 notificationTypes = [
   'propertySaved'
   'jobQueue'
@@ -131,5 +192,6 @@ module.exports = {
   processHandlers
   compactHandlers
   cleanupHandlers
+  userDataExtensionHandlers
   notificationTypes
 }
