@@ -362,6 +362,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       .where(listingRow)
       .update photo_import_error: analyzeValue.getSimpleDetails(error)
 
+
 deleteOldPhoto = (subtask, key) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
 
