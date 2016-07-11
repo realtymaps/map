@@ -12,32 +12,16 @@ sqlHelpers = require '../utils/util.sql.helpers'
   config_notification with user_notification. This is mainly intended for queing
   and actually sending notifications.
 ###
-sendNotificationNow = ({row, options, transaction}) ->
+sendNotificationNow = ({row, options}) ->
   logger.debug "@@@@ sendNotificationNow prior getAllWithUser@@@@"
   logger.debug row
   logger.debug options
-  notificationConfigService.getAllWithUser(id: row.config_notification_id, {transaction})
-  .then (configRows) ->
-    logger.debug "@@@@ sendNotificationNow configRows @@@@"
-    logger.debug configRows
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-    if !configRows?.length
-      return
+  handle = internals.sendHandles[row.method] || internals.sendHandles.default
 
-    configRow = configRows[0]
-
-    # join additional data like user data
-    row = _.extend {}, row, configRow
-
-    logger.debug "sendNotificationNow, merged"
-    logger.debug "sendNotificationNow, method: #{row.method}"
-
-    handle = internals.sendHandles[row.method] || internals.sendHandles.default
-
-    handle(row, options)
-    .catch errorHelpers.isUnhandled, (err) ->
-      throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
+  handle(row, options)
+  .catch errorHelpers.isUnhandled, (err) ->
+    throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
 
 ###
   Public: enqueues notifications to user_notifcation_queue.

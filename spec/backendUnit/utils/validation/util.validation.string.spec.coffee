@@ -1,4 +1,5 @@
 Promise = require 'bluebird'
+require('chai').should()
 {basePath} = require '../../globalSetup'
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
@@ -75,3 +76,13 @@ describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
       expectResolve(validators.string(forceInitCaps: true)(param, "TESTING with dash-es and a'postrophes")).then (value) ->
         value.should.equal("Testing With Dash-Es And A'Postrophes")
     ]
+
+  describe 'in', () ->
+    it 'throw on bad options', () ->
+      ( -> validators.string(in: {})).should.throw()
+
+    it 'thow when not in', () ->
+      expectReject(validators.string(in: ['crap', 'hmm'])(param, 'abcd'), DataValidationError)
+
+    it 'pass when in', () ->
+      expectResolve(validators.string(in: ['crap', 'abcd'])(param, 'abcd'))

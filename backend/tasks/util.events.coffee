@@ -110,7 +110,26 @@ compactHandlers =
   jobQueue: defaultCompaction
   default: defaultCompaction
 
+
+deleteCleanupHandle = (query) ->
+  query.delete()
+
+resetCleanupHandle = (query) ->
+  query.update status: null
+
+cleanupHandlers =
+  propertySaved: deleteCleanupHandle
+  default: resetCleanupHandle
+
+notificationTypes = [
+  'propertySaved'
+  'jobQueue'
+]
+
+
 module.exports = {
   processHandlers
   compactHandlers
+  cleanupHandlers
+  notificationTypes
 }
