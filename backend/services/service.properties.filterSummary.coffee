@@ -1,4 +1,3 @@
-###global moment###
 config = require '../../common/config/commonConfig'
 combined = require './service.properties.combined.filterSummary'
 Promise = require 'bluebird'
@@ -8,6 +7,7 @@ _ = require 'lodash'
 validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
 geohash = require 'geohash64'
+moment = require 'moment'
 
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
