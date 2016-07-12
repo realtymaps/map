@@ -9,6 +9,7 @@
         ng-disabled="fieldData.current.config.advanced"
         ng-options="option for option in lookupOptions[fieldData.current.output]"
       )
+        option(value="")
       input(
         ng-if="!lookupOptions[fieldData.current.output]"
         ng-model="fieldData.current.config.mapping[lookup.LongValue]"

@@ -193,9 +193,6 @@ app.controller 'rmapsCountyCtrl',
     field = $scope.fieldData.current
     removed = field.input[key]
     delete field.input[key]
-    delete field.lookups
-    delete field.config.map
-    delete field.config.Interpretation
     updateBase(field, removed)
 
   # Move rules to base field config
@@ -212,7 +209,8 @@ app.controller 'rmapsCountyCtrl',
     removed = field.input
     field.input = null
     delete field.lookups
-    delete field.config.map
+    delete field.config.mapping
+    delete field.config.Interpretation
     updateBase(field, removed)
 
   $scope.hideUnassigned = () ->

@@ -14,7 +14,6 @@ subStatus =
   auction: 'auction'
 
 propertyType = {
-  '': null,
   'Single Family',
   'Condo / Townhome',
   'Multi-Family'
@@ -22,16 +21,6 @@ propertyType = {
   'Commercial'
   'Industrial'
   'Agricultural'
-}
-
-zoning = {
-  'Agricultural'
-  'Commercial'
-  'Condominium Unit'
-  'Industrial'
-  'Land'
-  'Multi-Family Residential'
-  'Single-Family Residential'
 }
 
 categories =
@@ -105,10 +94,8 @@ mod.constant 'rmapsParcelEnums', {
   categories
   address
   propertyType
-  zoning
   lookupOptions:
     status: _.values(statusData)
     substatus: _.values(subStatusFull)
     property_type: _.values(propertyType)
-    zoning: _.values(zoning)
 }

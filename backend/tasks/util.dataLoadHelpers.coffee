@@ -702,9 +702,9 @@ ensureNormalizedTable = (dataType, subid) ->
         table.integer('sqft_finished')
         table.json('year_built')
         table.json('promoted_values')
+        table.text('zoning')
       if dataType == 'tax' || dataType == 'deed'
         table.text('property_type')
-        table.text('zoning')
         table.text('legal_unit_number')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")

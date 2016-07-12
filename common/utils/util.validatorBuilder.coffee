@@ -218,6 +218,9 @@ _rules =
         config:
           unmapped: 'null'
 
+      zoning:
+        alias: 'Zoning'
+
       description:
         alias: 'Description'
 
@@ -311,8 +314,6 @@ _rules =
 
       zoning:
         alias: 'Zoning'
-        config:
-          unmapped: 'null'
 
       legal_unit_number:
         alias: 'Legal Unit Number'
@@ -332,11 +333,6 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        config:
-          unmapped: 'null'
-
-      zoning:
-        alias: 'Zoning'
         config:
           unmapped: 'null'
 
