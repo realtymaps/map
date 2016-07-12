@@ -34,7 +34,7 @@ createForProject = (newProfile, transaction = null) ->
 # returns the main query for profile & project list query
 # `where` can honor a test on any field in `auth_user`, `user_project`, `user_profile`
 _getProfileWhere = (where = {}) ->
-  q = tables.user.profile()
+  tables.user.profile()
   .select(joinColumns.profile)
   .select(
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
@@ -42,10 +42,6 @@ _getProfileWhere = (where = {}) ->
   .where(where)
   .innerJoin(tables.user.project.tableName,"#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
   .leftOuterJoin(tables.auth.user.tableName, "#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
-
-  logger.debug  "OMFG"
-  logger.debug q.toString()
-  q
 
 # internal profile update
 _updateProfileWhere = (profile, where) ->
