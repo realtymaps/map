@@ -38,8 +38,8 @@ app.factory 'rmapSummaryResultsMutation',
 
   {setDataOptions, MLS} = rmapsLayerFormattersService
 
-  _wrapGeomPointJson = (obj) ->
-    unless obj?.geometry_center
+  _wrapGeomCenterJson = (obj) ->
+    if !obj?.geometry_center?
       obj.geometry_center =
         coordinates: obj.coordinates
         type: obj.type
@@ -62,7 +62,7 @@ app.factory 'rmapSummaryResultsMutation',
       filterSummary = {}
 
       for key, model of singletons
-        _wrapGeomPointJson model
+        _wrapGeomCenterJson model
         rmapsPropertiesService.updateProperty model
         filterSummary[key] = model
 
@@ -81,7 +81,7 @@ app.factory 'rmapSummaryResultsMutation',
           first = _.find(group)
           group.coordinates = first.coordinates
           group.type = first.type
-          _wrapGeomPointJson(group)
+          _wrapGeomCenterJson(group)
           group.geometry = group.geometry_center
 
         filterSummary["#{group.grouped.name}:#{group.grouped.forsale}:#{group.grouped.pending}:#{group.grouped.sold}"] = group
