@@ -15,12 +15,12 @@ include mixins/_avatarMixin.jade
             // Subscriber Project Selection
             //
 
-            div(ng-if="(principal.isSubscriber() || principal.isEditor()) && profile")
+            div(ng-if="profile")
               ul.nav.project-select
                 li
                   a.menu-label.menu-link.project-name(ng-click="goToState('project', {id: project.id})" class="projects" ng-class="{ active: isActive('projects') }")
                     span {{profile.name || "Sandbox"}}
-                  a.menu-alert.menu-link.change-project(ng-click="goToState('projects')") Switch
+                  a.menu-alert.menu-link.change-project(ng-if="principal.isSubscriber() || principal.isEditor()" ng-click="goToState('projects')") Switch
                     br
                     span Project
 
@@ -36,24 +36,24 @@ include mixins/_avatarMixin.jade
                       span Dashboard
                     a.menu-alert.menu-link.change-project(ng-click="goToState('projects')")
 
-                  li(ng-show="profile")
+                  li
                         a.menu-link(ng-click="goToMap()" class="map" ng-class="{ active: isActive('map') }")
                           span.icon.menu-icon.icon-project
                           span.menu-label Map
 
-                    li(ng-show="profile")
+                    li
                         a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
                             span.menu-label Pinned Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
-                    li(ng-show="profile")
+                    li
                         a.menu-link(ng-click="goToState('projectNotes', {id: project.id})" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
-                    li(ng-show="profile")
+                    li
                         a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
                             span.icon.menu-icon.icon-area
                             span.menu-label Areas
@@ -79,36 +79,46 @@ include mixins/_avatarMixin.jade
 
             div(ng-if="principal.isProjectViewer() && profile")
                 ul.nav.menu-options
-                    li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
-                            span.icon.menu-icon.icon-area
-                            span.menu-label Areas
-                            span.menu-badge.count {{project.areas.length}}
+                  li
+                      a.menu-label.menu-link.project-name(ng-click="goToState('project', {id: project.id})" class="projects" ng-class="{ active: isActive('projects') }")
+                        span.icon.menu-icon.icon-property
+                        span Dashboard
 
-                    li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
-                            span.icon.menu-icon.icon-property
-                            span.menu-label Properties
+                  li
+                    a.menu-link(ng-click="goToMap()" class="map" ng-class="{ active: isActive('map') }")
+                      span.icon.menu-icon.icon-project
+                      span.menu-label Map
+
+                  li
+                      a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
+                          span.icon.menu-icon.icon-property
+                          span.menu-label Pinned Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
-                    li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectNotes', {id: project.id})" class="notes" ng-class="{ active: isActive('notes') }")
-                            span.icon.menu-icon.icon-note
-                            span.menu-label Notes
-                            span.menu-badge.count {{project.notes.length}}
+                  li
+                    a.menu-link(ng-click="goToState('projectFavorites', {id: project.id})" class="favorites" ng-class="{ active: isActive('favorites') }")
+                      span.icon.menu-icon.icon-favorites
+                      span.menu-label Favorites
+                      span.menu-badge.count {{project.favoritesTotal}}
 
-                    li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectFavorites', {id: project.id})" class="favorites" ng-class="{ active: isActive('favorites') }")
-                            span.icon.menu-icon.icon-favorites
-                            span.menu-label Favorites
-                            span.menu-badge.count {{project.favoritesTotal}}
+                  li
+                      a.menu-link(ng-click="goToState('projectNotes', {id: project.id})" class="notes" ng-class="{ active: isActive('notes') }")
+                          span.icon.menu-icon.icon-note
+                          span.menu-label Notes
+                          span.menu-badge.count {{project.notes.length}}
+
+                  li
+                      a.menu-link(ng-click="goToState('projectAreas', {id: project.id})" class="areas" ng-class="{ active: isActive('areas') }")
+                        span.icon.menu-icon.icon-area
+                        span.menu-label Areas
+                        span.menu-badge.count {{areas.length}}
 
         .bottom
             ul.nav
                 li(ng-if="principal.isProjectViewer()")
                     a.menu-link
                         span.icon.menu-icon.icon-project
-                        span.menu-label My Realtor
+                        span.menu-label {{ profile.parent_name || 'My Realtor' }}
 
                 li
                     a.menu-label.menu-link(ng-click="goToState('user')")
