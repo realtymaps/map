@@ -62,7 +62,8 @@ save = ({req, res, next, type}) ->
         rm_property_id: validReq.body.rm_property_id
         type
       }
-      
+      .then () ->
+        userUtils.cacheUserValues(req, profiles: true)
 saves = ({res, next}) ->
   handleRoute res, next, () -> propSaveSvc.getAll()
 
