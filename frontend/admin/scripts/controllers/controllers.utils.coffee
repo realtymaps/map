@@ -10,9 +10,9 @@ app.controller 'rmapsUtilsFipsCodesCtrl', ($scope, rmapsFipsCodesService, rmapsU
   $scope.$watch 'location.usStateCode', (usStateCode) ->
     return unless usStateCode
 
-    rmapsFipsCodesService.getAllByState usStateCode
-    .then (counties) ->
-      $scope.counties = counties
+    rmapsFipsCodesService.getAllMlsCodes state: usStateCode
+    .then (fipsCodes) ->
+      $scope.counties = fipsCodes
 
 app.controller 'rmapsUtilsMailCtrl', ($scope, $http, $log) ->
   $log = $log.spawn 'rmapsUtilsMailCtrl'
