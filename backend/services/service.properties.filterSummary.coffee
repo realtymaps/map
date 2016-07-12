@@ -65,9 +65,6 @@ module.exports =
                 resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
                 # Ensure saved details are part of the saved props
-                logger.debug "@@@@ profile @@@@"
-                logger.debug profile
-
                 for type in ['pins', 'favorites']
                   if profile[type]?[property.rm_property_id]?
                     property.savedDetails = _.extend property.savedDetails || {},
