@@ -1,1 +1,0 @@
-ALTER TABLE listing ADD COLUMN zoning TEXT;
