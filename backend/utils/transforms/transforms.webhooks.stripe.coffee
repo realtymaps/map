@@ -1,4 +1,3 @@
-_ = require 'lodash'
 {validators} = require '../util.validation'
 
 module.exports =

@@ -1,6 +1,8 @@
+_ = require 'lodash'
 Promise = require 'bluebird'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
+config = require '../config/config'
 dbs = require '../config/dbs'
 logger = require('../config/logger.coffee').spawn('task:events:notifications:internals')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
@@ -8,11 +10,15 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 notifyQueueSvc = require('../services/service.notification.queue').instance
 notificationsSvc = require '../services/service.notifications'
+utilEvents = require './util.events.coffee'
 
 
 NUM_ROWS_TO_PAGINATE = 100
-# DELAY_MILLISECONDS = 50
 
+_deleteNotifications = () ->
+  tables.user.notificationQueue()
+  .where status: 'delivered'
+  .delete()
 ###
   subtask will have the necessary info to figure out
   what notifications to send out
@@ -34,26 +40,39 @@ loadNotifications = ({subtask, frequency}) -> Promise.try () ->
     'method'
   ]
 
-  queryEntity = {}
+  queryEntity =
+    status: null
 
   for name in loadSubtaskOptions
     if subtask?.data?[name]?
       queryEntity["#{tables.user.notificationConfig.tableName}.#{name}"] = subtask.data[name]
 
-  #return a list of user_notification.id to be paged
-  notifyQueueSvc.getAllWithConfigUser queryEntity
-  .select "#{tables.user.notificationQueue.tableName}.id"
-  .then (rows) ->
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug "loadNotifications to sendNotifications row.length: #{rows.length}"
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+  _deleteNotifications()
+  .then () ->
 
-    jobQueue.queueSubsequentPaginatedSubtask {
-      subtask
-      totalOrList: rows
-      maxPage: numRowsToPageSendNotifications
-      laterSubtaskName: "sendNotifications"
-    }
+    notifyQueueSvc.getAllWithConfigUser queryEntity
+    .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS
+    .then (rows) ->
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+      logger.debug "loadNotifications to sendNotifications row.length: #{rows.length}"
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+
+      Promise.all [
+        jobQueue.queueSubsequentPaginatedSubtask {
+          subtask
+          totalOrList: rows
+          maxPage: numRowsToPageSendNotifications
+          laterSubtaskName: "sendNotifications"
+        }
+        jobQueue.queueSubsequentSubtask {
+          subtask
+          laterSubtaskName: 'cleanupNotifications'
+        }
+      ]
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, "failed to load #{frequency} notifications")
+  .catch (error) ->
+    throw new HardFail(analyzeValue.getSimpleMessage(error))
 
 sendNotifications = (subtask) ->
   rows = subtask?.data?.values
@@ -75,43 +94,92 @@ sendNotifications = (subtask) ->
     Use webhook for emailVero, sms but not on email (node mailer).
 
     ###
+    row.options.notification_id = row.id
+
     dbs.get("main").transaction (transaction) ->
-      notificationsSvc.sendNotificationNow {row, options: row.options, transaction}
-      .then () ->
-        logger.debug '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
-        # logger.debug row.id
-        q = tables.user.notificationQueue({transaction})
-        .where id: row.id
-        .delete()
-        logger.debug q.toString()
-        q
-      .catch (err) ->
-        throw err
+      q = tables.user.notificationQueue({transaction})
+      .where id: row.id
+      .update {
+        status: 'pending'
+        last_attempt_time: tables.user.notificationQueue().raw 'now_utc()'
+        attempts: row.attempts + 1
+      }
+      logger.debug "@@@@@@ PENDING UPDATE @@@@@@"
+      logger.debug q.toString()
+      q.then () ->
+        notificationsSvc.sendNotificationNow {row, options: row.options, transaction}
+        .then () ->
+          logger.debug '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
+
+          if !config.NOTIFICATIONS.USE_WEBHOOKS
+            logger.debug '@@@@ NO WEBHOOKS DELETING @@@@'
+            tables.user.notificationQueue({transaction})
+            .where id: row.id
+            .delete()
+
+        .catch (err) ->
+          throw err
 
     .catch (err) ->
       details = analyzeValue.getSimpleDetails(err)
       logger.error "notification error: #{details}"
 
-      if row.attempts >= row.maxAttempts
-        #mark with error and no longer try it
-        tables.user.notificationQueue()
-        .update error: details
-      else
-        tables.user.notificationQueue()
-        .update {
-          options: row.options
-          config_notification_id: row.config_notification_id
-          error: details
-          attempts: row.attempts++
-        }
-        .where id: row.id
+      tables.user.notificationQueue()
+      .update {
+        options: row.options
+        config_notification_id: row.config_notification_id
+        error: details
+        status: null
+      }
+      .where id: row.id
 
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to sendNotifications')
   .catch (error) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
+cleanupNotifications = (subtask) ->
+  _deleteNotifications()
+  .then () ->
+  Promise.map utilEvents.notificationTypes, (type) ->
+    query = tables.user.notificationQueue()
+    .where () ->
+      @where status: 'pending'
+      @orWhere status: null
+    .whereNotNull 'last_attempt_time'
+    .whereRaw "options->>'type' = ?", [type]
+    .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
+    .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS
+
+
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug query.toString()
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+
+    handle = utilEvents.cleanupHandlers[type] || utilEvents.cleanupHandlers.default
+    handle(query)
+  .then () ->
+    dbs.transaction (transaction) ->
+      #get maxed out rows and move them out
+      tables.user.notificationQueue({transaction})
+      .whereNotNull 'last_attempt_time'
+      .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
+      .where 'attempts', '>=', config.NOTIFICATIONS.MAX_ATTEMPTS
+      .then (maxedOutRows) ->
+        if !maxedOutRows.length
+          return
+        logger.debug "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
+        logger.debug maxedOutRows
+        tables.user.notificationExpired({transaction})
+        .insert(maxedOutRows.map (r) -> _.omit r, 'id')
+        .then () ->
+          tables.user.notificationQueue({transaction})
+          .whereIn 'id', _.pluck 'id', maxedOutRows
+          .delete()
+
+
 module.exports = {
   loadNotifications
   sendNotifications
+  cleanupNotifications
 }

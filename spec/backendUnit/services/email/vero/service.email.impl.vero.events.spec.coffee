@@ -144,6 +144,7 @@ describe "service.email.impl.vero.events", ->
       @promise = subject(@vero)[testName] {
         authUser: @authUser
         properties: []
+        notification_id: 1
       }
 
     it "can run", ->
@@ -171,4 +172,5 @@ describe "service.email.impl.vero.events", ->
       @vero.createUserAndTrackEvent.args[0][4].should.be.eql {
         in_error_support_phrase: internals.inErrorSupportPhrase
         properties: []
+        notification_id: 1
       }

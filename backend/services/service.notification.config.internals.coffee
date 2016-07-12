@@ -5,7 +5,6 @@ getColumns = [
   'type'
   'method'
   'frequency'
-  'max_attempts'
 ]
 
 userColumns = [

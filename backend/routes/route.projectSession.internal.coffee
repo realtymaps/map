@@ -118,7 +118,7 @@ class ProjectRouteCrud extends RouteCrud
         subValidateSeparate:
           geometry_center: validators.geojson(toCrs:true)
           geometry: validators.geojson(toCrs:true)
-          geom_line_json:  validators.geojson(toCrs:true)
+          geometry_line:  validators.geojson(toCrs:true)
           shape_extras: validators.object()
           area_name: validators.string()
           area_details: validators.string()

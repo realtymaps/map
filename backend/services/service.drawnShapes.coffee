@@ -13,9 +13,9 @@ module.exports =
       .then (rows) ->
         toGeoFeatureCollection rows,
           toMove: @drawnShapeCols
-          geometry: ['geometry_center', 'geometry', 'geom_line_json']
+          geometry: ['geometry_center', 'geometry', 'geometry_line']
           deletes: ['rm_inserted_time', 'rm_modified_time',
-            'geom_point_raw', 'geometry_raw', 'geom_line_raw']
+            'geometry_center_raw', 'geometry_raw', 'geometry_line_raw']
 
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true

@@ -100,22 +100,23 @@ base =
     HASH_MIN_LENGTH: 20
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
-    LIVE_MODE: process.env.PAYMENT_IS_LIVE or false
+    LIVE_MODE: process.env.PAYMENT_IS_LIVE || false
     INTERVAL_COUNT: 1
     CURRENCY: 'usd'
   EMAIL_PLATFORM:
-    LIVE_MODE: process.env.EMAIL_IS_LIVE or false
-    MAX_RETRIES: 4
-    RETRY_DELAY_MILLI: 2000
+    LIVE_MODE: process.env.EMAIL_IS_LIVE || false
   MAILING_PLATFORM:
-    LIVE_MODE: process.env.MAILING_IS_LIVE or false
+    LIVE_MODE: process.env.MAILING_IS_LIVE || false
     CAMPAIGN_BILLING_DELAY_DAYS: 1
     READ_PDF_URL_RETRIES: 6
     LOB_MAX_RETRIES: 5
     S3_UPLOAD: _.merge common.pdfUpload, common.mail.s3_upload
     GET_PRICE: common.mail.getPrice
-
-  ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS or false
+  NOTIFICATIONS:
+    USE_WEBHOOKS: process.env.NOTIFICATIONS_USE_WEBHOOKS || true
+    DELIVERY_THRESH_MIN: 12
+    MAX_ATTEMPTS: 10
+  ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS || false
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =

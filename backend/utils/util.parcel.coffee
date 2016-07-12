@@ -83,7 +83,7 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
 
 prepRowForRawGeom = (row) ->
   if row.geometry.type == 'Point'
-    row.geom_point_raw = dbs.get('normalized').raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
+    row.geometry_center_raw = dbs.get('normalized').raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
   else  # 'Polygon'
     row.geometry_raw = dbs.get('normalized').raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
   delete row.geometry

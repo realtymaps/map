@@ -17,9 +17,7 @@ module.exports =
     .then (queryParams) ->
 
       # Calculate permissions for the current user
-      filterSummaryImpl.getPermissions(profile)
-      .then (permissions) ->
-        permissions
+      combined.getPermissions(profile)
 
       .then (permissions) ->
         logger.debug permissions
@@ -37,13 +35,13 @@ module.exports =
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
           filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
           .then (properties) ->
-            filterSummaryImpl.scrubPermissions?(properties, permissions)
+            combined.scrubPermissions(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           .then (properties) ->
-            filterSummaryImpl.scrubPermissions?(properties, permissions)
+            combined.scrubPermissions(properties, permissions)
 
             resultsByPropertyId = {}
             propertyIdsByCenterPoint = {}
@@ -96,7 +94,10 @@ module.exports =
                 return cluster()
               else
                 logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
-                return summary()
+                if result.count == 0
+                  return {}
+                else
+                  return summary()
 
           when 'cluster'
             cluster()

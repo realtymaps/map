@@ -23,9 +23,6 @@ onDemandEvents = (subtask) ->
     doDequeue: false
   }
 
-# TODO: remove as this is not needed, only onDemandNotifications -> notifications
-# is needed as notifications are queued up as fast as necessary (onDemand and daily).
-# Therefore, we can just send them out as fast as possible.
 dailyNotifications = (subtask) ->
   logger.debug 'Attempting Daily notifications'
   internalsNotifications.loadNotifications {
@@ -49,4 +46,5 @@ module.exports = new TaskImplementation 'events', {
   dailyNotifications
   onDemandNotifications
   sendNotifications: internalsNotifications.sendNotifications
+  cleanupNotifications: internalsNotifications.cleanupNotifications
 }

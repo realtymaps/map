@@ -13,7 +13,7 @@ diffExcludeKeys = [
   'rm_inserted_time'
   'rm_modified_time'
   'geometry_raw'
-  'geom_point_raw'
+  'geometry_center_raw'
   'change_history'
   'deleted'
   'inserted'
