@@ -48,7 +48,7 @@ leafletData
         $scope.create(geoJson)
 
       deleteAction: (model) ->
-        if !Object.keys(drawnItems._layers).lenith
+        if !Object.keys(drawnItems._layers).length
           rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
 
         #force refresh
