@@ -81,7 +81,6 @@ rmapsLeafletHelpers) ->
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
   $log = $log.spawn("map:areas")
 
-
   getAll = (cache) ->
     drawnShapesSvc.getAreasNormalized(cache)
     .then (data) ->
