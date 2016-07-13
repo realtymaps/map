@@ -197,7 +197,7 @@ module.exports = app.config (
   # Project dashboard
   buildChildState 'project', 'projectLayout',
     projectParam: 'id',
-    page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true },
+    page: { title: 'Project', dynamicTitle: true },
     controller: null,
     templateUrl: './views/project.jade'
 

@@ -18,6 +18,9 @@ mobile-header
     width: 30px;
     text-align: center;
 
+  a#burgericon
+    margin-right: 10px;
+
   i
     font-size: 18px
 
@@ -26,8 +29,15 @@ mobile-header
 
   .mobile-header-center
     margin: 0 auto;
-    width: calc(100% - 35px - 35px);
     height: $navbarHeight;
+
+  &.custom-header
+    .mobile-header-center
+      width: calc(100% - 50px - 50px);
+
+  &.modal-header
+    .mobile-header-center
+      width: calc(100% - 35px - 35px);
 
   .mobile-header-left
     position: absolute;

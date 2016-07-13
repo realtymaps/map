@@ -33,8 +33,12 @@ app.provider 'rmapsPageService', () ->
       #
 
       mobile: {
+        custom: false
         modal: false
       }
+
+      showMobileCustomHeader: () ->
+        return @mobile?.custom
 
       showMobileModalHeader: () ->
         return @mobile?.modal || @isModal()
@@ -107,6 +111,7 @@ app.provider 'rmapsPageService', () ->
         @title = value if value and @allowDynamicTitle
 
       reset: () ->
+        @mobile.custom = false
         @mobile.modal = false
         @title = defaults.title
         @meta = defaults.meta

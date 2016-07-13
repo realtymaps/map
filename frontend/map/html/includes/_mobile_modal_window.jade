@@ -6,8 +6,9 @@ ng-style="{'z-index': 1050 + index*10, display: 'block'}")
     mobile-header.mobile-header-modal
       .inner(ng-controller="OpenAsModalWindowCtrl")
         .mobile-header-left
-          mobile-header-target-left
-          .mobile-header-title {{context.modalTitle}}
+          .mobile-header-title
+            mobile-header-target-left
+            span {{context.modalTitle}}
         .mobile-header-center
           mobile-header-target-center
         .mobile-header-right

@@ -1,6 +1,14 @@
 include ../includes/mixins/_leafletMixin.jade
 
 .project-dashboard-container
+  .mobile-only
+    mobile-custom-header
+      mobile-header-buttons(header-id="page-custom-header" button-type="center")
+        span Brad Sanders
+
+      mobile-header-buttons(header-id="page-custom-header" button-type="right")
+        i.icon.fa.fa-user.dashboard-realtor-icon
+
   .row.project-top
     .col-sm-6.col-xs-12
       .desktop-only
