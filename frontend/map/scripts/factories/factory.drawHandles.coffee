@@ -9,7 +9,7 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
   _makeDrawKeys = (handles) ->
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
-  return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise, mapId}) ->
+  return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise, mapId, deleteAction}) ->
 
     _makeDrawKeys
       created: ({layer,layerType}) ->
@@ -33,6 +33,7 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
         eachLayerModel layers, (model) ->
           drawnShapesSvc?.delete(model).then ->
             commonPostDrawActions(model)
+            deleteAction?(model)
 
       drawstart: ({layerType}) ->
         rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)

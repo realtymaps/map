@@ -2,15 +2,16 @@ app = require '../app.coffee'
 color = 'red'
 
 app.controller "rmapsDrawAreaCtrl", (
-$scope,
-$log,
-$q,
-$rootScope,
-rmapsEventConstants,
+$scope
+$log
+$q
+$rootScope
+rmapsEventConstants
 rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory,
-rmapsMapIds,
-rmapsDrawCtrlFactory,
+rmapsMapDrawHandlesFactory
+rmapsMapIds
+rmapsDrawCtrlFactory
+rmapsMapTogglesFactory
 leafletData
 ) ->
 
@@ -45,6 +46,15 @@ leafletData
         #requires rmapsAreasModalCtrl to be in scope (parent)
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
         $scope.create(geoJson)
+
+      deleteAction: (model) ->
+        if !Object.keys(drawnItems._layers).lenith
+          rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+
+        #force refresh
+        $scope.$emit rmapsEventConstants.areas
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+
     }
 
     _drawCtrlFactory = (handles) ->
@@ -83,16 +93,11 @@ leafletData
       _drawCtrlFactory()
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, model) ->
-      leafletData.getMap(mapId)
-      .then (map) ->
-        toRemove = null
-        keyToRemove = null
+      toRemove = null
 
-        for key, val of drawnItems._layers
-          if val.model?.id == model.id
-            toRemove = val
-            keyToRemove = key
-            break
+      for key, val of drawnItems._layers
+        if val.model.properties?.id == model.id
+          toRemove = val
+          break
 
-        delete drawnItems._layers[keyToRemove]
-        map.removeLayer toRemove
+      drawnItems.removeLayer toRemove
