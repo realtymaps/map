@@ -209,6 +209,7 @@ app.controller 'rmapsCountyCtrl',
     removed = field.input
     field.input = null
     delete field.lookups
+    delete field.config.lookup
     delete field.config.mapping
     delete field.config.Interpretation
     updateBase(field, removed)
