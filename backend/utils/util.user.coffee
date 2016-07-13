@@ -17,20 +17,20 @@ isSubscriber = (req) ->
 # back in.
 cacheUserValues = (req, reload = {}) ->
 
-  if not req.session.permissions or reload?.permissions
+  if !req.session.permissions or reload?.permissions
     logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
       req.session.permissions = permissionsHash
 
-  if not req.session.groups or reload?.groups
+  if !req.session.groups or reload?.groups
     logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
       req.session.groups = groupsHash
 
 
-  if not req.session.profiles or reload?.profiles
+  if !req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
 
     # if user is subscriber, use service endpoint that includes sandbox creation and display

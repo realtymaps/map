@@ -6,7 +6,6 @@ db = require('../config/dbs').get('main')
 {singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 {currentProfile} = require '../../common/utils/util.profile'
-util = require 'util'
 
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
@@ -41,12 +40,8 @@ _getProfileWhere = (where = {}) ->
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
   )
   .where(where)
-  .join(tables.user.project.tableName, () ->
-    this.on("#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
-  )
-  .leftOuterJoin(tables.auth.user.tableName, () ->
-    this.on("#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
-  )
+  .innerJoin(tables.user.project.tableName,"#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
+  .leftOuterJoin(tables.auth.user.tableName, "#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
 
 # internal profile update
 _updateProfileWhere = (profile, where) ->

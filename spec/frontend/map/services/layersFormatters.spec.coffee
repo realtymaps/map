@@ -146,7 +146,7 @@ describe "rmapsLayerFormattersService", ->
 
             it 'invalid status', ->
               style = @subject(
-                rm_status: 'crap'
+                status: 'crap'
                 savedDetails:
                   isPinned: false
               )
@@ -159,7 +159,7 @@ describe "rmapsLayerFormattersService", ->
 
             it 'sold', ->
               style = @subject(
-                rm_status: 'sold'
+                status: 'sold'
                 savedDetails:
                   isPinned: false
               )
