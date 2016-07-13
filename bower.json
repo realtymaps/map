@@ -42,7 +42,7 @@
     "angular-credit-cards": "~2.3.5",
     "angular-load": "~0.4.0",
     "angular-stripe": "~4.2.8",
-    "angular-validation": "git://github.com/nmccready/angular-validation#master",
+    "angular-validation": "git://github.com/nmccready/angular-validation#896297463767fa8b9a52354a74d05afda9a8b142",
     "angularjs-slider": "~2.4.0",
     "angular-numeraljs": "~1.2.0",
     "gl-matrix": "~2.3.1",
