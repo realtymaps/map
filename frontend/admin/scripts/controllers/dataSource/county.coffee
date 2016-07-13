@@ -320,5 +320,5 @@ app.controller 'rmapsCountyCtrl',
         $scope.countyData.dataListType = _.find $scope.dataListTypes, { id: $state.params.list }
         loadCounty($scope.countyData)
 
-  # Load MLS list
+  # Load dataSource list
   $scope.loadReadyCounty()
