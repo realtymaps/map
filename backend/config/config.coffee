@@ -1,7 +1,8 @@
 _ = require 'lodash'
 path = require 'path'
-common =  require '../../common/config/commonConfig'
-toBool = require '../utils/util.toBool'
+#need *.coffee extensions for frontend files as this config is truely common
+common =  require '../../common/config/commonConfig.coffee'
+toBool = require '../utils/util.toBool.coffee'
 
 scriptName = path.basename(require?.main?.filename, '.coffee')
 if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
