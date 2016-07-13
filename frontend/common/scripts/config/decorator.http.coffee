@@ -1,9 +1,9 @@
 ###globals angular###
-app = require '../app.coffee'
+module = require '../module.coffee'
 qs = require 'qs'
 
 ###globals angular, _###
-app.config(($httpProvider) ->
+module.config(($httpProvider) ->
   $httpProvider.useApplyAsync(true)
 )
 .config(($provide, rmapsPromiseDataProviderProvider) ->
