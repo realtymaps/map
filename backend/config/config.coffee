@@ -1,6 +1,7 @@
 _ = require 'lodash'
 path = require 'path'
-common =  require '../../common/config/commonConfig.coffee'
+common =  require '../../common/config/commonConfig'
+toBool = require '../utils/util.toBool'
 
 scriptName = path.basename(require?.main?.filename, '.coffee')
 if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
@@ -9,13 +10,13 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 base =
   ANGULAR:
-    DO_COMPILE_DEBUG: if process.env.ANGULAR_DO_COMPILE_DEBUG? then process.env.ANGULAR_DO_COMPILE_DEBUG == 'true' else true
+    DO_COMPILE_DEBUG: toBool(process.env.ANGULAR_DO_COMPILE_DEBUG, defaultValue: true)
   KARMA:
     LOG_LEVEL: process.env.KARMA_LOG_LEVEL ? 'info'
     BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
-  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true
+  COFFEE_SOURCE_MAP: toBool(process.env.COFFEE_SOURCE_MAP, defaultValue: true)
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
@@ -70,7 +71,7 @@ base =
       secure: true
   USE_ERROR_HANDLER: false
   MEM_WATCH:
-    IS_ON: process.env.MEM_WATCH_IS_ON || false
+    IS_ON: toBool(process.env.MEM_WATCH_IS_ON, defaultValue: false)
   TEMP_DIR: '/tmp'
   MAP: common.map
   IMAGES: common.images
@@ -100,23 +101,23 @@ base =
     HASH_MIN_LENGTH: 20
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
-    LIVE_MODE: process.env.PAYMENT_IS_LIVE || false
+    LIVE_MODE: toBool(process.env.PAYMENT_IS_LIVE, defaultValue: false)
     INTERVAL_COUNT: 1
     CURRENCY: 'usd'
   EMAIL_PLATFORM:
-    LIVE_MODE: process.env.EMAIL_IS_LIVE || false
+    LIVE_MODE: toBool(process.env.EMAIL_IS_LIVE, defaultValue: false)
   MAILING_PLATFORM:
-    LIVE_MODE: process.env.MAILING_IS_LIVE || false
+    LIVE_MODE: toBool(process.env.MAILING_IS_LIVE, defaultValue: false)
     CAMPAIGN_BILLING_DELAY_DAYS: 1
     READ_PDF_URL_RETRIES: 6
     LOB_MAX_RETRIES: 5
     S3_UPLOAD: _.merge common.pdfUpload, common.mail.s3_upload
     GET_PRICE: common.mail.getPrice
   NOTIFICATIONS:
-    USE_WEBHOOKS: if process.env.NOTIFICATIONS_USE_WEBHOOKS? then process.env.NOTIFICATIONS_USE_WEBHOOKS == 'true' else true
+    USE_WEBHOOKS: toBool(process.env.NOTIFICATIONS_USE_WEBHOOKS, defaultValue: true)
     DELIVERY_THRESH_MIN: 12
     MAX_ATTEMPTS: 10
-  ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS || false
+  ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
@@ -144,7 +145,7 @@ environmentConfig =
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
     NEW_RELIC:
-      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else false
+      RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: false)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
     CLEANUP:
@@ -168,7 +169,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
+      RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
@@ -184,7 +185,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
+      RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       APP_NAME: 'realtymaps-map'
 
 
