@@ -106,12 +106,9 @@ joinColumns = do ->
 
   profile: [
     "#{tables.user.profile.tableName}.id as id"
-    ###
-    TODO REMOVE THIS LINE ONCE ALL REFERENCES TO user_id are removed
-    Most of our code base uses auth_user_id and auth_user_id is the correct query column name as well.
-    
-    Not removing this now as there should be a specific ticket for this to have less chance of regressions.
-    ###
+    # TODO REMOVE THIS LINE ONCE ALL REFERENCES TO user_id are removed
+    # Most of our code base uses auth_user_id and auth_user_id is the correct query column name as well.
+    # Not removing this now as there should be a specific ticket for this to have less chance of regressions.
     "#{tables.user.profile.tableName}.auth_user_id as user_id"
     "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
     "#{tables.user.profile.tableName}.parent_auth_user_id"
