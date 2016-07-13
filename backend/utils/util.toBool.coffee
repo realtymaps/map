@@ -1,6 +1,6 @@
 util = require 'util'
 
-module.exports = (value, defaultValue, defaultOn) ->
+module.exports = (value, {defaultValue, defaultOn}) ->
   if defaultValue?
     if Array.isArray(defaultOn)
       if defaultOn.indexOf(value) != -1
