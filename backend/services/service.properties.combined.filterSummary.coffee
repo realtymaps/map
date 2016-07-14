@@ -216,11 +216,13 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
     else
+      # no status, so query and show pins and favorites
       savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
       sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
 
 
   logger.debug () -> query.toString()
+  # console.log "getFilterSummaryAsQuery(), query:\n#{query.toString()}"
   query
 
 module.exports = {
