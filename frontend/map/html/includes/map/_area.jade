@@ -30,13 +30,13 @@ span(
             span New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
-          li(ng-repeat="model in areas | orderBy:'area_name'" ng-click="centerOn(model)")
+          li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")
             div
               span.enity
                 +circleNrMixin("{{$index+1}}")
 
               span.content
-                p.title {{model.area_name}}
+                p.title {{model.properties.area_name}}
 
               span.actions(rmaps-require-project-editor)
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

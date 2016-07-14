@@ -107,6 +107,8 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
         enableHandle = (handle) ->
+          scope.disable() #never have more than one active handle
+
           if typeof(handle) == 'string'
             handle = drawModeHandles[handle] || editModeHandles[handle]
           handle.handler.enable()
