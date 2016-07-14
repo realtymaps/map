@@ -32,6 +32,11 @@ module.exports =
         if propertyIds.length > 0
           queryParams.pins = propertyIds
 
+        favoriteIds = _.keys(profile.favorites)
+        if favoriteIds.length > 0
+          queryParams.favorites = favoriteIds
+
+
         cluster = () ->
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
           filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})

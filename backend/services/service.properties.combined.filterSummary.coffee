@@ -216,7 +216,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
     else
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
+      savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
+      sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
+
 
   logger.debug () -> query.toString()
   query
