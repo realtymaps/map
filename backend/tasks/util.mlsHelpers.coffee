@@ -348,14 +348,16 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-        # TODO: 3) if we had a NO_OBJECT_FOUND error on 1 or more of the images for this listing, record this listing
-        # TODO:    somehow for a later retry.  The retry should probably be handled in storePhotosPrep, which would need
-        # TODO:    to enqueue any recorded listings for this MLS from prior batches in addition to what it does now
-        # TODO:    (listings inserted/updated during this batch).  Then we would also need another subtask at the end
-        # TODO:    of the mls task that clears out any recorded listings for this mls from prior batches (since if the
-        # TODO:    transient error was still happening, it would have been recorded again for this batch).
+        # TODO: 3) if we had a NO_OBJECT_FOUND error or S3 upload error on 1 or more of the images for this listing,
+        # TODO:    record this listing somehow for a later retry.  The retry should probably be handled in
+        # TODO:    storePhotosPrep, which would need to enqueue any recorded listings for this MLS from prior batches in
+        # TODO:    addition to what it does now (listings inserted/updated during this batch).  Then we would also need
+        # TODO:    another subtask at the endof the mls task that clears out any recorded listings for this mls from
+        # TODO:    prior batches (since if the transient error was still happening, it would have been recorded again
+        # TODO:    for this batch).
         # TODO: 4) When we have an authentication error (see isRetsAuthenticationError), we need to soft-fail so we can
-        # TODO:    retry after a delay.
+        # TODO:    retry after a delay.  A single-line warning message is all that should be logged when this occurs
+        # TODO:    (because there is a good chance several simultaneous image uploads will report the same error).
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
