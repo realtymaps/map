@@ -149,9 +149,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query.limit(limit) if limit
 
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
-  query.where ->
-    if filters?.status?.length
+  if filters?.status?.length
 
+    query.where ->
       if bounds?
         sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
@@ -215,14 +215,13 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-    else
-      # no status, so query and show pins and favorites
-      savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
-      sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
+  else
+    # no status, so query and show pins and favorites
+    savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
+    sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
 
 
   logger.debug () -> query.toString()
-  # console.log "getFilterSummaryAsQuery(), query:\n#{query.toString()}"
   query
 
 module.exports = {
