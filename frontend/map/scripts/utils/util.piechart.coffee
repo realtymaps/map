@@ -14,7 +14,7 @@ serializeXmlNode = (xmlNode) ->
 formatPieData = (data) ->
   d3.nest()
   .key (k) ->
-    k.rm_status || k.status
+    k.status
   .sortValues (v) ->
     v.length
   .entries data, d3.map

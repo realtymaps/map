@@ -7,6 +7,7 @@ _ = require 'lodash'
 validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
 geohash = require 'geohash64'
+moment = require 'moment'
 
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
@@ -39,7 +40,7 @@ module.exports =
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
-          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
+          filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           .then (properties) ->
             combined.scrubPermissions(properties, permissions)
 
@@ -64,8 +65,10 @@ module.exports =
                 resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
 
                 # Ensure saved details are part of the saved props
-                if profile.pins?[property.rm_property_id]?
-                  property.savedDetails = profile.pins[property.rm_property_id]
+                for type in ['pins', 'favorites']
+                  if profile[type]?[property.rm_property_id]?
+                    property.savedDetails = _.extend property.savedDetails || {},
+                      profile[type][property.rm_property_id]
 
                 if property.data_source_type == 'mls'
                   mlsConfigSvc.getByIdCached(property.data_source_id)
