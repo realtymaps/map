@@ -13,6 +13,8 @@ module.exports = (options = {truthy: "true", falsy: "false"}) ->
   else if options.falsy?
     falsy = [options.falsy]
   truthyReturnValue = if options.invert? then !options.invert else true
+  if other of options
+    otherReturnValue = options.other
 
   (param, value) -> Promise.try () ->
     if !value?
@@ -31,5 +33,7 @@ module.exports = (options = {truthy: "true", falsy: "false"}) ->
         return !truthyReturnValue
     else if value in falsy
       return !truthyReturnValue
+    if otherReturnValue != undefined
+      return otherReturnValue
 
     throw new DataValidationError('invalid value given for boolean field', param, value)

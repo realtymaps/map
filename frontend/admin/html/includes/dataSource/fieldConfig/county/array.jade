@@ -1,0 +1,6 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'array'")
+  .row
+    .col-md-2 Delimiter
+    .col-md-1
+      input(type="text" ng-model="fieldData.current.config.split" ng-change="updateRule()")
+    .col-md-6.help Leave empty to indicate 1-character codes
