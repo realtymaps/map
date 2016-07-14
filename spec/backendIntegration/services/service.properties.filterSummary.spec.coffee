@@ -16,7 +16,7 @@ describe 'service.properties.filterSummary', ->
   beforeEach ->
     @subject = svc
 
-  it 'clusterOrDefault returned works with geoJson', (done) ->
+  xit 'clusterOrDefault returned works with geoJson', (done) ->
     @subject.getFilterSummary
       profile: {
         auth_user_id: 1

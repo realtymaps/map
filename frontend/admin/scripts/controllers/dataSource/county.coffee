@@ -157,7 +157,7 @@ app.controller 'rmapsCountyCtrl',
       setLookups(field._lookups)
     else if field && !field._lookups && field.config.LookupName
       config = $scope.countyData.current
-      $scope.countyLoading = rmapsCountyService.getLookupTypes config.id, $scope.countyData.dataListType.id, field.config.LookupName
+      $scope.countyLoading = rmapsCountyService.getLookupTypes(config.id, $scope.countyData.dataListType.id, field.config.LookupName)
       .then (lookups) ->
         setLookups(lookups)
         $scope.$evalAsync()
@@ -212,6 +212,7 @@ app.controller 'rmapsCountyCtrl',
     delete field.config.lookup
     delete field.config.mapping
     delete field.config.Interpretation
+    delete field.config.doLookup
     updateBase(field, removed)
 
   $scope.hideUnassigned = () ->

@@ -8,6 +8,12 @@
 .col-md-12.scroll
   .row.advanced
     .col-md-2
+    .col-md-1
+      label config
+    .col-md-9
+      textarea.transform(rmaps-json-input ng-model="fieldData.current.config" readonly)
+  .row.advanced
+    .col-md-2
       .btn-group
         .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="false" ng-change="updateRule()") Simple
         .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true" ng-change="updateRule()") Advanced
@@ -15,7 +21,7 @@
       label transform
     .col-md-9
       textarea.transform(ng-model="fieldData.current.transform" ng-show="fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
-      textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" disabled)
+      textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" readonly)
 .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
   .row.advanced
     .col-md-2

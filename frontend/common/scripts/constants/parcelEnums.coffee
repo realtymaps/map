@@ -21,6 +21,7 @@ propertyType = {
   'Commercial'
   'Industrial'
   'Agricultural'
+  'Recreational / Seasonal'
 }
 
 categories =
