@@ -23,7 +23,7 @@ do
 done
 
 # remove the shrinkwrap file
-rm npm-shrinkwrap.json
+rm -f npm-shrinkwrap.json
 
 # install new versions of removed deps
 npm install

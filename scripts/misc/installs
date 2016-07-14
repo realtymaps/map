@@ -4,8 +4,9 @@ set -o pipefail
 
 
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
-  # use buildpacks if HEROKU
-  # use circle.ym if CI
+  # this is for local dev install needs ONLY!
+  # for Heroku use buildpacks for this sort of thing
+  # for CircleCI use circle.yml for this sort of thing
   exit 0
 fi
 
