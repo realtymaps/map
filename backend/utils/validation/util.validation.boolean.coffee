@@ -13,7 +13,7 @@ module.exports = (options = {truthy: "true", falsy: "false"}) ->
   else if options.falsy?
     falsy = [options.falsy]
   truthyReturnValue = if options.invert? then !options.invert else true
-  if other of options
+  if 'other' of options
     otherReturnValue = options.other
 
   (param, value) -> Promise.try () ->
