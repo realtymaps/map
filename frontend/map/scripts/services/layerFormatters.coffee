@@ -14,7 +14,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     if !model || requireFilterModel && !filterSummary[model.rm_property_id]
       return false
     # by returning savedDetails.isPinned false instead of undefined it allows us to tell the difference
-    # between parcels and markers. Where parcels do not have rm_status (always).
+    # between parcels and markers. Where parcels do not have status (always).
     # depends on rmapsProperties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
     filterModel = filterSummary[model.rm_property_id] or model
     nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isPinned
@@ -55,8 +55,8 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
       if feature?.savedDetails?.isPinned
         savedStatus = 'saved'
 
-      if feature?.rm_status?
-        status = feature?.rm_status
+      if feature?.status?
+        status = feature?.status
       else
         status = 'default'
 
@@ -105,7 +105,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
       if model.savedDetails?.isPinned
         status = 'saved'
       else
-        status = model.rm_status || model.status
+        status = model.status
 
       _.extend model,
         markerType: 'price'

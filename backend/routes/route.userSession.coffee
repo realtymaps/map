@@ -18,7 +18,6 @@ sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
 safeColumns = (require '../utils/util.sql.helpers').columns
 tables = require '../config/tables'
-moment = require 'moment'
 transforms = require '../utils/transforms/transforms.userSession'
 internals = require './route.userSession.internals'
 

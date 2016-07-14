@@ -1,17 +1,15 @@
-querystring = require 'querystring'
 Promise = require 'bluebird'
 _ = require 'lodash'
 
 logger = require('../config/logger').spawn('auth')
 config = require '../config/config'
-userSessionService = require '../services/service.userSession'
-permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 tables = require '../config/tables'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 class SessionSecurityError extends Error
@@ -32,6 +30,7 @@ getSessionUser = (req) -> Promise.try () ->
   .then (user=[]) ->
     user?[0] ? false
   .catch (err) ->
+    logger.warn analyzeValue.getSimpleDetails err
     return false
 
 # everything we need to do for a logout gets encapsulated here
@@ -126,7 +125,7 @@ checkSessionSecurity = (req, res) ->
         if not security.remember_me
           return Promise.reject(new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug'))
         if tokenHash != security.token
-          return Promise.reject(new SessionSecurityError('user', "cookie vs security token mismatch for user #{cookieValues.user_id} on remember_me session: #{context.sessionId}", 'warn'))
+          return Promise.reject(new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn'))
         req.session.userid = context.cookieValues.userId
         getSessionUser(req)
         .then (user) ->
