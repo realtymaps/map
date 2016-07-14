@@ -32,7 +32,7 @@ loadUpdates = (subtask, options={}) ->
   uuidPromise = internals.getUuidField(subtask.task_name)
   Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
     retsService.getDataStream(subtask.task_name, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
-    .catch retsService.isTransientRetsError, (error) ->
+    .catch retsService.isRetsAuthenticationError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
@@ -327,9 +327,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           .catch (error) ->
             # TODO: 1) investigate NO_OBJECT_FOUND error (can be detected based on ReplyCode: 20403) and figure out when
             # TODO:    it occurs; maybe for listings with no photos?  if so, then we should not really treat it as an
-            # TODO:    error, especially for the retry logic described in a TODO below
+            # TODO:    error, especially for the retry logic described in a TODO below.  I suspect though that it is
+            # TODO:    actually a transient error, based on what I've seen.
             # TODO: 2) investigate duplicate key error for inserts into delete_photos -- seems like that shouldn't be
-            # TODO:    possible, so it could be an indication of a deeper bug
+            # TODO:    possible, so it could be an indication of a deeper bug.  This seems to have gone away, possibly
+            # TODO:    as a result of the improved transaction handling.
             console.log("upload error in mlsHelpers#storePhotos (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{error}")
             logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
             logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
@@ -346,13 +348,16 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
         logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-        # TODO: 3) if we had transient errors on 1 or more of the images for this listing (or for
-        # TODO:    retsService.getPhotosObject overall), record this listing somehow for a later retry.  The retry
-        # TODO:    should probably be handled in storePhotosPrep, which would need to enqueue any recorded listings for
-        # TODO:    this MLS from prior batches in addition to what it does now (listings inserted/updated during this
-        # TODO:    batch).  Then we would also need another subtask at the end of the mls task that clears out any
-        # TODO:    recorded listings for this mls from prior batches (since if the transient error was still happening,
-        # TODO:    it would have been recorded again for this batch)
+        # TODO: 3) if we had a NO_OBJECT_FOUND error or S3 upload error on 1 or more of the images for this listing,
+        # TODO:    record this listing somehow for a later retry.  The retry should probably be handled in
+        # TODO:    storePhotosPrep, which would need to enqueue any recorded listings for this MLS from prior batches in
+        # TODO:    addition to what it does now (listings inserted/updated during this batch).  Then we would also need
+        # TODO:    another subtask at the endof the mls task that clears out any recorded listings for this mls from
+        # TODO:    prior batches (since if the transient error was still happening, it would have been recorded again
+        # TODO:    for this batch).
+        # TODO: 4) When we have an authentication error (see isRetsAuthenticationError), we need to soft-fail so we can
+        # TODO:    retry after a delay.  A single-line warning message is all that should be logged when this occurs
+        # TODO:    (because there is a good chance several simultaneous image uploads will report the same error).
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
     .catch (error) ->
@@ -407,7 +412,7 @@ markUpToDate = (subtask) ->
 
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
-  .catch retsService.isTransientRetsError, (error) ->
+  .catch retsService.isRetsAuthenticationError, (error) ->
     throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
