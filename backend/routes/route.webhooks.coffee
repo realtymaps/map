@@ -40,16 +40,16 @@ handles = wrapHandleRoutes handles:
       logger.debug 'VERO WEBHOOK DELIVERED'
       logger.debug validReq.body
 
-      if /notification/.test validReq.body.campaign["trigger-event"]
+      if /notification/.test validReq.body.campaign["trigger-event"] && validReq.body.event?.data?
         notificationQueueSvc.update {
           id: validReq.body.event.data.notification_id
           status: 'delivered'
         }
         return
+
+      if !validReq.body.event?.data?
+        return logger.debug "ignoring event.name: #{validReq.body.campaign["trigger-event"]}, MISSING validReq.body.event.data"
       logger.debug "ignoring event.name: #{validReq.body.campaign["trigger-event"]}"
-
-
-
 
 
 module.exports = mergeHandles handles,
