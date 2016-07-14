@@ -62,7 +62,19 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
       _attachEvents = () ->
         return if !scope.events
 
-        leafletIterators.each scope.events, (handle, eventName) ->
+        events = {}
+        # listen on draw:created to disable once creation is done (hide cancel button)
+        ['draw:created', 'draw:drawstop'].forEach (eventName) ->
+          origEvent = {}
+          origEvent[eventName] = scope.events[eventName]
+
+          #extending a new object as to not cause a digest on scope.events (direct override)
+          angular.extend events, scope.events,
+            "#{eventName}": (opts) ->
+              scope.disable()
+              origEvent[eventName](opts)
+
+        leafletIterators.each events, (handle, eventName) ->
           map.on eventName, handle
 
       _cleanUpEvents = (events) ->
@@ -88,9 +100,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
         if !options?.edit? or !options?.edit?.featureGroup?
           _optionsEditedInDirective = true
-          angular.extend options,
-            edit:
-              featureGroup: new L.FeatureGroup()
+          options.edit = featureGroup: new L.FeatureGroup()
 
           $timeout -> _optionsEditedInDirective = false #skip extra digest due to above mod
 
@@ -155,6 +165,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           _currentHandler?.disable()
           scope.enabled = false
           scope.canSave = false
+          scope.$evalAsync()
 
         scope.$watch 'enabled', (newVal) ->
           if !newVal
