@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 
 app.controller 'rmapsProjectAreasCtrl', (
@@ -6,6 +7,7 @@ app.controller 'rmapsProjectAreasCtrl', (
   $scope
 
   rmapsDrawnUtilsService
+  rmapsEventConstants
 ) ->
   $log = $log.spawn('rmapsProjectAreasCtrl')
 

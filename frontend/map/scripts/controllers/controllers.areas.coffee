@@ -65,7 +65,11 @@ rmapsLeafletHelpers) ->
 
     remove: (model) ->
       _.remove($scope.areas, model)
-      _signalUpdate drawnShapesSvc.delete model
+
+      if !$scope.areas.length
+        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+
+      _signalUpdate(drawnShapesSvc.delete(model))
       .then () ->
         $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
         $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
