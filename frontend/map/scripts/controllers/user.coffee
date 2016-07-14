@@ -64,7 +64,7 @@ rmapsUsStates
         $scope.imageForm.errors = {}
 
     toRender: () ->
-      if @cropBlob.length
+      if @cropBlob?.length
         return @cropBlob
       if $scope.user.account_image_id?
         return @blob || backendRoutes.userSession.image
@@ -91,7 +91,7 @@ rmapsUsStates
         $scope.companyImageForm.errors = {}
 
     toRender: () ->
-      if @cropBlob.length
+      if @cropBlob?.length
         return @cropBlob
       if $scope.company.account_image_id?
         return @blob || backendRoutes.userSession.companyImage.replace(':account_image_id', $scope.company.account_image_id)
