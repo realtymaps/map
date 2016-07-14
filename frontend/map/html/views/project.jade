@@ -4,7 +4,7 @@ include ../includes/mixins/_leafletMixin.jade
   .mobile-only
     mobile-custom-header
       mobile-header-buttons(header-id="page-custom-header" button-type="center")
-        span Brad Sanders
+        span {{profile.parent_name || project.name || 'Dashboard'}}
 
       mobile-header-buttons(header-id="page-custom-header" button-type="right")
         i.icon.fa.fa-user.dashboard-realtor-icon

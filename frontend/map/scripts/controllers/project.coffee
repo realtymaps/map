@@ -45,13 +45,13 @@ app.controller 'rmapsProjectCtrl',
   #
 
   project = currentProject
-  profile = currentProfile
   properties = []
 
   #
   # Initialize Scope Variables
   #
 
+  $scope.profile = currentProfile
   $scope.propertiesService = rmapsPropertiesService
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
