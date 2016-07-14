@@ -1,0 +1,14 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'boolean'")
+  .row
+    .col-md-2 Invert
+    .col-md-1
+      input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+    .col-md-6.help Check this if the value means the opposite of what we intend
+  .row(ng-repeat="lookup in fieldData.current.lookups")
+    .col-md-2 Truthiness for: {{lookup.LongValue}}
+    .col-md-1
+      label Truthy
+        input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="true" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+    .col-md-1
+      label Falsy
+        input(type="radio" ng-model="fieldData.current.config.truthiness[lookup.LongValue]" ng-value="false" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")

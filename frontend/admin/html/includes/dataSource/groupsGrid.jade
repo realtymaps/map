@@ -1,0 +1,21 @@
+.col-md-8.list-container(ng-if="showGrid")
+  h4 Groups
+  .field-container
+    .category(
+    cg-busy="category.loading"
+    ng-class="{collapse: !expanded}"
+    rmaps-droppable="category.items" on-drop="onDropCategory"
+    ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
+      .expand-icon(ng-click="expanded = !expanded" ng-show="category.items.length > 5")
+      .field-list
+        .field(
+        class="base unselectable"
+        ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
+        .field(
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.config.DataType }"
+        ng-click="item.unselectable || selectField(item)"
+        rmaps-draggable="item" rmaps-draggable-collection="category.items"
+        ng-repeat="item in category.items")
+          span(ng-show="!item.unselectable") {{item.input}}
+          span(ng-show="item.unselectable") {{item.alias}}
+          span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")

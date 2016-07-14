@@ -1,0 +1,4 @@
+.row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > lookupThreshold")
+  .col-md-2 Lookup has {{fieldData.current._lookups.length}} entries.
+  .col-md-2
+    .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all values anyway?

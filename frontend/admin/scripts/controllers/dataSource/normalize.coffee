@@ -22,6 +22,9 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.mlsData =
     current: null
+    dataSourceType:
+      id: 'mls'
+      name: 'MLS'
 
   $scope.fieldData =
     current: null
@@ -46,9 +49,7 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.typeOf = (val) ->
     return typeof val
 
-  $scope.statusOptions = _.values rmapsParcelEnums.statusData
-  $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
-  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
+  $scope.lookupOptions = rmapsParcelEnums.lookupOptions
 
   $scope.baseRules = rmapsValidatorBuilderService.getBaseRules('mls', 'listing')
 

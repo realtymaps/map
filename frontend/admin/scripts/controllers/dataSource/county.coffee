@@ -57,8 +57,7 @@ app.controller 'rmapsCountyCtrl',
   $scope.typeOf = (val) ->
     return typeof val
 
-  $scope.propertyTypeOptions = _.values rmapsParcelEnums.propertyType
-  $scope.zoningOptions = _.values rmapsParcelEnums.zoning
+  $scope.lookupOptions = rmapsParcelEnums.lookupOptions
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
@@ -150,6 +149,7 @@ app.controller 'rmapsCountyCtrl',
     if !target
       target = field
     setLookups = (lookups) ->
+      target.config.Interpretation = field.config.Interpretation
       target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         target.lookups = field.lookups = field._lookups
@@ -157,7 +157,7 @@ app.controller 'rmapsCountyCtrl',
       setLookups(field._lookups)
     else if field && !field._lookups && field.config.LookupName
       config = $scope.countyData.current
-      $scope.countyLoading = rmapsCountyService.getLookupTypes config.id, $scope.countyData.dataListType.id, field.config.LookupName
+      $scope.countyLoading = rmapsCountyService.getLookupTypes(config.id, $scope.countyData.dataListType.id, field.config.LookupName)
       .then (lookups) ->
         setLookups(lookups)
         $scope.$evalAsync()
@@ -193,8 +193,6 @@ app.controller 'rmapsCountyCtrl',
     field = $scope.fieldData.current
     removed = field.input[key]
     delete field.input[key]
-    delete field.lookups
-    delete field.config.map
     updateBase(field, removed)
 
   # Move rules to base field config
@@ -211,7 +209,10 @@ app.controller 'rmapsCountyCtrl',
     removed = field.input
     field.input = null
     delete field.lookups
-    delete field.config.map
+    delete field.config.lookup
+    delete field.config.mapping
+    delete field.config.Interpretation
+    delete field.config.doLookup
     updateBase(field, removed)
 
   $scope.hideUnassigned = () ->
@@ -320,5 +321,5 @@ app.controller 'rmapsCountyCtrl',
         $scope.countyData.dataListType = _.find $scope.dataListTypes, { id: $state.params.list }
         loadCounty($scope.countyData)
 
-  # Load MLS list
+  # Load dataSource list
   $scope.loadReadyCounty()

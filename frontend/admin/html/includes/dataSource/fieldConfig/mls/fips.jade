@@ -1,0 +1,8 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'fips'")
+  .row
+    .col-md-2 FIPS Code (preferred), or County and State
+    .col-md-10
+      rmaps-subinput(name="FIPS Code" field="fipsCode")
+      span.sep OR
+      rmaps-subinput(name="County" field="county")
+      rmaps-subinput(name="State" field="stateCode")

@@ -1,0 +1,12 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'name'")
+  .row
+    .col-md-2 by part
+    .col-md-10
+      rmaps-subinput(name="First Name" field="first")
+      rmaps-subinput(name="Middle Name (optional)" field="middle")
+      rmaps-subinput(name="Last Name" field="last")
+  .row
+    .col-md-2 full blob
+    .col-md-10
+      span.sep OR
+      rmaps-subinput(name="Full Name" field="full")
