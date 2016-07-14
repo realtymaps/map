@@ -1,7 +1,6 @@
-config = require '../config/config'
 _ = require 'lodash'
-
-dimensionLimits = config.IMAGES.dimensions.profile
+config = require '../config/config'
+userUtils = require '../utils/util.user'
 
 safeUserFields = [
   'cell_phone'
@@ -40,8 +39,8 @@ safeRootCompanyFields = [
   'website_url'
 ]
 
-getIdentity = (req) ->
-  if req.user
+getIdentity = (req, res) ->
+  ret = if req.user
     # here we should probaby return some things from the user's profile as well, such as name
     user: _.pick req.user, safeUserFields
     subscription: req.session.subscription
@@ -53,11 +52,20 @@ getIdentity = (req) ->
   else
     null
 
+  res.json identity: ret
+
+
+updateCache = (req, res, next) ->
+  userUtils.cacheUserValues(req)
+  .then () ->
+    req.session.saveAsync()
+  .then () ->
+    getIdentity(req, res, next)
+
 
 module.exports ={
-  dimensionLimits
-  safeUserFields
+  getIdentity
+  updateCache
   safeRootFields
   safeRootCompanyFields
-  getIdentity
 }

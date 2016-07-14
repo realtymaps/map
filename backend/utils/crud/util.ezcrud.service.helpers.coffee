@@ -85,7 +85,7 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "getById() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
 
     # allow `entity` to represent a primitive
-    ids = if _.isObject entity or @idKeys.length > 1 then entity else {"#{@idKeys[0]}": entity}
+    ids = if _.isObject(entity) or @idKeys.length > 1 then entity else {"#{@idKeys[0]}": entity}
     throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys ids
 
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
