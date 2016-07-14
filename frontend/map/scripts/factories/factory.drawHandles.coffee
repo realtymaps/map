@@ -12,7 +12,9 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
   return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise, mapId, deleteAction}) ->
 
     _makeDrawKeys
+      ### eslint-disable ###
       created: ({layer,layerType}) ->
+        ### eslint-enable ###
         drawnItems.addLayer(layer)
         geojson = layer.toGeoJSON()
 
@@ -35,24 +37,36 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
             commonPostDrawActions(model)
             deleteAction?(model)
 
+      ### eslint-disable ###
       drawstart: ({layerType}) ->
+        ### eslint-enable ###
         rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
         announceCb('Draw on the map to query polygons and shapes','Draw')
 
+      ### eslint-disable ###
       drawstop: ({layerType}) ->
+        ### eslint-enable ###
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
         endDrawAction()
 
+      ### eslint-disable ###
       editstart: ({handler}) ->
+        ### eslint-enable ###
         rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
         announceCb('Edit Drawing on the map to query polygons and shapes','Edit Drawing')
 
+      ### eslint-disable ###
       editstop: ({handler}) ->
+        ### eslint-enable ###
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
         endDrawAction()
 
+      ### eslint-disable ###
       deletestart: ({handler}) ->
+        ### eslint-enable ###
         announceCb('Delete Drawing','Delete Drawing')
 
+      ### eslint-disable ###
       deletestop: ({handler}) ->
+        ### eslint-enable ###
         endDrawAction()

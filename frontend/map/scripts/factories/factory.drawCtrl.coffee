@@ -2,12 +2,12 @@
 app = require '../app.coffee'
 
 app.factory "rmapsDrawCtrlFactory", (
-$rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
+$rootScope, $log, rmapsNgLeafletEventGateService, toastr
 leafletData, leafletDrawEvents) ->
 
   ngLog = $log
 
-  ({$scope, mapId, handles, drawnItems, postDrawAction, name, itemsOptions, drawOptions}) ->
+  ({$scope, mapId, handles, drawnItems, name, itemsOptions, drawOptions}) ->
 
     if itemsOptions?
       drawnItems.getLayers().forEach (layer) ->
@@ -25,7 +25,7 @@ leafletData, leafletDrawEvents) ->
 
     mapPromise = leafletData.getMap(mapId)
 
-    mapPromise.then (lMap) ->
+    mapPromise.then () ->
 
       _destroy = () ->
 
