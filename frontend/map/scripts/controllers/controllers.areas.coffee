@@ -46,15 +46,15 @@ rmapsLeafletHelpers) ->
     oldCreate: (model) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
-        if !model?.area_name
+        if !model?.properties.area_name
           #makes the model an area with a defined empty string
-          model.area_name = ''
+          model.properties.area_name = ''
         rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
         _signalUpdate(drawnShapesSvc.create model)
 
     #create with no modal and default a name
     create: (model) ->
-      model.area_name = "Untitled Area"
+      model.properties.area_name = "Untitled Area"
       rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
       _signalUpdate(drawnShapesSvc.create model)
 

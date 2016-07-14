@@ -1,4 +1,4 @@
-###globals _,L###
+###globals _###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
@@ -40,25 +40,41 @@ rmapsLeafletHelpers) ->
           throw new Error 'geom type not supported'
 
 
-    _normalize = (shape) ->
-      unless shape.geometry
+    ###
+      Public: Function is intended to normalize a shape geojson object to make it easier to save on the backend.
+
+      NOTE: If you find your self trying to move fields that are not in properties THEN THERE is something wrong in the
+      backend service.drawnShapes. Basically it is missing a toMove column.
+
+      All fields should be in properties at all times to be valid geojson.
+
+     - `shapeGeoJson` Geojson object to be saved {object geojson}.
+
+      Returns the [Description] as `undefined`.
+    ###
+    normalize = (shapeGeoJson) ->
+      unless shapeGeoJson.geometry
         throw new Error("Shape must be GeoJSON with a geometry")
       normal = {}
-      normal[_getGeomName(shape.geometry.type)] = shape.geometry
+      normal[_getGeomName(shapeGeoJson.geometry.type)] = shapeGeoJson.geometry
       normal.project_id = profile.project_id
-      if shape.id?
-        normal.id = shape.id
-      if shape.shape_extras?
-        normal.shape_extras = shape.shape_extras
+      if shapeGeoJson.properties.id?
+        normal.id = shapeGeoJson.properties.id
+      if shapeGeoJson.properties.shape_extras?
+        normal.shape_extras = shapeGeoJson.properties.shape_extras
 
-      normal.area_name = if shape.area_name? then shape.area_name else null
-      normal.area_details = shape.area_details || null
+      normal.area_name = if shapeGeoJson.properties.area_name? then shapeGeoJson.properties.area_name else null
+      normal.area_details = shapeGeoJson.properties.area_details || null
       normal
 
-    _normalizedList = (geojson) ->
+    normalizedList = (geojson) ->
       return [] unless geojson
       {features} = geojson
       features
+
+    normalize: normalize
+
+    normalizedList: normalizedList
 
     getList: getList
 
@@ -67,22 +83,22 @@ rmapsLeafletHelpers) ->
     getAreaById: getAreaById
 
     getAreasNormalized: (cache) ->
-      getAreas(cache).then _normalizedList
+      getAreas(cache).then normalizedList
 
     getAreaByIdNormalized: (id, cache = false) ->
       getAreaById(id, cache)
       .then ({data}) ->
-        features = _normalizedList(data)
+        features = normalizedList(data)
         return features[0]
 
     getListNormalized: (cache = false) ->
-      getList(cache).then _normalizedList
+      getList(cache).then normalizedList
 
     create: (shape) ->
-      $http.post rootUrl, _normalize shape
+      $http.post rootUrl, normalize shape
 
     update: (shape) ->
-      $http.put _byIdUrlFromShape(shape), _normalize shape
+      $http.put _byIdUrlFromShape(shape), normalize shape
 
     delete: (shape) ->
       $http.delete _byIdUrlFromShape(shape)
