@@ -47,25 +47,36 @@ notifyByUser = ({opts, payload}) ->
   logger.debug opts
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-  internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
-  .then (users) ->
-    entity = auth_user_id: _.pluck(users, 'id')
-    _.extend entity, _.pick opts, ['type', 'method']
+  internals.distribute.getFromUser(opts.id)
+  .then (rows) ->
+    if !rows.length
+      logger.warn "User not found aborting notification creation. User id: #{opts.id}"
+      return
+    [fromUser] = rows
 
-    logger.debug "@@@@ notifyByUser: entity @@@@"
-    logger.debug entity
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    payload.from = fromUser
 
-    query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
+    internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
+    .then (users) ->
+      entity = auth_user_id: _.pluck(users, 'id')
+      _.extend entity, _.pick opts, ['type', 'method']
 
-    logger.debug "@@@@ notifyByUser: internals.enqueue @@@@"
-    internals.enqueue {
-      configRowsQuery: query
-      options: payload
-      verify: opts.verify
-      verbose: opts.verbose
-      from: 'notifyByUser'
-    }
+      logger.debug "@@@@ notifyByUser: entity @@@@"
+      logger.debug entity
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+      query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
+
+      logger.debug "@@@@ notifyByUser: internals.enqueue @@@@"
+      internals.enqueue {
+        configRowsQuery: query
+        options: payload
+        verify: opts.verify
+        verbose: opts.verbose
+        from: 'notifyByUser'
+        project_id: opts.project_id
+        type: opts.type
+      }
 
 ###
   Grab specific notification configs by type and or method

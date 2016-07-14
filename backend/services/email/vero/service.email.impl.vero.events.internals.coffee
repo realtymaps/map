@@ -60,6 +60,8 @@ module.exports = (vero) ->
       type
       frequency
       notification_id
+      project_id
+      from
     } = onMissingArgsFail args: opts, required: ['authUser', 'properties', 'notification_id']
 
     opts = {
@@ -69,6 +71,8 @@ module.exports = (vero) ->
         type
         frequency
         notification_id
+        project_id
+        from
       }
     }
 

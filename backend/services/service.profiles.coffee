@@ -33,7 +33,7 @@ createForProject = (newProfile, transaction = null) ->
 
 # returns the main query for profile & project list query
 # `where` can honor a test on any field in `auth_user`, `user_project`, `user_profile`
-_getProfileWhere = (where = {}) ->
+getProfileWhere = (where = {}) ->
   tables.user.profile()
   .select(joinColumns.profile)
   .select(
@@ -69,7 +69,7 @@ getAllBulk = (entity) ->
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
 # Note: this differs from a usual "getAll" endpoint in that we bundle some project fields with profile results
 getProfiles = (auth_user_id) -> Promise.try () ->
-  _getProfileWhere
+  getProfileWhere
     "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
   .then (profiles) ->
     sandbox = _.find profiles, (p) -> p.sandbox is true
@@ -80,7 +80,7 @@ getProfiles = (auth_user_id) -> Promise.try () ->
       create auth_user_id: auth_user_id, sandbox: true, can_edit: true
       .then () ->
         # re-fetch for full list w/ ids
-        _getProfileWhere
+        getProfileWhere
           "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 
   .then (profiles) ->
@@ -88,7 +88,7 @@ getProfiles = (auth_user_id) -> Promise.try () ->
 
 # this gives us profiles for a non-subscribing (client) user, forego dealing with sandbox
 getClientProfiles = (auth_user_id) -> Promise.try () ->
-  _getProfileWhere
+  getProfileWhere
     "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
     "#{tables.user.project.tableName}.sandbox": false
   .then (profiles) ->
@@ -145,4 +145,5 @@ module.exports = {
   update
   create
   createForProject
+  getProfileWhere
 }
