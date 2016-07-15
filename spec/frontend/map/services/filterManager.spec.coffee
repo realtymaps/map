@@ -66,26 +66,11 @@ describe "rmapsFilterManagerService", ->
 
           expect(@subject.getFilters()).to.eql status: ['sold']
 
-        it 'notForSale', ->
-          @$rootScope.selectedFilters =
-            notForSale: true
-
-          expect(@subject.getFilters()).to.eql status: ['not for sale']
-
       describe 'multi filters', ->
 
-        it 'forSale and notForSale', ->
+        it 'forSale and pending', ->
           @$rootScope.selectedFilters =
             forSale: true
-            notForSale: true
+            pending: true
 
-          expect(@subject.getFilters()).to.eql status: ['for sale', 'not for sale']
-
-
-        it 'forSale, sold and notForSale', ->
-          @$rootScope.selectedFilters =
-            forSale: true
-            sold: true
-            notForSale: true
-
-          expect(@subject.getFilters()).to.eql status: ['for sale', 'sold', 'not for sale']
+          expect(@subject.getFilters()).to.eql status: ['for sale', 'pending']
