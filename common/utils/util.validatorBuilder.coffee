@@ -422,7 +422,7 @@ getBaseRules = (dataSourceType, dataListType) ->
   p2 = _.cloneDeep(_rules[dataSourceType].common)
   p3 = _.cloneDeep(_rules.common)
   builtBaseRules = _.defaultsDeep(p1, p2, p3)
-  return _(builtBaseRules).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])).filter((val) -> val?)
+  return _(builtBaseRules).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])).omit((val) -> !val?)
 getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
 buildDataRule = (rule) ->
