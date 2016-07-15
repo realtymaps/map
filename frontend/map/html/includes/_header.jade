@@ -1,3 +1,4 @@
+// Standard Site Header
 header.site-header
   .desktop-only
     .inner
@@ -11,17 +12,33 @@ header.site-header
             include ./header/_userblock
             include ./header/_search
           include ./header/_rightnav
-  .mobile-only
-    .inner(ng-if='!rmapsPageService.showMobileModalHeader() && !rmapsPageService.showMobileCustomHeader()')
-      .container-fluid
+
+// Realtor/Subscriber Header for Mobile
+.mobile-only
+  mobile-header.editor-header(ng-if="!principal.isProjectViewer()")
+    .inner
+      .mobile-header-left
         include ./header/_burger
+      .mobile-header-center
         include ./header/_logo
+        .mobile-header-title
+          span {{rmapsPageService.getTitle()}}
 
-        .site-header-right
-          div(ng-if="principal.isAuthenticated()")
-            include ./header/_search
+// Project Viewer Header for Mobile
+.mobile-only
+  mobile-header.viewer-header(ng-if="principal.isProjectViewer()")
+    .inner
+      .mobile-header-left
+        include ./header/_burger
+      .mobile-header-center
+        .mobile-header-title(ng-if="rmapsPageService.getTitle()")
+          span {{rmapsPageService.getTitle()}}
+        .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
+          span {{rmapsPageService.profiles.currentProfile.parent_name || project.name || 'Dashboard'}}
+      .mobile-header-right
+        i.icon.fa.fa-user.dashboard-realtor-icon
 
-// Custom Header
+// Custom Header for Mobile
 .mobile-only
   div(ng-if='rmapsPageService.showMobileCustomHeader()')
     mobile-header.custom-header(header-id="page-custom-header")
@@ -31,12 +48,12 @@ header.site-header
           mobile-header-target-left
         .mobile-header-center
           .mobile-header-title
-            span {{rmapsPageService.title}}
+            span {{rmapsPageService.getTitle()}}
             mobile-header-target-center
         .mobile-header-right
           mobile-header-target-right
 
-// Modal Header
+// Modal Header for Mobile
 .mobile-only
   div(ng-if='rmapsPageService.showMobileModalHeader()')
     mobile-header.modal-header(header-id="page-modal-header")
@@ -47,7 +64,7 @@ header.site-header
           mobile-header-target-left
         .mobile-header-center
           .mobile-header-title
-            span {{rmapsPageService.title}}
+            span {{rmapsPageService.getTitle()}}
             mobile-header-target-center
         .mobile-header-right
           mobile-header-target-right

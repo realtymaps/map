@@ -17,7 +17,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsMapIds, rmapsProfilesService, leafletData) ->
+  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsMapIds, rmapsPrincipalService, rmapsProfilesService) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -27,6 +27,7 @@ app.provider 'rmapsPageService', () ->
       #
       title: defaults.title
       meta: defaults.meta
+      profiles: rmapsProfilesService
 
       #
       # Mobile Header State
@@ -106,15 +107,21 @@ app.provider 'rmapsPageService', () ->
       #
 
       allowDynamicTitle: false
+      hasDynamicTitle: false
+
+      getTitle: () ->
+        return @title
 
       setDynamicTitle: (value) ->
         @title = value if value and @allowDynamicTitle
+        @hasDynamicTitle = true
 
       reset: () ->
         @mobile.custom = false
         @mobile.modal = false
         @title = defaults.title
         @meta = defaults.meta
+        @hasDynamicTitle = false
 
     page = new RmapsPageService
 
