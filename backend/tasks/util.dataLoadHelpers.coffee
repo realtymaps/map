@@ -708,6 +708,10 @@ ensureNormalizedTable = (dataType, subid) ->
         table.text('legal_unit_number')
       if dataType == 'deed' || dataType == 'mortgage'
         table.timestamp('close_date', true)
+      if dataType == 'deed'
+        table.text('seller_name')
+        table.text('seller_name_2')
+        table.text('document_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")

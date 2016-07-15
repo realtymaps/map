@@ -110,10 +110,6 @@ _rules =
       config:
         nullZero: true
 
-    close_date:
-      alias: 'Close Date'
-      type: name: 'datetime'
-
     fips_code:
       alias: 'FIPS code'
       required: true
@@ -132,6 +128,10 @@ _rules =
 
   mls:
     listing:
+      close_date:
+        alias: 'Close Date'
+        type: name: 'datetime'
+
       data_source_uuid:
         alias: 'MLS Number'
         required: true
@@ -146,9 +146,6 @@ _rules =
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'
         type: name: 'datetime'
-
-      address:
-        group: 'general'
 
       bedrooms:
         alias: 'Bedrooms'
@@ -196,7 +193,6 @@ _rules =
       status_display:
         alias: 'Status Display'
         required: true
-        group: 'general'
 
       substatus:
         alias: 'Sub-Status'
@@ -252,7 +248,6 @@ _rules =
 
       owner_name_2:
         alias: 'Owner 2'
-        required: true
         input: {}
         valid: () ->
           @input.first && @input.last || @input.full
@@ -268,9 +263,6 @@ _rules =
 
 
     tax:
-      address:
-        group: 'general'
-
       bedrooms:
         alias: 'Bedrooms'
         type: name: 'integer'
@@ -290,15 +282,6 @@ _rules =
       sqft_finished:
         alias: 'Finished Sq Ft'
         type: name: 'integer'
-
-      owner_name:
-        group: 'owner'
-
-      owner_name_2:
-        group: 'owner'
-
-      owner_address:
-        group: 'owner'
 
       year_built:
         alias: 'Year Built or Age'
@@ -323,17 +306,9 @@ _rules =
         type: name: 'datetime'
 
     deed:
-      address:
-        group: 'deed'
-
-      owner_name:
-        group: 'owner'
-
-      owner_name_2:
-        group: 'owner'
-
-      owner_address:
-        group: 'owner'
+      close_date:
+        alias: 'Close Date'
+        type: name: 'datetime'
 
       property_type:
         alias: 'Property Type'
@@ -347,18 +322,28 @@ _rules =
         alias: 'Recording Date'
         type: name: 'datetime'
 
+      seller_name:
+        alias: 'Seller 1'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      seller_name_2:
+        alias: 'Seller 2'
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      document_type:
+        alias: 'Document Type'
+
     mortgage:
-      address:
-        group: 'mortgage'
-
-      owner_name:
-        group: 'mortgage'
-
-      owner_name_2:
-        group: 'mortgage'
-
-      owner_address:
-        group: 'mortgage'
+      close_date:
+        alias: 'Close Date'
+        type: name: 'datetime'
 
 
 # RETS/MLS rule defaults for each data type
