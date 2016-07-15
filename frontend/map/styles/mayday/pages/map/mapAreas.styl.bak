@@ -4,8 +4,6 @@ $fnMakeMapAreas()
       overflow hidden
       padding 10px
       display flex
-      justify-content space-between
-      align-items center
 
       .entity
         .count
@@ -29,32 +27,23 @@ $fnMakeMapAreas()
             max-width 100%
             display inline
 
-      .content
-        display flex
-        align-items center
-        .circle-nr
-          display inline-block
-          padding 0 10px
-        p
-          margin 0
-
-        a
-          display block
-          padding 0
-          &:hover
-          &:focus
-          &:active
-            text-decoration none
-            color $light_blue
-          h3.title
-            font-size 16px
+        .content
+          float left
+          a
+            display block
+            padding 0
+            &:hover
+            &:focus
+            &:active
+              text-decoration none
+              color $light_blue
+            h3.title
+              font-size 16px
+              margin 0
+          p.properties
+            font-size 12px
+            color $text_gray_lighter
             margin 0
-        p.properties
-          font-size 12px
-          color $text_gray_lighter
-          margin 0
-          line-height 20px
-
+            line-height 20px
       .actions
         width inherit
-        color $gray_darkest

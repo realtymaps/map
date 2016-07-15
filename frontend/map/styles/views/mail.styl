@@ -29,7 +29,7 @@
 
   .head
     justify-content flex-end
-    
+
   .value
     border 1px solid black
     justify-content center
@@ -44,7 +44,7 @@
       border-top-left-radius 4px
     :nth-child(5)
       border-top-right-radius 4px
-      
+
   .prices.color-chart
     color $black
     :nth-child(2)
@@ -79,17 +79,17 @@
   float left
   margin-top 10px
   text-align center
-  
+
   .btn
     padding 2px 14px
 
   label
     font-size 14px
-    
+
   .disabled
     cursor not-allowed
 
-// 
+//
 // modals
 //
 .confirm-mail-modal
@@ -490,3 +490,36 @@
         .color-toggle input
           margin 0
 
+.send-to
+  label
+    display block
+    font-size 18px
+    line-height 2em
+    border-bottom 1px solid $gray_lighter
+    padding 20px
+    cursor pointer
+
+    &:last-child
+      border 0 none
+
+    input
+      visibility hidden
+
+    i
+      color transparent
+      margin-right 0.5em
+      border 1px solid $gray
+      background-color $dark_white
+      border-radius 6px
+
+    input:checked + i
+      color $light_blue
+
+    span
+      display inline-block
+      vertical-align top
+      line-height 2em
+
+      .total
+        color $text_gray_lighter
+        text-decoration underline
