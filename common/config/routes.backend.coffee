@@ -145,6 +145,7 @@ module.exports =
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
+    inArea: "#{apiBase}/properties/inArea/"
     parcelBase: "#{apiBase}/properties/parcel_base/"
     addresses: "#{apiBase}/properties/addresses/"
     detail: "#{apiBase}/properties/detail/"

@@ -27,17 +27,16 @@ span(
           popover="Add Area"
           ng-click="Toggles.toggleIsAreaDraw()")
             span.icon.icon-add_area
-            span New Area
+            span Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
           li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")
-            div
-              span.enity
-                +circleNrMixin("{{$index+1}}")
+            span.content
+              +circleNrMixin("{{$index+1}}")
+              p.title {{model.properties.area_name}}
 
-              span.content
-                p.title {{model.properties.area_name}}
-
-              span.actions(rmaps-require-project-editor)
-                span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
-                span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
+            span.actions(rmaps-require-project-editor)
+              span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
+              span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
+              span.fa.fa-bar-chart(ng-click="showStats(model); $event.stopPropagation()")
+              span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

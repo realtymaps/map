@@ -1,9 +1,10 @@
 logger = require('../config/logger').spawn('map:filterSummary:drawnShapes')
-filterSummaryService = require './service.properties.combined.filterSummary'
+combined = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
-{validators} = require '../utils/util.validation'
+validation = require '../utils/util.validation'
+validators = validation.validators
 {distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
 
 ###
@@ -25,7 +26,7 @@ throwOnUndefined = (thing, name) ->
 throwOnUndefined(detailsName,"detailsName")
 throwOnUndefined(drawnShapesName,"drawnShapesName")
 
-getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
+getDefaultQuery = (query = combined.getDefaultQuery()) ->
   #http://stackoverflow.com/questions/12204834/get-distance-in-meters-instead-of-degrees-in-spatialite
   #earth meters per degree 111195
   query.joinRaw tables.finalized.combined().raw """
@@ -39,27 +40,52 @@ getDefaultQuery = (query = filterSummaryService.getDefaultQuery()) ->
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
-  # logger.debug.green queryParams, true
-  query = filterSummaryService.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
+
+  query = combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
+
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
-  if queryParams.isArea?
-    if queryParams.isArea
-      query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
+  if queryParams.isArea
+    query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
+
+  if queryParams.areaId
+    query = query.where("#{drawnShapesName}.id", queryParams.areaId)
 
   query
 
 getResultCount = ({queryParams, permissions}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  q = getFilterSummaryAsQuery({queryParams, query, permissions})
-  logger.debug q.toString()
-  q
+  getFilterSummaryAsQuery({queryParams, query, permissions})
+
+getPropertyIdsInArea = ({queryParams, profile}) ->
+  # Calculate permissions for the current user
+  combined.getPermissions(profile)
+
+  .then (permissions) ->
+    logger.debug permissions
+
+    if !queryParams.areaId
+      throw new Exception('areaId is required')
+
+    query = getDefaultQuery(tables.finalized.combined().distinct("rm_property_id"))
+    .where(active: true)
+    .where("#{drawnShapesName}.id", queryParams.areaId)
+
+    query = combined.getFilterSummaryAsQuery({queryParams, query, permissions})
+
+    logger.debug -> query.toString()
+
+    query.then (properties) ->
+      _.map(properties, 'rm_property_id')
+
 
 module.exports = {
   getResultCount
   getFilterSummaryAsQuery
-  transforms: _.merge {}, filterSummaryService.transforms,
+  getPropertyIdsInArea
+  transforms: _.merge {}, combined.transforms,
     isArea: validators.boolean(truthy: true, falsy: false)
+    areaId: validators.integer()
     bounds: validators.string(null:true)
     project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
 }
