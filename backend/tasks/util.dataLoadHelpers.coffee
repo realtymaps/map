@@ -684,7 +684,7 @@ ensureNormalizedTable = (dataType, subid) ->
       table.text('parcel_id').notNullable()
       table.json('address')
       table.decimal('price', 12, 2)
-      table.timestamp('close_date', true)
+      table.timestamp('recording_date', true)
       table.text('owner_name')
       table.text('owner_name_2')
       table.integer('rm_raw_id').notNullable()
@@ -706,6 +706,8 @@ ensureNormalizedTable = (dataType, subid) ->
       if dataType == 'tax' || dataType == 'deed'
         table.text('property_type')
         table.text('legal_unit_number')
+      if dataType == 'deed' || dataType == 'mortgage'
+        table.timestamp('close_date', true)
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")
