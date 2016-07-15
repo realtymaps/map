@@ -63,13 +63,12 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
   imageId = 0
 
   object.objectStream.once 'error', (error) ->
-    console.log "stream error in mls.photos#imagesHandle: #{error}"
     cb(new photoErrors.ObjectsStreamError(error))
 
   object.objectStream.on 'data', (event) ->
 
     if event?.error?
-      console.log "error received in mls.photos#imagesHandle: #{event.error}"
+      cb(event.error)
       return
 
     logger.debug event.headerInfo
@@ -93,11 +92,12 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
   object.objectStream.once 'end', () ->
     if !everSentData and doThrowNoEvents
-      console.log "error in mls.photos#imagesHandle: No object events"
       cb(new photoErrors.NoPhotoObjectsError 'No object events')
     cb(null, null, true)
 
 
+# TODO: the below code will choke and die on errors -- you can't throw from within event handlers (or the imagesHandle cb)
+# TODO: https://realtymaps.atlassian.net/browse/MAPD-1182
 imagesStream = (object, archive = Archiver('zip')) ->
 
   archive.once 'error', (err)  ->
@@ -105,7 +105,6 @@ imagesStream = (object, archive = Archiver('zip')) ->
 
   imagesHandle object, (err, payload, isEnd) ->
     if err
-      console.log "error in mls.photos#imagesStream: #{err}"
       throw err
 
     if isEnd
