@@ -26,6 +26,8 @@ module.exports = (options = {}) ->
         result.unit = "#{value.unitNum}".trim()
         if value.unitType
           result.unit = "#{value.unitType} #{result.unit}"
+      else if value.unitType
+        result.unit = value.unitType
 
       if value.streetNum && value.streetName && value.streetSuffix
         if value.streetNum

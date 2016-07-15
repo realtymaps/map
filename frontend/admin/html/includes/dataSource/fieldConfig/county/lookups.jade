@@ -1,5 +1,5 @@
 .col-md-12.scroll
-  .row(ng-if="fieldData.current.config.Interpretation == 'Lookup'")
+  .row(ng-if="fieldData.current.config.Interpretation == 'Lookup' || fieldData.current.config.Interpretation == 'LookupMulti'")
     .col-md-2 Do Lookup Table Mapping?
     .col-md-4
       input(type="checkbox" ng-model="fieldData.current.config.doLookup" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")

@@ -49,7 +49,7 @@ ruleDefaults =
     if globalOpts.nullString
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
-      transformArr.push name: 'map', options: {unmapped: 'pass', lookup: {lookupName: @config.LookupName, proxyName: @input, dataSourceId: @data_source_id, dataListType: @data_type}}
+      transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', lookup: {lookupName: @config.LookupName, proxyName: @input, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
       transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
 
@@ -436,8 +436,10 @@ buildDataRule = (rule) ->
     else if rule.config.Interpretation == 'LookupMulti'
       rule.type.label = 'Restricted Text (multiple values)'
       rule.type.name = 'array'
-      rule.config.split = ','
-      rule.config.nullEmptyArray = true
+      if rule.data_source_type == 'county'
+        rule.config.doLookup ?= true
+      rule.config.split ?= ','
+      rule.config.nullEmptyArray ?= true
       rule.config.nullEmpty = false
     else
       rule.type.label = 'User-Entered Text'
