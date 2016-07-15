@@ -2,7 +2,7 @@ include ../includes/mixins/_leafletMixin.jade
 
 .project-dashboard-container
   .mobile-only
-    mobile-custom-header
+    mobile-custom-header(ng-if="principal.isProjectViewer()")
       mobile-header-buttons(header-id="page-custom-header" button-type="center")
         span {{profile.parent_name || project.name || 'Dashboard'}}
 
