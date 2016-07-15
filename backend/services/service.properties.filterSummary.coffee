@@ -92,7 +92,7 @@ module.exports =
           when 'clusterOrDefault'
             # Count the number of properties and do clustering if there are enough
             query = filterSummaryImpl.getResultCount({queryParams, permissions})
-            logger.debug query.toString()
+            logger.debug -> query.toString()
             query.then ([result]) ->
               if result.count > config.backendClustering.resultThreshold
                 logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"

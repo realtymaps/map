@@ -73,7 +73,7 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
 
     query = combined.getFilterSummaryAsQuery({queryParams, query, permissions})
 
-    logger.debug query.toString()
+    logger.debug -> query.toString()
 
     query.then (properties) ->
       _.map(properties, 'rm_property_id')
