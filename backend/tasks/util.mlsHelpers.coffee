@@ -283,7 +283,6 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
 
         if err
-          logger.spawn(subtask.task_name).debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
           return reject err
 
         if isEnd
