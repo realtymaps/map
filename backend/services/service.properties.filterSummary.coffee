@@ -41,7 +41,7 @@ module.exports =
 
         summary = () ->
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
-          logger.debug query.toString()
+          logger.debug -> query.toString()
           query.then (properties) ->
             combined.scrubPermissions(properties, permissions)
 
