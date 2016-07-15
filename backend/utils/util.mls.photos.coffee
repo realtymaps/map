@@ -64,7 +64,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
   object.objectStream.once 'error', (error) ->
     console.log "stream error in mls.photos#imagesHandle: #{error}"
-    cb new photoErrors.ObjectsStreamError error
+    cb(new photoErrors.ObjectsStreamError(error))
 
   object.objectStream.on 'data', (event) ->
 
@@ -105,6 +105,7 @@ imagesStream = (object, archive = Archiver('zip')) ->
 
   imagesHandle object, (err, payload, isEnd) ->
     if err
+      console.log "error in mls.photos#imagesStream: #{err}"
       throw err
 
     if isEnd

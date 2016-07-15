@@ -10,7 +10,7 @@ module.exports =
 
     toGeoJson: (query) ->
       query
-      .then (rows) ->
+      .then (rows) =>
         toGeoFeatureCollection rows,
           toMove: @drawnShapeCols
           geometry: ['geometry_center', 'geometry', 'geometry_line']

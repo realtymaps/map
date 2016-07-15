@@ -4,7 +4,6 @@ Promise = require 'bluebird'
 backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
 logger = require('../../../config/logger').spawn('vero')
-{EMAIL_PLATFORM} = require '../../../config/config'
 veroErrors = require '../../../utils/errors/util.errors.vero'
 veroEvents = require '../../../enums/enum.vero.events'
 analyzeValue = require '../../../../common/utils/util.analyzeValue'
@@ -55,7 +54,15 @@ module.exports = (vero) ->
     logger.debug "@@@@@@@@ notificationProperties @@@@@@@@"
     logger.debug {opts, name, errorName, eventName}
     logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    {authUser, properties, type, frequency} = onMissingArgsFail args: opts, required: ['authUser', 'properties']
+    {
+      authUser
+      properties
+      type
+      frequency
+      notification_id
+      project_id
+      from
+    } = onMissingArgsFail args: opts, required: ['authUser', 'properties', 'notification_id']
 
     opts = {
       authUser
@@ -63,6 +70,9 @@ module.exports = (vero) ->
         properties
         type
         frequency
+        notification_id
+        project_id
+        from
       }
     }
 

@@ -10,13 +10,14 @@ getColumns = [
   'last_attempt_time'
   'attempts'
   'error'
+  'status'
 ]
 
 explicitGetColumns = getColumns.map (col) ->
   "#{tables.user.notificationQueue.tableName}.#{col}"
 
 explicitGetColumnsWithUserConfig = explicitGetColumns.concat(
-  _.without notificationConfigInternals, ['id']
+  _.without notificationConfigInternals.allColumns, "#{tables.user.notificationConfig.tableName}.id"
 )
 
 module.exports = {

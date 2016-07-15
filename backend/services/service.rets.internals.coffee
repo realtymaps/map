@@ -53,7 +53,7 @@ getRetsClient = (mlsId, handler) ->
     _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
     .then (retsClient) ->
       handler(retsClient, serverInfo)
-    .catch isTransientRetsError, (error) ->
+    .catch isRetsAuthenticationError, (error) ->
       referenceId = [serverInfo.url, creds.username, creds.password, serverInfo.static_ip].join('__')
       referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
       throw error
@@ -61,7 +61,7 @@ getRetsClient = (mlsId, handler) ->
       setTimeout (() -> _getRetsClientInternal.deleteRef(serverInfo.url, creds.username, creds.password, serverInfo.static_ip)), 60000
 
 
-isTransientRetsError = (error) ->
+isRetsAuthenticationError = (error) ->
   cause = errorHandlingUtils.getRootCause(error)
   if cause instanceof rets.RetsReplyError && cause.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
     return true
@@ -90,6 +90,6 @@ buildSearchQuery = (tableData, utcOffset, opts) ->
 
 module.exports = {
   getRetsClient
-  isTransientRetsError
+  isRetsAuthenticationError
   buildSearchQuery
 }

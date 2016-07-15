@@ -16,18 +16,12 @@ subStatus =
 propertyType = {
   'Single Family',
   'Condo / Townhome',
-  'Lots',
   'Multi-Family'
-}
-
-zoning = {
-  'Agricultural'
+  'Land / Lot',
   'Commercial'
-  'Condominium Unit'
   'Industrial'
-  'Land'
-  'Multi-Family Residential'
-  'Single-Family Residential'
+  'Agricultural'
+  'Recreational / Seasonal'
 }
 
 categories =
@@ -89,12 +83,20 @@ address =
   unitNum: 'Unit Number'
   showStreetInfo: 'Show Street Info'
 
+
+statusFull = _.extend(statusUniversal, statusFilter)
+subStatusFull = _.extend(statusUniversal, statusFilter, subStatus)
+statusData = statusUniversal
+
 mod.constant 'rmapsParcelEnums', {
-  status: _.extend(statusUniversal, statusFilter)
-  subStatus: _.extend(statusUniversal, statusFilter, subStatus)
-  statusData: statusUniversal
+  status: statusFull
+  subStatus: subStatusFull
+  statusData
   categories
   address
   propertyType
-  zoning
+  lookupOptions:
+    status: _.values(statusData)
+    substatus: _.values(subStatusFull)
+    property_type: _.values(propertyType)
 }

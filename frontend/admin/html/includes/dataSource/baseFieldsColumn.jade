@@ -1,0 +1,14 @@
+.col-md-2.list-container
+  h4 Filters
+  .row-slim.row
+    .col-md-12
+      .filter-container
+        input(ng-model="filterSearchText" placeholder="Search")
+  .row-slim.row
+    .col-md-12
+      .field-container(cg-busy="baseLoading")
+        .field.base(
+        ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
+        ng-click="selectField(item)"
+        ng-repeat="item in categories.base | filter:rootSearchText | filter:filterSearchText | orderBy : 'alias'") {{item.alias}}
+          span.datatype(ng-show="item.valid() && !item.input")

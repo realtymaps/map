@@ -12,32 +12,16 @@ sqlHelpers = require '../utils/util.sql.helpers'
   config_notification with user_notification. This is mainly intended for queing
   and actually sending notifications.
 ###
-sendNotificationNow = ({row, options, transaction}) ->
+sendNotificationNow = ({row, options}) ->
   logger.debug "@@@@ sendNotificationNow prior getAllWithUser@@@@"
   logger.debug row
   logger.debug options
-  notificationConfigService.getAllWithUser(id: row.config_notification_id, {transaction})
-  .then (configRows) ->
-    logger.debug "@@@@ sendNotificationNow configRows @@@@"
-    logger.debug configRows
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-    if !configRows?.length
-      return
+  handle = internals.sendHandles[row.method] || internals.sendHandles.default
 
-    configRow = configRows[0]
-
-    # join additional data like user data
-    row = _.extend {}, row, configRow
-
-    logger.debug "sendNotificationNow, merged"
-    logger.debug "sendNotificationNow, method: #{row.method}"
-
-    handle = internals.sendHandles[row.method] || internals.sendHandles.default
-
-    handle(row, options)
-    .catch errorHelpers.isUnhandled, (err) ->
-      throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
+  handle(row, options)
+  .catch errorHelpers.isUnhandled, (err) ->
+    throw new errorHelpers.PartiallyHandledError(err, 'Unhandled immediate notification error')
 
 ###
   Public: enqueues notifications to user_notifcation_queue.
@@ -63,25 +47,36 @@ notifyByUser = ({opts, payload}) ->
   logger.debug opts
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-  internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
-  .then (users) ->
-    entity = auth_user_id: _.pluck(users, 'id')
-    _.extend entity, _.pick opts, ['type', 'method']
+  internals.distribute.getFromUser(opts.id)
+  .then (rows) ->
+    if !rows.length
+      logger.warn "User not found aborting notification creation. User id: #{opts.id}"
+      return
+    [fromUser] = rows
 
-    logger.debug "@@@@ notifyByUser: entity @@@@"
-    logger.debug entity
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    payload.from = fromUser
 
-    query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
+    internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
+    .then (users) ->
+      entity = auth_user_id: _.pluck(users, 'id')
+      _.extend entity, _.pick opts, ['type', 'method']
 
-    logger.debug "@@@@ notifyByUser: internals.enqueue @@@@"
-    internals.enqueue {
-      configRowsQuery: query
-      options: payload
-      verify: opts.verify
-      verbose: opts.verbose
-      from: 'notifyByUser'
-    }
+      logger.debug "@@@@ notifyByUser: entity @@@@"
+      logger.debug entity
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+      query = sqlHelpers.whereAndWhereIn notificationConfigService.getAllWithUser(), entity
+
+      logger.debug "@@@@ notifyByUser: internals.enqueue @@@@"
+      internals.enqueue {
+        configRowsQuery: query
+        options: payload
+        verify: opts.verify
+        verbose: opts.verbose
+        from: 'notifyByUser'
+        project_id: opts.project_id
+        type: opts.type
+      }
 
 ###
   Grab specific notification configs by type and or method

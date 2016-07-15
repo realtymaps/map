@@ -1,7 +1,9 @@
 {basePath} = require '../globalSetup'
 dbs = require("#{basePath}/config/dbs")
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
-{expect} = require 'chai'
+{expect, should} = require 'chai'
+should()
+SqlMock = require '../../specUtils/sqlMock'
 
 describe 'util.sql.helpers', ->
 
@@ -39,3 +41,91 @@ describe 'util.sql.helpers', ->
     tableName = 'temp_table'
     query = sqlHelpers.buildUpsertBindings {idObj:ids, entityObj: entity, tableName}
     expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
+
+  describe "whereIn", ->
+    mock = query = null
+
+    beforeEach ->
+      mock = new SqlMock 'finalized', 'combined'
+      query = mock.dbFn()()
+
+    describe "non array", ->
+      it "int", ->
+        query = sqlHelpers.whereIn(query, 'rm_property_id', 1)
+        mock.whereSpy.called.should.be.ok
+        mock.whereSpy.args.should.be.eql [
+          ["rm_property_id", 1]
+        ]
+
+      it "string", ->
+        query = sqlHelpers.whereIn(query, 'rm_property_id', "12021_002_001")
+        mock.whereSpy.called.should.be.ok
+        mock.whereSpy.args.should.be.eql [
+          ["rm_property_id", "12021_002_001"]
+        ]
+
+      it "boolean", ->
+        query = sqlHelpers.whereIn(query, 'rm_property_id', true)
+        mock.whereSpy.called.should.be.ok
+        mock.whereSpy.args.should.be.eql [
+          ["rm_property_id", true]
+        ]
+
+      it "undefined", ->
+        query = sqlHelpers.whereIn(query, 'rm_property_id', undefined)
+        mock.whereRawSpy.called.should.be.ok
+        mock.whereRawSpy.args.should.be.eql [
+          ["FALSE"]
+        ]
+
+      it "null", ->
+        query = sqlHelpers.whereIn(query, 'rm_property_id', undefined)
+        mock.whereRawSpy.called.should.be.ok
+        mock.whereRawSpy.args.should.be.eql [
+          ["FALSE"]
+        ]
+
+      describe 'array', ->
+        describe "single item", ->
+          it "int", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', [1])
+            mock.whereSpy.called.should.be.ok
+            mock.whereSpy.args.should.be.eql [
+              ["rm_property_id", 1]
+            ]
+
+          it "string", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', ["12021_002_001"])
+            mock.whereSpy.called.should.be.ok
+            mock.whereSpy.args.should.be.eql [
+              ["rm_property_id", "12021_002_001"]
+            ]
+
+          it "boolean", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', [true])
+            mock.whereSpy.called.should.be.ok
+            mock.whereSpy.args.should.be.eql [
+              ["rm_property_id", true]
+            ]
+
+        describe "many items", ->
+          it "int", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', [1,2,3])
+            mock.whereInSpy.called.should.be.ok
+            mock.whereInSpy.args.should.be.eql [
+              ["rm_property_id", [1,2,3]]
+            ]
+
+          it "string", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', ["12021_002_001", "12021_002_002"])
+            mock.whereInSpy.called.should.be.ok
+            mock.whereInSpy.args.should.be.eql [
+              ["rm_property_id", ["12021_002_001", "12021_002_002"]]
+            ]
+
+          it "boolean", ->
+            query = sqlHelpers.whereIn(query, 'rm_property_id', [true,false])
+            mock.whereInSpy.called.should.be.ok
+            mock.whereInSpy.args.should.be.eql [
+              ["rm_property_id", [true, false]]
+            ]

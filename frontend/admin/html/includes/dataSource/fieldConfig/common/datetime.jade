@@ -1,0 +1,16 @@
+.col-md-12.typeahead.scroll(ng-if="fieldData.current.type.name == 'datetime'")
+  .row
+    .col-md-2 Date Format
+    .col-md-4
+      input(
+        type="text"
+        ng-model="fieldData.current.config.format"
+        placeholder="YYYY-MM-DD[T]HH:mm:ss"
+        ng-disabled="fieldData.current.config.advanced"
+        ng-change="updateRule()"
+        typeahead="format for format in dateFormats | filter:$viewValue"
+        typeahead-min-length=0
+        typeahead-on-select="updateRule()"
+      )
+    .col-md-6.help Date formatting, as documented #{''}
+      a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here

@@ -238,6 +238,7 @@ module.exports =
   webhooks:
     apiBase: apiBaseWebhooks
     stripe: "#{apiBaseWebhooks}/stripe"
+    vero: "#{apiBaseWebhooks}/vero"
   charges:
     apiBase: apiBaseCharges
     getHistory: "#{apiBaseCharges}/history"

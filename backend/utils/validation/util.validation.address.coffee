@@ -3,6 +3,7 @@ DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
 logger = require('../../config/logger').spawn('validation:address')
 usStates = require '../../../common/utils/util.usStates'
+_ = require 'lodash'
 
 module.exports = (options = {}) ->
   (param, value) ->
@@ -22,7 +23,7 @@ module.exports = (options = {}) ->
         result.co = "c/o #{value.careOf.toInitCaps()}"
 
       if value.unitNum
-          result.unit = "#{value.unitNum}".trim()
+        result.unit = "#{value.unitNum}".trim()
         if value.unitType
           result.unit = "#{value.unitType} #{result.unit}"
 

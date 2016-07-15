@@ -3,12 +3,11 @@ logger = require('../config/logger').spawn('map:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
-filterAddress = require "../enums/filterAddress"
 filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
 cluster = require '../utils/util.sql.manual.cluster.combined'
-{currentProfile} = require '../../common/utils/util.profile'
+
 
 dbFn = tables.finalized.combined
 
@@ -106,27 +105,28 @@ getPermissions = (profile) -> Promise.try ->
           .where('id', profile.parent_auth_user_id).then ([owner]) ->
             permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
             permissions
-
+      logger.debug "@@@@ permissions @@@@"
+      logger.debug permissions
       return permissions
 
 queryPermissions = (query, permissions = {}) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
   query.where ->
     if permissions.fips?.length && mls?.length
-      @.where ->
-        @.where("data_source_type", "county")
+      @where ->
+        @where("data_source_type", "county")
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
-      @.orWhere ->
-        @.where("data_source_type", "mls")
+      @orWhere ->
+        @where("data_source_type", "mls")
         sqlHelpers.whereIn(@, "data_source_id", mls)
     else if mls?.length
-      @.where("data_source_type", "mls")
+      @where("data_source_type", "mls")
       sqlHelpers.whereIn(@, "data_source_id", mls)
     else if permissions.fips?.length
-      @.where("data_source_type", "county")
+      @where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
     else if !permissions.superuser
-      @.whereRaw("FALSE")
+      @whereRaw("FALSE")
 
 scrubPermissions = (data, permissions) ->
   if !permissions.superuser
@@ -160,7 +160,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       # only need to do any filtering if not all available statuses are selected or all statuses
       #   are selected and sold date range is provided
       if filters.status.length < statuses.length || filters.soldRange
-        @.where () ->
+        @where () ->
           sold = false
           hardStatuses = []
           for status in filters.status
@@ -170,10 +170,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
               hardStatuses.push(status)
 
           if sold
-            @.orWhere () ->
-              @.where("#{dbFn.tableName}.status", 'sold')
+            @orWhere () ->
+              @where("#{dbFn.tableName}.status", 'sold')
               if filters.soldRange
-                @.whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
+                @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
             sqlHelpers.orWhereIn(@, "#{dbFn.tableName}.status", hardStatuses)
@@ -183,10 +183,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       sqlHelpers.between(@, "#{dbFn.tableName}.acres", filters.acresMin, filters.acresMax)
 
       if filters.bedsMin
-        @.where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
+        @where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
 
       if filters.bathsMin
-        @.where("#{dbFn.tableName}.baths_total", ">=", filters.bathsMin)
+        @where("#{dbFn.tableName}.baths_total", ">=", filters.bathsMin)
 
       if filters.ownerName
         # need to avoid any characters that have special meanings in regexes
@@ -200,17 +200,17 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
         sqlHelpers.allPatternsInAnyColumn(@, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name_2"])
 
       if filters.listedDaysMin
-        @.where("days_on_market", ">=", filters.listedDaysMin)
+        @where("days_on_market", ">=", filters.listedDaysMin)
       if filters.listedDaysMax
-        @.where("days_on_market", "<=", filters.listedDaysMax)
+        @where("days_on_market", "<=", filters.listedDaysMax)
 
       if filters.propertyType
-        @.where("#{dbFn.tableName}.property_type", filters.propertyType)
+        @where("#{dbFn.tableName}.property_type", filters.propertyType)
 
       sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
       if filters.hasImages
-        @.where("photos", "!=", "{}")
+        @where("photos", "!=", "{}")
 
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)

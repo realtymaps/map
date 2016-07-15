@@ -30,10 +30,10 @@ span(
             span Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
-          li(ng-repeat="model in areas | orderBy:'area_name'" ng-click="centerOn(model)")
+          li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")
             span.content
               +circleNrMixin("{{$index+1}}")
-              p.title {{model.area_name}}
+              p.title {{model.properties.area_name}}
 
             span.actions(rmaps-require-project-editor)
               span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

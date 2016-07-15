@@ -5,6 +5,8 @@ require '../../../common/extensions/strings'
 logger = require('../../config/logger').spawn 'util:validation:string'
 
 module.exports = (options = {}) ->
+  if options.in? && !Array.isArray(options.in)
+    throw new Error("options.in must be of type Array.")
   (param, value) -> Promise.try () ->
     if !value?
       return null
@@ -18,8 +20,11 @@ module.exports = (options = {}) ->
       return Promise.reject new DataValidationError("string longer than maximum length: #{options.maxLength}", param, value)
     if options.regex?
       regex = new RegExp(options.regex)
-      if not regex.test(value)
+      if !regex.test(value)
         return Promise.reject new DataValidationError("string does not match regex: #{regex}", param, value)
+    if options.in?
+      if !_.includes options.in, value
+        return Promise.reject new DataValidationError("string is nothin within : [#{options.in.join(',')}] options.", param, value)
 
     transformedValue = value
 

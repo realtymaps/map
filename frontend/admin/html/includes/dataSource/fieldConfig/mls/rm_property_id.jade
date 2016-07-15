@@ -1,0 +1,12 @@
+.col-md-12.scroll(ng-show="fieldData.current.type.name == 'rm_property_id'")
+  .row
+    .col-md-2 ParcelId
+    .col-md-10
+      rmaps-subinput(name="Parcel" field="apn")
+  .row
+    .col-md-2 FIPS Code (preferred), or County and State
+    .col-md-10
+      rmaps-subinput(name="Fips Code" field="fipsCode")
+      span.sep OR
+      rmaps-subinput(name="County" field="county")
+      rmaps-subinput(name="State" field="stateCode")
