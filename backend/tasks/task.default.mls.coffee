@@ -102,8 +102,6 @@ storePhotosPrep = (subtask) ->
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
   taskLogger.debug subtask
-  #NOTE currently we can not do image download at high volume until we pool mls connections
-  #swflmls, MRED and others only allow one connection at a time
   if !subtask?.data?.values.length
     taskLogger.debug 'no values to process for storePhotos'
     return
