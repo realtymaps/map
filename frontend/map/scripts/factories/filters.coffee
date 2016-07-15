@@ -48,7 +48,6 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: 730, name: '2 years+'}
     ]
     soldRangeValues: [
-      { value: undefined, name: 'All of time' }
       { value: '10 day', name: '10 days' }
       { value: '30 day', name: '30 days' }
       { value: '60 day', name: '60 days' }
@@ -59,8 +58,34 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: '1 year', name: '1 year' }
       { value: '2 year', name: '2 years' }
       { value: '3 year', name: '3 years' }
+      { value: 'all', name: 'All of time' }
     ]
 
   values.soldRange = _.zipObject(_.map(values.soldRangeValues, 'value'), _.map(values.soldRangeValues, 'name'))
 
-  {values}
+  MIN_BEDS = 0
+  MAX_BEDS = 10
+  MIN_BATHS = 0
+  MAX_BATHS = 6
+
+  valueDefaults =
+    bedsMin: MIN_BEDS
+    bathsMin: MIN_BATHS
+    priceMin: null
+    priceMax: null
+    sqftMin: null
+    sqftMax: null
+    acresMin: null
+    acresMax: null
+    listedDaysMin: null
+    listedDaysMax: null
+    closePriceMin: null
+    closePriceMax: null
+    closeDateMin: null
+    closeDateMax: null
+    ownerName: null
+    propertyType: null
+    hasImages: false
+    soldRange: '120 day'
+
+  {values, valueDefaults, MIN_BEDS, MAX_BEDS, MIN_BATHS, MAX_BATHS}
