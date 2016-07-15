@@ -22,14 +22,14 @@ getLookupMap = memoize.promise(getLookupMap, {primitive: true})
 
 getLookupName = (data_source_id, data_list_type, proxyName) ->
   query = tables.config.dataSourceFields()
-  .select('LongValue', 'Value')
+  .select('LookupName')
   .where({data_source_id, data_list_type, SystemName: proxyName})
   .then (rows) ->
     if !rows?.length
       throw new DataValidationError("lookup proxy '#{proxyName}' not found for source #{data_source_id}, list_type #{data_list_type}")
-    if !rows[0].config?.lookup?.lookupName
+    if !rows[0]?.LookupName
       throw new DataValidationError("lookup proxy '#{data_source_id}/#{data_list_type}/#{proxyName}' has no lookup name")
-    return rows[0].config.lookup.lookupName
+    return rows[0]?.LookupName
 getLookupName = memoize.promise(getLookupName, {primitive: true})
 
 

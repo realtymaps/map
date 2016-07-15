@@ -3,12 +3,11 @@ logger = require('../config/logger').spawn('map:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
-filterAddress = require "../enums/filterAddress"
 filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
 cluster = require '../utils/util.sql.manual.cluster.combined'
-{currentProfile} = require '../../common/utils/util.profile'
+
 
 dbFn = tables.finalized.combined
 
@@ -106,7 +105,8 @@ getPermissions = (profile) -> Promise.try ->
           .where('id', profile.parent_auth_user_id).then ([owner]) ->
             permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
             permissions
-
+      logger.debug "@@@@ permissions @@@@"
+      logger.debug permissions
       return permissions
 
 queryPermissions = (query, permissions = {}) ->

@@ -70,7 +70,7 @@ ruleDefaults =
     if @config.mapping
       map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
       if Object.keys(map).length > 0
-        transformArr.push name: 'map', options: {unmapped: 'pass', map: map}
+        transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', map: map}
 
     transformArr
 
@@ -104,7 +104,9 @@ _rules =
 
     price:
       alias: 'Price'
-      type: name: 'currency'
+      type:
+        name: 'currency'
+        hasDecimal: true
       config:
         nullZero: true
 
@@ -190,21 +192,15 @@ _rules =
       status:
         alias: 'Status'
         required: true
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       status_display:
         alias: 'Status Display'
         required: true
         group: 'general'
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       substatus:
         alias: 'Sub-Status'
         required: true
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'pass'}
 
       discontinued_date:
         alias: 'Discontinued Date'
@@ -219,15 +215,20 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
+        config:
+          unmapped: 'null'
+
+      zoning:
+        alias: 'Zoning'
 
       description:
         alias: 'Description'
 
       original_price:
         alias: 'Original Price'
-        type: name: 'currency'
+        type:
+          name: 'currency'
+          hasDecimal: true
         config:
           nullZero: true
 
@@ -306,6 +307,14 @@ _rules =
         valid: () ->
           @input.year || @input.age
 
+      property_type:
+        alias: 'Property Type'
+        config:
+          unmapped: 'null'
+
+      zoning:
+        alias: 'Zoning'
+
       legal_unit_number:
         alias: 'Legal Unit Number'
 
@@ -324,13 +333,8 @@ _rules =
 
       property_type:
         alias: 'Property Type'
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
-
-      zoning:
-        alias: 'Zoning'
-        getTransform: () ->
-          name: 'map', options: {map: @config.map ? {}, unmapped: 'null'}
+        config:
+          unmapped: 'null'
 
       legal_unit_number:
         alias: 'Legal Unit Number'
@@ -361,12 +365,13 @@ typeRules =
     type:
       name: 'float'
       label: 'Number (decimal)'
+      hasDecimal: true
     config:
       nullZero: true
   Long:
     type:
       name: 'float'
-      label: 'Number (decimal)'
+      label: 'Number (integer)'
     config:
       nullZero: true
   Character:

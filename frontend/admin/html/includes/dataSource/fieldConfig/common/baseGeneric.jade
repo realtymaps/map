@@ -1,0 +1,15 @@
+// Generic input handling here
+.col-md-12.scroll(ng-if="fieldData.current.input == null || typeOf(fieldData.current.input) == 'string'")
+  // only for "simple"/string input values (i.e. not array or object)
+  .row.heading
+    .col-md-2 RealtyMaps Field
+    .col-md-10
+      .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span {{fieldData.current.alias}}:
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+.col-md-12.scroll(ng-if="fieldData.current.input != null && typeOf(fieldData.current.input) != 'string'")
+  // only for complex input values (i.e. array or object)
+  .row.heading
+    .col-md-2 RealtyMaps Field
+    .col-md-2 {{fieldData.current.alias}}

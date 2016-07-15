@@ -1,0 +1,10 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'rm_property_id'")
+  .row
+    .col-md-2 Fips Code and Assessor's Parcel Number
+    .col-md-10
+      rmaps-subinput(name="Fips Code" field="fipsCode")
+      rmaps-subinput(name="APN" field="apn")
+  .row
+    .col-md-2 Sequence Number (optional)
+    .col-md-10
+      rmaps-subinput(name="Sequence Number" field="sequenceNumber")

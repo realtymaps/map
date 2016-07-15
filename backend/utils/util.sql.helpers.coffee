@@ -78,7 +78,17 @@ whereIntersects = (query, geoPointJson, column = 'geometry_raw') ->
 getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
+_whereInArrayToValues = (values) ->
+  if Array.isArray values
+    return values
+
+  if !values?
+    values = []
+  else
+    values = [values]
+
 whereIn = (query, column, values) ->
+  values =_whereInArrayToValues(values)
   # this logic is necessary to avoid SQL parse errors
   if values.length == 0
     query.whereRaw('FALSE')
@@ -91,6 +101,7 @@ orWhereIn = (query, column, values) ->
   query.orWhere () -> whereIn(@, column, values)
 
 whereNotIn = (query, column, values) ->
+  values =_whereInArrayToValues(values)
   # this logic is necessary to avoid SQL parse errors
   if values.length == 0
     query.whereRaw('TRUE')

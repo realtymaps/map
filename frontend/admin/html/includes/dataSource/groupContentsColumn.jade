@@ -1,0 +1,16 @@
+.col-md-3.list-container(ng-if="!showGrid && fieldData.category")
+  h4 {{fieldData.category.label}}
+  .field-container(
+  rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
+  cg-busy="fieldData.category.loading")
+    .field(
+    class="base unselectable"
+    ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
+    .field(
+    ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.config.DataType}"
+    ng-click="item.unselectable || selectField(item)"
+    rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
+    ng-repeat="item in fieldData.category.items | filter:rootSearchText")
+      span(ng-show="!item.unselectable") {{item.input}}
+      span(ng-show="item.unselectable") {{item.alias}}
+      span.datatype(ng-class="[item.type.name, item.config.Interpretation]" ng-show="item.type")

@@ -1,0 +1,9 @@
+.col-md-12.scroll
+  .row(ng-if="fieldData.current.config.Interpretation == 'Lookup'")
+    .col-md-2 Do Lookup Table Mapping?
+    .col-md-4
+      input(type="checkbox" ng-model="fieldData.current.config.doLookup" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+  .row(ng-if="fieldData.current.config.doLookup && !fieldData.current.lookups.length && fieldData.current._lookups.length > lookupThreshold")
+    .col-md-2 Lookup has {{fieldData.current._lookups.length}} entries.
+    .col-md-2
+      .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all values anyway?
