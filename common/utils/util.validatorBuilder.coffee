@@ -318,6 +318,10 @@ _rules =
       legal_unit_number:
         alias: 'Legal Unit Number'
 
+      recording_date:
+        alias: 'Recording Date'
+        type: name: 'datetime'
+
     deed:
       address:
         group: 'deed'
@@ -338,6 +342,10 @@ _rules =
 
       legal_unit_number:
         alias: 'Legal Unit Number'
+
+      recording_date:
+        alias: 'Recording Date'
+        type: name: 'datetime'
 
     mortgage:
       address:
