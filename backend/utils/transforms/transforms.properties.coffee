@@ -26,7 +26,6 @@ body = _.extend {}, state,
   geometry_center: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
 
-
 save =
   params: validators.object isEmptyProtect: true
   query: validators.object isEmptyProtect: true

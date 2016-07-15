@@ -215,10 +215,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-    else if filters?.status? || queryParams.pins?.length
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins)
+    else if filters.status?
+      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
 
-  logger.debug () -> query.toString()
   query
 
 module.exports = {
