@@ -337,7 +337,7 @@ _rules =
         valid: () ->
           @input.amount && @input.scale
         input: {}
-        type: name: amount
+        type: name: 'amount'
 
       lender:
         alias: 'Lender'
