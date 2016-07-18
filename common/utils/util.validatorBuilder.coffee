@@ -126,12 +126,12 @@ _rules =
         @input.city && @input.state && (@input.zip || @input.zip9) &&
           ((@input.streetName && @input.streetNum) || @input.streetFull)
 
+    close_date:
+      alias: 'Close Date'
+      type: name: 'datetime'
+
   mls:
     listing:
-      close_date:
-        alias: 'Close Date'
-        type: name: 'datetime'
-
       data_source_uuid:
         alias: 'MLS Number'
         required: true
@@ -261,8 +261,18 @@ _rules =
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
 
+      recording_date:
+        alias: 'Recording Date'
+        type: name: 'datetime'
+
+      property_type:
+        alias: 'Property Type'
+        config:
+          unmapped: 'null'
 
     tax:
+      close_date: null
+
       bedrooms:
         alias: 'Bedrooms'
         type: name: 'integer'
@@ -290,37 +300,15 @@ _rules =
         valid: () ->
           @input.year || @input.age
 
-      property_type:
-        alias: 'Property Type'
-        config:
-          unmapped: 'null'
-
       zoning:
         alias: 'Zoning'
 
       legal_unit_number:
         alias: 'Legal Unit Number'
 
-      recording_date:
-        alias: 'Recording Date'
-        type: name: 'datetime'
-
     deed:
-      close_date:
-        alias: 'Close Date'
-        type: name: 'datetime'
-
-      property_type:
-        alias: 'Property Type'
-        config:
-          unmapped: 'null'
-
       legal_unit_number:
         alias: 'Legal Unit Number'
-
-      recording_date:
-        alias: 'Recording Date'
-        type: name: 'datetime'
 
       seller_name:
         alias: 'Seller 1'
@@ -341,9 +329,27 @@ _rules =
         alias: 'Document Type'
 
     mortgage:
-      close_date:
-        alias: 'Close Date'
-        type: name: 'datetime'
+      price: null
+      property_type: null
+
+      amount:
+        alias: 'Loan Amount'
+        valid: () ->
+          @input.amount && @input.scale
+        input: {}
+        type: name: 'amount'
+
+      lender:
+        alias: 'Lender'
+
+      term:
+        alias: 'Loan Term'
+
+      financing_type:
+        alias: 'Financing Type'
+
+      loan_type:
+        alias: 'Loan Type'
 
 
 # RETS/MLS rule defaults for each data type
@@ -416,7 +422,7 @@ getBaseRules = (dataSourceType, dataListType) ->
   p2 = _.cloneDeep(_rules[dataSourceType].common)
   p3 = _.cloneDeep(_rules.common)
   builtBaseRules = _.defaultsDeep(p1, p2, p3)
-  return _.mapValues builtBaseRules, (val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])
+  return _(builtBaseRules).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val?.type?.name ? 'string'])).omit((val) -> !val?).value()
 getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
 buildDataRule = (rule) ->

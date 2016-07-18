@@ -683,7 +683,6 @@ ensureNormalizedTable = (dataType, subid) ->
       table.integer('fips_code').notNullable()
       table.text('parcel_id').notNullable()
       table.json('address')
-      table.decimal('price', 12, 2)
       table.timestamp('recording_date', true)
       table.text('owner_name')
       table.text('owner_name_2')
@@ -696,6 +695,7 @@ ensureNormalizedTable = (dataType, subid) ->
       table.json('ungrouped_fields')
       table.json('owner_address')
       if dataType == 'tax'
+        table.decimal('price', 13, 2)
         table.integer('bedrooms')
         table.json('baths')
         table.decimal('acres', 11, 3)
@@ -703,15 +703,23 @@ ensureNormalizedTable = (dataType, subid) ->
         table.json('year_built')
         table.json('promoted_values')
         table.text('zoning')
-      if dataType == 'tax' || dataType == 'deed'
         table.text('property_type')
         table.text('legal_unit_number')
-      if dataType == 'deed' || dataType == 'mortgage'
+      else if dataType == 'deed'
+        table.decimal('price', 13, 2)
         table.timestamp('close_date', true)
-      if dataType == 'deed'
+        table.text('property_type')
+        table.text('legal_unit_number')
         table.text('seller_name')
         table.text('seller_name_2')
         table.text('document_type')
+      else if dataType == 'mortgage'
+        table.decimal('amount', 13, 2)
+        table.timestamp('close_date', true)
+        table.text('lender')
+        table.json('term')
+        table.text('financing_type')
+        table.text('loan_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")

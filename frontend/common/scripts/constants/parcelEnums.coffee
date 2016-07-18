@@ -53,7 +53,6 @@ categories =
       building: 'Building'
       owner: 'Owner'
       deed: 'Deed'
-      mortgage: 'Mortgage'
     deed:
       base: 'Base'
       unassigned: 'Unassigned'

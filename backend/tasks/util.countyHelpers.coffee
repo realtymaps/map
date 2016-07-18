@@ -129,7 +129,6 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
       subscriber_groups:
         owner: normalizedData.owner || []
         deed: normalizedData.deed || []
-        mortgage: normalizedData.mortgage || []
   else if dataType == 'deed'
     data =
       shared_groups: {}
