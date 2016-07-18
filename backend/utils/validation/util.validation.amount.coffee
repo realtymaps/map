@@ -12,10 +12,10 @@ module.exports = (options = {}) ->
     if !value
       return null
 
-    amount = validator(param, value.amount)
-    if value.scale == 'K'
-      amount *= 10
-    else if value.scale == 'T'
-      amount *= 100
-
-    amount
+    validator(param, value.amount)
+    .then (amount) ->
+      if value.scale == 'K'
+        amount *= 10
+      else if value.scale == 'T'
+        amount *= 100
+      amount
