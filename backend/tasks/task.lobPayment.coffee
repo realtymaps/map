@@ -70,7 +70,7 @@ chargeCampaign = (subtask) ->
     logger.debug "Checking whether #{campaign.label} is ready for billing"
 
     tables.mail.letters()
-    .select(tables.mail.letters().raw "id, lob_response->'price' as price")
+    .select('id')
     .where(
       status: 'sent'
       user_mail_campaign_id: campaign.id

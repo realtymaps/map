@@ -79,9 +79,9 @@ commonConfig =
     getKey: () -> "#{Math.round((Math.pow(36, 17) - Math.random() * Math.pow(36, 16))).toString(36).slice(1)}.pdf"
 
   mail:
-    # pricing formula for a mail campaign
-    getPrice: ({firstPage, extraPage, pages, recipientCount}) ->
-      return (firstPage + ((pages-1) * extraPage)) * recipientCount
+    # pricing formula for a letter
+    getPrice: ({firstPage, extraPage, pages}) ->
+      return (firstPage + ((pages-1) * extraPage))
 
     macros:
       address: '{{address}}'
