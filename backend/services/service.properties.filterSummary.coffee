@@ -28,15 +28,11 @@ module.exports =
           return []
 
         # Include saved id's in query so no need to touch db later
-        propertyIds = _.keys(profile.pins)
-        if propertyIds.length > 0
-          queryParams.pins = propertyIds
+        queryParams.pins = _.keys(profile?.pins || {}) # `|| {}` defensive just in case no `.pins`
 
         # This helps ensure favorites are accounted for in query for the following edge case requirement:
         #   When no status layers are selected, show only pins and favorites
-        favoriteIds = _.keys(profile.favorites)
-        if favoriteIds.length > 0
-          queryParams.favorites = favoriteIds
+        queryParams.favorites = _.keys(profile?.favorites || {}) # `|| {}` defensive just in case no `.favorites`
 
 
         cluster = () ->

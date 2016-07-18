@@ -212,13 +212,14 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if filters.hasImages
         @where("photos", "!=", "{}")
 
-      if queryParams.pins?.length
+      if queryParams.pins.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
   else
     # no status, so query and show pins and favorites
-    savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
-    sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
+    savedIds = queryParams.pins.concat queryParams.favorites
+    if savedIds.length
+      sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
 
   query
 
