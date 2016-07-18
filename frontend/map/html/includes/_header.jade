@@ -34,7 +34,10 @@ header.site-header
         .mobile-header-title(ng-if="rmapsPageService.getTitle()")
           span {{rmapsPageService.getTitle()}}
         .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
-          span {{rmapsPageService.profiles.currentProfile.parent_name || project.name || 'Dashboard'}}
+          div(ng-if="rmapsPageService.profiles.currentProfile.parent_name && rmapsPageService.profiles.currentProfile.company_name")
+            .header-title-major {{rmapsPageService.profiles.currentProfile.parent_name}}
+            .header-title-minor {{rmapsPageService.profiles.currentProfile.company_name}}
+          div(ng-if="!rmapsPageService.profiles.currentProfile.parent_name || !rmapsPageService.profiles.currentProfile.company_name") {{rmapsPageService.profiles.currentProfile.parent_name || project.name || 'Dashboard'}}
       .mobile-header-right
         i.icon.fa.fa-user.dashboard-realtor-icon
 
