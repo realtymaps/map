@@ -1,6 +1,5 @@
 logger = require '../config/logger'
 Promise = require 'bluebird'
-util = require 'util'
 
 profileService = require '../services/service.profiles'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
