@@ -32,6 +32,8 @@ module.exports =
         if propertyIds.length > 0
           queryParams.pins = propertyIds
 
+        # This helps ensure favorites are accounted for in query for the following edge case requirement:
+        #   When no status layers are selected, show only pins and favorites
         favoriteIds = _.keys(profile.favorites)
         if favoriteIds.length > 0
           queryParams.favorites = favoriteIds

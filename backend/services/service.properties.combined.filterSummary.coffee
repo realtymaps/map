@@ -215,16 +215,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-<<<<<<< HEAD
   else
     # no status, so query and show pins and favorites
     savedIds = (queryParams.pins || []).concat (queryParams.favorites || [])
     sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
-
-=======
-    else if filters.status?
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
->>>>>>> origin/master
 
   query
 
