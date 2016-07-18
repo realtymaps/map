@@ -136,7 +136,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .col-sm-6
 
           accordion.row.content-block.subscriber-groups(close-others="false")
-            accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{group.label}}")
+            accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}")
               .table-striped
                 .row.content-row(ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4 {{field.name}}
