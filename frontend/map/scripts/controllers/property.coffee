@@ -39,34 +39,26 @@ app.controller 'rmapsPropertyCtrl',
         status: 'OK'
       control: {}
 
+    $scope.getLabel = (group, property) ->
+      if (typeof group.label) == 'string'
+        return group.label
+      return group.label[property.data_source_type]
+
     $scope.groups = [
-      name: 'general', label: 'General Info', subscriber: 'shared_groups'
-     ,
-      name: 'details', label: 'Details', subscriber: 'shared_groups'
-     ,
-      name: 'listing', label: 'Listing', subscriber: 'shared_groups'
-     ,
-      name: 'building', label: 'Building', subscriber: 'shared_groups'
-     ,
-      name: 'dimensions', label: 'Room Dimensions', subscriber: 'shared_groups'
-     ,
-      name: 'lot', label: 'Lot', subscriber: 'shared_groups'
-     ,
-      name: 'location', label: 'Location & Schools', subscriber: 'shared_groups'
-     ,
-      name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'
-     ,
-      name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'
-     ,
-      name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'
-     ,
-      name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',
-    ,
-      name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'
-     ,
-      name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'
-     ,
-      name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'
+      {name: 'general', label: 'General Info', subscriber: 'shared_groups'}
+      {name: 'details', label: 'Details', subscriber: 'shared_groups'}
+      {name: 'listing', label: 'Listing', subscriber: 'shared_groups'}
+      {name: 'dimensions', label: 'Room Dimensions', subscriber: 'shared_groups'}
+      {name: 'lot', label: 'Lot', subscriber: 'shared_groups'}
+      {name: 'location', label: {mls: 'Location & Schools', county: 'Location'}, subscriber: 'shared_groups'}
+      {name: 'building', label: 'Building', subscriber: 'shared_groups'}
+      {name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'}
+      {name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'}
+      {name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'}
+      {name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',}
+      {name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'}
+      {name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'}
+      {name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'}
     ]
 
     $scope.previewLetter = (mail) ->
