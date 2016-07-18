@@ -9,7 +9,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
 
   $log = $log.spawn('map:layerFormatter')
 
-  _isVisible = (scope, model, requireFilterModel=false) ->
+  isVisible = (scope, model, requireFilterModel=false) ->
     filterSummary = scope.map.markers.filterSummary
     if !model || requireFilterModel && !filterSummary[model.rm_property_id]
       return false
@@ -20,7 +20,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isPinned
     nonBool == true
 
-  _parcels = do ->
+  Parcels = do ->
 
     _strokeColor = '#1269D8'
     _strokeWeight = 1.5
@@ -72,7 +72,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
       colorOpacity: 1
       fillOpacity: .75
 
-  _mls = do ->
+  MLS = do ->
     markersBSLabel = {}
     markersBSLabel[rmapsParcelEnums.status.sold] = 'sold-property'
     markersBSLabel[rmapsParcelEnums.status.pending] = 'pending-property'
@@ -126,9 +126,8 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Units (#{models.grouped.name}", priceClasses: "label-saved-property")
           html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
 
-    setMarkerNotesOptions: (model, number) ->
+    setMarkerNotesOptions: (model) ->
       _.extend model,
-        $index: number
         markerType: 'note'
         icon:
           type: 'div'
@@ -136,7 +135,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           html: """
 <div class='note-marker'>
   <i class='fa fa-sticky-note'></i>
-  <div class='note-marker-inner'><span>#{number+1}</span></div>
+  <div class='note-marker-inner'><span>#{model.id}</span></div>
 </div>
 """
 
@@ -158,11 +157,19 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           type: 'div'
           html: pieUtil.pieCreateFunctionBackend(model)
 
-  #public
-  Parcels: _parcels
-  MLS: _mls
-  isVisible: _isVisible
-  setDataOptions: (data, optionsFormatter) ->
+  setDataOptions = (data, optionsFormatter) ->
     _.each data, (model,k) ->
       optionsFormatter(model, k)
     data
+
+  setMarkerDataOptions = (data) ->
+    setDataOptions(data, MLS.setMarkerNotesOptions)
+
+  #public
+  {
+    Parcels
+    MLS
+    isVisible
+    setDataOptions
+    setMarkerDataOptions
+  }

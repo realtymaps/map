@@ -1,7 +1,14 @@
 ###global _:true###
 app = require '../app.coffee'
 
-module.exports = app.constant 'rmapsRouteProfileResolve', ($location, $log, $state, $stateParams, rmapsProfilesService, currentIdentity) ->
+app.constant 'rmapsRouteProfileResolve', (
+$location
+$log
+$state
+$stateParams
+rmapsProfilesService
+currentIdentity
+) ->
   # Does the state or location define a project id?
   if $state.toState?.projectParam? and $state.toParams?[$state.toState.projectParam]?
     $log.debug "Loading project based on $state.current.projectParam #{$state.toState.projectParam}"

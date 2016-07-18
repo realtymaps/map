@@ -3,9 +3,11 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.factory 'rmapsDrawnProfileFactory', (
-$log,
-$http,
-rmapsLeafletHelpers) ->
+$log
+$http
+rmapsLeafletHelpers
+rmapsHttpTempCache
+) ->
 
   (profile) ->
     ###eslint-disable###
@@ -14,14 +16,25 @@ rmapsLeafletHelpers) ->
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
     areaUrl = backendRoutes.projectSession.areas.replace(":id",profile.project_id)
 
-    getList = (cache = false) ->
-      $http.getData rootUrl, cache: cache
+    getList = (cache = true) ->
+      rmapsHttpTempCache {
+        url: rootUrl
+        promise: $http.getData rootUrl, cache: cache
+      }
 
-    getAreas = (cache = false) ->
-      $http.getData areaUrl, cache: cache
+    getAreas = (cache = true) ->
+      rmapsHttpTempCache {
+        url: areaUrl
+        promise: $http.getData areaUrl, cache: cache
+      }
 
-    getAreaById = (projectId, drawnShapeId, cache = false) ->
-      $http.get _byIdUrl(projectId, drawnShapeId)
+    getAreaById = (projectId, drawnShapeId, cache = true) ->
+      url = _byIdUrl(projectId, drawnShapeId)
+      rmapsHttpTempCache {
+        url
+        promise: $http.get(url, cache: cache)
+      }
+
 
     _byIdUrl = (projectId, drawnShapeId) ->
       backendRoutes.projectSession.drawnShapesById
@@ -95,7 +108,7 @@ rmapsLeafletHelpers) ->
       getList(cache).then normalizedList
 
     create: (shape) ->
-      $http.post rootUrl, normalize shape
+      $http.post rootUrl, normalize shape, cache: false
 
     update: (shape) ->
       $http.put _byIdUrlFromShape(shape), normalize shape

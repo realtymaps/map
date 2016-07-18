@@ -18,8 +18,8 @@ span(
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
       span
-        a(ng-show="map.markers.notes.length" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{map.markers.notes.length}} Notes
-        span(ng-show="!map.markers.notes.length") No Notes
+        a(ng-show="markerNotesLength()" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{markerNotesLength()}} Notes
+        span(ng-show="!markerNotesLength()") No Notes
       span.results-btn(
         popover-placement="right"
         popover-trigger="mouseenter"
@@ -32,7 +32,7 @@ span(
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{$index+1}}')
+              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.id}}')
 
               // TODO - add sketch feature in
                 span.sketch
