@@ -71,7 +71,7 @@ login = (req, res, next) -> Promise.try () ->
         .then () ->
           internals.getIdentity(req, res, next)
 
-currentProfile = (req, res, next) -> Promise.try () ->
+setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
     next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, httpStatus.BAD_REQUEST)
 
@@ -245,7 +245,7 @@ module.exports =
   currentProfile:
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: currentProfile
+    handle: setCurrentProfile
 
   newProject:
     method: 'post'
