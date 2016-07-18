@@ -105,6 +105,18 @@ module.exports =
           filterSummaryImpl: DrawnShapesFiltSvc
         )
 
+  inArea:
+    method: "post"
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req, res, next) ->
+      internals.handleRoute res, next, () ->
+        DrawnShapesFiltSvc.getPropertyIdsInArea(
+          queryParams: req.body
+          profile: currentProfile(req)
+        )
+
   saves:
     middleware:
       auth.requireLogin(redirectOnFail: true)

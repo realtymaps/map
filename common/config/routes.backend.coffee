@@ -24,7 +24,6 @@ apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
 apiBaseFipsCodes = "#{apiBase}/fipsCodes"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
-apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseMailPdf = "#{apiBase}/mailPdf"
@@ -58,7 +57,7 @@ module.exports =
     profiles: "#{apiBaseSession}/profiles"
     newProject: "#{apiBaseSession}/newProject"
     image: "#{apiBaseSession}/image"
-    companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
+    companyImage: "#{apiBaseSession}/companyImage"
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
@@ -86,6 +85,7 @@ module.exports =
     permissionsById: "#{apiBaseUsers}/:id/permissions/:permission_id"
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
+    image: "#{apiBaseUsers}/:id/image"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"
@@ -128,10 +128,6 @@ module.exports =
     getAll: "#{apiBaseFipsCodes}/state/:state"
     getAllMlsCodes: "#{apiBaseFipsCodes}/mls"
     getAllSupportedMlsCodes: "#{apiBaseFipsCodes}/mlsSupported"
-  account_images:
-    apiBase: apiBaseAccountImages
-    root: apiBaseAccountImages
-    byId: "#{apiBaseAccountImages}/:id"
   account_use_types:
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes
@@ -145,6 +141,7 @@ module.exports =
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
+    inArea: "#{apiBase}/properties/inArea/"
     parcelBase: "#{apiBase}/properties/parcel_base/"
     addresses: "#{apiBase}/properties/addresses/"
     detail: "#{apiBase}/properties/detail/"

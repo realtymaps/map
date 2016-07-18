@@ -89,15 +89,11 @@ describe "rmapsLayerFormattersService", ->
         describe 'price', ->
 
           it 'none', ->
-            model = @testObj = @subject.setMarkerPriceOptions {}
-            status = 'undefined'
-            hovered = ''
-            formattedPrice = '-'
-
+            model = @testObj = @subject.setMarkerPriceOptions {status: 'sold'}
             expect(model.markerType).to.be.equal 'price'
             expect(model.icon.type).to.be.equal 'div'
             expect(model.icon.iconSize).to.include.members [60, 30]
-            expect(model.icon.html).to.be.equal priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{status}#{hovered}")
+            expect(model.icon.html).to.be.equal priceMarkerTemplate(price:'-', priceClasses: "label-sold-property")
 
       describe 'setMarkerManualClusterOptions extends the model', ->
         beforeEach ->

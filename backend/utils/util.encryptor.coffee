@@ -15,7 +15,7 @@ crypto = require 'crypto'
 
 
 class Encryptor
-  
+
   constructor: (options) ->
     # copy over fields from options to instance
     {
@@ -33,8 +33,8 @@ class Encryptor
       @unpackPayload
       @payloadDelimiter
     } = options
-    
-    
+
+
     # set some default values
     @textEncoding ?= 'utf8'
     @keyEncoding ?= 'hex'
@@ -57,21 +57,21 @@ class Encryptor
         data: new Buffer(pieces[2], encoding)
         auth: new Buffer(pieces[3], encoding)
       }
-    
+
     # coerce keys to Buffers if necessary
     if @cipherKey && !Buffer.isBuffer(@cipherKey)
       @cipherKey = new Buffer(@cipherKey, @keyEncoding)
     if @authenticationKey && !Buffer.isBuffer(@authenticationKey)
       @authenticationKey = new Buffer(@authenticationKey, @keyEncoding)
-  
-    
+
+
   encrypt: (plainData, authData, initVector) ->
 
     if !@cipherKey?
       throw new Error('A cipher key is required')
 
     payloadData = {}
-    
+
     if !Buffer.isBuffer(plainData)
       plainData = new Buffer(plainData, @textEncoding)
 
@@ -97,7 +97,7 @@ class Encryptor
       cipher = crypto.createCipheriv(@cipherAlgo, @cipherKey, payloadData.iv)
     else
       cipher = crypto.createCipher(@cipherAlgo, @cipherKey)
-      
+
     if @autoPadding?
       cipher.setAutoPadding(@autoPadding)
 
@@ -118,7 +118,7 @@ class Encryptor
 
     # build ciphertext
     payloadData.data = Buffer.concat([cipher.update(plainData), cipher.final()])
-    
+
     # build the auth string (if configured)
     if @authentication == 'automatic'
       payloadData.auth = cipher.getAuthTag()
@@ -131,8 +131,8 @@ class Encryptor
 
     # pack it up and go
     return @packPayload(payloadData, @payloadEncoding, @payloadDelimiter)
-    
-    
+
+
   decrypt: (payload, withAAD=false) ->
 
     if !@cipherKey?
@@ -140,10 +140,10 @@ class Encryptor
 
     if typeof(payload) != 'string'
       payload = payload.toString()
-    
-    # unpack the parts of the payload 
+
+    # unpack the parts of the payload
     {data, iv, auth, aad} = @unpackPayload(payload, @payloadEncoding, @payloadDelimiter)
-    
+
     # detect whether there was an initVector used
     if iv?.length
       decipher = crypto.createDecipheriv(@cipherAlgo, @cipherKey, iv)
@@ -173,7 +173,7 @@ class Encryptor
 
     if @autoPadding?
       decipher.setAutoPadding(@autoPadding)
-    
+
     plainData = Buffer.concat([decipher.update(data), decipher.final()])
     if @textEncoding
       plainData = plainData.toString(@textEncoding)
@@ -184,24 +184,24 @@ class Encryptor
     else
       return plainData
 
-  
+
   # compute manual auth tag
   digest: (dataBlobs) ->
     hmac = crypto.createHmac(@authentication, @authenticationKey)
     for data in dataBlobs
       hmac.update(data)
     return hmac.digest()
-  
-    
+
+
   # avoid timing attacks by refusing to shortcut out after the first non-matching byte
   cryptoSafeCompare: (val1, val2) ->
     if val1.length != val2.length
       return false
-    
+
     difference = 0
     for byte,i in val1
       difference |= (byte ^ val2[i])
-      
+
     return difference == 0
 
 

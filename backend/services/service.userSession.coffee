@@ -1,10 +1,7 @@
 Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
-
-logger = require '../config/logger'
+logger = require('../config/logger').spawn("service:userSession")
 keystore = require '../services/service.keystore'
-{singleRow} = require '../utils/util.sql.helpers'
-accountImagesSvc = require('./services.user').accountImages
 tables = require '../config/tables'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
 
@@ -49,7 +46,7 @@ verifyPassword = (email, password) ->
     if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
       # to prevent timing attacks from determining validity of email
-      return createPasswordHash(password).then (hash) -> return false
+      return createPasswordHash(password).then () -> return false
     preprocessHash(user.password)
     .catch (err) ->
       logger.error "error while preprocessing password hash for email #{email}: #{err}"
@@ -71,33 +68,6 @@ verifyPassword = (email, password) ->
           .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
         return user
 
-
-getImage = (entity) -> Promise.try () ->
-  if !entity?.account_image_id?
-    return null
-  accountImagesSvc.getById(entity.account_image_id)
-  .then singleRow
-
-upsertImage = (entity, blob, tableFn = tables.auth.user) ->
-  getImage(entity)
-  .then (image) ->
-    if image
-      #update
-      logger.debug "updating image for account_image_id: #{entity.account_image_id}"
-      return accountImagesSvc.update(entity.account_image_id, blob:blob)
-    #create
-    logger.debug 'creating image'
-    accountImagesSvc.create(blob:blob)
-    .returning('id')
-    .then singleRow
-    .then (id) ->
-      logger.debug "saving account_image_id: #{id}"
-      tableFn().update(account_image_id: id)
-      .where(id:entity.id)
-
-upsertCompanyImage = (entity, blob) ->
-  upsertImage(entity,blob, tables.user.company)
-
 updatePassword = (user, password, overwrite = true) ->
   createPasswordHash(password).then (password) ->
     toSet = if overwrite then password else tables.auth.user().raw("coalesce(password, '#{password}')")
@@ -117,8 +87,5 @@ module.exports = {
   createPasswordHash
   verifyPassword
   verifyValidAccount
-  getImage
-  upsertImage
-  upsertCompanyImage
   updatePassword
 }

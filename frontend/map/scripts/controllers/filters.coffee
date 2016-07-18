@@ -11,35 +11,16 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
   #initialize values for filter options in the select tags
   $scope.filterValues = rmapsFiltersFactory.values
 
-  MIN_BEDS = 0
-  MAX_BEDS = 10
-  MIN_BATHS = 0
-  MAX_BATHS = 6
 
-  $scope.bedsSlider = options: floor: MIN_BEDS, ceil: MAX_BEDS, step: 1
-  $scope.bathsSlider = options: floor: MIN_BATHS, ceil: MAX_BATHS, step: 0.5, precision: 1
+  $scope.bedsSlider = options: floor: rmapsFiltersFactory.MIN_BEDS, ceil: rmapsFiltersFactory.MAX_BEDS, step: 1
+  $scope.bathsSlider = options: floor: rmapsFiltersFactory.MIN_BATHS, ceil: rmapsFiltersFactory.MAX_BATHS, step: 0.5, precision: 1
 
-  $scope.selectedFilters.bedsMin ?= MIN_BEDS
-  $scope.selectedFilters.bathsMin ?= MIN_BATHS
+  $scope.selectedFilters.bedsMin ?= rmapsFiltersFactory.MIN_BEDS
+  $scope.selectedFilters.bathsMin ?= rmapsFiltersFactory.MIN_BATHS
 
   $scope.reset = ->
     $log.debug 'reset'
-    $scope.selectedFilters.bedsMin = MIN_BEDS
-    $scope.selectedFilters.bathsMin = MIN_BATHS
-    $scope.selectedFilters.priceMin = null
-    $scope.selectedFilters.priceMax = null
-    $scope.selectedFilters.sqftMin = null
-    $scope.selectedFilters.sqftMax = null
-    $scope.selectedFilters.acresMin = null
-    $scope.selectedFilters.acresMax = null
-    $scope.selectedFilters.listedDaysMin = null
-    $scope.selectedFilters.listedDaysMax = null
-    $scope.selectedFilters.closePriceMin = null
-    $scope.selectedFilters.closePriceMax = null
-    $scope.selectedFilters.closeDateMin = null
-    $scope.selectedFilters.closeDateMax = null
-    $scope.selectedFilters.ownerName = null
-    $scope.selectedFilters.propertyType = null
+    _.extend $scope.selectedFilters, rmapsFiltersFactory.valueDefaults
 
   $scope.tooltipOpen = false
   $scope.toggled = () ->

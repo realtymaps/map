@@ -141,7 +141,7 @@ scrubPermissions = (data, permissions) ->
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
   {bounds, state} = queryParams
-  {filters} = state
+  {filters} = state || {}
 
   # Add permissions
   queryPermissions(query, permissions)
@@ -172,7 +172,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
           if sold
             @orWhere () ->
               @where("#{dbFn.tableName}.status", 'sold')
-              if filters.soldRange
+              if filters.soldRange && filters.soldRange != 'all'
                 @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
@@ -215,10 +215,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-    else
+    else if filters.status?
       sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
 
-  logger.debug () -> query.toString()
   query
 
 module.exports = {

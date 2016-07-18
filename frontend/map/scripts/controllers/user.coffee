@@ -63,25 +63,25 @@ rmapsUsStates
       $scope.$evalAsync ->
         $scope.imageForm.errors = {}
 
-      toRender: () ->
-        if @cropBlob.length
-          return @cropBlob
-        if $scope.user.account_image_id?
-          return @blob || backendRoutes.userSession.image
-        '/assets/avatar.svg'
+    toRender: () ->
+      if @cropBlob.length
+        return @cropBlob
+      if $scope.user.account_image_id?
+        return @blob || backendRoutes.userSession.image
+      '/assets/avatar.svg'
 
-      save: () ->
-        return spawnAlert 'No Image to Save.' unless @blob?
+    save: () ->
+      return spawnAlert 'No Image to Save.' unless @blob?
 
-        if _.keys(@errors).length
-          _.each @errors, (e) ->
-            spawnAlert e
-          return
+      if _.keys(@errors).length
+        _.each @errors, (e) ->
+          spawnAlert e
+        return
 
-        $http.put backendRoutes.userSession.image, blob: @cropBlob
-        .success =>
-          delete @cropBlob
-          delete @blob
+      $http.put backendRoutes.userSession.image, blob: @cropBlob
+      .success =>
+        delete @cropBlob
+        delete @blob
 
   $scope.companyImageForm =
     cropBlob: ''
