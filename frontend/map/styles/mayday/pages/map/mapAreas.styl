@@ -1,41 +1,43 @@
 $fnMakeMapAreas()
   .area-list
-    ul
-      li
-        > div
-          min-height 85px
+    li
+      overflow hidden
+      padding 10px
+      display flex
+      justify-content space-between
+      align-items center
+
+      .entity
+        .count
+          float left
+          margin 0 10px 0 0
+          color $black !important
+          font-weight bold
+          font-size 12px
+          line-height 20px
+
+        .map
+          width 38px
+          height 38px
+          border 1px solid $gray
+          border-radius 2px
+          float left
+          margin 0 10px 0 0
           overflow hidden
-          padding 10px
-          position relative
 
-    .enity
-      display table
-      float left
-      margin-right 32px
-      position relative
-      .count
-        float left
-        margin 0 10px 0 0
-        color $black !important
-        font-weight bold
-        font-size 12px
-        line-height 20px
-
-      .map
-        width 38px
-        height 38px
-        border 1px solid $gray
-        border-radius 2px
-        float left
-        margin 0 10px 0 0
-        overflow hidden
-
-        img
-          max-width 100%
-          display inline
+          img
+            max-width 100%
+            display inline
 
       .content
-        float left
+        display flex
+        align-items center
+        .circle-nr
+          display inline-block
+          padding 0 10px
+        p
+          margin 0
+
         a
           display block
           padding 0
@@ -52,9 +54,7 @@ $fnMakeMapAreas()
           color $text_gray_lighter
           margin 0
           line-height 20px
-    span.actions
-      width 32px
-      position absolute
-      top 10px
-      right 10px
-      text-align center
+
+      .actions
+        width inherit
+        color $gray_darkest

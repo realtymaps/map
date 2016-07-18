@@ -22,6 +22,7 @@ app.service 'rmapsProfilesService', (
   rmapsParcelEnums,
   rmapsPrincipalService,
   rmapsPropertiesService,
+  rmapsFiltersFactory
 ) ->
 
   $log = $log.spawn "rmapsProfileService"
@@ -136,23 +137,26 @@ app.service 'rmapsProfilesService', (
         # Handle project filters
         #
 
-        $rootScope.selectedFilters = {}
+        selectedFilters = _.defaults {}, project.filters, rmapsFiltersFactory.valueDefaults
+        delete selectedFilters.status
+        delete selectedFilters.current_project_id
 
-        if project.filters
-          statusList = project.filters.status || []
-          for key,status of rmapsParcelEnums.status
-            project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-          #TODO: this is a really ugly hack to workaround our poor state design in our app
-          #filters and mapState need to be combined, also both should be moved to rootScope
-          #the omits here are to keep from saving off duplicate data where project.filters is from the backend
+        $log.debug selectedFilters
 
-          # Some parts of the UI expect a Date object
-          if project.filters.closeDateMin
-            project.filters.closeDateMin = new Date(project.filters.closeDateMin)
-          if project.filters.closeDateMax
-            project.filters.closeDateMax = new Date(project.filters.closeDateMax)
+        statusList = project.filters?.status || []
+        for key,status of rmapsParcelEnums.status
+          selectedFilters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
+        #TODO: this is a really ugly hack to workaround our poor state design in our app
+        #filters and mapState need to be combined, also both should be moved to rootScope
+        #the omits here are to keep from saving off duplicate data where selectedFilters is from the backend
 
-          _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
+        # Some parts of the UI expect a Date object
+        if selectedFilters.closeDateMin
+          selectedFilters.closeDateMin = new Date(selectedFilters.closeDateMin)
+        if selectedFilters.closeDateMax
+          selectedFilters.closeDateMax = new Date(selectedFilters.closeDateMax)
+
+        $rootScope.selectedFilters = selectedFilters
 
         #
         # Set the Filter toggles based on the current project

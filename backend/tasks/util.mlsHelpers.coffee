@@ -32,7 +32,7 @@ loadUpdates = (subtask, options={}) ->
   uuidPromise = internals.getUuidField(subtask.task_name)
   Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
     retsService.getDataStream(subtask.task_name, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
-    .catch retsService.isTransientRetsError, (error) ->
+    .catch retsService.isRetsAuthenticationError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
@@ -237,6 +237,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
   finePhotologger.debug listingRow, true
 
+  successCtr = 0
+  errorsCtr = 0
+  skipsCtr = 0
+  needsRetry = false
+
   mlsConfigPromise = mlsConfigService.getByIdCached(subtask.task_name)
   listingRowPromise = tables.normalized.listing()
   .where(listingRow)
@@ -273,94 +278,87 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       photoIds
       photoType
     }
-    .then (obj) ->
-      successCtr = 0
-      errorsCtr = 0
-      skipsCtr = 0
+    .then (obj) -> new Promise (resolve, reject) ->
       promises = []
+      mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
 
-      savesPromise = new Promise (resolve, reject) ->
-        mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
+        if err
+          return reject err
 
-          if err
-            console.log("error in mlsHelpers#storePhotos from imagesHandle: #{err}")
-            logger.spawn(subtask.task_name).debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
-            return reject err
+        if isEnd
+          return resolve(Promise.all promises)
 
-          if isEnd
-            return resolve(Promise.all promises)
+        #file naming consideratons
+        #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+        newFileName = "#{uuid.genUUID()}/#{listingRow.data_source_id}/#{listingRow.data_source_uuid}/#{payload.name}"
+        {imageId, objectData} = payload
 
-          #file naming consideratons
-          #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-          newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
-          {imageId, objectData} = payload
+        logger.spawn(subtask.task_name).debug _.omit payload, 'data'
 
-          logger.spawn(subtask.task_name).debug _.omit payload, 'data'
+        if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
+          skipsCtr++
+          finePhotologger.debug 'photo has same updateDate GTFO.'
+          return
 
-          if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
-            skipsCtr++
-            finePhotologger.debug 'photo has same updateDate GTFO.'
-            return
-
-          uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-            _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
-            .catch (error) ->
-              console.log("SPAM error catching 3: #{error}")
-            .then () ->
-              dbs.transaction 'main', (transaction2) ->
-                _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
-                .catch (error) ->
-                  console.log("SPAM error catching 2: #{error}")
-                .then () ->
-                  _uploadPhoto({photoRes, newFileName, payload, row})
-                  .catch (error) ->
-                    console.log("SPAM error catching 1: #{error}")
-              .catch (error) ->
-                console.log("SPAM error catching 4: #{error}")
-            .catch (error) ->
-              console.log("SPAM error catching 5: #{error}")
-          .catch (error) ->
-            console.log("SPAM error catching 6: #{error}")
+        uploadPromise = dbs.transaction 'normalized', (transaction1) ->
+          _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
           .then () ->
-            logger.spawn(subtask.task_name).debug 'photo upload success'
-            successCtr++
-          .catch (error) ->
-            # TODO: 1) investigate NO_OBJECT_FOUND error (can be detected based on ReplyCode: 20403) and figure out when
-            # TODO:    it occurs; maybe for listings with no photos?  if so, then we should not really treat it as an
-            # TODO:    error, especially for the retry logic described in a TODO below
-            # TODO: 2) investigate duplicate key error for inserts into delete_photos -- seems like that shouldn't be
-            # TODO:    possible, so it could be an indication of a deeper bug
-            console.log("upload error in mlsHelpers#storePhotos (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{error}")
-            logger.spawn(subtask.task_name).debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
-            logger.spawn(subtask.task_name).debug analyzeValue.getSimpleDetails(error)
-            errorsCtr++
-            #record the error, enqueue a delete for the new version just in case, and move on
-            tables.normalized.listing()
-            .where(listingRow)
-            .update(photo_import_error: analyzeValue.getSimpleDetails(error))
-          promises.push(uploadPromise)
-      savesPromise
-      .catch (err) ->
-        console.log("SPAM error catching 12: #{err}")
-      .then () ->
-        logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
-        logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
-        logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-        # TODO: 3) if we had transient errors on 1 or more of the images for this listing (or for
-        # TODO:    retsService.getPhotosObject overall), record this listing somehow for a later retry.  The retry
-        # TODO:    should probably be handled in storePhotosPrep, which would need to enqueue any recorded listings for
-        # TODO:    this MLS from prior batches in addition to what it does now (listings inserted/updated during this
-        # TODO:    batch).  Then we would also need another subtask at the end of the mls task that clears out any
-        # TODO:    recorded listings for this mls from prior batches (since if the transient error was still happening,
-        # TODO:    it would have been recorded again for this batch)
-    .catch errorHandlingUtils.isUnhandled, (error) ->
-      throw new errorHandlingUtils.PartiallyHandledError(error, 'problem storing photo')
-    .catch (error) ->
-      console.log("overall error in mlsHelpers#storePhotos: #{error}")
-      tables.normalized.listing()
-      .where(listingRow)
-      .update photo_import_error: analyzeValue.getSimpleDetails(error)
-
+            dbs.transaction 'main', (transaction2) ->
+              _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+              .then () ->
+                _uploadPhoto({photoRes, newFileName, payload, row})
+        .then () ->
+          logger.spawn(subtask.task_name).debug 'photo upload success'
+          successCtr++
+        .catch (error) ->
+          errorDetails = analyzeValue.getSimpleDetails(error)
+          logger.spawn(subtask.task_name).debug "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+          errorsCtr++
+          # record the error, enqueue a delete for the new version just in case, and move on
+          tables.normalized.listing()
+          .where(listingRow)
+          .update(photo_import_error: errorDetails)
+        promises.push(uploadPromise)
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, "problem storing photos for #{JSON.stringify(listingRow)}")
+  .catch (error) ->
+    errorDetails = analyzeValue.getSimpleDetails(error)
+    needsRetry = true
+    logger.spawn(subtask.task_name).debug () -> "overall error: #{errorDetails}"
+    tables.normalized.listing()
+    .where(listingRow)
+    .update(photo_import_error: errorDetails)
+  .then () ->
+    logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
+    logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
+    logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
+    needsRetry ||= (errorsCtr > 0)
+    # TODO: 1) ----  https://realtymaps.atlassian.net/browse/MAPD-1179
+    # TODO:  If needsRetry is true, then we need to record this listing somehow for a later retry of storing its photos;
+    # TODO:  if we don't do that, then a transient error could prevent a photo (or all photos for a listing) from
+    # TODO:  uploading -- and it won't get another chance until the listing is updated next.
+    # TODO:
+    # TODO:  The retry should probably be handled in storePhotosPrep, which would need to enqueue any listings for this
+    # TODO:  MLS recorded from prior batches as having had upload errors -- in addition to what it does now (listings
+    # TODO:  inserted/updated during this batch).  Then we would also need another subtask at the end of the mls task
+    # TODO:  that clears out any recorded listings for this mls from prior batches (since if the transient error was
+    # TODO:  still happening, it would have been recorded again for this batch).
+    # TODO:
+    # TODO:  This change means we need to have storePhotosPrep run no matter whether there was regular update data or
+    # TODO:  not on a given run of the task.
+    # TODO:
+    # TODO: 2) ----  https://realtymaps.atlassian.net/browse/MAPD-1180
+    # TODO:  As a side note, for storePhotosPrep to work properly (even as it is now), we need to change the way we
+    # TODO:  pull updated listings.  Currently it only pulls listings with a listing update timestamp greater than the
+    # TODO:  last successful run; instead, it should pull listings with either a listing update timestamp OR a photo
+    # TODO:  update timestamp greater than the last successful run.  If we could assume the listing update timestamp
+    # TODO:  would also reflect photo changes, then this would not be necessary, but also wouldn't hurt; since we can't
+    # TODO:  assume that is true for all MLSs, then we need the more thorough query.
+    # TODO:
+    # TODO: 3) ----  https://realtymaps.atlassian.net/browse/MAPD-1181
+    # TODO:  Also, there is logic above that looks at row.photo_download_last_mod_time and possibly bails for
+    # TODO:  efficiency -- however there is no code that ever sets such a value, and the column doesn't even exist on
+    # TODO:  the listings table.
 
 deleteOldPhoto = (subtask, key) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
@@ -407,7 +405,7 @@ markUpToDate = (subtask) ->
 
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
-  .catch retsService.isTransientRetsError, (error) ->
+  .catch retsService.isRetsAuthenticationError, (error) ->
     throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')

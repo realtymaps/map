@@ -1,0 +1,19 @@
+.modal-header
+  h3.modal-title Mail to Area
+.modal-body
+  .send-to(ng-show="!modalBusy")
+    label
+      input(type="radio" name="filterProperties" ng-model="newMail.filterProperties" value="true")
+      i.fa.fa-check
+      span
+        div Mail to search results in this area
+    label
+      input(type="radio" name="filterProperties" ng-model="newMail.filterProperties" value="false")
+      i.fa.fa-check
+      span
+        div Mail to all properties in this area
+  .send-to(ng-show="modalBusy") Please wait...
+
+.modal-footer
+  button.btn.btn-primary(type='button' ng-disabled="newMail.filterProperties === undefined || modalBusy" ng-click='modalOk(); $event.stopPropagation()') OK
+  button.btn.btn-warning(type='button' ng-click='$dismiss(); $event.stopPropagation()') Cancel
