@@ -68,4 +68,5 @@ module.exports ={
   updateCache
   safeRootFields
   safeRootCompanyFields
+  safeUserFields
 }
