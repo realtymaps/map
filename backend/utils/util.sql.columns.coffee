@@ -92,7 +92,6 @@ joinColumns = do ->
     "#{tables.auth.m2m_user_permission.tableName}.id as id"
     'user_id'
     'permission_id'
-    'content_type_id'
     'name'
     'codename'
   ]
