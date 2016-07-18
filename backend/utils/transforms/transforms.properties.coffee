@@ -21,10 +21,10 @@ body = _.extend {}, state,
   returnType: validators.string()
   columns: validators.string()
   isArea: validators.boolean(truthy: true, falsy: false)
+  areaId: validators.integer()
   pins: validators.object()
   geometry_center: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
-
 
 save =
   params: validators.object isEmptyProtect: true

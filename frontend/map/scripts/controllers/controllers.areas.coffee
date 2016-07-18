@@ -1,17 +1,23 @@
 ###globals _###
 app = require '../app.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 template = do require '../../html/views/templates/modals/areaModal.jade'
 
 app.controller 'rmapsAreasModalCtrl', (
 $rootScope,
 $scope,
 $modal,
+$http,
+$log,
+$state,
 rmapsProjectsService,
 rmapsMainOptions,
 rmapsEventConstants,
 rmapsDrawnUtilsService,
 rmapsMapTogglesFactory,
+rmapsFilterManagerService,
 rmapsLeafletHelpers) ->
+  $log = $log.spawn("map:areasModal")
 
   _event = rmapsEventConstants.areas
 
@@ -73,6 +79,25 @@ rmapsLeafletHelpers) ->
       .then () ->
         $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
         $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
+
+    sendMail: (model) ->
+      $scope.newMail = {}
+      modalInstance = $modal.open
+        animation: true
+        scope: $scope
+        template: require('../../html/views/templates/modals/mailArea.jade')()
+
+      $scope.modalOk = ->
+        filters = {}
+        if $scope.newMail.filterProperties == 'true'
+          filters = rmapsFilterManagerService.getFilters()
+        $scope.modalBusy = $http.post(backendRoutes.properties.inArea, {
+          areaId: model.id
+          state: {filters}
+        }, cache: false)
+        .then ({data}) ->
+          modalInstance.dismiss('done')
+          $state.go 'recipientInfo', {property_ids: data}, {reload: true}
 
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,

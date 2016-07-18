@@ -40,8 +40,9 @@ module.exports =
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
         summary = () ->
-          filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
-          .then (properties) ->
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
+          logger.debug -> query.toString()
+          query.then (properties) ->
             combined.scrubPermissions(properties, permissions)
 
             resultsByPropertyId = {}
@@ -90,8 +91,9 @@ module.exports =
         switch queryParams.returnType
           when 'clusterOrDefault'
             # Count the number of properties and do clustering if there are enough
-            filterSummaryImpl.getResultCount({queryParams, permissions})
-            .then ([result]) ->
+            query = filterSummaryImpl.getResultCount({queryParams, permissions})
+            logger.debug -> query.toString()
+            query.then ([result]) ->
               if result.count > config.backendClustering.resultThreshold
                 logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
                 return cluster()
