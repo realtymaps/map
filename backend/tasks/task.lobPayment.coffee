@@ -79,6 +79,8 @@ chargeCampaign = (subtask) ->
     .then (letters) ->
 
       totalPrice = campaign.price
+      if !totalPrice
+        throw new SoftFail(err, "Expected a price for #{campaign.label}, but got #{campaign.price}.")
       logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaign.label}"
 
       # Shown on CC statements (all caps, 22-character limit)
