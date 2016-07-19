@@ -48,7 +48,6 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: 730, name: '2 years+'}
     ]
     soldRangeValues: [
-      { value: undefined, name: 'All of time' }
       { value: '10 day', name: '10 days' }
       { value: '30 day', name: '30 days' }
       { value: '60 day', name: '60 days' }
@@ -59,6 +58,7 @@ app.factory 'rmapsFiltersFactory', () ->
       { value: '1 year', name: '1 year' }
       { value: '2 year', name: '2 years' }
       { value: '3 year', name: '3 years' }
+      { value: 'all', name: 'All of time' }
     ]
 
   values.soldRange = _.zipObject(_.map(values.soldRangeValues, 'value'), _.map(values.soldRangeValues, 'name'))

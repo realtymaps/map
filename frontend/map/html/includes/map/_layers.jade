@@ -10,7 +10,7 @@
   script(type="text/ng-template" id="LayersPopover")
     .filter-row
       span.label Show
-      ul
+      ul.buttons
         li
           button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
         li
@@ -21,16 +21,16 @@
           button.btn(rmaps-require-project-editor="disable" ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
     .filter-row
       span.label Status
-      ul
+      ul.buttons
         li
           button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
         li
           button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
         li
-          button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold within..
+          rmaps-sold-button(filters="selectedFilters" menu="top")
 
   script(type="text/ng-template" id="LayersPopoverMobile")
-    .list
+    .list(ng-controller="rmapsLayersMobileCtrl")
       .item-divider Show
       .item
         button.button.button-block(ng-click="Toggles.toggleAddresses()" ng-class="{'button-inactive' : !Toggles.showAddresses }") Address
@@ -41,5 +41,5 @@
       .item
         button.button.button-block.button-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'button-inactive' : !selectedFilters.forSale }") For Sale
         button.button.button-block.button-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'button-inactive' : !selectedFilters.pending }") Pending
-        button.button.button-block.button-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'button-inactive' : !selectedFilters.sold }") Sold
-        button.btn.button.button-block.button-offmarket(rmaps-require-subscriber="disable" ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'button-inactive' : !selectedFilters.notForSale }") Off Market
+        button.button.button-block.button-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'button-inactive' : !selectedFilters.sold }") Sold in ..
+        select.form-control(ng-disabled="!selectedFilters.sold" ng-model="selectedFilters.soldRange" ng-options='c.value as c.name for c in filterValues.soldRangeValues')

@@ -93,20 +93,23 @@ $fnMakeMapSettings()
       width 460px
       background-color $white
 
-    .property-status
-      ul
-        display flex
-        justify-content space-between
-        list-style none
-        padding 0
-        margin 0 -3px
-        li
-          margin 0
-          button
-            height auto
-            font-size 12px
-            font-weight bold
-            width 100px
+    ul.property-status
+      display flex
+      justify-content space-between
+      list-style none
+      padding 0
+      margin 0 -3px
+      > li
+        margin 0
+        .btn-forsale
+        .btn-pending
+        .btn-sold
+          height auto
+          font-size 12px
+          font-weight bold
+          width 80px
+        .btn-sold
+          width 65px
 
 
     .settings-slider
@@ -257,3 +260,52 @@ $fnMakeMapSettings()
       width: 7%
       padding-right: 0
       padding-left: 0
+
+.sold-within.btn-group
+  margin 5px
+
+  .btn-sold
+    width 65px !important
+    margin 0 !important
+
+  .btn.toggle:focus
+    color $text_gray
+  .btn.btn-default.toggle
+    background-color $white
+    color $text_gray
+    width 65px !important
+    height auto !important
+    font-size 12px !important
+    padding 6px 8px
+    margin 0 !important
+
+  .sold-options
+    z-index 1000
+    position absolute
+    display block
+    margin-top 0
+    color $text_gray
+    animation-name none
+    -webkit-animation-name none
+    border 1px solid $gray
+    background-color #eee
+    font-size 14px
+    padding 10px 0 0 0 !important
+    width 160px
+    left auto
+    right 0
+    top 30px
+    list-style none
+    li
+      margin-bottom 10px
+    a
+      color $text_gray
+      padding 5px 20px
+      width 100%
+      display inline-block
+      text-transform capitalize
+      &:hover
+      &:focus
+        background $light_blue_select
+    &.top
+      top: -385px

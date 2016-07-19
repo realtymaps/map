@@ -1,0 +1,7 @@
+.btn-group.sold-within
+  button.btn.btn-sold(type='button' ng-click="filters.sold = !filters.sold" ng-class="{'btn-inactive' : !filters.sold }") Sold in
+  button.btn.btn-default.toggle(type='button' ng-click="isOpen = !isOpen" ng-disabled="!filters.sold")
+    span {{shortName(selected)}} ▾
+  ul.sold-options(ng-show="isOpen" role='menu' ng-class="{'top': menuTop==true}")
+    li(role='menuitem' ng-repeat="option in options" ng-click="onClick(option)")
+      a {{option.name}}
