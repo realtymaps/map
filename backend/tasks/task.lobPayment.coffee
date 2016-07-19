@@ -78,12 +78,10 @@ chargeCampaign = (subtask) ->
 
     .then (letters) ->
 
-      totalPrice = _.reduce (_.pluck letters, 'price'), (total, price) ->
-        total + Number(price)
-
+      totalPrice = campaign.price
       logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaign.label}"
 
-       # Shown on CC statements (all caps, 22-character limit)
+      # Shown on CC statements (all caps, 22-character limit)
       statement_descriptor = "REALTYMAPS #{campaign.stripe_charge.description ? ''}".trim().slice 0, 22
 
       payment.customers.capture
