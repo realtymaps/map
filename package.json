@@ -183,7 +183,7 @@
     "request": "2.70.0",
     "require-dir": "^0.1.0",
     "require-directory": "^2.1.1",
-    "rets-client": "4.X",
+    "rets-client": "git://github.com/sbruno81/rets-client#error-trace-3",
     "rewire": "2.X",
     "rework-plugin-url": "^1.0.1",
     "rimraf": "^2.4.3",
