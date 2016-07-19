@@ -1,0 +1,1 @@
+ALTER TABLE user_mail_campaigns ADD COLUMN price NUMERIC;

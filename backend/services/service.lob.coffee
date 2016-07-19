@@ -201,8 +201,8 @@ getPriceQuote = (userId, campaignId) ->
               pdf: uri
               price: (price * campaign.recipients.length)
 
-      .catch (err) ->
-        throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")
+    .catch (err) ->
+      throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")
 
 
 # Retrieves LOB letters by metadata
