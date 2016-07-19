@@ -162,7 +162,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
       optionsFormatter(model, k)
     data
 
-  setMarkerDataOptions = (data) ->
+  setMarkerNotesDataOptions = (data) ->
     setDataOptions(data, MLS.setMarkerNotesOptions)
 
   #public
@@ -171,5 +171,5 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     MLS
     isVisible
     setDataOptions
-    setMarkerDataOptions
+    setMarkerNotesDataOptions
   }

@@ -146,7 +146,7 @@ rmapsMapTogglesFactory
 ) ->
 
   mapId = rmapsMapIds.mainMap()
-  {setMarkerDataOptions} = rmapsLayerFormattersService
+  {setMarkerNotesDataOptions} = rmapsLayerFormattersService
   linker = rmapsMapEventsLinkerService
   directiveControls = null
   popup = rmapsPopupLoaderService
@@ -196,8 +196,7 @@ rmapsMapTogglesFactory
     rmapsNotesService.getList(force)
     .then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
-      # oldModels = _.clone $scope.map.markers
-      $scope.map.markers.notes = setMarkerDataOptions(data)
+      $scope.map.markers.notes = setMarkerNotesDataOptions(data)
 
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
     getNotes(true).then ->
