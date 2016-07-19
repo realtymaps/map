@@ -182,3 +182,6 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     $scope.selectedFilters.bathsMin = $scope.bathsMin
 
     $scope.close()
+
+module.exports = app.controller 'rmapsLayersMobileCtrl', ($scope, rmapsFiltersFactory) ->
+  $scope.filterValues = rmapsFiltersFactory.values

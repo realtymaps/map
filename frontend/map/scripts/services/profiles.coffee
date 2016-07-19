@@ -35,13 +35,17 @@ app.service 'rmapsProfilesService', (
     $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
   _current = (profile) ->
+    $log.debug 'attempting to set current profile'
     rmapsCurrentProfilesService.setCurrent profile
     .then () ->
+      $log.debug 'set profile'
+      $log.debug profile
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
 
   _setCurrent = (oldProfile, newProfile) ->
     if oldProfile?
+      $log.debug 'updating old profile'
       _update(oldProfile)
       .then () ->
         _current newProfile
