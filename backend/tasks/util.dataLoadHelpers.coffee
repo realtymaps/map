@@ -727,7 +727,7 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, deleted)")
     .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
     if dataType == 'tax'
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, recording_date DESC NULLS LAST)")
       .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
     else
