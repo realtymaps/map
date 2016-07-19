@@ -59,7 +59,7 @@ module.exports =
     profile: 'user_profile'
     project: 'user_project'
     company: 'user_company'
-    accountImages: 'user_account_images'
+    blobs: 'user_blobs'
     notes: 'user_notes'
     drawnShapes: 'user_drawn_shapes'
     creditCards: 'user_credit_cards'

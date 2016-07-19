@@ -39,7 +39,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   # Reset the properties hash when switching profiles
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-    _loadProperties()
+    $log.debug 'rmapsEventConstants.principal.profile.updated: re-loading saved properties'
+    _loadProperties(true)
     .then () ->
       $rootScope.$emit rmapsEventConstants.update.properties.pin, properties: service.pins
       $rootScope.$emit rmapsEventConstants.update.properties.favorite, properties: service.favorites
@@ -150,7 +151,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   _loadProperties = (force) ->
     service.getSaves()
     .then (response) ->
+      $log.debug "saves: #{JSON.stringify response}"
       if (!Object.keys(service.pins).length && !Object.keys(service.favorites).length) || force
+        $log.debug 'refreshing saves'
         #fresh initial load
         service.pins = response.pins
         service.favorites = response.favorites
@@ -223,7 +226,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
   service.getSaves = () ->
-    $http.getData backendRoutes.properties.saves
+    $http.getData backendRoutes.properties.saves, cache: false
 
   service.pinUnpinProperty = (models) ->
     if !_.isArray models

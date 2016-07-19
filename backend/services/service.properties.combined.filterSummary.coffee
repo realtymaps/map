@@ -149,9 +149,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query.limit(limit) if limit
 
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
-  query.where ->
-    if filters?.status?.length
+  if filters?.status?.length
 
+    query.where ->
       if bounds?
         sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
 
@@ -172,7 +172,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
           if sold
             @orWhere () ->
               @where("#{dbFn.tableName}.status", 'sold')
-              if filters.soldRange
+              if filters.soldRange && filters.soldRange != 'all'
                 @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
@@ -212,11 +212,14 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if filters.hasImages
         @where("photos", "!=", "{}")
 
-      if queryParams.pins?.length
+      if queryParams.pins.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-    else if filters.status?
-      sqlHelpers.whereIn(query, 'rm_property_id', queryParams.pins || [])
+  else
+    # no status, so query and show pins and favorites
+    savedIds = queryParams.pins.concat queryParams.favorites
+    if savedIds.length
+      sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
 
   query
 

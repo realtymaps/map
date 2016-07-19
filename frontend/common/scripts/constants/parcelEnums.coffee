@@ -2,7 +2,6 @@ _ = require 'lodash'
 mod = require '../module.coffee'
 
 statusUniversal =
-  notForSale: 'not for sale'
   pending: 'pending'
   forSale: 'for sale'
 

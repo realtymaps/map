@@ -13,13 +13,14 @@ alertIds = require '../../common/utils/enums/util.enums.alertIds'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
-{parseBase64} = require '../utils/util.image'
-sizeOf = require 'image-size'
+
 validation = require '../utils/util.validation'
 safeColumns = (require '../utils/util.sql.helpers').columns
 tables = require '../config/tables'
 transforms = require '../utils/transforms/transforms.userSession'
 internals = require './route.userSession.internals'
+userInternals = require './route.user.internals'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -68,25 +69,15 @@ login = (req, res, next) -> Promise.try () ->
         .then () ->
           sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
         .then () ->
-          identity(req, res, next)
+          internals.getIdentity(req, res, next)
 
-identity = (req, res, next) ->
-  res.json identity: internals.getIdentity req
-
-updateCache = (req, res, next) ->
-  userUtils.cacheUserValues(req)
-  .then () ->
-    req.session.saveAsync()
-  .then () ->
-    identity(req, res, next)
-
-currentProfile = (req, res, next) -> Promise.try () ->
+setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
     next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, httpStatus.BAD_REQUEST)
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-  updateCache(req, res, next)
+  internals.updateCache(req, res, next)
 
 updateState = (req, res, next) ->
   profileService.updateCurrent(req.session, req.body)
@@ -117,7 +108,7 @@ profiles = (req, res, next) ->
         .then () ->
           logger.debug 'SESSION: clearing profiles'
           delete req.session.profiles#to force profiles refresh in cache
-          updateCache(req, res, next)
+          internals.updateCache(req, res, next)
 
 newProject = (req, res, next) ->
 
@@ -147,55 +138,32 @@ newProject = (req, res, next) ->
     req.session.current_profile_id = newProfile.id
     logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
     delete req.session.profiles # to force profiles refresh in cache
-    updateCache(req, res, next)
+    internals.updateCache(req, res, next)
 
-getImage = (req, res, next, entity, typeStr = 'user') -> Promise.try ->
-  userSessionService.getImage(entity)
-  .then (result) ->
-    unless result?.blob?
-      return next new ExpressResponse({} , httpStatus.NOT_FOUND)
-
-    parsed = parseBase64(result.blob)
-    res.setHeader('Content-Type', parsed.type)
-    buf = new Buffer(parsed.data, 'base64')
-    dim = sizeOf buf
-    if dim.width > internals.dimensionLimits.width || dim.height > internals.dimensionLimits.height
-      logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for entity.id: #{entity.id}; type: #{typeStr}"
-    res.send(buf)
-
-updateImage = (req, res, next, entity, typeStr = 'user', upsertImageFn = userSessionService.upsertImage) -> Promise.try ->
-  # logger.debug req.body.blob
-  if !req.body?.blob.contains 'image/' or !req.body?.blob.contains 'base64'
-    return next new ExpressResponse({alert: 'image has incorrect formatting.'} , httpStatus.BAD_REQUEST)
-
-  if !req.body?
-    return next new ExpressResponse({alert: 'undefined image blob'} , httpStatus.BAD_REQUEST)
-
-  parsed = parseBase64(req.body.blob)
-  buf = new Buffer(parsed.data, 'base64')
-  dim = sizeOf buf
-
-  if dim.width > internals.dimensionLimits.width || dim.height > internals.dimensionLimits.height
-    return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
-
-  upsertImageFn(entity, req.body.blob)
-  .then ()->
-    updateCache(req, res, next)
 
 image = (req, res, next) ->
   methodExec req,
-    GET: () -> getImage(req, res, next, req.user)
-    PUT: () -> updateImage(req, res, next, req.user)
+    GET: () -> userInternals.getImage {req, res, next, entity: req.user}
+    PUT: () ->
+      userInternals.updateImage {req, next, entity: req.user}
+      .then ()->
+        internals.updateCache(req, res, next)
 
 companyImage = (req, res, next) ->
   methodExec req,
     GET: () ->
-      validation.validateAndTransformRequest(req.params, transforms.companyImage.GET)
-      .then (validParams) ->
-        getImage(req, res, next, {account_image_id: validParams.account_image_id}, 'company')
+      userInternals.getCompanyImage(req, res, next)
 
-    PUT: () ->
-      updateImage(req, res, next, _.omit(req.body, 'blob'), 'company', userSessionService.upsertCompanyImage)
+    PUT: () -> Promise.try ->
+      userInternals.updateCompanyImage {
+        req
+        next
+        entity: _.omit(req.body, 'blob')
+      }
+      .then ()->
+        internals.updateCache(req, res, next)
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to PUT company image')
 
 
 
@@ -206,7 +174,7 @@ root = (req, res, next) ->
       .then (validBody) ->
         userSvc.update(req.session.userid, validBody, internals.safeRootFields)
       .then () ->
-        updateCache(req, res, next)
+        internals.updateCache(req, res, next)
 
 
 #only way to add a company for a logged in user (otherwise use admin route /company)
@@ -238,7 +206,7 @@ companyRoot = (req, res, next) ->
             .where id: req.user.id
             .update {company_id}
             .then () ->
-              updateCache(req, res, next)
+              internals.updateCache(req, res, next)
 
 updatePassword = (req, res, next) ->
   validation.validateAndTransformRequest(req.body, transforms.updatePassword)
@@ -262,7 +230,7 @@ module.exports =
 
   logout: auth.logout
 
-  identity: identity
+  identity: internals.getIdentity
 
   updateState:
     method: 'post'
@@ -277,7 +245,7 @@ module.exports =
   currentProfile:
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: currentProfile
+    handle: setCurrentProfile
 
   newProject:
     method: 'post'

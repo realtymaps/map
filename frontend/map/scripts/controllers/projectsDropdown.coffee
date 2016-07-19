@@ -1,3 +1,4 @@
+###global _###
 app = require '../app.coffee'
 module.exports = app
 moment = require 'moment'
@@ -79,6 +80,8 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
+      .then (identity) ->
+        $scope.selectProject(identity.profiles[identity.currentProfileId])
 
   $scope.checkSubmit = (evt) ->
     if evt.keyCode == 13

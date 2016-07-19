@@ -4,28 +4,20 @@ userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coff
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
 tables = require('../config/tables')
-db = require('../config/dbs').get('main')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
 profileSvc = require '../services/service.profiles'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
-keystoreSvc = require '../services/service.keystore'
 userUtils = require '../utils/util.user'
 ProjectSvcClass = require('../services/service.user.project')
 # Needed for temporary create client user workaround until onboarding is completed
-userSessionSvc = require '../services/service.userSession'
-permissionsService = require '../services/service.permissions'
 routeUserSessionInternals = require './route.userSession.internals'
 Promise = require 'bluebird'
 # End temporary
-
 projectSvc = new ProjectSvcClass(tables.user.project).init(false)
-safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
 
-vero = null
-require('../services/email/vero').then (svc) -> vero = svc.vero
 
 class ClientsCrud extends RouteCrud
   init: () ->
@@ -223,6 +215,6 @@ class ProjectRouteCrud extends RouteCrud
         req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
     .then () ->
-      identity: routeUserSessionInternals.getIdentity req
+      identity: routeUserSessionInternals.getIdentity req, res
 
 module.exports = ProjectRouteCrud

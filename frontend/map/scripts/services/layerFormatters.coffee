@@ -77,7 +77,6 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     markersBSLabel[rmapsParcelEnums.status.sold] = 'sold-property'
     markersBSLabel[rmapsParcelEnums.status.pending] = 'pending-property'
     markersBSLabel[rmapsParcelEnums.status.forSale] = 'sale-property'
-    markersBSLabel[rmapsParcelEnums.status.notForSale] = 'notsale-property'
     markersBSLabel['saved'] = 'saved-property'
 
     setMarkerOptions: (marker) ->

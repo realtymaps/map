@@ -63,4 +63,29 @@ app.factory 'rmapsFiltersFactory', () ->
 
   values.soldRange = _.zipObject(_.map(values.soldRangeValues, 'value'), _.map(values.soldRangeValues, 'name'))
 
-  {values}
+  MIN_BEDS = 0
+  MAX_BEDS = 10
+  MIN_BATHS = 0
+  MAX_BATHS = 6
+
+  valueDefaults =
+    bedsMin: MIN_BEDS
+    bathsMin: MIN_BATHS
+    priceMin: null
+    priceMax: null
+    sqftMin: null
+    sqftMax: null
+    acresMin: null
+    acresMax: null
+    listedDaysMin: null
+    listedDaysMax: null
+    closePriceMin: null
+    closePriceMax: null
+    closeDateMin: null
+    closeDateMax: null
+    ownerName: null
+    propertyType: null
+    hasImages: false
+    soldRange: '120 day'
+
+  {values, valueDefaults, MIN_BEDS, MAX_BEDS, MIN_BATHS, MAX_BATHS}

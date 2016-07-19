@@ -92,11 +92,11 @@ leafletData
         return
       _drawCtrlFactory()
 
-    $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, model) ->
+    $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       toRemove = null
 
       for key, val of drawnItems._layers
-        if val.model.properties?.id == model.id
+        if val.model.properties?.id == geojsonModel.properties.id
           toRemove = val
           break
 
