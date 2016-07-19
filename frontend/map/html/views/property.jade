@@ -52,11 +52,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
-            .col-sm-6
-              .content-heading Description
-              p.content-body {{formatters.property.orNa(property.description)}}
 
-            .col-sm-6
+            .col-sm-12
               .content-heading Property Info
 
               .row.content-row
@@ -72,18 +69,28 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value {{formatters.property.orNa(property.sqft_finished)}}
                   .content-label Sq Ft
                 .col-xs-6
-                  .content-value {{property.year_built.value}}
-                  .content-label {{property.year_built.label}}
+                  .content-value(ng-if="property.year_built.value") {{property.year_built.value}}
+                  .content-value(ng-if="!property.year_built.value") N/A
+                  .content-label(ng-if="property.year_built.label") {{property.year_built.label}}
+                  .content-label(ng-if="!property.year_built.label") Year Built
 
               .row.content-row
                 .col-xs-6
                   .content-value {{formatters.property.orNa(property.acres)}}
                   .content-label Acres
                 .col-xs-6
-                  .content-value {{formatters.property.orNa(property.acres*43560) | number:0}}
+                  .content-value(ng-if="property.acres") {{property.acres*43560| number:0}}
+                  .content-value(ng-if="!property.acres") N/A
                   .content-label Lot SqFt
 
-          .content-block.border-bottom
+          .row.content-block.prop-attrs.border-bottom
+
+            .col-sm-12
+              .content-heading Description
+
+              p.content-body {{formatters.property.orNa(property.description)}}
+
+          .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
             .content-heading Owner Info
             .row
               .col-sm-6
@@ -99,7 +106,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
                 .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
 
-          .row.content-block.border-bottom
+          .row.content-block.border-bottom(ng-if="formatters.property.showListingData(property) || formatters.property.showSalesData(property)")
             .col-sm-6(ng-if="formatters.property.showListingData(property)")
               .content-heading MLS Listing Info
               .row.content-row
