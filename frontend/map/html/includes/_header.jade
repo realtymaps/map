@@ -1,73 +1,76 @@
-// Standard Site Header
-header.site-header
-  .desktop-only
-    .inner
-      .container-fluid
-        include ./header/_logo
-        include ./header/_navigation
+div(ng-controller="rmapsHeaderCtrl")
 
-        .site-header-right
-          div(ng-if="principal.isAuthenticated()")
-            include ./header/_notices
-            include ./header/_userblock
-            include ./header/_search
-          include ./header/_rightnav
+  // Standard Site Header
+  header.site-header
+    .desktop-only
+      .inner
+        .container-fluid
+          include ./header/_logo
+          include ./header/_navigation
 
-// Realtor/Subscriber Header for Mobile
-.mobile-only
-  mobile-header.editor-header(ng-if="!principal.isProjectViewer()")
-    .inner
-      .mobile-header-left
-        include ./header/_burger
-      .mobile-header-center
-        include ./header/_logo
-        .mobile-header-title
-          span {{rmapsPageService.getTitle()}}
+          .site-header-right
+            div(ng-if="principal.isAuthenticated()")
+              include ./header/_notices
+              include ./header/_userblock
+              include ./header/_search
+            include ./header/_rightnav
 
-// Project Viewer Header for Mobile
-.mobile-only
-  mobile-header.viewer-header(ng-if="principal.isProjectViewer()")
-    .inner
-      .mobile-header-left
-        include ./header/_burger
-      .mobile-header-center
-        .mobile-header-title(ng-if="rmapsPageService.getTitle()")
-          span {{rmapsPageService.getTitle()}}
-        .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
-          div(ng-if="rmapsPageService.profiles.currentProfile.parent_name && rmapsPageService.profiles.currentProfile.company_name")
-            .header-title-major {{rmapsPageService.profiles.currentProfile.parent_name}}
-            .header-title-minor {{rmapsPageService.profiles.currentProfile.company_name}}
-          div(ng-if="!rmapsPageService.profiles.currentProfile.parent_name || !rmapsPageService.profiles.currentProfile.company_name") {{rmapsPageService.profiles.currentProfile.parent_name || project.name || 'Dashboard'}}
-      .mobile-header-right
-        i.icon.fa.fa-user.dashboard-realtor-icon
-
-// Custom Header for Mobile
-.mobile-only
-  div(ng-if='rmapsPageService.showMobileCustomHeader()')
-    mobile-header.custom-header(header-id="page-custom-header")
+  // Realtor/Subscriber Header for Mobile
+  .mobile-only
+    mobile-header.editor-header(ng-if="!principal.isProjectViewer()")
       .inner
         .mobile-header-left
           include ./header/_burger
-          mobile-header-target-left
         .mobile-header-center
+          include ./header/_logo
           .mobile-header-title
             span {{rmapsPageService.getTitle()}}
-            mobile-header-target-center
-        .mobile-header-right
-          mobile-header-target-right
 
-// Modal Header for Mobile
-.mobile-only
-  div(ng-if='rmapsPageService.showMobileModalHeader()')
-    mobile-header.modal-header(header-id="page-modal-header")
+  // Project Viewer Header for Mobile
+  .mobile-only
+    mobile-header.viewer-header(ng-if="principal.isProjectViewer()")
       .inner
         .mobile-header-left
-          a(ng-click='rmapsPageService.back($event)')
-            i.fa.fa-chevron-left
-          mobile-header-target-left
+          include ./header/_burger
         .mobile-header-center
-          .mobile-header-title
+          .mobile-header-title(ng-if="rmapsPageService.getTitle()")
             span {{rmapsPageService.getTitle()}}
-            mobile-header-target-center
+          .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
+            div(ng-if="profile.parent_name && profile.company_name")
+              .header-title-major {{profile.parent_name}}
+              .header-title-minor {{profile.company_name}}
+            div(ng-if="!profile.parent_name || !profile.company_name") {{profile.parent_name || project.name}}
         .mobile-header-right
-          mobile-header-target-right
+          span(ng-cloak ng-if="hasParentImage()")
+            img.header-owner-image(rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{profile.parent_name}}")
+
+  // Custom Header for Mobile
+  .mobile-only
+    div(ng-if='rmapsPageService.showMobileCustomHeader()')
+      mobile-header.custom-header(header-id="page-custom-header")
+        .inner
+          .mobile-header-left
+            include ./header/_burger
+            mobile-header-target-left
+          .mobile-header-center
+            .mobile-header-title
+              span {{rmapsPageService.getTitle()}}
+              mobile-header-target-center
+          .mobile-header-right
+            mobile-header-target-right
+
+  // Modal Header for Mobile
+  .mobile-only
+    div(ng-if='rmapsPageService.showMobileModalHeader()')
+      mobile-header.modal-header(header-id="page-modal-header")
+        .inner
+          .mobile-header-left
+            a(ng-click='rmapsPageService.back($event)')
+              i.fa.fa-chevron-left
+            mobile-header-target-left
+          .mobile-header-center
+            .mobile-header-title
+              span {{rmapsPageService.getTitle()}}
+              mobile-header-target-center
+          .mobile-header-right
+            mobile-header-target-right

@@ -39,6 +39,7 @@ getProfileWhere = (where = {}) ->
   .select(
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
   )
+  .select("auth_user.account_image_id as parent_image_id")
   .select("#{tables.user.company.tableName}.name as company_name")
   .where(where)
   .innerJoin(tables.user.project.tableName,"#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
