@@ -70,17 +70,17 @@ chargeCampaign = (subtask) ->
     logger.debug "Checking whether #{campaign.label} is ready for billing"
 
     tables.mail.letters()
-    .select('id')
+    .count('id')
     .where(
       status: 'sent'
       user_mail_campaign_id: campaign.id
     )
 
-    .then (letters) ->
-
-      totalPrice = campaign.price
-      if !totalPrice
-        throw new SoftFail(err, "Expected a price for #{campaign.label}, but got #{campaign.price}.")
+    .then ([result]) ->
+      try
+        totalPrice = Number(campaign.price_per_letter * result.count)
+      catch err
+        throw new SoftFail(err, "Expected a price per letter for #{campaign.label}, but got #{campaign.price_per_letter} for #{result.count} sent letters.")
       logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaign.label}"
 
       # Shown on CC statements (all caps, 22-character limit)

@@ -199,6 +199,7 @@ getPriceQuote = (userId, campaignId) ->
           .then (price) ->
             result =
               pdf: uri
+              pricePerLetter: price
               price: (price * campaign.recipients.length)
 
     .catch (err) ->
@@ -302,13 +303,13 @@ sendCampaign = (userId, campaignId) ->
       .catch isUnhandled, (err) ->
         throw new PartiallyHandledError(err, "Could not get price quote for campaign #{campaign.id}")
 
-      .then ({price}) ->
+      .then ({pricePerLetter, price}) ->
         dbs.transaction 'main', (tx) ->
 
-          # save off price for lob task to use
+          # save off pricePerLetter for lob task to use
           tables.mail.campaign(tx)
           .update
-            price: price
+            price_per_letter: pricePerLetter
           .where
             id: campaign.id
           .then () ->
