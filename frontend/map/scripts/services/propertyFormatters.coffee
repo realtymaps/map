@@ -72,7 +72,8 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return label
 
     showListingData: (model) ->
-      return false if not model
+      if !model || model.data_source_type != 'mls'
+        return false
       model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
 
     showSalesData: (model) ->
