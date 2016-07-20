@@ -21,6 +21,7 @@ findCampaigns = (subtask) ->
       'status'
       'name'
       'stripe_charge'
+      'price_per_letter'
     ]
   )
   .where status: 'sending'
