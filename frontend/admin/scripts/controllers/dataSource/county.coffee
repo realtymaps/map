@@ -65,7 +65,6 @@ app.controller 'rmapsCountyCtrl',
       label: label
       list: list
       items: $scope.categories[list] = []
-    console.log(JSON.stringify($scope.categories))
 
   $scope.getBaseRules = (dataSourceType, dataListType) ->
     $scope.baseRules = rmapsValidatorBuilderService.getBaseRules(dataSourceType, dataListType)
@@ -79,8 +78,6 @@ app.controller 'rmapsCountyCtrl',
     rule.list ?= list
     idx = _.sortedIndex(category, rule, 'ordering')
     allRules[if list == 'base' then rule.output else rule.input] = rule
-    if !category?
-      console.log("can't find: #{list}")
     category.splice idx, 0, rule
 
   # Handles adding base rules
