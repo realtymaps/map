@@ -1,3 +1,4 @@
+_ = require 'lodash'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -19,8 +20,9 @@ class NotesService extends ServiceCrud
       "#{tables.finalized.combined.tableName}.rm_property_id"
     )
 
-    super(entity, query: query).then (notes) ->
-      return toLeafletMarker notes
+    super(entity, {query})
+    .then (notes) ->
+      _.indexBy(toLeafletMarker(notes), 'id')
 
   enqueueEvent: ({promise, sub_type, type = 'propertySaved', entity, transaction}) ->
     promise
