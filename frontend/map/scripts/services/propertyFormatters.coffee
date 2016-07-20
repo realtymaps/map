@@ -13,14 +13,6 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
   _forSaleClass['saved'] = 'saved'
   _forSaleClass['default'] = ''
 
-  _statusLabelClass = {}
-  _statusLabelClass[rmapsParcelEnums.status.sold] = 'label-sold-property'
-  _statusLabelClass[rmapsParcelEnums.status.pending] = 'label-pending-property'
-  _statusLabelClass[rmapsParcelEnums.status.forSale] = 'label-sale-property'
-  _statusLabelClass[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
-  _statusLabelClass['saved'] = 'label-saved-property'
-  _statusLabelClass['default'] = ''
-
   class PropertyFormatter
 
     constructor: () ->
@@ -44,17 +36,17 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
         return true
       return false
 
-    getForSaleClass: (result, showSaved = true) ->
-      return '' unless result
-      status = result?.status
-      soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isPinned
-      soldClass or _forSaleClass[status] or _forSaleClass['default']
+    getForSaleClass: (result, showPinned = true) ->
+      if !result
+        return ''
+      if result.savedDetails?.isPinned && showPinned
+        soldClass = _forSaleClass['saved']
+      return soldClass || _forSaleClass[result.status] || _forSaleClass['default']
 
-    getStatusLabelClass: (result, ignoreSavedStatus=false) ->
-      return '' unless result
-      status = result?.status
-      soldClass = _statusLabelClass['saved'] if result.savedDetails?.isPinned && !ignoreSavedStatus
-      return soldClass or _statusLabelClass[status] or _statusLabelClass['default']
+    getStatusLabelClass: (result, ignorePinned = false) ->
+      if !result
+        return ''
+      return "label-#{@getForSaleClass(result, !ignorePinned)}-property"
 
     showSoldDate: (result) ->
       return false unless result
@@ -72,7 +64,8 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return label
 
     showListingData: (model) ->
-      return false if not model
+      if !model || model.data_source_type != 'mls'
+        return false
       model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
 
     showSalesData: (model) ->

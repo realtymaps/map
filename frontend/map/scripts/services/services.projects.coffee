@@ -2,7 +2,14 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalService, rmapsEventConstants) ->
+app.service 'rmapsProjectsService', (
+$http
+$log
+$rootScope
+rmapsPrincipalService
+rmapsEventConstants
+rmapsHttpTempCache
+) ->
 
   _mockData = (project) ->
 
@@ -25,12 +32,17 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         _.each projects, _mockData
         projects
 
-    getProject: (id, cache = false) ->
-      $http.get backendRoutes.projectSession.root + "/#{id}", cache: cache
-      .then (response) ->
-        project = response.data
-        _mockData project
-        project
+    getProject: (id, cache = true) ->
+      url = backendRoutes.projectSession.root + "/#{id}"
+
+      rmapsHttpTempCache {
+        url
+        promise: $http.get url, cache: cache
+        .then (response) ->
+          project = response.data
+          _mockData project
+          project
+      }
 
     saveProject: (project) ->
       service.update (project.project_id | project.id), project
