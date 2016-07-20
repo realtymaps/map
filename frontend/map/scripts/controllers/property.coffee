@@ -91,7 +91,7 @@ app.controller 'rmapsPropertyCtrl',
       rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
       .then (property) ->
         $scope.selectedResult = property
-        $scope.dataSources = [].concat(property.county||[]).concat(property.mls||[])
+        $scope.dataSources = [].concat(property.mls||[]).concat(property.county||[])
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
     $scope.getStatus = (property) ->
@@ -102,12 +102,12 @@ app.controller 'rmapsPropertyCtrl',
           units = soldRange.match(/^\d+ ([a-z])/)[1]
           units = if units == 'm' then 'M' else units
           if moment().subtract(qty, units).isBefore(moment(property.close_date))
-            return label: "Sold within #{soldRange}", class: 'label-sold-property'
+            return label: "Sold within #{soldRange}", class: 'sold'
           else
-            return label: "Not Sold witin #{soldRange}", class: 'label-notsale-property'
+            return label: "Not Sold witin #{soldRange}", class: 'notsale'
         catch ex
-          return label: "Not Sold", class: 'label-notsale-property'
+          return label: "Not Sold", class: 'notsale'
       else
-        return label: property.status, class: $scope.formatters.property.getStatusLabelClass(property, true)
+        return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
 
     getPropertyDetail $stateParams.id
