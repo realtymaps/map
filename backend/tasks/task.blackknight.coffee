@@ -222,7 +222,7 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'property'})
+  dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined'})
 
 
 subtasks = {
