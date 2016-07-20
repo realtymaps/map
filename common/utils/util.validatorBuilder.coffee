@@ -110,10 +110,6 @@ _rules =
       config:
         nullZero: true
 
-    close_date:
-      alias: 'Close Date'
-      type: name: 'datetime'
-
     fips_code:
       alias: 'FIPS code'
       required: true
@@ -129,6 +125,10 @@ _rules =
       valid: () ->
         @input.city && @input.state && (@input.zip || @input.zip9) &&
           ((@input.streetName && @input.streetNum) || @input.streetFull)
+
+    close_date:
+      alias: 'Close Date'
+      type: name: 'datetime'
 
   mls:
     listing:
@@ -146,9 +146,6 @@ _rules =
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'
         type: name: 'datetime'
-
-      address:
-        group: 'general'
 
       bedrooms:
         alias: 'Bedrooms'
@@ -196,7 +193,6 @@ _rules =
       status_display:
         alias: 'Status Display'
         required: true
-        group: 'general'
 
       substatus:
         alias: 'Sub-Status'
@@ -252,7 +248,6 @@ _rules =
 
       owner_name_2:
         alias: 'Owner 2'
-        required: true
         input: {}
         valid: () ->
           @input.first && @input.last || @input.full
@@ -266,10 +261,17 @@ _rules =
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
 
+      recording_date:
+        alias: 'Recording Date'
+        type: name: 'datetime'
+
+      property_type:
+        alias: 'Property Type'
+        config:
+          unmapped: 'null'
 
     tax:
-      address:
-        group: 'general'
+      close_date: null
 
       bedrooms:
         alias: 'Bedrooms'
@@ -291,26 +293,12 @@ _rules =
         alias: 'Finished Sq Ft'
         type: name: 'integer'
 
-      owner_name:
-        group: 'owner'
-
-      owner_name_2:
-        group: 'owner'
-
-      owner_address:
-        group: 'owner'
-
       year_built:
         alias: 'Year Built or Age'
         type: name: 'yearOrAge'
         input: {}
         valid: () ->
           @input.year || @input.age
-
-      property_type:
-        alias: 'Property Type'
-        config:
-          unmapped: 'null'
 
       zoning:
         alias: 'Zoning'
@@ -319,38 +307,49 @@ _rules =
         alias: 'Legal Unit Number'
 
     deed:
-      address:
-        group: 'deed'
-
-      owner_name:
-        group: 'owner'
-
-      owner_name_2:
-        group: 'owner'
-
-      owner_address:
-        group: 'owner'
-
-      property_type:
-        alias: 'Property Type'
-        config:
-          unmapped: 'null'
-
       legal_unit_number:
         alias: 'Legal Unit Number'
 
+      seller_name:
+        alias: 'Seller 1'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      seller_name_2:
+        alias: 'Seller 2'
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      document_type:
+        alias: 'Document Type'
+
     mortgage:
-      address:
-        group: 'mortgage'
+      price: null
+      property_type: null
 
-      owner_name:
-        group: 'mortgage'
+      amount:
+        alias: 'Loan Amount'
+        valid: () ->
+          @input.amount && @input.scale
+        input: {}
+        type: name: 'amount'
 
-      owner_name_2:
-        group: 'mortgage'
+      lender:
+        alias: 'Lender'
 
-      owner_address:
-        group: 'mortgage'
+      term:
+        alias: 'Loan Term'
+
+      financing_type:
+        alias: 'Financing Type'
+
+      loan_type:
+        alias: 'Loan Type'
 
 
 # RETS/MLS rule defaults for each data type
@@ -423,7 +422,7 @@ getBaseRules = (dataSourceType, dataListType) ->
   p2 = _.cloneDeep(_rules[dataSourceType].common)
   p3 = _.cloneDeep(_rules.common)
   builtBaseRules = _.defaultsDeep(p1, p2, p3)
-  return _.mapValues builtBaseRules, (val) -> _.defaultsDeep(val, baseTypeRules[val.type?.name ? 'string'])
+  return _(builtBaseRules).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val?.type?.name ? 'string'])).omit((val) -> !val?).value()
 getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
 buildDataRule = (rule) ->

@@ -26,7 +26,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
-    .orderByRaw('close_date DESC NULLS LAST')
+    .orderByRaw('recording_date DESC NULLS LAST')
     .then (taxEntries=[]) ->
       if taxEntries.length == 0
         return null  # sometimes this might cover up a real error, but there are semi-legitimate cases where this can happen
@@ -82,8 +82,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   tax.substatus = 'sold'
   tax.status_display = 'sold'
 
-  # now that we have an ordered sales history, overwrite that into the tax record
-  saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type', 'zoning']
+  saleFields = ['price', 'close_date', 'recording_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
 
   # we need to check to see if we have a deed record that represents a sale more recent than what our tax records show,
   # and if so, overwrite the owner, deed, and sale info with that from the deed record (since it would have the tax
@@ -94,15 +93,19 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
   # the main parcel with info from the sale of a split-off
   for deedEntry,i in deedEntries
-    if tax.legal_unit_number == deedEntry.legal_unit_number
+    deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
+    delete deedEntry.close_date
+    delete deedEntry.recording_date
+    if !lastSaleIndex? && tax.legal_unit_number == deedEntry.legal_unit_number
       lastSaleIndex = i
-      break
-  if lastSaleIndex? && moment(deedEntries[lastSaleIndex].close_date).isAfter(tax.close_date)
+  if lastSaleIndex? && moment(deedEntries[lastSaleIndex].recording_date).isAfter(tax.recording_date)
     [lastSale] = deedEntries.splice(lastSaleIndex, 1)
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
     tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
     for field in saleFields
       tax[field] = lastSale[field]
+  tax.close_date = tax.close_date || tax.recording_date
+  delete tax.recording_date
   delete tax.legal_unit_number
   # save the values we will promote to MLS for easier access
   promotedValues =
@@ -110,13 +113,8 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     owner_name_2: tax.owner_name_2
     zoning: tax.zoning
 
-  # TODO: consider going through salesHistory / deedHistory / mortgageHistory to make them essentially diffs, with
-  # TODO: changed values only for certain static data fields?
   tax.subscriber_groups.mortgageHistory = mortgageEntries
   tax.subscriber_groups.deedHistory = deedEntries
-  tax.shared_groups.saleHistory = []
-  for deedInfo in deedEntries
-    tax.shared_groups.saleHistory.push(price: deedInfo.price, close_date: deedInfo.close_date)
 
   {promotedValues,tax}
 
@@ -136,6 +134,7 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, de
   _documentFinalize "finalizeJoin", () ->
     # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
     # TODO: simultaneous closings, how do we properly sort to account for that?
+    # TODO: answer: by buyer/seller names, but we'll get to that later
     {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
 
     Promise.delay(delay)  #throttle for heroku's sake
