@@ -110,4 +110,19 @@ app.controller 'rmapsPropertyCtrl',
       else
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
 
+    $scope.showPVA = (rm_property_id) ->
+      # TODO: call backend service with rm_property_id to get PVA url
+      # $http.get("#{backendRoutes.property.pva}/#{rm_property_id}")
+      # .then (pvaPage) ->
+      # Mock response
+      pvaPage =
+        url: "http://www.collierappraiser.com/Main_Search/RecordDetail.html?FolioID=#{rm_property_id.slice(6,17)}"
+        post: null
+
+      if post?
+        # TODO: POST
+        window.open(pvaPage.url)
+      else
+        window.open(pvaPage.url)
+
     getPropertyDetail $stateParams.id
