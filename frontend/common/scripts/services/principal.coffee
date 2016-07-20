@@ -134,4 +134,3 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   getCurrentProfile: getCurrentProfile
   getCurrentProfileId: getCurrentProfileId
   getCurrentProjectId: getCurrentProjectId
-

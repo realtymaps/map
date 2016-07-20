@@ -5,12 +5,12 @@ confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 originator = 'map'
 
 app.controller 'rmapsNotesModalCtrl', (
-$rootScope,
-$scope,
-$modal,
-rmapsNotesService,
-rmapsMainOptions,
-rmapsEventConstants,
+$rootScope
+$scope
+$modal
+rmapsNotesService
+rmapsMainOptions
+rmapsEventConstants
 rmapsPrincipalService
 rmapsMapTogglesFactory
 ) ->
@@ -25,55 +25,54 @@ rmapsMapTogglesFactory
     promise.then ->
       $rootScope.$emit rmapsEventConstants.notes
 
-  _.extend $scope,
-    activeView: 'notes'
+  $scope.activeView = 'notes'
 
-    hasNotes: (property) ->
-      rmapsNotesService.hasNotes(property?.rm_property_id)
+  $scope.hasNotes = (property) ->
+    rmapsNotesService.hasNotes(property?.rm_property_id)
 
-    createModal: (note = {}, property) ->
-      modalScope = $scope.$new false
-      modalScope.property = property
+  $scope.createModal = (note = {}, property) ->
+    modalScope = $scope.$new false
+    modalScope.property = property
 
+    modalInstance = $modal.open
+      animation: rmapsMainOptions.modals.animationsEnabled
+      template: notesTemplate
+      scope: modalScope
+      controller: 'rmapsModalInstanceCtrl'
+      resolve: model: -> note
+
+    modalInstance.result
+
+  $scope.create = (property, projectId) ->
+    $scope.createModal({}, property).then (note) ->
+      _.extend note,
+        rm_property_id : property.rm_property_id || undefined
+        geometry_center : property.geometry_center
+        project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
+
+      # Turn the Notes layer on so that the user will see the new note
+      rmapsMapTogglesFactory.currentToggles.showNotes = true
+      _signalUpdate rmapsNotesService.create note
+
+  $scope.update = (note, property) ->
+    note = _.cloneDeep note
+    $scope.createModal(note, property).then (note) ->
+      _signalUpdate rmapsNotesService.update note
+
+  $scope.remove = (note, confirm = false) ->
+    if confirm
       modalInstance = $modal.open
-        animation: rmapsMainOptions.modals.animationsEnabled
-        template: notesTemplate
-        scope: modalScope
-        controller: 'rmapsModalInstanceCtrl'
-        resolve: model: -> note
+        scope: $scope
+        template: confirmTemplate
 
-      modalInstance.result
-
-    create: (property, projectId) ->
-      $scope.createModal({}, property).then (note) ->
-        _.extend note,
-          rm_property_id : property.rm_property_id || undefined
-          geometry_center : property.geometry_center
-          project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
-
-        # Turn the Notes layer on so that the user will see the new note
-        rmapsMapTogglesFactory.currentToggles.showNotes = true
-        _signalUpdate rmapsNotesService.create note
-
-    update: (note, property) ->
-      note = _.cloneDeep note
-      $scope.createModal(note, property).then (note) ->
-        _signalUpdate rmapsNotesService.update note
-
-    remove: (note, confirm = false) ->
-      if confirm
-        modalInstance = $modal.open
-          scope: $scope
-          template: confirmTemplate
-
-        $scope.showCancelButton = true
-        $scope.modalTitle = "Remove note \"#{note.title}\"?"
-        $scope.modalCancel = modalInstance.dismiss
-        $scope.modalOk = () ->
-          modalInstance.close()
-          _signalUpdate rmapsNotesService.remove note.id
-      else
+      $scope.showCancelButton = true
+      $scope.modalTitle = "Remove note \"#{note.title}\"?"
+      $scope.modalCancel = modalInstance.dismiss
+      $scope.modalOk = () ->
+        modalInstance.close()
         _signalUpdate rmapsNotesService.remove note.id
+    else
+      _signalUpdate rmapsNotesService.remove note.id
 
 .controller 'rmapsMapNotesTapCtrl',(
   $log
@@ -110,6 +109,7 @@ rmapsMapTogglesFactory
   rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
   _mapHandle =
+    #create a note from purley land
     click: (event) ->
       geojson = (new L.Marker(event.latlng)).toGeoJSON()
       createFromModal
@@ -118,6 +118,7 @@ rmapsMapTogglesFactory
         _destroy()
 
   _markerGeoJsonHandle =
+    #create a note from an existing parcel
     click: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       $log.debug "note for model: #{model.rm_property_id}"
       createFromModal(model).finally ->
@@ -145,8 +146,7 @@ rmapsMapTogglesFactory
 ) ->
 
   mapId = rmapsMapIds.mainMap()
-  setMarkerNotesOptions = rmapsLayerFormattersService.MLS.setMarkerNotesOptions
-  setDataOptions = rmapsLayerFormattersService.setDataOptions
+  {setMarkerNotesDataOptions} = rmapsLayerFormattersService
   linker = rmapsMapEventsLinkerService
   directiveControls = null
   popup = rmapsPopupLoaderService
@@ -178,7 +178,7 @@ rmapsMapTogglesFactory
             first_name: model.first_name
             last_name: model.last_name
             text: model.text
-            circleNrArg: model.$index + 1
+            circleNrArg: model.id
           needToCompile: false
         })
 
@@ -189,10 +189,14 @@ rmapsMapTogglesFactory
       leafletIterators.each markersUnSubs, (unsub) ->
         unsub()
 
+  $scope.markerNotesLength = () ->
+    Object.keys($scope.map.markers.notes).length
+
   getNotes = (force = false) ->
-    rmapsNotesService.getList(true).then (data) ->
+    rmapsNotesService.getList(force)
+    .then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
-      $scope.map.markers.notes = setDataOptions data, setMarkerNotesOptions
+      $scope.map.markers.notes = setMarkerNotesDataOptions(data)
 
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
     getNotes(true).then ->
