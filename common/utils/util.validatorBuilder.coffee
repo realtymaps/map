@@ -331,6 +331,9 @@ _rules =
     mortgage:
       price: null
       property_type: null
+      owner_name: null
+      owner_name_2: null
+      owner_address: null
 
       amount:
         alias: 'Loan Amount'
@@ -344,6 +347,7 @@ _rules =
 
       term:
         alias: 'Loan Term'
+        type: name: 'yearsOrMonths'
 
       financing_type:
         alias: 'Financing Type'
