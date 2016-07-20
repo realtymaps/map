@@ -194,12 +194,13 @@ getPriceQuote = (userId, campaignId) ->
             # pdf-uploaded content won't have address windows, so add a page
             pages += 1
 
-          # get price
-          priceService.getPriceForLetter({pages, recipientCount: campaign.recipients.length, color: campaign.options.color})
+          # get price per letter
+          priceService.getPricePerLetter({pages, color: campaign.options.color})
           .then (price) ->
             result =
               pdf: uri
-              price: price
+              pricePerLetter: price
+              price: (price * campaign.recipients.length)
 
     .catch (err) ->
       throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")
@@ -273,11 +274,9 @@ sendCampaign = (userId, campaignId) ->
   })
 
   .catch isUnhandled, (err) ->
-
     throw new PartiallyHandledError(err, "Campaign cannot be sent right now -- try again later")
 
   .then ({authUser, campaign, payment, lob}) ->
-
     [authUser] = authUser
     [campaign] = campaign
     {stripe_customer_id} = authUser
@@ -295,65 +294,62 @@ sendCampaign = (userId, campaignId) ->
     payment.customers.get authUser
 
     .catch isUnhandled, (err) ->
-
       throw new PartiallyHandledError(err, "Could not find stripe customer #{stripe_customer_id} for user #{userId}")
 
     .then (stripeCustomer) ->
-
       logger.debug "Checking price to send campaign #{campaign.id} on behalf of user #{userId}"
-      getPriceQuote userId, campaign.id
+      getPriceQuote(userId, campaign.id)
 
       .catch isUnhandled, (err) ->
-
         throw new PartiallyHandledError(err, "Could not get price quote for campaign #{campaign.id}")
 
-      .then ({price}) ->
-
+      .then ({pricePerLetter, price}) ->
         dbs.transaction 'main', (tx) ->
 
-          logger.debug "Creating $#{price.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
+          # save off pricePerLetter for lob task to use
+          tables.mail.campaign(tx)
+          .update
+            price_per_letter: pricePerLetter
+          .where
+            id: campaign.id
+          .then () ->
 
-          payment.customers.charge
-            customer: stripe_customer_id
-            source: stripeCustomer.default_source
-            amount: price
-            capture: false # funds held but not actually charged until letters are sent to LOB
-            description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
-            ,
-            "charge_campaign_#{campaign.id}" # unique identifier to prevent duplicate charges
-
-          .catch isUnhandled, (err) ->
-
-            throw new PartiallyHandledError(err, "CC hold failed for customer #{stripe_customer_id}")
-
-          .then (stripeCharge) ->
-
-            # Whether or not mailing API is turned on, only queue real letters if payment is live
-            apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
-
-            logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId} using API #{apiName}"
-            logger.debug -> "#{JSON.stringify stripeCharge}"
-
-            tables.mail.letters(transaction: tx)
-            .insert _.map campaign.recipients, (recipient) ->
-              letter = buildLetter campaign, recipient
-              letter.lob_api = apiName
-              letter
+            logger.debug "Creating $#{price.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
+            payment.customers.charge
+              customer: stripe_customer_id
+              source: stripeCustomer.default_source
+              amount: price
+              capture: false # funds held but not actually charged until letters are sent to LOB
+              description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
+              ,
+              "charge_campaign_#{campaign.id}" # unique identifier to prevent duplicate charges
 
             .catch isUnhandled, (err) ->
+              throw new PartiallyHandledError(err, "CC hold failed for customer #{stripe_customer_id}")
 
-              throw new PartiallyHandledError(err, "Failed to queue #{campaign.recipients.length} letters for campaign #{campaignId}")
+            .then (stripeCharge) ->
+              # Whether or not mailing API is turned on, only queue real letters if payment is live
+              apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
 
-            .then (inserted) ->
+              logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId} using API #{apiName}"
+              logger.debug -> "#{JSON.stringify stripeCharge}"
+              tables.mail.letters(transaction: tx)
+              .insert _.map campaign.recipients, (recipient) ->
+                letter = buildLetter campaign, recipient
+                letter.lob_api = apiName
+                letter
 
-              logger.debug "Queued #{campaign.recipients.length} letters, changing status of campaign #{campaignId} -> 'sending'"
-              tables.mail.campaign(transaction: tx)
-              .update(status: 'sending', stripe_charge: stripeCharge)
-              .where(id: campaignId, auth_user_id: userId)
+              .catch isUnhandled, (err) ->
+                throw new PartiallyHandledError(err, "Failed to queue #{campaign.recipients.length} letters for campaign #{campaignId}")
 
-            .catch isUnhandled, (err) ->
+              .then (inserted) ->
+                logger.debug "Queued #{campaign.recipients.length} letters, changing status of campaign #{campaignId} -> 'sending'"
+                tables.mail.campaign(transaction: tx)
+                .update(status: 'sending', stripe_charge: stripeCharge)
+                .where(id: campaignId, auth_user_id: userId)
 
-              throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
+              .catch isUnhandled, (err) ->
+                throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
 
 module.exports =
   getLetter: getLetter

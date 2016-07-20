@@ -6,7 +6,7 @@ config = require('../config/config')
 getMailPrices = () ->
   keystore.getValue('mail', namespace: "pricings")
 
-getPriceForLetter = ({pages, recipientCount, color}) -> Promise.try () ->
+getPricePerLetter = ({pages, color}) -> Promise.try () ->
   keystore.cache.getValue('mail', namespace: "pricings")
   .then (pricings) ->
     if color
@@ -14,14 +14,12 @@ getPriceForLetter = ({pages, recipientCount, color}) -> Promise.try () ->
         firstPage: pricings.colorPage
         extraPage: pricings.colorExtra
         pages: pages
-        recipientCount: recipientCount
       )
     else
       price = config.MAILING_PLATFORM.GET_PRICE(
         firstPage: pricings.bnwPage
         extraPage: pricings.bnwExtra
         pages: pages
-        recipientCount: recipientCount
       )
 
     return price
@@ -29,4 +27,4 @@ getPriceForLetter = ({pages, recipientCount, color}) -> Promise.try () ->
 
 module.exports =
   getMailPrices: getMailPrices
-  getPriceForLetter: getPriceForLetter
+  getPricePerLetter: getPricePerLetter

@@ -21,6 +21,7 @@ findCampaigns = (subtask) ->
       'status'
       'name'
       'stripe_charge'
+      'price_per_letter'
     ]
   )
   .where status: 'sending'
@@ -70,20 +71,20 @@ chargeCampaign = (subtask) ->
     logger.debug "Checking whether #{campaign.label} is ready for billing"
 
     tables.mail.letters()
-    .select(tables.mail.letters().raw "id, lob_response->'price' as price")
+    .count('id')
     .where(
       status: 'sent'
       user_mail_campaign_id: campaign.id
     )
 
-    .then (letters) ->
-
-      totalPrice = _.reduce (_.pluck letters, 'price'), (total, price) ->
-        total + Number(price)
-
+    .then ([result]) ->
+      try
+        totalPrice = Number(campaign.price_per_letter * result.count)
+      catch err
+        throw new SoftFail(err, "Expected a price per letter for #{campaign.label}, but got #{campaign.price_per_letter} for #{result.count} sent letters.")
       logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaign.label}"
 
-       # Shown on CC statements (all caps, 22-character limit)
+      # Shown on CC statements (all caps, 22-character limit)
       statement_descriptor = "REALTYMAPS #{campaign.stripe_charge.description ? ''}".trim().slice 0, 22
 
       payment.customers.capture
