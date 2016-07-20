@@ -6,13 +6,15 @@ objectValidation = require './util.validation.object'
 # convenience validator
 
 module.exports = (options = {}) ->
-  validator = currencyValidation(options)
+  composite = objectValidation
+    subValidateSeparate:
+      amount: currencyValidation(options)
 
   (param, value) -> Promise.try () ->
     if !value
       return null
 
-    validator(param, value.amount)
+    composite(param, value)
     .then (amount) ->
       if value.scale == 'K'
         amount *= 10
