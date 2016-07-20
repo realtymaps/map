@@ -152,6 +152,11 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-label
                     a(ng-click="showPVA(property.rm_property_id)") View PVA Website (opens new window) &nbsp;
                       icon.fa.fa-external-link
+              .row.content-row
+                .col-sm-12
+                  .content-label
+                    a(ng-click="showPVA(property.rm_property_id, {fake:'asdf'})") (POST) View PVA Website (opens new window) &nbsp;
+                      icon.fa.fa-external-link
 
           accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{group.label}}")

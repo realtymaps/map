@@ -110,19 +110,38 @@ app.controller 'rmapsPropertyCtrl',
       else
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
 
-    $scope.showPVA = (rm_property_id) ->
+    $scope.showPVA = (rm_property_id, post) ->
       # TODO: call backend service with rm_property_id to get PVA url
       # $http.get("#{backendRoutes.property.pva}/#{rm_property_id}")
       # .then (pvaPage) ->
       # Mock response
       pvaPage =
         url: "http://www.collierappraiser.com/Main_Search/RecordDetail.html?FolioID=#{rm_property_id.slice(6,17)}"
-        post: null
+        post: post
 
-      if post?
-        # TODO: POST
-        window.open(pvaPage.url)
+      if !_.isEmpty(pvaPage.post)
+        pvaForm = document.createElement("form")
+        windowName = window.name+(new Date().getTime())
+        pvaForm.target = windowName
+        pvaForm.method = "POST"
+        pvaForm.action = pvaPage.url
+
+        for name, value of pvaPage.post
+          newInput = document.createElement("input")
+          newInput.type = "hidden"
+          newInput.name = name
+          newInput.value = value
+          pvaForm.appendChild(newInput)
+
+        document.body.appendChild(pvaForm)
+        if child = window.open('', windowName)
+          pvaForm.submit()
+        else
+          alert("Please enable popups on this page")
+
       else
         window.open(pvaPage.url)
+
+      return false
 
     getPropertyDetail $stateParams.id
