@@ -144,6 +144,20 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     span(ng-if="!property.sale_date") N/A
                 .col-sm-6
 
+          .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
+            .col-sm-12
+              .content-heading PVA Info
+              .row.content-row
+                .col-sm-12
+                  .content-label
+                    a(ng-click="showPVA(property.rm_property_id)") View PVA Website (opens new window) &nbsp;
+                      icon.fa.fa-external-link
+              .row.content-row
+                .col-sm-12
+                  .content-label
+                    a(ng-click="showPVA(property.rm_property_id, {fake:'asdf'})") (POST) View PVA Website (opens new window) &nbsp;
+                      icon.fa.fa-external-link
+
           accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}")
               .table-striped
