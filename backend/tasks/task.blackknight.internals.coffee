@@ -9,6 +9,7 @@ moment = require 'moment'
 
 NUM_ROWS_TO_PAGINATE = 2500
 BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
+BLACKKNIGHT_COPY_DATES = 'blackknight copy dates'
 TAX = 'tax'
 DEED = 'deed'
 MORTGAGE = 'mortgage'
@@ -187,6 +188,7 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 module.exports = {
   NUM_ROWS_TO_PAGINATE
   BLACKKNIGHT_PROCESS_DATES
+  BLACKKNIGHT_COPY_DATES
   TAX
   DEED
   MORTGAGE
