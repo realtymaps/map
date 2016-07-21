@@ -106,8 +106,10 @@ app.controller 'rmapsPropertyCtrl',
       splits = rm_property_id.split('_')
       fips = splits[0]
       apn = splits[1]
+      # this should probably be changed to somehow be based on our actual CDN config, but it works for now
+      cdnNum = (fips % 2)+1
       # TODO: call backend service with rm_property_id to get PVA url
-      # $http.get("#{backendRoutes.properties.root}/pva/#{fips}")
+      # $http.get("`//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}")
       # .then (pvaPage) ->
       # Mock response
       pvaPage =
