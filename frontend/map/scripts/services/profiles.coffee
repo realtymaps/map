@@ -5,9 +5,18 @@ _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_togg
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 
-app.service 'rmapsCurrentProfilesService', ($http) ->
+app.service 'rmapsCurrentProfilesService', (
+$http
+rmapsHttpTempCache
+) ->
+
   setCurrent: (profile) ->
-    $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+    url = backendRoutes.userSession.currentProfile
+
+    rmapsHttpTempCache {
+      url
+      promise: $http.post(url, {currentProfileId: profile.id}, {cache: true})
+    }
 
 app.service 'rmapsProfilesService', (
   $http,

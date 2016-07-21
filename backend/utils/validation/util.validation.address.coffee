@@ -81,7 +81,7 @@ module.exports = (options = {}) ->
           result.zip = "#{result.zip}-#{value.zip4}"
 
       # Clean up whitespace in all fields. This is the last step so earlier regexes can use the original values.
-      result = _.mapValues (v) ->
+      result = _.mapValues result, (v) ->
         v.replace(/\s{2,}/g, ' ').trim()
 
       logger.debug result

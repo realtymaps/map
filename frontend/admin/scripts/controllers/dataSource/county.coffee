@@ -44,7 +44,7 @@ app.controller 'rmapsCountyCtrl',
     name: 'Deed'
   ,
     id: 'mortgage'
-    name: 'mortgage'
+    name: 'Mortgage'
   ]
 
   $scope.dateFormats = [

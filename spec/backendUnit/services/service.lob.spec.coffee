@@ -74,7 +74,7 @@ describe "service.lob", ->
       return 3
 
   svc.__set__ 'priceService',
-    getPriceForLetter: () -> Promise.try ->
+    getPricePerLetter: () -> Promise.try ->
       return 3.41
 
   beforeEach ->
@@ -101,8 +101,9 @@ describe "service.lob", ->
         tables.mail.campaign().selectSpy.callCount.should.equal 2
         tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
 
-        tables.mail.campaign().updateSpy.callCount.should.equal 1
-        tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
+        tables.mail.campaign().updateSpy.callCount.should.equal 2
+        tables.mail.campaign().updateSpy.args[0][0].should.deep.equal price_per_letter: 3.41
+        tables.mail.campaign().updateSpy.args[1][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
         tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
 
         tables.mail.letters().insertSpy.callCount.should.equal 1
@@ -142,8 +143,9 @@ describe "service.lob", ->
         tables.mail.campaign().selectSpy.callCount.should.equal 2
         tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockPdfCampaign.id, auth_user_id: mockAuthUser.id
 
-        tables.mail.campaign().updateSpy.callCount.should.equal 1
-        tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
+        tables.mail.campaign().updateSpy.callCount.should.equal 2
+        tables.mail.campaign().updateSpy.args[0][0].should.deep.equal price_per_letter: 3.41
+        tables.mail.campaign().updateSpy.args[1][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
         tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockPdfCampaign.id, auth_user_id: mockAuthUser.id
 
         tables.mail.letters().insertSpy.callCount.should.equal 1
