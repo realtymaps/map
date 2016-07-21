@@ -6,7 +6,7 @@ qs = require 'qs'
 module.config(($httpProvider) ->
   $httpProvider.useApplyAsync(true)
 )
-.config(($provide, rmapsPromiseDataProviderProvider) ->
+.config(($provide) ->
   # attempting to create a cancelable $http on all its functions
   $provide.decorator '$http', ($delegate, $q, $cacheFactory, rmapsPromiseDataProvider) ->
     flattenDataPromise = rmapsPromiseDataProvider.flattenDataPromise

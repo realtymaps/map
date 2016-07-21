@@ -1,0 +1,7 @@
+.col-md-12.scroll(ng-if="fieldData.current.type.name == 'yearsOrMonths'")
+  .row
+    .col-md-2 Years or Months
+    .col-md-10
+      rmaps-subinput(name="Years" field="years")
+      span.sep OR
+      rmaps-subinput(name="Months" field="months")

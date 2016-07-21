@@ -6,13 +6,13 @@ memoize = require 'memoizee'
 require '../../config/promisify'
 
 
-getLookupMap = (data_source_id, data_list_type, LookupName) ->
+getLookupMap = (data_source_id, data_list_type, LookupName, param, value) ->
   query = tables.config.dataSourceLookups()
   .select('LongValue', 'Value')
   .where({data_source_id, data_list_type, LookupName})
   .then (rows) ->
     if !rows?.length
-      throw new DataValidationError("lookup '#{LookupName}' not found for source #{data_source_id}, list_type #{data_list_type}")
+      throw new DataValidationError("lookup '#{LookupName}' not found for source #{data_source_id}, list_type #{data_list_type}", param, value)
     lookup = {}
     for row in rows
       lookup[row.Value] = row.LongValue
@@ -20,15 +20,15 @@ getLookupMap = (data_source_id, data_list_type, LookupName) ->
 getLookupMap = memoize.promise(getLookupMap, {primitive: true})
 
 
-getLookupName = (data_source_id, data_list_type, proxyName) ->
+getLookupName = (data_source_id, data_list_type, proxyName, param, value) ->
   query = tables.config.dataSourceFields()
   .select('LookupName')
   .where({data_source_id, data_list_type, SystemName: proxyName})
   .then (rows) ->
     if !rows?.length
-      throw new DataValidationError("lookup proxy '#{proxyName}' not found for source #{data_source_id}, list_type #{data_list_type}")
+      throw new DataValidationError("lookup proxy '#{proxyName}' not found for source #{data_source_id}, list_type #{data_list_type}", param, value)
     if !rows[0]?.LookupName
-      throw new DataValidationError("lookup proxy '#{data_source_id}/#{data_list_type}/#{proxyName}' has no lookup name")
+      throw new DataValidationError("lookup proxy '#{data_source_id}/#{data_list_type}/#{proxyName}' has no lookup name", param, value)
     return rows[0]?.LookupName
 getLookupName = memoize.promise(getLookupName, {primitive: true})
 
@@ -61,11 +61,11 @@ module.exports = (options = {}) ->
       if options.map
         return options.map
       else if options.lookup.lookupName
-        return getLookupMap(options.lookup.dataSourceId, options.lookup.dataListType, options.lookup.lookupName)
+        return getLookupMap(options.lookup.dataSourceId, options.lookup.dataListType, options.lookup.lookupName, param, value)
       else if options.lookup.proxyName
-        return getLookupName(options.lookup.dataSourceId, options.lookup.dataListType, options.lookup.proxyName)
+        return getLookupName(options.lookup.dataSourceId, options.lookup.dataListType, options.lookup.proxyName, param, value)
         .then (lookupName) ->
-          getLookupMap(options.lookup.dataSourceId, options.lookup.dataListType, lookupName)
+          getLookupMap(options.lookup.dataSourceId, options.lookup.dataListType, lookupName, param, value)
       else
         throw new DataValidationError("no lookup name or proxy name provided, options are: #{JSON.stringify(options)}", param, value)
     .then (map) ->

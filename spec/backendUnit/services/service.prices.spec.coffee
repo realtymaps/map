@@ -28,9 +28,9 @@ describe "service.prices", ->
       pages: 1
       color: true
       recipientCount: 3
-    priceService.getPriceForLetter(letter)
+    priceService.getPricePerLetter(letter)
     .then (price) ->
-      price.should.be.approximately 3.45, 0.004
+      price.should.be.approximately 1.15, 0.004
       done()
 
   it 'should return correct price for 3 color pages', (done) ->
@@ -38,9 +38,9 @@ describe "service.prices", ->
       pages: 3
       color: true
       recipientCount: 3
-    priceService.getPriceForLetter(letter)
+    priceService.getPricePerLetter(letter)
     .then (price) ->
-      price.should.be.approximately 4.65, 0.004
+      price.should.be.approximately 1.55, 0.004
       done()
 
 
@@ -49,9 +49,9 @@ describe "service.prices", ->
       pages: 1
       color: false
       recipientCount: 3
-    priceService.getPriceForLetter(letter)
+    priceService.getPricePerLetter(letter)
     .then (price) ->
-      price.should.be.approximately 2.85, 0.004
+      price.should.be.approximately 0.95, 0.004
       done()
 
   it 'should return correct price for 3 bnw pages', (done) ->
@@ -59,8 +59,8 @@ describe "service.prices", ->
       pages: 3
       color: false
       recipientCount: 3
-    priceService.getPriceForLetter(letter)
+    priceService.getPricePerLetter(letter)
     .then (price) ->
-      price.should.be.approximately 3.45, 0.004
+      price.should.be.approximately 1.15, 0.004
       done()
 

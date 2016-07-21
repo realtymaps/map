@@ -4,7 +4,8 @@ logger = require './logger'
 
 locals = {}
 setLocals = (keyParam) ->
-  locals.mapsSdkUrl = "http://maps.google.com/maps/api/js?v=3#{keyParam}&sensor=false&libraries=places"
+  locals.mapsSdkUrl = "http://maps.google.com/maps/api/js?v=3#{keyParam}&libraries=places"
+
 setLocals('')
 
 module.exports =

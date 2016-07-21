@@ -62,7 +62,7 @@ _updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insert
 
 
 recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
-  logger.debug () -> subtask
+  logger.spawn(subtask.task_name).debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
   subset =
@@ -146,7 +146,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
 activateNewData = (subtask, {tableProp, transaction} = {}) -> Promise.try () ->
-  logger.debug subtask
+  logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
 
@@ -296,7 +296,7 @@ getRawRows = (subtask, rawSubid) ->
   rowsPromise = tables.temp(subid: rawSubid)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
 
-  logger.debug () -> rowsPromise.toString()
+  logger.spawn(subtask.task_name).debug () -> rowsPromise.toString()
   rowsPromise
 
 # normalizes data from the raw data table into the permanent data table
@@ -325,13 +325,15 @@ normalizeData = (subtask, options) -> Promise.try () ->
           for field in group
             if _.isDate field.value
               field.value = moment(field.value).format 'MMMM Do, YYYY'
-              logger.debug "Normalized a date #{field.name} = #{field.value}"
-            else if !isNaN(Number(field.value)) && field.name.toLowerCase().indexOf('price') != -1
-              field.value = "$" + field.value
-              logger.debug "Normalized a price #{field.name} = #{field.value}"
+              logger.spawn(subtask.task_name+':preformat').debug "Normalized a date #{field.name} = #{field.value}"
+            else if !isNaN(Number(field.value))
+              lcName = field.name.toLowerCase()
+              if lcName.indexOf('price') != -1 || lcName.indexOf('amount') != -1
+                field.value = "$" + field.value
+                logger.spawn(subtask.task_name+':preformat').debug "Normalized a price #{field.name} = #{field.value}"
             else if _.isBoolean field.value
               field.value = if field.value then 'yes' else 'no'
-              logger.debug "Normalized a boolean #{field.name} = #{field.value}"
+              logger.spawn(subtask.task_name+':preformat').debug "Normalized a boolean #{field.name} = #{field.value}"
 
         for groupName, group of updateRow.shared_groups
           preformat(group)
@@ -349,10 +351,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
         })
         .then (rm_property_id) ->
           successes.push(rm_property_id)
-        #.then () ->
-        #  tables.temp(subid: rawSubid)
-        #  .where(rm_raw_id: row.rm_raw_id)
-        #  .update(rm_valid: true)
         .catch analyzeValue.isKnexError, (err) ->
           jsonData = util.inspect(updateRow, depth: null)
           tables.temp(subid: rawSubid)
@@ -363,10 +361,12 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
+    .then () ->
+      rows.length
   Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
-  .then () ->
+  .then (total) ->
+    logger.spawn(subtask.task_name).debug () -> "Finished normalize: #{JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix)} (#{successes.length} successes out of #{total})"
     if successes.length == 0
-      logger.debug("No successful data updates from #{subtask.task_name} normalize subtask: "+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
       return
     manualData =
       cause: subtask.data.dataType
@@ -563,7 +563,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
-    # logger.debug json
+    # logger.spawn(tableName).debug json
     if isFinished
       return
     count++
@@ -577,7 +577,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
     if isFinished
       return
     isFinished = true
-    logger.debug "FINISHED: #{tableName}"
+    logger.spawn(tableName).debug () -> "FINISHED: #{tableName}"
     objectStreamer.push(type: 'done', payload: count)
     callback()
 
