@@ -4,9 +4,24 @@ block customHead
   //TODO: angular-stripe, stripe-promisified, all expect Stipe to be loaded into DOM immediatley
   // to much of a PAIN to refactor
   script(type='application/javascript' src="https://js.stripe.com/v2/")
-  //Attempted to load async but now `gPlacesAutocomplete` directive is the main blocker
-  //its entire design is synchronous
-  script(src="#{google.mapsSdkUrl}")
+  script.
+    function addScript( url, callback ) {
+      var script = document.createElement( 'script' );
+      if(callback)
+        script.onload = callback;
+      script.type = 'text/javascript';
+      script.src = url;
+      document.body.appendChild(script);  
+    } 
+    function loadAsyncScripts() {
+        addScript("!{google.mapsSdkUrl}&callback=mapsApiReady");
+        window.removeEventListener('load', loadAsyncScripts);
+    }
+    function mapsApiReady() {
+      console.log('GOOGLE LOADED');
+    }
+    
+    window.addEventListener('load', loadAsyncScripts);
 
   title RealtyMaps
   meta(name='description' content='RealtyMaps')
