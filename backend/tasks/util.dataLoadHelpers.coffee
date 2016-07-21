@@ -365,9 +365,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
       rows.length
   Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then (total) ->
-    console.log "Finished normalize: #{subtask.data.i} of #{subtask.data.of} (#{successes.length} successes out of #{total})"
+    logger.spawn(subtask.task_name).debug () -> "Finished normalize: #{JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix)} (#{successes.length} successes out of #{total})"
     if successes.length == 0
-      logger.spawn(subtask.task_name).debug("No successful data updates from #{subtask.task_name} normalize subtask: "+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
       return
     manualData =
       cause: subtask.data.dataType
