@@ -25,7 +25,7 @@
     "fontawesome": "~4.4.0",
     "isteven-angular-multiselect": "~2.0.2",
     "leaflet": "0.7.x",
-    "leaflet-plugins": "git://github.com/realtymaps/leaflet-plugins#4c13017",
+    "leaflet-plugins": "git://github.com/realtymaps/leaflet-plugins#092fbfc8c03c6ce85a8d15a19bd6a2f48f6de056",
     "leaflet-search": "https://github.com/realtymaps/leaflet-search.git#1.5.6-rmaps",
     "leaflet.markercluster": "~0.4.0",
     "leaflet.zoombox": "https://github.com/realtymaps/Leaflet.ZoomBox/archive/d66f81d1ef1cdcfd2e2047c309e6e69535c2fbe5.zip",
