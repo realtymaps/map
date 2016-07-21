@@ -102,44 +102,36 @@ app.controller 'rmapsPropertyCtrl',
       else
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
 
-    $scope.showPVA = (rm_property_id, post) ->
+    $scope.showPVA = (rm_property_id) ->
       splits = rm_property_id.split('_')
       fips = splits[0]
       apn = splits[1]
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (fips % 2)+1
-      # TODO: call backend service with rm_property_id to get PVA url
-      # $http.get("`//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}")
-      # .then (pvaPage) ->
-      # Mock response
-      pvaPage =
-        url: "http://www.collierappraiser.com/Main_Search/RecordDetail.html?FolioID={{_APN_}}"
-        options:
-          post: post
+      $http.get("`//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}")
+      .then (pvaPage) ->
+        url = pvaPage.url.replace("{{_APN_}}", apn)
+        if pvaPage.options?.post
+          pvaForm = document.createElement("form")
+          windowName = window.name+(new Date().getTime())
+          pvaForm.target = windowName
+          pvaForm.method = "POST"
+          pvaForm.action = url
 
-      url = pvaPage.url.replace("{{_APN_}}", apn)
-      if pvaPage.options?.post
-        pvaForm = document.createElement("form")
-        windowName = window.name+(new Date().getTime())
-        pvaForm.target = windowName
-        pvaForm.method = "POST"
-        pvaForm.action = url
+          for name, value of pvaPage.options.post
+            newInput = document.createElement("input")
+            newInput.type = "hidden"
+            newInput.name = name
+            newInput.value = value.replace("{{_APN_}}", apn)
+            pvaForm.appendChild(newInput)
 
-        for name, value of pvaPage.options.post
-          newInput = document.createElement("input")
-          newInput.type = "hidden"
-          newInput.name = name
-          newInput.value = value.replace("{{_APN_}}", apn)
-          pvaForm.appendChild(newInput)
-
-        document.body.appendChild(pvaForm)
-        if child = window.open('', windowName)
-          pvaForm.submit()
+          document.body.appendChild(pvaForm)
+          if child = window.open('', windowName)
+            pvaForm.submit()
+          else
+            alert("Please enable popups on this page")
         else
-          alert("Please enable popups on this page")
-
-      else
-        window.open(url)
+          window.open(url)
 
       return false
 
