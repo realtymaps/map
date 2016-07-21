@@ -6,4 +6,4 @@ floatValidation = require './util.validation.float'
 # convenience validator
 
 module.exports = (options = {}) ->
-  [stringValidation(replace: [/[$,]/g, '']), floatValidation(options)]
+  [stringValidation(replace: [/[$,]/g, ''], allowNumber: true), floatValidation(options)]

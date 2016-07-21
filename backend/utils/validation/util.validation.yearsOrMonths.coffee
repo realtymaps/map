@@ -16,7 +16,7 @@ module.exports = (options = {}) ->
       years = value.years
     else
       remainder = value.months % 12
-      if remainder == 0 || (remainder == 6 && months != 6)
+      if remainder == 0 || (remainder == 6 && value.months != 6)
         years = value.months / 12
     if years
       if years == 1

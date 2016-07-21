@@ -10,7 +10,7 @@ module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     if !value?
       return null
-    if _.isNumber value and options.allowNumber
+    if _.isNumber(value) and options.allowNumber
       value = value.toString()
     if !_.isString(value)
       return Promise.reject new DataValidationError('invalid data type given for string field', param, value)
