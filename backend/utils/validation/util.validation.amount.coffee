@@ -15,9 +15,9 @@ module.exports = (options = {}) ->
       return null
 
     composite(param, value)
-    .then (amount) ->
+    .then (obj) ->
       if value.scale == 'K'
-        amount *= 10
+        obj.amount *= 10
       else if value.scale == 'T'
-        amount *= 100
-      amount
+        obj.amount *= 100
+      obj.amount
