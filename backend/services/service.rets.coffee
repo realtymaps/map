@@ -349,7 +349,7 @@ module.exports = {
   getDataChunks
   getPhotosObject
   getObjectList
-  isRetsAuthenticationError: internals.isRetsAuthenticationError
+  isMaybeTransientRetsError: internals.isMaybeTransientRetsError
   RetsError: rets.RetsError
   RetsServerError: rets.RetsServerError
   RetsReplyError: rets.RetsReplyError
