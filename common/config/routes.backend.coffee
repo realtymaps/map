@@ -139,7 +139,6 @@ module.exports =
     safeConfig: "#{apiBaseConfig}/safeConfig"
     protectedConfig: "#{apiBaseConfig}/protectedConfig"
   properties:
-    root: "#{apiBase}/properties"
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
     inArea: "#{apiBase}/properties/inArea/"
