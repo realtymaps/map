@@ -16,6 +16,7 @@ module.exports =
     dataSourceObjects: 'config_data_source_objects'
     dataSourceTables: 'config_data_source_tables'
     handlersEventMap: 'config_handlers_event_map'
+    pva: 'config_pva'
   lookup:
     accountUseTypes: 'lookup_account_use_types'
     fipsCodes: 'lookup_fips_codes'
