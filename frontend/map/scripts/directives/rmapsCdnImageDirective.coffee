@@ -22,7 +22,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
 
       if originalSrc?.indexOf('http') != 0
         shard = (originalSrc.match(/.*\/(\w+)\.\w+/)?[1]?.charCodeAt(0) || 0) % 2
-        element.attr(srcAttr, "http://prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{originalSrc}")
+        element.attr(srcAttr, "//prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{originalSrc}")
         $log.debug element.attr(srcAttr)
 
         element.bind 'error', ->
