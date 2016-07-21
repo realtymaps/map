@@ -8,6 +8,7 @@ moment = require('moment')
 externalAccounts = require './service.externalAccounts'
 mlsConfigService = require './service.mls_config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+httpStatus = require '../../common/utils/httpStatus'
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -53,7 +54,7 @@ getRetsClient = (mlsId, handler) ->
     _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
     .then (retsClient) ->
       handler(retsClient, serverInfo)
-    .catch isRetsAuthenticationError, (error) ->
+    .catch isMaybeTransientRetsError, (error) ->
       referenceId = [serverInfo.url, creds.username, creds.password, serverInfo.static_ip].join('__')
       referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
       throw error
@@ -61,11 +62,11 @@ getRetsClient = (mlsId, handler) ->
       setTimeout (() -> _getRetsClientInternal.deleteRef(serverInfo.url, creds.username, creds.password, serverInfo.static_ip)), 60000
 
 
-isRetsAuthenticationError = (error) ->
+isMaybeTransientRetsError = (error) ->
   cause = errorHandlingUtils.getRootCause(error)
   if cause instanceof rets.RetsReplyError && cause.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
     return true
-  if cause instanceof rets.RetsServerError && "#{cause.httpStatus }" == "401"
+  if cause instanceof rets.RetsServerError && httpStatus.isMaybeTransientError(cause.httpStatus)
     return true
   return false
 
@@ -90,6 +91,6 @@ buildSearchQuery = (tableData, utcOffset, opts) ->
 
 module.exports = {
   getRetsClient
-  isRetsAuthenticationError
+  isMaybeTransientRetsError
   buildSearchQuery
 }

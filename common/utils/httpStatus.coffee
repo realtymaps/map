@@ -16,7 +16,9 @@ isOK = (code) ->
 isWithinOK = (code) ->
   code < codes.BAD_REQUEST
 
+isMaybeTransientError = (code) ->
+  # hand-picked from https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+  code in [401, 403, 408, 429, 440, 500, 502, 503, 504, 509, 520, 521, 522, 523, 524, 525, 526]
+
 module.exports =
-  _.extend codes,
-    isOK: isOK
-    isWithinOK: isWithinOK
+  _.extend codes, {isOK, isWithinOK, isMaybeTransientError}

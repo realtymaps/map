@@ -6,7 +6,7 @@ externalAccounts = require '../services/service.externalAccounts'
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobService = require './service.jobs'
-jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
+mlsTaskDefaults = require '../../common/config/mlsTaskDefaults'
 memoize = require 'memoizee'
 
 mlsServerFields = ['url', 'username', 'password']
@@ -80,32 +80,32 @@ class MlsConfigService extends ServiceCrud
       externalAccounts.insertAccountInfo(accountInfo)
     .then () ->
       # prepare a queue task for this new MLS
-      taskObj = _.merge _.clone(jobQueueTaskDefaults.task),
+      taskObj = _.merge _.clone(mlsTaskDefaults.task),
         name: newMls.id
 
       # prepare subtasks for this new MLS
       subtaskObjs = [
-        _.merge _.clone(jobQueueTaskDefaults.subtask_loadRawData),
+        _.merge _.clone(mlsTaskDefaults.subtask_loadRawData),
           task_name: newMls.id
           name: "#{newMls.id}_loadRawData"
       ,
-        _.merge _.clone(jobQueueTaskDefaults.subtask_normalizeData),
+        _.merge _.clone(mlsTaskDefaults.subtask_normalizeData),
           task_name: newMls.id
           name: "#{newMls.id}_normalizeData"
       ,
-        _.merge _.clone(jobQueueTaskDefaults.subtask_recordChangeCounts),
+        _.merge _.clone(mlsTaskDefaults.subtask_recordChangeCounts),
           task_name: newMls.id
           name: "#{newMls.id}_recordChangeCounts"
       ,
-        _.merge _.clone(jobQueueTaskDefaults.subtask_finalizeDataPrep),
+        _.merge _.clone(mlsTaskDefaults.subtask_finalizeDataPrep),
           task_name: newMls.id
           name: "#{newMls.id}_finalizeDataPrep"
       ,
-        _.merge _.clone(jobQueueTaskDefaults.subtask_finalizeData),
+        _.merge _.clone(mlsTaskDefaults.subtask_finalizeData),
           task_name: newMls.id
           name: "#{newMls.id}_finalizeData"
       ,
-        _.merge _.clone(jobQueueTaskDefaults.subtask_activateNewData),
+        _.merge _.clone(mlsTaskDefaults.subtask_activateNewData),
           task_name: newMls.id
           name: "#{newMls.id}_activateNewData"
       ]

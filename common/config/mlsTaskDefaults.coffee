@@ -33,7 +33,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -46,7 +46,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: 30
-    retry_max_count: 100
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -62,7 +62,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: 30
-    retry_max_count: 100
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -78,7 +78,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 40
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -94,7 +94,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -110,7 +110,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -126,7 +126,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false
@@ -142,7 +142,7 @@ module.exports =
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
-    retry_max_count: 0
+    retry_max_count: 5
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: false

@@ -32,7 +32,7 @@ loadUpdates = (subtask, options={}) ->
   uuidPromise = internals.getUuidField(subtask.task_name)
   Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
     retsService.getDataStream(subtask.task_name, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
-    .catch retsService.isRetsAuthenticationError, (error) ->
+    .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
       rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
@@ -405,7 +405,7 @@ markUpToDate = (subtask) ->
 
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
-  .catch retsService.isRetsAuthenticationError, (error) ->
+  .catch retsService.isMaybeTransientRetsError, (error) ->
     throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
