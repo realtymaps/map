@@ -348,6 +348,7 @@ _rules =
       term:
         alias: 'Loan Term'
         type: name: 'yearsOrMonths'
+        input: {}
 
       financing_type:
         alias: 'Financing Type'
