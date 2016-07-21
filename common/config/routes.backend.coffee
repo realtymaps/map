@@ -139,6 +139,7 @@ module.exports =
     safeConfig: "#{apiBaseConfig}/safeConfig"
     protectedConfig: "#{apiBaseConfig}/protectedConfig"
   properties:
+    root: "#{apiBase}/properties"
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
     inArea: "#{apiBase}/properties/inArea/"
@@ -152,7 +153,7 @@ module.exports =
     unPin: "#{apiBase}/properties/unPin/"
     favorite: "#{apiBase}/properties/favorite/"
     unFavorite: "#{apiBase}/properties/unFavorite/"
-    pva: "#{apiBase}/properties/:fips_code/pva"
+    pva: "#{apiBase}/properties/pva/:fips_code"
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
     getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"

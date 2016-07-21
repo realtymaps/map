@@ -103,26 +103,31 @@ app.controller 'rmapsPropertyCtrl',
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
 
     $scope.showPVA = (rm_property_id, post) ->
+      splits = rm_property_id.split('_')
+      fips = splits[0]
+      apn = splits[1]
       # TODO: call backend service with rm_property_id to get PVA url
-      # $http.get("#{backendRoutes.property.pva}/#{rm_property_id}")
+      # $http.get("#{backendRoutes.properties.root}/pva/#{fips}")
       # .then (pvaPage) ->
       # Mock response
       pvaPage =
-        url: "http://www.collierappraiser.com/Main_Search/RecordDetail.html?FolioID=#{rm_property_id.slice(6,17)}"
-        post: post
+        url: "http://www.collierappraiser.com/Main_Search/RecordDetail.html?FolioID={{_APN_}}"
+        options:
+          post: post
 
-      if !_.isEmpty(pvaPage.post)
+      url = pvaPage.url.replace("{{_APN_}}", apn)
+      if pvaPage.options?.post
         pvaForm = document.createElement("form")
         windowName = window.name+(new Date().getTime())
         pvaForm.target = windowName
         pvaForm.method = "POST"
-        pvaForm.action = pvaPage.url
+        pvaForm.action = url
 
-        for name, value of pvaPage.post
+        for name, value of pvaPage.options.post
           newInput = document.createElement("input")
           newInput.type = "hidden"
           newInput.name = name
-          newInput.value = value
+          newInput.value = value.replace("{{_APN_}}", apn)
           pvaForm.appendChild(newInput)
 
         document.body.appendChild(pvaForm)
@@ -132,7 +137,7 @@ app.controller 'rmapsPropertyCtrl',
           alert("Please enable popups on this page")
 
       else
-        window.open(pvaPage.url)
+        window.open(url)
 
       return false
 
