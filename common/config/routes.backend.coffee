@@ -152,6 +152,7 @@ module.exports =
     unPin: "#{apiBase}/properties/unPin/"
     favorite: "#{apiBase}/properties/favorite/"
     unFavorite: "#{apiBase}/properties/unFavorite/"
+    pva: "#{apiBase}/properties/:fips_code/pva"
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
     getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"
