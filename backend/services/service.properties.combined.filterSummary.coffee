@@ -215,6 +215,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if queryParams.pins.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
+      if queryParams.favorites.length
+        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
+
   else
     # no status, so query and show pins and favorites
     savedIds = queryParams.pins.concat queryParams.favorites
