@@ -12,7 +12,8 @@ span.pinned-list.dropdown.btn-group(
     dropdown-toggle
     popover-placement="bottom"
     popover="Pinned Properties"
-    popover-trigger="mouseenter"
+    popover-enable="!isOpens.pinned"
+    popover-trigger="click mouseenter"
   )
     span.icon.icon-pin
 
