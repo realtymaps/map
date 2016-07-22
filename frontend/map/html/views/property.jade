@@ -154,14 +154,14 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
                 .row.content-row.deedHistory(ng-if="group.name == 'deedHistory'")
                   .col-sm-2 Sale Date
-                  .col-sm-1 Price
+                  .col-sm-2 Price
                   .col-sm-3 Buyer
                   .col-sm-3 Seller
                   .col-sm-2 Doc Type
                   .col-sm-1
                 .row.content-row.deed-history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
                   .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
-                  .col-sm-1(ng-if="deed.extra") {{deed.price | currency:"$":0}}
+                  .col-sm-2(ng-if="deed.extra") {{deed.price | currency:"$":0}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
                     span {{deed.owner_name}}
                     span(ng-if="deed.owner_name_2")  &nbsp;&amp; {{deed.owner_name_2}}
