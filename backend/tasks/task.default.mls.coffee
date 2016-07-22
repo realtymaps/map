@@ -81,7 +81,9 @@ finalizeDataPrep = (subtask) ->
 
   tables.normalized.listing()
   .select('rm_property_id')
-  .where(batch_id: subtask.batch_id)
+  .where
+    batch_id: subtask.batch_id
+    data_source_id: subtask.task_name
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
@@ -95,7 +97,9 @@ storePhotosPrep = (subtask) ->
 
   tables.normalized.listing()
   .select('data_source_id', 'data_source_uuid')
-  .where(batch_id: subtask.batch_id)
+  .where
+    batch_id: subtask.batch_id
+    data_source_id: subtask.task_name
   .then (rows) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 

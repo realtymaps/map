@@ -84,12 +84,15 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
 
   listingsPromise = tables.normalized.listing()
   .select('*')
-  .where(rm_property_id: id)
+  .where
+    rm_property_id: id
+    hide_listing: false
+    data_source_id: subtask.task_name
   .whereNull('deleted')
-  .where(hide_listing: false)
   .orderBy('rm_property_id')
-  .orderBy('deleted')
   .orderBy('hide_listing')
+  .orderBy('data_source_id')
+  .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
   parcelPromise = if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
