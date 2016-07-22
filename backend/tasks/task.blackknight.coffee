@@ -105,8 +105,7 @@ copyFtpDrop = (subtask) ->
 
                 ftpStream.pipe(upload)
             .catch (err) -> # catches ftp errors
-              logger.warn(msg = "SFTP error while copying #{fullpath}: #{err}")
-              throw new SoftFail(msg)
+              throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
 
     .then () ->
       # save off dates
