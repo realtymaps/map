@@ -145,7 +145,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .col-sm-6
 
           accordion.row.content-block.subscriber-groups(close-others="false")
-            accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}")
+            accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
               .table-striped-pair
                 .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4.field-label {{field.name}}
@@ -174,7 +174,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                       span(ng-show="!deed.extra.showExtra") More
                       span(ng-show="deed.extra.showExtra") Less
                   accordion.col-sm-12(ng-if="!deed.extra" close-others="false")
-                    accordion-group(ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}")
+                    accordion-group(ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}" is-open="deed[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':deed[group.subscriber][group.name].isAccordionOpen}")
                       .table-striped-single
                         .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
