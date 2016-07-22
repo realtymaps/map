@@ -717,7 +717,7 @@ ensureNormalizedTable = (dataType, subid) ->
         table.decimal('amount', 13, 2)
         table.timestamp('close_date', true)
         table.text('lender')
-        table.json('term')
+        table.text('term')
         table.text('financing_type')
         table.text('loan_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
