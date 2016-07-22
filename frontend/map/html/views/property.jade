@@ -146,12 +146,41 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
           accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}")
-              .table-striped
-                .row.content-row(ng-repeat="field in property[group.subscriber][group.name]")
-                  .col-sm-4 {{field.name}}
+              .table-striped-pair
+                .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in property[group.subscriber][group.name]")
+                  .col-sm-4.field-label {{field.name}}
                   .col-sm-8
                     div(ng-if="!field.value.lines") {{field.value}}
                     div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                .row.content-row.deedHistory(ng-if="group.name == 'deedHistory'")
+                  .col-sm-2 Sale Date
+                  .col-sm-1 Price
+                  .col-sm-3 Buyer
+                  .col-sm-3 Seller
+                  .col-sm-2 Doc Type
+                  .col-sm-1
+                .row.content-row.deed-history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
+                  .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
+                  .col-sm-1(ng-if="deed.extra") {{deed.price | currency:"$":0}}
+                  .col-sm-3.sensitive(ng-if="deed.extra")
+                    span {{deed.owner_name}}
+                    span(ng-if="deed.owner_name_2")  &nbsp;&amp; {{deed.owner_name_2}}
+                  .col-sm-3.sensitive(ng-if="deed.extra")
+                    span {{deed.seller_name}}
+                    span(ng-if="deed.seller_name_2") &nbsp;&amp; {{deed.seller_name_2}}
+                  .col-sm-2(ng-if="deed.extra") {{deed.document_type}}
+                  .col-sm-1(ng-if="deed.extra")
+                    a(ng-click="deed.extra.showExtra = !deed.extra.showExtra")
+                      span(ng-show="!deed.extra.showExtra") More
+                      span(ng-show="deed.extra.showExtra") Less
+                  accordion.col-sm-12(ng-if="!deed.extra" close-others="false")
+                    accordion-group(ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}")
+                      .table-striped-single
+                        .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
+                          .col-sm-4 {{field.name}}
+                          .col-sm-8
+                            div(ng-if="!field.value.lines") {{field.value}}
+                            div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
 
           .row.content-block.mls-disclaimer
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")

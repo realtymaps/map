@@ -89,19 +89,39 @@ Property Detail Modal
     .panel
       box-shadow none
 
-    .table-striped
-      font-size 16px
-      > :nth-child(even)
+    font-size 16px
+
+    .table-striped-pair
+      > :nth-child(4n+2)
+      > :nth-child(4n+3)
         background-color $gray_lightest
-      .row > :first-child
-        font-weight bold
-        overflow-x hidden
-        text-overflow ellipsis
+
+    .table-striped-single
+      > :nth-child(even)
+        background-color $gray_lighter
+
+    .field-label
+      font-weight bold
+      overflow-x hidden
+      text-overflow ellipsis
+    .row
+      min-height 50px
+      margin 0
+      display flex
+      align-items center
+
+    .deed-history
+      font-size 11px
+      .panel-group
+        margin 5px 0
+      .panel
+        background transparent
       .row
-        min-height 50px
-        margin 0
-        display flex
-        align-items center
+        min-height 25px !important
+      .panel-title
+        font-size 14px !important
+      .table-striped
+        font-size 11px !important
 
 .mobile-view
   .property-detail-modal
