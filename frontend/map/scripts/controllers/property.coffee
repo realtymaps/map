@@ -44,9 +44,6 @@ app.controller 'rmapsPropertyCtrl',
         return group.label
       return group.label[property.data_source_type]
 
-    $scope.showDeed = () ->
-      $log.debug arguments
-
     $scope.groups = [
       {name: 'general', label: 'General Info', subscriber: 'shared_groups'}
       {name: 'details', label: 'Details', subscriber: 'shared_groups'}
@@ -63,6 +60,7 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'}
       {name: 'deedHistory', label: 'Deed History', subscriber: 'subscriber_groups'}
       {name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'}
+      {name: 'mortgageHistory', label: 'Mortgage History', subscriber: 'subscriber_groups'}
     ]
 
     $scope.previewLetter = (mail) ->
