@@ -152,3 +152,7 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       internals.save({req, res, next, type: 'unFavorite'})
+
+  pva:
+    handle: (req, res, next) ->
+      internals.getPva({req, res, next})

@@ -1,5 +1,6 @@
 logger = require '../config/logger'
 Promise = require 'bluebird'
+moment = require 'moment'
 
 profileService = require '../services/service.profiles'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
@@ -10,6 +11,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 ourTransforms = require '../utils/transforms/transforms.properties'
 propSaveSvc = require '../services/service.properties.save'
 userUtils = require '../utils/util.user'
+tables = require '../config/tables'
 
 
 appendProjectId = (req, obj) ->
@@ -66,10 +68,22 @@ save = ({req, res, next, type}) ->
 saves = ({res, next}) ->
   handleRoute res, next, () -> propSaveSvc.getAll()
 
+getPva = ({req, res, next}) ->
+  handleRoute res, next, () ->
+    tables.config.pva()
+    .where(fips_code: req.params.fips_code)
+    .then (results) ->
+      if !results?.length
+        throw new Error("Can't find PVA config for FIPS code: #{req.params.fips_code}")
+      res.set('Cache-Control', 'public, max-age=8640')
+      res.set('Expires', moment.utc(new Date()).add(1, 'day').format('ddd, DD MMM YYYY HH:mm:ss [GMT]'))
+      return results[0]
+
 module.exports = {
   handleRoute
   captureMapFilterState
   appendProjectId
   save
   saves
+  getPva
 }
