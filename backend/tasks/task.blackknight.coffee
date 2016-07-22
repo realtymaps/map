@@ -14,6 +14,104 @@ dbs = require '../config/dbs'
 moment = require 'moment'
 internals = require './task.blackknight.internals'
 validation = require '../utils/util.validation'
+awsService = require '../services/service.aws'
+
+
+copyFtpDrop = (subtask) ->
+  console.log "transferFiles()"
+  ftp = new PromiseSftp()
+  now = Date.now()
+
+  # path containers that are populated below
+  defaults = {}
+  defaults[internals.REFRESH] = '19700101'
+  defaults[internals.UPDATE] = '19700101'
+  defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+
+  # dates for which we've processed blackknight files are tracked in keystore
+  keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
+  .then (copyDates) ->
+    # establish ftp connection to blackknight
+    externalAccounts.getAccountInfo('blackknight')
+    .then (accountInfo) ->
+      ftp.connect
+        host: accountInfo.url
+        user: accountInfo.username
+        password: accountInfo.password
+        autoReconnect: true
+      .catch (err) ->
+        if err.level == 'client-authentication'
+          throw new SoftFail('FTP authentication error')
+        else
+          throw err
+
+    .then () ->
+
+      # REFRESH paths/files for tax, deed, and mortgage
+      refreshPromise = internals.findNewFolders(ftp, internals.REFRESH, copyDates)
+      .then (newFolders) ->
+        # sort to help us get oldest date...
+        drops = Object.keys(newFolders).sort()
+        refresh = newFolders[drops[0]]
+        # track the dates we got here and send out the tax/deed/mortgage paths
+        copyDates[internals.REFRESH] = refresh.date
+        return [refresh.tax.path, refresh.deed.path, refresh.mortgage.path]
+
+      # UPDATE paths/files for tax, deed, and mortgage
+      updatePromise = internals.findNewFolders(ftp, internals.UPDATE, copyDates)
+      .then (newFolders) ->
+        # sort to help us get oldest date...
+        drops = Object.keys(newFolders).sort()
+        update = newFolders[drops[0]]
+        # track the dates we got here and send out the tax/deed/mortgage paths
+        copyDates[internals.UPDATE] = update.date
+        return [update.tax.path, update.deed.path, update.mortgage.path]
+
+
+      # concat the paths from both sources
+      Promise.join(refreshPromise, updatePromise)
+      .then ([refreshPaths, updatePaths]) ->
+        return refreshPaths.concat updatePaths
+
+    # expect a list of 6 paths here, for one date of processing
+    .then (paths) ->
+
+      # traverse each path...
+      Promise.each paths, (path) ->
+        ftp.list(path)
+        .then (files) ->
+
+          # traverse each file...
+          Promise.each files, (file) ->
+            fullpath = "#{path}/#{file.name}"
+
+            # setup input ftp stream
+            logger.debug () -> "copying blackknight file #{fullpath}"
+            ftp.get(fullpath)
+            .then (ftpStream) -> new Promise (resolve, reject) ->
+
+              ftpStream.on('error', reject)
+
+              # procure writable aws stream
+              config =
+                extAcctName: awsService.buckets.BlackknightData
+                Key: fullpath.substring(1) # omit leading slash
+                ContentType: 'text/plain'
+              awsService.upload(config)
+              .then (upload) ->
+
+                upload.on('error', reject)
+                upload.on('uploaded', resolve)
+
+                ftpStream.pipe(upload)
+            .catch (err) -> # catches ftp errors
+              throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
+
+    .then () ->
+      # save off dates
+      keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
+    .then () ->
+      ftp.logout()
 
 
 checkFtpDrop = (subtask) ->
@@ -226,6 +324,7 @@ recordChangeCounts = (subtask) ->
 
 
 subtasks = {
+  copyFtpDrop
   checkFtpDrop
   loadRawData
   deleteData
