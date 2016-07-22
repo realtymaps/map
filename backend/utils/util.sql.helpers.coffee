@@ -5,6 +5,7 @@ sqlColumns = require('./util.sql.columns')
 logger = require('../config/logger').spawn('backend:utils:sql.helpers')
 dbs = require("../config/dbs")
 clone = require 'clone'
+ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -175,9 +176,9 @@ singleRow = (rows) -> Promise.try ->
 
 expectSingleRow = (rows) ->
   if !rows?.length
-    throw new Error('Expected a single result and rows are empty!')
+    throw new ExpectedSingleRowError('Expected a single result and rows are empty!')
   if !rows[0]?
-    throw new Error("Expected a single result and row is #{rows[0]}")  # undefined or null
+    throw new ExpectedSingleRowError("Expected a single result and row is #{rows[0]}")  # undefined or null
   return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
