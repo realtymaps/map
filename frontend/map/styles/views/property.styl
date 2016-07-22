@@ -77,10 +77,22 @@ Property Detail Modal
     background: $gray_lighter
 
   .subscriber-groups
+    .panel-title
+      font-size 22px
+      &:after
+        content '▶'
+        font-size 50%
+        vertical-align middle
+      &:hover
+        color $light_blue
+
+    .panel-open
+      > .panel-heading
+        > .panel-title:after
+          content '▼'
+
     .panel-heading
       background: transparent
-      .panel-title
-        font-size 22px
       a
         outline 0
         &:focus
@@ -111,7 +123,7 @@ Property Detail Modal
       align-items center
 
     .deed-history
-      font-size 11px
+      font-size 12px
       .panel-group
         margin 5px 0
       .panel
@@ -120,8 +132,10 @@ Property Detail Modal
         min-height 25px !important
       .panel-title
         font-size 14px !important
+      .panel-body
+        padding 3px
       .table-striped
-        font-size 11px !important
+        font-size 12px !important
 
 .mobile-view
   .property-detail-modal

@@ -96,7 +96,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .row
               .col-sm-6
                 .content-label Current Owner
-                .content-lg
+                .content-lg.sensitive
                   span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
                   span {{property.owner_name}}
                   span(ng-if="property.owner_name_2")
