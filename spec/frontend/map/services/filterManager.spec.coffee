@@ -13,8 +13,19 @@ describe "rmapsFilterManagerService", ->
       @subject = rmapsFilterManagerService
       @digestor = digestor
 
-      $httpBackend.when( 'GET', backendRoutes.userSession.identity)
-      .respond( identity: {})
+      identity = {
+        currentProfileId: 1,
+        profiles: {
+          1: {
+            id: 1
+          }
+        }
+      }
+
+      $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )
+      $httpBackend.when( 'POST', backendRoutes.userSession.currentProfile).respond( identity: identity )
+      $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
+
 
   describe 'subject', ->
 
@@ -30,8 +41,8 @@ describe "rmapsFilterManagerService", ->
         @digestor.digest()
 
         spyCb = sinon.spy @$rootScope, '$emit'
-        @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) ->
-          expect(filters).to.eql status: ['for sale']
+        @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) =>
+          expect(filters).to.eql {"hasImages":false,"soldRange":"120 day","discontinued":false,"auction":false,"status":[]}
           done()
 
         @$rootScope.selectedFilters =

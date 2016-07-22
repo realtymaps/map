@@ -39,9 +39,12 @@ getProfileWhere = (where = {}) ->
   .select(
     db.raw("auth_user.first_name || ' ' || auth_user.last_name as parent_name")
   )
+  .select("auth_user.account_image_id as parent_image_id")
+  .select("#{tables.user.company.tableName}.name as company_name")
   .where(where)
   .innerJoin(tables.user.project.tableName,"#{tables.user.profile.tableName}.project_id", "#{tables.user.project.tableName}.id")
   .leftOuterJoin(tables.auth.user.tableName, "#{tables.auth.user.tableName}.id", "#{tables.user.profile.tableName}.parent_auth_user_id")
+  .leftOuterJoin(tables.user.company.tableName, "#{tables.user.company.tableName}.id", "#{tables.auth.user.tableName}.company_id")
 
 # internal profile update
 _updateProfileWhere = (profile, where) ->

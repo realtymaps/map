@@ -18,6 +18,9 @@ mobile-header
     width: 30px;
     text-align: center;
 
+  a#burgericon
+    margin-right: 10px;
+
   i
     font-size: 18px
 
@@ -26,8 +29,21 @@ mobile-header
 
   .mobile-header-center
     margin: 0 auto;
-    width: calc(100% - 35px - 35px);
     height: $navbarHeight;
+
+  &.editor-header
+    .mobile-header-center
+      width: calc(100% - 50px);
+      margin-left: 50px;
+
+  &.custom-header
+  &.viewer-header
+    .mobile-header-center
+      width: calc(100% - 50px - 50px);
+
+  &.modal-header
+    .mobile-header-center
+      width: calc(100% - 35px - 35px);
 
   .mobile-header-left
     position: absolute;
@@ -53,6 +69,23 @@ mobile-header
     white-space: nowrap;
     text-overflow: ellipsis;
     height: $navbarHeight;
+
+  //
+  // Realtor name and company
+  //
+  .header-title-major
+    height: 30px;
+    line-height: 35px;
+    font-size: 20px;
+
+  .header-title-minor
+    height: 18px;
+    line-height: 18px;
+    font-size: 14px;
+
+  .header-owner-image
+    max-height: 50px;
+    margin-top: -2px;
 
   //
   // Disabled

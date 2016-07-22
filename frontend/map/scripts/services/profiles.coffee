@@ -184,4 +184,10 @@ app.service 'rmapsProfilesService', (
 
         return project
 
+  #
+  # Listen for login event to ensure that a current profile is set
+  #
+  $rootScope.$onRootScope rmapsEventConstants.principal.login.success, (event, identity) ->
+    service.setCurrentProfileByIdentity(identity)
+
   return service
