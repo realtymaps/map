@@ -22,7 +22,8 @@ body = _.extend {}, state,
   columns: validators.string()
   isArea: validators.boolean(truthy: true, falsy: false)
   areaId: validators.integer()
-  pins: validators.object()
+  pins: validators.object(isEmptyProtect: true)
+  favorites: validators.object(isEmptyProtect: true)
   geometry_center: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
 
