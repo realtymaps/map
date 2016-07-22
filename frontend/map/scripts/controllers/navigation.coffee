@@ -18,8 +18,8 @@ module.exports = app.controller 'rmapsNavigationCtrl', ($scope, $log) ->
     sketch: false
     client: false
   $scope.togglePanel = (id) ->
-    console.log("togglePanel: #{id} (now #{$scope.isOpens[id]})")
-    console.log("prior state: #{JSON.stringify($scope.isOpens,null,2)}")
+    $log.debug("togglePanel: #{id} (now #{$scope.isOpens[id]})")
+    $log.debug("prior state: #{JSON.stringify($scope.isOpens,null,2)}")
     if $scope.isOpens[id]
       # close all the others, and open this one
       for key of $scope.isOpens when key != id

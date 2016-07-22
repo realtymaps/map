@@ -13,7 +13,8 @@ span(
     dropdown-toggle
     popover-placement="bottom"
     popover="Notes"
-    popover-trigger="mouseenter")
+    popover-enable="!isOpens.notes"
+    popover-trigger="click mouseenter")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
