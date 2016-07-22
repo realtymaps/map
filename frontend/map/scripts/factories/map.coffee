@@ -389,7 +389,8 @@ app.factory 'rmapsMapFactory',
           lObject?.setIcon(new L.divIcon(result.icon))
           #update polygons immediately
           lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
-          lObject.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
+
+          lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
 
           #make sure selectedResult is updated if it exists
           summary = @scope.map?.markers?.filterSummary
