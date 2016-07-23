@@ -164,19 +164,21 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
           accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
               .table-striped-pair
-                .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in property[group.subscriber][group.name]")
+                .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory'" ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4.field-label {{field.name}}
                   .col-sm-8
                     div(ng-if="!field.value.lines") {{field.value}}
                     div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
-                .row.content-row.deedHistory(ng-if="group.name == 'deedHistory'")
+
+                .row.content-row.history(ng-if="group.name == 'deedHistory'")
                   .col-sm-2 Sale Date
                   .col-sm-2 Price
                   .col-sm-3 Buyer
                   .col-sm-3 Seller
                   .col-sm-2 Doc Type
                   .col-sm-1
-                .row.content-row.deed-history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
+
+                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
                   .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
                   .col-sm-2(ng-if="deed.extra") {{deed.price | currency:"$":0}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
@@ -194,6 +196,35 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                     accordion-group(ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}" is-open="deed[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':deed[group.subscriber][group.name].isAccordionOpen}")
                       .table-striped-single
                         .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
+                          .col-sm-4 {{field.name}}
+                          .col-sm-8
+                            div(ng-if="!field.value.lines") {{field.value}}
+                            div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+
+                .row.content-row.history(ng-if="group.name == 'deedHistory'")
+                  .col-sm-2 Date
+                  .col-sm-2 Amount
+                  .col-sm-2 Lender
+                  .col-sm-2 Type
+                  .col-sm-2 Term
+                  .col-sm-2 Purpose
+                  .col-sm-1
+
+                .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra")
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.close_date | date}}
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.amount | currency:"$":0}}
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.lender}}
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.financing_type}}
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.term}}
+                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.loan_type}}
+                  .col-sm-1(ng-if="mortgage.extra")
+                    a(ng-click="mortgage.extra.showExtra = !mortgage.extra.showExtra")
+                      span(ng-show="!mortgage.extra.showExtra") More
+                      span(ng-show="mortgage.extra.showExtra") Less
+                  accordion.col-sm-12(ng-if="!mortgage.extra" close-others="false")
+                    accordion-group(ng-repeat="group in groups" ng-if="mortgage[group.subscriber][group.name].length" heading="{{getLabel(group, mortgage)}}" is-open="mortgage[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':mortgage[group.subscriber][group.name].isAccordionOpen}")
+                      .table-striped-single
+                        .row.content-row(ng-if="group.name != 'mortgageHistory'" ng-repeat="field in mortgage[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
                           .col-sm-8
                             div(ng-if="!field.value.lines") {{field.value}}
