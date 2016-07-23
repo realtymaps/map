@@ -44,6 +44,9 @@ app.controller 'rmapsPropertyCtrl',
         return group.label
       return group.label[property.data_source_type]
 
+    $scope.showDeed = () ->
+      $log.debug arguments
+
     $scope.groups = [
       {name: 'general', label: 'General Info', subscriber: 'shared_groups'}
       {name: 'details', label: 'Details', subscriber: 'shared_groups'}
@@ -58,6 +61,7 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',}
       {name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'}
       {name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'}
+      {name: 'deedHistory', label: 'Deed History', subscriber: 'subscriber_groups'}
       {name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'}
     ]
 
@@ -83,6 +87,17 @@ app.controller 'rmapsPropertyCtrl',
       rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
       .then (property) ->
         $scope.selectedResult = property
+
+        # Sets up Deed and Mortage history array with extra data split off (for ng-repeat)
+        for county in property.county
+          for history in ['deedHistory', 'mortgageHistory']
+            if county?.subscriber_groups?[history]
+              historyExtra = []
+              for entry in county.subscriber_groups[history]
+                entry.extra = _.clone(entry)
+                historyExtra.push(entry, entry.extra)
+              county.subscriber_groups["#{history}Extra"] = historyExtra
+
         $scope.dataSources = [].concat(property.mls||[]).concat(property.county||[])
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
