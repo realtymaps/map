@@ -62,12 +62,7 @@
 
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       include ../../includes/dataSource/fieldConfig/common/nonBase.jade
-      include ../../includes/dataSource/fieldConfig/mls/nonBase.jade
 
-    .col-md-12.scroll(
-      ng-if="fieldData.current.type.name == 'string'"
-      ng-repeat="lookup in fieldData.current.lookups"
-    )
-      include ../../includes/dataSource/fieldConfig/common/lookups.jade
+    include ../../includes/dataSource/fieldConfig/mls/lookups.jade
     include ../../includes/dataSource/fieldConfig/common/datetime.jade
     include ../../includes/dataSource/fieldConfig/common/advanced.jade
