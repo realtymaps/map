@@ -15,5 +15,14 @@ module.factory 'rmapsTempCacheFactory', ($q, $cacheFactory, $timeout) ->
         , ttlMilliSec
         result
 
-module.service 'rmapsHttpTempCache', (rmapsTempCacheFactory, $http) ->
-  rmapsTempCacheFactory(cacheName: '$http', cache: $http.defaults.cache)
+module.service 'rmapsHttpTempCache', (rmapsEventConstants, rmapsTempCacheFactory, $cacheFactory, $http, $rootScope, $log) ->
+  $log = $log.spawn 'rmapsHttpTempCache'
+
+  service = rmapsTempCacheFactory(cacheName: '$http', cache: $http.defaults.cache)
+
+  ## Clear the HTTP cache on logout
+  $rootScope.$onRootScope rmapsEventConstants.principal.logout.success, () ->
+    $log.debug 'LOGOUT:  Remove all HTTP cache entries'
+    $http.defaults.cache.removeAll()
+
+  return service
