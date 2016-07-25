@@ -1,7 +1,7 @@
 include ../../../../common/html/includes/mixins/_spinnerMixin.jade
 include ../map/_projects.jade
 
-nav.navigation.pull-left(role="navigation")
+nav.navigation(role="navigation")
   .nav-toggle
     span(ng-click="toggleMainNav()") toggle menu
   ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")

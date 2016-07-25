@@ -25,11 +25,46 @@ header.site-header
     $fnMakeNotices()
     $fnMakeUserBlock()
 
+  .site-header-title
+    display inline-block;
+    margin-right: 20px;
+    max-width: 290px;
+    height: $navbarInnerHeight
+    color $white
+    white-space: nowrap;
+
+    .header-title-info
+      display: inline-block;
+      vertical-align: top;
+
+  .header-owner-image
+    margin-right: 10px;
+    max-height: $navbarInnerHeight
+    max-width: $navbarInnerHeight;
+    vertical-align top
+
+  .header-r-logo
+    background url('/assets/logo-r-sm.png') no-repeat center center transparent
+    margin-right: 15px;
+    height: $navbarInnerHeight
+    width: 25px;
+    display: inline-block;
+
+  .header-title-major
+    height: 30px;
+    line-height: 32px;
+    font-size: 20px;
+
+  .header-title-minor
+    height: 18px;
+    line-height: 14px;
+    font-size: 14px;
+
   .site-header-right
     position: absolute;
     top: 0;
     right: 0;
-    height: $navbarHeight - 3;
+    height: $navbarInnerHeight
     background $dark_blue;
     z-index: $rm-header-zindex + 11;   // One higher than the project dropdown .caret in bootstrap.styl
 

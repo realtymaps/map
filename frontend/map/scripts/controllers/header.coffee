@@ -14,6 +14,13 @@ module.exports = app.controller 'rmapsHeaderCtrl', (
   $scope.getProfile = () ->
     rmapsProfilesService.currentProfile
 
+  $scope.desktopHeaderType = () ->
+    # Viewer (sub-user) header
+    if rmapsPrincipalService.isAuthenticated() && rmapsPrincipalService.isProjectViewer()
+      return "VIEWER"
+
+    return "OWNER"
+
   $scope.mobileHeaderType = () ->
 
     # Custom header controlled by child view
