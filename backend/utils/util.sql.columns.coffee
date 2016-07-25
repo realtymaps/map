@@ -36,6 +36,7 @@ basicColumns = do ->
       'owner_address'
       'cdn_photo'
       'photo_count'
+      'actual_photo_count'
       'status'
       'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')

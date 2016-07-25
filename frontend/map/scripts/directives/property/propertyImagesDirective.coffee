@@ -41,7 +41,7 @@ app.directive 'propertyImages', (
       , 50
 
     photos = []
-    if $scope.property.cdn_photo && $scope.property.photo_count
+    if $scope.property.cdn_photo && $scope.property.actual_photo_count
       resizeUrl = $scope.property.cdn_photo
       if resizeUrl.slice(0,4) != "http"
         resizeUrl = "http://#{resizeUrl}"
@@ -55,7 +55,7 @@ app.directive 'propertyImages', (
         resizeUrl += "&height=#{$scope.imageHeight}"
 
       # Skip the first image, it is expected to be a duplicate
-      for i in [1..$scope.property.photo_count]
+      for i in [1..$scope.property.actual_photo_count]
         photos.push
           key: i
           url: "#{resizeUrl}&image_id=#{i}"
