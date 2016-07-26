@@ -3,7 +3,7 @@ ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('service:notes')
-{joinColumns} = require '../utils/util.sql.columns'
+{joinColumns, basicColumns} = require '../utils/util.sql.columns'
 toLeafletMarker = require('../utils/crud/extensions/util.crud.extension.user').route.toLeafletMarker
 routeHelpers = require '../utils/util.route.helpers'
 
@@ -63,6 +63,9 @@ class NotesService extends ServiceCrud
       }
 
   update: (entity, options = {}) ->
+    # filter out non-db fields that sometimes make it in like `icon` or `address`
+    entity = _.pick entity, basicColumns.notes
+
     dbs.transaction (transaction) =>
       options.query = @dbFn({transaction})
 

@@ -43,6 +43,6 @@ span(
                 span.comment
                   a(href="#comment") Leave a comment
 
-            span.actions(rmaps-require-project-editor)
-              span.icon.icon-remove(ng-click="remove(note); $event.stopPropagation()")
+            span.actions
+              span.icon.icon-remove(rmaps-require-project-editor ng-click="remove(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
