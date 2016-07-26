@@ -8,7 +8,7 @@ $fnMakeMapPinned()
       font-size 18px
       display inherit
 
-    .enity
+    .enity //is this supposed to be entity????
       // display table
       .circle-nr
         display table-cell
@@ -27,6 +27,9 @@ $fnMakeMapPinned()
       .content
         display table-cell
         padding-left 10px
+        width 100%
+        .property-attr
+          width 100%
         .status
           color c_white
           text-transform uppercase
@@ -75,7 +78,10 @@ $fnMakeMapPinned()
           margin-top 3px
 
         .location
-          color c_gray
-          font-size 12px
+          color $rm_attribute_lighter !important
+          font-size 14px !important
           font-weight bold
-
+          &.light
+            color $rm_attribute_lightest !important
+          &.large
+            font-size 18px !important

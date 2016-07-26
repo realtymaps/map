@@ -62,13 +62,22 @@ $fnMakeMapDrawTools()
     .nav-btn
       font-size 28px
 
+
     .btn-transparent
       height $drawToolHeight
       background-color transparent
       color $white
 
+      &.active
+        background-color $rm-map-btn-icon-hover
+        &:hover
+          background-color $rm-map-btn-icon-hover !important
+          span
+            color $black !important
+
       &:hover
         background-color transparent
+
 
     /*Want to slide down*/
     &.ng-enter
