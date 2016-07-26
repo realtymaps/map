@@ -22,15 +22,16 @@ div(ng-controller="rmapsHeaderCtrl")
         .inner
           .container-fluid
 
-            .site-header-title(ng-if="getProfile().parent_name")
-              img.header-owner-image(ng-if="!hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
-              .header-r-logo(ng-if="hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
+            .site-header-title(ng-if="hasParentName()")
+              img.header-owner-image(ng-if="hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
+              .header-r-logo(ng-if="!hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
 
-              .header-title-info.hidden-xs.hidden-sm(ng-if="getProfile().parent_name && getProfile().company_name" ng-class="{ 'header-has-image': hasParentImage() }")
+              .header-title-info.hidden-xs.hidden-sm(ng-class="{ 'header-has-image': hasParentImage() }")
                 .header-title-major {{getProfile().parent_name}}
-                .header-title-minor {{getProfile().company_name}}
+                .header-title-minor {{getProfile().company_name || 'Project Owner' }}
 
-              div(ng-if="!getProfile().company_name") {{getProfile().parent_name}}
+            div(ng-if="!hasParentName()")
+              include ./header/_logo
 
             include ./header/_navigation
 

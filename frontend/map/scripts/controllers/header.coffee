@@ -37,6 +37,9 @@ module.exports = app.controller 'rmapsHeaderCtrl', (
 
     return "OWNER"
 
+  $scope.hasParentName = () ->
+    return $scope.getProfile()?.parent_name?.trim().length > 0
+
   $scope.hasParentImage = () ->
     return $scope.getProfile()?.parent_auth_user_id && $scope.getProfile().parent_image_id
 
