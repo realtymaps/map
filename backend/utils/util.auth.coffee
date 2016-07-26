@@ -196,7 +196,7 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
 
     # if we're trying to access something like `req.body` but it doesn't exist, error out (instead of continuing with possible insecurity)
     if reqMember? and reqMember not of req
-      logger.error 'for methods #{JSON.stringify(methods)}, `req` does not have key #{reqMember}, error authorizing request'
+      logger.error "for methods #{JSON.stringify(methods)}, `req` does not have key #{reqMember}, error authorizing request"
       return next new ExpressResponse(alert: {msg: "Problem encountered while authorizing request."}, httpStatus.INTERNAL_SERVER_ERROR)
 
     # get project id based on the `projectIdParam` argument in either `req.params` or

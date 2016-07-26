@@ -59,7 +59,7 @@
           .widget-background
             i.fa.fa-sticky-note
           a(ng-click="goDashboardState('projectNotes', { id: project.id})")
-            .widget-count {{notes.length || 0}}
+            .widget-count {{_.keys(notes).length || 0}}
             .widget-title Notes
 
       .project-widget.widget-area(ng-class="{ 'widget-active': $state.is('projectAreas')}")
