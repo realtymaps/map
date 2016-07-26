@@ -65,10 +65,9 @@ div(ng-controller="rmapsHeaderCtrl")
             .mobile-header-title(ng-if="rmapsPageService.getTitle()")
               span {{rmapsPageService.getTitle()}}
             .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
-              div(ng-if="getProfile().parent_name && getProfile().company_name")
+              div(ng-if="getProfile().parent_name")
                 .header-title-major {{getProfile().parent_name}}
-                .header-title-minor {{getProfile().company_name}}
-              div(ng-if="!getProfile().parent_name || !getProfile().company_name") {{getProfile().parent_name || project.name}}
+                .header-title-minor {{getProfile().company_name || 'Project Owner' }}
           .mobile-header-right
             span(ng-cloak ng-if="hasParentImage()")
               img.header-owner-image(rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
