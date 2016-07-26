@@ -3,7 +3,7 @@
 div
   button(
     ng-repeat="toDraw in ::drawContexts"
-    ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
+    ng-class="button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
       span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
   
   button.save(ng-if="canSave"
