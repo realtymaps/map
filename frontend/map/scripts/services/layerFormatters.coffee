@@ -170,6 +170,8 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     return {} unless model
     #important for the clusterer css a div must have child span
     _.extend model,
+      coordinates: [model.longitude, model.latitude]
+      type: 'Point'
       markerType: 'currentLocation'
       icon:
         type: 'div'

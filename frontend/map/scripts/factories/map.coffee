@@ -81,8 +81,6 @@ app.factory 'rmapsMapFactory',
             position = $scope.previousCenter
 
           if isMyLocation
-            position.coordinates = [position.longitude, position.latitude]
-            position.type = 'Point'
             $scope.map.markers.currentLocation.myLocation = rmapsLayerFormattersService.setCurrentLocationMarkerOptions(position)
             @redraw()
 
