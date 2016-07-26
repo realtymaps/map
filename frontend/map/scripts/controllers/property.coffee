@@ -4,18 +4,19 @@ moment = require 'moment'
 
 app.controller 'rmapsPropertyCtrl',
   (
-    $scope,
-    $rootScope,
-    $stateParams,
-    $log,
-    $modal,
-    rmapsPropertiesService,
-    rmapsFormattersService,
-    rmapsResultsFormatterService,
-    rmapsPropertyFormatterService,
-    rmapsGoogleService,
-    rmapsMailCampaignService,
+    $scope
+    $rootScope
+    $stateParams
+    $log
+    $modal
+    rmapsPropertiesService
+    rmapsFormattersService
+    rmapsResultsFormatterService
+    rmapsPropertyFormatterService
+    rmapsGoogleService
+    rmapsMailCampaignService
     rmapsFiltersFactory
+    $http
   ) ->
 
     $log = $log.spawn 'rmapsPropertyCtrl'
@@ -87,7 +88,7 @@ app.controller 'rmapsPropertyCtrl',
         $scope.selectedResult = property
 
         # Sets up Deed and Mortage history array with extra data split off (for ng-repeat)
-        for county in property.county
+        for county in property.county || []
           for history in ['deedHistory', 'mortgageHistory']
             if county?.subscriber_groups?[history]
               historyExtra = []
@@ -110,7 +111,7 @@ app.controller 'rmapsPropertyCtrl',
             return label: "Sold within #{soldRange}", class: 'sold'
           else
             return label: "Not Sold witin #{soldRange}", class: 'notsale'
-        catch ex
+        catch error
           return label: "Not Sold", class: 'notsale'
       else
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
@@ -139,7 +140,7 @@ app.controller 'rmapsPropertyCtrl',
             pvaForm.appendChild(newInput)
 
           document.body.appendChild(pvaForm)
-          if child = window.open('', windowName)
+          if window.open('', windowName)
             pvaForm.submit()
           else
             alert("Please enable popups on this page")
