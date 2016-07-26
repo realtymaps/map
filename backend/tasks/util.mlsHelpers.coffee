@@ -8,21 +8,15 @@ tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
 dataLoadHelpers = require './util.dataLoadHelpers'
-rets = require 'rets-client'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 awsService = require '../services/service.aws'
 mlsPhotoUtil = require '../utils/util.mls.photos'
 uuid = require '../utils/util.uuid'
-externalAccounts = require '../services/service.externalAccounts'
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 config = require '../config/config'
 internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
-
-
-ONE_YEAR_MILLIS = 365*24*60*60*1000
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -101,140 +95,47 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
-    listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
-    listing.data_source_type = 'mls'
-    _.extend(listing, parcel[0])
-    Promise.delay(delay)  #throttle for heroku's sake
-    .then () ->
-      # do owner name and zoning promotion logic
-      if listing.owner_name? || listing.owner_name_2? || listing.zoning
-        # keep previously-promoted values
-        return false
-      dataLoadHelpers.checkTableExists('normalized', tables.normalized.tax.buildTableName(listing.fips_code))
-    .then (checkPromotedValues) ->
-      if !checkPromotedValues
-        return
-      # need to query the tax table to get values to promote
-      tables.normalized.tax(subid: listing.fips_code)
-      .select('promoted_values')
-      .where
-        rm_property_id: id
-      .then (results=[]) ->
-        if results[0]?.promoted_values
-          # promote values into this listing
-          _.extend(listing, results[0].promoted_values)
-          # save back to the listing table to avoid making checks in the future
-          tables.normalized.listing()
-          .where
-            data_source_id: listing.data_source_id
-            data_source_uuid: listing.data_source_uuid
-          .update(results[0].promoted_values)
-    .then () ->
-      dbs.ensureTransaction transaction, 'main', (transaction) ->
-        tables.finalized.combined(transaction: transaction)
+    dataLoadHelpers.finalizeEntry({entries: listings, subtask})
+    .then (listing) ->
+      listing.data_source_type = 'mls'
+      _.extend(listing, parcel[0])
+      Promise.delay(delay)  #throttle for heroku's sake
+      .then () ->
+        # do owner name and zoning promotion logic
+        if listing.owner_name? || listing.owner_name_2? || listing.zoning
+          # keep previously-promoted values
+          return false
+        dataLoadHelpers.checkTableExists('normalized', tables.normalized.tax.buildTableName(listing.fips_code))
+      .then (checkPromotedValues) ->
+        if !checkPromotedValues
+          return
+        # need to query the tax table to get values to promote
+        tables.normalized.tax(subid: listing.fips_code)
+        .select('promoted_values')
         .where
           rm_property_id: id
-          data_source_id: data_source_id || subtask.task_name
-          active: false
-        .delete()
-        .then () ->
+        .then (results=[]) ->
+          if results[0]?.promoted_values
+            # promote values into this listing
+            _.extend(listing, results[0].promoted_values)
+            # save back to the listing table to avoid making checks in the future
+            tables.normalized.listing()
+            .where
+              data_source_id: listing.data_source_id
+              data_source_uuid: listing.data_source_uuid
+            .update(results[0].promoted_values)
+      .then () ->
+        dbs.ensureTransaction transaction, 'main', (transaction) ->
           tables.finalized.combined(transaction: transaction)
-          .insert(listing)
+          .where
+            rm_property_id: id
+            data_source_id: data_source_id || subtask.task_name
+            active: false
+          .delete()
+          .then () ->
+            tables.finalized.combined(transaction: transaction)
+            .insert(listing)
 
-
-_updatePhoto = (subtask, opts) -> Promise.try () ->
-  if !opts
-    logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
-    return
-
-  onMissingArgsFail
-    args: opts
-    required: ['newFileName', 'imageId', 'photo_id', 'listingRow']
-
-  {newFileName, imageId, photo_id, listingRow, objectData, transaction} = opts
-  externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
-  .then (s3Info) ->
-    ###
-    Update photo's hash in a listing col
-    example:
-      photos:
-        1: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
-        2: https://s3.amazonaws.com/uuid/swflmls/mls_id_2.jpeg
-        3: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
-    ###
-    obj =
-      key: newFileName
-      url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
-
-
-    obj.objectData = objectData if objectData
-
-    jsonObjStr = JSON.stringify obj
-
-    finePhotologger.debug jsonObjStr
-
-    cdnPhotoStrPromise = Promise.resolve('')
-    if imageId == 0
-      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(opts)
-
-    cdnPhotoStrPromise
-    .then (cdnPhotoStr) ->
-
-      internals.makeInsertPhoto {
-        listingRow
-        cdnPhotoStr
-        jsonObjStr
-        imageId
-        photo_id
-        transaction
-      }
-
-    .catch (error) ->
-      logger.spawn(subtask.task_name).error error
-      logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
-      _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
-
-_enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
-  if key?
-    tables.deletes.photos({transaction})
-    .insert {key, batch_id}
-  else
-    Promise.resolve()
-
-###
-  using upload see service.aws.putObject comments
-
-  The short of it is that we do not know the size of the payload. EVEN if rets-client gives a size if it is invalid
-  it causes too many problems. It is easier to forgoe worying about size and just upload blindly!
-###
-_uploadPhoto = ({photoRes, newFileName, payload, row}) ->
-  new Promise (resolve, reject) ->
-    awsService.upload
-      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
-      Key: newFileName
-      ContentType: payload.contentType
-      Metadata:
-        data_source_id: row.data_source_id
-        data_source_uuid: row.data_source_uuid
-        rm_property_id: row.rm_property_id
-        height: photoRes.height
-        width: photoRes.width
-    .then (upload) ->
-
-      payload.data.once 'error', (error) ->
-        reject error
-
-      upload.once 'uploaded', (details) ->
-        logger.spawn(row.data_source_id).debug details
-        resolve(details)
-
-      upload.once 'error', (error) ->
-        reject error
-
-      payload.data.pipe(upload)
-
-    .catch (error) -> #missing catch
-      reject error
 
 storePhotos = (subtask, listingRow) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
@@ -304,12 +205,12 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           return
 
         uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-          _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
           .then () ->
             dbs.transaction 'main', (transaction2) ->
-              _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
               .then () ->
-                _uploadPhoto({photoRes, newFileName, payload, row})
+                internals.uploadPhoto({photoRes, newFileName, payload, row})
         .then () ->
           logger.spawn(subtask.task_name).debug 'photo upload success'
           successCtr++
