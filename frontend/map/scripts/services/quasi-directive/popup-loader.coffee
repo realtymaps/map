@@ -41,13 +41,10 @@ app.factory 'rmapsPopupFactory', (
   $log = $log.spawn("map:rmapsPopupFactory")
 
   class
-    constructor: ({map, model, opts, needToCompile, templateVars}) ->
+    constructor: ({@map, model, opts = _defaultOptions, needToCompile = true, templateVars, @canClose = true}) ->
       @popup = rmapsPopupConstants[model.markerType]
       @popup ?= rmapsPopupConstants.default
-      opts ?= _defaultOptions
       template = @popup.templateFn(templateVars)
-      needToCompile ?= true
-      @map = map
 
       return if model?.markerType == 'cluster'
       content = null
@@ -79,13 +76,14 @@ app.factory 'rmapsPopupFactory', (
       @lObj.setLatLng
         lat: coords[1]
         lng: coords[0]
-      .openOn map
+      .openOn @map
       @lObj.setContent content
 
       # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
       # This is an attempt to make sure the popup goes away once the cursor is moved away
       @lObj._container?.addEventListener 'mouseleave', (e) =>
         @popupIsHovered = false
+        return if !@canClose
         @map?.closePopup()
 
       @lObj._container?.addEventListener 'mouseover', (e) =>
@@ -94,6 +92,7 @@ app.factory 'rmapsPopupFactory', (
       @lObj
 
     close: () ->
+      return if !@canClose
       if !@popupIsHovered
         $log.debug 'closing popup'
         @map?.closePopup()
@@ -126,6 +125,6 @@ app.service 'rmapsPopupLoaderService',(
   close: () ->
     $log.debug "popup closing in #{_delay}ms..."
 
-    $timeout () ->
-      _queue.shift()?.close()
-    , _delay
+    # $timeout () ->
+    #   _queue.shift()?.close()
+    # , _delay
