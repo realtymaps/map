@@ -4,6 +4,7 @@ numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
 priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
+currentLocationMarkerTemplate = require '../../html/includes/map/_currentLocationMarker.jade'
 
 app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
 
@@ -165,6 +166,16 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
   setMarkerNotesDataOptions = (data) ->
     setDataOptions(data, MLS.setMarkerNotesOptions)
 
+  setCurrentLocationMarkerOptions = (model) ->
+    return {} unless model
+    #important for the clusterer css a div must have child span
+    _.extend model,
+      markerType: 'currentLocation'
+      icon:
+        type: 'div'
+        html: currentLocationMarkerTemplate()
+
+
   #public
   {
     Parcels
@@ -172,4 +183,5 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     isVisible
     setDataOptions
     setMarkerNotesDataOptions
+    setCurrentLocationMarkerOptions
   }

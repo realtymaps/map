@@ -73,11 +73,18 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) ->
+        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
+          {isMyLocation} = position
           if position
             position = position.coords
           else
             position = $scope.previousCenter
+
+          if isMyLocation
+            position.coordinates = [position.longitude, position.latitude]
+            position.type = 'Point'
+            $scope.map.markers.currentLocation.myLocation = rmapsLayerFormattersService.setCurrentLocationMarkerOptions(position)
+            @redraw()
 
           position.zoom = position.zoom ? rmapsZoomLevelService.getZoom($scope) ? 14
           $scope.map.center = NgLeafletCenter position
@@ -175,7 +182,8 @@ app.factory 'rmapsMapFactory',
               filterSummary:{}
               backendPriceCluster:{}
               addresses:{}
-              notes: []
+              notes: {}
+              currentLocation: {}
 
             geojson: {}
 
