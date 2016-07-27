@@ -191,7 +191,7 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
 
     # get project id based on the `projectIdParam` argument in either `req.params` or
     #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
-    #    `req.params`, since 
+    #   `projectIdParam` on the `req` obj,     followed by `req.params`, since 
     #   that is where the restful resource id will often be found (in url)
     queryParams = _.merge {}, req.query, req.params
 
