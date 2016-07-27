@@ -12,14 +12,15 @@ app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
   _prevZoom = null
   _currZoom = null
 
-  _setCurrZoom = (zoom) ->
-    _currZoom = zoom
-  _setPrevZoom = (zoom) ->
-    _prevZoom = zoom
+  _trackZoom = (scope) ->
+    # only if initial state or zoom has changed, set new prev and curr
+    if _currZoom != _getZoom(scope)
+      _prevZoom = _currZoom
+      _currZoom = _getZoom(scope)
 
   # determine if we zoomed out from "price" level zoom (to figure out if we need to turn markers back on)
-  _isFromPriceZoom = () ->
-    return _currZoom < _prevZoom and _currZoom <= _zoomThresh.price
+  _isFromParcelZoom = () ->
+    return _currZoom < _prevZoom and _currZoom <= _zoomThresh.price and _prevZoom > _zoomThresh.price
 
   _getZoom = (scope) ->
     scope.map?.center?.zoom
@@ -53,9 +54,8 @@ app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
   enumFromLevel: _enumFromLevel
   enumFromMap: _enumFromMap
   getZoom: _getZoom
-  setCurrZoom: _setCurrZoom
-  setPrevZoom: _setPrevZoom
-  isFromPriceZoom: _isFromPriceZoom
+  trackZoom: _trackZoom
+  isFromParcelZoom: _isFromParcelZoom
 
   doCluster: (scope) ->
     _getZoom(scope) <= _zoomThresh.roundOne

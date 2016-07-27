@@ -90,10 +90,10 @@ app.factory 'rmapSummaryResultsMutation',
 
       $log.debug @scope.map.markers.filterSummary
 
+      if @scope.zoomLevelService.isFromParcelZoom()
+        Toggles.showPrices = true
       if !@isAnyParcel()
         overlays?.parcels?.visible = false
-        if @scope.zoomLevelService.isFromPriceZoom()
-          Toggles.showPrices = true
         Toggles.showAddresses = false
         overlays?.parcelsAddresses?.visible = false
         @promise = $q.resolve()

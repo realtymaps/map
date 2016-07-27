@@ -200,10 +200,8 @@ app.factory 'rmapsMapFactory',
             property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
-          changeZoom: (increment) =>
-            @scope.zoomLevelService.setPrevZoom self.map.getZoom()
+          changeZoom: (increment) ->
             toBeZoom = self.map.getZoom() + increment
-            @scope.zoomLevelService.setCurrZoom toBeZoom
             self.map.setZoom(toBeZoom)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
@@ -211,8 +209,10 @@ app.factory 'rmapsMapFactory',
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
           if @scope.map.listingDetail?
             @scope.map.listingDetail.show = false if newVal isnt oldVal
+
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         #END CONSTRUCTOR
+
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       updateToggles: (map_toggles) =>
@@ -247,6 +247,10 @@ app.factory 'rmapsMapFactory',
 
         rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
+          # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
+          # but gets buggy when rapidly changing zooms occurs.
+          @scope.zoomLevelService.trackZoom(@scope)
+
           rmapsResultsFlow {
             @scope
             filters
