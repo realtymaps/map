@@ -209,10 +209,8 @@ app.factory 'rmapsMapFactory',
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
           if @scope.map.listingDetail?
             @scope.map.listingDetail.show = false if newVal isnt oldVal
-
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         #END CONSTRUCTOR
-
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       updateToggles: (map_toggles) =>
