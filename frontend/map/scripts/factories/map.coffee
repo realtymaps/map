@@ -200,10 +200,8 @@ app.factory 'rmapsMapFactory',
             property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
-          changeZoom: (increment) =>
-            @scope.zoomLevelService.setPrevZoom self.map.getZoom()
+          changeZoom: (increment) ->
             toBeZoom = self.map.getZoom() + increment
-            @scope.zoomLevelService.setCurrZoom toBeZoom
             self.map.setZoom(toBeZoom)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
@@ -247,6 +245,10 @@ app.factory 'rmapsMapFactory',
 
         rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
+          # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
+          # but gets buggy when rapidly changing zooms occurs.
+          @scope.zoomLevelService.trackZoom(@scope)
+
           rmapsResultsFlow {
             @scope
             filters
