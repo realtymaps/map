@@ -104,6 +104,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @toggleLocation = () =>
         @isFetchingLocation = true
         navigator.geolocation.getCurrentPosition (location) =>
+          location.isMyLocation = true
           @isFetchingLocation = false
           _fireLocationChange(location)
 
