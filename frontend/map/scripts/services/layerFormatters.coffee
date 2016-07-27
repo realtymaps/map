@@ -4,6 +4,7 @@ numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
 priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
+noteMarkerTemplate  = require '../../html/includes/map/_noteMarker.jade'
 currentLocationMarkerTemplate = require '../../html/includes/map/_currentLocationMarker.jade'
 
 app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
@@ -133,12 +134,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         icon:
           type: 'div'
           iconSize: [30, 30]
-          html: """
-<div class='note-marker'>
-  <i class='fa fa-sticky-note'></i>
-  <div class='note-marker-inner'><span>#{model.id}</span></div>
-</div>
-"""
+          html: noteMarkerTemplate(model)
 
     setMarkerMailOptions: (model, number) ->
       _.extend model,

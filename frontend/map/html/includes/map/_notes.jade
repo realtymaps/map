@@ -33,7 +33,7 @@ span(
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.id}}')
+              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.$index}}', true)
 
               // TODO - add sketch feature in
                 span.sketch
