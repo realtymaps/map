@@ -104,3 +104,11 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       rmapsProjectsService.delete id: project.project_id
       .then () ->
         $window.location.reload()
+
+  $scope.setDefaultName = ({project, defaultName, inverseName, isCopy = false}) ->
+    copyName = ($scope.principal.getCurrentProfile().name || defaultName) + ' copy'
+
+    if project.name == inverseName && isCopy
+      project.name = copyName
+    else if project.name == inverseName || project.name == copyName
+      project.name = defaultName
