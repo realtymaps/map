@@ -193,7 +193,7 @@ rmapsMapTogglesFactory
     Object.keys($scope.map.markers.notes).length
 
   getNotes = (force = false) ->
-    rmapsNotesService.getList(force)
+    rmapsNotesService.getAll(force)
     .then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
       $scope.map.markers.notes = setMarkerNotesDataOptions(data)
