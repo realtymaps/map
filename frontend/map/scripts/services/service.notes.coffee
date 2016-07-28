@@ -18,7 +18,7 @@ rmapsHttpTempCache
   service =
     # Restangular.service backendRoutes.notesSession.apiBase
     # vs a simple $http
-    getList: (force = false, cache = true) ->
+    getAll: (force = false, cache = true) ->
       $log.debug 'Get notes from API, force?', force
       if !getPromise || force
         if force
@@ -41,6 +41,9 @@ rmapsHttpTempCache
       else
         getPromise
 
+    getList: (force, cache) ->
+      @getAll(force, cache).then (data) ->
+        _.values data
 
     createFromText: (noteText, projectId, propertyId, geomPointJson) ->
       note = {
