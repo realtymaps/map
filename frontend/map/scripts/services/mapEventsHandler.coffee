@@ -63,12 +63,12 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
           # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
 
-         # Ignore when this is firing from previous marker
-        if (_lastEvents.mouseover?.lat == model.lat) && (_lastEvents.mouseover?.lng == model.lng)
+        # Ignore when this is firing from previous marker
+        if (_lastEvents.mouseover?.lat? && _lastEvents.mouseover?.lng? && (_lastEvents.mouseover.lat == model.coordinates[1]) && (_lastEvents.mouseover.lng == model.coordinates[0]))
           # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
-         # Ignore these types of markers
+        # Ignore these types of markers
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
           # $log.debug '[IGNORED:markertype] ' + eventInfo
           return
