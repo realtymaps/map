@@ -1,7 +1,7 @@
 config = require '../../common/config/commonConfig'
 combined = require './service.properties.combined.filterSummary'
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('map:filterSummary')
+logger = require('../config/logger').spawn('service:filterSummary')
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 validation = require '../utils/util.validation'
@@ -37,8 +37,13 @@ module.exports =
 
         cluster = () ->
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
-          filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, query: clusterQuery, permissions})
-          .then (properties) ->
+
+          # does not need limit as clusterQuery will only return 1 row
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, query: clusterQuery, permissions})
+
+          logger.debug () -> query.toString()
+
+          query.then (properties) ->
             combined.scrubPermissions(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
@@ -90,6 +95,8 @@ module.exports =
                 return {singletons: resultsByPropertyId, groups: resultGroups}
               else
                 resultsByPropertyId
+
+        logger.debug () -> "queryParams.returnType: #{queryParams.returnType}"
 
         switch queryParams.returnType
           when 'clusterOrDefault'

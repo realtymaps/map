@@ -1,6 +1,8 @@
 _ = require 'lodash'
 {validators} = require '../util.validation'
-
+internals = require './transforms.properties.internals'
+{propertyTypes} = require "../../enums/filterPropertyType"
+{statuses} = require "../../enums/filterStatuses"
 
 state =
   state: [
@@ -33,8 +35,53 @@ save =
   body: validators.object subValidateSeparate:
     rm_property_id: validators.string(minLength:1)
 
+filterSummary =
+  state: validators.object
+    subValidateSeparate:
+      filters: [
+        validators.object
+          subValidateSeparate: _.extend internals.minMaxFilterValidations,
+            ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
+            hasOwner: validators.boolean()
+            status: [
+              validators.array
+                subValidateEach: [
+                  validators.string(forceLowerCase: true)
+                  validators.choice(choices: statuses)
+                ]
+              validators.defaults(defaultValue: [])
+            ]
+            address: [
+              validators.object()
+              validators.defaults(defaultValue: {})
+            ]
+            propertyType: [
+              validators.string()
+              validators.choice(choices: propertyTypes)
+            ]
+            hasImages: validators.boolean(truthy: true, falsy: false)
+            soldRange: validators.string()
+          validators.defaults(defaultValue: {})
+      ]
+  bounds:
+    transform: [
+      validators.string(minLength: 1)
+      validators.geohash
+      validators.array(minLength: 2)
+    ]
+    required: true
+  returnType: validators.string()
+
+drawnShapes = _.merge {}, filterSummary,
+  isArea: validators.boolean(truthy: true, falsy: false)
+  areaId: validators.integer()
+  bounds: validators.string(null:true)
+  project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
+
 module.exports = {
   state
   body
   save
+  filterSummary
+  drawnShapes
 }
