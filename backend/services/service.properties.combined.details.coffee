@@ -73,8 +73,8 @@ getProperty = ({query, profile}) ->
             row.mls_formal_name = mlsConfig.formal_name
             row.disclaimer_logo = mlsConfig.disclaimer_logo
             row.disclaimer_text = mlsConfig.disclaimer_text
-            row.dcma_contact_name = mlsConfig.dcma_contact_name
-            row.dcma_contact_address = mlsConfig.dcma_contact_address
+            row.dmca_contact_name = mlsConfig.dmca_contact_name
+            row.dmca_contact_address = mlsConfig.dmca_contact_address
 
     .then () ->
       _.map(result)[0]
