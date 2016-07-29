@@ -103,6 +103,8 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
 
       @toggleLocation = () =>
         @isFetchingLocation = true
+        # notes on why there is trouble on current loc on Prod and Staging
+        # http://stackoverflow.com/questions/3397585/navigator-geolocation-getcurrentposition-sometimes-works-sometimes-doesnt
         navigator.geolocation.getCurrentPosition (location) =>
           location.isMyLocation = true
           @isFetchingLocation = false
