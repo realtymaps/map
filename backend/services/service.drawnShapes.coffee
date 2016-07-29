@@ -11,11 +11,14 @@ module.exports =
     toGeoJson: (query) ->
       query
       .then (rows) =>
-        toGeoFeatureCollection rows,
-          toMove: @drawnShapeCols
-          geometry: ['geometry_center', 'geometry', 'geometry_line']
-          deletes: ['rm_inserted_time', 'rm_modified_time',
-            'geometry_center_raw', 'geometry_raw', 'geometry_line_raw']
+        toGeoFeatureCollection {
+          rows
+          opts:
+            toMove: @drawnShapeCols
+            geometry: ['geometry_center', 'geometry', 'geometry_line']
+            deletes: ['rm_inserted_time', 'rm_modified_time',
+              'geometry_center_raw', 'geometry_raw', 'geometry_line_raw']
+        }
 
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true

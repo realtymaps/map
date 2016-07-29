@@ -192,13 +192,16 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, data) ->
     #forcing this to always use a cached val since getFilterResults will always be run prior
-    promise = if !data?
-      service.getFilterResults(hash, mapState, filters, true)
+    doClone = false
+
+    if !data?
+      promise = service.getFilterResults(hash, mapState, filters, true)
     else
-      $q.resolve data
+      doClone = true
+      promise = $q.resolve data
 
     promise.then (data) ->
-      utilsGeoJson.toGeoFeatureCollection(data)
+      utilsGeoJson.toGeoFeatureCollection({rows: data, doClone})
 
   service.getParcelBase = (hash, mapState, cache = true) ->
     _parcelThrottler.invokePromise _getPropertyData(
