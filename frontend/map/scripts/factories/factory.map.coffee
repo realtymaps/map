@@ -365,7 +365,7 @@ app.factory 'rmapsMapFactory',
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])
         old = _.cloneDeep @scope.map.center
         resultCenter.zoom = old.zoom
-        resultCenter.where = 'rmapsMapFactory.zoomTo'
+        resultCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = resultCenter
 
         if !doChangeZoom
@@ -438,7 +438,7 @@ app.factory 'rmapsMapFactory',
 
         getZoom()
 
-        positionCenter.where = 'rmapsMapFactory.zoomTo'
+        positionCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = positionCenter
         @scope.$evalAsync()
 

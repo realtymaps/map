@@ -137,7 +137,7 @@ app.service 'rmapsProfilesService', (
 
         # Center and zoom the map for the new profile
         map_position = center: NgLeafletCenter profile.map_position.center
-        map_position.center.where = 'rmapsProfilesService:profile.map_position.center'
+        map_position.center.docWhere = 'rmapsProfilesService:profile.map_position.center'
         #
         # Center and zoom map to profile
         #
@@ -145,7 +145,7 @@ app.service 'rmapsProfilesService', (
         #fix messed center
         if !map_position?.center?.lng || !map_position?.center?.lat
           map_position = rmapsMainOptions.map.options.json.center
-          map_position.center.where = 'rmapsProfilesService:invalid'
+          map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
         if rmapsMapFactory.currentMainMap?.scope?.map?
           ### eslint-disable###
@@ -153,7 +153,7 @@ app.service 'rmapsProfilesService', (
           ### eslint-enable###
           if map_position?.center?
             newCenter = NgLeafletCenter(map_position.center || rmapsMainOptions.map.options.json.center)
-            newCenter.where = 'rmapsProfilesService currentMainMap'
+            newCenter.docWhere = 'rmapsProfilesService currentMainMap'
             if !newCenter.isEqual(rmapsMapFactory.currentMainMap.scope.map.center)
               $log.debug "Profile changed and map factory exists, recentering map"
               $log.debug "old lat: #{oldCenter.lat}, new lat: #{map_position.center.lat}"
@@ -169,7 +169,7 @@ app.service 'rmapsProfilesService', (
             map_position.center.longitude? &&
             map_position.center.longitude != 'NaN'
               newCenter = NgLeafletCenter map_position.center
-              newCenter.where = 'rmapsProfilesService original'
+              newCenter.docWhere = 'rmapsProfilesService original'
               rmapsMainOptions.map.options.json.center = newCenter
 
         # Handle profile filters

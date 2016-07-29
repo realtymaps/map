@@ -77,7 +77,7 @@ app.controller 'rmapsMapCtrl', (
           map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
         , 50
         resultCenter = new LeafletCenter(result.coordinates[1],result.coordinates[0], 18)
-        resultCenter.where = 'rmapsMapCtrl.scope.loadProperty'
+        resultCenter.docWhere = 'rmapsMapCtrl.scope.loadProperty'
         map.scope.map.center = resultCenter
       .catch () ->
         $location.search 'property_id', undefined
