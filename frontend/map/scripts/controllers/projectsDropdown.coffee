@@ -52,17 +52,17 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
     $scope.projectDropdown.isOpen = false
 
-    rmapsProfilesService.setCurrentProfileByProjectId project.project_id
-    .then ->
-      # if we're currently on the map state, use the rmapsPage.goToMap() function
-      if $state.current.name == 'map'
-        rmapsPageService.goToMap()
+    if !project
+      return
+    # if we're currently on the map state, use the rmapsPage.goToMap() function
+    if $state.current.name == 'map'
+      rmapsPageService.goToMap({project_id: project.project_id})
+    else
+      # Reset the project and reload the current state
+      if $state.current.projectParam?
+        $state.go $state.current, "#{$state.current.projectParam}": project.project_id, reload: true
       else
-        # Reset the project and reload the current state
-        if $state.current.projectParam?
-          $state.go $state.current, "#{$state.current.projectParam}": project.project_id, reload: true
-        else
-          $state.go $state.current, $state.current.params, reload: true
+        $state.go $state.current, $state.current.params, reload: true
 
   $scope.addProject = () ->
     $scope.newProject =

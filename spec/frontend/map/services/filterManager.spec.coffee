@@ -1,4 +1,4 @@
-qs = require 'qs'
+###globals angular,inject###
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
 
@@ -41,8 +41,8 @@ describe "rmapsFilterManagerService", ->
         @digestor.digest()
 
         spyCb = sinon.spy @$rootScope, '$emit'
-        @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) =>
-          expect(filters).to.eql {"hasImages":false,"soldRange":"120 day","discontinued":false,"auction":false,"status":[]}
+        @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) ->
+          expect(filters).to.eql status: [ 'for sale' ]
           done()
 
         @$rootScope.selectedFilters =
