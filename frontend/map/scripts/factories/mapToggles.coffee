@@ -107,6 +107,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
           location.isMyLocation = true
           @isFetchingLocation = false
           _fireLocationChange(location)
+        , (->), timeout:10000
 
       @togglePreviousLocation = ->
         _fireLocationChange()
