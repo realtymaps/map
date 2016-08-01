@@ -4,6 +4,7 @@ jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
 mlsHelpers = require './util.mlsHelpers'
+retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 moment = require 'moment'
@@ -93,6 +94,9 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
+  console.log "\n\nstorePhotosPrep()"
+  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
+  #console.log "subtask.data:\n#{JSON.stringify(subtask.data,null,2)}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
 
   tables.normalized.listing()
@@ -100,8 +104,27 @@ storePhotosPrep = (subtask) ->
   .where
     batch_id: subtask.batch_id
     data_source_id: subtask.task_name
+
   .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+    mlsHelpers.getMlsField(subtask.task_name, 'photo_last_mod_time')
+    .then (mlsFieldName) ->
+      console.log "mlsFieldName:\n#{JSON.stringify(mlsFieldName,null,2)}"
+      dataOptions = {mlsFieldName, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: mlsFieldName, offset: 1}}
+      retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
+        if !chunk?.length
+          return
+        console.log "chunk:\n#{JSON.stringify(chunk,null,2)}"
+
+        ts = _.pluck(chunk, mlsFieldName)
+    
+        rows
+
+
+  .then (rows) ->
+    console.log "#rows: #{rows.length}"
+    console.log "row1:\n#{JSON.stringify(rows[0],null,2)}"
+    process.exit(0)
+    #jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)

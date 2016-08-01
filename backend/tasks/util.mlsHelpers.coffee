@@ -315,6 +315,9 @@ markUpToDate = (subtask) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 
 
+getMlsField = (mlsId, fieldName) ->
+  internals.getMlsField(mlsId, fieldName)
+
 module.exports = {
   loadUpdates
   buildRecord
@@ -322,4 +325,5 @@ module.exports = {
   storePhotos
   deleteOldPhoto
   markUpToDate
+  getMlsField
 }
