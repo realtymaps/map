@@ -6,6 +6,8 @@ thisEnum = {}
 statuses.forEach (v) ->
   thisEnum[v.replace(' ', '_')] =  v
 
-module.exports =
+module.exports = {
   enum: thisEnum
   keys: statuses
+  statuses
+}
