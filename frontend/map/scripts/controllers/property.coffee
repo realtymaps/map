@@ -122,17 +122,20 @@ app.controller 'rmapsPropertyCtrl',
       apn = splits[1]
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (fips % 2)+1
-      $http.get("`//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}")
-      .then (pvaPage) ->
-        url = pvaPage.url.replace("{{_APN_}}", apn)
-        if pvaPage.options?.post
+      pvaUrl = "/api/properties/pva/#{fips}"
+      if !location.href.match(/https?:\/\/localhost/)
+        pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/#{pvaUrl}"
+      $http.get(pvaUrl)
+      .then ({data}) ->
+        url = data.url.replace("{{_APN_}}", apn)
+        if data.options?.post
           pvaForm = document.createElement("form")
           windowName = window.name+(new Date().getTime())
           pvaForm.target = windowName
           pvaForm.method = "POST"
           pvaForm.action = url
 
-          for name, value of pvaPage.options.post
+          for name, value of data.options.post
             newInput = document.createElement("input")
             newInput.type = "hidden"
             newInput.name = name
