@@ -47,10 +47,14 @@ module.exports =
             combined.scrubPermissions(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
-        summary = () ->
+        summary = (limit) ->
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           logger.debug -> query.toString()
           query.then (properties) ->
+            if properties.length > config.backendClustering.resultThreshold
+              logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
+              return cluster()
+
             combined.scrubPermissions(properties, permissions)
 
             resultsByPropertyId = {}
@@ -84,38 +88,31 @@ module.exports =
                   .then (mlsConfig) ->
                     property.mls_formal_name = mlsConfig?.formal_name
             .then () ->
-              if filterSummaryImpl == combined
+              resultGroupsCtr = 0
+              result = if filterSummaryImpl == combined
                 for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
                   if _.size(rm_property_ids) > 1
                     for rm_property_id of rm_property_ids
                       resultGroups[encodedCenter] ?= {}
                       resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
                       delete resultsByPropertyId[rm_property_id]
+                      resultGroupsCtr++
 
-                return {singletons: resultsByPropertyId, groups: resultGroups}
+                singletons: resultsByPropertyId
+                groups: resultGroups
+                length: properties.length + resultGroupsCtr
               else
+                resultsByPropertyId.length = properties.length
                 resultsByPropertyId
+
+              logger.debug "Normal Query with length of #{result.length}"
+              delete result.length
+              result
 
         logger.debug () -> "queryParams.returnType: #{queryParams.returnType}"
 
         switch queryParams.returnType
-          when 'clusterOrDefault'
-            # Count the number of properties and do clustering if there are enough
-            query = filterSummaryImpl.getResultCount({queryParams, permissions})
-            logger.debug -> query.toString()
-            query.then ([result]) ->
-              if result.count > config.backendClustering.resultThreshold
-                logger.debug -> "Cluster query for #{result.count} properties - above threshold #{config.backendClustering.resultThreshold}"
-                return cluster()
-              else
-                logger.debug -> "Default query for #{result.count} properties - under threshold #{config.backendClustering.resultThreshold}"
-                if result.count == 0
-                  return {}
-                else
-                  return summary()
-
           when 'cluster'
             cluster()
-
           else
-            summary()
+            summary(config.backendClustering.resultThreshold + 1)
