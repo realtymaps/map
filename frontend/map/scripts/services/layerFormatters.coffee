@@ -37,7 +37,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     normalColors[rmapsParcelEnums.status.sold] = rmapsStylusConstants.$rm_sold
     normalColors[rmapsParcelEnums.status.pending] = rmapsStylusConstants.$rm_pending
     normalColors[rmapsParcelEnums.status.forSale] = rmapsStylusConstants.$rm_forsale
-    normalColors[rmapsParcelEnums.status.notForSale] = rmapsStylusConstants.$rm_notforsale
+    normalColors[rmapsParcelEnums.status.discontinued] = rmapsStylusConstants.$rm_notforsale
     normalColors['saved'] = rmapsStylusConstants['$rm_saved']
     normalColors['default'] = 'transparent'
 
@@ -45,7 +45,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     hoverColors[rmapsParcelEnums.status.sold] = rmapsStylusConstants.$rm_sold_hover
     hoverColors[rmapsParcelEnums.status.pending] = rmapsStylusConstants.$rm_pending_hover
     hoverColors[rmapsParcelEnums.status.forSale] = rmapsStylusConstants.$rm_forsale_hover
-    hoverColors[rmapsParcelEnums.status.notForSale] = rmapsStylusConstants.$rm_notforsale_hover
+    hoverColors[rmapsParcelEnums.status.discontinued] = rmapsStylusConstants.$rm_notforsale_hover
     hoverColors['saved'] = rmapsStylusConstants['$rm_saved_hover']
     hoverColors['default'] = 'rgba(153,153,153,.8)'
 
