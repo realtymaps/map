@@ -35,10 +35,8 @@ makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, t
 ###
 
 getMlsField = (mlsId, rmapsFieldName) ->
-  console.log "getUuidField()"
   mlsConfigService.getByIdCached(mlsId)
   .then (mlsInfo) ->
-    console.log "mlsInfo:\n#{JSON.stringify(mlsInfo,null,2)}"
     columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
     validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, 'listing', 'base', rmapsFieldName)
     Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->

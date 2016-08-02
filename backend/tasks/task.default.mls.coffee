@@ -94,37 +94,27 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
-  console.log "\n\nstorePhotosPrep()"
-  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
-  #console.log "subtask.data:\n#{JSON.stringify(subtask.data,null,2)}"
-  numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
+  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  lastModPromise = mlsHelpers.getMlsField(subtask.task_name, 'photo_last_mod_time')
+  uuidPromise = mlsHelpers.getMlsField(subtask.task_name, 'data_source_uuid')
 
-  tables.normalized.listing()
-  .select('data_source_id', 'data_source_uuid')
-  .where
-    batch_id: subtask.batch_id
-    data_source_id: subtask.task_name
+  # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+  Promise.join updateThresholdPromise, lastModPromise, uuidPromise, (updateThreshold, lastModField, uuidField) ->
+    dataOptions = {minDate: updateThreshold, searchOptions: {Select: uuidField, offset: 1}, listing_data: {field: lastModField}}
+    retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
 
-  .then (rows) ->
-    mlsHelpers.getMlsField(subtask.task_name, 'photo_last_mod_time')
-    .then (mlsFieldName) ->
-      console.log "mlsFieldName:\n#{JSON.stringify(mlsFieldName,null,2)}"
-      dataOptions = {mlsFieldName, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: mlsFieldName, offset: 1}}
-      retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
-        if !chunk?.length
-          return
-        console.log "chunk:\n#{JSON.stringify(chunk,null,2)}"
+      # ensure each obj has `data_source_id` and `data_source_uuid` keys
+      _.forEach chunk, (row) ->
+        row.data_source_uuid = row[uuidField]
+        row.data_source_id = subtask.task_name
+        delete row[uuidField]
 
-        ts = _.pluck(chunk, mlsFieldName)
-    
-        rows
+      chunk
 
-
-  .then (rows) ->
-    console.log "#rows: #{rows.length}"
-    console.log "row1:\n#{JSON.stringify(rows[0],null,2)}"
-    process.exit(0)
-    #jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+    .then (rows) ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)

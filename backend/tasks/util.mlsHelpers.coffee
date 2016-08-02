@@ -161,11 +161,6 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     #if the photo set is not updated GTFO
     logger.spawn(subtask.task_name).debug row.photo_last_mod_time
 
-    if row.photo_last_mod_time? && row.photo_download_last_mod_time? &&
-    row.photo_last_mod_time == row.photo_download_last_mod_time
-      finePhotologger.debug 'photo_last_mod_time identical  GTFO'
-      return Promise.resolve()
-
     {photo_id} = row
     photoIds = {}
     #get all photos for a specific property
@@ -250,19 +245,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
     # TODO:
     # TODO:  This change means we need to have storePhotosPrep run no matter whether there was regular update data or
     # TODO:  not on a given run of the task.
-    # TODO:
-    # TODO: 2) ----  https://realtymaps.atlassian.net/browse/MAPD-1180
-    # TODO:  As a side note, for storePhotosPrep to work properly (even as it is now), we need to change the way we
-    # TODO:  pull updated listings.  Currently it only pulls listings with a listing update timestamp greater than the
-    # TODO:  last successful run; instead, it should pull listings with either a listing update timestamp OR a photo
-    # TODO:  update timestamp greater than the last successful run.  If we could assume the listing update timestamp
-    # TODO:  would also reflect photo changes, then this would not be necessary, but also wouldn't hurt; since we can't
-    # TODO:  assume that is true for all MLSs, then we need the more thorough query.
-    # TODO:
-    # TODO: 3) ----  https://realtymaps.atlassian.net/browse/MAPD-1181
-    # TODO:  Also, there is logic above that looks at row.photo_download_last_mod_time and possibly bails for
-    # TODO:  efficiency -- however there is no code that ever sets such a value, and the column doesn't even exist on
-    # TODO:  the listings table.
+
 
 deleteOldPhoto = (subtask, key) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
