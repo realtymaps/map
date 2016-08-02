@@ -93,6 +93,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value(ng-if="property.zoning") {{property.zoning}}
                   .content-value(ng-if="!property.zoning") Unknown
                   .content-label Zoning
+                .col-xs-4
+                  .content-value(ng-if="property.status_display") {{property.status_display}}
+                  .content-label(ng-if="property.status_display") MLS Status
 
           .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
             .col-sm-12
@@ -327,6 +330,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .content-value(ng-if="property.zoning") {{property.zoning}}
               .content-value(ng-if="!property.zoning") Unknown
               .content-label Zoning
+            .col-xs-4
+              .content-value(ng-if="property.status_display") {{property.status_display}}
+              .content-label(ng-if="property.status_display") MLS Status
 
         .content-block.prop-attrs.border-bottom(ng-if="property.description")
           .content-heading Description
