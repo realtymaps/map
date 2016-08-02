@@ -12,12 +12,12 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") {{mls.mls_formal_name}} Property Detail
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
-            li
-              a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
+            //- li
+            //-   a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
 
-        .col-sm-8(ng-show="tab.selected == 'raw'")
-          .content-heading Full raw data
-          json-formatter(json="selectedResult" open="3")
+        //- .col-sm-8(ng-show="tab.selected == 'raw'")
+        //-   .content-heading Full raw data
+        //-   json-formatter(json="selectedResult" open="3")
 
         .col-sm-8(ng-repeat="property in dataSources" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
@@ -204,7 +204,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                             div(ng-if="!field.value.lines") {{field.value}}
                             div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
 
-                .row.content-row.history(ng-if="group.name == 'deedHistory'")
+                .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
                   .col-sm-2 Date
                   .col-sm-2 Amount
                   .col-sm-2 Lender
