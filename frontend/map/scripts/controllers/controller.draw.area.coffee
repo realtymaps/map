@@ -33,11 +33,6 @@ rmapsMapTogglesFactory
       mapId
       drawnShapesSvc
       drawnItems
-      endDrawAction: () ->
-
-      commonPostDrawActions: () ->
-
-      announceCb: () ->
 
       createPromise: (geoJson) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
