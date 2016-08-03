@@ -122,9 +122,7 @@ app.controller 'rmapsPropertyCtrl',
       apn = splits[1]
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (fips % 2)+1
-      pvaUrl = "/api/properties/pva/#{fips}"
-      if location.href.match(/https?:\/\/realtymaps-map/)
-        pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/#{pvaUrl}"
+      pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}"
       $http.get(pvaUrl)
       .then ({data}) ->
         url = data.url.replace("{{_APN_}}", apn)
