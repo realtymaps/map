@@ -164,7 +164,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
-        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'all')
+        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'id')
         .then (data) ->
           model = data.mls?[0] || data.county?[0]
           return if !model

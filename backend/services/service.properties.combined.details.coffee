@@ -52,7 +52,7 @@ getProperty = ({query, profile}) ->
       transform: [validators.object(), validators.geojson(toCrs: true)]
 
     columns:
-      transform: validators.choice(choices: ['filter', 'address', 'all'])
+      transform: validators.choice(choices: ['filter', 'address', 'all', 'id'])
       required: true
 
   .then (queryParams) ->
