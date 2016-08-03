@@ -35,8 +35,6 @@ app.controller "rmapsDrawSketchCtrl", (
         $scope
         handles
         drawnItems
-        postDrawAction: () ->
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "sketch"
         itemsOptions:
           color: color
