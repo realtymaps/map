@@ -81,6 +81,7 @@ rmapsLeafletHelpers) ->
         $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
 
     sendMail: (model) ->
+      $log.debug model
       $scope.newMail = {}
       modalInstance = $modal.open
         animation: true
@@ -92,7 +93,7 @@ rmapsLeafletHelpers) ->
         if $scope.newMail.filterProperties == 'true'
           filters = rmapsFilterManagerService.getFilters()
         $scope.modalBusy = $http.post(backendRoutes.properties.inArea, {
-          areaId: model.id
+          areaId: model.properties.id
           state: {filters}
         }, cache: false)
         .then ({data}) ->

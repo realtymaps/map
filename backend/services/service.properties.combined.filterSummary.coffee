@@ -146,15 +146,15 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       if filters.hasImages
         @where("photos", "!=", "{}")
 
-      if queryParams.pins.length
+      if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
-      if queryParams.favorites.length
+      if queryParams.favorites?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
 
-  else
+  else if queryParams.pins || queryParams.favorites
     logger.debug () -> "no status, so query and show pins and favorites"
-    savedIds = queryParams.pins.concat queryParams.favorites
+    savedIds = (queryParams.pins || []).concat(queryParams.favorites || [])
 
     logger.debug () -> "savedIds.length: #{savedIds.length}"
     # execute the query regardless as empty savedIds will
