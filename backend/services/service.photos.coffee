@@ -50,6 +50,8 @@ getResizedPayload = (opts) -> Promise.try () ->
 
       if payload.meta?.width? && payload.meta?.height?
         logger.debug "Using photo metadata for originalSize: #{payload.meta.width} x #{payload.meta.height}"
+        width: payload.meta.width
+        height: payload.meta.height
       else
         mlsConfigService.getByIdCached(data_source_id)
         .then (mlsInfo) ->
