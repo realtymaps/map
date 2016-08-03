@@ -11,7 +11,6 @@ app.controller "rmapsDrawSketchCtrl", (
   rmapsMapIds
   rmapsDrawCtrlFactory
 ) ->
-
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
   mapId = rmapsMapIds.mainMap()

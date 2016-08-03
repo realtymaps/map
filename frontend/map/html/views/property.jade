@@ -12,12 +12,12 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") {{mls.mls_formal_name}} Property Detail
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
-            li
-              a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
+            //- li
+            //-   a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
 
-        .col-sm-8(ng-show="tab.selected == 'raw'")
-          .content-heading Full raw data
-          json-formatter(json="selectedResult" open="3")
+        //- .col-sm-8(ng-show="tab.selected == 'raw'")
+        //-   .content-heading Full raw data
+        //-   json-formatter(json="selectedResult" open="3")
 
         .col-sm-8(ng-repeat="property in dataSources" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
@@ -93,6 +93,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .content-value(ng-if="property.zoning") {{property.zoning}}
                   .content-value(ng-if="!property.zoning") Unknown
                   .content-label Zoning
+                .col-xs-4
+                  .content-value(ng-if="property.status_display") {{property.status_display}}
+                  .content-label(ng-if="property.status_display") MLS Status
 
           .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
             .col-sm-12
@@ -201,7 +204,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                             div(ng-if="!field.value.lines") {{field.value}}
                             div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
 
-                .row.content-row.history(ng-if="group.name == 'deedHistory'")
+                .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
                   .col-sm-2 Date
                   .col-sm-2 Amount
                   .col-sm-2 Lender
@@ -230,20 +233,20 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                             div(ng-if="!field.value.lines") {{field.value}}
                             div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
 
-          .row.content-block.mls-disclaimer
+          .row.content-block.mls-disclaimer.border-top
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")
               .content-heading Broker Reciprocity
               .content-row
-                .mls-info Based on information from {{property.formal_name}} as of {{property.up_to_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 .row
                   .col-lg-3
                     .mls-icon
                       img(ng-show="property.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
                   .col-lg-9
                     .mls-disclaimer {{property.disclaimer_text}}
-            .col-sm-6(ng-show="property.dcma_contact_name && property.dcma_contact_address")
+            .col-sm-6(ng-show="property.dmca_contact_name && property.dmca_contact_address")
               .content-row
-                .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.formal_name}}
+                .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.mls_formal_name}}
 
 
   .mobile-only
@@ -327,6 +330,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .content-value(ng-if="property.zoning") {{property.zoning}}
               .content-value(ng-if="!property.zoning") Unknown
               .content-label Zoning
+            .col-xs-4
+              .content-value(ng-if="property.status_display") {{property.status_display}}
+              .content-label(ng-if="property.status_display") MLS Status
 
         .content-block.prop-attrs.border-bottom(ng-if="property.description")
           .content-heading Description
@@ -384,3 +390,17 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 span(ng-if="property.sale_date") {{property.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 span(ng-if="!property.sale_date") N/A
             .col-xs-6
+
+        .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
+          .content-heading Broker Reciprocity
+          .content-row
+            .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+            .row
+              .col-lg-3
+                .mls-icon
+                  img(ng-show="property.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
+              .col-lg-9
+                .mls-disclaimer {{property.disclaimer_text}}
+          .content-row(ng-show="property.disclaimer_logo || property.disclaimer_text") 
+            .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.mls_formal_name}}
+

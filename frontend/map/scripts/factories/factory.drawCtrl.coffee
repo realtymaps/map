@@ -2,12 +2,32 @@
 app = require '../app.coffee'
 
 app.factory "rmapsDrawCtrlFactory", (
-$rootScope, $log, rmapsNgLeafletEventGateService, toastr
-leafletData, leafletDrawEvents) ->
+$rootScope
+$log
+rmapsNgLeafletEventGateService
+toastr
+leafletData
+leafletDrawEvents
+) ->
 
   ngLog = $log
 
   ({$scope, mapId, handles, drawnItems, name, itemsOptions, drawOptions}) ->
+
+    hasBeenDisabled = false
+
+    $scope.$watch 'draw.enabled', (newVal, oldVal) ->
+      return if !newVal?
+      return if newVal == oldVal
+
+      if newVal
+        return if hasBeenDisabled
+        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
+        hasBeenDisabled = true
+      else
+        return if !hasBeenDisabled
+        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
+        hasBeenDisabled = false
 
     if itemsOptions?
       drawnItems.getLayers().forEach (layer) ->

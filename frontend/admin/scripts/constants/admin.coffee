@@ -13,8 +13,8 @@ admin =
       url: null
       disclaimer_logo: null
       disclaimer_text: null
-      dcma_contact_name: null
-      dcma_contact_address: null
+      dmca_contact_name: null
+      dmca_contact_address: null
     propertySchema:
       listing_data: {}
     otherConfig:

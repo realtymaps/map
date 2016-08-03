@@ -12,9 +12,7 @@ rmapsMapDrawHandlesFactory
 rmapsMapIds
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
-leafletData
 ) ->
-
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
   isReadyPromise = $q.defer()
 

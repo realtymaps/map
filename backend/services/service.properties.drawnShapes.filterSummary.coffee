@@ -3,9 +3,8 @@ combined = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
-validation = require '../utils/util.validation'
-validators = validation.validators
 {distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
+drawnShapesTransforms = require('../utils/transforms/transforms.properties.coffee').drawnShapes
 
 ###
 override:
@@ -65,7 +64,7 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
     logger.debug permissions
 
     if !queryParams.areaId
-      throw new Exception('areaId is required')
+      throw new Error('areaId is required')
 
     query = getDefaultQuery(tables.finalized.combined().distinct("rm_property_id"))
     .where(active: true)
@@ -83,9 +82,5 @@ module.exports = {
   getResultCount
   getFilterSummaryAsQuery
   getPropertyIdsInArea
-  transforms: _.merge {}, combined.transforms,
-    isArea: validators.boolean(truthy: true, falsy: false)
-    areaId: validators.integer()
-    bounds: validators.string(null:true)
-    project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
+  transforms: drawnShapesTransforms
 }

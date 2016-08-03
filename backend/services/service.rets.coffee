@@ -248,6 +248,11 @@ getDataChunks = (mlsId, opts, handler) ->
     handler = opts
     opts = {}
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
+
+    # override mls listing_data fields with optional `listing_data` if provided
+    if !_.isEmpty(opts?.listing_data)
+      _.merge(mlsInfo.listing_data, opts.listing_data)
+
     if !mlsInfo.listing_data.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->

@@ -76,7 +76,7 @@ app.controller 'rmapsPropertyCtrl',
             pdf: mail.lob.url
             title: 'Mail Review'
 
-    $scope.showDCMA = (mls) ->
+    $scope.showDMCA = (mls) ->
       $modal.open
         template: require('../../html/views/templates/modal-dmca.tpl.jade')()
         controller: 'rmapsModalInstanceCtrl'
