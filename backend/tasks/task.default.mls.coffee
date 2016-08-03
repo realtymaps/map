@@ -4,6 +4,7 @@ jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
 mlsHelpers = require './util.mlsHelpers'
+retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 moment = require 'moment'
@@ -93,15 +94,27 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
-  numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
+  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  lastModPromise = mlsHelpers.getMlsField(subtask.task_name, 'photo_last_mod_time')
+  uuidPromise = mlsHelpers.getMlsField(subtask.task_name, 'data_source_uuid')
 
-  tables.normalized.listing()
-  .select('data_source_id', 'data_source_uuid')
-  .where
-    batch_id: subtask.batch_id
-    data_source_id: subtask.task_name
-  .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+  # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+  Promise.join updateThresholdPromise, lastModPromise, uuidPromise, (updateThreshold, lastModField, uuidField) ->
+    dataOptions = {minDate: updateThreshold, searchOptions: {Select: uuidField, offset: 1}, listing_data: {field: lastModField}}
+    retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
+
+      # ensure each obj has `data_source_id` and `data_source_uuid` keys
+      _.forEach chunk, (row) ->
+        row.data_source_uuid = row[uuidField]
+        row.data_source_id = subtask.task_name
+        delete row[uuidField]
+
+      chunk
+
+    .then (rows) ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)

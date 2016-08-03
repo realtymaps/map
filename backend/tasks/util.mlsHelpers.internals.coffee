@@ -29,23 +29,28 @@ makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, t
 
 
 ###
-# this function works backwards from the validation for data_source_uuid to determine the LongName and then the SystemName
-# of the UUID field
+# these function works backwards from the validation for `fieldName` (e.g. "data_source_uuid") to determine the LongName and then the
+# SystemName of the UUID field
 # TODO: change this to use the KeyField metadata from RETS
 ###
-getUuidField = (mlsId) ->
+
+getMlsField = (mlsId, rmapsFieldName) ->
   mlsConfigService.getByIdCached(mlsId)
   .then (mlsInfo) ->
     columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
-    validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, 'listing', 'base', 'data_source_uuid')
+    validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, 'listing', 'base', rmapsFieldName)
     Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->
       for field in columnData
         if field.LongName == validationInfo.validationMap.base[0].input
-          uuidField = field.SystemName
+          mlsFieldName = field.SystemName
           break
-      if !uuidField
-        throw new Error("can't locate uuidField for #{mlsId} (SystemName for #{validationInfo.validationMap.base[0].input})")
-      return uuidField
+      if !mlsFieldName
+        throw new Error("can't locate `#{mlsFieldName}` for #{mlsId} (SystemName for #{validationInfo.validationMap.base[0].input})")
+      return mlsFieldName
+
+getUuidField = (mlsId) -> # existed prior to `getMlsField` above; keeping it here
+  getMlsField(mlsId, 'data_source_uuid')
+
 
 # cdnPhotoStrPromise = Promise.resolve('')
 # if imageId == 0
@@ -144,4 +149,5 @@ module.exports = {
   updatePhoto
   makeInsertPhoto
   getUuidField
+  getMlsField
 }
