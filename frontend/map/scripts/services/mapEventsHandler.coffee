@@ -166,8 +166,9 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
 
         rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'all')
         .then (data) ->
-          return if !data?.rm_property_id
-          $scope.formatters.results.showModel(data)
+          model = data.mls?[0] || data.county?[0]
+          return if !model
+          $scope.formatters.results.showModel(model)
 
     , thisOriginator, ['click']
 
