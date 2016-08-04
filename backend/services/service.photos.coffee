@@ -22,7 +22,7 @@ getMetaData = (opts) -> Promise.try () ->
 
   query.then (rows) ->
     rows = _.filter rows, (r) ->
-      !!Object.keys(r).length
+      !!Object.keys(r.photos).length
     row = sqlHelpers.expectSingleRow(rows)
     photo = row?.photos?[opts.image_id]
     logger.debug photo
