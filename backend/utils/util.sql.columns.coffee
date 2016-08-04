@@ -82,6 +82,8 @@ basicColumns = do ->
       'city', 'zip'
     ]
 
+    id: ['rm_property_id', 'data_source_type'] # `data_source_type` needed for finding "mls" or "county" category
+
   ret
 
 

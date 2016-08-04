@@ -84,7 +84,7 @@ app.controller 'rmapsPropertyCtrl',
         resolve: model: -> mls
 
     getPropertyDetail = (propertyId) ->
-      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
+      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', true)
       .then (property) ->
         $scope.selectedResult = property
 
