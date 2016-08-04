@@ -1,0 +1,18 @@
+.modal-header
+  h3.modal-title Area Statistics - {{areaToShow.area_name}}
+.modal-body
+  .statistics(ng-show="areaStatistics[areaToShow.id].values")
+    .row
+      .col-md-6 Properties Matching Filters
+      .col-md-6 {{areaStatistics[areaToShow.id].values.count}}
+    .row
+      .col-md-6 Average Price
+      .col-md-6 {{areaStatistics[areaToShow.id].values.price_avg | currency:"$":0}}
+    .row
+      .col-md-6 Average Sq Ft
+      .col-md-6 {{areaStatistics[areaToShow.id].values.sqft_avg | number:0}}
+    .row
+      .col-md-6 Average Price / Sq Ft
+      .col-md-6 {{areaStatistics[areaToShow.id].values.price_avg / areaStatistics[areaToShow.id].values.sqft_avg | currency:"$":0}}
+
+  .statistics(ng-show="!areaStatistics[areaToShow.id].values") No statistics available

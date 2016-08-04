@@ -99,6 +99,40 @@ rmapsLeafletHelpers) ->
           modalInstance.dismiss('done')
           $state.go 'recipientInfo', {property_ids: data}, {reload: true}
 
+    showStatistics: (model) ->
+      $log.debug model
+
+      getStatistics = ->
+        properties = $scope.formatters.results.getResultsArray()
+        $log.debug properties
+        statistics = d3.nest()
+          .key (k) ->
+            k.area_id
+          .rollup (area) ->
+            count: area.length
+            price_avg: d3.mean(area, (p) -> p.price)
+            sqft_avg: d3.mean(area, (p) -> p.sqft_finished)
+          .entries(properties)
+        $scope.areaStatistics = _.indexBy(statistics, 'key')
+        $log.debug $scope.areaStatistics
+
+      if !$scope.areaStatistics
+        getStatistics()
+
+      $scope.areaToShow = model.properties
+
+      $log.debug $scope.areaStatistics[$scope.areaToShow.id]
+
+      modalInstance = $modal.open
+        animation: true
+        scope: $scope
+        template: require('../../html/views/templates/modals/statisticsArea.jade')()
+
+  $scope.$watch('formatters.results.scope.results', ->
+    $log.debug 'clearing stats'
+    $scope.areaStatistics = null
+  )
+
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,
   $scope,

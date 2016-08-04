@@ -37,7 +37,7 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
-getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+_getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
 
   query = combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
@@ -52,9 +52,14 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   query
 
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+  query = _getFilterSummaryAsQuery({queryParams, limit, query, permissions})
+  query.select(query.raw("#{drawnShapesName}.id as area_id"))
+  query
+
 getResultCount = ({queryParams, permissions}) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  getFilterSummaryAsQuery({queryParams, query, permissions})
+  _getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
