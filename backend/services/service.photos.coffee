@@ -15,12 +15,14 @@ getMetaData = (opts) -> Promise.try () ->
     required: ['data_source_id', 'data_source_uuid', 'image_id']
 
   query = tables.finalized.combined()
+  .select('photos')
   .where _.pick opts, ['data_source_id', 'data_source_uuid']
-  .where 'photos', '!=', '{}'
 
   logger.debug query.toString()
 
   query.then (rows) ->
+    rows = _.filter rows, (r) ->
+      !!Object.keys(r.photos).length
     row = sqlHelpers.expectSingleRow(rows)
     photo = row?.photos?[opts.image_id]
     logger.debug photo
@@ -39,7 +41,6 @@ getResizedPayload = (opts) -> Promise.try () ->
   {width, height, data_source_id, data_source_uuid, image_id} = opts
 
   logger.debug "Requested resize of photo #{data_source_uuid}##{image_id} to #{width||'?'}px x #{height||'?'}px"
-  newSize = {width, height}
 
   getRawPayload(opts)
   .then (payload) ->
@@ -50,9 +51,8 @@ getResizedPayload = (opts) -> Promise.try () ->
 
       if payload.meta?.width? && payload.meta?.height?
         logger.debug "Using photo metadata for originalSize: #{payload.meta.width} x #{payload.meta.height}"
-        originalSize =
-          width: payload.meta.width
-          height: payload.meta.height
+        width: payload.meta.width
+        height: payload.meta.height
       else
         mlsConfigService.getByIdCached(data_source_id)
         .then (mlsInfo) ->
