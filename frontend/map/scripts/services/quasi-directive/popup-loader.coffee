@@ -129,8 +129,10 @@ app.service 'rmapsPopupLoaderService',(
     $log.debug "popup closing in #{_delay}ms..."
 
     if _queue.length > 1
-      $timeout () ->
-        popup = _queue.shift()
-        if popup? && !popup.isLoading
-          popup.close()
-      , _delay + 2000
+      setTimeout () ->
+        setTimeout () ->
+          popup = _queue.shift()
+          if popup? && !popup.isLoading
+            popup.close()
+        , 2000
+      , _delay

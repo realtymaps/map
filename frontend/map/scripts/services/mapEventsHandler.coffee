@@ -62,7 +62,14 @@ $log) ->
       Thus in a two way event everything should be visited once.
       ###
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-
+        #toBack
+        #https://github.com/Leaflet/Leaflet/issues/3708
+        #http://jsfiddle.net/kytqgpjo/2/
+        if lObject?.bringToBack?
+          lObject.bringToBack()
+        else
+          e = lObject._icon.parentNode
+          e.insertBefore(lObject._icon, e.firstChild)
         # Grab some details about the original event for logging
         eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
 
@@ -78,6 +85,10 @@ $log) ->
         # Ignore these types of markers
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
           # $log.debug '[IGNORED:markertype] ' + eventInfo
+          return
+
+        if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
+          # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
         $log.debug eventInfo
