@@ -6,9 +6,16 @@ events = require '../../../common/scripts/utils/events.coffee'
 _isMarker = (type) ->
   type == 'marker'
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
-rmapsPropertiesService, rmapsMapEventEnums, $log) ->
+app.service 'rmapsMapEventsHandlerService', (
+$timeout
+rmapsMainOptions
+rmapsNgLeafletHelpersService
+rmapsNgLeafletEventGateService
+rmapsMapEventsLinkerService
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsMapEventEnums
+$log) ->
 
   _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
