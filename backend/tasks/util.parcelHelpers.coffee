@@ -116,8 +116,6 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
         dbs.transaction 'main', (transaction) ->
           internals.finalizeNewParcel {parcels, id, subtask, transaction}
           .then (finalizedParcel) ->
-            transforms.execFinalizeParcelAsDataCombined(finalizedParcel)
-          .then (finalizedParcel) ->
             internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
 
   .catch isUnhandled, (error) ->

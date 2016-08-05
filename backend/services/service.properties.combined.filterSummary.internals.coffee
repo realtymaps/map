@@ -5,7 +5,7 @@ logger = require('../config/logger').spawn('service:filterSummary:combined:inter
 dbs = require '../config/dbs'
 
 _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
-  "round(ST_#{xy}(ST_CENTROID(geometry_raw))::decimal * #{scale},#{roundTo}) / #{scale}"
+  "round(ST_#{xy}(geometry_center_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
 
