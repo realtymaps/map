@@ -74,7 +74,7 @@ basicColumns = do ->
       'rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished', 'substatus',
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
-      'property_type', 'photo_id', 'photo_count', 'photos', 'photo_import_error', 'photo_last_mod_time',
+      'property_type', 'photo_id', 'photo_count', 'photos', 'photo_last_mod_time',
       'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
     ]
 
