@@ -102,19 +102,19 @@ storePhotosPrep = (subtask) ->
   Promise.join updateThresholdPromise, lastModPromise, uuidPromise, (updateThreshold, lastModField, uuidField) ->
     dataOptions = {minDate: updateThreshold, searchOptions: {Select: uuidField, offset: 1}, listing_data: {field: lastModField}}
     idsObj = {}
+    retryPhotosPromise = tables.deletes.retry_photos()
+    .where(data_source_id: subtask.task_name)
+    .whereNot(batch_id: subtask.batch_id)
+    .then (rows) ->
+      for row in rows
+        idsObj[row[uuidField]] = true
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
         return
       for row in chunk
         idsObj[row[uuidField]] = true
-      tables.deletes.retry_photos()
-      .where(data_source_id: subtask.task_name)
-      .whereNot(batch_id: subtask.batch_id)
-      .then (rows) ->
-        for row in rows
-          idsObj[row[uuidField]] = true
-    retsService.getDataChunks(subtask.task_name, dataOptions, handleChunk)
-    .then () ->
+    updatedPhotosPromise = retsService.getDataChunks(subtask.task_name, dataOptions, handleChunk)
+    Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
       jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: Object.keys(idsObj), maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
