@@ -6,9 +6,16 @@ events = require '../../../common/scripts/utils/events.coffee'
 _isMarker = (type) ->
   type == 'marker'
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
-rmapsPropertiesService, rmapsMapEventEnums, $log) ->
+app.service 'rmapsMapEventsHandlerService', (
+$timeout
+rmapsMainOptions
+rmapsNgLeafletHelpersService
+rmapsNgLeafletEventGateService
+rmapsMapEventsLinkerService
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsMapEventEnums
+$log) ->
 
   _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
@@ -55,7 +62,14 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
       Thus in a two way event everything should be visited once.
       ###
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-
+        #toBack
+        #https://github.com/Leaflet/Leaflet/issues/3708
+        #http://jsfiddle.net/kytqgpjo/2/
+        if lObject?.bringToBack?
+          lObject.bringToBack()
+        else
+          e = lObject._icon.parentNode
+          e.insertBefore(lObject._icon, e.firstChild)
         # Grab some details about the original event for logging
         eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
 
@@ -71,6 +85,10 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         # Ignore these types of markers
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
           # $log.debug '[IGNORED:markertype] ' + eventInfo
+          return
+
+        if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
+          # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
         $log.debug eventInfo
