@@ -13,11 +13,8 @@ mocks =
 
 describe 'service.properties.filterSummary', ->
 
-  beforeEach ->
-    @subject = svc
-
   xit 'clusterOrDefault returned works with geoJson', (done) ->
-    @subject.getFilterSummary
+    svc.getFilterSummary
       profile: {
         auth_user_id: 1
         state: mocks.map.state

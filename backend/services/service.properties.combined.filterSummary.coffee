@@ -13,14 +13,6 @@ getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
   .where(active: true)
 
-getResultCount = ({queryParams, permissions}) ->
-  # obtain a count(*)-style select query
-  query = dbFn()
-  .countDistinct('rm_property_id')
-  .where(active: true)
-  # apply the queryParams (mostly "where" clause stuff)
-  query = getFilterSummaryAsQuery({queryParams, query, permissions})
-
 getPermissions = (profile) -> Promise.try ->
   tables.auth.user()
   .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
@@ -154,25 +146,19 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
 
   else if queryParams.pins || queryParams.favorites
-    logger.debug () -> "no status, so query and show pins and favorites"
+    logger.debug () -> "no status, so query for pins and favorites only"
     savedIds = (queryParams.pins || []).concat(queryParams.favorites || [])
 
-    logger.debug () -> "savedIds.length: #{savedIds.length}"
-    # execute the query regardless as empty savedIds will
-    # return zero results and a quick query on postges
     sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
-    # TRIED: below to not hit the database at all on no savedIds
-    # but it did not work, it still queried regardless
-    # if savedIds?.length
-    #   sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
-    # else
-    #   logger.debug "mockQuery NOTHING"
-    #   mockQuery = Promise.resolve([])
-    #   mockQuery.toString = () ->
-    #     'NOTHING TO QUERY!'
-    #   return mockQuery
+  else
+    logger.debug () -> "no status and no pins or favorites, so no query needed"
+    mockQuery = Promise.resolve([])
+    mockQuery.toString = () ->
+      'NOTHING TO QUERY!'
+    return mockQuery
 
   query
+
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
@@ -183,13 +169,11 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query.limit(limit) if limit
   queryFilters({query, filters, bounds, queryParams})
 
-  query
 
 module.exports = {
   transforms: combinedTransforms
   getDefaultQuery
   getFilterSummaryAsQuery
-  getResultCount
   cluster: internals
   getPermissions
   queryPermissions
