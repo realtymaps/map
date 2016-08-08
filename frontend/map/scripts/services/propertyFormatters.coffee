@@ -62,25 +62,3 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       else
         label = 'asking:'
       return label
-
-    showListingData: (model) ->
-      if !model || model.data_source_type != 'mls'
-        return false
-      model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
-
-    showSalesData: (model) ->
-      return false if not model
-      model.mortgage_amount || model.mortgage_date || @showIfDifferentFrom(model, 'sale', 'mls_close') || @showIfDifferentFrom(model, 'prior_sale', 'mls_close')
-
-    showIfDifferentFrom: (model, prefix, differentFromPrefix) ->
-      return false if !model || !prefix || !differentFromPrefix
-      prefix += '_'
-      differentFromPrefix += '_'
-      # differing prices or >= 30 days difference in sale date
-      if (model[prefix+'date'] && !model[differentFromPrefix+'date']) || model[prefix+'price'] != model[differentFromPrefix+'price']
-        return true
-      if !model[prefix+'date']
-        return false
-      millis1 = new Date(model[differentFromPrefix+'date'].toLocaleString()).getTime()
-      millis2 = new Date(model[prefix+'date'].toLocaleString()).getTime()
-      return Math.abs(millis1-millis2) > 30*86400000

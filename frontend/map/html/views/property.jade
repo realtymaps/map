@@ -30,7 +30,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .col-sm-6
               .prop-price.prop-lg(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
               .below-price
-                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
 
               .content-emphasis {{property.address.street}} {{property.address.unit}}
               .content-muted {{property.address.citystate}} {{property.address.zip}}
@@ -118,8 +118,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
                 .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
 
-          .row.content-block.border-bottom(ng-if="formatters.property.showListingData(property) || formatters.property.showSalesData(property)")
-            .col-sm-6(ng-if="formatters.property.showListingData(property)")
+          .row.content-block.border-bottom(ng-if="property.data_source_type == 'mls'")
+            .col-sm-6(ng-if="property.days_on_market != null || property.original_price || property.close_date")
               .content-heading MLS Listing Info
               .row.content-row
                 .col-sm-6
@@ -131,29 +131,13 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .row
                 .col-sm-6
                   .content-label Close Price
-                  .content-value(ng-if="property.mls_close_date") {{formatters.property.getPrice(property.price)}}
-                  .content-value(ng-if="!property.mls_close_date") N/A
+                  .content-value(ng-if="property.close_date") {{formatters.property.getPrice(property.price)}}
+                  .content-value(ng-if="!property.close_date") N/A
                 .col-sm-6
                   .content-label Close Date
                   .content-value
-                    span(ng-if="property.close_date") {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    span(ng-if="property.close_date") {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
                     span(ng-if="!property.close_date") N/A
-            .col-sm-6(ng-if="formatters.property.showSalesData(property)")
-              .content-heading Historical Sales Info
-              .row.content-row
-                .col-sm-6
-                  .content-label Mortgage
-                  .content-value {{formatters.property.getPrice(property.mortgage_amount)}}
-                .col-sm-6
-                  .content-label Prior Sales Price
-                  .content-value {{formatters.property.getPrice(property.sale_price)}}
-              .row
-                .col-sm-6
-                  .content-label Prior Sale Date
-                  .content-value
-                    span(ng-if="property.sale_date") {{property.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    span(ng-if="!property.sale_date") N/A
-                .col-sm-6
 
           .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
             .col-sm-12
@@ -262,7 +246,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")
               .content-heading Broker Reciprocity
               .content-row
-                .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toUTCString() | date : 'MM/dd/yyyy'}}
                 .row
                   .col-lg-3
                     .mls-icon
@@ -294,7 +278,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
           .pull-right.text-right
             .prop-price(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
             .below-price.content-label
-              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
 
           .content-emphasis.content-lg {{property.address.street}} {{property.address.unit}}
           .content-muted {{property.address.citystate}} {{property.address.zip}}
@@ -379,7 +363,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               br/
               | {{property.address.citystate}} {{property.address.zip}}
 
-        .content-block.border-bottom(ng-if="formatters.property.showListingData(property)")
+        .content-block.border-bottom(ng-if="property.data_source_type == 'mls' || property.days_on_market != null || property.original_price || property.close_date")
           .content-heading MLS Listing Info
           .row.content-row
             .col-xs-6
@@ -391,35 +375,18 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
           .row.content-row
             .col-xs-6
               .content-label Close Price
-              .content-value(ng-if="property.mls_close_date") {{formatters.property.getPrice(property.price)}}
-              .content-value(ng-if="!property.mls_close_date") N/A
+              .content-value(ng-if="property.close_date") {{formatters.property.getPrice(property.price)}}
+              .content-value(ng-if="!property.close_date") N/A
             .col-xs-6
               .content-label Close Date
               .content-value
-                span(ng-if="property.mls_close_date") {{property.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                span(ng-if="!property.mls_close_date") N/A
-
-        .content-block.border-bottom(ng-if="formatters.property.showSalesData(property)")
-          .content-heading Historical Sales Info
-          .row.content-row
-            .col-xs-6
-              .content-label Mortgage
-              .content-value {{formatters.property.getPrice(property.mortgage_amount)}}
-            .col-xs-6
-              .content-label Prior Sales Price
-              .content-value {{formatters.property.getPrice(property.sale_price)}}
-          .row.content-row
-            .col-xs-6
-              .content-label Prior Sale Date
-              .content-value
-                span(ng-if="property.sale_date") {{property.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                span(ng-if="!property.sale_date") N/A
-            .col-xs-6
+                span(ng-if="property.close_date") {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
+                span(ng-if="!property.close_date") N/A
 
         .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
           .content-heading Broker Reciprocity
           .content-row
-            .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+            .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toUTCString() | date : 'MM/dd/yyyy'}}
             .row
               .col-lg-3
                 .mls-icon
