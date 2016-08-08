@@ -88,10 +88,10 @@ app.controller 'rmapsPropertyCtrl',
       .then (property) ->
         $scope.selectedResult = property
 
-        $scope.dataSources = [].concat(property.mls||[]).concat(property.county||[])
+        $scope.dataSources = (property.mls||[]).concat(property.county||[])
 
         # Temporary mock data
-        if property.mls[0]
+        if property.mls?[0]
           property.mls[0].subscriber_groups.priorListings = [
             {
               data_source_type: 'mls'
