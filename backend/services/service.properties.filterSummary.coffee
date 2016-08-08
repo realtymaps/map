@@ -83,7 +83,7 @@ module.exports =
                     property.savedDetails = _.extend property.savedDetails || {},
                       profile[type][property.rm_property_id]
 
-                if property.data_source_type == 'mls'
+                if property.data_source_type == 'mls' and property.data_source_id?
                   mlsConfigSvc.getByIdCached(property.data_source_id)
                   .then (mlsConfig) ->
                     property.mls_formal_name = mlsConfig?.formal_name
