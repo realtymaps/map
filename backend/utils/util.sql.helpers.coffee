@@ -163,12 +163,6 @@ select = (knex, which, passedFilters=null, prepend='') ->
   knex.select(knex.raw(prepend + columns[which] + extra))
   knex
 
-selectCountDistinct = (knex, distinctField='rm_property_id') ->
-  # some other (possibly preferred) query structure not available,
-  # using tip described via https://github.com/tgriesser/knex/issues/238
-  knex.select(knex.raw("count(distinct \"#{distinctField}\")"))
-  knex
-
 singleRow = (rows) -> Promise.try ->
   if !rows?.length
     return null
@@ -236,6 +230,9 @@ buildRawBindings = (obj, opts={}) ->
   valPlaceholders = []
   valBindings = []
   for k,v of obj
+    if v == undefined
+      # an undefined value should be explicitly skipped / not set
+      continue
     colPlaceholders.push('??')
     colBindings.push(k)
     valPlaceholders.push('?')
@@ -243,10 +240,11 @@ buildRawBindings = (obj, opts={}) ->
       valBindings.push(JSON.stringify(v))
     else if v?
       valBindings.push(v)
-    else if opts.defaultNulls
-      valBindings.push(dbs.connectionless.raw('DEFAULT'))
-    else
-      valBindings.push(dbs.connectionless.raw('NULL'))
+    else  # v == null
+      if opts.defaultNulls
+        valBindings.push(dbs.connectionless.raw('DEFAULT'))
+      else
+        valBindings.push(dbs.connectionless.raw('NULL'))
   cols:
     placeholder: colPlaceholders.join(', ')
     bindings: colBindings
@@ -256,17 +254,26 @@ buildRawBindings = (obj, opts={}) ->
 
 
 # Static function that produces an upsert query string given ids and entity of model.
-buildUpsertBindings = ({idObj, entityObj, tableName}) ->
+buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
   id = buildRawBindings(idObj, defaultNulls: true)
   entity = buildRawBindings(_.omit(entityObj, Object.keys(idObj)))
+  conflictEntity = buildRawBindings(_.omit(_.extend(entityObj, conflictOverrideObj), Object.keys(idObj)))
 
   # postgresql templates for raw query (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
-  if entity.cols.placeholder
+  if conflictEntity.cols.placeholder
     templateStr = """
      INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
       VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
       ON CONFLICT (#{id.cols.placeholder})
-      DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
+      DO UPDATE SET (#{conflictEntity.cols.placeholder}) = (#{conflictEntity.vals.placeholder})
+      RETURNING #{id.cols.placeholder}
+    """
+  else if entity.cols.placeholder
+    templateStr = """
+     INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
+      VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
+      ON CONFLICT (#{id.cols.placeholder})
+      DO NOTHING
       RETURNING #{id.cols.placeholder}
     """
   else
@@ -279,11 +286,11 @@ buildUpsertBindings = ({idObj, entityObj, tableName}) ->
     """
 
   sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
-  bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
+  bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, conflictEntity.cols.bindings, conflictEntity.vals.bindings, id.cols.bindings)
 
 
-upsert = ({idObj, entityObj, dbFn, transaction}) ->
-  upsertBindings = buildUpsertBindings({idObj, entityObj, tableName: dbFn.tableName})
+upsert = ({idObj, entityObj, conflictOverrideObj, dbFn, transaction}) ->
+  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
   dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
 
 module.exports = {
@@ -292,7 +299,6 @@ module.exports = {
   orderByDistanceFromPoint
   allPatternsInAnyColumn
   select
-  selectCountDistinct
   singleRow
   expectSingleRow
   whereIn

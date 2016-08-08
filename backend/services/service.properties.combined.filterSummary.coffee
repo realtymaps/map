@@ -15,7 +15,8 @@ getDefaultQuery = ->
 
 getResultCount = ({queryParams, permissions}) ->
   # obtain a count(*)-style select query
-  query = sqlHelpers.selectCountDistinct(dbFn())
+  query = dbFn()
+  .countDistinct('rm_property_id')
   .where(active: true)
   # apply the queryParams (mostly "where" clause stuff)
   query = getFilterSummaryAsQuery({queryParams, query, permissions})

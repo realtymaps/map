@@ -57,11 +57,10 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
     s3 = Promise.promisifyAll new AWS.S3()
 
     if (s3FnName == 'upload')
-      s3Stream = awsUploadFactory(s3)
-      return s3Stream.upload.call s3Stream, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+      return awsUploadFactory(s3).upload(extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts))
 
-    handle = s3[s3FnName + if nodeStyle then '' else 'Async']
-    handle.call s3, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+    s3FullFnName = s3FnName + if nodeStyle then '' else 'Async'
+    s3[s3FullFnName](extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts))
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, "AWS error encountered")
 

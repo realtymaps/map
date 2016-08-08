@@ -53,7 +53,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query
 
 getResultCount = ({queryParams, permissions}) ->
-  query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
+  query = getDefaultQuery(tables.finalized.combined().countDistinct('rm_property_id'))
   getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
