@@ -36,102 +36,102 @@ rmapsLeafletHelpers) ->
       $rootScope.$emit _event
       data
 
-  _.extend $scope,
-    activeView: 'areas'
+  $scope.createModal = (area = {}) ->
+    modalInstance = $modal.open
+      animation: rmapsMainOptions.modals.animationsEnabled
+      template: template
+      controller: 'rmapsModalInstanceCtrl'
+      resolve: model: -> area
 
-    createModal: (area = {}) ->
-      modalInstance = $modal.open
-        animation: rmapsMainOptions.modals.animationsEnabled
-        template: template
-        controller: 'rmapsModalInstanceCtrl'
-        resolve: model: -> area
+    modalInstance.result
 
-      modalInstance.result
-
-    #uses modal
-    oldCreate: (model) ->
-      $scope.createModal().then (modalModel) ->
-        _.merge(model, modalModel)
-        if !model?.properties.area_name
-          #makes the model an area with a defined empty string
-          model.properties.area_name = ''
-        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
-        _signalUpdate(drawnShapesSvc.create model)
-
-    #create with no modal and default a name
-    create: (model) ->
-      model.properties.area_name = "Untitled Area"
+  #uses modal
+  $scope.oldCreate = (model) ->
+    $scope.createModal().then (modalModel) ->
+      _.merge(model, modalModel)
+      if !model?.properties.area_name
+        #makes the model an area with a defined empty string
+        model.properties.area_name = ''
       rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
       _signalUpdate(drawnShapesSvc.create model)
 
-    update: (model) ->
-      $scope.createModal(model).then (modalModel) ->
-        _.merge(model, modalModel)
-        _signalUpdate drawnShapesSvc.update model
+  #create with no modal and default a name
+  $scope.create = (model) ->
+    model.properties.area_name = "Untitled Area"
+    rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+    _signalUpdate(drawnShapesSvc.create model)
 
-    remove: (model) ->
-      _.remove($scope.areas, model)
+  $scope.update = (model) ->
+    $scope.createModal(model).then (modalModel) ->
+      _.merge(model, modalModel)
+      _signalUpdate drawnShapesSvc.update model
 
-      if !$scope.areas.length
-        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+  $scope.remove = (model) ->
+    _.remove($scope.areas, model)
 
-      _signalUpdate(drawnShapesSvc.delete(model))
-      .then () ->
-        $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
+    if !$scope.areas.length
+      rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
 
-    sendMail: (model) ->
-      $scope.newMail = {}
-      modalInstance = $modal.open
-        animation: true
-        scope: $scope
-        template: require('../../html/views/templates/modals/mailArea.jade')()
+    _signalUpdate(drawnShapesSvc.delete(model))
+    .then () ->
+      $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
+      $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
 
-      $scope.modalOk = ->
-        filters = {}
-        if $scope.newMail.filterProperties == 'true'
-          filters = rmapsFilterManagerService.getFilters()
-        $scope.modalBusy = $http.post(backendRoutes.properties.inArea, {
-          areaId: model.id
-          state: {filters}
-        }, cache: false)
-        .then ({data}) ->
-          modalInstance.dismiss('done')
-          $state.go 'recipientInfo', {property_ids: data}, {reload: true}
+  $scope.sendMail = (model) ->
+    $scope.newMail = {}
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/mailArea.jade')()
 
-    showStatistics: (model) ->
-      $log.debug model
+    $scope.modalOk = ->
+      filters = {}
+      if $scope.newMail.filterProperties == 'true'
+        filters = rmapsFilterManagerService.getFilters()
+      $scope.modalBusy = $http.post(backendRoutes.properties.inArea, {
+        areaId: model.id
+        state: {filters}
+      }, cache: false)
+      .then ({data}) ->
+        modalInstance.dismiss('done')
+        $state.go 'recipientInfo', {property_ids: data}, {reload: true}
 
-      getStatistics = ->
-        properties = $scope.formatters.results.getResultsArray()
-        $log.debug properties
-        statistics = d3.nest()
-          .key (k) ->
-            k.area_id
-          .rollup (area) ->
-            count: area.length
-            price_avg: d3.mean(area, (p) -> p.price)
-            sqft_avg: d3.mean(area, (p) -> p.sqft_finished)
-          .entries(properties)
-        $scope.areaStatistics = _.indexBy(statistics, 'key')
-        $log.debug $scope.areaStatistics
+  $scope.showStatistics = (model) ->
+    $scope.areaToShow = model.properties
 
-      if !$scope.areaStatistics
-        getStatistics()
+    $scope.centerOn(model)
 
-      $scope.areaToShow = model.properties
+    updateStatistics($scope.areaToShow.id)
+    .then (stats) ->
+      statisticsModal()
 
-      $log.debug $scope.areaStatistics[$scope.areaToShow.id]
+  statisticsModal = () ->
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/statisticsArea.jade')()
 
-      modalInstance = $modal.open
-        animation: true
-        scope: $scope
-        template: require('../../html/views/templates/modals/statisticsArea.jade')()
+  getStatistics = (resultsArray, area_id) ->
 
-  $scope.$watch('formatters.results.scope.results', ->
-    $log.debug 'clearing stats'
-    $scope.areaStatistics = null
-  )
+
+  updateStatistics = (area_id) ->
+    $log.debug "Querying for properties in area #{area_id}"
+    $http.post(backendRoutes.properties.drawnShapes,
+      {
+        areaId: area_id
+        state:
+          filters: rmapsFilterManagerService.getFilters()
+      }
+    )
+    .then ({data}) ->
+      resultsArray = _.values(data).filter (r) -> r.price && r.sqft_finished
+      $log.debug "calculating area #{area_id} stats"
+      $scope.areaStatistics ?= {}
+      $scope.areaStatistics[area_id] =
+        count: resultsArray.length
+        price_avg: d3.mean(resultsArray, (p) -> p.price)
+        sqft_avg: d3.mean(resultsArray, (p) -> p.sqft_finished)
+        price_sqft_avg: d3.mean(resultsArray, (p) -> p.price/p.sqft_finished)
 
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,
