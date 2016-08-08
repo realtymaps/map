@@ -23,6 +23,8 @@ rmapsLeafletHelpers) ->
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
+  $scope.activeView = 'areas'
+
   $scope.centerOn = (model) ->
     #zoom to bounds on shapes
     #handle polygons, circles, and points
