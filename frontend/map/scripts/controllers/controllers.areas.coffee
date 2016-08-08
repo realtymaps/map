@@ -60,10 +60,10 @@ rmapsLeafletHelpers) ->
   #create with no modal and default a name
   $scope.create = (model) ->
     model.properties.area_name = "Untitled Area"
-      if !$scope.Toggles.propertiesInShapes
-        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
-      else
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+    if !$scope.Toggles.propertiesInShapes
+      rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+    else
+      $scope.$emit rmapsEventConstants.map.mainMap.redraw
     _signalUpdate(drawnShapesSvc.create model)
 
   $scope.update = (model) ->
