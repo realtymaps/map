@@ -41,7 +41,7 @@ app.factory 'rmapsPopupFactory', (
   $log = $log.spawn("map:rmapsPopupFactory")
 
   class
-    constructor: ({@map, model, opts = _defaultOptions, needToCompile = true, templateVars, @canClose = false}) ->
+    constructor: ({@map, model, opts = _defaultOptions, needToCompile = true, templateVars, @canClose = false, @index, @closedCb}) ->
       @isLoading = true
       @popup = rmapsPopupConstants[model.markerType]
       @popup ?= rmapsPopupConstants.default
@@ -86,6 +86,7 @@ app.factory 'rmapsPopupFactory', (
       @lObj._container?.addEventListener 'mouseleave', (e) =>
         @popupIsHovered = false
         return if !@canClose
+        @closedCb(@index)
         @map?.closePopup()
 
       @lObj._container?.addEventListener 'mouseover', (e) =>
@@ -122,17 +123,18 @@ app.service 'rmapsPopupLoaderService',(
       $timeout.cancel(promise) if promise?
 
     _timeoutPromiseQueue.push $timeout () ->
+      opts.index = _queue.length - 1
+      opts.closedCb = (index) ->
+        _queue.splice(index, 1)
+
       _queue.push new rmapsPopupFactory opts
     , _delay
 
   close: () ->
     $log.debug "popup closing in #{_delay}ms..."
-
-    if _queue.length > 1
-      setTimeout () ->
-        setTimeout () ->
-          popup = _queue.shift()
-          if popup? && !popup.isLoading
-            popup.close()
-        , 2000
-      , _delay
+    setTimeout ->
+      if _queue.length > 1
+        popup = _queue.shift()
+        if popup? && !popup.isLoading
+          popup.close()
+    , 400
