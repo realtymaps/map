@@ -23,10 +23,8 @@ app.controller "rmapsDrawSketchCtrl", (
       mapId
       drawnShapesSvc
       drawnItems
-      endDrawAction: () ->
       commonPostDrawActions: () ->
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
-      announceCb: () ->
     }
 
     _drawCtrlFactory = (handles) ->
@@ -35,8 +33,6 @@ app.controller "rmapsDrawSketchCtrl", (
         $scope
         handles
         drawnItems
-        postDrawAction: () ->
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "sketch"
         itemsOptions:
           color: color

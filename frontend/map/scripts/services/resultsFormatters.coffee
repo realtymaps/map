@@ -132,7 +132,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       $log.debug "New results limit > #{@mapCtrl.scope.resultsLimit} / #{@mapCtrl.scope.resultsPotentialLength} <"
 
     showModel: (model) =>
-      @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
+      @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id] || model, window.event, 'map')
 
     click: (result, event, context) ->
       $state.go "property", { id: result.rm_property_id }

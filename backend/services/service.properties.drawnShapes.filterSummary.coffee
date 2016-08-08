@@ -29,10 +29,10 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
   #http://stackoverflow.com/questions/12204834/get-distance-in-meters-instead-of-degrees-in-spatialite
   #earth meters per degree 111195
   query.joinRaw tables.finalized.combined().raw """
-    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_raw, #{drawnShapesName}.geometry_raw)
+    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_center_raw, #{drawnShapesName}.geometry_raw)
      or
      ST_DWithin(
-     #{detailsName}.geometry_raw,
+     #{detailsName}.geometry_center_raw,
      #{drawnShapesName}.geometry_center_raw,
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
@@ -58,8 +58,8 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query
 
 getResultCount = ({queryParams, permissions}) ->
-  query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  _getFilterSummaryAsQuery({queryParams, query, permissions})
+  query = getDefaultQuery(tables.finalized.combined().countDistinct('rm_property_id'))
+  getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user

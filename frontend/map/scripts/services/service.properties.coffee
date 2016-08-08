@@ -192,7 +192,10 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   service.getFilterSummaryAsGeoJsonPolys = (hash, mapState, filters, data) ->
     #forcing this to always use a cached val since getFilterResults will always be run prior
-    doClone = false
+
+    # doClone should be false eventually, but we need to fix ui-leaflet to allow
+    # for geojson to have different property atribute names, so markers and geojson don't collide
+    doClone = true
 
     if !data?
       promise = service.getFilterResults(hash, mapState, filters, true)

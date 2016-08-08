@@ -35,8 +35,8 @@ analyzeValue = (value, fullJson=false) ->
     result.verbose = value.toString().split('\n')
     result.details = getFunctionName(result.verbose) || '<anonymous function>'
   else if result.type == 'object'
-    if value instanceof Error || (value.hasOwnProperty('isOperational') && value.name == 'error')
-      result.type = if value.hasOwnProperty('isOperational') && value.name == 'error' then 'KnexError' else value.name
+    if value instanceof Error
+      result.type = if isKnexError(value) then 'KnexError' else null
       result.details = value.message
       result.verbose = util.inspect(result, depth: null).split('\n')
       if (value.stack?)
@@ -59,7 +59,7 @@ analyzeValue = (value, fullJson=false) ->
   return result
 
 
-isKnexError = (err) -> (err.hasOwnProperty('isOperational') && err.name == 'error')
+isKnexError = (err) -> (err.hasOwnProperty('internalQuery') && err.name == 'error')
 
 
 getSimpleDetails = (err, opts={}) ->
@@ -71,15 +71,12 @@ getSimpleDetails = (err, opts={}) ->
 
   if !err?.hasOwnProperty?
     return JSON.stringify(err)
-  if isKnexError(err) || (!err.stack && err.toString() == '[object Object]')
-    inspect = util.inspect(err, depth: null)
-    if !showUndefined
-      inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
-    if !showNull
-      inspect = inspect.replace(/,?\n +\w+: null/g, '')
-    return inspect
-  else
-    return err.stack || "#{err}"
+  inspect = util.inspect(err, depth: null)
+  if !showUndefined
+    inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
+  if !showNull
+    inspect = inspect.replace(/,?\n +\w+: null/g, '')
+  return inspect + '\n' + (err.stack || "#{err}")
 
 
 getSimpleMessage = (err, opts={}) ->

@@ -9,12 +9,14 @@ config = require '../config/config'
 finePhotologger = logger.spawn('photos.fine.internals')
 externalAccounts = require '../services/service.externalAccounts'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
+analyzeValue = require '../../common/utils/util.analyzeValue'
+ensureErrorUtil = require '../utils/errors/util.ensureError'
+NamedError = require '../utils/errors/util.error.named'
 
 makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction}) ->
   doReturnStr ?= false
 
   updatedInfo =
-    photo_import_error: null
     photos: tables.normalized.listing.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
   if cdnPhotoStr
     updatedInfo.cdn_photo = cdnPhotoStr
@@ -66,6 +68,8 @@ getUuidField = (mlsId) -> # existed prior to `getMlsField` above; keeping it her
   it causes too many problems. It is easier to forgoe worying about size and just upload blindly!
 ###
 uploadPhoto = ({photoRes, newFileName, payload, row}) ->
+  ensureError = ensureErrorUtil.ensureErrorFactory (err) ->
+    return new NamedError('S3UploadError', err)
   new Promise (resolve, reject) ->
     awsService.upload
       extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
@@ -80,19 +84,20 @@ uploadPhoto = ({photoRes, newFileName, payload, row}) ->
     .then (upload) ->
 
       payload.data.once 'error', (error) ->
-        reject error
+
+        reject(ensureError(error))
 
       upload.once 'uploaded', (details) ->
         logger.spawn(row.data_source_id).debug details
         resolve(details)
 
       upload.once 'error', (error) ->
-        reject error
+        reject(ensureError(error))
 
       payload.data.pipe(upload)
 
     .catch (error) -> #missing catch
-      reject error
+      reject(ensureError(error))
 
 enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
   if key?
@@ -139,7 +144,7 @@ updatePhoto = (subtask, opts) -> Promise.try () ->
       transaction
     }
     .catch (error) ->
-      logger.spawn(subtask.task_name).error error
+      logger.spawn(subtask.task_name).error analyzeValue.getSimpleDetails(error)
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
 

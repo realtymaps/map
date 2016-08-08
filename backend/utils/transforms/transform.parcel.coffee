@@ -48,13 +48,6 @@ final =
   geometry:
     required: true
 
-finalizeParcelAsDataCombined =
-  geometry_raw: input: 'geometry_raw'
-  geometry: input: 'geometry'
-  geometry_center: input: 'geometry_center'
-
-execFinalizeParcelAsDataCombined = (finalizedParcel) ->
-  validation.validateAndTransform finalizedParcel, finalizeParcelAsDataCombined
 
 validateAndTransform = (toTransform) ->
   validation.validateAndTransform toTransform, prepForRmPropertyId
@@ -65,6 +58,4 @@ module.exports = {
   prepForRmPropertyId
   final
   validateAndTransform
-  finalizeParcelAsDataCombined
-  execFinalizeParcelAsDataCombined
 }
