@@ -58,7 +58,10 @@ rmapsLeafletHelpers) ->
   #create with no modal and default a name
   $scope.create = (model) ->
     model.properties.area_name = "Untitled Area"
-    rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+      if !$scope.Toggles.propertiesInShapes
+        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+      else
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
     _signalUpdate(drawnShapesSvc.create model)
 
   $scope.update = (model) ->
@@ -89,7 +92,7 @@ rmapsLeafletHelpers) ->
       if $scope.newMail.filterProperties == 'true'
         filters = rmapsFilterManagerService.getFilters()
       $scope.modalBusy = $http.post(backendRoutes.properties.inArea, {
-        areaId: model.id
+        areaId: model.properties.id
         state: {filters}
       }, cache: false)
       .then ({data}) ->
@@ -103,16 +106,10 @@ rmapsLeafletHelpers) ->
 
     updateStatistics($scope.areaToShow.id)
     .then (stats) ->
-      statisticsModal()
-
-  statisticsModal = () ->
-    modalInstance = $modal.open
-      animation: true
-      scope: $scope
-      template: require('../../html/views/templates/modals/statisticsArea.jade')()
-
-  getStatistics = (resultsArray, area_id) ->
-
+      modalInstance = $modal.open
+        animation: true
+        scope: $scope
+        template: require('../../html/views/templates/modals/statisticsArea.jade')()
 
   updateStatistics = (area_id) ->
     $log.debug "Querying for properties in area #{area_id}"
