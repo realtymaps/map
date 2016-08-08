@@ -128,16 +128,14 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .col-sm-6
                   .content-label Orginal Asked Price
                   .content-value {{formatters.property.getPrice(property.original_price)}}
-              .row
+              .row(ng-if="property.close_date")
                 .col-sm-6
                   .content-label Close Price
-                  .content-value(ng-if="property.close_date") {{formatters.property.getPrice(property.price)}}
-                  .content-value(ng-if="!property.close_date") N/A
+                  .content-value {{formatters.property.getPrice(property.price)}}
                 .col-sm-6
                   .content-label Close Date
                   .content-value
-                    span(ng-if="property.close_date") {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
-                    span(ng-if="!property.close_date") N/A
+                    span {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
 
           .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
             .col-sm-12
@@ -372,16 +370,14 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .col-xs-6
               .content-label Orginal Asked Price
               .content-value {{formatters.property.getPrice(property.original_price)}}
-          .row.content-row
+          .row.content-row(ng-if="property.close_date")
             .col-xs-6
               .content-label Close Price
-              .content-value(ng-if="property.close_date") {{formatters.property.getPrice(property.price)}}
-              .content-value(ng-if="!property.close_date") N/A
+              .content-value {{formatters.property.getPrice(property.price)}}
             .col-xs-6
               .content-label Close Date
               .content-value
-                span(ng-if="property.close_date") {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
-                span(ng-if="!property.close_date") N/A
+                span {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
 
         .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
           .content-heading Broker Reciprocity
