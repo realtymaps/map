@@ -33,25 +33,19 @@ rmapsMapTogglesFactory
       mapId
       drawnShapesSvc
       drawnItems
-      endDrawAction: () ->
-
-      commonPostDrawActions: () ->
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
-
-      announceCb: () ->
 
       createPromise: (geoJson) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
         $scope.create(geoJson)
 
       deleteAction: (model) ->
         if !Object.keys(drawnItems._layers).length
           rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+        else
+          $scope.$emit rmapsEventConstants.map.mainMap.redraw
 
         #force refresh
         $scope.$emit rmapsEventConstants.areas
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
 
     }
 
@@ -61,8 +55,6 @@ rmapsMapTogglesFactory
         $scope
         handles
         drawnItems
-        postDrawAction: ->
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "area"
         itemsOptions:
           color: color
