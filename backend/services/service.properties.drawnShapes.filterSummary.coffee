@@ -9,7 +9,6 @@ drawnShapesTransforms = require('../utils/transforms/transforms.properties.coffe
 ###
 override:
 - getFilterSummaryAsQuery
-- getResultCount
 - getDefaultQuery
 - (optionally) validateAndTransform
 - tested non knex query that works
@@ -37,29 +36,20 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
-_getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
 
-  query = combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
-
+  query.select(query.raw("#{drawnShapesName}.id as area_id"))
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea
-    query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
+    query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
 
   if queryParams.areaId
-    query = query.where("#{drawnShapesName}.id", queryParams.areaId)
+    query.where("#{drawnShapesName}.id", queryParams.areaId)
 
-  query
+  combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
 
-getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
-  query = _getFilterSummaryAsQuery({queryParams, limit, query, permissions})
-  query.select(query.raw("#{drawnShapesName}.id as area_id"))
-  query
-
-getResultCount = ({queryParams, permissions}) ->
-  query = getDefaultQuery(tables.finalized.combined().countDistinct('rm_property_id'))
-  _getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
@@ -84,7 +74,6 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
 
 
 module.exports = {
-  getResultCount
   getFilterSummaryAsQuery
   getPropertyIdsInArea
   transforms: drawnShapesTransforms
