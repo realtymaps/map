@@ -59,7 +59,7 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
 getResultCount = ({queryParams, permissions}) ->
   query = getDefaultQuery(tables.finalized.combined().countDistinct('rm_property_id'))
-  getFilterSummaryAsQuery({queryParams, query, permissions})
+  _getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
