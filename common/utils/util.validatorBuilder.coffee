@@ -194,10 +194,6 @@ _rules =
         alias: 'Status Display'
         required: true
 
-      substatus:
-        alias: 'Sub-Status'
-        required: true
-
       discontinued_date:
         alias: 'Discontinued Date'
         type: name: 'datetime'
