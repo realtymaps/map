@@ -72,6 +72,50 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
+_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+  index = 0
+  for entry,i in entries
+    if entry.status != 'discontinued'
+      index = i
+      break
+  mainEntry = _.clone(entries[index])
+  delete entries[index].shared_groups
+  delete entries[index].subscriber_groups
+  delete entries[index].hidden_fields
+  delete entries[index].ungrouped_fields
+
+  mainEntry.active = false
+  delete mainEntry.deleted
+  delete mainEntry.hide_address
+  delete mainEntry.hide_listing
+  delete mainEntry.rm_inserted_time
+  delete mainEntry.rm_modified_time
+  mainEntry.prior_entries = sqlHelpers.safeJsonArray(entries)
+  mainEntry.address = sqlHelpers.safeJsonArray(mainEntry.address)
+  mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
+  mainEntry.change_history = sqlHelpers.safeJsonArray(mainEntry.change_history)
+  mainEntry.update_source = subtask.task_name
+
+  mainEntry.baths_total = mainEntry.baths?.filter
+
+  #compose photo finalized fields
+  photosLength = Object.keys(mainEntry.photos).length
+
+  if !photosLength
+    mainEntry.actual_photo_count = 0
+    return mainEntry
+
+  mainEntry.actual_photo_count = photosLength - 1  # photo 0 and 1 are the same
+
+  mlsPhotoUtil.getCndPhotoShard {
+    newFileName: mainEntry.photos[0].key
+    listingRow: mainEntry
+  }
+  .then (cdn_photo) ->
+    mainEntry.cdn_photo = cdn_photo
+    mainEntry
+
+
 finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
@@ -95,7 +139,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
-    dataLoadHelpers.finalizeEntry({entries: listings, subtask})
+    _finalizeEntry({entries: listings, subtask})
     .then (listing) ->
       listing.data_source_type = 'mls'
       _.extend(listing, parcel[0])
