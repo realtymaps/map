@@ -45,4 +45,10 @@ module.exports = (options = {}) ->
       transformedValue = transformedValue.toLowerCase()
     else if (options.forceUpperCase)
       transformedValue = transformedValue.toUpperCase()
+    if options.leftPad
+      while transformedValue.length < options.leftPad.target
+        transformedValue = options.leftPad.padding + transformedValue
+    else if options.rightPad
+      while transformedValue.length < options.rightPad.target
+        transformedValue = transformedValue + options.rightPad.padding
     return transformedValue
