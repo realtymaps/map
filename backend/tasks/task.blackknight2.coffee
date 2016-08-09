@@ -12,13 +12,13 @@ keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
 dbs = require '../config/dbs'
 moment = require 'moment'
-internals = require './task.blackknight.internals'
+internals = require './task.blackknight2.internals'
 validation = require '../utils/util.validation'
 awsService = require '../services/service.aws'
 
 
 copyFtpDrop = (subtask) ->
-  console.log "copyFtpDrop()"
+  console.log "transferFiles()"
   ftp = new PromiseSftp()
   now = Date.now()
 
@@ -31,6 +31,7 @@ copyFtpDrop = (subtask) ->
   # dates for which we've processed blackknight files are tracked in keystore
   keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
   .then (copyDates) ->
+    console.log "copyDates:\n#{JSON.stringify(copyDates,null,2)}"
     # establish ftp connection to blackknight
     externalAccounts.getAccountInfo('blackknight')
     .then (accountInfo) ->
@@ -75,41 +76,28 @@ copyFtpDrop = (subtask) ->
 
     # expect a list of 6 paths here, for one date of processing
     .then (paths) ->
-
       console.log "paths:\n#{JSON.stringify(paths,null,2)}"
+
 
       # traverse each path...
       Promise.each paths, (path) ->
-        console.log "path:\n#{path}"
         ftp.list(path)
         .then (files) ->
-          console.log "files:\n#{JSON.stringify(files,null,2)}"
 
-          # traverse each file....
+          # traverse each file...
           Promise.each files, (file) ->
-            console.log "file:\n#{JSON.stringify(file,null,2)}"
-            fullpath = "#{path}/#{file.name}"
-            #fullpath = "/Managed_Refresh/ASMT20160404/metadata_asmt.txt"
+            # ignore empty files
             if !file.size
               return
 
-            console.log "fullpath: #{fullpath}"
+            fullpath = "#{path}/#{file.name}"
+
             # setup input ftp stream
             logger.debug () -> "copying blackknight file #{fullpath}"
             ftp.get(fullpath)
             .then (ftpStream) -> new Promise (resolve, reject) ->
 
-              ftpStream.on 'error', (ftperr) ->
-                console.log "ftp err: #{ftperr}"
-                reject(err)
-
-              # ftpStream.on 'data', (d) ->
-              #   console.log "got data... #{d}"
-
-              ftpStream.on 'end', (end) ->
-                console.log "ftpStream ended"
-
-
+              ftpStream.on('error', reject)
 
               # procure writable aws stream
               config =
@@ -118,77 +106,164 @@ copyFtpDrop = (subtask) ->
                 ContentType: 'text/plain'
               awsService.upload(config)
               .then (upload) ->
-                console.log "got upload service"
-                upload.on 'error', (err) ->
-                  console.log "err: #{err}"
-                  reject(err)
 
-                # upload.on 'data', (d) ->
-                #   console.log "upload got data"
-
-                upload.on 'uploaded', resolve
+                upload.on('error', reject)
+                upload.on('uploaded', resolve)
 
                 ftpStream.pipe(upload)
             .catch (err) -> # catches ftp errors
               throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
 
     .then () ->
-      # save off dates
       keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
+      console.log "saved BLACKKNIGHT_COPY_DATES"
+
+    .then () ->
+      internals.pushProcessingDates(copyDates)
     .then () ->
       ftp.logout()
 
 
 checkFtpDrop = (subtask) ->
-  console.log "\n\n\n\n##########\ncheckFtpDrop()"
+  console.log "\n\n\n\n##########\ncheckFtpDrop2()"
   console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
-  ftp = new PromiseSftp()
+  #ftp = new PromiseSftp()
   defaults = {}
   defaults[internals.REFRESH] = '19700101'
   defaults[internals.UPDATE] = '19700101'
   defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
   now = Date.now()
-  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  internals.nextProcessingDates()
   .then (processDates) ->
+  # keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  # .then (processDates) ->
+  #   processDates = {
+  #     "no new data found": "20160729"
+  #     "Refresh": "20160405"
+  #     "Update": "20160405"
+  #   }
     console.log "processDates:\n#{JSON.stringify(processDates,null,2)}"
 
 
 ####################################
-    # processInfo = {dates: processDates}
-    # processInfo[internals.REFRESH] = []
-    # processInfo[internals.UPDATE] = []
-    # processInfo[internals.DELETE] = []
+    processInfo =
+      dates: processDates
+      hasFiles: false
+    processInfo[internals.REFRESH] = []
+    processInfo[internals.UPDATE] = []
+    processInfo[internals.DELETE] = []
 
-    # tableIds = Object.keys(internals.tableIdMap)
-    # console.log "tableIds: #{JSON.stringify(tableIds)}"
+    tableIds = Object.keys(internals.tableIdMap)
 
-    # Promise.each tableIds, (tableId) ->
-    #   console.log "\n\n\nprocessing tableId #{tableId}"
-    #   configRefresh =
-    #     extAcctName: awsService.buckets.BlackknightData
-    #     Prefix: "Managed_Refresh/#{tableId}#{processDates.Refresh}"
-    #   configUpdate =
-    #     extAcctName: awsService.buckets.BlackknightData
-    #     Prefix: "Managed_Update/#{tableId}#{processDates.Update}"
+    #console.log "about to begin tableId promise, processInfo keys: #{Object.keys(processInfo)}"
+    Promise.map tableIds, (tableId) ->
 
-    #   console.log "configRefresh:\n#{JSON.stringify(configRefresh,null,2)}"
-    #   console.log "configUpdate:\n#{JSON.stringify(configUpdate,null,2)}"
+      refreshConfig =
+        extAcctName: awsService.buckets.BlackknightData
+        Prefix: "Managed_#{internals.REFRESH}/#{tableId}#{processDates.Refresh}"
+      updateConfig =
+        extAcctName: awsService.buckets.BlackknightData
+        Prefix: "Managed_#{internals.UPDATE}/#{tableId}#{processDates.Update}"
 
-    #   Promise.join(awsService.listObjects(configRefresh), awsService.listObjects(configUpdate))
-    #   .then ([refreshPaths, updatePaths]) ->
-    #     console.log "refreshPaths.Contents[0..2]:\n#{JSON.stringify(refreshPaths.Contents[0..2],null,2)}"
-    #     console.log "updatePaths.Contents[0..2]:\n#{JSON.stringify(updatePaths.Contents[0..2],null,2)}"
-    #   .catch (err) ->
-    #     console.log "err: #{err}"
+      refreshPromise = awsService.listObjects(refreshConfig)#.then internals.filterS3Contents
+      .then (refreshResponse) ->
+        internals.filterS3Contents(refreshResponse.Contents, {action: internals.REFRESH, tableId, date: processDates.Refresh, startTime: now})
+        # processInfo[internals.REFRESH] = internals.filterS3Listing(listing)
+
+      updatePromise = awsService.listObjects(updateConfig)#.then internals.filterS3Contents
+      .then (updateResponse) ->
+        internals.filterS3Contents(updateResponse.Contents, {action: internals.UPDATE, tableId, date: processDates.Update, startTime: now})
+
+      # console.log "configRefresh:\n#{JSON.stringify(configRefresh,null,2)}"
+      # console.log "configUpdate:\n#{JSON.stringify(configUpdate,null,2)}"
+
+      Promise.join(refreshPromise, updatePromise)
+      .then ([refreshInfo, updateInfo]) ->
+        {
+          "#{internals.REFRESH}": refreshInfo[internals.REFRESH]
+          "#{internals.UPDATE}": updateInfo[internals.UPDATE]
+          "#{internals.DELETE}": refreshInfo[internals.DELETE].concat updateInfo[internals.DELETE]
+        }
+
+        # processInfo[internals.UPDATE] = processInfo[internals.UPDATE].concat updateInfo[internals.UPDATE]
+        # processInfo[internals.DELETE] = 
+        # processInfo
+      .catch (err) ->
+        console.log "refresh/update err: #{err}"
+
+
+    .then ([table1, table2, table3]) ->
+      console.log "tableId promises done. processInfo keys: #{Object.keys(processInfo)}"
+      list = [table1, table2, table3]
+#      console.log "map.then, list:\n#{JSON.stringify(list,null,2)}"
+      processInfo[internals.REFRESH] = _.union table1[internals.REFRESH], table2[internals.REFRESH], table3[internals.REFRESH]
+      processInfo[internals.UPDATE] = _.union table1[internals.UPDATE], table2[internals.UPDATE], table3[internals.UPDATE]
+      processInfo[internals.DELETE] = _.union table1[internals.DELETE], table2[internals.DELETE], table3[internals.DELETE]
+      #console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
+      if (processInfo[internals.REFRESH].length + processInfo[internals.UPDATE].length + processInfo[internals.DELETE].length) > 0
+        processInfo.hasFiles = true
+      console.log "returning processInfo:\n#{JSON.stringify(processInfo,null,2)}"
+      return processInfo
+
+    .catch (err) ->
+      console.log "promise map err: #{err}"
+
+  .then (processInfo) ->
+    console.log "\n####################################################################################################################################"
+    console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
+
+    dbs.transaction 'main', (transaction) ->
+      if processInfo.hasFiles
+        deletes = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.DELETE], internals.DELETE)
+        refresh = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.REFRESH], internals.REFRESH)
+        update = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.UPDATE], internals.UPDATE)
+        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
+        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
+          fipsCodes = _.extend(refreshFips, updateFips)
+          console.log "-------fipsCodes-------:\n#{JSON.stringify(fipsCodes)}"
+          normalizedTablePromises = []
+          for fipsCode of fipsCodes
+            # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.TAX, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.DEED, fipsCode)
+            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.MORTGAGE, fipsCode)
+          Promise.all(normalizedTablePromises)
+      else
+        fileProcessing = Promise.resolve()
+      dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
+      Promise.join fileProcessing, dates, () ->  # empty handler
 
 
 
+###
+# from s3:
+   {
+      "Key": "Managed_Update/SAM20160405/metadata_SAM.txt",
+      "LastModified": "2016-08-04T02:06:31.000Z",
+      "ETag": "\"715d275bfe22331612d7d2e4e969a626-1\"",
+      "Size": 4087,
+      "StorageClass": "STANDARD"
+    }
+  ],
+  "Name": "rmaps-blackknight-data",
+  "Prefix": "Managed_Update/SAM20160405",
+###
 
+###
+# our process list:
     # fileObj =
+    #   key: <path>
     #   type: internals.tableIdMap[tableId]
     #   action: 
-
-
+  {
+    "path": "/Managed_Update/ASMT20160405/Assessment_Update_Delete_20160405.txt",
+    "dataType": "tax",
+    "action": "Update",
+    "fileType": "Delete",
+    "rawTableSuffix": "Assessment_Update_Delete_20160405"
+  },
+ 
+###
 
     # awsService.listObjects(config)
     # .then (data) ->
@@ -204,35 +279,35 @@ checkFtpDrop = (subtask) ->
 
 
 
-    externalAccounts.getAccountInfo('blackknight')
-    .then (accountInfo) ->
-      ftp.connect
-        host: accountInfo.url
-        user: accountInfo.username
-        password: accountInfo.password
-        autoReconnect: true
-      .catch (err) ->
-        if err.level == 'client-authentication'
-          throw new SoftFail('FTP authentication error')
-        else
-          throw err
-    .then () ->
-      internals.findNewFolders(ftp, internals.REFRESH, processDates)
-    .then (newFolders) ->
-      internals.findNewFolders(ftp, internals.UPDATE, processDates, newFolders)
-    .then (newFolders) ->
-      drops = Object.keys(newFolders).sort()  # sorts by date, with Refresh before Update
-      if drops.length == 0
-        logger.info "No new blackknight directories to process"
-        console.log "No new blackknight directories to process"
-      else
-        logger.debug "Found #{drops.length} blackknight dates to process"
-        console.log "Found #{drops.length} blackknight dates to process"
-      processInfo = {dates: processDates}
-      processInfo[internals.REFRESH] = []
-      processInfo[internals.UPDATE] = []
-      processInfo[internals.DELETE] = []
-      internals.checkDropChain(ftp, processInfo, newFolders, drops, 0)
+    # externalAccounts.getAccountInfo('blackknight')
+    # .then (accountInfo) ->
+    #   ftp.connect
+    #     host: accountInfo.url
+    #     user: accountInfo.username
+    #     password: accountInfo.password
+    #     autoReconnect: true
+    #   .catch (err) ->
+    #     if err.level == 'client-authentication'
+    #       throw new SoftFail('FTP authentication error')
+    #     else
+    #       throw err
+    # .then () ->
+    #   internals.findNewFolders(ftp, internals.REFRESH, processDates)
+    # .then (newFolders) ->
+    #   internals.findNewFolders(ftp, internals.UPDATE, processDates, newFolders)
+    # .then (newFolders) ->
+    #   drops = Object.keys(newFolders).sort()  # sorts by date, with Refresh before Update
+    #   if drops.length == 0
+    #     logger.info "No new blackknight directories to process"
+    #     console.log "No new blackknight directories to process"
+    #   else
+    #     logger.debug "Found #{drops.length} blackknight dates to process"
+    #     console.log "Found #{drops.length} blackknight dates to process"
+    #   processInfo = {dates: processDates}
+    #   processInfo[internals.REFRESH] = []
+    #   processInfo[internals.UPDATE] = []
+    #   processInfo[internals.DELETE] = []
+    #   internals.checkDropChain(ftp, processInfo, newFolders, drops, 0)
 
 
 
@@ -298,35 +373,35 @@ checkFtpDrop = (subtask) ->
 
 
 
-  .then (processInfo) ->
-    console.log "\n####################################################################################################################################"
-    console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
-    ftpEnd = ftp.end()
-    # this transaction is important because we don't want the subtasks enqueued below to start showing up as available
-    # on their queue out-of-order; normally, subtasks enqueued by another subtask won't be considered as available
-    # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
-    # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
-    # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-    dbs.transaction 'main', (transaction) ->
-      if processInfo.hasFiles
-        deletes = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.DELETE], internals.DELETE)
-        refresh = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.REFRESH], internals.REFRESH, now)
-        update = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.UPDATE], internals.UPDATE, now)
-        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
-          fipsCodes = _.extend(refreshFips, updateFips)
-          console.log "-------fipsCodes-------:\n#{JSON.stringify(fipsCodes)}"
-          normalizedTablePromises = []
-          for fipsCode of fipsCodes
-            # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.TAX, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.DEED, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.MORTGAGE, fipsCode)
-          Promise.all(normalizedTablePromises)
-      else
-        fileProcessing = Promise.resolve()
-      dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
-      Promise.join ftpEnd, fileProcessing, dates, () ->  # empty handler
+  # .then (processInfo) ->
+  #   console.log "\n####################################################################################################################################"
+  #   console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
+  #   ftpEnd = ftp.end()
+  #   # this transaction is important because we don't want the subtasks enqueued below to start showing up as available
+  #   # on their queue out-of-order; normally, subtasks enqueued by another subtask won't be considered as available
+  #   # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
+  #   # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
+  #   # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
+  #   dbs.transaction 'main', (transaction) ->
+  #     if processInfo.hasFiles
+  #       deletes = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.DELETE], internals.DELETE)
+  #       refresh = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.REFRESH], internals.REFRESH, now)
+  #       update = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.UPDATE], internals.UPDATE, now)
+  #       activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
+  #       fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
+  #         fipsCodes = _.extend(refreshFips, updateFips)
+  #         console.log "-------fipsCodes-------:\n#{JSON.stringify(fipsCodes)}"
+  #         normalizedTablePromises = []
+  #         for fipsCode of fipsCodes
+  #           # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+  #           normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.TAX, fipsCode)
+  #           normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.DEED, fipsCode)
+  #           normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.MORTGAGE, fipsCode)
+  #         Promise.all(normalizedTablePromises)
+  #     else
+  #       fileProcessing = Promise.resolve()
+  #     dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
+  #     Promise.join ftpEnd, fileProcessing, dates, () ->  # empty handler
 
 
 loadRawData = (subtask) ->
@@ -338,7 +413,8 @@ loadRawData = (subtask) ->
       dataSourceId: 'blackknight'
       columnsHandler: columns
       delimiter: '\t'
-      sftp: true
+      s3account: awsService.buckets.BlackknightData
+
   .then (numRows) ->
     console.log "numRows: #{numRows}"
     mergeData =
@@ -358,7 +434,7 @@ loadRawData = (subtask) ->
 
 
 saveProcessDates = (subtask) ->
-  keystore.setValuesMap(subtask.data.dates, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
+  internals.popProcessingDates(subtask.data.dates)
 
 
 deleteData = (subtask) ->

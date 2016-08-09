@@ -12,9 +12,16 @@ options:
 Promise = require 'bluebird'
 _ = require 'lodash'
 argv = require('yargs').argv
+console.log "argv:\n#{JSON.stringify(argv,null,2)}"
 rewire = require('rewire')
 taskFile = rewire('../../backend/tasks/' + argv.task)
-task = taskFile(argv.subtaskStateFile.match(/(.*\/)?(\w+)(\.\w+)?/)[2])
+
+pseudoTask = argv.subtaskStateFile.match(/(.*\/)?(\w+)(\.\w+)?/)[2]
+console.log "pseudoTask: #{pseudoTask}"
+console.log "taskFile keys: #{Object.keys(taskFile,null,2)}"
+console.log "taskFile.subtasks:\n#{JSON.stringify(taskFile.subtasks,null,2)}"
+
+task = taskFile
 subtask = task.subtasks[argv.subtask]
 internal =  require './subtask.internal'
 

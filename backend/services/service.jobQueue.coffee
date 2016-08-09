@@ -155,6 +155,12 @@ queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try (
 
 # convenience function to get another subtask config and then enqueue it based on the current subtask
 queueSubsequentSubtask = ({transaction, subtask, laterSubtaskName, manualData, replace, concurrency}) ->
+  console.log "\nqueueSubsequentSubtask()"
+  console.log "-------laterSubtaskName-------:\n#{laterSubtaskName}"
+  console.log "-------manualData-------:\n#{JSON.stringify(manualData,null,2)}"
+  console.log "-------replace-------:\n#{replace}"
+  console.log "-------concurrency-------:\n#{concurrency}"
+
   subtaskName = "#{subtask.task_name}_#{laterSubtaskName}"
   getSubtaskConfig(transaction, subtaskName, subtask.task_name)
   .then (laterSubtask) ->

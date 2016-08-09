@@ -62,8 +62,11 @@ columns[LOAD][UPDATE] = columns[LOAD][REFRESH]
 
 
 findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
+  console.log "\n####################################################################################################################################"
+  console.log "findNewFolders()"
   ftp.list("/Managed_#{action}")
   .then (rootListing) ->
+    console.log "rootListing:\n#{JSON.stringify(rootListing,null,2)}"
     for dir in rootListing when dir.type == 'd'
       date = dir.name.slice(-8)
       type = tableIdMap[dir.name.slice(0, -8)]
@@ -74,22 +77,26 @@ findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
         continue
       newFolders["#{date}_#{action}"] ?= {date, action}
       newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
-      logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
+      #logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
+    console.log "newFolders:\n#{JSON.stringify(newFolders,null,2)}"
     newFolders
 
 
 _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
-  logger.debug "Processing blackknight folder: #{folderInfo.path}"
+  #logger.debug "Processing blackknight folder: #{folderInfo.path}"
   ftp.list(folderInfo.path)
   .then (folderListing) ->
     for file in folderListing
+      console.log "###### file.name: #{file.name}, file.size: #{file.size}"
       if file.name.endsWith('.txt')
-        if file.name.startsWith('metadata_')
+        if file.name.startsWith('metadata_')  #ignore `metadata_*_.txt`
+          console.log "starts with `metadata_`, bypassing..."
           continue
         if file.name.indexOf('_Delete_') == -1
           logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
           continue
-        if file.size == 0
+        if file.size == 0   #ignore empty file
+          console.log "size is 0, bypassing..."
           continue
         fileType = DELETE
       else if !file.name.endsWith('.gz')
@@ -102,10 +109,18 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
         fileType = folderInfo.action
       fileInfo = _.clone(folderInfo)
       fileInfo.name = file.name
+      console.log "###### pushing to #{fileType}, fileInfo:\n#{JSON.stringify(fileInfo,null,2)}"
       processLists[fileType].push(fileInfo)
 
 
 checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
+  console.log "\n####################################################################################################################################"
+  console.log "checkDropChain()"
+  console.log "-------processInfo-------:\n#{JSON.stringify(processInfo,null,2)}"
+  console.log "-------newFolders.20160405_Refresh-------:\n#{JSON.stringify(newFolders["20160405_Refresh"],null,2)}"
+  #console.log "-------drops-------:\n#{JSON.stringify(drops,null,2)}"
+  console.log "-------i-------:\n#{i}"
+
   if i >= drops.length
     logger.debug "Finished processing all blackknight drops; no files found."
     # we've iterated over the whole list
@@ -129,10 +144,16 @@ checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
     # we found files!  resolve the results
     logger.debug "Found blackknight files to process: #{drop.action}/#{drop.date}.  Refresh: #{processInfo[REFRESH].length}, Update: #{processInfo[UPDATE].length}, Delete: #{processInfo[DELETE].length}."
     processInfo.hasFiles = true
+    console.log "finished processing, returning processInfo:\n#{JSON.stringify(processInfo,null,2)}"
     processInfo
 
 
 queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.try () ->
+  console.log "\n####################################################################################################################################"
+  console.log "queuePerFileSubtasks()"
+  console.log "-------files-------:\n#{JSON.stringify(files,null,2)}"
+  console.log "-------action-------:\n#{action}"
+  console.log "-------now-------:\n#{now}"
   if !files?.length
     return
   loadDataList = []
@@ -160,6 +181,10 @@ queuePerFileSubtasks = (transaction, subtask, files, action, now) -> Promise.try
         action: action
         indicateDeletes: (action == REFRESH)  # only set this flag for refreshes, not updates
     loadDataList.push(loadData)
+  console.log "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+  console.log "queuing (laterSubtaskName): loadRawData"
+  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
+  console.log "manualData (loadDataList):\n#{JSON.stringify(loadDataList,null,2)}"
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: loadDataList, replace: true, concurrency: 10})
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: countDataList, replace: true})
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
@@ -179,6 +204,10 @@ _getColumnsImpl = (fileType, action, dataType) ->
 
 
 getColumns = (fileType, action, dataType) -> Promise.try () ->
+  console.log "\ngetColumns()"
+  console.log "fileType: #{fileType}"
+  console.log "action:   #{action}"
+  console.log "dataType: #{dataType}"
   if !columns[fileType][action][dataType]?
     _getColumnsImpl(fileType, action, dataType)
   else

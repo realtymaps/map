@@ -1,4 +1,4 @@
-logger = require './config/logger'
+logger = require('./config/logger').spawn('blackknight')
 cluster = require './config/cluster'
 tables = require './config/tables'
 jobQueue = require './services/service.jobQueue'
@@ -18,6 +18,7 @@ tables.jobQueue.queueConfig()
 .select('*')
 .where(name: queueName)
 .then (queues) ->
+  console.log "queues:#{JSON.stringify(queues)}"
   if !queues || !queues.length
     logger.error "Can't find config for queue: #{queueName}"
     shutdown.exit(error: true)

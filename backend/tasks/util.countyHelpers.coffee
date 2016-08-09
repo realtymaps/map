@@ -16,18 +16,17 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 internals = require './util.countyHelpers.internals'
 parcelHelpers = null  # required later to avoid circular dependency
+awsService = require '../services/service.aws'
 
 
-# loads all records from a ftp-dropped zip file
-loadRawData = (subtask, options) ->
-  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+
+_fetchFTP = (account, source, target, options) ->
   if options.sftp
     ftp = new PromiseSftp()
   else
     ftp = new PromiseFtp()
-  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
-  dataStreamPromise = externalAccounts.getAccountInfo(subtask.task_name)
+
+  externalAccounts.getAccountInfo(account)
   .then (accountInfo) ->
     ftp.connect
       host: accountInfo.url
@@ -41,15 +40,48 @@ loadRawData = (subtask, options) ->
         throw err
   .then () ->
     if options.sftp
-      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
+      ftp.fastGet(source, target)
     else
-      ftp.get(subtask.data.path)
+      ftp.get(source)
       .then (dataStream) -> new Promise (resolve, reject) ->
-        dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
+        dataStream.pipe(fs.createWriteStream(target))
         .on('finish', resolve)
         .on('error', reject)
   .then () ->
     ftp.logout()
+
+
+_fetchS3 = (account, source, target, options) ->
+  config =
+    extAcctName: account
+    Key: source
+    stream: true
+
+  awsService.getObject(config)
+  .then (streamable) -> new Promise (resolve, reject) ->
+    streamable.createReadStream().pipe(fs.createWriteStream(target))
+    .on('finish', resolve)
+    .on('error', reject)
+  .catch (err) ->
+    throw new SoftFail("S3 `getObject` error: #{err}")
+
+
+# loads all records from an s3 bucket
+loadRawData = (subtask, options) ->
+  console.log "\n\ncountyHelpers.loadRawData()"
+  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
+  console.log "options:\n#{JSON.stringify(options)}"
+  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+  target = "/tmp/#{fileBaseName}.#{filetype}"
+  source = subtask.data.path
+
+  if options.s3account  
+    dataStreamPromise = _fetchS3(options.s3account, source, target, options)
+  else
+    dataStreamPromise = _fetchFTP(subtask.task_name, source, target, options)
 
   switch filetype
     when 'zip'
@@ -108,6 +140,102 @@ loadRawData = (subtask, options) ->
       rimraf.async("/tmp/#{fileBaseName}*")
     catch err
       logger.warn("Error trying to rm -rf temporary files /tmp/#{fileBaseName}*: #{err}")
+
+
+
+# # loads all records from a ftp-dropped zip file
+# loadRawData = (subtask, options) ->
+#   console.log "\n\ncountyHelpers.loadRawData()"
+#   console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
+#   console.log "options:\n#{JSON.stringify(options)}"
+#   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+#   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+#   if options.sftp
+#     ftp = new PromiseSftp()
+#   else
+#     ftp = new PromiseFtp()
+#   filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+#   dataStreamPromise = externalAccounts.getAccountInfo(subtask.task_name)
+#   .then (accountInfo) ->
+#     ftp.connect
+#       host: accountInfo.url
+#       user: accountInfo.username
+#       password: accountInfo.password
+#       autoReconnect: true
+#     .catch (err) ->
+#       if err.level == 'client-authentication'
+#         throw new SoftFail('FTP authentication error')
+#       else
+#         throw err
+#   .then () ->
+#     if options.sftp
+#       ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
+#     else
+#       ftp.get(subtask.data.path)
+#       .then (dataStream) -> new Promise (resolve, reject) ->
+#         dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
+#         .on('finish', resolve)
+#         .on('error', reject)
+#   .then () ->
+#     ftp.logout()
+
+#   switch filetype
+#     when 'zip'
+#       dataStreamPromise = dataStreamPromise
+#       .then () ->  # just in case this is a retry, do rm -rf
+#         rimraf.async("/tmp/#{fileBaseName}")
+#       .then () ->
+#         fs.mkdirAsync("/tmp/#{fileBaseName}")
+#       .then () -> new Promise (resolve, reject) ->
+#         try
+#           fs.createReadStream("/tmp/#{fileBaseName}.zip")
+#           .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+#           .on('close', resolve)
+#           .on('error', reject)
+#         catch err
+#           reject new SoftFail(err.toString())
+#       .then () ->
+#         "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
+#     when 'gz'
+#       dataStreamPromise = dataStreamPromise
+#       .then () -> new Promise (resolve, reject) ->
+#         try
+#           fs.createReadStream("/tmp/#{fileBaseName}.gz")
+#           .pipe(zlib.createGunzip())
+#           .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
+#           .on('close', resolve)
+#           .on('error', reject)
+#         catch err
+#           reject new SoftFail(err.toString())
+#       .then () ->
+#         "/tmp/#{fileBaseName}"
+#     else
+#       dataStreamPromise = dataStreamPromise
+#       .then () ->
+#         "/tmp/#{fileBaseName}.#{filetype}"
+
+#   dataStreamPromise
+#   .then (localFilePath) ->
+#     fs.createReadStream(localFilePath)
+#   .catch isUnhandled, (err) ->
+#     throw new SoftFail(err.toString())
+#   .then (rawDataStream) ->
+#     dataLoadHistory =
+#       data_source_id: options.dataSourceId
+#       data_source_type: 'county'
+#       data_type: subtask.data.dataType
+#       batch_id: subtask.batch_id
+#       raw_table_name: rawTableName
+#     objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
+#     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
+#   .catch isUnhandled, (error) ->
+#     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
+#   .finally () ->
+#     try
+#       # try to clean up after ourselves
+#       rimraf.async("/tmp/#{fileBaseName}*")
+#     catch err
+#       logger.warn("Error trying to rm -rf temporary files /tmp/#{fileBaseName}*: #{err}")
 
 
 buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
