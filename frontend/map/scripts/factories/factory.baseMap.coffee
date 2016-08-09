@@ -11,12 +11,13 @@ _mapClassContainerName = 'angular-leaflet-map'
 _mapDrawEvents = ['resize','moveend', 'zoomend']
 
 module.exports = app.factory 'rmapsBaseMapFactory', (
-  $http,
-  nemSimpleLogger,
-  $timeout,
-  leafletData,
-  rmapsNgLeafletHelpersService,
+  $http
+  nemSimpleLogger
+  $timeout
+  leafletData
+  rmapsNgLeafletHelpersService
   rmapsUtilLayersBase
+  rmapsNgLeafletEventGateService
 ) ->
   _baseLayers = null
 
@@ -59,13 +60,17 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
             map:
               enable: mapEvents,
               logic: 'emit'
-          zoomBox: () =>
-            if @zoomBoxActive
+
+          zoomBox: (force) =>
+            if @zoomBoxActive or (force? && !force)
               @zoomBoxActive = false
+              rmapsNgLeafletEventGateService.disableMapCommonEvents(@mapId)
               @zoomBox.deactivate()
             else
-              @zoomBoxActive = true
-              @zoomBox.activate()
+              if !force? or (force? && force)
+                @zoomBoxActive = true
+                rmapsNgLeafletEventGateService.enableMapCommonEvents(@mapId)
+                @zoomBox.activate()
 
       angular.extend @scope, settings
 
@@ -77,6 +82,24 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
       @hasRun = false
       @zoomChangedTimeMilli = new Date().getTime()
       @zoomBox = L.control.zoomBox position: 'bottomleft'
+
+      zoomBoxOrigActivate = @zoomBox.activate
+      zoomBoxOrigDeactivate = @zoomBox.deactivate
+
+      zoomBoxActivate = () =>
+        rmapsNgLeafletEventGateService.disableMapCommonEvents(@mapId)
+        zoomBoxOrigActivate.call(@zoomBox)
+
+      zoomBoxDeactivate = () =>
+        $timeout =>
+          rmapsNgLeafletEventGateService.enableMapCommonEvents(@mapId)
+        , 300
+        zoomBoxOrigDeactivate.call(@zoomBox)
+
+      @zoomBox.activate = zoomBoxActivate
+      @zoomBox.deactivate = zoomBoxDeactivate
+
+
       @activeMarker = undefined
       self = @
       _last = new Date()
@@ -117,11 +140,9 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         document.onkeydown = (e) =>
           e = e || window.event
           if e.keyCode == 27 #esc
-            self.zoomBoxActive = false
-            @zoomBox.deactivate()
+            @scope[mapPath].zoomBox(false)
           if e.altKey && !e.metaKey && !e.shiftKey && !e.ctrlKey
-            self.zoomBoxActive = true
-            @zoomBox.activate()
+            @scope[mapPath].zoomBox(true)
 
         #due to the router hiding the map and timing the map needs to be resized
         #figuring out exactly when this is has been tricky (might try element .load)
