@@ -5,7 +5,7 @@ should()
 logger = require('../../specUtils/logger').spawn('task:blackknight')
 rewire = require 'rewire'
 Promise = require 'bluebird'
-bkServiceInternals = rewire '../../../backend/tasks/task.blackknight2.internals'
+bkServiceInternals = rewire '../../../backend/tasks/task.blackknight.internals'
 
 _initialDateQueue = 
   "#{bkServiceInternals.REFRESH}": ['19800103', '19800102', '19800101']
