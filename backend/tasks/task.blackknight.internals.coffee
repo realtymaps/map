@@ -224,7 +224,7 @@ findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
       if !processDates[action]? || !type
         logger.warn("Unexpected directory found in blackknight FTP drop: /Managed_#{action}/#{dir.name}")
         continue
-      if processDates[action] != date
+      if processDates[action] >= date
         continue
 
       newFolders["#{date}_#{action}"] ?= {date, action}

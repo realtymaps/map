@@ -95,7 +95,6 @@ putObject = (opts) ->
   , opts
 
 getObject = (opts) ->
-  console.log "getObject handler..."
   _handler
     s3FnName: 'getObject'
     required: ['extAcctName','Key']
