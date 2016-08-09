@@ -1,4 +1,4 @@
-logger = require('./config/logger').spawn('blackknight')
+logger = require './config/logger'
 cluster = require './config/cluster'
 tables = require './config/tables'
 jobQueue = require './services/service.jobQueue'
