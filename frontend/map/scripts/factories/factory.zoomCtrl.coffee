@@ -7,6 +7,14 @@ app.factory 'rmapsZoomLevelStateFactory', (rmapsZoomLevelService) ->
 
     zoomPath = @zoomPath || 'map.center.zoom'
 
+    if @scope
+      @scope.doShowAddressButton = () =>
+        zoom = rmapsZoomLevelService.getZoom(@scope)
+        if zoom <= @scope.options.zoomThresh.addressButtonHide
+          return false
+        true
+
+
     @isZoomLevel = (key, doSetState) ->
       if doSetState
         return rmapsZoomLevelService[key](_.get(@scope, zoomPath), @scope)

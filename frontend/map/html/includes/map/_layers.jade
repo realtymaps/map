@@ -12,7 +12,7 @@
       span.label Show
       ul.buttons
         li
-          button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
+          button.btn(ng-if="doShowAddressButton()" ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
         li
           button.btn(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
         li
