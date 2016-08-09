@@ -44,7 +44,7 @@ describe 'transform.parcel', ->
 
       valid.should.be.eql
         fips_code: '12021'
-        rm_property_id: '12021_556623_001'
+        rm_property_id: '12021_00000556623_001'
         data_source_uuid: '556623'
         street_address_num: '620'
         street_unit_num: '123'
@@ -55,7 +55,7 @@ describe 'transform.parcel', ->
     .then (valid) ->
       valid.should.be.eql
         fips_code: '12021'
-        rm_property_id: '12021_556623_001'
+        rm_property_id: '12021_00000556623_001'
         data_source_uuid: '556623'
         street_address_num: '620'
         street_unit_num: '123'

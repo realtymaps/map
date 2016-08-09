@@ -77,6 +77,18 @@ describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
         value.should.equal("Testing With Dash-Es And A'Postrophes")
     ]
 
+  promiseIt 'should pad string when configured', () ->
+    [
+      expectResolve(validators.string(leftPad: {target: 5, padding: '*'})(param, 'abc')).then (value) ->
+        value.should.equal('**abc')
+      expectResolve(validators.string(leftPad: {target: 2, padding: '*'})(param, 'abc')).then (value) ->
+        value.should.equal('abc')
+      expectResolve(validators.string(rightPad: {target: 6, padding: '~'})(param, 'abc')).then (value) ->
+        value.should.equal('abc~~~')
+      expectResolve(validators.string(rightPad: {target: 3, padding: '~'})(param, 'abc')).then (value) ->
+        value.should.equal('abc')
+    ]
+
   describe 'in', () ->
     it 'throw on bad options', () ->
       ( -> validators.string(in: {})).should.throw()

@@ -14,6 +14,7 @@ buckets =
   PDF: 'aws-pdf-downloads'
   PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
+  BlackknightData: 'aws-blackknight-data'
 
 
 _debug = (thing, thingName) ->
