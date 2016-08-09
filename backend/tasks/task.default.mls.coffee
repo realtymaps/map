@@ -4,6 +4,7 @@ jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
 mlsHelpers = require './util.mlsHelpers'
+retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 moment = require 'moment'
@@ -52,18 +53,16 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      storePhotosPrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "storePhotosPrep", replace: true})
       normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
       recordCountsData.skipRawTable = false
     else
-      storePhotosPrepPromise = Promise.resolve()
       normalizePromise = Promise.resolve()
       recordCountsData.skipRawTable = true
 
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: recordCountsData, replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
 
-    Promise.join(recordCountsPromise, storePhotosPrepPromise, activatePromise, normalizePromise, markUpToDatePromise, () ->)
+    Promise.join(recordCountsPromise, activatePromise, normalizePromise, markUpToDatePromise, () ->)
     .then () ->
       return numRawRows
 
@@ -81,7 +80,9 @@ finalizeDataPrep = (subtask) ->
 
   tables.normalized.listing()
   .select('rm_property_id')
-  .where(batch_id: subtask.batch_id)
+  .where
+    batch_id: subtask.batch_id
+    data_source_id: subtask.task_name
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
@@ -93,11 +94,28 @@ finalizeData = (subtask) ->
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
 
-  tables.normalized.listing()
-  .select('data_source_id', 'data_source_uuid')
-  .where(batch_id: subtask.batch_id)
-  .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  lastModPromise = mlsHelpers.getMlsField(subtask.task_name, 'photo_last_mod_time')
+  uuidPromise = mlsHelpers.getMlsField(subtask.task_name, 'data_source_uuid')
+
+  # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+  Promise.join updateThresholdPromise, lastModPromise, uuidPromise, (updateThreshold, lastModField, uuidField) ->
+    dataOptions = {minDate: updateThreshold, searchOptions: {Select: uuidField, offset: 1}, listing_data: {field: lastModField}}
+    idsObj = {}
+    retryPhotosPromise = tables.deletes.retry_photos()
+    .where(data_source_id: subtask.task_name)
+    .whereNot(batch_id: subtask.batch_id)
+    .then (rows) ->
+      for row in rows
+        idsObj[row[uuidField]] = true
+    handleChunk = (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
+      for row in chunk
+        idsObj[row[uuidField]] = true
+    updatedPhotosPromise = retsService.getDataChunks(subtask.task_name, dataOptions, handleChunk)
+    Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: Object.keys(idsObj), maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
@@ -130,6 +148,12 @@ markUpToDate = (subtask) ->
   mlsHelpers.markUpToDate(subtask)
 
 
+clearPhotoRetries = (subtask) ->
+  tables.deletes.retry_photos()
+  .whereNot(batch_id: subtask.batch_id)
+  .delete()
+
+
 subtasks = {
   loadRawData
   normalizeData
@@ -140,6 +164,7 @@ subtasks = {
   storePhotosPrep
   storePhotos
   markUpToDate
+  clearPhotoRetries
 }
 
 

@@ -25,7 +25,8 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
     _baseLayers = data
 
   $log = nemSimpleLogger.spawn("map:baseFactory")
-  class BaseMap
+
+  class
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
       baseLayers ?= _baseLayers
 
@@ -58,7 +59,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
             map:
               enable: mapEvents,
               logic: 'emit'
-          zoomBox: =>
+          zoomBox: () =>
             if @zoomBoxActive
               @zoomBoxActive = false
               @zoomBox.deactivate()

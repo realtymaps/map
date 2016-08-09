@@ -11,6 +11,12 @@ _ = require 'lodash'
 #  mobile-header-buttons   <-- buttons directive
 #    a(ng-click="doSomething()") View-Specific Button   <-- This will execute in the $scope of the view/modal
 #
+app.directive 'mobileModalHeader', (rmapsPageService) ->
+  rmapsPageService.mobile.modal = true
+
+app.directive 'mobileCustomHeader', (rmapsPageService) ->
+  rmapsPageService.mobile.custom = true
+
 app.directive 'mobileHeaderButtons', ($parse, $templateCache, $modal, $log, rmapsMobileHeaderContextFactory) ->
   $log = $log.spawn "mobileHeader"
   return {

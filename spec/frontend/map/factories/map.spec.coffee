@@ -32,7 +32,19 @@ describe "rmapsMapFactory factory", ->
       # Construct the rmapsMapFactory object to test
       @subject = new rmapsMapFactory($rootScope.$new(), rmapsMainOptions.map)
 
-      $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
+      identity = {
+        currentProfileId: 1,
+        profiles: {
+          1: {
+            id: 1
+          }
+        }
+      }
+
+      $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )
+      $httpBackend.when( 'POST', backendRoutes.userSession.currentProfile).respond( identity: identity )
+      $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
+
       $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
         data = JSON.parse dataString
 

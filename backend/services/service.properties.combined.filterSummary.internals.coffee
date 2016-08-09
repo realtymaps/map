@@ -1,15 +1,15 @@
 config = require '../config/config'
 zoomThresh = config.MAP.options.zoomThresh
-sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:filterSummary:combined:internals')
 dbs = require '../config/dbs'
 
 _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
-  "round(ST_#{xy}(ST_CENTROID(geometry_raw))::decimal * #{scale},#{roundTo}) / #{scale}"
+  "round(ST_#{xy}(geometry_center_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
-  query = tables.finalized.combined().select(
+
+  tables.finalized.combined().select(
     dbs.get('main').raw('count(*)'),
     dbs.get('main').raw("count(case when status='not for sale' then 1 end) as notforsale"),
     dbs.get('main').raw("count(case when status='pending' then 1 end) as pending"),
@@ -17,11 +17,12 @@ _makeClusterQuery = (roundTo, scale) ->
     dbs.get('main').raw("count(case when status='for sale' then 1 end) as forsale"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
-  .whereNotNull('geometry_raw')
-  .whereNotNull('address')
-  .groupByRaw(_roundCoordCol(roundTo,scale))
-  .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
-  query
+    .whereNotNull('geometry_raw')
+    .whereNotNull('address')
+    .groupByRaw(_roundCoordCol(roundTo,scale))
+    .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
+    .where(active: true)
+
 
 _getRoundingDigit = (zoom) ->
   return if zoom > zoomThresh.roundDigit then 1 else 0
@@ -35,12 +36,13 @@ _getRoundingScale = (zoom) ->
   if scale <= 0 then scale = 1
   scale
 
-_clusterQuery = (zoom) ->
+clusterQuery = (zoom) ->
   digit = _getRoundingDigit(zoom)
   scale = _getRoundingScale(zoom)
   _makeClusterQuery(digit, scale)
 
-_fillOutDummyClusterIds = (properties) ->
+
+fillOutDummyClusterIds = (properties) ->
   counter = 0
   properties.map (obj) ->
     obj.id = counter
@@ -49,6 +51,7 @@ _fillOutDummyClusterIds = (properties) ->
     counter += 1
     obj
 
-module.exports =
-  clusterQuery: _clusterQuery
-  fillOutDummyClusterIds: _fillOutDummyClusterIds
+module.exports = {
+  clusterQuery
+  fillOutDummyClusterIds
+}

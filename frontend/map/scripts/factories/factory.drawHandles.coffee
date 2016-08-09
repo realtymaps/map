@@ -10,6 +10,10 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
   return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise, mapId, deleteAction}) ->
+    endDrawAction ?= ->
+    commonPostDrawActions ?= ->
+    deleteAction ?= ->
+    announceCb ?= ->
 
     _makeDrawKeys
       ### eslint-disable ###

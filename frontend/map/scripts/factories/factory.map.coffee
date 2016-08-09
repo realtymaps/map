@@ -73,15 +73,8 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) ->
-          if position
-            position = position.coords
-          else
-            position = $scope.previousCenter
-
-          position.zoom = position.zoom ? rmapsZoomLevelService.getZoom($scope) ? 14
-          $scope.map.center = NgLeafletCenter position
-          $scope.$evalAsync()
+        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
+          @setLocation(position)
 
         #
         # Property Button events
@@ -132,19 +125,22 @@ app.factory 'rmapsMapFactory',
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
-            if newVal != oldVal
-              if _firstCenter
-                _firstCenter = false
-                return
-              @scope.previousCenter = oldVal
-              @scope.Toggles.hasPreviousLocation = true
-            else
+            if newVal == oldVal
               @scope.Toggles.hasPreviousLocation = false
+              return
+
+            if _firstCenter
+              _firstCenter = false
+              return
+            
+            @scope.previousCenter = oldVal
+            @scope.Toggles.hasPreviousLocation = true
+
 
         @singleClickCtrForDouble = 0
 
-        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) ->
-          $scope.Toggles.setLocation location
+        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
+          @setLocation location
 
         @layerFormatter = rmapsLayerFormattersService
 
@@ -153,6 +149,7 @@ app.factory 'rmapsMapFactory',
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
+
         _.merge @scope,
           streetViewPanorama:
             status: 'OK'
@@ -175,7 +172,8 @@ app.factory 'rmapsMapFactory',
               filterSummary:{}
               backendPriceCluster:{}
               addresses:{}
-              notes: []
+              notes: {}
+              currentLocation: {}
 
             geojson: {}
 
@@ -194,10 +192,8 @@ app.factory 'rmapsMapFactory',
             property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
-          changeZoom: (increment) =>
-            @scope.zoomLevelService.setPrevZoom self.map.getZoom()
+          changeZoom: (increment) ->
             toBeZoom = self.map.getZoom() + increment
-            @scope.zoomLevelService.setCurrZoom toBeZoom
             self.map.setZoom(toBeZoom)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
@@ -241,6 +237,10 @@ app.factory 'rmapsMapFactory',
 
         rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
+          # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
+          # but gets buggy when rapidly changing zooms occurs.
+          @scope.zoomLevelService.trackZoom(@scope)
+
           rmapsResultsFlow {
             @scope
             filters
@@ -365,6 +365,7 @@ app.factory 'rmapsMapFactory',
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])
         old = _.cloneDeep @scope.map.center
         resultCenter.zoom = old.zoom
+        resultCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = resultCenter
 
         if !doChangeZoom
@@ -389,7 +390,8 @@ app.factory 'rmapsMapFactory',
           lObject?.setIcon(new L.divIcon(result.icon))
           #update polygons immediately
           lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummaryPoly')?.lObject
-          lObject.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
+
+          lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
 
           #make sure selectedResult is updated if it exists
           summary = @scope.map?.markers?.filterSummary
@@ -413,5 +415,31 @@ app.factory 'rmapsMapFactory',
           lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
+
+      setLocation: (position) =>
+        {isMyLocation} = position
+
+        getZoom = () =>
+          position.zoom = position.zoom ? rmapsZoomLevelService.getZoom(@scope) ? 14
+
+        if position
+          position = position.coords
+          getZoom()
+          positionCenter = NgLeafletCenter position
+
+          if @scope.map.center.isEqual(positionCenter)
+            return
+        else
+          position = @scope.previousCenter
+
+        if isMyLocation
+          @scope.map.markers.currentLocation.myLocation = rmapsLayerFormattersService.setCurrentLocationMarkerOptions(position)
+          @redraw()
+
+        getZoom()
+
+        positionCenter.docWhere = 'rmapsMapFactory.zoomTo'
+        @scope.map.center = positionCenter
+        @scope.$evalAsync()
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////

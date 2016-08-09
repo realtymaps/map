@@ -3,14 +3,12 @@ combined = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
-validation = require '../utils/util.validation'
-validators = validation.validators
 {distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
+drawnShapesTransforms = require('../utils/transforms/transforms.properties.coffee').drawnShapes
 
 ###
 override:
 - getFilterSummaryAsQuery
-- getResultCount
 - getDefaultQuery
 - (optionally) validateAndTransform
 - tested non knex query that works
@@ -30,10 +28,10 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
   #http://stackoverflow.com/questions/12204834/get-distance-in-meters-instead-of-degrees-in-spatialite
   #earth meters per degree 111195
   query.joinRaw tables.finalized.combined().raw """
-    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_raw, #{drawnShapesName}.geometry_raw)
+    inner join #{drawnShapesName} on ST_Within(#{detailsName}.geometry_center_raw, #{drawnShapesName}.geometry_raw)
      or
      ST_DWithin(
-     #{detailsName}.geometry_raw,
+     #{detailsName}.geometry_center_raw,
      #{drawnShapesName}.geometry_center_raw,
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
@@ -41,21 +39,17 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
 
-  query = combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
-
+  query.select(query.raw("#{drawnShapesName}.id as area_id"))
   .where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea
-    query = query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
+    query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
 
   if queryParams.areaId
-    query = query.where("#{drawnShapesName}.id", queryParams.areaId)
+    query.where("#{drawnShapesName}.id", queryParams.areaId)
 
-  query
+  combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
 
-getResultCount = ({queryParams, permissions}) ->
-  query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.finalized.combined()))
-  getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
@@ -65,7 +59,7 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
     logger.debug permissions
 
     if !queryParams.areaId
-      throw new Exception('areaId is required')
+      throw new Error('areaId is required')
 
     query = getDefaultQuery(tables.finalized.combined().distinct("rm_property_id"))
     .where(active: true)
@@ -80,12 +74,7 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
 
 
 module.exports = {
-  getResultCount
   getFilterSummaryAsQuery
   getPropertyIdsInArea
-  transforms: _.merge {}, combined.transforms,
-    isArea: validators.boolean(truthy: true, falsy: false)
-    areaId: validators.integer()
-    bounds: validators.string(null:true)
-    project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
+  transforms: drawnShapesTransforms
 }

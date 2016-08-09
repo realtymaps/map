@@ -73,50 +73,57 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
 
 
 _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  tax = dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
-  tax.data_source_type = 'county'
-  _.extend(tax, parcelEntries[0])
+  dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
+  .then (tax) ->
+    tax.data_source_type = 'county'
+    _.extend(tax, parcelEntries[0])
 
-  # all county data gets 'sold' status -- it will be differentiated by the frontend's sold timeframe filter
-  tax.status = 'sold'
-  tax.substatus = 'sold'
-  tax.status_display = 'sold'
+    # all county data gets 'sold' status -- it will be differentiated by the frontend's sold timeframe filter
+    tax.status = 'sold'
+    tax.substatus = 'sold'
+    tax.status_display = 'sold'
 
-  saleFields = ['price', 'close_date', 'recording_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
+    saleFields = ['price', 'close_date', 'recording_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
 
-  # we need to check to see if we have a deed record that represents a sale more recent than what our tax records show,
-  # and if so, overwrite the owner, deed, and sale info with that from the deed record (since it would have the tax
-  # info by default)
-  lastSaleIndex = null
-  # look for the last deed entry that is actually the same property (i.e. same legal unit number) -- when a property
-  # gets split, it appears the initial sales all get marked on the original parcel number (or at least that's how it is
-  # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
-  # the main parcel with info from the sale of a split-off
-  for deedEntry,i in deedEntries
-    deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
-    delete deedEntry.close_date
-    delete deedEntry.recording_date
-    if !lastSaleIndex? && tax.legal_unit_number == deedEntry.legal_unit_number
-      lastSaleIndex = i
-  if lastSaleIndex? && moment(deedEntries[lastSaleIndex].recording_date).isAfter(tax.recording_date)
-    [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-    tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-    tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-    for field in saleFields
-      tax[field] = lastSale[field]
-  tax.close_date = tax.close_date || tax.recording_date
-  delete tax.recording_date
-  delete tax.legal_unit_number
-  # save the values we will promote to MLS for easier access
-  promotedValues =
-    owner_name: tax.owner_name
-    owner_name_2: tax.owner_name_2
-    zoning: tax.zoning
+    # we need to check to see if we have a deed record that represents a sale more recent than what our tax records show,
+    # and if so, overwrite the owner, deed, and sale info with that from the deed record (since it would have the tax
+    # info by default)
+    lastSaleIndex = null
+    # look for the last deed entry that is actually the same property (i.e. same legal unit number) -- when a property
+    # gets split, it appears the initial sales all get marked on the original parcel number (or at least that's how it is
+    # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
+    # the main parcel with info from the sale of a split-off
+    for deedEntry,i in deedEntries
+      deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
+      delete deedEntry.close_date
+      delete deedEntry.recording_date
+      if !lastSaleIndex? && tax.legal_unit_number == deedEntry.legal_unit_number
+        lastSaleIndex = i
+    if lastSaleIndex?
+      [lastSale] = deedEntries.splice(lastSaleIndex, 1)
+      deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
+      taxRecordingDate = moment(tax.recording_date).startOf('day')
+      if deedRecordingDate.isAfter(taxRecordingDate)
+        tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+        tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+        for field in saleFields
+          tax[field] = lastSale[field]
+      else if deedRecordingDate.isSame(taxRecordingDate)
+        for field in saleFields
+          tax[field] ?= lastSale[field]
+    tax.close_date = tax.close_date || tax.recording_date
+    delete tax.recording_date
+    delete tax.legal_unit_number
+    # save the values we will promote to MLS for easier access
+    promotedValues =
+      owner_name: tax.owner_name
+      owner_name_2: tax.owner_name_2
+      zoning: tax.zoning
 
-  tax.subscriber_groups.mortgageHistory = mortgageEntries
-  tax.subscriber_groups.deedHistory = deedEntries
+    tax.subscriber_groups.mortgageHistory = mortgageEntries
+    tax.subscriber_groups.deedHistory = deedEntries
 
-  {promotedValues,tax}
+    {promotedValues,tax}
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
   tables.finalized.combined(transaction: transaction)
@@ -135,25 +142,26 @@ finalizeJoin = ({subtask, id, data_source_id, delay, transaction, taxEntries, de
     # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
     # TODO: simultaneous closings, how do we properly sort to account for that?
     # TODO: answer: by buyer/seller names, but we'll get to that later
-    {promotedValues,tax} = _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
+    _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
+    .then ({promotedValues,tax}) ->
 
-    Promise.delay(delay)  #throttle for heroku's sake
-    .then () ->
-      if !_.isEqual(promotedValues, tax.promoted_values)
-        # need to save back promoted values to the normal table
-        tables.normalized.tax(subid: subtask.data.normalSubid)
-        .where
-          data_source_id: data_source_id || subtask.task_name
-          data_source_uuid: tax.data_source_uuid
-        .update(promoted_values: promotedValues)
-      else
-        Promise.resolve()
-    .then () ->
-      delete tax.promoted_values
+      Promise.delay(delay)  #throttle for heroku's sake
+      .then () ->
+        if !_.isEqual(promotedValues, tax.promoted_values)
+          # need to save back promoted values to the normal table
+          tables.normalized.tax(subid: subtask.data.normalSubid)
+          .where
+            data_source_id: data_source_id || subtask.task_name
+            data_source_uuid: tax.data_source_uuid
+          .update(promoted_values: promotedValues)
+        else
+          Promise.resolve()
+      .then () ->
+        delete tax.promoted_values
 
-      # we must use an existing transaction if there is one
-      dbs.ensureTransaction transaction, 'main', (transaction) ->
-        _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
+        # we must use an existing transaction if there is one
+        dbs.ensureTransaction transaction, 'main', (transaction) ->
+          _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
 
 
 module.exports = {

@@ -1,8 +1,8 @@
 app = require '../app.coffee'
 
 ###globals _###
-googleStyles = require './styles/util.style.google.coffee'
-googleOptions = _.extend {}, googleStyles
+googleStyles = require './styles/style.google.json'
+googleOptions = _.extend {}, styles: googleStyles
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 

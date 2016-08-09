@@ -116,13 +116,16 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
-        enableHandle = (handle) ->
+        enableHandle = (handle, handleName) ->
           scope.disable() #never have more than one active handle
 
           if typeof(handle) == 'string'
+            handleName ?= handle
             handle = drawModeHandles[handle] || editModeHandles[handle]
+
           handle.handler.enable()
           scope.enabled = true
+          scope.activeHandle = handleName
           _currentHandler = handle.handler
 
         if options.control?
@@ -136,7 +139,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
             scope['clicked' + handleName.toInitCaps()] = (event) ->
-              enableHandle legacyHandle, scope
+              enableHandle legacyHandle, handleName
 
 
         scope.clickedPen = (event) ->
@@ -150,11 +153,11 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
 
         scope.clickedEdit = (event) ->
-          enableHandle editModeHandles?.edit, scope
+          enableHandle editModeHandles?.edit, 'edit'
           scope.canSave = true
 
         scope.clickedTrash = (event) ->
-          enableHandle editModeHandles?.remove, scope
+          enableHandle editModeHandles?.remove, 'delete'
           scope.canSave = true
 
         ###eslint-enable###
@@ -165,6 +168,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           _currentHandler?.disable()
           scope.enabled = false
           scope.canSave = false
+          scope.activeHandle = null
           scope.$evalAsync()
 
         scope.$watch 'enabled', (newVal) ->

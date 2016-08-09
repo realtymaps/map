@@ -4,6 +4,11 @@ commonConfig = require '../../../../common/config/commonConfig.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 _overlays =
+  currentLocation:
+    name: 'Current Location'
+    type: 'group'
+    visible: true
+
   filterSummary: # can be price and poly (consider renaming)
     name: 'Homes Detail'
     type: 'markercluster'

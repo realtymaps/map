@@ -14,7 +14,8 @@ span(
     dropdown-toggle
     popover-placement="bottom"
     popover="Areas"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter"
+    popover-enable="!isOpens.area")
       span.icon.icon-area
     .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
       .fixed-header
@@ -38,5 +39,5 @@ span(
             span.actions(rmaps-require-project-editor)
               span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
               span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
-              span.fa.fa-bar-chart(ng-click="showStats(model); $event.stopPropagation()")
+              span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()")
               span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")

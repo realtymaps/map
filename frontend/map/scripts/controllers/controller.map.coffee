@@ -1,9 +1,7 @@
 ###globals _, google###
 app = require '../app.coffee'
-require '../factories/map.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-{Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
-{uiProfile} = require('../../../../common/utils/util.profile.coffee')
+{LeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 ###
   Our Main Map Controller, logic
@@ -36,10 +34,7 @@ app.controller 'rmapsMapCtrl', (
   rmapsProfilesService
   rmapsProjectsService,
   rmapsPropertiesService,
-  rmapsSearchboxService,
-
-  currentIdentity,
-  currentProfile
+  rmapsSearchboxService
 ) ->
 
   $scope.mapId = mapId = rmapsMapIds.mainMap()
@@ -81,8 +76,8 @@ app.controller 'rmapsMapCtrl', (
         $timeout () ->
           map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
         , 50
-        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-        resultCenter.zoom = 18
+        resultCenter = new LeafletCenter(result.coordinates[1],result.coordinates[0], 18)
+        resultCenter.docWhere = 'rmapsMapCtrl.scope.loadProperty'
         map.scope.map.center = resultCenter
       .catch () ->
         $location.search 'property_id', undefined

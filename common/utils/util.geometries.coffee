@@ -25,6 +25,9 @@ class Point
       return @
     throw new Error('Arguments incorrect for Point')
 
+  isEqual: (other) ->
+    other.lat == @lat && other.lon == @lon
+
 class LeafletPoint extends Point
   constructor: (lat, lon) ->
     super(lat, lon)
@@ -38,13 +41,14 @@ class LeafletCenter extends LeafletPoint
     super(lat, lon)
     @zoom = Number zoom
 
+  isEqual: (other) ->
+    super(other) && other.zoom == @zoom
+
+  setZoom: (zoom) ->
+    @zoom = Number zoom
+
 _ngLeafletCenter = (pointWZoom) ->
-  zoom = Number pointWZoom.zoom
-  numericPoint = new Point pointWZoom
-  numericPoint.zoom = zoom
-  numericPoint.setZoom = (zoom) ->
-    numericPoint.zoom = Number zoom
-  numericPoint
+  new LeafletCenter(pointWZoom, null, pointWZoom.zoom)
 
 #
 # Export for Require statements
