@@ -25,7 +25,7 @@ app.constant 'rmapsMainOptions', do () ->
             mouseout: 200
           space: 2
         json:
-          center: _.extend Point(lat: 26.148111, lon: -81.790809), zoom: 15
+          center: _.extend new Point(lat: 26.148111, lon: -81.790809), zoom: 15, where: 'rmapsMainOptions'
 
     # do logging for local dev only
     doLog: if isDev then true else false

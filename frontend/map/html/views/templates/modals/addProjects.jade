@@ -8,9 +8,9 @@ form.add-project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here" rmaps-autofocus="true" ng-keyup="checkSubmit($event)")
 
     .form-group.project-options(ng-if="principal.getCurrentProfile()")
-      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="newProject.name = 'New Project'")
+      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'New Project', inverseName: 'Sandbox'})")
         span Empty Project
-      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="true" uncheckable ng-click="newProject.name = (principal.getCurrentProfile().name || 'Sandbox') + ' copy'")
+      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="true" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'Sandbox', inverseName: 'New Project', isCopy: true})")
         span(ng-show="principal.getCurrentProfile().sandbox") Copy Sandbox
         span(ng-show="!principal.getCurrentProfile().sandbox") Copy {{principal.getCurrentProfile().name}}
 

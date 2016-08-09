@@ -12,7 +12,12 @@ app.factory 'rmapsEmptyFilterData', () ->
   overall flow:
   if this.promise exists then the mutation has been handled.
 ###
-app.factory 'rmapClusterMutation', ($q, rmapsLayerFormattersService, rmapsPropertiesService, rmapsEmptyFilterData) ->
+app.factory 'rmapClusterMutation', (
+$q
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsEmptyFilterData
+) ->
   {MLS} = rmapsLayerFormattersService
 
   stampit.methods
@@ -32,8 +37,13 @@ app.factory 'rmapClusterMutation', ($q, rmapsLayerFormattersService, rmapsProper
 
   .compose(rmapsEmptyFilterData)
 
-app.factory 'rmapSummaryResultsMutation',
-($q, $log, rmapsLayerFormattersService, rmapsPropertiesService, rmapsZoomLevelStateFactory) ->
+app.factory 'rmapSummaryResultsMutation', (
+$q
+$log
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsZoomLevelStateFactory
+) ->
   $log = $log.spawn 'rmapSummaryResultsMutation'
 
   {setDataOptions, MLS} = rmapsLayerFormattersService
@@ -90,21 +100,34 @@ app.factory 'rmapSummaryResultsMutation',
 
       $log.debug @scope.map.markers.filterSummary
 
+      # turn our price marker layer back on if zooming from parcel-level
+      if @scope.zoomLevelService.isFromParcelZoom()
+        Toggles.showPrices = true
+
       if !@isAnyParcel()
         overlays?.parcels?.visible = false
-        if @scope.zoomLevelService.isFromPriceZoom()
-          Toggles.showPrices = true
         Toggles.showAddresses = false
         overlays?.parcelsAddresses?.visible = false
         @promise = $q.resolve()
       @
   .compose rmapsZoomLevelStateFactory
 
-app.factory 'rmapParcelResultsMutation',
-($q, $log, rmapSummaryResultsMutation, rmapsZoomLevelStateFactory, rmapsPropertiesService, rmapsLayerFormattersService, rmapsEmptyFilterData) ->
+app.factory 'rmapParcelResultsMutation', (
+$q
+$log
+$timeout
+rmapSummaryResultsMutation
+rmapsZoomLevelStateFactory
+rmapsPropertiesService
+rmapsLayerFormattersService
+rmapsEmptyFilterData
+) ->
   $log = $log.spawn 'rmapParcelResultsMutation'
   stampit.methods
     handleGeoJsonResults: (data) ->
+      # $timeout =>
+      # timeout allows the spinner to return, this shows the re-slow area is
+      # clone (truned off), ui-leaflet, leaflet
       rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data)
       .then (data) =>
         return if @isEmptyData()
@@ -113,6 +136,7 @@ app.factory 'rmapParcelResultsMutation',
         @scope.map.geojson.filterSummaryPoly =
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle
+      # , 50
 
     mutateParcel: () ->
       if @promise
@@ -133,8 +157,12 @@ app.factory 'rmapParcelResultsMutation',
 
   .compose rmapsZoomLevelStateFactory, rmapsEmptyFilterData
 
-app.factory 'rmapsResultsFlow',
-(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation, $log) ->
+app.factory 'rmapsResultsFlow', (
+$log
+rmapParcelResultsMutation
+rmapClusterMutation
+rmapSummaryResultsMutation
+) ->
   $log = $log.spawn 'map:rmapsResultsFlow'
   flowFact = stampit
   .compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)

@@ -24,8 +24,8 @@ toGeoFeature = (row, opts) ->
 
   row
 
-toGeoFeatureCollection = (rows = [], opts = {}) ->
-  rows = clone rows
+toGeoFeatureCollection = ({rows = [], opts = {}, doClone = true}) ->
+  rows = clone rows if doClone
   if opts?.uniqueKey?
     rows = _.uniq rows, (r) ->
       r[opts.uniqueKey]

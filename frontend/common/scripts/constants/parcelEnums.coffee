@@ -1,16 +1,13 @@
 _ = require 'lodash'
 mod = require '../module.coffee'
 
-statusUniversal =
+statusData =
   pending: 'pending'
   forSale: 'for sale'
+  discontinued: 'discontinued'
 
 statusFilter =
   sold: 'sold'
-
-subStatus =
-  discontinued: 'discontinued'
-  auction: 'auction'
 
 propertyType = {
   'Single Family',
@@ -80,20 +77,13 @@ address =
   unitNum: 'Unit Number'
   showStreetInfo: 'Show Street Info'
 
-
-statusFull = _.extend(statusUniversal, statusFilter)
-subStatusFull = _.extend(statusUniversal, statusFilter, subStatus)
-statusData = statusUniversal
-
 mod.constant 'rmapsParcelEnums', {
-  status: statusFull
-  subStatus: subStatusFull
+  status: _.extend({}, statusData, statusFilter)
   statusData
   categories
   address
   propertyType
   lookupOptions:
     status: _.values(statusData)
-    substatus: _.values(subStatusFull)
     property_type: _.values(propertyType)
 }

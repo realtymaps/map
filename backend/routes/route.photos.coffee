@@ -7,6 +7,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 {HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 config = require '../config/config'
+ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -54,7 +55,8 @@ handles = wrapHandleRoutes
             next new ExpressResponse(alert: {msg: 'stream error: ' + err.message}, httpStatus.INTERNAL_SERVER_ERROR)
 
           .pipe(res)
-
+      .catch ExpectedSingleRowError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, httpStatus.NOT_FOUND)
       .catch HttpStatusCodeError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, err.statusCode)
       .catch BadContentTypeError, (err) ->

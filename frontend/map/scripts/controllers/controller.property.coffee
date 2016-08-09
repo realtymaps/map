@@ -4,18 +4,19 @@ moment = require 'moment'
 
 app.controller 'rmapsPropertyCtrl',
   (
-    $scope,
-    $rootScope,
-    $stateParams,
-    $log,
-    $modal,
-    rmapsPropertiesService,
-    rmapsFormattersService,
-    rmapsResultsFormatterService,
-    rmapsPropertyFormatterService,
-    rmapsGoogleService,
-    rmapsMailCampaignService,
+    $scope
+    $rootScope
+    $stateParams
+    $log
+    $modal
+    rmapsPropertiesService
+    rmapsFormattersService
+    rmapsResultsFormatterService
+    rmapsPropertyFormatterService
+    rmapsGoogleService
+    rmapsMailCampaignService
     rmapsFiltersFactory
+    $http
   ) ->
 
     $log = $log.spawn 'rmapsPropertyCtrl'
@@ -58,7 +59,10 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',}
       {name: 'owner', label: 'Owner', subscriber: 'subscriber_groups'}
       {name: 'deed', label: 'Deed', subscriber: 'subscriber_groups'}
+      {name: 'deedHistory', label: 'Deed History', subscriber: 'subscriber_groups'}
       {name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'}
+      {name: 'mortgageHistory', label: 'Mortgage History', subscriber: 'subscriber_groups'}
+      {name: 'priorListings', label: 'Prior Listings', subscriber: 'subscriber_groups'}
     ]
 
     $scope.previewLetter = (mail) ->
@@ -73,17 +77,47 @@ app.controller 'rmapsPropertyCtrl',
             pdf: mail.lob.url
             title: 'Mail Review'
 
-    $scope.showDCMA = (mls) ->
+    $scope.showDMCA = (mls) ->
       $modal.open
         template: require('../../html/views/templates/modal-dmca.tpl.jade')()
         controller: 'rmapsModalInstanceCtrl'
         resolve: model: -> mls
 
     getPropertyDetail = (propertyId) ->
-      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
+      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', true)
       .then (property) ->
         $scope.selectedResult = property
-        $scope.dataSources = [].concat(property.mls||[]).concat(property.county||[])
+
+        $scope.dataSources = (property.mls||[]).concat(property.county||[])
+
+        # Temporary mock data
+        if property.mls?[0]
+          property.mls[0].subscriber_groups.priorListings = [
+            {
+              data_source_type: 'mls'
+              date: new Date()
+              event: 'Terminated'
+              price: 2000000
+              listing_agent: 'A. Realtor'
+              sqft_finished: 1890
+              acres: 1.2
+              year_built: 1950
+              days_on_market: 150
+              subscriber_groups: _.cloneDeep property.mls[0].subscriber_groups
+              shared_groups: _.cloneDeep property.mls[0].shared_groups
+            }
+          ]
+
+        # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
+        for source in $scope.dataSources
+          for history in ['deedHistory', 'mortgageHistory', 'priorListings']
+            if source?.subscriber_groups?[history]
+              historyExtra = []
+              for entry in source.subscriber_groups[history]
+                entry.extra = _.clone(entry)
+                historyExtra.push(entry, entry.extra)
+              source.subscriber_groups["#{history}Extra"] = historyExtra
+
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
     $scope.getStatus = (property) ->
@@ -97,7 +131,7 @@ app.controller 'rmapsPropertyCtrl',
             return label: "Sold within #{soldRange}", class: 'sold'
           else
             return label: "Not Sold witin #{soldRange}", class: 'notsale'
-        catch ex
+        catch error
           return label: "Not Sold", class: 'notsale'
       else
         return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
@@ -108,17 +142,18 @@ app.controller 'rmapsPropertyCtrl',
       apn = splits[1]
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (fips % 2)+1
-      $http.get("`//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}")
-      .then (pvaPage) ->
-        url = pvaPage.url.replace("{{_APN_}}", apn)
-        if pvaPage.options?.post
+      pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}"
+      $http.get(pvaUrl)
+      .then ({data}) ->
+        url = data.url.replace("{{_APN_}}", apn)
+        if data.options?.post
           pvaForm = document.createElement("form")
           windowName = window.name+(new Date().getTime())
           pvaForm.target = windowName
           pvaForm.method = "POST"
           pvaForm.action = url
 
-          for name, value of pvaPage.options.post
+          for name, value of data.options.post
             newInput = document.createElement("input")
             newInput.type = "hidden"
             newInput.name = name
@@ -126,7 +161,7 @@ app.controller 'rmapsPropertyCtrl',
             pvaForm.appendChild(newInput)
 
           document.body.appendChild(pvaForm)
-          if child = window.open('', windowName)
+          if window.open('', windowName)
             pvaForm.submit()
           else
             alert("Please enable popups on this page")

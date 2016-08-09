@@ -1,82 +1,17 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('map:filterSummary:combined')
-validation = require "../utils/util.validation"
+logger = require('../config/logger').spawn('service:filterSummary:combined')
 sqlHelpers = require "./../utils/util.sql.helpers"
-filterStatuses = require "../enums/filterStatuses"
-filterPropertyType = require "../enums/filterPropertyType"
 _ = require "lodash"
 tables = require "../config/tables"
-cluster = require '../utils/util.sql.manual.cluster.combined'
-
-
+internals = require './service.properties.combined.filterSummary.internals'
 dbFn = tables.finalized.combined
+combinedTransforms = require('../utils/transforms/transforms.properties.coffee').filterSummary
+{statuses} = require "../enums/filterStatuses"
 
-validators = validation.validators
-
-statuses = filterStatuses.keys
-
-propertyTypes = filterPropertyType.keys
-
-minMaxFilterValidations =
-  price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
-  listedDays: validators.integer()
-  beds: validators.integer()
-  baths: validators.float()
-  acres: validators.float()
-  sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
-  closeDate: validators.datetime()
-
-transforms = do ->
-  makeMinMaxes = (result, validators, name) ->
-    result["#{name}Min"] = validators
-    result["#{name}Max"] = validators
-
-  minMaxFilterValidations = _.transform(minMaxFilterValidations, makeMinMaxes)
-  state: validators.object
-    subValidateSeparate:
-      filters: [
-        validators.object
-          subValidateSeparate: _.extend minMaxFilterValidations,
-            ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-            hasOwner: validators.boolean()
-            status: [
-              validators.array
-                subValidateEach: [
-                  validators.string(forceLowerCase: true)
-                  validators.choice(choices: statuses)
-                ]
-              validators.defaults(defaultValue: [])
-            ]
-            address: [
-              validators.object()
-              validators.defaults(defaultValue: {})
-            ]
-            propertyType: [
-              validators.string()
-              validators.choice(choices: propertyTypes)
-            ]
-            hasImages: validators.boolean(truthy: true, falsy: false)
-            soldRange: validators.string()
-          validators.defaults(defaultValue: {})
-      ]
-  bounds:
-    transform: [
-      validators.string(minLength: 1)
-      validators.geohash
-      validators.array(minLength: 2)
-    ]
-    required: true
-  returnType: validators.string()
 
 getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
   .where(active: true)
-
-getResultCount = ({queryParams, permissions}) ->
-  # obtain a count(*)-style select query
-  query = sqlHelpers.selectCountDistinct(dbFn())
-  # apply the queryParams (mostly "where" clause stuff)
-  query = getFilterSummaryAsQuery({queryParams, query, permissions})
 
 getPermissions = (profile) -> Promise.try ->
   tables.auth.user()
@@ -138,16 +73,8 @@ scrubPermissions = (data, permissions) ->
         delete row.owner_name_2
         delete row.owner_address
 
-getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
-  query ?= getDefaultQuery()
-  {bounds, state} = queryParams
-  {filters} = state || {}
-
-  # Add permissions
-  queryPermissions(query, permissions)
-
-  query.limit(limit) if limit
-
+queryFilters = ({query, filters, bounds, queryParams}) ->
+  logger.debug () -> "in queryFilters"
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
   if filters?.status?.length
 
@@ -212,23 +139,42 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
       if filters.hasImages
         @where("photos", "!=", "{}")
 
-      if queryParams.pins.length
+      if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 
+      if queryParams.favorites?.length
+        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
+
+  else if queryParams.pins || queryParams.favorites
+    logger.debug () -> "no status, so query for pins and favorites only"
+    savedIds = (queryParams.pins || []).concat(queryParams.favorites || [])
+
+    sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
   else
-    # no status, so query and show pins and favorites
-    savedIds = queryParams.pins.concat queryParams.favorites
-    if savedIds.length
-      sqlHelpers.whereIn(query, 'rm_property_id', savedIds)
+    logger.debug () -> "no status and no pins or favorites, so no query needed"
+    mockQuery = Promise.resolve([])
+    mockQuery.toString = () ->
+      'NOTHING TO QUERY!'
+    return mockQuery
 
   query
 
+
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+  query ?= getDefaultQuery()
+  {bounds, state} = queryParams
+  {filters} = state || {}
+
+  queryPermissions(query, permissions)
+  query.limit(limit) if limit
+  queryFilters({query, filters, bounds, queryParams})
+
+
 module.exports = {
-  transforms
+  transforms: combinedTransforms
   getDefaultQuery
   getFilterSummaryAsQuery
-  getResultCount
-  cluster
+  cluster: internals
   getPermissions
   queryPermissions
   scrubPermissions

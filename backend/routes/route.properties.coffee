@@ -13,7 +13,6 @@ internals = require './route.properties.internals'
 ourTransforms = require '../utils/transforms/transforms.properties'
 logger = require('../config/logger').spawn('route.properties')
 
-
 module.exports =
 
   mapState:
@@ -155,4 +154,5 @@ module.exports =
 
   pva:
     handle: (req, res, next) ->
+      res.set 'Access-Control-Allow-Origin', "*"
       internals.getPva({req, res, next})

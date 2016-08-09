@@ -174,12 +174,14 @@ requireLogin = (options = {}) ->
 
 # route-specific middleware that requires profile and project for the user
 # optional: methods
-# optional: projectIdParam (needs to match the url param of the endpoint, though)
+# optional: projectIdParam (needs to match the id of the endpoint, such as `id` or `project_id`)
+#           Can use format like `body.project_id` or `params.id` to force where on `req` to get the id.
 requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -188,11 +190,17 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
     # middleware is not applicable for this req.method, move along
     return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
+    # get project id based on the `projectIdParam` argument in either `req.params` or
+    #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
+    #   `projectIdParam` on the `req` obj,     followed by `req.params`, since
+    #   that is where the restful resource id will often be found (in url)
+    queryParams = _.merge {}, req.query, req.params
+
     # get profile based on project param.  some endpoints will not have this,
     # so if project is not present, get it via `current_profile_id` off session
-    if getProjectFromSession != true and req.params? and projectIdParam of req.params
-      project_id = req.params[projectIdParam]
-      profile = _.find(req.session.profiles, project_id: Number(project_id))
+    if getProjectFromSession != true and queryParams? and projectIdParam of queryParams
+      project_id = _.get(req, projectIdParam, queryParams[projectIdParam]) # try using `projectIdParam as a "path" if possible
+      profile = _.find(req.session.profiles, project_id: Number(project_id)) # project_id == null, undefined, or NaN makes `profile` undefined here
     else
       profile = req.session.profiles["#{req.session.current_profile_id}"]
 
@@ -217,7 +225,8 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -248,7 +257,8 @@ requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods

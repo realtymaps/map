@@ -13,7 +13,8 @@ span.pinned-list.dropdown.btn-group(
     dropdown-toggle
     popover-placement="bottom"
     popover="Mailings"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter"
+    popover-enable="!isOpens.mail")
     i.fa.fa-envelope.icon
 
   .dropdown-menu.whiteblock

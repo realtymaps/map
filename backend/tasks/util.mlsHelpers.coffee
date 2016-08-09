@@ -8,21 +8,15 @@ tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
 dataLoadHelpers = require './util.dataLoadHelpers'
-rets = require 'rets-client'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 awsService = require '../services/service.aws'
 mlsPhotoUtil = require '../utils/util.mls.photos'
 uuid = require '../utils/util.uuid'
-externalAccounts = require '../services/service.externalAccounts'
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 config = require '../config/config'
 internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
-
-
-ONE_YEAR_MILLIS = 365*24*60*60*1000
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -78,18 +72,65 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data
 
 
+_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+  index = 0
+  for entry,i in entries
+    if entry.status != 'discontinued'
+      index = i
+      break
+  mainEntry = _.clone(entries[index])
+  delete entries[index].shared_groups
+  delete entries[index].subscriber_groups
+  delete entries[index].hidden_fields
+  delete entries[index].ungrouped_fields
+
+  mainEntry.active = false
+  delete mainEntry.deleted
+  delete mainEntry.hide_address
+  delete mainEntry.hide_listing
+  delete mainEntry.rm_inserted_time
+  delete mainEntry.rm_modified_time
+  mainEntry.prior_entries = sqlHelpers.safeJsonArray(entries)
+  mainEntry.address = sqlHelpers.safeJsonArray(mainEntry.address)
+  mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
+  mainEntry.change_history = sqlHelpers.safeJsonArray(mainEntry.change_history)
+  mainEntry.update_source = subtask.task_name
+
+  mainEntry.baths_total = mainEntry.baths?.filter
+
+  #compose photo finalized fields
+  photosLength = Object.keys(mainEntry.photos).length
+
+  if !photosLength
+    mainEntry.actual_photo_count = 0
+    return mainEntry
+
+  mainEntry.actual_photo_count = photosLength - 1  # photo 0 and 1 are the same
+
+  mlsPhotoUtil.getCndPhotoShard {
+    newFileName: mainEntry.photos[0].key
+    listingRow: mainEntry
+  }
+  .then (cdn_photo) ->
+    mainEntry.cdn_photo = cdn_photo
+    mainEntry
+
+
 finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   listingsPromise = tables.normalized.listing()
   .select('*')
-  .where(rm_property_id: id)
+  .where
+    rm_property_id: id
+    hide_listing: false
+    data_source_id: subtask.task_name
   .whereNull('deleted')
-  .where(hide_listing: false)
   .orderBy('rm_property_id')
-  .orderBy('deleted')
   .orderBy('hide_listing')
+  .orderBy('data_source_id')
+  .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
   parcelPromise = if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
   Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
@@ -98,149 +139,57 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
-    listing = dataLoadHelpers.finalizeEntry({entries: listings, subtask})
-    listing.data_source_type = 'mls'
-    _.extend(listing, parcel[0])
-    Promise.delay(delay)  #throttle for heroku's sake
-    .then () ->
-      # do owner name and zoning promotion logic
-      if listing.owner_name? || listing.owner_name_2? || listing.zoning
-        # keep previously-promoted values
-        return false
-      dataLoadHelpers.checkTableExists('normalized', tables.normalized.tax.buildTableName(listing.fips_code))
-    .then (checkPromotedValues) ->
-      if !checkPromotedValues
-        return
-      # need to query the tax table to get values to promote
-      tables.normalized.tax(subid: listing.fips_code)
-      .select('promoted_values')
-      .where
-        rm_property_id: id
-      .then (results=[]) ->
-        if results[0]?.promoted_values
-          # promote values into this listing
-          _.extend(listing, results[0].promoted_values)
-          # save back to the listing table to avoid making checks in the future
-          tables.normalized.listing()
-          .where
-            data_source_id: listing.data_source_id
-            data_source_uuid: listing.data_source_uuid
-          .update(results[0].promoted_values)
-    .then () ->
-      dbs.ensureTransaction transaction, 'main', (transaction) ->
-        tables.finalized.combined(transaction: transaction)
+    _finalizeEntry({entries: listings, subtask})
+    .then (listing) ->
+      listing.data_source_type = 'mls'
+      _.extend(listing, parcel[0])
+      Promise.delay(delay)  #throttle for heroku's sake
+      .then () ->
+        # do owner name and zoning promotion logic
+        if listing.owner_name? || listing.owner_name_2? || listing.zoning
+          # keep previously-promoted values
+          return false
+        dataLoadHelpers.checkTableExists('normalized', tables.normalized.tax.buildTableName(listing.fips_code))
+      .then (checkPromotedValues) ->
+        if !checkPromotedValues
+          return
+        # need to query the tax table to get values to promote
+        tables.normalized.tax(subid: listing.fips_code)
+        .select('promoted_values')
         .where
           rm_property_id: id
-          data_source_id: data_source_id || subtask.task_name
-          active: false
-        .delete()
-        .then () ->
+        .then (results=[]) ->
+          if results[0]?.promoted_values
+            # promote values into this listing
+            _.extend(listing, results[0].promoted_values)
+            # save back to the listing table to avoid making checks in the future
+            tables.normalized.listing()
+            .where
+              data_source_id: listing.data_source_id
+              data_source_uuid: listing.data_source_uuid
+            .update(results[0].promoted_values)
+      .then () ->
+        dbs.ensureTransaction transaction, 'main', (transaction) ->
           tables.finalized.combined(transaction: transaction)
-          .insert(listing)
+          .where
+            rm_property_id: id
+            data_source_id: data_source_id || subtask.task_name
+            active: false
+          .delete()
+          .then () ->
+            tables.finalized.combined(transaction: transaction)
+            .insert(listing)
 
 
-_updatePhoto = (subtask, opts) -> Promise.try () ->
-  if !opts
-    logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
-    return
-
-  onMissingArgsFail
-    args: opts
-    required: ['newFileName', 'imageId', 'photo_id', 'listingRow']
-
-  {newFileName, imageId, photo_id, listingRow, objectData, transaction} = opts
-  externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
-  .then (s3Info) ->
-    ###
-    Update photo's hash in a listing col
-    example:
-      photos:
-        1: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
-        2: https://s3.amazonaws.com/uuid/swflmls/mls_id_2.jpeg
-        3: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
-    ###
-    obj =
-      key: newFileName
-      url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
-
-
-    obj.objectData = objectData if objectData
-
-    jsonObjStr = JSON.stringify obj
-
-    finePhotologger.debug jsonObjStr
-
-    cdnPhotoStrPromise = Promise.resolve('')
-    if imageId == 0
-      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(opts)
-
-    cdnPhotoStrPromise
-    .then (cdnPhotoStr) ->
-
-      internals.makeInsertPhoto {
-        listingRow
-        cdnPhotoStr
-        jsonObjStr
-        imageId
-        photo_id
-        transaction
-      }
-
-    .catch (error) ->
-      logger.spawn(subtask.task_name).error error
-      logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
-      _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
-
-_enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
-  if key?
-    tables.deletes.photos({transaction})
-    .insert {key, batch_id}
-  else
-    Promise.resolve()
-
-###
-  using upload see service.aws.putObject comments
-
-  The short of it is that we do not know the size of the payload. EVEN if rets-client gives a size if it is invalid
-  it causes too many problems. It is easier to forgoe worying about size and just upload blindly!
-###
-_uploadPhoto = ({photoRes, newFileName, payload, row}) ->
-  new Promise (resolve, reject) ->
-    awsService.upload
-      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
-      Key: newFileName
-      ContentType: payload.contentType
-      Metadata:
-        data_source_id: row.data_source_id
-        data_source_uuid: row.data_source_uuid
-        rm_property_id: row.rm_property_id
-        height: photoRes.height
-        width: photoRes.width
-    .then (upload) ->
-
-      payload.data.once 'error', (error) ->
-        reject error
-
-      upload.once 'uploaded', (details) ->
-        logger.spawn(row.data_source_id).debug details
-        resolve(details)
-
-      upload.once 'error', (error) ->
-        reject error
-
-      payload.data.pipe(upload)
-
-    .catch (error) -> #missing catch
-      reject error
-
-storePhotos = (subtask, listingRow) -> Promise.try () ->
-  finePhotologger.debug subtask.task_name
-  finePhotologger.debug listingRow, true
-
+storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
   successCtr = 0
   errorsCtr = 0
   skipsCtr = 0
   needsRetry = false
+  errorDetails = null
+  listingRow =
+    data_source_id: subtask.task_name
+    data_source_uuid: data_source_uuid
 
   mlsConfigPromise = mlsConfigService.getByIdCached(subtask.task_name)
   listingRowPromise = tables.normalized.listing()
@@ -252,15 +201,10 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       return Promise.resolve()
 
     [row] = rows
-    finePhotologger.debug "id: data_source_id: #{listingRow.data_source_id} data_source_uuid: #{listingRow.data_source_uuid}"
+    finePhotologger.debug "id: data_source_id: #{subtask.task_name} data_source_uuid: #{data_source_uuid}"
 
     #if the photo set is not updated GTFO
     logger.spawn(subtask.task_name).debug row.photo_last_mod_time
-
-    if row.photo_last_mod_time? && row.photo_download_last_mod_time? &&
-    row.photo_last_mod_time == row.photo_download_last_mod_time
-      finePhotologger.debug 'photo_last_mod_time identical  GTFO'
-      return Promise.resolve()
 
     {photo_id} = row
     photoIds = {}
@@ -290,7 +234,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
 
         #file naming consideratons
         #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-        newFileName = "#{uuid.genUUID()}/#{listingRow.data_source_id}/#{listingRow.data_source_uuid}/#{payload.name}"
+        newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{data_source_uuid}/#{payload.name}"
         {imageId, objectData} = payload
 
         logger.spawn(subtask.task_name).debug _.omit payload, 'data'
@@ -301,64 +245,42 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           return
 
         uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-          _updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
           .then () ->
             dbs.transaction 'main', (transaction2) ->
-              _enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
               .then () ->
-                _uploadPhoto({photoRes, newFileName, payload, row})
+                internals.uploadPhoto({photoRes, newFileName, payload, row})
         .then () ->
           logger.spawn(subtask.task_name).debug 'photo upload success'
           successCtr++
         .catch (error) ->
-          errorDetails = analyzeValue.getSimpleDetails(error)
-          logger.spawn(subtask.task_name).debug "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+          errorDetails ?= analyzeValue.getSimpleDetails(error)
+          logger.spawn(subtask.task_name).debug () -> "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
           errorsCtr++
-          # record the error, enqueue a delete for the new version just in case, and move on
-          tables.normalized.listing()
-          .where(listingRow)
-          .update(photo_import_error: errorDetails)
         promises.push(uploadPromise)
   .catch errorHandlingUtils.isUnhandled, (error) ->
-    throw new errorHandlingUtils.PartiallyHandledError(error, "problem storing photos for #{JSON.stringify(listingRow)}")
+    throw new errorHandlingUtils.PartiallyHandledError(error, "problem storing photos for #{subtask.task_name}/#{data_source_uuid}")
   .catch (error) ->
-    errorDetails = analyzeValue.getSimpleDetails(error)
+    errorDetails ?= analyzeValue.getSimpleDetails(error)
     needsRetry = true
     logger.spawn(subtask.task_name).debug () -> "overall error: #{errorDetails}"
-    tables.normalized.listing()
-    .where(listingRow)
-    .update(photo_import_error: errorDetails)
   .then () ->
     logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
     logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
     logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
-    needsRetry ||= (errorsCtr > 0)
-    # TODO: 1) ----  https://realtymaps.atlassian.net/browse/MAPD-1179
-    # TODO:  If needsRetry is true, then we need to record this listing somehow for a later retry of storing its photos;
-    # TODO:  if we don't do that, then a transient error could prevent a photo (or all photos for a listing) from
-    # TODO:  uploading -- and it won't get another chance until the listing is updated next.
-    # TODO:
-    # TODO:  The retry should probably be handled in storePhotosPrep, which would need to enqueue any listings for this
-    # TODO:  MLS recorded from prior batches as having had upload errors -- in addition to what it does now (listings
-    # TODO:  inserted/updated during this batch).  Then we would also need another subtask at the end of the mls task
-    # TODO:  that clears out any recorded listings for this mls from prior batches (since if the transient error was
-    # TODO:  still happening, it would have been recorded again for this batch).
-    # TODO:
-    # TODO:  This change means we need to have storePhotosPrep run no matter whether there was regular update data or
-    # TODO:  not on a given run of the task.
-    # TODO:
-    # TODO: 2) ----  https://realtymaps.atlassian.net/browse/MAPD-1180
-    # TODO:  As a side note, for storePhotosPrep to work properly (even as it is now), we need to change the way we
-    # TODO:  pull updated listings.  Currently it only pulls listings with a listing update timestamp greater than the
-    # TODO:  last successful run; instead, it should pull listings with either a listing update timestamp OR a photo
-    # TODO:  update timestamp greater than the last successful run.  If we could assume the listing update timestamp
-    # TODO:  would also reflect photo changes, then this would not be necessary, but also wouldn't hurt; since we can't
-    # TODO:  assume that is true for all MLSs, then we need the more thorough query.
-    # TODO:
-    # TODO: 3) ----  https://realtymaps.atlassian.net/browse/MAPD-1181
-    # TODO:  Also, there is logic above that looks at row.photo_download_last_mod_time and possibly bails for
-    # TODO:  efficiency -- however there is no code that ever sets such a value, and the column doesn't even exist on
-    # TODO:  the listings table.
+    if needsRetry || (errorsCtr > 0)
+      sqlHelpers.upsert
+        dbFn: tables.deletes.retry_photos
+        idObj:
+          data_source_id: subtask.task_name
+          data_source_uuid: data_source_uuid
+          batch_id: subtask.batch_id
+        entityObj:
+          error: errorDetails
+        conflictOverrideObj:
+          error: undefined
+
 
 deleteOldPhoto = (subtask, key) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
@@ -411,6 +333,9 @@ markUpToDate = (subtask) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 
 
+getMlsField = (mlsId, fieldName) ->
+  internals.getMlsField(mlsId, fieldName)
+
 module.exports = {
   loadUpdates
   buildRecord
@@ -418,4 +343,5 @@ module.exports = {
   storePhotos
   deleteOldPhoto
   markUpToDate
+  getMlsField
 }

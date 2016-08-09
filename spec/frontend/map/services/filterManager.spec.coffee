@@ -1,4 +1,4 @@
-qs = require 'qs'
+###globals angular,inject###
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
 
@@ -13,8 +13,19 @@ describe "rmapsFilterManagerService", ->
       @subject = rmapsFilterManagerService
       @digestor = digestor
 
-      $httpBackend.when( 'GET', backendRoutes.userSession.identity)
-      .respond( identity: {})
+      identity = {
+        currentProfileId: 1,
+        profiles: {
+          1: {
+            id: 1
+          }
+        }
+      }
+
+      $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )
+      $httpBackend.when( 'POST', backendRoutes.userSession.currentProfile).respond( identity: identity )
+      $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
+
 
   describe 'subject', ->
 
@@ -31,7 +42,7 @@ describe "rmapsFilterManagerService", ->
 
         spyCb = sinon.spy @$rootScope, '$emit'
         @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) ->
-          expect(filters).to.eql status: ['for sale']
+          expect(filters).to.eql status: [ 'for sale' ]
           done()
 
         @$rootScope.selectedFilters =

@@ -18,7 +18,7 @@ rmapsHttpTempCache
   service =
     # Restangular.service backendRoutes.notesSession.apiBase
     # vs a simple $http
-    getList: (force = false, cache = true) ->
+    getAll: (force = false, cache = true) ->
       $log.debug 'Get notes from API, force?', force
       if !getPromise || force
         if force
@@ -29,12 +29,21 @@ rmapsHttpTempCache
 
         rmapsHttpTempCache {
           url
-          promise: $http.getData(url, {cache}).then (data) -> _notes = data
+          promise: $http.getData(url, {cache})
+          .then (data) ->
+            index = 0
+            for key, val of data
+              val.$index = ++index
+              val.text = decodeURIComponent(val.text)
+            _notes = data
           ttlMilliSec: 800
         }
       else
         getPromise
 
+    getList: (force, cache) ->
+      @getAll(force, cache).then (data) ->
+        _.values data
 
     createFromText: (noteText, projectId, propertyId, geomPointJson) ->
       note = {
@@ -47,6 +56,7 @@ rmapsHttpTempCache
       return service.create(note)
 
     create: (entity) ->
+      entity.text = encodeURIComponent(entity.text)
       $http.post(backendRoutes.notesSession.apiBase, entity, {cache:false})
       .then () =>
         @getList(true)
@@ -59,6 +69,7 @@ rmapsHttpTempCache
         @getList(true)
 
     update: (entity) ->
+      entity.text = encodeURIComponent(entity.text)
       throw new Error('entity must have id') unless entity.id
       id = '/' + entity.id
       $http.put(backendRoutes.notesSession.apiBase + id, entity, cache: false)

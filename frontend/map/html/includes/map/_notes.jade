@@ -13,7 +13,8 @@ span(
     dropdown-toggle
     popover-placement="bottom"
     popover="Notes"
-    popover-trigger="mouseenter")
+    popover-enable="!isOpens.notes"
+    popover-trigger="click mouseenter")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
@@ -32,7 +33,7 @@ span(
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.id}}')
+              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.$index}}', true)
 
               // TODO - add sketch feature in
                 span.sketch
@@ -42,6 +43,6 @@ span(
                 span.comment
                   a(href="#comment") Leave a comment
 
-            span.actions(rmaps-require-project-editor)
-              span.icon.icon-remove(ng-click="remove(note); $event.stopPropagation()")
+            span.actions
+              span.icon.icon-remove(rmaps-require-project-editor ng-click="remove(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")

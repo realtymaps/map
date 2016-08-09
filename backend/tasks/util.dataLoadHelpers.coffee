@@ -21,7 +21,6 @@ moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
 
-
 DELETE =
   UNTOUCHED: 'untouched'
   INDICATED: 'indicated'
@@ -488,23 +487,6 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-finalizeEntry = ({entries, subtask}) ->
-  entry = entries.shift()
-  entry.active = false
-  delete entry.deleted
-  delete entry.hide_address
-  delete entry.hide_listing
-  delete entry.rm_inserted_time
-  delete entry.rm_modified_time
-  entry.prior_entries = sqlHelpers.safeJsonArray(entries)
-  entry.address = sqlHelpers.safeJsonArray(entry.address)
-  entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
-  entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = subtask.task_name
-  entry.actual_photo_count = _.keys(entry.photos).length - 1  # photo 0 and 1 are the same
-  entry.baths_total = entry.baths?.filter
-  entry
-
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   if !_.isArray columns
     columns = [columns]
@@ -798,7 +780,6 @@ module.exports = {
   normalizeData
   getRawRows
   getValues
-  finalizeEntry
   manageRawDataStream
   manageRawJSONStream
   ensureNormalizedTable

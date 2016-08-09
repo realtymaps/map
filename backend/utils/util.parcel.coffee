@@ -82,11 +82,20 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
 
 
 prepRowForRawGeom = (row) ->
+  #NOTE: If we were to simplify our geometries across the board on import
+  # it should be done here , SIMPLIFY_TOL = .000002
   if row.geometry.type == 'Point'
-    row.geometry_center_raw = dbs.get('normalized').raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
+    row.geometry_center_raw = dbs.get('normalized')
+      .raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
+    row.geometry_center = row.geometry
+    delete row.geometry
   else  # 'Polygon'
-    row.geometry_raw = dbs.get('normalized').raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
-  delete row.geometry
+    row.geometry_raw = dbs.get('normalized')
+      .raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
+    row.geometry_center_raw = dbs.get('normalized')
+      .raw("st_centroid(ST_Multi(st_geomfromgeojson( ? )))", JSON.stringify(row.geometry))
+    row.geometry_center = dbs.get('normalized')
+      .raw("ST_AsGeoJSON(st_centroid(ST_Multi(st_geomfromgeojson( ? ))))::jsonb", JSON.stringify(row.geometry))
 
 
 module.exports = {

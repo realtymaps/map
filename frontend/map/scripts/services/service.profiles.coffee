@@ -19,18 +19,19 @@ rmapsHttpTempCache
     }
 
 app.service 'rmapsProfilesService', (
-  $http,
+  $http
   $log
-  $q,
-  $rootScope,
-  rmapsCurrentProfilesService,
-  rmapsEventConstants,
-  rmapsMainOptions,
-  rmapsMapFactory,
-  rmapsMapTogglesFactory,
-  rmapsParcelEnums,
-  rmapsPrincipalService,
-  rmapsPropertiesService,
+  $q
+  $timeout
+  $rootScope
+  rmapsCurrentProfilesService
+  rmapsEventConstants
+  rmapsMainOptions
+  rmapsMapFactory
+  rmapsMapTogglesFactory
+  rmapsParcelEnums
+  rmapsPrincipalService
+  rmapsPropertiesService
   rmapsFiltersFactory
 ) ->
 
@@ -52,14 +53,25 @@ app.service 'rmapsProfilesService', (
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
 
+  _isSettingProfile = false
+  _settingCurrentPromise = null
+
   _setCurrent = (oldProfile, newProfile) ->
-    if oldProfile?
+    _isSettingProfile = true
+
+    _settingCurrentPromise = if oldProfile?
       $log.debug 'updating old profile'
       _update(oldProfile)
       .then () ->
         _current newProfile
     else
       _current newProfile
+
+    _settingCurrentPromise.then () ->
+      _isSettingProfile = false
+      _settingCurrentPromise = null
+
+    return _settingCurrentPromise
 
   #
   # Service Definition
@@ -90,75 +102,88 @@ app.service 'rmapsProfilesService', (
       else
         return @setCurrentProfile _.values(identity.profiles)[0]
 
-    setCurrentProfile: (project) ->
-      if project == @currentProfile
-        $log.debug "Profile is already set as current project, returning"
-        return $q.resolve project
+    ###
+      Public: This function gets hammered by watchers and or page resolves at boot.
+        Therefore we have a few GTFOS
+    ###
+    setCurrentProfile: (profile) ->
+      # GTFO 1
+      if profile == @currentProfile || profile?.id == @currentProfile?.id
+        $log.debug "Profile is already set as current profile, returning"
+        return $q.resolve profile
 
-      # If switching projects, ensure the old one is up-to-date
+      # GTFO 2
+      # At boot @currentProfile is null and gets piled up on the Promise queue
+      # if this does not exist
+      if _isSettingProfile
+        return _settingCurrentPromise
+
+      # If switching profiles, ensure the old one is up-to-date
       if @currentProfile
         @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-        @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+        @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? && status
         @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
 
         # Get the center of the main map if it has been created
         if rmapsMapFactory.currentMainMap
           @currentProfile.map_position = center: NgLeafletCenter(_.pick rmapsMapFactory.currentMainMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
 
-      # Save the old and load the new projects
-      return _setCurrent @currentProfile, project
+      # Save the old and load the new profiles
+      return _setCurrent @currentProfile, profile
       .then () ->
-        $log.debug "Set current profile to: #{project.project_id}"
+        return if !profile?.map_position?.center?
 
-        # Center and zoom the map for the new project
-        map_position = project.map_position
+        $log.debug "Set current profile to: #{profile.id}"
 
+        # Center and zoom the map for the new profile
+        map_position = center: NgLeafletCenter profile.map_position.center
+        map_position.center.docWhere = 'rmapsProfilesService:profile.map_position.center'
         #
-        # Center and zoom map to Project
+        # Center and zoom map to profile
         #
 
         #fix messed center
-        if !map_position?.center?.lng or !map_position?.center?.lat
-          map_position =
-            center:
-              lat: 26.129241
-              lng: -81.782227
-              zoom: 15
-
-        map_position =
-          center: NgLeafletCenter map_position.center
+        if !map_position?.center?.lng || !map_position?.center?.lat
+          map_position = rmapsMainOptions.map.options.json.center
+          map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
         if rmapsMapFactory.currentMainMap?.scope?.map?
+          ### eslint-disable###
+          oldCenter = _.extend {}, rmapsMapFactory?.currentMainMap?.scope?.map?.center
+          ### eslint-enable###
           if map_position?.center?
-            $log.debug "Project changed and map factory exists, recentering map"
-            rmapsMapFactory.currentMainMap.scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
-          if map_position?.zoom?
-            rmapsMapFactory.currentMainMap.scope.map.center.zoom = Number map_position.zoom
+            newCenter = NgLeafletCenter(map_position.center || rmapsMainOptions.map.options.json.center)
+            newCenter.docWhere = 'rmapsProfilesService currentMainMap'
+            if !newCenter.isEqual(rmapsMapFactory.currentMainMap.scope.map.center)
+              $log.debug "Profile changed and map factory exists, recentering map"
+              $log.debug "old lat: #{oldCenter.lat}, new lat: #{map_position.center.lat}"
+              $log.debug "old lon: #{oldCenter.lon}, new lon: #{map_position.center.lon}"
+              $log.debug "old zoom: #{oldCenter.zoom}, new zoom: #{map_position.center.zoom}"
+              rmapsMainOptions.map.options.json.center = newCenter
         else
           if map_position?
-            $log.debug "Project set first time, recentering map"
-            if map_position.center? and
-            map_position.center.latitude? and
-            map_position.center.latitude != 'NaN' and
-            map_position.center.longitude? and
+            $log.debug "Profile set first time, recentering map"
+            if map_position.center? &&
+            map_position.center.latitude? &&
+            map_position.center.latitude != 'NaN' &&
+            map_position.center.longitude? &&
             map_position.center.longitude != 'NaN'
-              rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
-            if map_position.zoom?
-              rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
+              newCenter = NgLeafletCenter map_position.center
+              newCenter.docWhere = 'rmapsProfilesService original'
+              rmapsMainOptions.map.options.json.center = newCenter
 
-        #
-        # Handle project filters
+        # Handle profile filters
         #
 
-        selectedFilters = _.defaults {}, project.filters, rmapsFiltersFactory.valueDefaults
+        selectedFilters = _.defaults {}, profile.filters, rmapsFiltersFactory.valueDefaults
         delete selectedFilters.status
         delete selectedFilters.current_project_id
 
         $log.debug selectedFilters
 
-        statusList = project.filters?.status || []
+        statusList = profile.filters?.status || []
         for key,status of rmapsParcelEnums.status
-          selectedFilters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
+          selectedFilters[key] = (statusList.indexOf(status) > -1) || (statusList.indexOf(key) > -1)
         #TODO: this is a really ugly hack to workaround our poor state design in our app
         #filters and mapState need to be combined, also both should be moved to rootScope
         #the omits here are to keep from saving off duplicate data where selectedFilters is from the backend
@@ -172,16 +197,22 @@ app.service 'rmapsProfilesService', (
         $rootScope.selectedFilters = selectedFilters
 
         #
-        # Set the Filter toggles based on the current project
+        # Set the Filter toggles based on the current profile
         #
 
         if rmapsMapFactory.currentMainMap?
           $log.debug "Profile change, updating current map Toggles"
-          rmapsMapFactory.currentMainMap.updateToggles project.map_toggles
+          rmapsMapFactory.currentMainMap.updateToggles profile.map_toggles
         else
           $log.debug "Initial profile set, create Map Toggles Factory"
-          rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
+          rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(profile.map_toggles)
 
-        return project
+        return profile
+
+  #
+  # Listen for login event to ensure that a current profile is set
+  #
+  $rootScope.$onRootScope rmapsEventConstants.principal.login.success, (event, identity) ->
+    service.setCurrentProfileByIdentity(identity)
 
   return service
