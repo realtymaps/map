@@ -8,7 +8,7 @@ Promise = require 'bluebird'
 bkServiceInternals = rewire '../../../backend/tasks/task.blackknight2.internals'
 
 _initialDateQueue = 
-  "#{bkServiceInternals.REFRESH}": ['19800101', '19800102', '19800103']
+  "#{bkServiceInternals.REFRESH}": ['19800103', '19800102', '19800101']
   "#{bkServiceInternals.UPDATE}": ['19900101', '19900102', '19900103']
 
 _processDateQueue = {} # set this beforeEach test

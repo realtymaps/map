@@ -45,20 +45,15 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
 
   _debug opts, 'opts'
 
-  console.log "getting account..."
-
   externalAccounts.getAccountInfo(extAcctName)
   .catch (error) ->
     logger.debug "Did you forget to import account into externalAccounts?"
     throw new errorHandlingUtils.PartiallyHandledError(error, "AWS external account lookup failed")
   .then (s3Info) ->
-    console.log "s3Info:\n#{JSON.stringify(s3Info,null,2)}"
     AWS.config.update
       accessKeyId: s3Info.api_key
       secretAccessKey: s3Info.other.secret_key
       region: 'us-east-1'
-
-    console.log "opts:\n#{JSON.stringify(opts,null,2)}"
 
     # some S3 api calls return streamable buffers...
     if (s3FnName == 'getObject') && (opts.stream)
