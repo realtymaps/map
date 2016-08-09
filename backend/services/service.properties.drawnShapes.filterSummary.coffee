@@ -65,7 +65,9 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
     .where(active: true)
     .where("#{drawnShapesName}.id", queryParams.areaId)
 
-    query = combined.getFilterSummaryAsQuery({queryParams, query, permissions})
+    # If there are filters set, we can use the standard combined query logic, otherwise it will return empty
+    if filters?.status?.length
+      query = combined.getFilterSummaryAsQuery({queryParams, query, permissions})
 
     logger.debug -> query.toString()
 
