@@ -20,7 +20,6 @@ util = require 'util'
 moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
-mlsPhotoUtil = require '../utils/util.mls.photos'
 
 DELETE =
   UNTOUCHED: 'untouched'
@@ -488,39 +487,6 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-finalizeEntry = ({entries, subtask}) -> Promise.try ->
-  entry = entries.shift()
-  entry.active = false
-  delete entry.deleted
-  delete entry.hide_address
-  delete entry.hide_listing
-  delete entry.rm_inserted_time
-  delete entry.rm_modified_time
-  entry.prior_entries = sqlHelpers.safeJsonArray(entries)
-  entry.address = sqlHelpers.safeJsonArray(entry.address)
-  entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
-  entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = subtask.task_name
-
-  entry.baths_total = entry.baths?.filter
-
-  #compose photo finalized fields
-  photosLength = Object.keys(entry.photos).length
-
-  if !photosLength
-    entry.actual_photo_count = 0
-    return entry
-
-  entry.actual_photo_count = photosLength - 1  # photo 0 and 1 are the same
-
-  mlsPhotoUtil.getCndPhotoShard {
-    newFileName: entry.photos[0].key
-    listingRow: entry
-  }
-  .then (cdn_photo) ->
-    entry.cdn_photo = cdn_photo
-    entry
-
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   if !_.isArray columns
     columns = [columns]
@@ -814,7 +780,6 @@ module.exports = {
   normalizeData
   getRawRows
   getValues
-  finalizeEntry
   manageRawDataStream
   manageRawJSONStream
   ensureNormalizedTable

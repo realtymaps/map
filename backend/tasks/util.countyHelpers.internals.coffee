@@ -71,9 +71,23 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
     .orderBy('deleted')
     .orderByRaw('close_date ASC NULLS FIRST')
 
+_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+  entry = entries.shift()
+  entry.active = false
+  delete entry.deleted
+  delete entry.rm_inserted_time
+  delete entry.rm_modified_time
+  entry.prior_entries = sqlHelpers.safeJsonArray(entries)
+  entry.address = sqlHelpers.safeJsonArray(entry.address)
+  entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
+  entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
+  entry.update_source = subtask.task_name
+  entry.baths_total = entry.baths?.filter
+  entry
+
 
 _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
+  _finalizeEntry({entries: taxEntries, subtask})
   .then (tax) ->
     tax.data_source_type = 'county'
     _.extend(tax, parcelEntries[0])
