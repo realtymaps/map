@@ -131,6 +131,10 @@ newProject = (req, res, next) ->
     else
       if req.body.copyCurrent is true
         _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
+      else
+        # we need a position to start with on the frontend, so copy the other profile's position
+        _.extend toSave, _.pick(profile, ['map_position'])
+        toSave = _.omit toSave, ['filters']
 
       profileService.create toSave
 

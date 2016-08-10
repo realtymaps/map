@@ -16,28 +16,27 @@ span(
     popover="Areas"
     popover-trigger="click mouseenter"
     popover-enable="!isOpens.area")
-      span.icon.icon-area
+      span.icon.icon-area-poly
     .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
       .fixed-header
         span
           a(ng-show="_.keys(areas).length" ui-sref="projectAreas({id: principal.getCurrentProfile().project_id})") {{_.keys(areas).length}} Areas
           span(ng-show="!_.keys(areas).length") No Areas
         span.results-btn(
-          popover-placement="right"
-          popover-trigger="mouseenter"
-          popover="Add Area"
           ng-click="Toggles.toggleIsAreaDraw()")
-            span.icon.icon-add_area
             span Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
           li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")
-            span.content
-              +circleNrMixin("{{$index+1}}")
-              p.title {{model.properties.area_name}}
-
-            span.actions(rmaps-require-project-editor)
-              span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
-              span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
-              span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()")
-              span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+            div
+              span.content
+                .title {{model.properties.area_name}}
+                span.rename(ng-click="update(model); $event.stopPropagation()") Rename
+              span.actions(rmaps-require-project-editor)
+                span.fa.fa-bar-chart(ng-click="showStats(model); $event.stopPropagation()")
+                span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
+                span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+        .dropdown-explanation(ng-show="!_.keys(areas).length")
+          p You haven't drawn any areas. Draw areas on the map to easily navigate between neighborhoods and to limit your search results.
+          p You can also send mail to an area or get statistics about it.
+          .action Watch a 60 second video

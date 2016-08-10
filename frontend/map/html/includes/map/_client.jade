@@ -3,7 +3,7 @@ include ../mixins/_circleNrMixin.jade
 span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsClientButtonCtrl"
-  class="dropdown btn-group notes-list"
+  class="dropdown btn-group area-list"
   dropdown
   auto-close="disabled"
   is-open="isOpens.client"
@@ -20,7 +20,7 @@ span(
   .dropdown-menu.whiteblock
     .fixed-header
       span
-        a(ng-show="clientTotal" ui-sref="projectClients({id: principal.getCurrentProfile().project_id})") {{clientTotal}} Collaborator
+        a(ng-show="clientTotal" ui-sref="projectClients({id: principal.getCurrentProfile().project_id})") {{clientTotal}} Collaborators
         span(ng-show="!clientTotal") No Collaborators
       span.results-btn(
         rmaps-require-project-editor
@@ -28,19 +28,21 @@ span(
         popover-trigger="mouseenter"
         popover="Add Client"
         ng-click="edit(); $event.stopPropagation()")
-          span.icon.icon-add_note
-          span Add Collaborator
+          span Share Project
 
     .inner
       ul
         li(ng-repeat="client in clients" ng-cloak)
           div
-            span.enity
-              +circleNrMixin('{{$index+1}}')
-              span.content
-                p.text {{client.first_name}} {{client.last_name}}
-                p.text {{client.email}}
+            span.content
+              p.text {{client.first_name}} {{client.last_name}}
+              p.text {{client.email}}
 
             span.actions(rmaps-require-project-editor)
               span.icon.icon-remove(ng-click="remove(client); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="edit(client); $event.stopPropagation()")
+      // TODO : remove project owner from client list and remove the "<=1" in the ng-show below
+      .dropdown-explanation(ng-show="clients.length <= 1")
+        p You haven't shared your project yet. We'll email clients or collaborators an invitation to join your project in 1 quick step.
+        p Everyone gets notified when changes are made to the project.
+        .action Watch a 60 second video              

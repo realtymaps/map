@@ -17,8 +17,7 @@ mixin projectsDropdown()
           popover-trigger="click mouseenter"
           popover="Add Project"
           ng-click="addProject()")
-            span.icon.icon-project
-            span New Project
+            span Create New Project
       .inner
         ul
           li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )
