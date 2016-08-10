@@ -26,8 +26,7 @@ span(
         popover-trigger="mouseenter"
         popover="Add Note"
         ng-click="Toggles.enableNoteTap()")
-          span.icon.icon-add_note
-          span New Note
+          span Add Note
     .inner
       ul(ng-controller="rmapsNotesModalCtrl")
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
@@ -46,3 +45,7 @@ span(
             span.actions
               span.icon.icon-remove(rmaps-require-project-editor ng-click="remove(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
+      .dropdown-explanation(ng-show="!markerNotesLength()")
+        p Click 'Add Note' and drop a note anywhere on the map. Or click the note button on any property you see.
+        p Your notes will show up in this list. Notes will be emailed to everyone in the project
+        .action Watch a 60 second video

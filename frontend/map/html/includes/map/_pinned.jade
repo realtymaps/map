@@ -44,3 +44,8 @@ span.pinned-list.dropdown.btn-group(
               span.action-button(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")
                 span.action Unpin
                 span.icon.icon-pin
+        
+      .dropdown-explanation(ng-show="!pinnedTotal")
+        p You haven't pinned any properties yet. Click the pin to save properties in the project.  Everyone in the project will see the same pins.
+        p Pinning makes things easier to find: they'll show up right here in this list.
+        .action Watch a 60 second video
