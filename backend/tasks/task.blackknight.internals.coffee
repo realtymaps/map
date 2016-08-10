@@ -99,6 +99,10 @@ filterS3Contents = (contents, config) -> Promise.try () ->
     "#{UPDATE}": []
     "#{DELETE}": []
 
+  # this is defensive: this will be null if no dates were available for processing (default) if for some reason we get here
+  if !config.date?
+    return filtered
+
   # each Key in Bucket...
   for item in contents
     folderPrefix = "Managed_#{config.action}/#{config.tableId}#{config.date}/"
