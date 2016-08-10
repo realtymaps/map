@@ -35,6 +35,7 @@ module.exports =
     photos: 'deletes_photos'
     combined: 'deletes_combined'
     parcel: 'deletes_parcel'
+    retry_photos: 'retry_photos'  # this isn't a delete table, but is a similar idea, and didn't have its own category
   jobQueue:
     dataLoadHistory: 'jq_data_load_history'
     taskConfig: 'jq_task_config'

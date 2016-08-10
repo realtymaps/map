@@ -307,7 +307,7 @@ sendCampaign = (userId, campaignId) ->
         dbs.transaction 'main', (tx) ->
 
           # save off pricePerLetter for lob task to use
-          tables.mail.campaign(tx)
+          tables.mail.campaign(transaction: tx)
           .update
             price_per_letter: pricePerLetter
           .where

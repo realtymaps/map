@@ -6,7 +6,6 @@ externalAccounts = require '../services/service.externalAccounts'
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobService = require './service.jobs'
-mlsTaskDefaults = require '../../common/config/mlsTaskDefaults'
 memoize = require 'memoizee'
 
 mlsServerFields = ['url', 'username', 'password']
@@ -73,45 +72,33 @@ class MlsConfigService extends ServiceCrud
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
-    super(newMls)
-    .then () ->
-      accountInfo = _.pick(entity, ['url', 'username', 'password'])
-      accountInfo.name = newMls.id
-      externalAccounts.insertAccountInfo(accountInfo)
-    .then () ->
-      # prepare a queue task for this new MLS
-      taskObj = _.merge _.clone(mlsTaskDefaults.task),
-        name: newMls.id
-
-      # prepare subtasks for this new MLS
-      subtaskObjs = [
-        _.merge _.clone(mlsTaskDefaults.subtask_loadRawData),
-          task_name: newMls.id
-          name: "#{newMls.id}_loadRawData"
-      ,
-        _.merge _.clone(mlsTaskDefaults.subtask_normalizeData),
-          task_name: newMls.id
-          name: "#{newMls.id}_normalizeData"
-      ,
-        _.merge _.clone(mlsTaskDefaults.subtask_recordChangeCounts),
-          task_name: newMls.id
-          name: "#{newMls.id}_recordChangeCounts"
-      ,
-        _.merge _.clone(mlsTaskDefaults.subtask_finalizeDataPrep),
-          task_name: newMls.id
-          name: "#{newMls.id}_finalizeDataPrep"
-      ,
-        _.merge _.clone(mlsTaskDefaults.subtask_finalizeData),
-          task_name: newMls.id
-          name: "#{newMls.id}_finalizeData"
-      ,
-        _.merge _.clone(mlsTaskDefaults.subtask_activateNewData),
-          task_name: newMls.id
-          name: "#{newMls.id}_activateNewData"
-      ]
-      Promise.join(jobService.tasks.create(taskObj), jobService.subtasks.create(subtaskObjs), () ->)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
+    tables.config.mls.transaction (transaction) ->
+      tables.config.mls({transaction})
+      .insert(newMls)
+      .then () ->
+        accountInfo = _.pick(entity, ['url', 'username', 'password'])
+        accountInfo.name = newMls.id
+        externalAccounts.insertAccountInfo(accountInfo, {transaction})
+      .then () ->
+        # prepare a queue task for this new MLS
+        tables.jobQueue.taskConfig()
+        .where(name: '<default_mls_config>')
+        .then ([taskConfig]) ->
+          taskConfig.name = newMls.id
+          tables.jobQueue.taskConfig({transaction})
+          .insert(taskConfig)
+        .then () ->
+          # prepare subtasks for this new MLS
+          tables.jobQueue.subtaskConfig()
+          .where(task_name: '<default_mls_config>')
+          .then (subtaskConfigs) ->
+            Promise.each subtaskConfigs, (subtaskConfig) ->
+              subtaskConfig.task_name = newMls.id
+              subtaskConfig.name = subtaskConfig.name.replace('<default_mls_config>', newMls.id)
+              tables.jobQueue.subtaskConfig({transaction})
+              .insert(subtaskConfig)
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
 
   getByIdCached: null  # this is to make it show up in the prototype chain; see constructor for implementation
 

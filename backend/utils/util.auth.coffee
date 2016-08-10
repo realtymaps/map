@@ -180,7 +180,8 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -191,7 +192,7 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
 
     # get project id based on the `projectIdParam` argument in either `req.params` or
     #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
-    #   `projectIdParam` on the `req` obj,     followed by `req.params`, since 
+    #   `projectIdParam` on the `req` obj,     followed by `req.params`, since
     #   that is where the restful resource id will often be found (in url)
     queryParams = _.merge {}, req.query, req.params
 
@@ -224,7 +225,8 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -255,7 +257,8 @@ requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods

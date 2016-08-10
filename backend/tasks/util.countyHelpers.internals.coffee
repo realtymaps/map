@@ -72,8 +72,28 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
     .orderByRaw('close_date ASC NULLS FIRST')
 
 
+_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+  mainEntry = _.clone(entries[0])
+  delete entries[0].shared_groups
+  delete entries[0].subscriber_groups
+  delete entries[0].hidden_fields
+  delete entries[0].ungrouped_fields
+  
+  mainEntry.active = false
+  delete mainEntry.deleted
+  delete mainEntry.rm_inserted_time
+  delete mainEntry.rm_modified_time
+  mainEntry.prior_entries = sqlHelpers.safeJsonArray(entries)
+  mainEntry.address = sqlHelpers.safeJsonArray(mainEntry.address)
+  mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
+  mainEntry.change_history = sqlHelpers.safeJsonArray(mainEntry.change_history)
+  mainEntry.update_source = subtask.task_name
+  mainEntry.baths_total = mainEntry.baths?.filter
+  mainEntry
+
+
 _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  dataLoadHelpers.finalizeEntry({entries: taxEntries, subtask})
+  _finalizeEntry({entries: taxEntries, subtask})
   .then (tax) ->
     tax.data_source_type = 'county'
     _.extend(tax, parcelEntries[0])
@@ -99,12 +119,18 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
       delete deedEntry.recording_date
       if !lastSaleIndex? && tax.legal_unit_number == deedEntry.legal_unit_number
         lastSaleIndex = i
-    if lastSaleIndex? && moment(deedEntries[lastSaleIndex].recording_date).isAfter(tax.recording_date)
+    if lastSaleIndex?
       [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-      tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-      tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-      for field in saleFields
-        tax[field] = lastSale[field]
+      deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
+      taxRecordingDate = moment(tax.recording_date).startOf('day')
+      if deedRecordingDate.isAfter(taxRecordingDate)
+        tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+        tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+        for field in saleFields
+          tax[field] = lastSale[field]
+      else if deedRecordingDate.isSame(taxRecordingDate)
+        for field in saleFields
+          tax[field] ?= lastSale[field]
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
     delete tax.legal_unit_number

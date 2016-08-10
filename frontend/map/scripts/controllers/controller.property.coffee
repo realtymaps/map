@@ -62,6 +62,7 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'deedHistory', label: 'Deed History', subscriber: 'subscriber_groups'}
       {name: 'mortgage', label: 'Mortgage', subscriber: 'subscriber_groups'}
       {name: 'mortgageHistory', label: 'Mortgage History', subscriber: 'subscriber_groups'}
+      {name: 'priorListings', label: 'Prior Listings', subscriber: 'subscriber_groups'}
     ]
 
     $scope.previewLetter = (mail) ->
@@ -83,21 +84,40 @@ app.controller 'rmapsPropertyCtrl',
         resolve: model: -> mls
 
     getPropertyDetail = (propertyId) ->
-      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
+      rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', true)
       .then (property) ->
         $scope.selectedResult = property
 
-        # Sets up Deed and Mortage history array with extra data split off (for ng-repeat)
-        for county in property.county || []
-          for history in ['deedHistory', 'mortgageHistory']
-            if county?.subscriber_groups?[history]
+        $scope.dataSources = (property.mls||[]).concat(property.county||[])
+
+        # Temporary mock data
+        if property.mls?[0]
+          property.mls[0].subscriber_groups.priorListings = [
+            {
+              data_source_type: 'mls'
+              date: new Date()
+              event: 'Terminated'
+              price: 2000000
+              listing_agent: 'A. Realtor'
+              sqft_finished: 1890
+              acres: 1.2
+              year_built: 1950
+              days_on_market: 150
+              subscriber_groups: _.cloneDeep property.mls[0].subscriber_groups
+              shared_groups: _.cloneDeep property.mls[0].shared_groups
+            }
+          ]
+
+        # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
+        for source in $scope.dataSources
+          for history in ['deedHistory', 'mortgageHistory', 'priorListings']
+            if source?.subscriber_groups?[history]
               historyExtra = []
-              for entry in county.subscriber_groups[history]
+              for entry in source.subscriber_groups[history]
                 entry.extra = _.clone(entry)
                 historyExtra.push(entry, entry.extra)
-              county.subscriber_groups["#{history}Extra"] = historyExtra
+              source.subscriber_groups["#{history}Extra"] = historyExtra
 
-        $scope.dataSources = [].concat(property.mls||[]).concat(property.county||[])
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
     $scope.getStatus = (property) ->

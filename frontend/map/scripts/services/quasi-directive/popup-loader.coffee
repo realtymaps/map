@@ -41,7 +41,8 @@ app.factory 'rmapsPopupFactory', (
   $log = $log.spawn("map:rmapsPopupFactory")
 
   class
-    constructor: ({@map, model, opts = _defaultOptions, needToCompile = true, templateVars, @canClose = true}) ->
+    constructor: ({@map, model, opts = _defaultOptions, needToCompile = true, templateVars, @canClose = false, @index, @closedCb}) ->
+      @isLoading = true
       @popup = rmapsPopupConstants[model.markerType]
       @popup ?= rmapsPopupConstants.default
       template = @popup.templateFn(templateVars)
@@ -73,23 +74,25 @@ app.factory 'rmapsPopupFactory', (
         $log.debug "new L.popup (#{model.markerType}):", opts
         @lObj = new L.popup opts
 
-      @lObj.setLatLng
-        lat: coords[1]
-        lng: coords[0]
+      @isLoading = false
+
+      @lObj
+      .setLatLng(lat: coords[1], lng: coords[0])
+      .setContent content
       .openOn @map
-      @lObj.setContent content
 
       # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
       # This is an attempt to make sure the popup goes away once the cursor is moved away
       @lObj._container?.addEventListener 'mouseleave', (e) =>
         @popupIsHovered = false
         return if !@canClose
+        @closedCb(@index)
         @map?.closePopup()
 
       @lObj._container?.addEventListener 'mouseover', (e) =>
         @popupIsHovered = true
 
-      @lObj
+      @canClose = true
 
     close: () ->
       return if !@canClose
@@ -108,23 +111,30 @@ app.service 'rmapsPopupLoaderService',(
   rmapsPopupFactory,
   $timeout
 ) ->
-  _timeoutPromise = null
   _queue = []
+  _timeoutPromiseQueue = []
   $log = $log.spawn("map:rmapsPopupLoaderService")
-
 
   load: (opts) ->
     $log.debug "popup type #{opts.model.markerType} loading in #{_delay}ms..."
 
-    $timeout.cancel _timeoutPromise if _timeoutPromise
+    if _timeoutPromiseQueue.length
+      promise = _timeoutPromiseQueue.shift()
+      $timeout.cancel(promise) if promise?
 
-    _timeoutPromise = $timeout () ->
+    _timeoutPromiseQueue.push $timeout () ->
+      opts.index = _queue.length - 1
+      opts.closedCb = (index) ->
+        _queue.splice(index, 1)
+
       _queue.push new rmapsPopupFactory opts
     , _delay
 
   close: () ->
     $log.debug "popup closing in #{_delay}ms..."
-
-    # $timeout () ->
-    #   _queue.shift()?.close()
-    # , _delay
+    setTimeout ->
+      if _queue.length > 1
+        popup = _queue.shift()
+        if popup? && !popup.isLoading
+          popup.close()
+    , 400

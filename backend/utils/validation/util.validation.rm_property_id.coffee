@@ -14,7 +14,7 @@ module.exports = (options = {}) ->
   composite = arrayValidation
     subValidateSeparate: [
       fipsValidation()
-      stringValidation(stripFormatting: true, regex: options.parcelRegex)
+      stringValidation(stripFormatting: true, regex: options.parcelRegex, leftPad: {target: 11, padding: '0'})
       defaultsValidation(defaultValue: '001')
     ]
     join: '_'
