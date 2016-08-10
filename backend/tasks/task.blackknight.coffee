@@ -50,6 +50,9 @@ copyFtpDrop = (subtask) ->
       # REFRESH paths/files for tax, deed, and mortgage
       refreshPromise = internals.findNewFolders(ftp, internals.REFRESH, copyDates)
       .then (newFolders) ->
+        if _.isEmpty(newFolders)
+          return []
+
         # sort to help us get oldest date...
         drops = Object.keys(newFolders).sort()
         refresh = newFolders[drops[0]]
@@ -60,6 +63,9 @@ copyFtpDrop = (subtask) ->
       # UPDATE paths/files for tax, deed, and mortgage
       updatePromise = internals.findNewFolders(ftp, internals.UPDATE, copyDates)
       .then (newFolders) ->
+        if _.isEmpty(newFolders)
+          return []
+
         # sort to help us get oldest date...
         drops = Object.keys(newFolders).sort()
         update = newFolders[drops[0]]
@@ -83,6 +89,9 @@ copyFtpDrop = (subtask) ->
 
           # traverse each file...
           Promise.each files, (file) ->
+            # ignore empty files
+            if !file.size
+              return
             fullpath = "#{path}/#{file.name}"
 
             # setup input ftp stream
