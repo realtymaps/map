@@ -112,7 +112,7 @@ app.use (data, req, res, next) ->
   if data instanceof ExpressResponse
     # this response is intentional
     logger.debug "data.status: #{data.status}"
-    if !status.isWithinOK(data.status)
+    if !status.isWithinOK(data.status) && !data.quiet
       # this is not strictly an error handler now, it is also used for routine final handling of a response,
       # something not easily done with the standard way of using express -- so only log as an error if the
       # status indicates that it is

@@ -6,13 +6,17 @@ mlsConfigService = require '../services/service.mls_config'
 _ = require 'lodash'
 photoUtil = require '../utils/util.mls.photos'
 through2 = require 'through2'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+httpStatus = require '../../common/utils/httpStatus'
 
 
 _handleGenericImage = ({setContentTypeFn, getStreamFn, next, res}) ->
   setContentTypeFn()
   getStreamFn()
   .on 'error', (error) ->
-    next new ExpressResponse error.message, 500
+    if isUnhandled(error)
+      error = new PartiallyHandledError(error, 'uncaught image streaming error (*** add better error handling code to cover this case! ***)')
+    next new ExpressResponse(error.message, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
   .pipe(res)
 
 
@@ -66,7 +70,9 @@ _getPhoto = ({entity, res, next, photoType}) ->
   .then (object) ->
     _handleRetsObjectResponse(res, next, photoIds, mlsId, object)
   .catch (error) ->
-    next new ExpressResponse error, 500
+    if isUnhandled(error)
+      error = new PartiallyHandledError(error, 'uncaught photo error (*** add better error handling code to cover this case! ***)')
+    next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
 
 
 getParamPhoto = ({req, res, next, photoType}) ->
