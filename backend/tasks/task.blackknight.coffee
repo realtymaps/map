@@ -330,25 +330,36 @@ ready = () ->
     defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
     keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
     .then (processDates) ->
-      today = moment.utc().format('YYYYMMDD')
-      yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-      dayOfWeek = moment.utc().isoWeekday()
-      if processDates[internals.NO_NEW_DATA_FOUND] != today
-        # needs to run using regular logic
-        return undefined
-      else if dayOfWeek == 7 || dayOfWeek == 1
-        # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
-        .then () ->
-          return false
-      else if processDates[internals.REFRESH] == yesterday && processDates[internals.UPDATE] == yesterday
-        # we've already processed yesterday's data
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
-        .then () ->
-          return false
-      else
-        # no overrides, needs to run using regular logic
-        return undefined
+      # run task if there are dates to process
+      if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
+        return true
+
+      keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
+      .then (copyDates) ->
+        # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
+        today = moment.utc().format('YYYYMMDD')
+        yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
+        dayOfWeek = moment.utc().isoWeekday()
+
+        if copyDates[internals.NO_NEW_DATA_FOUND] != today
+          # needs to run using regular logic
+          return undefined
+        else if dayOfWeek == 7 || dayOfWeek == 1
+          # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
+
+        # check for empty processDates list?
+        else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
+          # we've already processed yesterday's data
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
+
+        else
+          # no overrides, needs to run using regular logic
+          return undefined
 
 
 recordChangeCounts = (subtask) ->
