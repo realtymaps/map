@@ -78,7 +78,7 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   delete entries[0].subscriber_groups
   delete entries[0].hidden_fields
   delete entries[0].ungrouped_fields
-  
+
   mainEntry.active = false
   delete mainEntry.deleted
   delete mainEntry.rm_inserted_time
@@ -100,7 +100,6 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
 
     # all county data gets 'sold' status -- it will be differentiated by the frontend's sold timeframe filter
     tax.status = 'sold'
-    tax.substatus = 'sold'
     tax.status_display = 'sold'
 
     saleFields = ['price', 'close_date', 'recording_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address', 'property_type']
