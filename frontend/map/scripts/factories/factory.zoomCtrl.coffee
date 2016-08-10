@@ -3,17 +3,36 @@ app = require '../app.coffee'
 stampit = require 'stampit'
 
 app.factory 'rmapsZoomLevelStateFactory', (rmapsZoomLevelService) ->
+
   stampit.init () ->
 
     zoomPath = @zoomPath || 'map.center.zoom'
 
     if @scope
-      @scope.doShowAddressButton = () =>
+      @scope.getDefaultLayerToolTip = (layerName) ->
+        "Enable / Disable #{layerName} Layer"
+
+      @scope.disableAddressButton = () =>
         zoom = rmapsZoomLevelService.getZoom(@scope)
         if zoom <= @scope.options.zoomThresh.addressButtonHide
-          return false
-        true
+          @scope.addressButtonLayerToolTip = "Zoom In to Enable Address Layer On/Off"
+          return true
 
+        @scope.addressButtonLayerToolTip = @scope.getDefaultLayerToolTip("Address")
+        false
+
+      @scope.disablePriceButton = () =>
+        # when we are in the price range we are wanting to disable the ability
+        # to turn it off
+        ret = rmapsZoomLevelService.isPrice(null, @scope)
+        @scope.priceButtonLayerToolTip = if ret
+          "Zoom In to Enable Price Layer On/Off"
+        else
+          @scope.getDefaultLayerToolTip("Price")
+        ret
+
+      @scope.addressButtonLayerToolTip = @scope.getDefaultLayerToolTip("Address")
+      @scope.priceButtonLayerToolTip = @scope.getDefaultLayerToolTip("Price")
 
     @isZoomLevel = (key, doSetState) ->
       if doSetState

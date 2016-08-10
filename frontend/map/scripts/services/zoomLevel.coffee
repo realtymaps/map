@@ -39,6 +39,9 @@ app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
     enumFromLevel scope.map?.center?.zoom
 
   _is = (gMapOrInt, stateObj = {}, stateToCheck) ->
+    if !gMapOrInt?
+      gMapOrInt = getZoom(stateObj)
+
     stateObj.zoomLevel = if _.isNumber(gMapOrInt) or _.isString(gMapOrInt) then enumFromLevel(gMapOrInt) else enumFromMap gMapOrInt
     stateToCheck == stateObj.zoomLevel
 
