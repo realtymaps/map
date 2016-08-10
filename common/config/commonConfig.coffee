@@ -59,6 +59,7 @@ commonConfig =
         ordering: 12
         roundDigit: 10 # threshold for when to round first decimal
         maxGrid: 6 # zoom level when grid will be largest (nearest integer lat/lng)
+        addressButtonHide: 16
 
   backendClustering:
     resultThreshold: 2000
