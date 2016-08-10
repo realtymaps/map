@@ -30,6 +30,7 @@ copyFtpDrop = (subtask) ->
   # dates for which we've processed blackknight files are tracked in keystore
   keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
   .then (copyDates) ->
+    logger.debug () -> "dates for file search: #{JSON.stringify(copyDates)}"
 
     # establish ftp connection to blackknight
     externalAccounts.getAccountInfo('blackknight')
@@ -50,6 +51,7 @@ copyFtpDrop = (subtask) ->
       # REFRESH paths/files for tax, deed, and mortgage
       refreshPromise = internals.findNewFolders(ftp, internals.REFRESH, copyDates)
       .then (newFolders) ->
+        logger.debug () -> "Found #{Object.keys(newFolders).length} newFolders for REFRESH list"
         if _.isEmpty(newFolders)
           return []
 
@@ -63,6 +65,7 @@ copyFtpDrop = (subtask) ->
       # UPDATE paths/files for tax, deed, and mortgage
       updatePromise = internals.findNewFolders(ftp, internals.UPDATE, copyDates)
       .then (newFolders) ->
+        logger.debug () -> "Found #{Object.keys(newFolders).length} newFolders for UPDATE list"
         if _.isEmpty(newFolders)
           return []
 
@@ -78,8 +81,12 @@ copyFtpDrop = (subtask) ->
       .then ([refreshPaths, updatePaths]) ->
         return refreshPaths.concat updatePaths
 
+    .catch (err) ->
+      throw new SoftFail("Error reading blackknight FTP: #{err}")
+
     # expect a list of 6 paths here, for one date of processing
     .then (paths) ->
+      logger.debug () -> "Processing blackknight paths: #{JSON.stringify(paths)}"
 
       # traverse each path...
       Promise.each paths, (path) ->
@@ -88,13 +95,14 @@ copyFtpDrop = (subtask) ->
 
           # traverse each file...
           Promise.each files, (file) ->
+            fullpath = "#{path}/#{file.name}"
+            logger.debug () -> "processing blackknight file #{fullpath}, size=#{file.size}, type=#{file.type}"
             # ignore empty files
             if !file.size
+              logger.debug () -> "Skipping #{fullpath} due to 0 size..."
               return
-            fullpath = "#{path}/#{file.name}"
 
             # setup input ftp stream
-            logger.debug () -> "copying blackknight file #{fullpath}"
             ftp.get(fullpath)
             .then (ftpStream) -> new Promise (resolve, reject) ->
 
@@ -107,6 +115,7 @@ copyFtpDrop = (subtask) ->
                 ContentType: 'text/plain'
               awsService.upload(config)
               .then (upload) ->
+                logger.debug () -> "Acquired upload stream to s3, transfering file..."
 
                 upload.on('error', reject)
                 upload.on('uploaded', resolve)
@@ -115,7 +124,11 @@ copyFtpDrop = (subtask) ->
             .catch (err) -> # catches ftp errors
               throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
 
+    .catch (err) ->
+      throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")
     .then () ->
+      # save off dates
+      logger.debug () -> "Setting new dates for next copy: #{JSON.stringify(copyDates)}"
       keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
     .then () ->
       internals.pushProcessingDates(copyDates)
