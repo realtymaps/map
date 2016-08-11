@@ -14,3 +14,9 @@ values ('vero', '{
 "secret_api_key":"crap2",
 "public_api_key":"crap3"
 }', 'crap4');
+
+
+insert into config_external_accounts ( "name", "username", "password", "api_key", "other", "url", "environment")
+  values (
+    'cartodb', 'junk', null, 'api_key', '{"api_key_to_us":"api_key_to_us","map-parcels":"map-parcels","map-parcelsAddresses":"map-parcelsAddresses"}'
+    , null, null);
