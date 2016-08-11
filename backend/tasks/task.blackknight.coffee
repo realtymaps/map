@@ -1,3 +1,4 @@
+Buffer = require('buffer').Buffer
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
@@ -106,7 +107,15 @@ copyFtpDrop = (subtask) ->
             ftp.get(fullpath)
             .then (ftpStream) -> new Promise (resolve, reject) ->
 
+              ftpStreamChunks = 0
+              s3UploadParts = 0
+
               ftpStream.on('error', reject)
+              ftpStream.on 'data', (buffer) ->
+                if file.size > 50000000 # 50 MB
+                  ftpStreamChunks++
+                  #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
+
 
               # procure writable aws stream
               config =
@@ -117,8 +126,15 @@ copyFtpDrop = (subtask) ->
               .then (upload) ->
                 logger.debug () -> "Acquired upload stream to s3, transfering file..."
 
+                upload.concurrentParts(10)
                 upload.on('error', reject)
                 upload.on('uploaded', resolve)
+
+                upload.on 'part', (details) ->
+                  if file.size > 50000000 # 50 MB
+                    s3UploadParts++
+                    logger.debug () -> "s3Upload (writing): Large file in progress, logging `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+
 
                 ftpStream.pipe(upload)
             .catch (err) -> # catches ftp errors
