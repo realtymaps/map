@@ -87,6 +87,7 @@ uploadPhoto = ({photoRes, newFileName, payload, row}) ->
 
         reject(ensureError(error))
 
+      upload.concurrentParts(5);
       upload.once 'uploaded', (details) ->
         logger.spawn(row.data_source_id).debug details
         resolve(details)

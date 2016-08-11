@@ -126,6 +126,7 @@ copyFtpDrop = (subtask) ->
               .then (upload) ->
                 logger.debug () -> "Acquired upload stream to s3, transfering file..."
 
+                upload.concurrentParts(10)
                 upload.on('error', reject)
                 upload.on('uploaded', resolve)
 
