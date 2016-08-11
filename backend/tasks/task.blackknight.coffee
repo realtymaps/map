@@ -103,6 +103,10 @@ copyFtpDrop = (subtask) ->
               logger.debug () -> "Skipping #{fullpath} due to 0 size..."
               return
 
+            if fullpath == "/Managed_Refresh/ASMT20160330/12086_Assessment_Refresh_20160330.txt.gz"
+              logger.warn "Skipping #{fullpath} by name"
+              return
+
             # setup input ftp stream
             ftp.get(fullpath)
             .then (ftpStream) -> new Promise (resolve, reject) ->
@@ -112,9 +116,8 @@ copyFtpDrop = (subtask) ->
 
               ftpStream.on('error', reject)
               ftpStream.on 'data', (buffer) ->
-                if file.size > 50000000 # 50 MB
-                  ftpStreamChunks++
-                  #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
+                ftpStreamChunks++
+                #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
 
 
               # procure writable aws stream
@@ -131,9 +134,8 @@ copyFtpDrop = (subtask) ->
                 upload.on('uploaded', resolve)
 
                 upload.on 'part', (details) ->
-                  if file.size > 50000000 # 50 MB
-                    s3UploadParts++
-                    logger.debug () -> "s3Upload (writing): Large file in progress, logging `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+                  s3UploadParts++
+                  logger.debug () -> "s3Upload (writing): Large file (#{file.size} Bytes), `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
 
 
                 ftpStream.pipe(upload)
