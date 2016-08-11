@@ -18,6 +18,7 @@
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
             tooltip-trigger="mouseenter focus"
+            tooltip-enable="disableAddressButton()"
           )
             button.btn(
               ng-disabled="disableAddressButton()"
@@ -31,6 +32,7 @@
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
             tooltip-trigger="mouseenter focus"
+            tooltip-enable="disablePriceButton()"
           )
             button.btn(
               ng-disabled="disablePriceButton()"
@@ -41,22 +43,12 @@
           button.btn(
             ng-click="Toggles.toggleNotes()"
             ng-class="{'btn-inactive' : !Toggles.showNotes }"
-            tooltip="{{getDefaultLayerToolTip('Notes')}}"
-            tooltip-placement="top"
-            tooltip-popup-delay="500"
-            tooltip-close-popup-delay="500"
-            tooltip-trigger="mouseenter focus"
           ) Notes
         li
           button.btn(
             rmaps-require-project-editor="disable"
             ng-click="Toggles.toggleMail()"
             ng-class="{'btn-inactive' : !Toggles.showMail }"
-            tooltip="{{getDefaultLayerToolTip('Mail')}}"
-            tooltip-placement="top"
-            tooltip-popup-delay="500"
-            tooltip-close-popup-delay="500"
-            tooltip-trigger="mouseenter focus"
           ) Sent Mail
     .filter-row
       span.label Status

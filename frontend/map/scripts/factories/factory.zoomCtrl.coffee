@@ -9,30 +9,20 @@ app.factory 'rmapsZoomLevelStateFactory', (rmapsZoomLevelService) ->
     zoomPath = @zoomPath || 'map.center.zoom'
 
     if @scope
-      @scope.getDefaultLayerToolTip = (layerName) ->
-        "Enable / Disable #{layerName} Layer"
-
       @scope.disableAddressButton = () =>
         zoom = rmapsZoomLevelService.getZoom(@scope)
         if zoom <= @scope.options.zoomThresh.addressButtonHide
-          @scope.addressButtonLayerToolTip = "Zoom In to Enable Address Layer On/Off"
+          @scope.addressButtonLayerToolTipEnable =  true
           return true
-
-        @scope.addressButtonLayerToolTip = @scope.getDefaultLayerToolTip("Address")
         false
 
       @scope.disablePriceButton = () =>
         # when we are in the price range we are wanting to disable the ability
         # to turn it off
-        ret = rmapsZoomLevelService.isPrice(null, @scope)
-        @scope.priceButtonLayerToolTip = if ret
-          "Zoom In to Enable Price Layer On/Off"
-        else
-          @scope.getDefaultLayerToolTip("Price")
-        ret
+        rmapsZoomLevelService.isPrice(null, @scope)
 
-      @scope.addressButtonLayerToolTip = @scope.getDefaultLayerToolTip("Address")
-      @scope.priceButtonLayerToolTip = @scope.getDefaultLayerToolTip("Price")
+      @scope.addressButtonLayerToolTip = "Zoom In to Enable Address Layer On/Off"
+      @scope.priceButtonLayerToolTip = "Zoom In to Enable Price Layer On/Off"
 
     @isZoomLevel = (key, doSetState) ->
       if doSetState
