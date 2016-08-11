@@ -73,7 +73,7 @@ login = (req, res, next) -> Promise.try () ->
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"

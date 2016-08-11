@@ -11,8 +11,8 @@ class PartiallyHandledError extends VError
     @name = 'PartiallyHandledError'
     if !@quiet && @jse_cause && !(@jse_cause instanceof PartiallyHandledError)
       ref = uuid.v1() # timestamp-based uuid
-      logger.error "Error reference: #{ref}\nDetails: #{analyzeValue.getSimpleDetails(args[0])}"
       @message = @message + " (Error reference #{ref})"
+      logger.error analyzeValue.getSimpleDetails(@)
 
 class QuietlyHandledError extends PartiallyHandledError
   constructor: (args...) ->
