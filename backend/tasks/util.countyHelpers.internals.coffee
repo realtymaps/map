@@ -4,7 +4,7 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
-{HardFail} = require '../utils/errors/util.error.jobQueue'
+{HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
 moment = require 'moment'
 sqlHelpers = require '../utils/util.sql.helpers'
 
@@ -121,16 +121,26 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         lastSaleIndex = i
     if lastSaleIndex?
       [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-      deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
-      taxRecordingDate = moment(tax.recording_date).startOf('day')
-      if deedRecordingDate.isAfter(taxRecordingDate)
-        tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-        tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-        for field in saleFields
-          tax[field] = lastSale[field]
-      else if deedRecordingDate.isSame(taxRecordingDate)
-        for field in saleFields
-          tax[field] ?= lastSale[field]
+      # deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
+      try
+        deedRecordingDate = moment(lastSale.recording_date).startOf('day')
+        taxRecordingDate = moment(tax.recording_date).startOf('day')
+        if deedRecordingDate.isAfter(taxRecordingDate)
+          tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+          tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+          for field in saleFields
+            tax[field] = lastSale[field]
+        else if deedRecordingDate.isSame(taxRecordingDate)
+          for field in saleFields
+            tax[field] ?= lastSale[field]
+      catch err
+        logger.warning(msg = "Error while processing tax and deed data: #{err}")
+        logger.warning("deedEntries.length: #{deedEntries.length}")
+        logger.warning("lastSaleIndex:  #{lastSaleIndex}")
+        logger.warning("lastSale:  #{JSON.stringify(lastSale)}")
+        logger.warning("tax:  #{JSON.stringify(tax)}")
+        throw new SoftFail(msg)
+
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
     delete tax.legal_unit_number
