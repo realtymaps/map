@@ -108,9 +108,11 @@ copyFtpDrop = (subtask) ->
             .then (ftpStream) -> new Promise (resolve, reject) ->
 
               ftpStreamChunks = 0
+              s3UploadParts = 0
+
               ftpStream.on('error', reject)
               ftpStream.on 'data', (buffer) ->
-                if file.size > 100000000 # 100 MB
+                if file.size > 50000000 # 50 MB
                   ftpStreamChunks++
                   #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
 
@@ -128,8 +130,9 @@ copyFtpDrop = (subtask) ->
                 upload.on('uploaded', resolve)
 
                 upload.on 'part', (details) ->
-                  if file.size > 100000000 # 100 MB
-                    logger.debug () -> "s3Upload (writing): Large file in progress, logging `part` event:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+                  if file.size > 50000000 # 50 MB
+                    s3UploadParts++
+                    logger.debug () -> "s3Upload (writing): Large file in progress, logging `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
 
 
                 ftpStream.pipe(upload)
