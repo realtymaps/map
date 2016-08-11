@@ -70,9 +70,9 @@ module.exports =
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
-            throw new ExpressResponse  # wait, why are we throwing an ExpressResponse instead of an error?  does this work as intended?
-              {alert: {msg: "property with id #{req.validBody.rm_property_id} not found"}},
-              {status: httpStatus.NOT_FOUND}  # might want `quiet: true` here?
+            return next( new ExpressResponse(
+              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
+              {status: httpStatus.NOT_FOUND, quiet: true}))
 
           property
 
