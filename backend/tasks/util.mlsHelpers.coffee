@@ -260,7 +260,7 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
           errorsCtr++
         promises.push(uploadPromise)
   .catch errorHandlingUtils.isUnhandled, (error) ->
-    throw new errorHandlingUtils.PartiallyHandledError(error, "problem storing photos for #{subtask.task_name}/#{data_source_uuid}")
+    throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{subtask.task_name}/#{data_source_uuid}")
   .catch (error) ->
     errorDetails ?= analyzeValue.getSimpleDetails(error)
     needsRetry = true

@@ -169,7 +169,7 @@ requireLogin = (options = {}) ->
       if options.redirectOnFail
         return res.json(doLogin: true)
       else
-        return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
 
 # route-specific middleware that requires profile and project for the user
@@ -206,11 +206,11 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
 
     # auth-ing
     if !profile?
-      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, {status: httpStatus.UNAUTHORIZED})
     if !req.user?
-      return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     if !req.session?.profiles? or Object.keys(req.session.profiles).length == 0
-      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, {status: httpStatus.UNAUTHORIZED})
 
     # attach to req for other project-oriented middlewares to use
     req.rmapsProfile = profile
@@ -244,7 +244,7 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
 
       # auth-ing
       if !profile?.can_edit
-        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, {status: httpStatus.UNAUTHORIZED})
 
       return process.nextTick(next)
     )
@@ -276,7 +276,7 @@ requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false}
 
       # auth-ing
       if !profile? or (profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id)
-        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, {status: httpStatus.UNAUTHORIZED})
 
       return process.nextTick(next)
     )
@@ -297,7 +297,7 @@ requireSubscriber = ({methods} = {}) ->
     # there are a variety of statuses that imply grace periods,
     # trial, type of plan, etc so we just test for the inactive statuses.
     if !userUtils.isSubscriber(req)
-      return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, {status: httpStatus.UNAUTHORIZED})
 
     return process.nextTick(next)
 
@@ -328,7 +328,7 @@ requirePermissions = (permissions, options = {}) ->
       if options.logoutOnFail
         return logout(req, res, next)
       else
-        return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
 
 
