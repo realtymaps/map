@@ -6,6 +6,7 @@ tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 {HardFail} = require '../utils/errors/util.error.jobQueue'
 moment = require 'moment'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 _documentFinalize = (fnName, cbPromise) ->
