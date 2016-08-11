@@ -1,6 +1,6 @@
 sqlHelpers = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:cartodb')
 cartodbConfig = require '../config/cartodb/cartodb'
 cartodb = require 'cartodb-api'
 cartodbSql = require '../utils/util.cartodb.sql'
@@ -13,6 +13,7 @@ _execCartodbSql = (sql) ->
   cartodbConfig()
   .then (config) ->
     cartodb.sql
+      account: config.ACCOUNT
       apiKey: config.API_KEY
       sql:sql
 
@@ -30,24 +31,21 @@ _upload = (stream, fileName) -> Promise.try ->
   # filteredStream.pipe(writeStream) #uncomment to write file
   cartodbConfig()
   .then (config) ->
-    new Promise (resolve, reject) ->
-      filteredStream.on 'error', reject
-      filteredStream.on 'end', ->
-        logger.debug 'done processing stream'
+    cartodb.upload
+      account: config.ACCOUNT
+      apiKey: config.API_KEY
+      stream: filteredStream
+      uploadFileName: fileName
 
-        resolve cartodb.upload
-          apiKey: config.API_KEY
-          stream: filteredStream
-          uploadFileName: fileName
-
-_fipsCodeQuery = (opts) -> Promise.try () ->
-  if !opts?.fipscode?
-    throw new Error('opts.fipscode required!')
+_fipsCodeQuery = (opts) ->
+  if !opts?.fips_code?
+    throw new Error('opts.fips_code required!')
   query =
   sqlHelpers.select(tables.finalized.parcel(), 'cartodb_parcel', false)
-  .where
-    fips_code: opts.fipscode
+  .where {
+    fips_code: opts.fips_code
     active: true
+  }
   .whereNotNull 'rm_property_id'
   .orderBy 'rm_property_id'
 
@@ -62,8 +60,8 @@ _fipsCodeQuery = (opts) -> Promise.try () ->
   query
 
 parcel =
-  upload: (fipsCode) ->
-    _upload _fipsCodeQuery(fipscode: fipsCode).stream(), fipsCode
+  upload: (fips_code) -> Promise.try () ->
+    _upload _fipsCodeQuery({fips_code}).stream(), fips_code
 
   #merge data to parcels cartodb table
   synchronize: (fipsCode) -> Promise.try ->
@@ -75,7 +73,7 @@ parcel =
     .then ->
       _execCartodbSql(cartodbSql.drop(fipsCode))
 
-  getByFipsCode: (opts) ->
+  getByFipsCode: (opts) -> Promise.try () ->
     _fipsCodeQuery(opts)
 
 module.exports =
