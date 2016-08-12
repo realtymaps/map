@@ -274,7 +274,7 @@ deleteData = (subtask) ->
         .then (normalizedData) ->
           parcel_id = normalizedData.parcel_id || (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
           if !parcel_id?
-            logger.warning("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
+            logger.warn("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
 
           normalDataTable(subid: row['FIPS Code'])
           .where
@@ -294,7 +294,7 @@ deleteData = (subtask) ->
         .then (normalizedData) ->
           data_source_uuid = normalizedData.data_source_uuid || (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
           if !data_source_uuid?
-            logger.warning("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
+            logger.warn("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
 
           normalDataTable(subid: row['FIPS Code'])
           .where
