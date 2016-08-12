@@ -272,10 +272,9 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
-          if 'parcel_id' of normalizedData
-            parcel_id = normalizedData.parcel_id
-          else
-            parcel_id = (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+          parcel_id = normalizedData.parcel_id || (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+          if !parcel_id?
+            logger.warning("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
 
           normalDataTable(subid: row['FIPS Code'])
           .where
@@ -293,10 +292,9 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
-          if 'data_source_uuid' of normalizedData
-            data_source_uuid = normalizedData.data_source_uuid
-          else
-            data_source_uuid = (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+          data_source_uuid = normalizedData.data_source_uuid || (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+          if !data_source_uuid?
+            logger.warning("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
 
           normalDataTable(subid: row['FIPS Code'])
           .where
