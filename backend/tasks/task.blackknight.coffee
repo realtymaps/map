@@ -272,7 +272,7 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
-          parcel_id = normalizedData.parcel_id || (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+          parcel_id = normalizedData.parcel_id || (_.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
           if !parcel_id?
             logger.warn("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
 
@@ -292,7 +292,7 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
-          data_source_uuid = normalizedData.data_source_uuid || (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+          data_source_uuid = normalizedData.data_source_uuid || (_.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
           if !data_source_uuid?
             logger.warn("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
 
