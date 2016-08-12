@@ -119,7 +119,10 @@ storePhotosPrep = (subtask) ->
         totalOrList: Object.keys(idsObj)
         maxPage: numRowsToPagePhotos
         laterSubtaskName: "storePhotos"
-        # concurrency: 1 # this makes debugging easier .. i think (nem)
+        # this makes debugging easier
+        # MAIN REASON is WE are limited to a single login for many MLSes
+        # THIS IS A MAJOR BOTTLE KNECK
+        concurrency: 1
       })
 
 storePhotos = (subtask) -> Promise.try () ->
