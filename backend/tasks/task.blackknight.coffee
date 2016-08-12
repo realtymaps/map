@@ -279,7 +279,6 @@ deleteData = (subtask) ->
             parcel_id: normalizedData.parcel_id
           .update(deleted: subtask.batch_id)
           .catch (err) ->
-            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
             throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
 
@@ -296,7 +295,6 @@ deleteData = (subtask) ->
             data_source_uuid: normalizedData.data_source_uuid
           .update(deleted: subtask.batch_id)
           .catch (err) ->
-            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
             throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
 
