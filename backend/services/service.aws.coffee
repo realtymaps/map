@@ -163,7 +163,7 @@ deleteAllObjects = (opts) ->
       return
     logger.debug "deleting page: #{pagesIdx}"
     summary.attempted += list.Contents.length
-    deleteObjects _.extend {}, opts,
+    deleteObjects _.extend {}, _.omit(opts, 'progress'),
       Delete: Objects: list.Contents.map (o) -> Key: o.Key
     .then (result) ->
       summary.deleted += (result.Deleted?.length||0)
