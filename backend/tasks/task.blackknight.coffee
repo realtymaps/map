@@ -272,11 +272,16 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          if 'parcel_id' of normalizedData
+            parcel_id = normalizedData.parcel_id
+          else
+            parcel_id = (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            parcel_id: normalizedData.parcel_id
+            parcel_id: parcel_id
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
@@ -288,11 +293,16 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          if 'data_source_uuid' of normalizedData
+            data_source_uuid = normalizedData.data_source_uuid
+          else
+            data_source_uuid = (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: normalizedData.data_source_uuid
+            data_source_uuid: data_source_uuid
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
