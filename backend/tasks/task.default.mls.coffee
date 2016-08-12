@@ -7,7 +7,6 @@ mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
-moment = require 'moment'
 memoize = require 'memoizee'
 
 
@@ -115,7 +114,13 @@ storePhotosPrep = (subtask) ->
         idsObj[row[uuidField]] = true
     updatedPhotosPromise = retsService.getDataChunks(subtask.task_name, dataOptions, handleChunk)
     Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: Object.keys(idsObj), maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+      jobQueue.queueSubsequentPaginatedSubtask({
+        subtask
+        totalOrList: Object.keys(idsObj)
+        maxPage: numRowsToPagePhotos
+        laterSubtaskName: "storePhotos"
+        # concurrency: 1 # this makes debugging easier .. i think (nem)
+      })
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
