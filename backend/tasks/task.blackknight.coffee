@@ -250,8 +250,11 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
+      logger.debug () -> "Processing row for `deleteData`: #{JSON.stringify(row)}"
+
       if row['FIPS Code'] != '12021'
         Promise.resolve()
+
       else if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
@@ -260,6 +263,9 @@ deleteData = (subtask) ->
           fips_code: row['FIPS Code']
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
+        .catch (err) ->
+          throw new SoftFail("Error while deleting for full refresh for fips=#{row['FIPS Code']}, batch_id=#{subtask.batch_id}\n#{err}")
+
       else if subtask.data.dataType == internals.TAX
         # get validation for parcel_id
         dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
@@ -272,6 +278,11 @@ deleteData = (subtask) ->
             fips_code: row['FIPS Code']
             parcel_id: normalizedData.parcel_id
           .update(deleted: subtask.batch_id)
+          .catch (err) ->
+            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
+            logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
+
       else
         # get validation for data_source_uuid
         dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'data_source_uuid')
@@ -284,6 +295,10 @@ deleteData = (subtask) ->
             fips_code: row['FIPS Code']
             data_source_uuid: normalizedData.data_source_uuid
           .update(deleted: subtask.batch_id)
+          .catch (err) ->
+            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
+            logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
 
 
 normalizeData = (subtask) ->
