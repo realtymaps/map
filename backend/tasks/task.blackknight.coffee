@@ -272,14 +272,17 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          parcel_id = normalizedData.parcel_id || (l.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+          if !parcel_id?
+            logger.warn("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            parcel_id: normalizedData.parcel_id
+            parcel_id: parcel_id
           .update(deleted: subtask.batch_id)
           .catch (err) ->
-            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
             throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
 
@@ -289,14 +292,17 @@ deleteData = (subtask) ->
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          data_source_uuid = normalizedData.data_source_uuid || (l.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+          if !data_source_uuid?
+            logger.warn("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: normalizedData.data_source_uuid
+            data_source_uuid: data_source_uuid
           .update(deleted: subtask.batch_id)
           .catch (err) ->
-            logger.debug () -> "validationInfo: #{JSON.stringify(validationInfo)}"
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
             throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
 
