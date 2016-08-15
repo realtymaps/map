@@ -1,4 +1,4 @@
-# This resets county data so that it can be reloaded with fixed deed info
+-- This resets county data so that it can be reloaded with fixed deed info
 DELETE FROM data_combined where data_source_type = 'county';
 
 DELETE FROM config_keystore WHERE namespace = 'blackknight process dates';
