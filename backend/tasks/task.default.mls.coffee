@@ -93,7 +93,7 @@ finalizeData = (subtask) ->
   started = 0
   finished = 0
   errored = 0
-  Promise.map subtask.data.values, (id) ->
+  impl = (id) ->
     started++
     coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> starting finalizeData (started #{started} of #{total})")
     mlsHelpers.finalizeData {subtask, id}
@@ -102,6 +102,10 @@ finalizeData = (subtask) ->
       coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> finished finalizeData (finished #{finished} of #{total} with #{errored} errors)")
     .catch (err) ->
       coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> error during finalizeData (finished #{finished} of #{total} with #{errored} errors):\n#{analyzeValue.getSimpleMessage(err)}")
+      throw err
+  Promise.map(subtask.data.values, impl)
+  .then () ->
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ done with finalizeData subtask #{subtask.data.i} of #{subtask.data.of}: finished #{finished} of #{total} with #{errored} errors")
 
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
