@@ -4,6 +4,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:mls')
 finePhotologger = logger.spawn('photos.fine')
+fineFinalizelogger = logger.spawn('finalize.fine')
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsService = require '../services/service.rets'
@@ -120,7 +121,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  logger.debug 'getting normalized data'
+  fineFinalizelogger.debug 'getting normalized data'
 
   listingsPromise = tables.normalized.listing()
   .select('*')
@@ -136,19 +137,21 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   .orderByRaw('close_date DESC NULLS FIRST')
 
   parcelPromise = if finalizedParcel?
-    logger.debug 'cached finalizedParcel'
+    fineFinalizelogger.debug 'cached finalizedParcel'
     Promise.resolve([finalizedParcel])
   else
-    logger.debug 'cached getParcelsPromise'
+    fineFinalizelogger.debug 'cached getParcelsPromise'
     parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
 
   Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
+    fineFinalizelogger.debug 'listings and parcels fetched'
+
     if listings.length == 0
-      logger.spawn(subtask.task_name).debug "No listings found for rm_property_id: #{id}"
+      fineFinalizelogger.spawn(subtask.task_name).debug "No listings found for rm_property_id: #{id}"
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
 
-    logger.debug '_finalizeEntry'
+    fineFinalizelogger.debug '_finalizeEntry'
 
     _finalizeEntry({entries: listings, subtask})
     .then (listing) ->
@@ -174,18 +177,20 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             # promote values into this listing
             _.extend(listing, results[0].promoted_values)
             # save back to the listing table to avoid making checks in the future
-            logger.debug 'promoting normalized data'
+            fineFinalizelogger.debug 'promoting normalized data'
 
             tables.normalized.listing()
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid
             .update(results[0].promoted_values)
+            .then () ->
+              fineFinalizelogger.debug 'finished promoting normalized data'
       .then () ->
-        logger.debug 'ensureTransaction'
+        fineFinalizelogger.debug 'ensureTransaction'
         dbs.ensureTransaction transaction, 'main', (transaction) ->
-          logger.debug 'post ensureTransaction'
-          logger.debug 'deleting in-active data_combined'
+          fineFinalizelogger.debug 'post ensureTransaction'
+          fineFinalizelogger.debug 'deleting in-active data_combined'
 
           tables.finalized.combined(transaction: transaction)
           .where
@@ -194,10 +199,12 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             active: false
           .delete()
           .then () ->
-            logger.debug 'inserting new data_combined'
+            fineFinalizelogger.debug 'inserting new data_combined'
 
             tables.finalized.combined(transaction: transaction)
             .insert(listing)
+            .then () ->
+              fineFinalizelogger.debug 'finished inserting new data_combined'
 
 
 storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
