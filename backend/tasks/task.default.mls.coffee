@@ -3,11 +3,13 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
+coarseFinalizelogger = logger.spawn('coarse')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -87,8 +89,23 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, (id) ->
+  total = subtask.data.values.length
+  started = 0
+  finished = 0
+  errored = 0
+  impl = (id) ->
+    started++
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> starting finalizeData (started #{started} of #{total})")
     mlsHelpers.finalizeData {subtask, id}
+    .then () ->
+      finished++
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> finished finalizeData (finished #{finished} of #{total} with #{errored} errors)")
+    .catch (err) ->
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> error during finalizeData (finished #{finished} of #{total} with #{errored} errors):\n#{analyzeValue.getSimpleMessage(err)}")
+      throw err
+  Promise.map(subtask.data.values, impl)
+  .then () ->
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ done with finalizeData subtask #{subtask.data.i} of #{subtask.data.of}: finished #{finished} of #{total} with #{errored} errors")
 
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
