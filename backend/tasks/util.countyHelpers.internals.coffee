@@ -134,11 +134,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
           for field in saleFields
             tax[field] ?= lastSale[field]
       catch err
-        logger.warning(msg = "Error while processing tax and deed data: #{err}")
-        logger.warning("deedEntries.length: #{deedEntries.length}")
-        logger.warning("lastSaleIndex:  #{lastSaleIndex}")
-        logger.warning("lastSale:  #{JSON.stringify(lastSale)}")
-        logger.warning("tax:  #{JSON.stringify(tax)}")
+        logger.warn(msg = "Error while processing tax and deed data: #{err}")
+        logger.warn("deedEntries.length: #{deedEntries.length}")
+        logger.warn("lastSaleIndex:  #{lastSaleIndex}")
+        logger.warn("lastSale:  #{JSON.stringify(lastSale)}")
+        logger.warn("tax:  #{JSON.stringify(tax)}")
         throw new SoftFail(msg)
 
     tax.close_date = tax.close_date || tax.recording_date
