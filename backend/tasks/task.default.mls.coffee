@@ -91,6 +91,9 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
 
 storePhotosPrep = (subtask) ->
+  if subtask.data?.skipPhotos
+    return Promise.resolve()
+
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
