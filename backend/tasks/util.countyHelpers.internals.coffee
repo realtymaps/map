@@ -113,7 +113,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     # gets split, it appears the initial sales all get marked on the original parcel number (or at least that's how it is
     # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
     # the main parcel with info from the sale of a split-off
-    for deedEntry,i in deedEntries
+    for deedEntry,i in deedEntries by -1
       deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
       delete deedEntry.close_date
       delete deedEntry.recording_date
