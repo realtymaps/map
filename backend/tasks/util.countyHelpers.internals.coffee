@@ -126,11 +126,15 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         deedRecordingDate = moment(lastSale.sale_date).startOf('day')
         taxRecordingDate = moment(tax.recording_date).startOf('day')
         if deedRecordingDate.isAfter(taxRecordingDate)
+          if tax.rm_property_id == '12021_11080160001_001' # temporary debug
+            logger.debug("12021_11080160001_001: Deed recording date #{deedRecordingDate} is AFTER tax recording date #{taxRecordingDate}")
           tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
           tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
           for field in saleFields
             tax[field] = lastSale[field]
         else if deedRecordingDate.isSame(taxRecordingDate)
+          if tax.rm_property_id == '12021_11080160001_001' # temporary debug
+            logger.debug("12021_11080160001_001: Deed recording date #{deedRecordingDate} is BEFORE tax recording date #{taxRecordingDate}")
           for field in saleFields
             tax[field] ?= lastSale[field]
       catch err
@@ -140,6 +144,9 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         logger.warn("lastSale:  #{JSON.stringify(lastSale)}")
         logger.warn("tax:  #{JSON.stringify(tax)}")
         throw new SoftFail(msg)
+    else
+      if tax.rm_property_id == '12021_11080160001_001' # temporary debug
+        logger.debug("12021_11080160001_001: Last sale was not found!")
 
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
