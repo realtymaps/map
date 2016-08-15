@@ -164,7 +164,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .col-sm-1
 
                 .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra | orderBy:'-'")
-                  .col-sm-2(ng-if="deed.extra") {{deed.close_date | date}}
+                  .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
                   .col-sm-2(ng-if="deed.extra") {{deed.price | currency:"$":0}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
                     span {{deed.owner_name}}
