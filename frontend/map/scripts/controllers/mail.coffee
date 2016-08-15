@@ -25,6 +25,8 @@ rmapsMailCampaignService, rmapsMainOptions, rmapsMailTemplateTypeService) ->
       $scope.mailCampaigns = list
       templateTypeMap = rmapsMailTemplateTypeService.getMeta()
       angular.forEach list, (el) ->
+        if el.stripe_charge?.created?
+          el.stripe_charge.created = el.stripe_charge.created * 1000 # js epoch is milliseconds, stripe epoch is seconds
         el.template_name = el.filename || templateTypeMap[el.template_type]?.name || "(none selected)"
 
   $scope.deleteCampaign = (campaign) ->
