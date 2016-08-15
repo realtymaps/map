@@ -8,6 +8,8 @@ httpStatus = require '../../common/utils/httpStatus'
 {HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 config = require '../config/config'
 ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
@@ -52,15 +54,16 @@ handles = wrapHandleRoutes
           .once 'error', (err) ->
             if res.headersSent
               return next err # not using Express response since headers are already sent
-            next new ExpressResponse(alert: {msg: 'stream error: ' + err.message}, httpStatus.INTERNAL_SERVER_ERROR)
-
+            if isUnhandled(err)
+              err = new PartiallyHandledError(err, 'uncaught photo stream error (*** add better error handling code to cover this case! ***)')
+            next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
           .pipe(res)
       .catch ExpectedSingleRowError, (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, httpStatus.NOT_FOUND)
+        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})
       .catch HttpStatusCodeError, (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, err.statusCode)
+        next new ExpressResponse(alert: {msg: err.message}, {status: err.statusCode, quiet: err.quiet})
       .catch BadContentTypeError, (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, httpStatus.UNSUPPORTED_MEDIA_TYPE)
+        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNSUPPORTED_MEDIA_TYPE, quiet: err.quiet})
 
 
 

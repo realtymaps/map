@@ -1,3 +1,4 @@
+Buffer = require('buffer').Buffer
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
@@ -102,11 +103,22 @@ copyFtpDrop = (subtask) ->
               logger.debug () -> "Skipping #{fullpath} due to 0 size..."
               return
 
+            if fullpath == "/Managed_Refresh/ASMT20160330/12086_Assessment_Refresh_20160330.txt.gz"
+              logger.warn "Skipping #{fullpath} by name"
+              return
+
             # setup input ftp stream
             ftp.get(fullpath)
             .then (ftpStream) -> new Promise (resolve, reject) ->
 
+              ftpStreamChunks = 0
+              s3UploadParts = 0
+
               ftpStream.on('error', reject)
+              ftpStream.on 'data', (buffer) ->
+                ftpStreamChunks++
+                #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
+
 
               # procure writable aws stream
               config =
@@ -117,8 +129,14 @@ copyFtpDrop = (subtask) ->
               .then (upload) ->
                 logger.debug () -> "Acquired upload stream to s3, transfering file..."
 
+                upload.concurrentParts(10)
                 upload.on('error', reject)
                 upload.on('uploaded', resolve)
+
+                upload.on 'part', (details) ->
+                  s3UploadParts++
+                  logger.debug () -> "s3Upload (writing): Large file (#{file.size} Bytes), `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+
 
                 ftpStream.pipe(upload)
             .catch (err) -> # catches ftp errors
@@ -257,8 +275,11 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
+      logger.debug () -> "Processing row for `deleteData`: #{JSON.stringify(row)}"
+
       if row['FIPS Code'] != '12021'
         Promise.resolve()
+
       else if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
@@ -267,30 +288,48 @@ deleteData = (subtask) ->
           fips_code: row['FIPS Code']
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
+        .catch (err) ->
+          throw new SoftFail("Error while deleting for full refresh for fips=#{row['FIPS Code']}, batch_id=#{subtask.batch_id}\n#{err}")
+
       else if subtask.data.dataType == internals.TAX
         # get validation for parcel_id
         dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          parcel_id = normalizedData.parcel_id || (_.find(normalizedData.base, (obj) -> obj.name == 'parcel_id')).value
+          if !parcel_id?
+            logger.warn("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            parcel_id: normalizedData.parcel_id
+            parcel_id: parcel_id
           .update(deleted: subtask.batch_id)
+          .catch (err) ->
+            logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
+
       else
         # get validation for data_source_uuid
         dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'data_source_uuid')
         .then (validationInfo) ->
           Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
         .then (normalizedData) ->
+          data_source_uuid = normalizedData.data_source_uuid || (_.find(normalizedData.base, (obj) -> obj.name == 'data_source_uuid')).value
+          if !data_source_uuid?
+            logger.warn("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
+
           normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: normalizedData.data_source_uuid
+            data_source_uuid: data_source_uuid
           .update(deleted: subtask.batch_id)
+          .catch (err) ->
+            logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
 
 
 normalizeData = (subtask) ->

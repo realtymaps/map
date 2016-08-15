@@ -66,7 +66,7 @@ getProperty = ({query, profile}) ->
       result[row.rm_property_id][row.data_source_type] ?= []
       result[row.rm_property_id][row.data_source_type].push(row)
 
-      if row.data_source_type == 'mls'
+      if row.data_source_type == 'mls' && row.data_source_id?
         mlsConfigSvc.getByIdCached(row.data_source_id)
         .then (mlsConfig) ->
           if mlsConfig

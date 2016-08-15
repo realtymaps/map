@@ -6,6 +6,37 @@ events = require '../../../common/scripts/utils/events.coffee'
 _isMarker = (type) ->
   type == 'marker'
 
+app.factory 'rmapsHoverQueue', (
+rmapsLayerFormattersService
+) ->
+  () ->
+    _queue = []
+
+    _handleHover = ({model, lObject, type, layerName} = {}) ->
+      return if !layerName or !type or !lObject
+      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
+        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
+      if type == 'geojson'
+        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
+        lObject.setStyle(opts)
+
+    enqueue = ({model, lObject, type, layerName} = {}) ->
+      if _queue.length
+        dequeue()
+      _queue.push {model, lObject, type, layerName}
+      _handleHover {model, lObject, type, layerName}
+
+    dequeue = () ->
+      {model, lObject, type, layerName} = _queue.shift()
+      model.isMousedOver = false
+      _handleHover {model, lObject, type, layerName}
+
+
+    {
+      enqueue
+      dequeue
+    }
+
 app.service 'rmapsMapEventsHandlerService', (
 $timeout
 rmapsMainOptions
@@ -15,6 +46,7 @@ rmapsMapEventsLinkerService
 rmapsLayerFormattersService
 rmapsPropertiesService
 rmapsMapEventEnums
+rmapsHoverQueue
 $log) ->
 
   _gate = rmapsNgLeafletEventGateService
@@ -25,20 +57,13 @@ $log) ->
   $log = $log.spawn("map:rmapsMapEventsHandlerService")
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
+    _hoverQueue = new rmapsHoverQueue()
     $scope = mapCtrl.scope
 
 
     _lastEvents =
       mouseover:null
       last: null
-
-    _handleHover = (model, lObject, type, layerName) ->
-      return if !layerName or !type or !lObject
-      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
-      if type == 'geojson'
-        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
-        lObject.setStyle(opts)
 
     _handleManualMarkerCluster = (model) ->
       if model.markerType == 'cluster'
@@ -47,12 +72,6 @@ $log) ->
         $scope[mapPath].center = center
         return true
       false
-
-    _isParcelPoly = (feature) ->
-      #crappy hack until leaflet fix
-      len = Object.keys(feature).length
-      len == 7
-
 
     _eventHandler =
       ###TODO:
@@ -103,7 +122,7 @@ $log) ->
         _lastEvents.mouseover = model
 
         # Update marker icon/style
-        _handleHover model, lObject, type, layerName
+        _hoverQueue.enqueue {model, lObject, type, layerName}
 
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
 
@@ -132,7 +151,7 @@ $log) ->
         _lastEvents.mouseover = null
 
         # Update marker icon/style
-        _handleHover model, lObject, type, layerName
+        _hoverQueue.dequeue()
 
       click: (event, lObject, model, modelName, layerName, type) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'

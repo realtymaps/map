@@ -132,7 +132,7 @@ app.factory 'rmapsMapFactory',
             if _firstCenter
               _firstCenter = false
               return
-            
+
             @scope.previousCenter = oldVal
             @scope.Toggles.hasPreviousLocation = true
 
@@ -345,7 +345,9 @@ app.factory 'rmapsMapFactory',
       openWindow: (model) =>
         opts = {@map, model}
         $log.debug "openWindow", model
-        rmapsPopupLoaderService.load(opts)
+        # Do not show infowindow for parcels without property data
+        if model.status || model.grouped
+          rmapsPopupLoaderService.load(opts)
 
       closeWindow: ->
         rmapsPopupLoaderService.close()

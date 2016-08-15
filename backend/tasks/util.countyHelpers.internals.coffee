@@ -4,8 +4,9 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
-{HardFail} = require '../utils/errors/util.error.jobQueue'
+{HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
 moment = require 'moment'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 _documentFinalize = (fnName, cbPromise) ->
@@ -112,7 +113,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     # gets split, it appears the initial sales all get marked on the original parcel number (or at least that's how it is
     # in some counties).  We don't want to lose those sale records, but we also don't want to override the tax info for
     # the main parcel with info from the sale of a split-off
-    for deedEntry,i in deedEntries
+    for deedEntry,i in deedEntries by -1
       deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
       delete deedEntry.close_date
       delete deedEntry.recording_date
@@ -120,16 +121,33 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         lastSaleIndex = i
     if lastSaleIndex?
       [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-      deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
-      taxRecordingDate = moment(tax.recording_date).startOf('day')
-      if deedRecordingDate.isAfter(taxRecordingDate)
-        tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-        tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-        for field in saleFields
-          tax[field] = lastSale[field]
-      else if deedRecordingDate.isSame(taxRecordingDate)
-        for field in saleFields
-          tax[field] ?= lastSale[field]
+      # deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
+      try
+        deedRecordingDate = moment(lastSale.sale_date).startOf('day')
+        taxRecordingDate = moment(tax.recording_date).startOf('day')
+        if deedRecordingDate.isAfter(taxRecordingDate)
+          if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
+            logger.debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is AFTER tax recording date #{taxRecordingDate}")
+          tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+          tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+          for field in saleFields
+            tax[field] = lastSale[field]
+        else if deedRecordingDate.isSame(taxRecordingDate)
+          if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
+            logger.debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is BEFORE tax recording date #{taxRecordingDate}")
+          for field in saleFields
+            tax[field] ?= lastSale[field]
+      catch err
+        logger.warn(msg = "Error while processing tax and deed data: #{err}")
+        logger.warn("deedEntries.length: #{deedEntries.length}")
+        logger.warn("lastSaleIndex:  #{lastSaleIndex}")
+        logger.warn("lastSale:  #{JSON.stringify(lastSale)}")
+        logger.warn("tax:  #{JSON.stringify(tax)}")
+        throw new SoftFail(msg)
+    else
+      if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
+        logger.debug("#{tax.rm_property_id}: Last sale was not found!")
+
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
     delete tax.legal_unit_number

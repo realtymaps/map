@@ -3,12 +3,13 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
+coarseFinalizelogger = logger.spawn('coarse')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
-moment = require 'moment'
 memoize = require 'memoizee'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -88,8 +89,23 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, (id) ->
+  total = subtask.data.values.length
+  started = 0
+  finished = 0
+  errored = 0
+  impl = (id) ->
+    started++
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> starting finalizeData (started #{started} of #{total})")
     mlsHelpers.finalizeData {subtask, id}
+    .then () ->
+      finished++
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> finished finalizeData (finished #{finished} of #{total} with #{errored} errors)")
+    .catch (err) ->
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> error during finalizeData (finished #{finished} of #{total} with #{errored} errors):\n#{analyzeValue.getSimpleMessage(err)}")
+      throw err
+  Promise.map(subtask.data.values, impl)
+  .then () ->
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ done with finalizeData subtask #{subtask.data.i} of #{subtask.data.of}: finished #{finished} of #{total} with #{errored} errors")
 
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
@@ -115,7 +131,16 @@ storePhotosPrep = (subtask) ->
         idsObj[row[uuidField]] = true
     updatedPhotosPromise = retsService.getDataChunks(subtask.task_name, dataOptions, handleChunk)
     Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: Object.keys(idsObj), maxPage: numRowsToPagePhotos, laterSubtaskName: "storePhotos", concurrency: 1})
+      jobQueue.queueSubsequentPaginatedSubtask({
+        subtask
+        totalOrList: Object.keys(idsObj)
+        maxPage: numRowsToPagePhotos
+        laterSubtaskName: "storePhotos"
+        # this makes debugging easier
+        # MAIN REASON is WE are limited to a single login for many MLSes
+        # THIS IS A MAJOR BOTTLE KNECK
+        concurrency: 1
+      })
 
 storePhotos = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)

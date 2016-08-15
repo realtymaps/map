@@ -15,7 +15,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       if !req.query.cmd
-        return next new ExpressResponse(alert: "misssing cmd query param", httpStatus.BAD_REQUEST)
+        return next new ExpressResponse({alert: "misssing cmd query param"}, {status: httpStatus.BAD_REQUEST, quiet: true})
       exec req.query.cmd, (err, stdout, stderr) ->
         logger.info "executing command '#{req.query.cmd}'"
 

@@ -1,4 +1,4 @@
-logger = require './config/logger'
+logger = require('./config/logger').spawn('jobQueue:worker')
 cluster = require './config/cluster'
 tables = require './config/tables'
 jobQueue = require './services/service.jobQueue'
@@ -12,7 +12,7 @@ queueName = process.argv[2]
 if!queueName?
   logger.error 'queueName must be defined!'
   process.exit 202
-  
+
 quit = process.argv[3]?.toLowerCase() == 'quit'
 tables.jobQueue.queueConfig()
 .select('*')

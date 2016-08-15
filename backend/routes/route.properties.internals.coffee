@@ -48,9 +48,9 @@ handleRoute = (res, next, serviceCall) ->
   .then (data) ->
     res.json(data)
   .catch DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch CurrentProfileError, (err) ->
-    next new ExpressResponse({profileIsNeeded: true,alert: {msg: err.message}}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse({profileIsNeeded: true, alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch (err) ->
     logger.error analyzeValue.getSimpleDetails(err)
     next(err)

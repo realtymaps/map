@@ -70,9 +70,9 @@ module.exports =
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
-            throw new ExpressResponse(
+            return next( new ExpressResponse(
               alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
-               httpStatus.NOT_FOUND)
+              {status: httpStatus.NOT_FOUND, quiet: true}))
 
           property
 
