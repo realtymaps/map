@@ -3,11 +3,13 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
+fineFinalizelogger = logger.spawn('finalize.fine')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -88,7 +90,12 @@ finalizeDataPrep = (subtask) ->
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, (id) ->
+    fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> starting finalizeData")
     mlsHelpers.finalizeData {subtask, id}
+    .then () ->
+      fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> finished finalizeData")
+    .catch (err) ->
+      fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> error during finalizeData:\n#{analyzeValue.getSimpleMessage(err)}")
 
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
