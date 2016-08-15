@@ -163,8 +163,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .col-sm-2 Doc Type
                   .col-sm-1
 
-                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
-                  .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
+                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra | orderBy:'-'")
+                  .col-sm-2(ng-if="deed.extra") {{deed.close_date | date}}
                   .col-sm-2(ng-if="deed.extra") {{deed.price | currency:"$":0}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
                     span {{deed.owner_name}}
@@ -216,19 +216,21 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                             div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'priorListings'")
-                  .col-sm-2 Date
-                  .col-sm-2 Event
+                  .col-sm-2(ng-if="!listing.discontinued_date") Close Date
+                  .col-sm-2(ng-if="listing.discontinued_date") Discontinued Date
+                  .col-sm-2 Status
+                  .col-sm-2 DOM
                   .col-sm-2 Price
-                  .col-sm-2 Listing Agent
                   .col-sm-1
 
                 .row.content-row.history(ng-if="group.name == 'priorListings'" ng-show="listing.extra || listing.showExtra" ng-repeat="listing in property[group.subscriber].priorListingsExtra")
-                  .col-sm-2(ng-if="listing.extra") {{listing.date | date}}
-                  .col-sm-2(ng-if="listing.extra") {{listing.event}}
+                  .col-sm-2(ng-if="listing.extra && !listing.discontinued_date") {{listing.close_date | date}}
+                  .col-sm-2(ng-if="listing.extra && listing.discontinued_date") {{listing.discontinued_date | date}}
+                  .col-sm-2(ng-if="listing.extra") {{listing.status}}
+                  .col-sm-2(ng-if="listing.extra") {{listing.days_on_market}}
                   .col-sm-2(ng-if="listing.extra") {{listing.price | currency:"$":0}}
-                  .col-sm-2(ng-if="listing.extra") {{listing.listing_agent}}
                   .col-sm-1(ng-if="listing.extra")
-                    a(ng-click="listing.extra.showExtra = !listing.extra.showExtra")
+                    a(ng-click="listing.extra.showExtra = !listing.extra.showExtra" ng-show="listing.subscriber_groups")
                       span(ng-show="!listing.extra.showExtra") More
                       span(ng-show="listing.extra.showExtra") Less
                   accordion.col-sm-12(ng-if="!listing.extra" close-others="false")
