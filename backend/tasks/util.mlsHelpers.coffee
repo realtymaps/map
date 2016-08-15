@@ -120,6 +120,8 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
+  logger.debug 'getting normalized data'
+
   listingsPromise = tables.normalized.listing()
   .select('*')
   .where
@@ -132,12 +134,21 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   .orderBy('data_source_id')
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
-  parcelPromise = if finalizedParcel? then Promise.resolve([finalizedParcel]) else parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
+
+  parcelPromise = if finalizedParcel?
+    logger.debug 'cached finalizedParcel'
+    Promise.resolve([finalizedParcel])
+  else
+    logger.debug 'cached getParcelsPromise'
+    parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
+
   Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
       logger.spawn(subtask.task_name).debug "No listings found for rm_property_id: #{id}"
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, subtask.task_name, subtask.batch_id, {transaction})
+
+    logger.debug '_finalizeEntry'
 
     _finalizeEntry({entries: listings, subtask})
     .then (listing) ->
@@ -163,13 +174,19 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             # promote values into this listing
             _.extend(listing, results[0].promoted_values)
             # save back to the listing table to avoid making checks in the future
+            logger.debug 'promoting normalized data'
+
             tables.normalized.listing()
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid
             .update(results[0].promoted_values)
       .then () ->
+        logger.debug 'ensureTransaction'
         dbs.ensureTransaction transaction, 'main', (transaction) ->
+          logger.debug 'post ensureTransaction'
+          logger.debug 'deleting in-active data_combined'
+
           tables.finalized.combined(transaction: transaction)
           .where
             rm_property_id: id
@@ -177,6 +194,8 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             active: false
           .delete()
           .then () ->
+            logger.debug 'inserting new data_combined'
+
             tables.finalized.combined(transaction: transaction)
             .insert(listing)
 
