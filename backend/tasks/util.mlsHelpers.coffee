@@ -118,7 +118,7 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
 
 
 finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->
-  delay ?= 100
+  delay ?= subtask.data?.delay || 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
   fineFinalizelogger.debug 'getting normalized data'
