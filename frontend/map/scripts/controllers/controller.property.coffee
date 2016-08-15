@@ -91,7 +91,7 @@ app.controller 'rmapsPropertyCtrl',
         $scope.dataSources = (property.mls||[]).concat(property.county||[])
 
         # Show prior entries for MLS only (for now)
-        for mls in property.mls
+        for mls in property.mls || []
           mls.subscriber_groups?.priorListings = mls.prior_entries
 
         # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
