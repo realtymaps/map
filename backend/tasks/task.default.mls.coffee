@@ -3,7 +3,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
-fineFinalizelogger = logger.spawn('finalize.fine')
+coarseFinalizelogger = logger.spawn('coarse')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
@@ -89,13 +89,19 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
+  total = subtask.data.values.length
+  started = 0
+  finished = 0
+  errored = 0
   Promise.map subtask.data.values, (id) ->
-    fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> starting finalizeData")
+    started++
+    coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> starting finalizeData (started #{started} of #{total})")
     mlsHelpers.finalizeData {subtask, id}
     .then () ->
-      fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> finished finalizeData")
+      finished++
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> finished finalizeData (finished #{finished} of #{total} with #{errored} errors)")
     .catch (err) ->
-      fineFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}> error during finalizeData:\n#{analyzeValue.getSimpleMessage(err)}")
+      coarseFinalizelogger.debug("@@@@@@@@@@@@@@@@@@ <#{id}, subtask #{subtask.data.i} of #{subtask.data.of}> error during finalizeData (finished #{finished} of #{total} with #{errored} errors):\n#{analyzeValue.getSimpleMessage(err)}")
 
 storePhotosPrep = (subtask) ->
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
