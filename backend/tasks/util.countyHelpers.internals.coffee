@@ -123,7 +123,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
       [lastSale] = deedEntries.splice(lastSaleIndex, 1)
       # deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
       try
-        deedRecordingDate = moment(lastSale.recording_date).startOf('day')
+        deedRecordingDate = moment(lastSale.sale_date).startOf('day')
         taxRecordingDate = moment(tax.recording_date).startOf('day')
         if deedRecordingDate.isAfter(taxRecordingDate)
           tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
