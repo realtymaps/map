@@ -55,9 +55,31 @@ $fnMakeMapDrawTools()
       transform translateX(25%)
       .rmaps-leaflet-draw
         div
+          display inline
           button
             display inline
             box-shadow none
+        .dropdown
+          min-width 192px
+          .dropdown-menu
+            left -40%
+            padding 0 0 0 0
+            ul
+              margin 0 0 0 0
+            li
+              border-bottom 0px
+              &.blue
+                .btn
+                  .icon
+                    color $rm-medium-blue
+              &.yellow
+                .btn
+                  .icon
+                    color rgb(242, 205, 12)
+            .btn
+              &:hover
+                .icon
+                  color $light_blue
 
     .nav-btn
       font-size 28px

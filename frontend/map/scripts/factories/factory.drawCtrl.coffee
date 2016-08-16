@@ -80,7 +80,7 @@ leafletDrawEvents
         , drawOptions || {})
         events:
           draw:
-            enable: leafletDrawEvents.getAvailableEvents()
+            enable: leafletDrawEvents
 
       $scope.$on '$destroy', ->
         _destroy()
