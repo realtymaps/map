@@ -40,18 +40,22 @@ base =
       client: 'pg'
       connection: process.env.MAIN_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     NORMALIZED:
       client: 'pg'
       connection: process.env.NORMALIZED_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     TEST:
       client: 'pg'
       connection: process.env.TEST_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'

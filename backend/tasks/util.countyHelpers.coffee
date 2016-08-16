@@ -10,7 +10,7 @@ zlib = require 'zlib'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 utilStreams = require '../utils/util.streams'
-logger = require('../config/logger').spawn('task:util:countyHelpers')
+logger = require('../config/logger').spawn('task:countyHelpers')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 externalAccounts = require '../services/service.externalAccounts'
@@ -179,7 +179,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, forceFinalize}) ->
+finalizeData = ({subtask, id, data_source_id, transaction, finalizedParcel, forceFinalize}) ->
   parcelHelpers ?= require './util.parcelHelpers'  # delayed require due to circular dependency
 
   internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
@@ -190,7 +190,7 @@ finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParce
     .then (deedEntries) ->
       if !deedEntries?
         return
-      mortgagePromise = internals.finalizeDataMortgage {subtask, id, data_source_id}
+      mortgagePromise = internals.finalizeDataMortgage({subtask, id, data_source_id})
       if finalizedParcel?
         parcelsPromise = Promise.resolve([finalizedParcel])
       else
@@ -201,7 +201,6 @@ finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParce
           id
           data_source_id
           transaction
-          delay
           taxEntries
           deedEntries
           mortgageEntries

@@ -8,6 +8,7 @@ tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 internals = require './service.photos.internals'
 mlsConfigService = require './service.mls_config'
+errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
@@ -78,7 +79,7 @@ getResizedPayload = (opts) -> Promise.try () ->
           #   stream = resizeStream
           #   meta = _.extend {}, payload.meta, {width, height}
 
-      Promise.try ->
+      Promise.try () ->
         if originalSize?.width && originalSize?.height # we can get aspect
           aspect = originalSize.width / originalSize.height
           if width && !height
@@ -89,8 +90,13 @@ getResizedPayload = (opts) -> Promise.try () ->
             _resize(width, height)
         else if width && height # no originalSize, so resize only if width and height provided
           _resize(width, height)
+      .catch (err) ->
+        if err.message == 'You cannot pipe after data has been emitted from the response.'
+          throw new errorUtils.QuietlyHandledError(err, 'no image available')
+        else
+          throw err
 
-    .then ->
+    .then () ->
 
       {stream, meta}
 

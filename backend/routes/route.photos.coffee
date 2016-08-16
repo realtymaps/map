@@ -8,7 +8,7 @@ httpStatus = require '../../common/utils/httpStatus'
 {HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 config = require '../config/config'
 ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isUnhandled, QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 _getContentType = (payload) ->
@@ -55,7 +55,10 @@ handles = wrapHandleRoutes
             if res.headersSent
               return next err # not using Express response since headers are already sent
             if isUnhandled(err)
-              err = new PartiallyHandledError(err, 'uncaught photo stream error (*** add better error handling code to cover this case! ***)')
+              if err.message == 'Input buffer contains unsupported image format'
+                err = new QuietlyHandledError(err, 'unsupported image format or no image found')
+              else
+                err = new PartiallyHandledError(err, 'uncaught photo stream error (*** add better error handling code to cover this case! ***)')
             next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
           .pipe(res)
       .catch ExpectedSingleRowError, (err) ->
