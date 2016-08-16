@@ -94,6 +94,7 @@ sync = (subtask) ->
   .then () ->
     loggerSync.debug('All Sync CartoDB Success!!')
   .catch errorHandlingUtils.isUnhandled, (error) ->
+    console.log error.stack
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to sync cartodb')
   .catch (error) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
