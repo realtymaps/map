@@ -43,7 +43,7 @@ app.controller 'rmapsPropertyCtrl',
     $scope.getLabel = (group, property) ->
       if (typeof group.label) == 'string'
         return group.label
-      return group.label[property.data_source_type]
+      return group.label[property.data_source_type] || group.label.mls
 
     $scope.groups = [
       {name: 'general', label: 'General Info', subscriber: 'shared_groups'}
@@ -90,30 +90,16 @@ app.controller 'rmapsPropertyCtrl',
 
         $scope.dataSources = (property.mls||[]).concat(property.county||[])
 
-        # Temporary mock data
-        if property.mls?[0]
-          property.mls[0].subscriber_groups.priorListings = [
-            {
-              data_source_type: 'mls'
-              date: new Date()
-              event: 'Terminated'
-              price: 2000000
-              listing_agent: 'A. Realtor'
-              sqft_finished: 1890
-              acres: 1.2
-              year_built: 1950
-              days_on_market: 150
-              subscriber_groups: _.cloneDeep property.mls[0].subscriber_groups
-              shared_groups: _.cloneDeep property.mls[0].shared_groups
-            }
-          ]
+        # Show prior entries for MLS only (for now)
+        for mls in property.mls || []
+          mls.subscriber_groups?.priorListings = mls.prior_entries
 
         # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
         for source in $scope.dataSources
           for history in ['deedHistory', 'mortgageHistory', 'priorListings']
-            if source?.subscriber_groups?[history]
+            if historyObj = source?.subscriber_groups?[history]
               historyExtra = []
-              for entry in source.subscriber_groups[history]
+              for entry in historyObj
                 entry.extra = _.clone(entry)
                 historyExtra.push(entry, entry.extra)
               source.subscriber_groups["#{history}Extra"] = historyExtra
