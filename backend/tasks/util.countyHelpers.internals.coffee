@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 dbs = require '../config/dbs'
-logger = require('../config/logger').spawn('task:util:countyHelpers:internals')
+logger = require('../config/logger').spawn('task:countyHelpers:internals')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 {HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
