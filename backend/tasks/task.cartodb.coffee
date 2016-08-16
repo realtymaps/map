@@ -1,5 +1,4 @@
 request = require 'request'
-cartodbConfig = require '../config/cartodb/cartodb'
 Promise = require 'bluebird'
 TaskImplementation = require './util.taskImplementation'
 request = Promise.promisify(request)
@@ -17,60 +16,31 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 
 NUM_ROWS_TO_PAGINATE = 10
 
-###eslint-disable###
-wake = (subtask) -> Promise.try ->
-  ###eslint-enable###
-  cartodbConfig()
-  .then (config) ->
-    logger.debug '@@@@ cartodb config @@@@'
-    logger.debug config
-
-    Promise.all Promise.map config.WAKE_URLS, (url) ->
-      logger.debug("Posting Wake URL: #{url}")
-      request {
-        url: 'http:' + url
-        headers:
-          'Content-Type': 'application/json;charset=utf-8'
-      }
-
-    .then () ->
-      logger.debug('All Wake Success!!')
-    .catch errorHandlingUtils.isUnhandled, (error) ->
-      throw new errorHandlingUtils.PartiallyHandledError(error, 'failed wake cartodb')
-    .catch (error) ->
-      throw new SoftFail(analyzeValue.getSimpleMessage(error))
-
 syncPrep = (subtask) ->
   loggerSyncPrep.debug "@@@@@@@@ cartodb:syncPrep @@@@@@@@"
 
-  dataLoadHelpers.checkReadyForRefresh(subtask, {targetHour: 2, targetDay: 'Saturday', runIfNever: true})
-  .then (doRefresh) ->
-    if !doRefresh
-      loggerSyncPrep.debug 'not doing refresh'
-      return
+  maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
 
-    maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
+  tables.cartodb.syncQueue()
+  .select('id', 'fips_code', 'batch_id')
+  .then (rows) ->
+    loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
+    loggerSyncPrep.debug rows
 
-    tables.cartodb.syncQueue()
-    .select('id', 'fips_code', 'batch_id')
-    .then (rows) ->
-      loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
-      loggerSyncPrep.debug rows
-
-      jobQueue.queueSubsequentPaginatedSubtask {
-        subtask
-        totalOrList: rows
-        maxPage
-        laterSubtaskName: 'sync'
-        mergeData: {}
-      }
-    .then () ->
-      jobQueue.queueSubsequentSubtask {
-        subtask
-        laterSubtaskName: 'syncDone'
-        manualData:
-          startTime: Date.now()
-      }
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: rows
+      maxPage
+      laterSubtaskName: 'sync'
+      mergeData: {}
+    }
+  .then () ->
+    jobQueue.queueSubsequentSubtask {
+      subtask
+      laterSubtaskName: 'syncDone'
+      manualData:
+        startTime: Date.now()
+    }
 
 sync = (subtask) ->
 
@@ -107,9 +77,14 @@ syncDone = (subtask) ->
   logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 
-module.exports = new TaskImplementation('cartodb', {
-  wake
-  syncPrep
-  sync
-  syncDone
-})
+ready = () ->
+  dataLoadHelpers.checkReadyForRefresh({task_name: 'cartodb'}, {targetHour: 2, targetDay: 'Saturday', runIfNever: true})
+  .then (doRefresh) ->
+    if !doRefresh
+      # not ready yet
+      return false
+    # otherwise, use regular logic i.e. error retry delays
+    return undefined
+
+
+module.exports = new TaskImplementation('cartodb', {syncPrep, sync, syncDone}, ready)
