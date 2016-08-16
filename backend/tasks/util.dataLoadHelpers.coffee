@@ -739,7 +739,7 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
     logger.spawn(subtask.task_name).debug () -> refreshTimestamp
     if runIfNever && refreshTimestamp == 0
       return true
-      
+
     now = Date.now()
     utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
 
@@ -747,9 +747,15 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
 
+    today = target.valueOf()
+    if targetDay?
+      target.day(targetDay)
+      if target.diff(today) != 0
+        # not the target day
+        return false
+
     target.hour(targetHour)
     target.minute(targetMinute)
-    target.day(targetDay) if targetDay?
     if target.diff(now) > 0  # not yet past target time
       return false
 

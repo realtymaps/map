@@ -4,6 +4,8 @@ shutdown = require('./config/shutdown')
 config = require './config/config'
 cluster = require('cluster')
 analyzeValue = require '../common/utils/util.analyzeValue'
+errorHandlingUtils = require './utils/errors/util.error.partiallyHandledError'
+cartodbConfig = require './config/cartodb/cartodb'
 
 
 _intervalHandler = null
@@ -25,6 +27,20 @@ repeat = (period=config.HIREFIRE.RUN_WINDOW) ->
 cancelRepeat = () ->
   clearInterval(_intervalHandler)
 
+wake = () -> Promise.try () ->
+  cartodbConfig()
+  .then (cartoConfig) ->
+    logger.spawn('wake').debug 'Cartodb config:'
+    logger.spawn('wake').debug cartoConfig
+
+    Promise.map cartoConfig.WAKE_URLS, (url) ->
+      logger.spawn('wake').debug () -> "Posting Wake URL: #{url}"
+      request({url, headers: 'Content-Type': 'application/json;charset=utf-8'})
+    .then () ->
+      logger.spawn('wake').debug 'All Wake Success!!'
+    .catch (err) ->
+      logger.error "Unexpected error performing cartoDb wake: #{analyzeValue.getSimpleDetails(err)}"
+
 
 module.exports = {
   runOnce
@@ -38,6 +54,11 @@ if require.main == module  # run directly, not require()d
 
   if cluster.isMaster
     shutdown.setup()
+
+    # first, spawn off a wake worker
+    cluster.fork({WAKE_WORKER: true})
+
+    # then do real queueNeeds stuff
     workerId = null
     workerForked = false
     intervalsWaited = 0
@@ -85,6 +106,11 @@ if require.main == module  # run directly, not require()d
       setTimeout(masterLoop, wait)
   else  # is worker
     shutdown.setup()
+
+    if process.env.WAKE_WORKER
+      setInterval(wake, config.CARTO_WAKE_INTERVAL)
+      return
+
     runOnce()
     .then () ->
       shutdown.exit()
