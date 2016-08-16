@@ -167,7 +167,7 @@ getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
   tables.finalized.parcel(transaction: transaction)
-  .select('geometry_raw', 'geometry', 'geometry_center')
+  .select('geometry_raw', 'geometry', 'geometry_center', 'geometry_center_raw')
   .where({rm_property_id, active})
 
 
