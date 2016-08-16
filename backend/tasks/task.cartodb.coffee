@@ -19,28 +19,28 @@ NUM_ROWS_TO_PAGINATE = 10
 syncPrep = (subtask) ->
   loggerSyncPrep.debug "@@@@@@@@ cartodb:syncPrep @@@@@@@@"
 
-    maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
+  maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
 
-    tables.cartodb.syncQueue()
-    .select('id', 'fips_code', 'batch_id')
-    .then (rows) ->
-      loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
-      loggerSyncPrep.debug rows
+  tables.cartodb.syncQueue()
+  .select('id', 'fips_code', 'batch_id')
+  .then (rows) ->
+    loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
+    loggerSyncPrep.debug rows
 
-      jobQueue.queueSubsequentPaginatedSubtask {
-        subtask
-        totalOrList: rows
-        maxPage
-        laterSubtaskName: 'sync'
-        mergeData: {}
-      }
-    .then () ->
-      jobQueue.queueSubsequentSubtask {
-        subtask
-        laterSubtaskName: 'syncDone'
-        manualData:
-          startTime: Date.now()
-      }
+    jobQueue.queueSubsequentPaginatedSubtask {
+      subtask
+      totalOrList: rows
+      maxPage
+      laterSubtaskName: 'sync'
+      mergeData: {}
+    }
+  .then () ->
+    jobQueue.queueSubsequentSubtask {
+      subtask
+      laterSubtaskName: 'syncDone'
+      manualData:
+        startTime: Date.now()
+    }
 
 sync = (subtask) ->
 
