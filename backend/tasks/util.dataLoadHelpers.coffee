@@ -308,6 +308,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       if row["Assessor’s Parcel Number"]?.indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1
+        logger.debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
