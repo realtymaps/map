@@ -1,1 +1,1 @@
-DELETE FROM listings WHERE data_source_id = 'swflmls';
+DELETE FROM listing WHERE data_source_id = 'swflmls';
