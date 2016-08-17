@@ -188,7 +188,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             .insert(listing)
 
 
-storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
+storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
   successCtr = 0
   errorsCtr = 0
   skipsCtr = 0
@@ -252,7 +252,7 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
           return
 
         uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1, table})
           .then () ->
             dbs.transaction 'main', (transaction2) ->
               internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)

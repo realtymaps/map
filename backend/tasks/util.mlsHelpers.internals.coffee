@@ -13,15 +13,15 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 ensureErrorUtil = require '../utils/errors/util.ensureError'
 NamedError = require '../utils/errors/util.error.named'
 
-makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction}) ->
+makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction, table}) ->
   doReturnStr ?= false
 
   updatedInfo =
-    photos: tables.normalized.listing.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
+    photos: table.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
   if cdnPhotoStr
     updatedInfo.cdn_photo = cdnPhotoStr
 
-  query = tables.normalized.listing({transaction})
+  query = table({transaction})
   .where(listingRow)
   .update(updatedInfo)
 
@@ -107,7 +107,7 @@ enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
   else
     Promise.resolve()
 
-updatePhoto = (subtask, opts) -> Promise.try () ->
+updatePhoto = (subtask, opts, table) -> Promise.try () ->
   if !opts
     logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
     return
@@ -143,6 +143,7 @@ updatePhoto = (subtask, opts) -> Promise.try () ->
       imageId
       photo_id
       transaction
+      table
     }
     .catch (error) ->
       logger.spawn(subtask.task_name).error analyzeValue.getSimpleDetails(error)
