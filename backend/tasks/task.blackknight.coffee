@@ -250,8 +250,6 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
-      logger.debug () -> "Processing row for `deleteData`: #{JSON.stringify(row)}"
-
       if row['FIPS Code'] != '12021'
         Promise.resolve()
 
