@@ -30,10 +30,10 @@ base =
   PORT: process.env.PORT_GOD || (if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else false) || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'rmaps.log'
-    LEVEL: process.env.LOG_LEVEL ? 'debug'
-    FILE_AND_LINE: false
-    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
-    TIMESTAMP: process.env.LOG_TIMESTAMP == 'true'
+    LEVEL: 'debug' #process.env.LOG_LEVEL ? 'debug'
+    FILE_AND_LINE: true # false
+    ENABLE: process.env.LOG_ENABLE ? '*blackknight*'  # 'frontend:*,backend:*,test:*'
+    TIMESTAMP: true # process.env.LOG_TIMESTAMP == 'true'
     LOG_TO_FILE: process.env.LOG_TO_FILE == 'true'
   DBS:
     MAIN:

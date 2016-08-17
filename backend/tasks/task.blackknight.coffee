@@ -88,7 +88,7 @@ copyFtpDrop = (subtask) ->
     # expect a list of 6 paths here, for one date of processing
     .then (paths) ->
       logger.debug () -> "Processing blackknight paths: #{JSON.stringify(paths)}"
-
+      
       # traverse each path...
       Promise.each paths, (path) ->
         ftp.list(path)
@@ -131,7 +131,9 @@ copyFtpDrop = (subtask) ->
 
                 upload.concurrentParts(10)
                 upload.on('error', reject)
-                upload.on('uploaded', resolve)
+                upload.on 'uploaded', (details) ->
+                  console.log "#{new Date()} - #{fullpath} uploaded."
+                  resolve(details)
 
                 upload.on 'part', (details) ->
                   s3UploadParts++
@@ -155,6 +157,7 @@ copyFtpDrop = (subtask) ->
 
 
 checkFtpDrop = (subtask) ->
+  return
   defaults = {}
   defaults[internals.REFRESH] = '19700101'
   defaults[internals.UPDATE] = '19700101'
@@ -164,6 +167,7 @@ checkFtpDrop = (subtask) ->
   # per date, filter and classify files as `Load` or `Delete`
   internals.nextProcessingDates()
   .then (processDates) ->
+    console.log "\n\ninternals.nextProcessingDates().then processDates:\n#{JSON.stringify(processDates,null,2)}"
     processInfo =
       dates: processDates
       hasFiles: false
@@ -214,6 +218,7 @@ checkFtpDrop = (subtask) ->
 
   # send classified file lists through downloading and processing
   .then (processInfo) ->
+    console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
     dbs.transaction 'main', (transaction) ->
       if processInfo.hasFiles
 

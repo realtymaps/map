@@ -90,6 +90,9 @@ _isLoad = (fileName) ->
 
 # Filter s3, classify as data to DELETE or LOAD based on filename
 filterS3Contents = (contents, config) -> Promise.try () ->
+  console.log "\n\nfilterS3Contents()"
+  console.log "contents:\n#{JSON.stringify(contents,null,2)}"
+  console.log "config:\n#{JSON.stringify(config,null,2)}"
   # required params, mostly for going ahead and populating the "fileInfo" objects used later
   if !("action" of config && "tableId" of config && "date" of config && "startTime" of config)
     throw new HardFail("S3 filtering requires config parameters: `action`, `date`, `tableId`, and `startTime`")
