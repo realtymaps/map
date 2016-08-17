@@ -31,8 +31,9 @@ loadRawData = (subtask) ->
   Promise.join refreshPromise, rawLoadPromise, (doRefresh, numRawRows) ->
     taskLogger.debug () -> "rows to normalize: #{numRawRows||0} (refresh: #{doRefresh})"
     if !doRefresh && !numRawRows
-      dataLoadHelpers.setLastUpdateTimestamp(subtask)
-      return 0
+      return dataLoadHelpers.setLastUpdateTimestamp(subtask, now)
+      .then () ->
+        return 0
 
     recordCountsData =
       dataType: 'listing'
