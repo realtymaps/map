@@ -88,17 +88,8 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  total = subtask.data.values.length
-  started = 0
-  finished = 0
-  errored = 0
   impl = (id) ->
-    started++
     mlsHelpers.finalizeData {subtask, id}
-    .then () ->
-      finished++
-    .catch (err) ->
-      throw err
   Promise.map(subtask.data.values, impl)
 
 storePhotosPrep = (subtask) ->
