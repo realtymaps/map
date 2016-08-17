@@ -106,24 +106,23 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
       deedEntry.sale_date = deedEntry.close_date || deedEntry.recording_date
       delete deedEntry.close_date
       delete deedEntry.recording_date
-      if !lastSaleIndex? && tax.legal_unit_number == deedEntry.legal_unit_number
+      if !lastSaleIndex? && (tax.legal_unit_number == deedEntry.legal_unit_number || (!tax.legal_unit_number && !deedEntry.legal_unit_number))
         lastSaleIndex = i
     if lastSaleIndex?
       [lastSale] = deedEntries.splice(lastSaleIndex, 1)
-      # deedRecordingDate = moment(deedEntries[lastSaleIndex].recording_date).startOf('day')
       try
         deedRecordingDate = moment(lastSale.sale_date).startOf('day')
         taxRecordingDate = moment(tax.recording_date).startOf('day')
         if deedRecordingDate.isAfter(taxRecordingDate)
           if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
-            logger.debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is AFTER tax recording date #{taxRecordingDate}")
+            logger.spawn('troubleshoot').debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is AFTER tax recording date #{taxRecordingDate}")
           tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
           tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
           for field in saleFields
             tax[field] = lastSale[field]
         else if deedRecordingDate.isSame(taxRecordingDate)
           if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
-            logger.debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is BEFORE tax recording date #{taxRecordingDate}")
+            logger.spawn('troubleshoot').debug("#{tax.rm_property_id}: Deed recording date #{deedRecordingDate} is BEFORE tax recording date #{taxRecordingDate}")
           for field in saleFields
             tax[field] ?= lastSale[field]
       catch err
@@ -135,7 +134,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         throw new SoftFail(msg)
     else
       if tax.rm_property_id == '12021_11080160001_001' || tax.rm_property_id.indexOf('6231520007') != -1 # temporary debug
-        logger.debug("#{tax.rm_property_id}: Last sale was not found!")
+        msg = "#{tax.rm_property_id}: Last sale was not found!\ntax.legal_unit_number: #{tax.legal_unit_number} / tax.recording_date: #{tax.recording_date}"
+        for deedEntry,i in deedEntries by -1
+          msg += "\ndeed.legal_unit_number: #{deedEntry.legal_unit_number} / deed.sale_date: #{deedEntry.sale_date}"
+        logger.spawn('troubleshoot').debug(msg)
+
 
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date

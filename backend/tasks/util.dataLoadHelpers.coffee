@@ -308,7 +308,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       if row["Assessor’s Parcel Number"]?.indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1
-        logger.debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
+        logger.spawn('troubleshoot').debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
@@ -722,14 +722,14 @@ ensureNormalizedTable = (dataType, subid) ->
 getLastUpdateTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
-setLastUpdateTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+setLastUpdateTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data update timestamps')
 
 getLastRefreshTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
 
-setLastRefreshTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
+setLastRefreshTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data refresh timestamps')
 
 # this is logic that checks to see if the last time something happened was before today, and if it is currently after a
 # given time of day (24-hour time).  Note this works based on eastern time zone, including DST
