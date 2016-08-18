@@ -1,3 +1,5 @@
+require('./l.handler.js')
+require('./api.draw.marker.js')
 var OurToolBar = require('./api.Toolbar.js')
 Object.assign = Object.assign || require('object-assign')
 /*

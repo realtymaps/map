@@ -36,7 +36,7 @@ describe 'service.cartodb', ->
         it 'no limit', (done) ->
           @subject.restful.getByFipsCode
             api_key: FAKE_API_KEY_TO_US
-            fipscode: 12011
+            fips_code: 12011
           .then () =>
             @sqlHelpersMock.select.calledOnce.should.equal(true)
             done()
@@ -44,7 +44,7 @@ describe 'service.cartodb', ->
         it 'limit', (done) ->
           @subject.restful.getByFipsCode
             api_key: FAKE_API_KEY_TO_US
-            fipscode: 12011
+            fips_code: 12011
             limit: 10
           .then () =>
             @sqlHelpersMock.select.calledOnce.should.equal(true)

@@ -49,9 +49,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return "label-#{@getForSaleClass(result, !ignorePinned)}-property"
 
     showSoldDate: (result) ->
-      return false unless result
-      status = result?.status
-      return (status=='sold'||status=='not for sale') && result.close_date
+      return result?.status == 'sold' && result?.close_date
 
     sendSnail: (result) ->
       $rootScope.$emit rmapsEventConstants.snail.initiateSend, result

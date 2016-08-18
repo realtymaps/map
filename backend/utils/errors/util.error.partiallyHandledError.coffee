@@ -9,7 +9,7 @@ class PartiallyHandledError extends VError
   constructor: (args...) ->
     super(args...)
     @name = 'PartiallyHandledError'
-    if !@quiet && @jse_cause && !(@jse_cause instanceof PartiallyHandledError)
+    if !@quiet && !(@jse_cause instanceof PartiallyHandledError)
       ref = uuid.v1() # timestamp-based uuid
       @message = @message + " (Error reference #{ref})"
       logger.error analyzeValue.getSimpleDetails(@)

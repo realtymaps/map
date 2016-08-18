@@ -33,7 +33,7 @@ span(
                 .title {{model.properties.area_name}}
                 span.rename(ng-click="update(model); $event.stopPropagation()") Rename
               span.actions(rmaps-require-project-editor)
-                span.fa.fa-bar-chart(ng-click="showStats(model); $event.stopPropagation()")
+                span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()")
                 span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
                 span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
         .dropdown-explanation(ng-show="!_.keys(areas).length")

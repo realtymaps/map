@@ -47,6 +47,7 @@ rmapsLayerFormattersService
 rmapsPropertiesService
 rmapsMapEventEnums
 rmapsHoverQueue
+rmapsZoomLevelService
 $log) ->
 
   _gate = rmapsNgLeafletEventGateService
@@ -162,7 +163,7 @@ $log) ->
           $timeout ->
             return if _handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
-#              return mapCtrl.saveProperty(model, lObject)
+              # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
             if _lastEvents.last != 'dblclick'
               if model.markerType != 'price-group'
@@ -201,11 +202,15 @@ $log) ->
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
-        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'id')
-        .then (data) ->
-          model = data.mls?[0] || data.county?[0]
-          return if !model
-          $scope.formatters.results.showModel(model)
+        if rmapsZoomLevelService.isParcel($scope.map.center.zoom)
+          $log.debug 'Showing property details if a parcel was clicked'
+          rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'id')
+          .then (data) ->
+            model = data.mls?[0] || data.county?[0]
+            return if !model
+            $scope.formatters.results.showModel(model)
+        else
+          $log.debug 'Not close enough to show property details'
 
     , thisOriginator, ['click']
 
