@@ -148,11 +148,10 @@ storePhotos = (subtask) -> Promise.try () ->
 
 
 ready = () ->
-  # don't automatically run if digimaps is running
+  # don't automatically run if digimaps or photos is running
   tables.jobQueue.taskHistory()
-  .where
-    current: true
-    name: 'digimaps'
+  .where(current: true)
+  .whereIn('name', ['digimaps', "#{@taskName}_photos"])
   .whereNull('finished')
   .then (results) ->
     if results?.length

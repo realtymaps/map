@@ -7,8 +7,8 @@ insert into jq_task_config (
   kill_timeout_minutes
 )
 values (
-	'photos',
-  'Load MLS photos',
+	'swflmls_photos',
+  'Load SWFL MLS photos',
   '{}',
   60,
   12,
@@ -30,8 +30,9 @@ insert into jq_subtask_config (
 	auto_enqueue
 )
 (
-	select=
-		name || '_new', 'photos',
+	select
+		replace(name, 'Photos', ''),
+		name || '_photos',
 		queue_name,
 		step_num,
 		retry_delay_seconds,
