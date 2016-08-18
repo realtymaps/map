@@ -1,7 +1,5 @@
-request = require 'request'
 Promise = require 'bluebird'
 TaskImplementation = require './util.taskImplementation'
-request = Promise.promisify(request)
 logger = require('../config/logger').spawn('backend:task:cartodb')
 loggerSyncPrep = require('../config/logger').spawn('backend:task:cartodb:syncPep')
 loggerSync = require('../config/logger').spawn('backend:task:cartodb:sync')
@@ -64,7 +62,6 @@ sync = (subtask) ->
   .then () ->
     loggerSync.debug('All Sync CartoDB Success!!')
   .catch errorHandlingUtils.isUnhandled, (error) ->
-    console.log error.stack
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to sync cartodb')
   .catch (error) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))

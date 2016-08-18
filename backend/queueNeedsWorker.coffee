@@ -4,9 +4,9 @@ shutdown = require('./config/shutdown')
 config = require './config/config'
 cluster = require('cluster')
 analyzeValue = require '../common/utils/util.analyzeValue'
+workers = require './workers'
+Promise = require 'bluebird'
 errorHandlingUtils = require './utils/errors/util.error.partiallyHandledError'
-cartodbConfig = require './config/cartodb/cartodb'
-
 
 _intervalHandler = null
 
@@ -27,20 +27,6 @@ repeat = (period=config.HIREFIRE.RUN_WINDOW) ->
 cancelRepeat = () ->
   clearInterval(_intervalHandler)
 
-wake = () -> Promise.try () ->
-  cartodbConfig()
-  .then (cartoConfig) ->
-    logger.spawn('wake').debug 'Cartodb config:'
-    logger.spawn('wake').debug cartoConfig
-
-    Promise.map cartoConfig.WAKE_URLS, (url) ->
-      logger.spawn('wake').debug () -> "Posting Wake URL: #{url}"
-      request({url, headers: 'Content-Type': 'application/json;charset=utf-8'})
-    .then () ->
-      logger.spawn('wake').debug 'All Wake Success!!'
-    .catch (err) ->
-      logger.error "Unexpected error performing cartoDb wake: #{analyzeValue.getSimpleDetails(err)}"
-
 
 module.exports = {
   runOnce
@@ -49,14 +35,15 @@ module.exports = {
 }
 
 
-
 if require.main == module  # run directly, not require()d
 
   if cluster.isMaster
     shutdown.setup()
 
-    # first, spawn off a wake worker
-    cluster.fork({WAKE_WORKER: true})
+    # first, spawn off workers
+    for workerKey of workers
+      logger.debug "Forking #{workerKey}"
+      cluster.fork("#{workerKey}": true)
 
     # then do real queueNeeds stuff
     workerId = null
@@ -107,9 +94,24 @@ if require.main == module  # run directly, not require()d
   else  # is worker
     shutdown.setup()
 
-    if process.env.WAKE_WORKER
-      setInterval(wake, config.CARTO_WAKE_INTERVAL)
-      return
+    for workerKey, val of workers
+      if process.env[workerKey]
+
+        return new Promise (resolve, reject) ->
+          try
+            setInterval( () ->
+              logger.debug "Running worker #{workerKey}"
+              resolve(val.worker())
+            , val.interval)
+          catch error
+            reject(error)
+        .catch errorHandlingUtils.isUnhandled, (error) ->
+          throw new errorHandlingUtils.PartiallyHandledError(error, "failed to run #{workerKey} worker.")
+        .catch (err) ->
+          logger.error err
+          logger.debug 'exiting'
+          process.exit(300)
+
 
     runOnce()
     .then () ->

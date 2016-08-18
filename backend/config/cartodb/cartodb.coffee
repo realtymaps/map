@@ -23,6 +23,6 @@ getConfig = () -> Promise.try () ->
     ROOT_URL: root
     API_URL: apiUrl
     TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
-    WAKE_URLS: _.map(maps, (m) -> "http:#{root}/map/named/#{m.name}?#{apiUrl}")
+    WAKE_URLS: _.map(maps, (m) -> "#{root}/map/named/#{m.name}?#{apiUrl}")
 
 module.exports = memoize.promise(getConfig, maxAge: 15*60*1000)
