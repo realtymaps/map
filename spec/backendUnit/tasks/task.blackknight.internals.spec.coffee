@@ -7,9 +7,9 @@ rewire = require 'rewire'
 Promise = require 'bluebird'
 bkServiceInternals = rewire '../../../backend/tasks/task.blackknight.internals'
 fixture = require '../../fixtures/backend/tasks/task.blackknight.internals'
-#console.log "fixture:\n#{JSON.stringify(fixture,null,2)}"
 
-_initialDateQueue = 
+
+_initialDateQueue =
   "#{bkServiceInternals.REFRESH}": ['19800103', '19800102', '19800101']
   "#{bkServiceInternals.UPDATE}": ['19900101', '19900102', '19900103']
 
@@ -132,7 +132,7 @@ describe "task.blackknight.internal", () ->
   # describe "useProcessInfo", () ->
   #   Might be able to test things like fips-code structure, but this routine mostly just
   #   branches off into calls to other routines in parallel fashion
-  
+
 
   describe "queuePerFileSubtasks", () ->
     beforeEach ->

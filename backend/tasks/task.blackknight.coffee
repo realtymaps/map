@@ -87,7 +87,7 @@ copyFtpDrop = (subtask) ->
     # expect a list of 6 paths here, for one date of processing
     .then (paths) ->
       logger.debug () -> "Processing blackknight paths: #{JSON.stringify(paths)}"
-      
+
       # traverse each path...
       Promise.each paths, (path) ->
         ftp.list(path)

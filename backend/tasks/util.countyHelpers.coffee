@@ -76,7 +76,7 @@ loadRawData = (subtask, options) ->
   source = subtask.data.path
 
   # transfer files from a configured source...
-  if options.s3account  
+  if options.s3account
     dataStreamPromise = _fetchS3(options.s3account, source, target, options)
   else
     # FTP / SFTP check done in `_fetchFTP`
