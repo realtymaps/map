@@ -11,7 +11,6 @@ PromiseSftp = require 'promise-sftp'
 _ = require 'lodash'
 keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
-dbs = require '../config/dbs'
 moment = require 'moment'
 internals = require './task.blackknight.internals'
 validation = require '../utils/util.validation'
@@ -103,9 +102,9 @@ copyFtpDrop = (subtask) ->
               logger.debug () -> "Skipping #{fullpath} due to 0 size..."
               return
 
-            if fullpath == "/Managed_Refresh/ASMT20160330/12086_Assessment_Refresh_20160330.txt.gz"
-              logger.warn "Skipping #{fullpath} by name"
-              return
+            # handy for reducing flow during debug, keeping in code comment:
+            # if fullpath.endsWith('.gz') and fullpath.indexOf('12021') < 0
+            #   return
 
             # setup input ftp stream
             ftp.get(fullpath)
@@ -117,8 +116,6 @@ copyFtpDrop = (subtask) ->
               ftpStream.on('error', reject)
               ftpStream.on 'data', (buffer) ->
                 ftpStreamChunks++
-                #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
-
 
               # procure writable aws stream
               config =
@@ -132,7 +129,7 @@ copyFtpDrop = (subtask) ->
                 upload.concurrentParts(10)
                 upload.on('error', reject)
                 upload.on 'uploaded', (details) ->
-                  console.log "#{new Date()} - #{fullpath} uploaded."
+                  logger.debug () ->  "#{fullpath} uploaded on #{new Date()}"
                   resolve(details)
 
                 upload.on 'part', (details) ->
@@ -157,91 +154,16 @@ copyFtpDrop = (subtask) ->
 
 
 checkFtpDrop = (subtask) ->
-  return
   defaults = {}
   defaults[internals.REFRESH] = '19700101'
   defaults[internals.UPDATE] = '19700101'
   defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
-  now = Date.now()
-
-  # per date, filter and classify files as `Load` or `Delete`
-  internals.nextProcessingDates()
-  .then (processDates) ->
-    console.log "\n\ninternals.nextProcessingDates().then processDates:\n#{JSON.stringify(processDates,null,2)}"
-    processInfo =
-      dates: processDates
-      hasFiles: false
-    processInfo[internals.REFRESH] = []
-    processInfo[internals.UPDATE] = []
-    processInfo[internals.DELETE] = []
-
-    tableIds = Object.keys(internals.tableIdMap)
-    Promise.map tableIds, (tableId) ->
-
-      refreshConfig =
-        extAcctName: awsService.buckets.BlackknightData
-        Prefix: "Managed_#{internals.REFRESH}/#{tableId}#{processDates.Refresh}"
-      updateConfig =
-        extAcctName: awsService.buckets.BlackknightData
-        Prefix: "Managed_#{internals.UPDATE}/#{tableId}#{processDates.Update}"
-
-      # pull sets of filtered (and classified as `Load` or `Delete`) keys
-      refreshPromise = awsService.listObjects(refreshConfig)
-      .then (refreshResponse) ->
-        internals.filterS3Contents(refreshResponse.Contents, {action: internals.REFRESH, tableId, date: processDates.Refresh, startTime: now})
-
-      updatePromise = awsService.listObjects(updateConfig)
-      .then (updateResponse) ->
-        internals.filterS3Contents(updateResponse.Contents, {action: internals.UPDATE, tableId, date: processDates.Update, startTime: now})
-
-      # combine the Update and Refresh lists (both filter processes may yield some `Delete` items)
-      Promise.join(refreshPromise, updatePromise)
-      .then ([refreshInfo, updateInfo]) ->
-        {
-          "#{internals.REFRESH}": refreshInfo[internals.REFRESH]
-          "#{internals.UPDATE}": updateInfo[internals.UPDATE]
-          "#{internals.DELETE}": refreshInfo[internals.DELETE].concat updateInfo[internals.DELETE]
-        }
-
-    # combine lists of all tableIds
-    .then ([table1, table2, table3]) ->
-      list = [table1, table2, table3]
-
-      # combine lists (union is helpful here for combining lists, not necessarily needing the non-dupe consequence)
-      processInfo[internals.REFRESH] = _.union table1[internals.REFRESH], table2[internals.REFRESH], table3[internals.REFRESH]
-      processInfo[internals.UPDATE] = _.union table1[internals.UPDATE], table2[internals.UPDATE], table3[internals.UPDATE]
-      processInfo[internals.DELETE] = _.union table1[internals.DELETE], table2[internals.DELETE], table3[internals.DELETE]
-
-      if (processInfo[internals.REFRESH].length + processInfo[internals.UPDATE].length + processInfo[internals.DELETE].length) > 0
-        processInfo.hasFiles = true
-      return processInfo
+  subtaskStartTime = Date.now()
 
   # send classified file lists through downloading and processing
+  internals.getProcessInfo(subtask, subtaskStartTime)
   .then (processInfo) ->
-    console.log "processInfo:\n#{JSON.stringify(processInfo,null,2)}"
-    dbs.transaction 'main', (transaction) ->
-      if processInfo.hasFiles
-
-        # initiate processing and loading for each list with concurrency
-        deletes = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.DELETE], internals.DELETE)
-        refresh = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.REFRESH], internals.REFRESH)
-        update = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.UPDATE], internals.UPDATE)
-        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
-
-          # keep track of fips
-          fipsCodes = _.extend(refreshFips, updateFips)
-          normalizedTablePromises = []
-          for fipsCode of fipsCodes
-            # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.TAX, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.DEED, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.MORTGAGE, fipsCode)
-          Promise.all(normalizedTablePromises)
-      else
-        fileProcessing = Promise.resolve()
-      dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
-      Promise.join fileProcessing, dates, () ->  # empty handler
+    internals.useProcessInfo(subtask, processInfo)
 
 
 loadRawData = (subtask) ->
@@ -420,6 +342,8 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
+  console.log "recordChangeCounts()"
+  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
   dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined'})
 
 

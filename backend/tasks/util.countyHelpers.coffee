@@ -66,7 +66,7 @@ _fetchS3 = (account, source, target, options) ->
     throw new SoftFail("S3 `getObject` error: #{err}")
 
 
-# loads all records from an s3 bucket
+# loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
 

@@ -7,6 +7,8 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 keystore = require '../services/service.keystore'
 moment = require 'moment'
+dbs = require '../config/dbs'
+awsService = require '../services/service.aws'
 
 
 RESTRICT_TO_FIPS = ['12021']
@@ -90,9 +92,6 @@ _isLoad = (fileName) ->
 
 # Filter s3, classify as data to DELETE or LOAD based on filename
 filterS3Contents = (contents, config) -> Promise.try () ->
-  console.log "\n\nfilterS3Contents()"
-  console.log "contents:\n#{JSON.stringify(contents,null,2)}"
-  console.log "config:\n#{JSON.stringify(config,null,2)}"
   # required params, mostly for going ahead and populating the "fileInfo" objects used later
   if !("action" of config && "tableId" of config && "date" of config && "startTime" of config)
     throw new HardFail("S3 filtering requires config parameters: `action`, `date`, `tableId`, and `startTime`")
@@ -140,7 +139,6 @@ filterS3Contents = (contents, config) -> Promise.try () ->
     if classified
       # apply to appropriate list
       filtered[fileInfo.listType].push fileInfo
-    
   filtered
 
 #
@@ -217,10 +215,12 @@ pushProcessingDates = (dates) -> Promise.try () ->
     else
       currentDateQueue[UPDATE].push dates[UPDATE]
 
-
     keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
 
 
+#
+# helpers for organizing, classifying, and processing files to process
+#
 findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
   ftp.list("/Managed_#{action}")
   .then (rootListing) ->
@@ -238,6 +238,89 @@ findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
       newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
       #logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
     newFolders
+
+
+# scan and classify (into Load or Delete) file data for processing
+getProcessInfo = (subtask, subtaskStartTime) ->
+  # per date, filter and classify files as `Load` or `Delete`
+  nextProcessingDates()
+  .then (processDates) ->
+    console.log "\n\nnextProcessingDates().then processDates:\n#{JSON.stringify(processDates,null,2)}"
+    processInfo =
+      dates: processDates
+      hasFiles: false
+      startTime: subtaskStartTime
+    processInfo[REFRESH] = []
+    processInfo[UPDATE] = []
+    processInfo[DELETE] = []
+
+    tableIds = Object.keys(tableIdMap)
+    Promise.map tableIds, (tableId) ->
+
+      refreshConfig =
+        extAcctName: awsService.buckets.BlackknightData
+        Prefix: "Managed_#{REFRESH}/#{tableId}#{processDates.Refresh}"
+      updateConfig =
+        extAcctName: awsService.buckets.BlackknightData
+        Prefix: "Managed_#{UPDATE}/#{tableId}#{processDates.Update}"
+
+      # pull sets of filtered (and classified as `Load` or `Delete`) keys
+      refreshPromise = awsService.listObjects(refreshConfig)
+      .then (refreshResponse) ->
+        filterS3Contents(refreshResponse.Contents, {action: REFRESH, tableId, date: processDates.Refresh, startTime: subtaskStartTime})
+
+      updatePromise = awsService.listObjects(updateConfig)
+      .then (updateResponse) ->
+        filterS3Contents(updateResponse.Contents, {action: UPDATE, tableId, date: processDates.Update, startTime: subtaskStartTime})
+
+      # combine the Update and Refresh lists (both filter processes may yield some `Delete` items)
+      Promise.join(refreshPromise, updatePromise)
+      .then ([refreshInfo, updateInfo]) ->
+        {
+          "#{REFRESH}": refreshInfo[REFRESH]
+          "#{UPDATE}": updateInfo[UPDATE]
+          "#{DELETE}": refreshInfo[DELETE].concat updateInfo[DELETE]
+        }
+
+    # combine lists of all tableIds
+    .then ([table1, table2, table3]) ->
+      list = [table1, table2, table3]
+
+      # combine lists (union is helpful here for combining lists, not necessarily needing the non-dupe consequence)
+      processInfo[REFRESH] = _.union table1[REFRESH], table2[REFRESH], table3[REFRESH]
+      processInfo[UPDATE] = _.union table1[UPDATE], table2[UPDATE], table3[UPDATE]
+      processInfo[DELETE] = _.union table1[DELETE], table2[DELETE], table3[DELETE]
+
+      if (processInfo[REFRESH].length + processInfo[UPDATE].length + processInfo[DELETE].length) > 0
+        processInfo.hasFiles = true
+      return processInfo
+
+
+# divvy out the file data (in `processInfo`) we found into procs that process that data (parallelized)
+useProcessInfo = (subtask, processInfo) ->
+  dbs.transaction 'main', (transaction) ->
+    if processInfo.hasFiles
+
+      # initiate processing and loading for each list with concurrency
+      deletes = queuePerFileSubtasks(transaction, subtask, processInfo[DELETE], DELETE)
+      refresh = queuePerFileSubtasks(transaction, subtask, processInfo[REFRESH], REFRESH)
+      update = queuePerFileSubtasks(transaction, subtask, processInfo[UPDATE], UPDATE)
+      activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: processInfo.startTime}, replace: true})
+      fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
+
+        # keep track of fips
+        fipsCodes = _.extend(refreshFips, updateFips)
+        normalizedTablePromises = []
+        for fipsCode of fipsCodes
+          # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(TAX, fipsCode)
+          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(DEED, fipsCode)
+          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(MORTGAGE, fipsCode)
+        Promise.all(normalizedTablePromises)
+    else
+      fileProcessing = Promise.resolve()
+    dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
+    Promise.join fileProcessing, dates, () ->  # empty handler
 
 
 # deprecated
@@ -300,11 +383,17 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
     return
 
   fipsCodes = {}
+  filesForDelete = []
+  if action == DELETE
+    filesForDelete = files
+  else
+    _.forEach files, (el) ->
+      fipsCodes[el.normalSubid] = true
+
   # load task 
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true, concurrency: 10})
 
   # non-delete `changeCounts` takes no data
-  filesForDelete = if action == DELETE then files else []
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForDelete, replace: true})
 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
@@ -352,4 +441,6 @@ module.exports = {
   nextProcessingDates
   popProcessingDates
   pushProcessingDates
+  getProcessInfo
+  useProcessInfo
 }
