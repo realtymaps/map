@@ -38,6 +38,7 @@ module.exports = (app) ->
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
         Promise.try () ->
+          logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           route.handle(req, res, next)
         .catch isUnhandled, (error) ->
           throw new PartiallyHandledError(error, 'uncaught route handler error (*** add better error handling code to cover this case! ***)')
