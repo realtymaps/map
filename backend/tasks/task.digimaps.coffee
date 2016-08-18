@@ -284,13 +284,6 @@ recordChangeCounts = (subtask) ->
         deletedParcel: true
     }
 
-# syncCartoDb: (subtask) -> Promise.try ->
-#   fipsCode = String.numeric path.basename subtask.task_data
-#   parcel.upload(fipsCode)
-#   .then ->
-#     parcel.synchronize(fipsCode)
-#     #WHAT ELSE IS THERE TO DO?
-
 
 module.exports = new TaskImplementation 'digimaps', {
   loadRawDataPrep

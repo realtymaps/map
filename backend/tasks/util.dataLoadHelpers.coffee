@@ -733,17 +733,28 @@ setLastRefreshTimestamp = (subtask, startTime) ->
 
 # this is logic that checks to see if the last time something happened was before today, and if it is currently after a
 # given time of day (24-hour time).  Note this works based on eastern time zone, including DST
-checkReadyForRefresh = (subtask, {targetHour, targetMinute}) ->
+checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNever}) ->
   targetHour ?= 0
   targetMinute ?= 0
   getLastRefreshTimestamp(subtask)
   .then (refreshTimestamp) ->
+    logger.spawn(subtask.task_name).debug () -> refreshTimestamp
+    if runIfNever && refreshTimestamp == 0
+      return true
+
     now = Date.now()
     utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
 
     target = moment.utc(now).utcOffset(utcOffset).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
+
+    today = target.valueOf()
+    if targetDay?
+      target.day(targetDay)
+      if target.diff(today) != 0
+        # not the target day
+        return false
 
     target.hour(targetHour)
     target.minute(targetMinute)
