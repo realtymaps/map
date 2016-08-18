@@ -57,7 +57,6 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
 
     # some S3 api calls return streamable buffers...
     if (s3FnName == 'getObject') && (opts.stream)
-      console.log "s3FnName: #{s3FnName}"
       delete opts.stream
       s3 = new AWS.S3()
       # return the "createReadStream"-able response
