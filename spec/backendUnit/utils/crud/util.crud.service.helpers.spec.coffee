@@ -56,7 +56,7 @@ describe 'util.crud.service.helpers', ->
           .should.equal """select * from "#{tables.auth.user.tableName}" where "crapId" = '1' and "prop2" = 'prop2'"""
 
         it 'anything else throws', ->
-          (=> @instance.getById([]).toString()).should.throw("val: #{[]} typeof #{typeof([])} must be an object, or Number but not an Array!")
+          (=> @instance.getById([], null, null, null, null, {quiet: true}).toString()).should.throw("val:  typeof object must be an object, or Number but not an Array!")
 
       it 'count', ->
         @instance.count(test:'test').toString()

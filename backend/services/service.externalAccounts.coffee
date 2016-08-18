@@ -65,7 +65,7 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
     .orWhereNull('environment')
   .orderBy('environment')
   .then (accountInfo) ->
-    expectSingleRow(accountInfo)
+    expectSingleRow(accountInfo, opts.quiet)
   .then (accountInfo) ->
     _transform(_decrypt, opts.cipherKey, accountInfo)
   .then (decryptedInfo) ->

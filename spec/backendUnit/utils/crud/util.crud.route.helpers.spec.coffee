@@ -29,7 +29,7 @@ describe 'util.crud.route.helpers', ->
     describe 'constructor', ->
 
       it 'undefined svc', ->
-        (-> new Crud()).should.throw()
+        (-> new Crud(null, null, null, null, {quiet: true})).should.throw()
 
       it 'init called', ->
         init = sinon.stub(Crud::, 'init')
@@ -179,7 +179,7 @@ describe 'util.crud.route.helpers', ->
         @subject.paramIdKey.should.be.eql 'crap_id'
 
       it 'undefined rootGETKey throws', ->
-        (=> new HasManyRouteCrud @stubbedSvc).should.throw('@rootGETKey must be defined')
+        (=> new HasManyRouteCrud(@stubbedSvc, null, null, null, null, {quiet: true})).should.throw('@rootGETKey must be defined')
 
     it 'rootGET', ->
       @subject.rootGET @mockQuery

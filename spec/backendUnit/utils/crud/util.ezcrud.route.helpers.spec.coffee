@@ -37,7 +37,7 @@ describe 'util.ezcrud.route.helpers', ->
         done()
 
     it 'fails instantiation without svc', ->
-      (-> new RouteCrud()).should.throw()
+      (-> new RouteCrud(null, {quiet: true})).should.throw()
 
     it 'produces a "tReq" and combines params and body', (done) ->
       @routeCrud.getEntity(makeRequest()).then (entity) ->
