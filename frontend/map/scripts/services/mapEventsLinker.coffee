@@ -45,7 +45,7 @@ app.service "rmapsMapEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNg
           if handler[name]?
             handler[name](leafletEvent, leafletObject, model,  modelName, layerName, 'map', originator)
 
-  _hookDraw = (mapId, handler, originator, events = leafletDrawEvents.getAvailableEvents()) ->
+  _hookDraw = (mapId, handler, originator, events = leafletDrawEvents) ->
     #return a array of unsubscibers if you want to early unsubscibe
     events.map (name) ->
       eventName = "leafletDirectiveDraw.#{_getMapIdEventStr(mapId)}" + name

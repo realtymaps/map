@@ -1,6 +1,10 @@
 mixin projectsDropdown()
-  span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
-    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+  span.dropdown.btn-group.projects-list(
+    ng-hide="Toggles.getHideAnyDraw()"
+    dropdown is-open="projectDropdown.isOpen"
+    ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
+    
+    button.dropdown-toggle.btn.btn-transparent(dropdown-toggle)
       span
         h4(ng-show="principal.getCurrentProfile().sandbox") Sandbox
         h4(ng-show="!principal.getCurrentProfile().sandbox") {{principal.getCurrentProfile().name}}

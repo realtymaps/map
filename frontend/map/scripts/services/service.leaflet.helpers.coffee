@@ -10,8 +10,10 @@ app.service 'rmapsLeafletHelpers', () ->
     drawnItems = new L.FeatureGroup()
     L.geoJson geoJson,
       onEachFeature: (feature, layer) ->
-        if feature.properties?.shape_extras?.type = 'Circle'
-          layer = L.Circle.createFromFeature feature
+        ['Circle', 'Marker'].forEach (name) ->
+          if feature.properties?.shape_extras?.type == name
+            layer = L[name].createFromFeature feature
+
         layer.model = feature
         drawnItems.addLayer layer
 

@@ -2,69 +2,6 @@
 
 $defaultHeight = 50px //Leaflet.Draw default is 26px
 
-$fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
-  $commonY = (-1px + yPositionOffset) * multY
-  .leaflet-draw-draw-polyline
-    background-position (0px + xPositionOffset) * multX $commonY
-  .leaflet-draw-draw-polygon
-    background-position (-29px + xPositionOffset) * multX $commonY
-  .leaflet-draw-draw-rectangle
-    background-position (-60px + xPositionOffset) * multX $commonY
-  .leaflet-draw-draw-circle
-    background-position (-90px + xPositionOffset) * multX $commonY
-  .leaflet-draw-draw-marker
-    background-position (-120px + xPositionOffset) * multX $commonY
-  .leaflet-draw-edit-edit
-    background-position (-150px + xPositionOffset) * multX $commonY
-    &.leaflet-disabled
-      background-position (-210px + xPositionOffset) * multX $commonY
-  .leaflet-draw-edit-remove
-    background-position (-180px + xPositionOffset) * multX $commonY
-    &.leaflet-disabled
-      background-position (-240px + xPositionOffset) * multX (-2px) * multY
-
-.leaflet-draw
-  margin-bottom 0px !important
-  .leaflet-bar
-    a
-      height $defaultHeight
-      width $defaultHeight
-      display inline-block //This is what keeps the images from moving around on hover.. not sure why
-      border-right 1px solid rgba(0,0,0,0.1)
-    &:hover
-      color $rm-map-btn-icon-hover
-
-  a
-    display inline-block //default is block
-    text-align center
-    text-decoration none
-
-  &:hover
-    color $rm-map-btn-icon-hover
-
-.leaflet-draw-section
-  position relative
-  display inline-block
-  height $defaultHeight
-
-.leaflet-draw-toolbar
-  @extend .desktop-only
-
-  height $defaultHeight
-  margin-top 12px
-  a
-    background-image url('/assets/spritesheet-2x.png')
-    background-repeat no-repeat
-
-  $fnMakeLeafletDrawToolbar(-2, -1, 2, 2)
-  &.leaflet-bar
-    a
-      &:first-child
-        border-radius: 4px 0px 0px 4px
-      &:last-child
-        border-radius: 0px 4px 4px 0px
-
-
 //compare to above to mimick movement
 .leaflet-touch
   .leaflet-draw-actions
