@@ -144,17 +144,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
             scope['clicked' + handleName.toInitCaps()] = (event, options) ->
               enableHandle {handle: legacyHandle, handleName, event, options}
 
-
-        scope.clickedPen = (event) ->
-          #kick off free draw
-        scope.clickedText = (event) ->
-          #kick off something that puts text on map
-        scope.clickedRedo = (event) ->
-          #pull out of drawItems cache and put it back on the map
-        scope.clickedUndo = (event) ->
-          #pull out of drawItems cache and put it back on the map
-
-
         scope.clickedEdit = (event, options) ->
           enableHandle {
             handle: editModeHandles?.edit

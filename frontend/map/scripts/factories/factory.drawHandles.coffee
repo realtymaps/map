@@ -1,7 +1,7 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNgLeafletEventGateService) ->
+app.factory "rmapsMapDrawHandlesFactory", ($q, $log, rmapsDrawnUtilsService, rmapsNgLeafletEventGateService) ->
 
   {eachLayerModel} = rmapsDrawnUtilsService
   $log = $log.spawn("map:rmapsMapDrawHandlesFactory")
@@ -22,6 +22,8 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService, rmapsNg
         drawnItems.addLayer(layer)
         geojson = layer.toGeoJSON()
 
+        if layer.ignoreSave
+          return $q.resolve()
         promise = createPromise or drawnShapesSvc?.create
         promise(geojson).then ({data}) ->
           [id] = data
