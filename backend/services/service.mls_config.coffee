@@ -80,7 +80,7 @@ class MlsConfigService extends ServiceCrud
         accountInfo.name = newMls.id
         externalAccounts.insertAccountInfo(accountInfo, {transaction})
       .then () ->
-        # prepare a queue task for this new MLS
+        # prepare a task for this new MLS
         tables.jobQueue.taskConfig()
         .where(name: '<default_mls_config>')
         .then ([taskConfig]) ->
@@ -97,6 +97,25 @@ class MlsConfigService extends ServiceCrud
               subtaskConfig.name = subtaskConfig.name.replace('<default_mls_config>', newMls.id)
               tables.jobQueue.subtaskConfig({transaction})
               .insert(subtaskConfig)
+            .then () ->
+              # prepare a photos task for this new MLS
+              tables.jobQueue.taskConfig()
+              .where(name: '<default_mls_photos_config>')
+              .then ([taskConfig]) ->
+                taskConfig.name = "#{newMls.id}_photos"
+                tables.jobQueue.taskConfig({transaction})
+                .insert(taskConfig)
+              .then () ->
+                # prepare subtasks for photos
+                tables.jobQueue.subtaskConfig()
+                .where(task_name: '<default_mls_photos_config>')
+                .then (subtaskConfigs) ->
+                  Promise.each subtaskConfigs, (subtaskConfig) ->
+                    subtaskConfig.task_name = "#{newMls.id}_photos"
+                    subtaskConfig.name = subtaskConfig.name.replace('<default_mls_photos_config>', newMls.id)
+                    tables.jobQueue.subtaskConfig({transaction})
+                    .insert(subtaskConfig)
+
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
 

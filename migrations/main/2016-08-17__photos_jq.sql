@@ -7,8 +7,32 @@ insert into jq_task_config (
   kill_timeout_minutes
 )
 values (
+	'<default_mls_photos_config>',
+  'Load MLS photos',
+  '{}',
+  60,
+  12,
+  14
+),
+(
 	'swflmls_photos',
-  'Load SWFL MLS photos',
+  'Load MLS photos',
+  '{}',
+  60,
+  12,
+  14
+),
+(
+	'MRED_photos',
+  'Load MLS photos',
+  '{}',
+  60,
+  12,
+  14
+),
+(
+	'GLVAR_photos',
+  'Load MLS photos',
   '{}',
   60,
   12,
@@ -27,12 +51,13 @@ insert into jq_subtask_config (
 	retry_max_count,
 	warn_timeout_seconds,
 	kill_timeout_seconds,
-	auto_enqueue
+	auto_enqueue,
+	active
 )
 (
 	select
-		replace(name, 'Photos', ''),
-		name || '_photos',
+		replace(replace(replace(name, 'Photos', ''), 'Photo', ''), 'default_mls_config', 'default_mls_photos_config'),
+		replace(replace(task_name || '_photos', '>_photos', '>'), 'default_mls_config', 'default_mls_photos_config'),
 		queue_name,
 		step_num,
 		retry_delay_seconds,
@@ -42,6 +67,7 @@ insert into jq_subtask_config (
 		retry_max_count,
 		warn_timeout_seconds,
 		kill_timeout_seconds,
-		auto_enqueue
-	from jq_subtask_config where name like '%storePhotos%'
+		auto_enqueue,
+		active
+	from jq_subtask_config where name like '%Photo%' and queue_name = 'mls'
 );
