@@ -61,6 +61,8 @@ app.controller 'rmapsMapCtrl', (
 
   # Load Property
   $scope.loadProperty = (project) ->
+    if !project
+      return
     selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
     if selectedResultId?.match(/\w+_\w*_\w+/) and map?
