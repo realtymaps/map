@@ -7,6 +7,7 @@ mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
+memoize = require 'memoizee'
 
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
