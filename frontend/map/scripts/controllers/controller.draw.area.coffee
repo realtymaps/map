@@ -78,7 +78,7 @@ rmapsMapTogglesFactory
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->
-          control.enableHandle 'rectangle'
+          control.enableHandle(handle: 'rectangle')
         return
       _drawCtrlFactory()
 
