@@ -18,6 +18,7 @@ app.config ($provide) ->
           name: 'marker'
           template: 'drawMarker.tpl.html'
         }
+        'text'
         'edit'
         'trash'
       ]

@@ -27,7 +27,10 @@ rmapsLayerFormattersService
       _handleHover {model, lObject, type, layerName}
 
     dequeue = () ->
-      {model, lObject, type, layerName} = _queue.shift()
+      item = _queue.shift()
+      if !item
+        return
+      {model, lObject, type, layerName} = item
       model.isMousedOver = false
       _handleHover {model, lObject, type, layerName}
 
