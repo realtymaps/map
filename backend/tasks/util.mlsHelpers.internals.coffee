@@ -25,6 +25,7 @@ makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, t
   .update(updatedInfo)
 
   if doReturnStr
+    logger.debug query.toString()
     return query.toString()
   query
 
