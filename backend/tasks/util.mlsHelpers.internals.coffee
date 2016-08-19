@@ -15,9 +15,8 @@ NamedError = require '../utils/errors/util.error.named'
 
 makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction, table}) ->
   doReturnStr ?= false
-
   updatedInfo =
-    photos: table.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
+    photos: table().raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
   if cdnPhotoStr
     updatedInfo.cdn_photo = cdnPhotoStr
 
