@@ -28,7 +28,12 @@ class PartiallyHandledError extends VError
 class QuietlyHandledError extends PartiallyHandledError
   constructor: (args...) ->
     @quiet = true
-    super('QuietlyHandledError', args...)
+    name = 'QuietlyHandledError'
+    if typeof(args[0]) == 'string' && args.length > 1
+      name = args.shift()
+    if typeof(args[0]) == 'object' && Object.keys(args[0]).length == 1 && ('quiet' of args[0])
+      args.shift()
+    super(name, args...)
 
 
 isUnhandled = (err) ->

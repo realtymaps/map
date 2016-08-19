@@ -120,7 +120,7 @@ class HasManyCrud extends Crud
   constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud', doLogRequest) ->
     # console.log name
     super(svc, paramIdKey, name, doLogRequest)
-    unless @rootGETKey?
+    if !@rootGETKey?
       throw new NamedError(@name, '@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
