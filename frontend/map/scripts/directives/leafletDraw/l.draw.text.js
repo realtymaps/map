@@ -122,7 +122,7 @@ module.exports = L.Draw.TextLabel = L.Draw.Feature.extend({
       icon: this.options.icon
     })
 
-    marker.on("click", this._onFocus, this)
+    marker.on("add", this._onFocus, this)
     marker.ignoreSave = true
     L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker)
   },
@@ -146,10 +146,10 @@ module.exports = L.Draw.TextLabel = L.Draw.Feature.extend({
   _createDivIcon: function() {
     var agent = navigator.userAgent.toLowerCase(),
       isAndroid = agent.indexOf("android") > -1,
-      textAreaTemplate = '<textarea class="textlabel-textarea"></textarea><div class="textlabel-text"></div>';
+      textAreaTemplate = '<textarea class="textlabel-textarea"></textarea><div class="textlabel-text" hidden></div>';
 
     if (isAndroid)
-      textAreaTemplate = '<textarea autofocus class="textlabel-textarea" onclick="L.Draw.TextPrompt(this);"></textarea><div contenteditable="true" class="textlabel-text"></div>'
+      textAreaTemplate = '<textarea autofocus class="textlabel-textarea" onclick="L.Draw.TextPrompt(this);"></textarea><div contenteditable="true" class="textlabel-text" hidden></div>'
 
     return new L.divIcon({
       className: "textlabel",
