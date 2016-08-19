@@ -98,7 +98,6 @@ app.controller 'rmapsPropertyCtrl',
         for source in $scope.dataSources
           for history in ['deedHistory', 'mortgageHistory', 'priorListings']
             if historyObj = source?.subscriber_groups?[history]
-              historyObj
               historyExtra = []
               for entry in historyObj
                 entry.extra = _.clone(entry)
