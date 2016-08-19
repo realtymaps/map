@@ -58,6 +58,11 @@ store = (subtask) -> Promise.try () ->
   Promise.each subtask.data.values, (row) ->
     mlsHelpers.storePhotos(subtask, row, tables.finalized.photo)
 
+clearRetries = (subtask) ->
+  tables.deletes.retry_photos()
+  .whereNot(batch_id: subtask.batch_id)
+  .delete()
+
 ready = () ->
   # don't automatically run if corresponding MLS is running
   tables.jobQueue.taskHistory()
@@ -75,6 +80,7 @@ ready = () ->
 subtasks = {
   storePrep
   store
+  clearRetries
 }
 
 factory = (taskName, overrideSubtasks) ->
