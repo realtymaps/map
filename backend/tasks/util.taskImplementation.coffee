@@ -8,7 +8,7 @@ errors = require '../utils/errors/util.errors.task'
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
-# if it can't find one and there is an MLS config with the task name as its id, then use the default MLS implementation
+# if it can't find one and there is an MLS config with the task name as its id, then use the default MLS (or MLS photos) implementation
 _getTaskCode = (taskName) ->
   if !mlsConfigService
     mlsConfigService = require '../services/service.mls_config'
@@ -16,12 +16,15 @@ _getTaskCode = (taskName) ->
     try
       return Promise.resolve(require("./task.#{taskName}"))
     catch err
-      mlsConfigService.getByIdCached(taskName)
+      baseName = taskName.replace('_photos', '')
+      mlsConfigService.getByIdCached(baseName)
       .then (mlsConfig) ->
         if mlsConfig?
-          return require("./task.default.mls")(taskName)
+          if taskName.indexOf('_photos') == -1
+            return require("./task.default.mls")(taskName)
+          else
+            return require("./task.photos")(taskName)
         throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
-
 
 class TaskImplementation
 

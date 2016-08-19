@@ -31,6 +31,7 @@ module.exports =
   finalized:
     combined: 'data_combined'
     parcel: 'data_parcel'
+    photo: 'data_photo'
   deletes:
     photos: 'deletes_photos'
     combined: 'deletes_combined'

@@ -136,15 +136,14 @@ storePhotos = (subtask) -> Promise.try () ->
     return
 
   Promise.each subtask.data.values, (row) ->
-    mlsHelpers.storePhotos(subtask, row)
+    mlsHelpers.storePhotos(subtask, row, tables.normalized.listing)
 
 
 ready = () ->
-  # don't automatically run if digimaps is running
+  # don't automatically run if digimaps or photos is running
   tables.jobQueue.taskHistory()
-  .where
-    current: true
-    name: 'digimaps'
+  .where(current: true)
+  .whereIn('name', ['digimaps', "#{@taskName}_photos"])
   .whereNull('finished')
   .then (results) ->
     if results?.length

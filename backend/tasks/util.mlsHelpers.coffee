@@ -188,17 +188,18 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             .insert(listing)
 
 
-storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
+storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
+  mlsName = subtask.task_name.replace('_photos', '')
   successCtr = 0
   errorsCtr = 0
   skipsCtr = 0
   needsRetry = false
   errorDetails = null
   listingRow =
-    data_source_id: subtask.task_name
+    data_source_id: mlsName
     data_source_uuid: data_source_uuid
 
-  mlsConfigPromise = mlsConfigService.getByIdCached(subtask.task_name)
+  mlsConfigPromise = mlsConfigService.getByIdCached(mlsName)
   listingRowPromise = tables.normalized.listing()
   .where(listingRow)
   Promise.join mlsConfigPromise, listingRowPromise, (mlsConfig, rows) ->
@@ -208,10 +209,11 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
       return Promise.resolve()
 
     [row] = rows
-    finePhotologger.debug "id: data_source_id: #{subtask.task_name} data_source_uuid: #{data_source_uuid}"
+    finePhotologger.debug "id: data_source_id: #{mlsName} data_source_uuid: #{data_source_uuid}"
 
     #if the photo set is not updated GTFO
-    logger.spawn(subtask.task_name).debug row.photo_last_mod_time
+    logger = logger.spawn(mlsName)
+    logger.debug row.photo_last_mod_time
 
     {photo_id} = row
     photoIds = {}
@@ -224,7 +226,7 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
     {photoRes} = mlsConfig.listing_data
 
     retsService.getPhotosObject {
-      mlsId: subtask.task_name
+      mlsId: mlsName
       databaseName: 'Property'
       photoIds
       photoType
@@ -241,10 +243,10 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
 
         #file naming consideratons
         #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-        newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{data_source_uuid}/#{payload.name}"
+        newFileName = "#{uuid.genUUID()}/#{mlsName}/#{data_source_uuid}/#{payload.name}"
         {imageId, objectData} = payload
 
-        logger.spawn(subtask.task_name).debug _.omit payload, 'data'
+        logger.debug _.omit payload, 'data'
 
         if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
           skipsCtr++
@@ -252,35 +254,35 @@ storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
           return
 
         uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1})
+          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1, table})
           .then () ->
             dbs.transaction 'main', (transaction2) ->
               internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
               .then () ->
                 internals.uploadPhoto({photoRes, newFileName, payload, row})
         .then () ->
-          logger.spawn(subtask.task_name).debug 'photo upload success'
+          logger.debug 'photo upload success'
           successCtr++
         .catch (error) ->
           errorDetails ?= analyzeValue.getSimpleDetails(error)
-          logger.spawn(subtask.task_name).debug () -> "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+          logger.debug () -> "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
           errorsCtr++
         promises.push(uploadPromise)
   .catch errorHandlingUtils.isUnhandled, (error) ->
-    throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{subtask.task_name}/#{data_source_uuid}")
+    throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsName}/#{data_source_uuid}")
   .catch (error) ->
     errorDetails ?= analyzeValue.getSimpleDetails(error)
     needsRetry = true
-    logger.spawn(subtask.task_name).debug () -> "overall error: #{errorDetails}"
+    logger.debug () -> "overall error: #{errorDetails}"
   .then () ->
-    logger.spawn(subtask.task_name).debug "Uploaded #{successCtr} photos to aws bucket."
-    logger.spawn(subtask.task_name).debug "Skipped #{skipsCtr} photos to aws bucket."
-    logger.spawn(subtask.task_name).debug "Failed to upload #{errorsCtr} photos to aws bucket."
+    logger.debug "Uploaded #{successCtr} photos to aws bucket."
+    logger.debug "Skipped #{skipsCtr} photos to aws bucket."
+    logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
     if needsRetry || (errorsCtr > 0)
       sqlHelpers.upsert
         dbFn: tables.deletes.retry_photos
         idObj:
-          data_source_id: subtask.task_name
+          data_source_id: mlsName
           data_source_uuid: data_source_uuid
           batch_id: subtask.batch_id
         entityObj:

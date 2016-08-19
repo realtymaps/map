@@ -15,7 +15,13 @@ class SqlMock
     2) simplified handlers for assessing operator calls (via sinon api)
     3) simplified assessment of flow through '.then' query callback evaluators, no matter
        how many are chained, and easily test input/output of callbacks
+  ###
 
+  ### Options
+    blockToString: Any time a raw() value is passed to a knex function such as where(), update(), etc,
+      subsequently calling toString() will break because raw() will return a spy instead of a string. In
+      some cases service methods call toString() themselves. Setting the blockToString option prevents
+      toString() from actually being called.
   ###
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
@@ -125,12 +131,20 @@ class SqlMock
   _appendCatchChain: (err) ->
     @catchCallbacks.push err
 
+  # This method will eventually be removed once we remove reliance on testing SQL strings
   _quickQuery: () ->
+    # @logger.debug @_svc
+    # @logger.debug "_queryChainFlag is #{@_queryChainFlag}"
     if !@_queryChainFlag
       for link in @_queryArgChain
-        if _.isFunction @_svc[link.operator]
+        # @logger.debug link
+        # @logger.debug typeof link
+        if _.isFunction(@_svc[link.operator]) && link.operator != 'raw'
+          # @logger.debug 'updating @_svc'
           @_svc = @_svc[link.operator](link.args...)
+      # @logger.debug "setting @_queryChainFlag true"
       @_queryChainFlag = true
+    # @logger.debug @_svc
     @_svc
 
   #### public evaluators ####
@@ -160,10 +174,18 @@ class SqlMock
     return Promise.resolve(result)
 
   toString: () ->
-    @_quickQuery().toString()
+    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    if !@options.blockToString
+      @_quickQuery().toString()
+    else
+      "blockToString was set, so this is fake SQL"
 
   toSQL: () ->
-    @_quickQuery().toSQL()
+    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    if !@options.blockToString
+      @_quickQuery().toSQL()
+    else
+      "blockToString was set, so this is fake SQL"
 
   returning: () ->
     @returningsSpy(arguments...)
