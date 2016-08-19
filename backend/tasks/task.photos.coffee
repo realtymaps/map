@@ -12,8 +12,10 @@ memoize = require 'memoizee'
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
 storePrep = (subtask) ->
+  logger.debug "storePrep for #{subtask.task_name}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
   mlsName = subtask.task_name.replace('_photos', '')
+  logger.debug "mlsName is #{mlsName}"
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
   lastModPromise = mlsHelpers.getMlsField(mlsName, 'photo_last_mod_time')
@@ -21,21 +23,28 @@ storePrep = (subtask) ->
 
   # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
   Promise.join updateThresholdPromise, lastModPromise, uuidPromise, (updateThreshold, lastModField, uuidField) ->
+    logger.debug arguments
     dataOptions = {minDate: updateThreshold, searchOptions: {Select: uuidField, offset: 1}, listing_data: {field: lastModField}}
+    logger.debug dataOptions
     idsObj = {}
     retryPhotosPromise = tables.deletes.retry_photos()
     .where(data_source_id: mlsName)
     .whereNot(batch_id: subtask.batch_id)
     .then (rows) ->
+      logger.debug "Found #{rows.length} retries"
       for row in rows
         idsObj[row[uuidField]] = true
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
         return
+      logger.debug "Found #{chunk.length} updated rows in chunk"
+      logger.debug chunk[0]
       for row in chunk
         idsObj[row[uuidField]] = true
+    logger.debug "Getting data chunks for #{mlsName}"
     updatedPhotosPromise = retsService.getDataChunks(mlsName, dataOptions, handleChunk)
     Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
+      logger.debug "Got #{Object.keys(idsObj).length} updates + retries"
       jobQueue.queueSubsequentPaginatedSubtask({
         subtask
         totalOrList: Object.keys(idsObj)
@@ -48,11 +57,11 @@ storePrep = (subtask) ->
       })
 
 store = (subtask) -> Promise.try () ->
-  mlsName = subtask.task_name.replace('_photos', '')
-  taskLogger = logger.spawn(mlsName)
+  logger.debug "store() for #{subtask.task_name}"
+  taskLogger = logger.spawn(subtask.task_name)
   taskLogger.debug subtask
   if !subtask?.data?.values.length
-    taskLogger.debug "no values to process for #{mlsName} store photos}"
+    taskLogger.debug "no photos to store for #{subtask.task_name}"
     return
 
   Promise.each subtask.data.values, (row) ->
