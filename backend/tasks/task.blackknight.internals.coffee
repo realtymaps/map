@@ -245,7 +245,6 @@ getProcessInfo = (subtask, subtaskStartTime) ->
   # per date, filter and classify files as `Load` or `Delete`
   nextProcessingDates()
   .then (processDates) ->
-    console.log "\n\nnextProcessingDates().then processDates:\n#{JSON.stringify(processDates,null,2)}"
     processInfo =
       dates: processDates
       hasFiles: false

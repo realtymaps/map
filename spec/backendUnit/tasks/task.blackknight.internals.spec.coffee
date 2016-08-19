@@ -112,12 +112,22 @@ describe "task.blackknight.internal", () ->
   describe "getProcessInfo", () ->
     it 'should acquire and classify filenames to process', (done) ->
 
-      revert = bkServiceInternals.__set__ 'nextProcessingDates', () ->
+      # rewire the calls to awsService.listObjects...
+      awsListObjectResponses = fixture.getProcessInfo.awsListObjectResponses
+      revertAwsListObjects = bkServiceInternals.__set__ 'awsService',
+        buckets:
+          BlackknightData: 'aws-blackknight-data'
+        listObjects: (opt) ->
+          Promise.resolve(awsListObjectResponses[opt.Prefix])
+
+      # rewire out the database call for processing dates...
+      revertNextProcessingDates = bkServiceInternals.__set__ 'nextProcessingDates', () ->
         _processDates = {
           "Refresh": "20160406",
           "Update": "20160406"
         }
         Promise.resolve(_processDates)
+
 
       inputSubtask = fixture.getProcessInfo.inputSubtask
       inputSubtaskStartTime = fixture.getProcessInfo.inputSubtaskStartTime
@@ -126,12 +136,13 @@ describe "task.blackknight.internal", () ->
       bkServiceInternals.getProcessInfo(inputSubtask, inputSubtaskStartTime)
       .then (processInfo) ->
         expect(processInfo).to.eql outputProcessInfo
-        revert()
+        revertNextProcessingDates()
+        revertAwsListObjects()
         done()
 
   # describe "useProcessInfo", () ->
   #   Might be able to test things like fips-code structure, but this routine mostly just
-  #   branches off into calls to other routines in parallel fashion
+  #   branches off into calls to other routines in parallel fashion, inner units are tested below
 
 
   describe "queuePerFileSubtasks", () ->
