@@ -17,8 +17,6 @@ describe 'util.mlsHelpers.internals', ->
     finalized:
       photo: () -> photo
 
-  subject.__set__ 'tables', tables
-
   beforeEach ->
     photo.resetSpies()
 
