@@ -24,7 +24,7 @@ withSafeEntity = (entity, safe, cb, skipSafeError) ->
   cb(entity or {}, safe)
 
 class Crud extends BaseObject
-  constructor: (@dbFn, @idKey = 'id', opts={}) ->
+  constructor: (@dbFn, @idKey = 'id') ->
     super()
     unless _.isFunction @dbFn
       logger.debug @dbFn

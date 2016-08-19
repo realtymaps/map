@@ -13,7 +13,7 @@ RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 class RouteCrud
   constructor: (@svc, options = {}) ->
     if !@svc?
-      throw new RouteCrudError({quiet: options.quiet}, '@svc must be defined')
+      throw new RouteCrudError('@svc must be defined')
 
     @logger = _logger
     if @svc.dbFn?.tableName

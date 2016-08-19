@@ -28,7 +28,7 @@ class TaskImplementation
   constructor: (@taskName, @subtasks, @ready) ->
     @name = 'TaskImplementation'
 
-  executeSubtask: (subtask, opts={}) -> Promise.try () =>
+  executeSubtask: (subtask) -> Promise.try () =>
     # call the handler for the subtask
     if !subtask.name?
       throw new errors.TaskNameError('subtask.name must be defined')
