@@ -9,7 +9,7 @@ errors = require '../utils/errors/util.errors.task'
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
 # if it can't find one and there is an MLS config with the task name as its id, then use the default MLS implementation
-_getTaskCode = (taskName, quiet) ->
+_getTaskCode = (taskName) ->
   if !mlsConfigService
     mlsConfigService = require '../services/service.mls_config'
   Promise.try () ->
@@ -20,7 +20,7 @@ _getTaskCode = (taskName, quiet) ->
       .then (mlsConfig) ->
         if mlsConfig?
           return require("./task.default.mls")(taskName)
-        throw new TaskNotImplemented({quiet: quiet}, err, "can't find code for task with name: #{taskName}")
+        throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
 
 
 class TaskImplementation
@@ -31,12 +31,12 @@ class TaskImplementation
   executeSubtask: (subtask, opts={}) -> Promise.try () =>
     # call the handler for the subtask
     if !subtask.name?
-      throw new errors.TaskNameError({quiet: opts.quiet}, 'subtask.name must be defined')
+      throw new errors.TaskNameError('subtask.name must be defined')
     if subtask.name.indexOf(@taskName+'_') != 0
-      throw new errors.TaskNameError({quiet: opts.quiet}, "Subtask name does not match format taskname_subtaskname: #{subtask.name}.")
+      throw new errors.TaskNameError("Subtask name does not match format taskname_subtaskname: #{subtask.name}.")
     subtaskBaseName = subtask.name.substring(@taskName.length+1)  # subtask name format is: taskname_subtaskname (in the database)
     if !(subtaskBaseName of @subtasks)
-      throw new errors.MissingSubtaskError({quiet: opts.quiet}, "Can't find subtask code for: #{subtask.name}; subtasks available: #{Object.keys(@subtasks).join(',')}")
+      throw new errors.MissingSubtaskError("Can't find subtask code for: #{subtask.name}; subtasks available: #{Object.keys(@subtasks).join(',')}")
     @subtasks[subtaskBaseName](subtask)
 
   initialize: (transaction, batchId) -> Promise.try () =>

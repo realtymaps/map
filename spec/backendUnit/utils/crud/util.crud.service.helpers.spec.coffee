@@ -1,11 +1,16 @@
-{Crud, HasManyCrud, hasManyCrud, ThenableCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
+rewire = require 'rewire'
+crudServiceHelpers = rewire '../../../../backend/utils/crud/util.crud.service.helpers'
+{Crud, HasManyCrud, hasManyCrud, ThenableCrud} = crudServiceHelpers
 tables = require '../../../../backend/config/tables'
 userServices = require '../../../../backend/services/services.user'
 Promise = require 'bluebird'
 require("chai").should()
 {expect} = require("chai")
 sinon = require 'sinon'
+errorHandlingUtils = require '../../../../backend/utils/errors/util.error.partiallyHandledError'
 
+
+crudServiceHelpers.__set__('IsIdObjError', class FakeIsIdObjError extends errorHandlingUtils.QuietlyHandledError)
 
 HasManyCrudInstance = hasManyCrud(tables.auth.permission, [
   "#{tables.auth.m2m_user_permission.tableName}.id as id"
@@ -56,7 +61,7 @@ describe 'util.crud.service.helpers', ->
           .should.equal """select * from "#{tables.auth.user.tableName}" where "crapId" = '1' and "prop2" = 'prop2'"""
 
         it 'anything else throws', ->
-          (=> @instance.getById([], null, null, null, null, {quiet: true}).toString()).should.throw("val:  typeof object must be an object, or Number but not an Array!")
+          (=> @instance.getById([]).toString()).should.throw("val:  typeof object must be an object, or Number but not an Array!")
 
       it 'count', ->
         @instance.count(test:'test').toString()

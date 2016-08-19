@@ -37,14 +37,14 @@ class Crud extends BaseObject
   clone: () ->
     new Crud @dbFn, @idKey
 
-  idObj: (val, quiet) ->
+  idObj: (val) ->
     val = clone val
     if _.isNumber(val) or _.isString(val)
       obj = {}
       obj[@idKey] = val
       return obj
     if !_.isObject(val) or _.isArray(val)
-      throw new IsIdObjError({quiet}, "val: #{val} typeof #{typeof(val)} must be an object, or Number but not an Array!")
+      throw new IsIdObjError("val: #{val} typeof #{typeof(val)} must be an object, or Number but not an Array!")
     return val
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
@@ -60,11 +60,11 @@ class Crud extends BaseObject
   getById: () ->
     @_getById 'dbFn', arguments...
 
-  _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ, opts={}) ->
+  _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     if !id?
       throw new Error("#{@dbFn.tableName}: id is required")
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @[dbFn]().where(_.extend @idObj(id, opts.quiet), entity), doLogQuery or @doLogQuery
+      fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery or @doLogQuery
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>

@@ -28,8 +28,7 @@ class PartiallyHandledError extends VError
 class QuietlyHandledError extends PartiallyHandledError
   constructor: (args...) ->
     @quiet = true
-    super(args...)
-    @name = 'QuietlyHandledError'
+    super('QuietlyHandledError', args...)
 
 
 isUnhandled = (err) ->
