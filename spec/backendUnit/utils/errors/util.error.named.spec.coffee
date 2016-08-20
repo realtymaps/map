@@ -14,7 +14,7 @@ describe 'util.error.named', ->
 
   describe 'throws', ->
     it 'with correct name', ->
-      err = new NamedError('poop', "montezuma's revenge")
+      err = new NamedError('poop', {quiet: true}, "montezuma's revenge")
       str = err.toString()
       str.should.have.string "poop: montezuma's revenge"
       (-> throw err).should.throw(/montezuma's revenge/)

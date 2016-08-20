@@ -307,7 +307,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
-      if row["Assessor’s Parcel Number"]?.indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1
+      if row["Assessor’s Parcel Number"]? && (row["Assessor’s Parcel Number"].indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1)
         logger.spawn('troubleshoot').debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
@@ -715,7 +715,7 @@ ensureNormalizedTable = (dataType, subid) ->
       .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
     else
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date ASC NULLS FIRST)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, data_source_uuid)")
 
 

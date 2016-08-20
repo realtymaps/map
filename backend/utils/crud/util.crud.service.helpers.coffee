@@ -61,7 +61,8 @@ class Crud extends BaseObject
     @_getById 'dbFn', arguments...
 
   _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-    throw new Error("#{@dbFn.tableName}: id is required") unless id?
+    if !id?
+      throw new Error("#{@dbFn.tableName}: id is required")
     withSafeEntity entity, safe, (entity, safe) =>
       fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery or @doLogQuery
 
@@ -116,8 +117,6 @@ class Crud extends BaseObject
 class HasManyCrud extends Crud
   constructor: (dbFn, @rootCols, @joinCrud, @origJoinIdStr, @origRootIdStr, idKey) ->
     super(dbFn, idKey)
-    unless @joinCrud instanceof Crud
-      throw new Error('@joinCrud must be Instance of Crud')
     @setIdStrs @origRootIdStr, @origJoinIdStr
 
   clone: () ->

@@ -41,10 +41,8 @@ module.exports =
   expectResolve: (promise) ->
     Promise.try () ->
       promise
-    .then (value) ->
-      Promise.resolve(value)
     .catch (err) ->
-      Promise.reject(new PromiseExpectationError("expected promise to be resolved, but was rejected", err))
+      throw new PromiseExpectationError("expected promise to be resolved, but was rejected", err)
 
   # the promise returned from this function fails if the argument promise resolves, and:
   #   if a type is not provided, succeeds on any rejection
@@ -53,25 +51,26 @@ module.exports =
   expectReject: (promise, type=null) ->
     if type == PromiseExpectationError
       # since PromiseExpectationError isn't being exported, this would be a hard situation to create, but it is possible
-      return Promise.reject(new Error("PromiseExpectationError passed as rejection type; this error is for internal use only"))
+      throw new Error("PromiseExpectationError passed as rejection type; this error is for internal use only")
 
     promise = Promise.try () ->
       promise
     .then (value) ->
-      Promise.reject(new PromiseExpectationError("expected promise to be rejected"+(if type? then " with #{analyzeValue(type).details}" else '')+", but was resolved", value))
+      throw new PromiseExpectationError("expected promise to be rejected"+(if type? then " with #{analyzeValue(type).details}" else '')+", but was resolved", value)
+
     if !type?
       promise.catch (err) ->
         if err instanceof PromiseExpectationError
           # this is an error we created in .then() above, we need to pass it through (re-reject)
-          Promise.reject(err)
+          throw err
         else
-          Promise.resolve(err)
+          return err
     else
       promise.catch type, (err) ->
-        Promise.resolve(err)
+        return err
       .catch (err) ->
         if err instanceof PromiseExpectationError
           # this is an error we created in .then() above, we need to pass it through (re-reject)
-          Promise.reject(err)
+          throw err
         else
-          Promise.reject(new PromiseExpectationError("expected promise to be rejected with #{analyzeValue(type).details}, but was rejected", err))
+          throw new PromiseExpectationError("expected promise to be rejected with #{analyzeValue(type).details}, but was rejected", err)

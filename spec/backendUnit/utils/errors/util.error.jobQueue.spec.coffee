@@ -4,7 +4,7 @@ _ = require 'lodash'
 {SoftFail, HardFail} = require '../../../../backend/utils/errors/util.error.jobQueue'
 
 describe 'util.error.jobQueue', ->
-  for name, classz of {HardFail: HardFail,SoftFail: SoftFail}
+  for name, classz of {HardFail: HardFail, SoftFail: SoftFail}
     do (name, classz) ->
       describe name, ->
 

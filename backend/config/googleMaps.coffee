@@ -10,7 +10,7 @@ setLocals('')
 
 module.exports =
   loadValues: () ->
-    externalAccounts.getAccountInfo('googlemaps')
+    externalAccounts.getAccountInfo('googlemaps', quiet: true)
     .catch (err) ->
       null  # we expect to not necessarily get a value here
     .then (accountInfo) ->
