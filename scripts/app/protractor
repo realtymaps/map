@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+MAIN_DIR=`pwd`
+
+trap 'kill -TERM $PID1' TERM INT
+
+./node_modules/.bin/webdriver-manager update &>/dev/null
+
+echo 'Starting webdriver'
+./node_modules/.bin/webdriver-manager start &> /dev/null &
+PID2=$!
+
+sleep 2
+echo 'Starting specs'
+./node_modules/.bin/protractor protractor.config.js &
+PID1=$!
+
+wait $PID1
+
+kill -9 $(echo `ps aux | grep webdriver-manager | grep -v grep |awk '{print $2}'`)
+
+# not working
+# echo DRIVER_PID: $PID2
+# kill -9 $DRIVER_PID

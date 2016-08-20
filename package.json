@@ -29,7 +29,8 @@
     "cmocha": "foreman run ./scripts/misc/cmocha",
     "cmochaDebug": "foreman run ./scripts/misc/cmocha --debug",
     "stylus": "stylus",
-    "karma": "karma start karma.conf.coffee"
+    "karma": "karma start karma.conf.coffee",
+    "protractor": "scripts/app/protractor"
   },
   "dependencies": {
     "JSONStream": "1.1.1",
@@ -177,6 +178,7 @@
     "promise-ftp": "^1.2.12",
     "promise-ftp-common": "^1.1.5",
     "promise-sftp": "^0.9.4",
+    "protractor": "4.0.3",
     "qs": "6.X",
     "randomstring": "1.1.X",
     "readable-stream": "^1.0.32",
