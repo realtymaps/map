@@ -282,7 +282,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{parcel_id}", err)
 
       else
         # get validation for data_source_uuid
@@ -302,7 +302,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
+            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}", err)
 
 
 normalizeData = (subtask) ->
