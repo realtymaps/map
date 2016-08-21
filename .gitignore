@@ -7,7 +7,7 @@ tmp/
 *.log
 #OSX
 .DS_Store
-nohup.out
+*.out
 
 *.xml
 coverage/
