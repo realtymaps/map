@@ -174,14 +174,18 @@ class SqlMock
     return Promise.resolve(result)
 
   toString: () ->
+    stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
     @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toString()
     else
       "blockToString was set, so this is fake SQL"
 
   toSQL: () ->
+    stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
     @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toSQL()
     else
