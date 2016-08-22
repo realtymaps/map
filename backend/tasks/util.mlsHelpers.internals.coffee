@@ -45,32 +45,42 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
   })
   .then (cdnPhotoStr) ->
 
-    jsonObjStr = JSON.stringify(obj)
-    photos = "#{imageId}": obj
-    upsertQuery = """
-      INSERT INTO "data_photo" ("data_source_id", "data_source_uuid", "photos", "cdn_photo", "photo_last_mod_time", "actual_photo_count")
+    query = table.raw("""
+      INSERT INTO ?? ("data_source_id", "data_source_uuid", "photos", "cdn_photo", "photo_last_mod_time", "actual_photo_count")
       VALUES (
-        '#{row.data_source_id}',
-        '#{row.data_source_uuid}',
-        '#{JSON.stringify(photos)}',
-        '#{cdnPhotoStr}',
-        '#{obj.objectData?.uploadDate}',
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
         1
       )
       ON CONFLICT ("data_source_id", "data_source_uuid")
       DO UPDATE SET ("photos", "photo_last_mod_time", "actual_photo_count") = (
-        jsonb_set(#{table.tableName}.photos, '{#{imageId}}', '#{jsonObjStr}', true),
-        '#{obj.objectData?.uploadDate}',
-        (select count(*) from (select jsonb_object_keys(#{table.tableName}.photos) union select '#{imageId}') photoKeys)
+        jsonb_set(??.photos, '{#{imageId}}', ?, true),
+        ?,
+        (select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)
       )
       RETURNING "data_source_id", "data_source_uuid"
-    """
+      """,
+      [
+        table.tableName,
+        row.data_source_id,
+        row.data_source_uuid,
+        JSON.stringify("#{imageId}": obj),
+        cdnPhotoStr,
+        obj.objectData?.uploadDate,
+        table.tableName,
+        JSON.stringify(obj),
+        obj.objectData?.uploadDate,
+        table.tableName,
+        imageId
+      ]
+    )
 
-    query = table.raw upsertQuery
-
-    # logger.debug query.toString()
-
+    # logger.debug (query)
     query
+
 
 ###
 # these function works backwards from the validation for `fieldName` (e.g. "data_source_uuid") to determine the LongName and then the
