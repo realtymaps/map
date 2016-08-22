@@ -18,7 +18,7 @@ internals = require './util.mlsHelpers.internals'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
-
+crypto = require 'crypto'
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options={}) ->
@@ -188,18 +188,17 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             .insert(listing)
 
 
-storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
-  mlsName = subtask.task_name.replace('_photos', '')
+storePhotos = (subtask, data_source_uuid) -> Promise.try () ->
   successCtr = 0
   errorsCtr = 0
   skipsCtr = 0
   needsRetry = false
   errorDetails = null
   listingRow =
-    data_source_id: mlsName
+    data_source_id: subtask.task_name
     data_source_uuid: data_source_uuid
 
-  mlsConfigPromise = mlsConfigService.getByIdCached(mlsName)
+  mlsConfigPromise = mlsConfigService.getByIdCached(subtask.task_name)
   listingRowPromise = tables.normalized.listing()
   .where(listingRow)
   Promise.join mlsConfigPromise, listingRowPromise, (mlsConfig, rows) ->
@@ -209,16 +208,115 @@ storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
       return Promise.resolve()
 
     [row] = rows
-    finePhotologger.debug "id: data_source_id: #{mlsName} data_source_uuid: #{data_source_uuid}"
+    finePhotologger.debug "id: data_source_id: #{subtask.task_name} data_source_uuid: #{data_source_uuid}"
 
     #if the photo set is not updated GTFO
-    logger = logger.spawn(mlsName)
+    logger = logger.spawn(subtask.task_name)
     logger.debug row.photo_last_mod_time
 
     {photo_id} = row
     photoIds = {}
     #get all photos for a specific property
     photoIds[photo_id] = '*'
+
+    finePhotologger.debug photoIds
+
+    photoType = mlsConfig.listing_data.largestPhotoObject
+    {photoRes} = mlsConfig.listing_data
+
+    retsService.getPhotosObject {
+      mlsId: subtask.task_name
+      databaseName: 'Property'
+      photoIds
+      photoType
+    }
+    .then (obj) -> new Promise (resolve, reject) ->
+      promises = []
+      mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
+
+        if err
+          return reject err
+
+        if isEnd
+          return resolve(Promise.all promises)
+
+        #file naming consideratons
+        #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+        newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{data_source_uuid}/#{payload.name}"
+        {imageId, objectData} = payload
+
+        logger.debug _.omit payload, 'data'
+
+        if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
+          skipsCtr++
+          finePhotologger.debug 'photo has same updateDate GTFO.'
+          return
+
+        uploadPromise = dbs.transaction 'normalized', (transaction1) ->
+          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, row: listingRow, transaction: transaction1, table: tables.normalized.listing})
+          .then () ->
+            dbs.transaction 'main', (transaction2) ->
+              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
+              .then () ->
+                internals.uploadPhoto({photoRes, newFileName, payload, row})
+        .then () ->
+          logger.debug 'photo upload success'
+          successCtr++
+        .catch (error) ->
+          errorDetails ?= analyzeValue.getSimpleDetails(error)
+          logger.debug () -> "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+          errorsCtr++
+        promises.push(uploadPromise)
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{subtask.task_name}/#{data_source_uuid}")
+  .catch (error) ->
+    errorDetails ?= analyzeValue.getSimpleDetails(error)
+    needsRetry = true
+    logger.debug () -> "overall error: #{errorDetails}"
+  .then () ->
+    logger.debug "Uploaded #{successCtr} photos to aws bucket."
+    logger.debug "Skipped #{skipsCtr} photos to aws bucket."
+    logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
+    if needsRetry || (errorsCtr > 0)
+      sqlHelpers.upsert
+        dbFn: tables.deletes.retry_photos
+        idObj:
+          data_source_id: subtask.task_name
+          data_source_uuid: data_source_uuid
+          batch_id: subtask.batch_id
+        entityObj:
+          error: errorDetails
+        conflictOverrideObj:
+          error: undefined
+
+storePhotosNew = (subtask, data_source_uuid) -> Promise.try () ->
+  taskLogger = logger.spawn(subtask.task_name)
+  mlsName = subtask.task_name.replace('_photos', '')
+  successCtr = 0
+  errorsCtr = 0
+  skipsCtr = 0
+  needsRetry = false
+  errorDetails = null
+  photoRow =
+    data_source_id: mlsName
+    data_source_uuid: data_source_uuid
+
+  photoResult = {}
+
+  mlsConfigPromise = mlsConfigService.getByIdCached(mlsName)
+  photoRowPromise = tables.finalized.photo()
+  .where(photoRow)
+  Promise.join mlsConfigPromise, photoRowPromise, (mlsConfig, rows) ->
+
+    finePhotologger.debug photoRow
+
+    taskLogger.debug "Found #{rows.length} existing photo rows"
+    [row] = rows
+
+    photoIds = {}
+
+    #get all photos for a specific property
+    photoIds[data_source_uuid] = '*'
 
     finePhotologger.debug photoIds
 
@@ -237,35 +335,46 @@ storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
 
         if err
           return reject err
-
         if isEnd
           return resolve(Promise.all promises)
 
-        #file naming consideratons
-        #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-        newFileName = "#{uuid.genUUID()}/#{mlsName}/#{data_source_uuid}/#{payload.name}"
+        finePhotologger.debug _.omit payload, 'data'
         {imageId, objectData} = payload
 
-        logger.debug _.omit payload, 'data'
-
-        if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
+        if row? && mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
           skipsCtr++
           finePhotologger.debug 'photo has same updateDate GTFO.'
           return
 
-        uploadPromise = dbs.transaction 'normalized', (transaction1) ->
-          internals.updatePhoto(subtask, {newFileName, imageId, photo_id, objectData, listingRow, transaction: transaction1, table})
+        # Deterministic but partition-friendly bucket names (10000 prefixes)
+        # http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+        uploadDate = (new Date(objectData?.uploadDate || null)).getTime()
+        partition = "#{mlsName}/#{data_source_uuid}/#{uploadDate}"
+        partition = crypto.createHash('md5').update(partition).digest('hex').slice(0,4)
+        newFileName = "#{partition}/#{mlsName}/#{data_source_uuid}/#{payload.name}"
+
+        uploadPromise = dbs.transaction 'main', (transaction1) ->
+          internals.updatePhoto(subtask, {
+            newFileName
+            imageId
+            data_source_uuid
+            objectData
+            row: photoRow
+            transaction: transaction1
+            table: tables.finalized.photo
+            upsert: true
+          })
           .then () ->
-            dbs.transaction 'main', (transaction2) ->
-              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction2)
-              .then () ->
-                internals.uploadPhoto({photoRes, newFileName, payload, row})
+            if row?
+              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction1)
+          .then () ->
+            internals.uploadPhoto({photoRes, newFileName, payload, row: photoRow})
         .then () ->
-          logger.debug 'photo upload success'
+          taskLogger.debug 'photo upload success'
           successCtr++
         .catch (error) ->
           errorDetails ?= analyzeValue.getSimpleDetails(error)
-          logger.debug () -> "single-photo error (was: #{row.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+          taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
           errorsCtr++
         promises.push(uploadPromise)
   .catch errorHandlingUtils.isUnhandled, (error) ->
@@ -273,11 +382,11 @@ storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
   .catch (error) ->
     errorDetails ?= analyzeValue.getSimpleDetails(error)
     needsRetry = true
-    logger.debug () -> "overall error: #{errorDetails}"
+    taskLogger.debug () -> "overall error: #{errorDetails}"
   .then () ->
-    logger.debug "Uploaded #{successCtr} photos to aws bucket."
-    logger.debug "Skipped #{skipsCtr} photos to aws bucket."
-    logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
+    taskLogger.debug "Uploaded #{successCtr} photos to aws bucket."
+    taskLogger.debug "Skipped #{skipsCtr} photos to aws bucket."
+    taskLogger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
     if needsRetry || (errorsCtr > 0)
       sqlHelpers.upsert
         dbFn: tables.deletes.retry_photos
@@ -289,7 +398,6 @@ storePhotos = (subtask, data_source_uuid, table) -> Promise.try () ->
           error: errorDetails
         conflictOverrideObj:
           error: undefined
-
 
 deleteOldPhoto = (subtask, key) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug "deleting: photo with key: #{key}"
@@ -350,6 +458,7 @@ module.exports = {
   buildRecord
   finalizeData
   storePhotos
+  storePhotosNew
   deleteOldPhoto
   markUpToDate
   getMlsField

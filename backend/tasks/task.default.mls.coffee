@@ -144,7 +144,7 @@ storePhotos = (subtask) -> Promise.try () ->
     return
 
   Promise.each subtask.data.values, (row) ->
-    mlsHelpers.storePhotos(subtask, row, tables.normalized.listing)
+    mlsHelpers.storePhotos(subtask, row)
 
 
 ready = () ->
