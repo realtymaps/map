@@ -174,18 +174,18 @@ class SqlMock
     return Promise.resolve(result)
 
   toString: () ->
-    src = (new Error()).stack.split('\n')?[2]
-    if src.indexOf('.spec') != -1
-      @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK! See #{src}"
+    stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
+    if stack[0]?.indexOf('.spec.') != -1
+      @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toString()
     else
       "SqlMock blocking toString() -- SQL would normally be output here"
 
   toSQL: () ->
-    src = (new Error()).stack.split('\n')?[2]
-    if src.indexOf('.spec') != -1
-      @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK! See #{src}"
+    stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
+    if stack[0]?.indexOf('.spec.') != -1
+      @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toSQL()
     else
