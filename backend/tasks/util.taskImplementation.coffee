@@ -49,7 +49,7 @@ class TaskImplementation
       task_name: @taskName
       auto_enqueue: true
       active: true
-    .then (subtasks) =>
+    .then (subtasks) ->
       if !subtasks.length
         return 0
       require('../services/service.jobQueue').queueSubtasks({transaction, batchId, subtasks})
