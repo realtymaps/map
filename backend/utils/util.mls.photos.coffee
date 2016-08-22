@@ -125,10 +125,10 @@ hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
     (new Date(uploadDate1)).getTime() == (new Date(uploadDate2)).getTime()
 
 
-getCndPhotoShard = (opts) -> Promise.try () ->
-  {newFileName, listingRow, shardsPromise} = onMissingArgsFail
+getCdnPhotoShard = (opts) -> Promise.try () ->
+  {newFileName, row, shardsPromise} = onMissingArgsFail
     args: opts
-    required: ['newFileName', 'listingRow']
+    required: ['newFileName', 'row']
 
   # logger.debug shardsPromise
   shardsPromise ?= keystore.cache.getValuesMap('cdn_shards')
@@ -144,7 +144,7 @@ getCndPhotoShard = (opts) -> Promise.try () ->
     if !shard?.url?
       throw new Error('Shard must have a url')
 
-    "#{shard.url}/api/photos/resize?data_source_id=#{listingRow.data_source_id}&data_source_uuid=#{listingRow.data_source_uuid}"
+    "#{shard.url}/api/photos/resize?data_source_id=#{row.data_source_id}&data_source_uuid=#{row.data_source_uuid}"
 
 module.exports = {
   isSingleImage
@@ -152,5 +152,5 @@ module.exports = {
   imagesStream
   imageStream
   hasSameUploadDate
-  getCndPhotoShard
+  getCdnPhotoShard
 }

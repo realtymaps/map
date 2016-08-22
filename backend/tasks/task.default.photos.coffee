@@ -65,7 +65,7 @@ store = (subtask) -> Promise.try () ->
     return
 
   Promise.each subtask.data.values, (row) ->
-    mlsHelpers.storePhotos(subtask, row, tables.finalized.photo)
+    mlsHelpers.storePhotosNew(subtask, row)
 
 clearRetries = (subtask) ->
   tables.deletes.retry_photos()

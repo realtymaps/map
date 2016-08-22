@@ -175,21 +175,21 @@ class SqlMock
 
   toString: () ->
     stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
-    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
-    @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
+    if stack[0]?.indexOf('.spec.') != -1
+      @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toString()
     else
-      "blockToString was set, so this is fake SQL"
+      "SqlMock blocking toString() -- SQL would normally be output here"
 
   toSQL: () ->
     stack = _.filter((new Error('just getting the stack')).stack.split('\n')[2..], (line) -> line.indexOf('node_modules') == -1)
-    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
-    @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
+    if stack[0]?.indexOf('.spec.') != -1
+      @logger.spawn('sqlStringWarning').debug "COMPARING SQL STRINGS IS LIKELY TO BREAK!\n#{stack.join('\n')}"
     if !@options.blockToString
       @_quickQuery().toSQL()
     else
-      "blockToString was set, so this is fake SQL"
+      "SqlMock blocking toSQL() -- SQL would normally be output here"
 
   returning: () ->
     @returningsSpy(arguments...)
