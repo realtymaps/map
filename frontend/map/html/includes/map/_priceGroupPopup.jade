@@ -24,8 +24,8 @@ include ../mixins/property/_propertyAttributes.jade
         div.unit-number(ng-show="showAllAddresses") {{unit.address.street}} {{unit.address.unit}}
       .property-attr
         ul.attr
-          li.bedrooms {{formatters.property.orNa(unit.bedrooms)}} beds
-          li.baths_total {{formatters.property.orNa(unit.baths.value)}} baths
+          li.bedrooms {{formatters.property.orDash(unit.bedrooms)}} beds
+          li.baths_total {{formatters.property.orDash(unit.baths.value)}} baths
           li.finished_sqft(ng-if="unit.sqft_finished") {{unit.sqft_finished}} Sq Ft
           li.year_built(ng-if="unit.year_built.value") {{unit.year_built.value}}
   //- .row
