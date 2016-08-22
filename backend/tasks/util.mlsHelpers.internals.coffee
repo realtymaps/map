@@ -57,7 +57,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
       )
       ON CONFLICT ("data_source_id", "data_source_uuid")
       DO UPDATE SET ("photos", "photo_last_mod_time", "actual_photo_count") = (
-        jsonb_set(??.photos, '{#{imageId}}', ?, true),
+        jsonb_set(??.photos, ?, ?, true),
         ?,
         (select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)
       )
@@ -71,6 +71,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
         cdnPhotoStr,
         obj.objectData?.uploadDate,
         table.tableName,
+        "{#{imageId}}",
         JSON.stringify(obj),
         obj.objectData?.uploadDate,
         table.tableName,
@@ -78,7 +79,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
       ]
     )
 
-    # logger.debug (query)
+    # logger.debug query.toString()
     query
 
 
