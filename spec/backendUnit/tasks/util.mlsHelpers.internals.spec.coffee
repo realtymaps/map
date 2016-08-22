@@ -20,7 +20,7 @@ describe 'util.mlsHelpers.internals', ->
   beforeEach ->
     photo.resetSpies()
 
-  describe 'makeInsertPhoto', ->
+  describe 'makeUpdatePhoto', ->
 
     it 'cdnPhotoStr defined', (done) ->
       data_source_id = 'data_source_id'
@@ -31,7 +31,7 @@ describe 'util.mlsHelpers.internals', ->
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      queryString = subject.makeInsertPhoto {
+      queryString = subject.makeUpdatePhoto {
         listingRow
         cdnPhotoStr
         jsonObjStr
@@ -62,7 +62,7 @@ describe 'util.mlsHelpers.internals', ->
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      queryString = subject.makeInsertPhoto {
+      queryString = subject.makeUpdatePhoto {
         listingRow
         jsonObjStr
         imageId
@@ -98,7 +98,7 @@ describe 'util.mlsHelpers.internals', ->
       cdnPhotoStrPromise
       .then (cdnPhotoStr) ->
 
-        queryString = subject.makeInsertPhoto {
+        queryString = subject.makeUpdatePhoto {
           listingRow
           jsonObjStr
           imageId

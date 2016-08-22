@@ -203,6 +203,7 @@ module.exports = {
   uploadPhoto
   enqueuePhotoToDelete
   updatePhoto
+  makeUpdatePhoto
   getUuidField
   getMlsField
 }
