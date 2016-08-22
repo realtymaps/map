@@ -5,6 +5,7 @@ require '../config/promisify'
 memoize = require 'memoizee'
 mlsConfigService = null
 errors = require '../utils/errors/util.errors.task'
+_ = require 'lodash'
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
@@ -23,7 +24,7 @@ _getTaskCode = (taskName) ->
           if taskName.indexOf('_photos') == -1
             return require("./task.default.mls")(taskName)
           else
-            return require("./task.photos")(taskName)
+            return require("./task.default.photos")(taskName)
         throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
 
 class TaskImplementation
@@ -48,11 +49,11 @@ class TaskImplementation
       task_name: @taskName
       auto_enqueue: true
       active: true
-    .then (subtasks) ->
+    .then (subtasks) =>
       if !subtasks.length
         return 0
       require('../services/service.jobQueue').queueSubtasks({transaction, batchId, subtasks})
-    .then (count) ->
+    .then (count) =>
       if count == 0
         throw new Error("0 subtasks enqueued for #{@taskName}")
       count

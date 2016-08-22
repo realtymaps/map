@@ -106,10 +106,10 @@ subtasks =
   ###
 
 
-class StipeTask extends TaskImplementation
+class StripeTask extends TaskImplementation
   initialize: () ->
     #delay stripe initialization here to get no errors in specs
     require('../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
     super(arguments...)
 
-module.exports = new StipeTask('stripe', subtasks)
+module.exports = new StripeTask('stripe', subtasks)

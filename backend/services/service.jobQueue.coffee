@@ -130,6 +130,8 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     TaskImplementation.getTaskCode(task.name)
   .then (taskImpl) ->
     taskImpl.initialize(transaction, batchId, task)
+  .catch (err) ->
+    throw err
   .then (count) ->
     tables.jobQueue.taskHistory(transaction: transaction)
     .where
