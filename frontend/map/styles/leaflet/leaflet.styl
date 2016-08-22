@@ -32,6 +32,21 @@
     margin-bottom 0px !important
 
 .leaflet-marker-icon
+  &.textlabel
+    width 200px !important
+    height 100px !important
+
+    overflow auto !important
+
+    .textlabel-text, textarea
+      font-size 16px
+      font-weight bold
+      background-color $rm-sketch-label-background
+      opacity .9
+      padding 10px
+      color $rm-sketch-label-text
+      border-radius 3px
+
   .circle-nr
     height 100%
     width 100%
@@ -39,6 +54,18 @@
       height 100%
       width 100%
       font-size 14px
-      line-height 30px//matchxs icon height
+      line-height 30px//matches icon height
+
+.leaflet-circled-marker
+  font-size 50px
+  .path2
+    color white
+
+.leaflet-arrow-marker
+  font-size 50px
+  &.blue
+    color $rm-medium-blue
+  &.yellow
+    color rgb(242, 205, 12)
 
 @import './leafletDraw'

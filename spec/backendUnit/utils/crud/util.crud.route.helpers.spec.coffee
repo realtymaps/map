@@ -4,9 +4,15 @@ sinon = require "sinon"
 Promise = require 'bluebird'
 _ = require 'lodash'
 {basePath} = require '../../globalSetup'
-{Crud, HasManyRouteCrud, wrapRoutesTrait} = require "#{basePath}/utils/crud/util.crud.route.helpers"
+rewire = require 'rewire'
+crudRouteHelpers = rewire "#{basePath}/utils/crud/util.crud.route.helpers"
+{Crud, HasManyRouteCrud, wrapRoutesTrait} = crudRouteHelpers
 crudSvc = require "#{basePath}/utils/crud/util.crud.service.helpers"
 {validators} = require "#{basePath}/utils/util.validation"
+errorHandlingUtils = require '../../../../backend/utils/errors/util.error.partiallyHandledError'
+
+
+crudRouteHelpers.__set__('NamedError', class FakeNamedError extends errorHandlingUtils.QuietlyHandledError)
 
 describe 'util.crud.route.helpers', ->
 
@@ -179,7 +185,7 @@ describe 'util.crud.route.helpers', ->
         @subject.paramIdKey.should.be.eql 'crap_id'
 
       it 'undefined rootGETKey throws', ->
-        (=> new HasManyRouteCrud @stubbedSvc).should.throw('@rootGETKey must be defined')
+        (=> new HasManyRouteCrud(@stubbedSvc)).should.throw('@rootGETKey must be defined')
 
     it 'rootGET', ->
       @subject.rootGET @mockQuery

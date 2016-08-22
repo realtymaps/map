@@ -6,7 +6,7 @@ include ../mixins/_avatarMixin.jade
       +avatarMixin()(class='tiny-avatar')
     ul(class="dropdown-menu right arrow")
       li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a(ui-sref="logout") Sign Out
+        a.logout(ui-sref="logout") Sign Out
       li(ng-show="principal.isAuthenticated()", ng-cloak)
         a(ui-sref="user") {{user.email}}
       li(ng-show="principal.isStaff()", ng-cloak)

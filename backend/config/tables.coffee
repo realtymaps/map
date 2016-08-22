@@ -79,6 +79,8 @@ module.exports =
   temp: 'raw_temp.raw'
   event:
     history: 'data_event_history'
+  cartodb:
+    syncQueue: 'cartodb_sync_queue'
 
 
 _setup = (baseObject) ->

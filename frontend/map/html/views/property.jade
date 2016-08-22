@@ -1,10 +1,7 @@
-include ../../../common/html/includes/mixins/_spinnerMixin.jade
-
 .property-detail-modal
 
   .desktop-only
     .property-detail-container.container
-      //+spinnerMixin()
       .row
         .col-sm-2
           ul.nav
@@ -12,27 +9,20 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") {{mls.mls_formal_name}} Property Detail
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
-            //- li
-            //-   a(ng-click="tab.selected = 'raw'" ng-class="{active: tab.selected == 'raw'}") Raw
-
-        //- .col-sm-8(ng-show="tab.selected == 'raw'")
-        //-   .content-heading Full raw data
-        //-   json-formatter(json="selectedResult" open="3")
 
         .col-sm-8(ng-repeat="property in dataSources" ng-show="tab.selected == '{{property.data_source_id}}'")
           .prop-image.prop-image-lg
 
-            property-images(property="property" image-height="350")
+            property-images(property="property" image-width="750")
 
             .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
               .prop-price.prop-lg(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
-              .below-price
-                .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
+              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
 
-              .content-emphasis {{property.address.street}} {{property.address.unit}}
+              .content-value {{property.address.street}} {{property.address.unit}}
               .content-muted {{property.address.citystate}} {{property.address.zip}}
 
             .col-sm-6.text-right.desktop-only
@@ -87,39 +77,36 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
               .row.content-row
                 .col-xs-4
-                  .content-value {{property.property_type}}
+                  .content-value(ng-if="property.property_type") {{property.property_type}}
+                  .content-value(ng-if="!property.property_type") N/A
                   .content-label Property Type
                 .col-xs-4
                   .content-value(ng-if="property.zoning") {{property.zoning}}
-                  .content-value(ng-if="!property.zoning") Unknown
+                  .content-value(ng-if="!property.zoning") N/A
                   .content-label Zoning
                 .col-xs-4
                   .content-value(ng-if="property.status_display") {{property.status_display}}
                   .content-label(ng-if="property.status_display") MLS Status
 
-          .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
+          .row.content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
             .col-sm-12
-              .content-heading Description
-              p.content-body {{formatters.property.orNa(property.description)}}
+              .content-heading Owner Info
+              .row.content-row
+                .col-sm-6
+                  .content-label Current Owner
+                  .content-lg.sensitive
+                    span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
+                    span {{property.owner_name}}
+                    span(ng-if="property.owner_name_2")
+                      br/
+                      | {{property.owner_name_2}}
+                .col-sm-6
+                  .content-label Address
+                  .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
+                  .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
 
-          .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
-            .content-heading Owner Info
-            .row
-              .col-sm-6
-                .content-label Current Owner
-                .content-lg.sensitive
-                  span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
-                  span {{property.owner_name}}
-                  span(ng-if="property.owner_name_2")
-                    br/
-                    | {{property.owner_name_2}}
-              .col-sm-6
-                .content-label Address
-                .content-lg {{property.owner_address.street}} {{property.owner_address.unit}}
-                .content-muted {{property.owner_address.citystate}} {{property.owner_address.zip}}
-
-          .row.content-block.border-bottom(ng-if="property.data_source_type == 'mls'")
-            .col-sm-6(ng-if="property.days_on_market != null || property.original_price || property.close_date")
+          .row.content-block.border-bottom(ng-if="property.data_source_type == 'mls' && (property.days_on_market != null || property.original_price || property.close_date)")
+            .col-sm-12
               .content-heading MLS Listing Info
               .row.content-row
                 .col-sm-6
@@ -135,7 +122,12 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 .col-sm-6
                   .content-label Close Date
                   .content-value
-                    span {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
+                    span {{property.close_date | date : 'MM/dd/yyyy'}}
+
+          .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
+            .col-sm-12
+              .content-heading Description
+              p.content-body {{formatters.property.orNa(property.description)}}
 
           .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
             .col-sm-12
@@ -148,7 +140,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
           accordion.row.content-block.subscriber-groups(close-others="false")
             accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
-              .table-striped-pair
+              div(ng-class="{'table-striped-single': group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings', 'table-striped-pair': group.name == 'deedHistory' || group.name == 'mortgageHistory' || group.name == 'priorListings'}")
                 .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings'" ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4.field-label {{field.name}}
                   .col-sm-8
@@ -163,16 +155,18 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .col-sm-2 Doc Type
                   .col-sm-1
 
-                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra | orderBy:'-'")
-                  .col-sm-2(ng-if="deed.extra") {{deed.sale_date | date}}
-                  .col-sm-2(ng-if="deed.extra") {{deed.price | currency:"$":0}}
+                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
+                  .col-sm-2(ng-if="deed.extra && deed.sale_date") {{deed.sale_date | date}}
+                  .col-sm-2(ng-if="deed.extra && !deed.sale_date") N/A
+                  .col-sm-2(ng-if="deed.extra && deed.price != null") {{deed.price | currency:"$":0}}
+                  .col-sm-2(ng-if="deed.extra && deed.price == null") N/A
                   .col-sm-3.sensitive(ng-if="deed.extra")
-                    span {{deed.owner_name}}
+                    span {{formatters.property.orNa(deed.owner_name)}}
                     span(ng-if="deed.owner_name_2")  &nbsp;&amp; {{deed.owner_name_2}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
-                    span {{deed.seller_name}}
+                    span {{formatters.property.orNa(deed.seller_name)}}
                     span(ng-if="deed.seller_name_2") &nbsp;&amp; {{deed.seller_name_2}}
-                  .col-sm-2(ng-if="deed.extra") {{deed.document_type}}
+                  .col-sm-2(ng-if="deed.extra") {{formatters.property.orNa(deed.document_type)}}
                   .col-sm-1(ng-if="deed.extra")
                     a(ng-click="deed.extra.showExtra = !deed.extra.showExtra")
                       span(ng-show="!deed.extra.showExtra") More
@@ -196,12 +190,14 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                   .col-sm-1
 
                 .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra")
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.close_date | date}}
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.amount | currency:"$":0}}
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.lender}}
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.financing_type}}
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.term}}
-                  .col-sm-2(ng-if="mortgage.extra") {{mortgage.loan_type}}
+                  .col-sm-2(ng-if="mortgage.extra && mortgage.close_date") {{mortgage.close_date | date}}
+                  .col-sm-2(ng-if="mortgage.extra && !mortgage.close_date") N/A
+                  .col-sm-2(ng-if="mortgage.extra && mortgage.amount != null") {{mortgage.amount | currency:"$":0}}
+                  .col-sm-2(ng-if="mortgage.extra && mortgage.amount == null") N/A
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.lender)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.financing_type)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.term)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.loan_type)}}
                   .col-sm-1(ng-if="mortgage.extra")
                     a(ng-click="mortgage.extra.showExtra = !mortgage.extra.showExtra")
                       span(ng-show="!mortgage.extra.showExtra") More
@@ -264,7 +260,6 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
         property-buttons(property = 'property')
 
     .property-detail-container(ng-repeat="property in dataSources")
-      //+spinnerMixin()
       .prop-image.prop-image-md
         //background-color:transparent; must be here to override googles meddling where it forces style via element
         ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="property.geometry_center",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
@@ -277,8 +272,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
         .content-block.prop-attrs.border-bottom
           .pull-right.text-right
             .prop-price(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
-            .below-price.content-label
-              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
+            .content-label
+              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
 
           .content-emphasis.content-lg {{property.address.street}} {{property.address.unit}}
           .content-muted {{property.address.citystate}} {{property.address.zip}}
@@ -333,19 +328,16 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
           .row.content-row
             .col-xs-4
-              .content-value {{property.property_type}}
+              .content-value(ng-if="property.property_type") {{property.property_type}}
+              .content-value(ng-if="!property.property_type") N/A
               .content-label Property Type
             .col-xs-4
               .content-value(ng-if="property.zoning") {{property.zoning}}
-              .content-value(ng-if="!property.zoning") Unknown
+              .content-value(ng-if="!property.zoning") N/A
               .content-label Zoning
             .col-xs-4
               .content-value(ng-if="property.status_display") {{property.status_display}}
               .content-label(ng-if="property.status_display") MLS Status
-
-        .content-block.prop-attrs.border-bottom(ng-if="property.description")
-          .content-heading Description
-          p.content-body {{property.description}}
 
         .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
           .content-heading Owner Info
@@ -379,7 +371,11 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .col-xs-6
               .content-label Close Date
               .content-value
-                span {{property.close_date.toUTCString() | date : 'MM/dd/yyyy'}}
+                span {{property.close_date | date : 'MM/dd/yyyy'}}
+
+        .content-block.prop-attrs.border-bottom(ng-if="property.description")
+          .content-heading Description
+          p.content-body {{property.description}}
 
         .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
           .content-heading Broker Reciprocity

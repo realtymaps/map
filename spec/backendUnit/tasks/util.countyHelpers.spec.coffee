@@ -46,7 +46,7 @@ describe "util.countyHelpers", () ->
       parcelHelpers.__set__ 'tables', tables
       countyHelpers.__set__ 'parcelHelpers', parcelHelpers
 
-      countyHelpers.finalizeData({subtask, id:1, data_source_id: 'county'})
+      countyHelpers.finalizeData({subtask, id:'1', data_source_id: 'county'})
 
 
     it 'should query table with subid', () ->

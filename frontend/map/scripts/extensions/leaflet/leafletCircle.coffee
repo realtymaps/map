@@ -1,3 +1,4 @@
+###globals L###
 #hidden by Leaflet
 _pointToGeoJSON = L.Circle::toGeoJSON
 ###

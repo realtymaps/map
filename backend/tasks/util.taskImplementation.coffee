@@ -36,10 +36,10 @@ class TaskImplementation
     if !subtask.name?
       throw new errors.TaskNameError('subtask.name must be defined')
     if subtask.name.indexOf(@taskName+'_') != 0
-      throw new errors.TaskNameError("Task name is not contained in subtask name. Where the valid format is taskname_subtaskname. For subtask: #{subtask.name}.")
+      throw new errors.TaskNameError("Subtask name does not match format taskname_subtaskname: #{subtask.name}.")
     subtaskBaseName = subtask.name.substring(@taskName.length+1)  # subtask name format is: taskname_subtaskname (in the database)
     if !(subtaskBaseName of @subtasks)
-      throw new errors.MissingSubtaskError("Can't find subtask code for #{subtask.name}, subtasks: #{Object.keys(@subtasks).join(',')} aval!!")
+      throw new errors.MissingSubtaskError("Can't find subtask code for: #{subtask.name}; subtasks available: #{Object.keys(@subtasks).join(',')}")
     @subtasks[subtaskBaseName](subtask)
 
   initialize: (transaction, batchId) -> Promise.try () =>

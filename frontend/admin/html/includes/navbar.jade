@@ -14,8 +14,8 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
     ul.nav.navbar-nav.navbar-right
       li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-float-right
-        a(ui-sref="{{adminRoutes.login}}") Sign In
+        a.login(ui-sref="{{adminRoutes.login}}") Sign In
       li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
-        a(ui-sref="{{adminRoutes.logout}}") Sign Out
+        a.logout(ui-sref="{{adminRoutes.logout}}") Sign Out
       li.navbar-float-right
         a(href="{{frontendRoutes.index}}" target="_self") Map

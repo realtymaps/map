@@ -14,5 +14,5 @@ app.service 'rmapsClientEntryService', ($http, $sce) ->
       data
 
   setPasswordAndBounce: (entity) ->
-    $http.put backendRoutes.clientEntry.setPasswordAndBounce, entity
+    $http.post backendRoutes.clientEntry.setPasswordAndBounce, entity
 

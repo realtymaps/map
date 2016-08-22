@@ -307,8 +307,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
-      if row["Assessor’s Parcel Number"]?.indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1
-        logger.debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
+      if row["Assessor’s Parcel Number"]? && (row["Assessor’s Parcel Number"].indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1)
+        logger.spawn('troubleshoot').debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
@@ -715,35 +715,46 @@ ensureNormalizedTable = (dataType, subid) ->
       .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
     else
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date ASC NULLS FIRST)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, data_source_uuid)")
 
 
 getLastUpdateTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
-setLastUpdateTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+setLastUpdateTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data update timestamps')
 
 getLastRefreshTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
 
-setLastRefreshTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
+setLastRefreshTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data refresh timestamps')
 
 # this is logic that checks to see if the last time something happened was before today, and if it is currently after a
 # given time of day (24-hour time).  Note this works based on eastern time zone, including DST
-checkReadyForRefresh = (subtask, {targetHour, targetMinute}) ->
+checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNever}) ->
   targetHour ?= 0
   targetMinute ?= 0
   getLastRefreshTimestamp(subtask)
   .then (refreshTimestamp) ->
+    logger.spawn(subtask.task_name).debug () -> refreshTimestamp
+    if runIfNever && refreshTimestamp == 0
+      return true
+
     now = Date.now()
     utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
 
     target = moment.utc(now).utcOffset(utcOffset).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
+
+    today = target.valueOf()
+    if targetDay?
+      target.day(targetDay)
+      if target.diff(today) != 0
+        # not the target day
+        return false
 
     target.hour(targetHour)
     target.minute(targetMinute)

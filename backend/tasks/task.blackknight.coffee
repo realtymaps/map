@@ -250,8 +250,6 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
-      logger.debug () -> "Processing row for `deleteData`: #{JSON.stringify(row)}"
-
       if row['FIPS Code'] != '12021'
         Promise.resolve()
 
@@ -284,7 +282,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
+            throw new SoftFail(err, "Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{parcel_id}")
 
       else
         # get validation for data_source_uuid
@@ -304,7 +302,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
+            throw new SoftFail(err, "Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}", err)
 
 
 normalizeData = (subtask) ->
@@ -334,7 +332,7 @@ finalizeDataPrep = (subtask) ->
     }
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, (id) ->
+  Promise.each subtask.data.values, (id) ->
     countyHelpers.finalizeData({subtask, id})
 
 

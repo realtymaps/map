@@ -1,3 +1,8 @@
+require('./l.handler.js')
+require('./l.draw.feature.js')
+require('./l.draw.marker.js')
+require('./l.draw.text.js')
+
 var OurToolBar = require('./api.Toolbar.js')
 Object.assign = Object.assign || require('object-assign')
 /*
@@ -55,6 +60,11 @@ module.exports = L.DrawToolbar.extend(Object.assign({}, OurToolBar, {
 				handler: new L.Draw.Marker(map, this.options.marker),
 				title: _.get(this.options.marker, "buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.marker
+			},
+			text: {
+				enabled: this.options.textlabel,
+				handler: new L.Draw.TextLabel(map, this.options.textlabel),
+				title: L.drawLocal.draw.toolbar.buttons.textlabel
 			}
 		}
 	},

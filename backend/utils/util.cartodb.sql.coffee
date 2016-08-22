@@ -40,7 +40,7 @@ _format = (sql, fipsCode) ->
 
 obj = {}
 ['update', 'insert', 'delete', 'drop'].forEach  (method) ->
-  obj[method] = (fipCode) ->
+  obj[method] = (fipsCode) ->
     _format(_sql[method], fipsCode)
 
 module.exports = obj
