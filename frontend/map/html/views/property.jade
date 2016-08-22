@@ -48,15 +48,15 @@
 
               .row.content-row
                 .col-xs-4
-                  .content-value {{formatters.property.orNa(property.bedrooms)}}
+                  .content-value {{formatters.property.orDash(property.bedrooms)}}
                   .content-label Beds
                 .col-xs-4
-                  .content-value {{formatters.property.orNa(property.baths.value)}}
+                  .content-value {{formatters.property.orDash(property.baths.value)}}
                   .content-label {{property.baths.label}}
 
                 .col-xs-4
                   .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
-                  .content-value(ng-if="!property.sqft_finished") N/A
+                  .content-value(ng-if="!property.sqft_finished") -
                   .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
                     icon.fa.fa-question-circle(tooltip-placement="bottom" tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
                   .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
@@ -64,25 +64,25 @@
               .row.content-row
                 .col-xs-4
                   .content-value(ng-if="property.year_built.value") {{property.year_built.value}}
-                  .content-value(ng-if="!property.year_built.value") N/A
+                  .content-value(ng-if="!property.year_built.value") -
                   .content-label(ng-if="property.year_built.label") {{property.year_built.label}}
                   .content-label(ng-if="!property.year_built.label") Year Built
                 .col-xs-4
-                  .content-value {{formatters.property.orNa(property.acres)}}
+                  .content-value {{formatters.property.orDash(property.acres)}}
                   .content-label Acres
                 .col-xs-4
                   .content-value(ng-if="property.acres") {{property.acres*43560| number:0}}
-                  .content-value(ng-if="!property.acres") N/A
+                  .content-value(ng-if="!property.acres") -
                   .content-label Lot SqFt
 
               .row.content-row
                 .col-xs-4
                   .content-value(ng-if="property.property_type") {{property.property_type}}
-                  .content-value(ng-if="!property.property_type") N/A
+                  .content-value(ng-if="!property.property_type") -
                   .content-label Property Type
                 .col-xs-4
                   .content-value(ng-if="property.zoning") {{property.zoning}}
-                  .content-value(ng-if="!property.zoning") N/A
+                  .content-value(ng-if="!property.zoning") -
                   .content-label Zoning
                 .col-xs-4
                   .content-value(ng-if="property.status_display") {{property.status_display}}
@@ -127,7 +127,7 @@
           .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
             .col-sm-12
               .content-heading Description
-              p.content-body {{formatters.property.orNa(property.description)}}
+              p.content-body {{formatters.property.orDash(property.description)}}
 
           .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
             .col-sm-12
@@ -157,16 +157,16 @@
 
                 .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
                   .col-sm-2(ng-if="deed.extra && deed.sale_date") {{deed.sale_date | date}}
-                  .col-sm-2(ng-if="deed.extra && !deed.sale_date") N/A
+                  .col-sm-2(ng-if="deed.extra && !deed.sale_date") -
                   .col-sm-2(ng-if="deed.extra && deed.price != null") {{deed.price | currency:"$":0}}
-                  .col-sm-2(ng-if="deed.extra && deed.price == null") N/A
+                  .col-sm-2(ng-if="deed.extra && deed.price == null") -
                   .col-sm-3.sensitive(ng-if="deed.extra")
-                    span {{formatters.property.orNa(deed.owner_name)}}
+                    span {{formatters.property.orDash(deed.owner_name)}}
                     span(ng-if="deed.owner_name_2")  &nbsp;&amp; {{deed.owner_name_2}}
                   .col-sm-3.sensitive(ng-if="deed.extra")
-                    span {{formatters.property.orNa(deed.seller_name)}}
+                    span {{formatters.property.orDash(deed.seller_name)}}
                     span(ng-if="deed.seller_name_2") &nbsp;&amp; {{deed.seller_name_2}}
-                  .col-sm-2(ng-if="deed.extra") {{formatters.property.orNa(deed.document_type)}}
+                  .col-sm-2(ng-if="deed.extra") {{formatters.property.orDash(deed.document_type)}}
                   .col-sm-1(ng-if="deed.extra")
                     a(ng-click="deed.extra.showExtra = !deed.extra.showExtra")
                       span(ng-show="!deed.extra.showExtra") More
@@ -191,13 +191,13 @@
 
                 .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra")
                   .col-sm-2(ng-if="mortgage.extra && mortgage.close_date") {{mortgage.close_date | date}}
-                  .col-sm-2(ng-if="mortgage.extra && !mortgage.close_date") N/A
+                  .col-sm-2(ng-if="mortgage.extra && !mortgage.close_date") -
                   .col-sm-2(ng-if="mortgage.extra && mortgage.amount != null") {{mortgage.amount | currency:"$":0}}
-                  .col-sm-2(ng-if="mortgage.extra && mortgage.amount == null") N/A
-                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.lender)}}
-                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.financing_type)}}
-                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.term)}}
-                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orNa(mortgage.loan_type)}}
+                  .col-sm-2(ng-if="mortgage.extra && mortgage.amount == null") -
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orDash(mortgage.lender)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orDash(mortgage.financing_type)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orDash(mortgage.term)}}
+                  .col-sm-2(ng-if="mortgage.extra") {{formatters.property.orDash(mortgage.loan_type)}}
                   .col-sm-1(ng-if="mortgage.extra")
                     a(ng-click="mortgage.extra.showExtra = !mortgage.extra.showExtra")
                       span(ng-show="!mortgage.extra.showExtra") More
@@ -300,14 +300,14 @@
 
           .row.content-row
             .col-xs-4
-              .content-value {{formatters.property.orNa(property.bedrooms)}}
+              .content-value {{formatters.property.orDash(property.bedrooms)}}
               .content-label Beds
             .col-xs-4
-              .content-value {{formatters.property.orNa(property.baths_total)}}
-              .content-label Baths
+              .content-value {{formatters.property.orDash(property.baths.value)}}
+              .content-label {{property.baths.label}}
             .col-xs-4
               .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
-              .content-value(ng-if="!property.sqft_finished") N/A
+              .content-value(ng-if="!property.sqft_finished") -
               .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
                 icon.fa.fa-question-circle(tooltip-placement="bottom" tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
               .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
@@ -315,25 +315,25 @@
           .row.content-row
             .col-xs-4
               .content-value(ng-if="property.year_built.value") {{property.year_built.value}}
-              .content-value(ng-if="!property.year_built.value") N/A
+              .content-value(ng-if="!property.year_built.value") -
               .content-label(ng-if="property.year_built.label") {{property.year_built.label}}
               .content-label(ng-if="!property.year_built.label") Year Built
             .col-xs-4
-              .content-value {{formatters.property.orNa(property.acres)}}
+              .content-value {{formatters.property.orDash(property.acres)}}
               .content-label Acres
             .col-xs-4
               .content-value(ng-if="property.acres") {{property.acres*43560| number:0}}
-              .content-value(ng-if="!property.acres") N/A
+              .content-value(ng-if="!property.acres") -
               .content-label Lot SqFt
 
           .row.content-row
             .col-xs-4
               .content-value(ng-if="property.property_type") {{property.property_type}}
-              .content-value(ng-if="!property.property_type") N/A
+              .content-value(ng-if="!property.property_type") -
               .content-label Property Type
             .col-xs-4
               .content-value(ng-if="property.zoning") {{property.zoning}}
-              .content-value(ng-if="!property.zoning") N/A
+              .content-value(ng-if="!property.zoning") -
               .content-label Zoning
             .col-xs-4
               .content-value(ng-if="property.status_display") {{property.status_display}}

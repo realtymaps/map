@@ -26,8 +26,8 @@ app.service 'rmapsFormattersService', ($log) ->
         return 'N/A'
       numeral(price).format('$0,0')
 
-    orNa: (val) ->
-      String.orNA val
+    orDash: (val) ->
+      String.orDash val
 
     # turns a json duration into a humanized string description e.g.:
     #   {days: 600} --> "about 1 year, 8 months"
