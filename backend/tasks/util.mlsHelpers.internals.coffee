@@ -43,45 +43,38 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
     newFileName
     row
   })
-  .then (cdnPhotoStr) ->
+  .then (cdn_photo) ->
 
-    query = table.raw("""
-      INSERT INTO ?? ("data_source_id", "data_source_uuid", "photos", "cdn_photo", "photo_last_mod_time", "actual_photo_count")
-      VALUES (
-        ?,
-        ?,
-        ?,
-        ?,
-        ?,
-        1
-      )
-      ON CONFLICT ("data_source_id", "data_source_uuid")
-      DO UPDATE SET ("photos", "photo_last_mod_time", "actual_photo_count") = (
-        jsonb_set(??.photos, ?, ?, true),
-        ?,
-        (select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)
-      )
-      RETURNING "data_source_id", "data_source_uuid"
-      """,
-      [
-        table.tableName,
-        row.data_source_id,
-        row.data_source_uuid,
-        JSON.stringify("#{imageId}": obj),
-        cdnPhotoStr,
-        obj.objectData?.uploadDate,
-        table.tableName,
-        "{#{imageId}}",
-        JSON.stringify(obj),
-        obj.objectData?.uploadDate,
-        table.tableName,
-        imageId
-      ]
-    )
+    query = sqlHelpers.upsert {
+      idObj: row
+      entityObj: {
+        photos: "#{imageId}": obj
+        cdn_photo
+        photo_last_mod_time: obj.objectData?.uploadDate
+        actual_photo_count: 1
+      }
+      conflictOverrideObj:
+        photos: table().raw(
+          'jsonb_set(??.photos, ?, ?, true)',
+          [
+            table.tableName
+            "{#{imageId}}"
+            obj
+          ]
+        )
+        actual_photo_count: table().raw(
+          '(select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)',
+          [
+            table.tableName
+            imageId
+          ]
+        )
+      dbFn: table
+      transaction
+    }
 
     # logger.debug query.toString()
     query
-
 
 ###
 # these function works backwards from the validation for `fieldName` (e.g. "data_source_uuid") to determine the LongName and then the

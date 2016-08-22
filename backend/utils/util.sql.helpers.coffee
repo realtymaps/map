@@ -236,9 +236,7 @@ buildRawBindings = (obj, opts={}) ->
     colPlaceholders.push('??')
     colBindings.push(k)
     valPlaceholders.push('?')
-    if _.isObject(v)
-      valBindings.push(JSON.stringify(v))
-    else if v?
+    if v?
       valBindings.push(v)
     else  # v == null
       if opts.defaultNulls
