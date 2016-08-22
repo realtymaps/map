@@ -174,18 +174,22 @@ class SqlMock
     return Promise.resolve(result)
 
   toString: () ->
-    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    src = (new Error()).stack.split('\n')?[2]
+    if src.indexOf('.spec') != -1
+      @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK! See #{src}"
     if !@options.blockToString
       @_quickQuery().toString()
     else
-      "blockToString was set, so this is fake SQL"
+      "SqlMock blocking toString() -- SQL would normally be output here"
 
   toSQL: () ->
-    @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK!"
+    src = (new Error()).stack.split('\n')?[2]
+    if src.indexOf('.spec') != -1
+      @logger.warn "COMPARING SQL STRINGS IS LIKELY TO BREAK! See #{src}"
     if !@options.blockToString
       @_quickQuery().toSQL()
     else
-      "blockToString was set, so this is fake SQL"
+      "SqlMock blocking toSQL() -- SQL would normally be output here"
 
   returning: () ->
     @returningsSpy(arguments...)
