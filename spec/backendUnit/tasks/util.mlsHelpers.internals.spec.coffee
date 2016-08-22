@@ -25,24 +25,23 @@ describe 'util.mlsHelpers.internals', ->
     it 'cdnPhotoStr defined', (done) ->
       data_source_id = 'data_source_id'
       data_source_uuid = 'uuid'
-      listingRow = {data_source_id, data_source_uuid}
+      row = {data_source_id, data_source_uuid}
       cdnPhotoStr = 'http://cdn.com'
       jsonObjStr = JSON.stringify crap: 'crap'
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      queryString = subject.makeUpdatePhoto {
-        listingRow
+      query = subject.makeUpdatePhoto {
+        row
         cdnPhotoStr
         jsonObjStr
         imageId
         photo_id
-        doReturnStr: true
         table: tableMocks.finalized.photo
       }
 
       tableMocks.finalized.photo().whereSpy.callCount.should.equal 1
-      tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal listingRow
+      tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal row
 
       tableMocks.finalized.photo().rawSpy.callCount.should.equal 1
       tableMocks.finalized.photo().rawSpy.args[0][0].should.equal("jsonb_set(photos, '{#{imageId}}', ?, true)")
@@ -57,17 +56,16 @@ describe 'util.mlsHelpers.internals', ->
     it 'cdnPhotoStr undefined', (done) ->
       data_source_id = 'data_source_id'
       data_source_uuid = 'uuid'
-      listingRow = {data_source_id, data_source_uuid}
+      row = {data_source_id, data_source_uuid}
       jsonObjStr = JSON.stringify crap: 'crap'
       imageId = 'imageId'
       photo_id = 'photo_id'
 
       queryString = subject.makeUpdatePhoto {
-        listingRow
+        row
         jsonObjStr
         imageId
         photo_id
-        doReturnStr: true
         table: tableMocks.finalized.photo
       }
 
@@ -78,14 +76,14 @@ describe 'util.mlsHelpers.internals', ->
     it 'use a real cdnPhotoStr', (done) ->
       data_source_id = 'data_source_id'
       data_source_uuid = 'uuid'
-      listingRow = {data_source_id, data_source_uuid}
+      row = {data_source_id, data_source_uuid}
       jsonObjStr = JSON.stringify crap: 'crap'
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard {
+      cdnPhotoStrPromise = mlsPhotoUtil.getCdnPhotoShard {
         newFileName: 'crap.jpg'
-        listingRow
+        row
         shardsPromise: Promise.resolve
           one:
             id: 0
@@ -99,17 +97,16 @@ describe 'util.mlsHelpers.internals', ->
       .then (cdnPhotoStr) ->
 
         queryString = subject.makeUpdatePhoto {
-          listingRow
+          row
           jsonObjStr
           imageId
           photo_id
-          doReturnStr: true
           cdnPhotoStr
           table: tableMocks.finalized.photo
         }
 
         tableMocks.finalized.photo().whereSpy.callCount.should.equal 1
-        tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal listingRow
+        tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal row
 
         tableMocks.finalized.photo().rawSpy.callCount.should.equal 1
         tableMocks.finalized.photo().rawSpy.args[0][0].should.equal("jsonb_set(photos, '{#{imageId}}', ?, true)")

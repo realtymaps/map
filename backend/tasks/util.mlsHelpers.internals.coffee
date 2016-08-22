@@ -39,9 +39,9 @@ makeUpdatePhoto = ({row, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transact
 
 makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
 
-  mlsPhotoUtil.getCndPhotoShard({
-    newFileName: newFileName
-    listingRow: row
+  mlsPhotoUtil.getCdnPhotoShard({
+    newFileName
+    row
   })
   .then (cdnPhotoStr) ->
 
@@ -108,7 +108,7 @@ getUuidField = (mlsId) -> # existed prior to `getMlsField` above; keeping it her
 
 # cdnPhotoStrPromise = Promise.resolve('')
 # if imageId == 0
-#   cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(opts)
+#   cdnPhotoStrPromise = mlsPhotoUtil.getCdnPhotoShard(opts)
 #
 # cdnPhotoStrPromise
 # .then (cdnPhotoStr) ->

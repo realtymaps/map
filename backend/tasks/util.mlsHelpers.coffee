@@ -108,9 +108,9 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
 
   mainEntry.actual_photo_count = photosLength - 1  # photo 0 and 1 are the same
 
-  mlsPhotoUtil.getCndPhotoShard {
+  mlsPhotoUtil.getCdnPhotoShard {
     newFileName: mainEntry.photos[0].key
-    listingRow: mainEntry
+    row: mainEntry
   }
   .then (cdn_photo) ->
     mainEntry.cdn_photo = cdn_photo
