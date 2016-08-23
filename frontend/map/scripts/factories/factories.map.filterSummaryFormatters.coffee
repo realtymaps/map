@@ -32,7 +32,7 @@ rmapsEmptyFilterData
           # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
           clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = MLS.setMarkerManualClusterOptions(model)
         @scope.map.markers.backendPriceCluster = clusters
-        @promise = $q.resolve()
+
       @
 
   .compose(rmapsEmptyFilterData)
@@ -58,8 +58,6 @@ rmapsZoomLevelStateFactory
   stampit.methods
 
     mutateSummary: () ->
-      if @promise
-        return @
 
       overlays = @scope.map.layers.overlays
       Toggles = @scope.Toggles
@@ -108,8 +106,9 @@ rmapsZoomLevelStateFactory
         overlays?.parcels?.visible = false
         Toggles.showAddresses = false
         overlays?.parcelsAddresses?.visible = false
-        @promise = $q.resolve()
+
       @
+
   .compose rmapsZoomLevelStateFactory
 
 app.factory 'rmapParcelResultsMutation', (
@@ -125,8 +124,6 @@ rmapsEmptyFilterData
   $log = $log.spawn 'rmapParcelResultsMutation'
   stampit.methods
     handleGeoJsonResults: (data) ->
-      # $timeout =>
-      # timeout allows the spinner to return, this shows the re-slow area is
       # clone (truned off), ui-leaflet, leaflet
       rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data)
       .then (data) =>
@@ -136,14 +133,10 @@ rmapsEmptyFilterData
         @scope.map.geojson.filterSummaryPoly =
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle
-      # , 50
 
     mutateParcel: () ->
-      if @promise
-        return @
-
       if !@isAnyParcel()
-        return @
+        return $q.resolve()
 
       overlays = @scope.map.layers.overlays
       Toggles = @scope.Toggles
@@ -152,8 +145,8 @@ rmapsEmptyFilterData
       Toggles.showAddresses = @isAddressParcel()
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
-      @promise = @handleGeoJsonResults(@data?.singletons)
-      @
+      data = if @data?.singletons? then @data?.singletons else @data
+      @handleGeoJsonResults(data)
 
   .compose rmapsZoomLevelStateFactory, rmapsEmptyFilterData
 
@@ -164,13 +157,14 @@ rmapClusterMutation
 rmapSummaryResultsMutation
 ) ->
   $log = $log.spawn 'map:rmapsResultsFlow'
-  flowFact = stampit
-  .compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)
+  flowFact = stampit.compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)
 
-  ({scope, filters, hash, mapState, data, cache}) ->
+  ({scope, filters, hash, mapState, data}) ->
     flow = flowFact({scope, filters, hash, mapState, data})
 
-    promise = flow.mutateCluster().mutateSummary().mutateParcel().promise
+    flow.mutateCluster().mutateSummary()
+
+    promise = flow.mutateParcel()
 
     #make the promise apparent as an undefined promise will just pass through and make
     #q.all a nightmare to debug. This was the main big bug originally in here

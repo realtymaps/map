@@ -1,25 +1,28 @@
-###globals _###
+###globals _,d3###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 template = do require '../../html/views/templates/modals/areaModal.jade'
 
 app.controller 'rmapsAreasModalCtrl', (
-$rootScope,
-$scope,
-$modal,
-$http,
-$log,
-$state,
-rmapsProjectsService,
-rmapsMainOptions,
-rmapsEventConstants,
-rmapsDrawnUtilsService,
-rmapsMapTogglesFactory,
-rmapsFilterManagerService,
+$rootScope
+$scope
+$timeout
+$modal
+$http
+$log
+$state
+rmapsProjectsService
+rmapsMainOptions
+rmapsEventConstants
+rmapsDrawnUtilsService
+rmapsMapTogglesFactory
+rmapsFilterManagerService
 rmapsLeafletHelpers) ->
   $log = $log.spawn("map:areasModal")
 
   _event = rmapsEventConstants.areas
+
+  removeNotificationQueue = []
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
@@ -47,40 +50,38 @@ rmapsLeafletHelpers) ->
 
     modalInstance.result
 
-  #uses modal
-  $scope.oldCreate = (model) ->
-    $scope.createModal().then (modalModel) ->
-      _.merge(model, modalModel)
-      if !model?.properties.area_name
-        #makes the model an area with a defined empty string
-        model.properties.area_name = ''
-      rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
-      _signalUpdate(drawnShapesSvc.create model)
-
   #create with no modal and default a name
   $scope.create = (model) ->
     model.properties.area_name = "Untitled Area"
-    if !$scope.Toggles.propertiesInShapes
-      rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
-    else
-      $scope.$emit rmapsEventConstants.map.mainMap.redraw
     _signalUpdate(drawnShapesSvc.create model)
+    .then (id) ->
+      if !$scope.Toggles.propertiesInShapes
+        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
+      else
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+      id
 
   $scope.update = (model) ->
     $scope.createModal(model).then (modalModel) ->
       _.merge(model, modalModel)
       _signalUpdate drawnShapesSvc.update model
 
-  $scope.remove = (model) ->
+  $scope.remove = (model, {skipAreas, redraw = false} = {}) ->
+    toCancel = removeNotificationQueue.shift()
+    if toCancel?
+      $timeout.cancel(toCancel)
+
     _.remove($scope.areas, model)
 
-    if !$scope.areas.length
+    if !skipAreas && !$scope.areas?.length
       rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
 
     _signalUpdate(drawnShapesSvc.delete(model))
     .then () ->
-      $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
-      $scope.$emit rmapsEventConstants.map.mainMap.redraw, false
+      removeNotificationQueue.push $timeout ->
+        $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw, redraw
+      , 100
 
   $scope.sendMail = (model) ->
     $scope.newMail = {}
