@@ -99,7 +99,12 @@ copyFtpDrop = (subtask) ->
 
       # queue up individual subtasks for each file transfer
       .then (fileList) ->
+
+        # flatten list of lists from the Promise.map...
         fileList = _.flatten(fileList)
+
+        # remove 0 size files
+        fileList = _.filter fileList, (el) -> el.size > 0
 
         ftp.logout()
         .then () ->
@@ -113,11 +118,6 @@ copyFile = (subtask) ->
   ftp = new PromiseSftp()
   file = subtask.data
   logger.debug () -> "copying blackknight file #{file.fullpath}, size=#{file.size}, type=#{file.type}"
-
-  # ignore empty files
-  if !file.size
-    logger.debug () -> "Skipping #{file.fullpath} due to 0 size..."
-    return
 
   externalAccounts.getAccountInfo('blackknight')
   .then (accountInfo) ->
