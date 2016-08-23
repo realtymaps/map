@@ -141,7 +141,7 @@ storePhotos = (subtask) -> Promise.try () ->
 
 ready = () ->
   # don't automatically run if digimaps or photos is running
-  tables.jobQueue.taskHistory()
+  query = tables.jobQueue.taskHistory()
   .where(current: true)
   .whereIn('name', ['digimaps', "#{@taskName}_photos"])
   .whereNull('finished')
@@ -152,6 +152,9 @@ ready = () ->
 
     # if we didn't bail, signal to use normal enqueuing logic
     return undefined
+
+  logger.debug query.toString()
+  query
 
 
 markUpToDate = (subtask) ->

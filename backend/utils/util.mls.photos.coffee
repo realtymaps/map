@@ -8,6 +8,7 @@ shardLogger = logger.spawn('shard')
 crypto = require("crypto")
 Promise = require 'bluebird'
 photoErrors = require '../utils/errors/util.errors.photos'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 md5 = (data) ->
   crypto.createHash('md5')
@@ -63,37 +64,56 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
   imageId = 0
 
   object.objectStream.once 'error', (error) ->
-    cb(new photoErrors.ObjectsStreamError(error))
+    try
+      logger.debug "error event received"
+      cb(new photoErrors.ObjectsStreamError(error))
+    catch err
+      logger.debug analyzeValue.getSimpleDetails(err)
+      throw err
 
   object.objectStream.on 'data', (event) ->
 
-    if event?.error?
-      cb(event.error)
-      return
+    try
+      logger.debug "data event received"
 
-    logger.debug event.headerInfo
-    listingId = event.headerInfo.contentId
-    fileExt = event.headerInfo.contentType.replace('image/','')
-    contentType = event.headerInfo.contentType
+      if event?.error?
+        logger.debug "data event has an error #{analyzeValue.getSimpleDetails(event.error)}"
+        cb(event.error)
+        return
 
-    everSentData = true
-    fileName = "#{listingId}_#{imageId}.#{fileExt}"
-    logger.debug "fileName: #{fileName}"
+      logger.debug event.headerInfo
+      listingId = event.headerInfo.contentId
+      fileExt = event.headerInfo.contentType.replace('image/','')
+      contentType = event.headerInfo.contentType
 
-    # not handling event.dataStream.once 'error' on purpose
-    # this makes it easier to discern overall errors vs individual photo error
-    payload = {data: event.dataStream, name: fileName, imageId, contentType}
+      everSentData = true
+      fileName = "#{listingId}_#{imageId}.#{fileExt}"
+      logger.debug "fileName: #{fileName}"
 
-    if event.headerInfo.objectData?
-      payload.objectData = event.headerInfo.objectData
+      # not handling event.dataStream.once 'error' on purpose
+      # this makes it easier to discern overall errors vs individual photo error
+      payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
-    imageId++
-    cb(null, payload)
+      if event.headerInfo.objectData?
+        payload.objectData = event.headerInfo.objectData
+
+      imageId++
+      cb(null, payload)
+    catch err
+      logger.debug analyzeValue.getSimpleDetails(err)
+      throw err
 
   object.objectStream.once 'end', () ->
-    if !everSentData and doThrowNoEvents
-      cb(new photoErrors.NoPhotoObjectsError 'No object events')
-    cb(null, null, true)
+    try
+      logger.debug "end event received"
+      if !everSentData and doThrowNoEvents
+        logger.debug "end event received -- callback with NoPhotoObjectsError"
+        cb(new photoErrors.NoPhotoObjectsError 'No object events')
+      logger.debug "end event received -- no NoPhotoObjectsError"
+      cb(null, null, true)
+    catch err
+      logger.debug analyzeValue.getSimpleDetails(err)
+      throw err
 
 
 # TODO: the below code will choke and die on errors -- you can't throw from within event handlers (or the imagesHandle cb)

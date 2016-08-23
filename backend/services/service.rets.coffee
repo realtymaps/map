@@ -7,7 +7,7 @@ require '../config/promisify'
 through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
-
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 getSystemData = (mlsId) ->
   internals.getRetsClient mlsId, (retsClient) ->
@@ -337,10 +337,10 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
     .catch (err) ->
-      console.log("error from service.rets#retsClient.objects.stream.getObjects: #{err}")
+      logger.debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getSimpleDetails(err)}")
       throw err
   .catch (err) ->
-    console.log("error from service.rets#internals.getRetsClient: #{err}")
+    logger.debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getSimpleDetails(err)}")
     throw err
 
 
