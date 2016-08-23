@@ -116,7 +116,7 @@ copyFile = (subtask) ->
 
   # ignore empty files
   if !file.size
-    logger.debug () -> "Skipping #{fullpath} due to 0 size..."
+    logger.debug () -> "Skipping #{file.fullpath} due to 0 size..."
     return
 
   externalAccounts.getAccountInfo('blackknight')
