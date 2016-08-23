@@ -8,6 +8,7 @@ retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
@@ -64,8 +65,16 @@ store = (subtask) -> Promise.try () ->
     taskLogger.debug "no photos to store for #{subtask.task_name}"
     return
 
-  Promise.each subtask.data.values, (row) ->
-    mlsHelpers.storePhotosNew(subtask, row)
+  Promise.each subtask.data.values, (data_source_uuid) ->
+    taskLogger.debug "Calling mlsHelpers.storePhotosNew() for property #{data_source_uuid}"
+    mlsHelpers.storePhotosNew(subtask, data_source_uuid)
+    .then () ->
+      taskLogger.debug "Finished property #{data_source_uuid}"
+  .then () ->
+    taskLogger.debug "Finished looping over properties"
+  .catch (err) ->
+    taskLogger.debug "#{analyzeValue.getSimpleDetails(err)}"
+    throw err
 
 clearRetries = (subtask) ->
   tables.deletes.retry_photos()
@@ -74,7 +83,7 @@ clearRetries = (subtask) ->
 
 ready = () ->
   # don't automatically run if corresponding MLS is running
-  tables.jobQueue.taskHistory()
+  query = tables.jobQueue.taskHistory()
   .where(current: true)
   .where('name', @taskName.replace('_photos', ''))
   .whereNull('finished')
@@ -85,6 +94,9 @@ ready = () ->
 
     # if we didn't bail, signal to use normal enqueuing logic
     return undefined
+
+  logger.debug query.toString()
+  query
 
 subtasks = {
   storePrep

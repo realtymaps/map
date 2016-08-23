@@ -310,7 +310,7 @@ storePhotosNew = (subtask, data_source_uuid) -> Promise.try () ->
 
     finePhotologger.debug photoRow
 
-    taskLogger.debug "Found #{rows.length} existing photo rows"
+    taskLogger.debug "Found #{rows.length} existing photo rows for uuid #{data_source_uuid}"
     [row] = rows
 
     photoIds = {}
@@ -330,53 +330,63 @@ storePhotosNew = (subtask, data_source_uuid) -> Promise.try () ->
       photoType
     }
     .then (obj) -> new Promise (resolve, reject) ->
+
+      finePhotologger.debug "RETS responded:\n#{Object.keys(obj)}"
+
       promises = []
       mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
+        try
+          finePhotologger.debug "imagesHandle:\n#{payload}"
 
-        if err
-          return reject err
-        if isEnd
-          return resolve(Promise.all promises)
+          if err
+            finePhotologger.debug "imagesHandle error:\n#{analyzeValue.getSimpleDetails(err)}"
+            return reject err
+          if isEnd
+            finePhotologger.debug "imagesHandle End!"
+            return resolve(Promise.all promises)
 
-        finePhotologger.debug _.omit payload, 'data'
-        {imageId, objectData} = payload
+          finePhotologger.debug _.omit payload, 'data'
+          {imageId, objectData} = payload
 
-        if row? && mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
-          skipsCtr++
-          finePhotologger.debug 'photo has same updateDate GTFO.'
-          return
+          if row? && mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
+            skipsCtr++
+            finePhotologger.debug 'photo has same updateDate (#{objectData?.uploadDate}) GTFO.'
+            return
 
-        # Deterministic but partition-friendly bucket names (10000 prefixes)
-        # http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-        uploadDate = (new Date(objectData?.uploadDate || null)).getTime()
-        partition = "#{mlsName}/#{data_source_uuid}/#{uploadDate}"
-        partition = crypto.createHash('md5').update(partition).digest('hex').slice(0,4)
-        newFileName = "#{partition}/#{mlsName}/#{data_source_uuid}/#{payload.name}"
+          # Deterministic but partition-friendly bucket names (10000 prefixes)
+          # http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+          uploadDate = (new Date(objectData?.uploadDate || null)).getTime()
+          partition = "#{mlsName}/#{data_source_uuid}/#{uploadDate}"
+          partition = crypto.createHash('md5').update(partition).digest('hex').slice(0,4)
+          newFileName = "#{partition}/#{mlsName}/#{data_source_uuid}/#{payload.name}"
 
-        uploadPromise = dbs.transaction 'main', (transaction1) ->
-          internals.updatePhoto(subtask, {
-            newFileName
-            imageId
-            data_source_uuid
-            objectData
-            row: photoRow
-            transaction: transaction1
-            table: tables.finalized.photo
-            upsert: true
-          })
+          uploadPromise = dbs.transaction 'main', (transaction1) ->
+            internals.updatePhoto(subtask, {
+              newFileName
+              imageId
+              data_source_uuid
+              objectData
+              row: photoRow
+              transaction: transaction1
+              table: tables.finalized.photo
+              upsert: true
+            })
+            .then () ->
+              if row?
+                internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction1)
+            .then () ->
+              internals.uploadPhoto({photoRes, newFileName, payload, row: photoRow})
           .then () ->
-            if row?
-              internals.enqueuePhotoToDelete(row.photos[imageId]?.key, subtask.batch_id, transaction: transaction1)
-          .then () ->
-            internals.uploadPhoto({photoRes, newFileName, payload, row: photoRow})
-        .then () ->
-          taskLogger.debug 'photo upload success'
-          successCtr++
-        .catch (error) ->
-          errorDetails ?= analyzeValue.getSimpleDetails(error)
-          taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
-          errorsCtr++
-        promises.push(uploadPromise)
+            taskLogger.debug 'photo upload success'
+            successCtr++
+          .catch (error) ->
+            errorDetails ?= analyzeValue.getSimpleDetails(error)
+            taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+            errorsCtr++
+          promises.push(uploadPromise)
+        catch err
+          taskLogger.debug analyzeValue.getSimpleDetails(err)
+          throw err
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsName}/#{data_source_uuid}")
   .catch (error) ->
