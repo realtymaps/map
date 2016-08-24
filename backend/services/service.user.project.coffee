@@ -121,7 +121,6 @@ class ProjectCrud extends ThenableCrud
         # Delete the project itself
         promises.push super id: profile.project_id, doLogQuery
 
-      console.log "processing Promises.all..."
       Promise.all promises
       .then () ->
         true
