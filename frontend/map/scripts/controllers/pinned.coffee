@@ -61,6 +61,36 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
       modalInstance.dismiss('ok')
       rmapsPropertiesService.pinUnpinProperty toPin
 
+  $scope.getStatistics = () ->
+    $log.debug "calculating pinned stats"
+    $log.debug _.values($scope.pinnedProperties)
+    stats = d3.nest()
+    .key (d) ->
+      # $log.debug d
+      # $log.debug d.status
+      d.status
+    .rollup (status) ->
+      # $log.debug status
+      count: status.length
+      price_avg: d3.mean(status, (p) -> p.price)
+      sqft_avg: d3.mean(status, (p) -> p.sqft_finished)
+      price_sqft_avg: d3.mean(status, (p) -> p.price/p.sqft_finished)
+      days_on_market_avg: d3.mean(status, (p) -> p.days_on_market)
+      acres_avg: d3.mean(status, (p) -> p.acres)
+    .entries(_.values($scope.pinnedProperties))
+
+    $log.debug stats
+    stats = _.indexBy stats, 'key'
+    $log.debug stats
+
+    $scope.areaToShow = id: 'pinned', area_name: 'Pinned Properties'
+    $scope.areaStatistics ?= {}
+    $scope.areaStatistics.pinned = stats
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
+
   $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, getPinned
   $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, getFavorites
 

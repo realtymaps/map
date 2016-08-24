@@ -23,6 +23,8 @@ span.pinned-list.dropdown.btn-group(
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties
         span(ng-show="!pinnedTotal") No Pinned Properties
       span
+        span.results-btn(ng-click="getStatistics(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
+          span.fa.fa-bar-chart
         span.results-btn(ng-click="pinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-plus-circle
           span.action Results
@@ -44,7 +46,7 @@ span.pinned-list.dropdown.btn-group(
               span.action-button(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")
                 span.action Unpin
                 span.icon.icon-pin
-        
+
       .dropdown-explanation(ng-show="!pinnedTotal")
         p You haven't pinned any properties yet. Click the pin to save properties in the project.  Everyone in the project will see the same pins.
         p Pinning makes things easier to find: they'll show up right here in this list.
