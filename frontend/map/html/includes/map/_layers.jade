@@ -1,10 +1,20 @@
 .layers-tools
   .desktop-only
-    button.toggle-active.btn.btn-transparent(ng-attr-aria-expanded="{{layersOpen?'true':'false'}}" popover-template="'LayersPopover'", popover-placement='right' ng-click="layersOpen=!layersOpen")
+    button.toggle-active.btn.btn-transparent(
+      ng-attr-aria-expanded="{{layersOpen?'true':'false'}}"
+      popover-template="'LayersPopover'"
+      popover-placement='right'
+      popover-trigger='click touchend'
+      ng-click="layersOpen=!layersOpen"
+    )
       span.icon.icon-layers
 
   .mobile-only
-    button.toggle-active.btn.btn-transparent(mobile-modal modal-template="'LayersPopoverMobile'" modal-title="'Map Layers'")
+    button.toggle-active.btn.btn-transparent(
+      mobile-modal
+      modal-template="'LayersPopoverMobile'"
+      modal-title="'Map Layers'"
+    )
       span.icon.icon-layers
 
   script(type="text/ng-template" id="LayersPopover")

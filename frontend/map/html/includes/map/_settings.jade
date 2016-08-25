@@ -12,7 +12,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         popover-template="'SettingsPopoverDesktop'"
         popover-is-open="isOpens.settings"
         popover-placement="bottom"
-        popover-trigger="click"
+        popover-trigger="click touchend"
         ng-click="togglePanel('settings'); toggled()"
       )
         span.icon.icon-settings

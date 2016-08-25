@@ -1,25 +1,33 @@
 .location-tools
   button.btn.btn-transparent.zoom-previous(
     ng-if="Toggles.hasPreviousLocation"
-    ng-click="Toggles.togglePreviousLocation()"
+    ng-touch="Toggles.toggleLocation(); $event.stopPropagation()"
+    ng-click="Toggles.togglePreviousLocation(); $event.stopPropagation()"
     popover-placement="right"
     popover="Previous Location"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter touchend"
+    popover-popup-close-delay="1")
     span.icon.icon-undo2
-  button.btn.btn-transparent.zoom-locate(ng-click="Toggles.toggleLocation()" findme="" ng:class="{'active' : showFollowMe }"
+  button.btn.btn-transparent.zoom-locate(
+    ng-touch="Toggles.toggleLocation(); $event.stopPropagation()"
+    ng-click="Toggles.toggleLocation(); $event.stopPropagation()"
+    findme="" ng:class="{'active' : showFollowMe }"
     popover-placement="right"
     popover="My Location"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter touchend"
+    popover-popup-close-delay="1")
     span.icon.icon-location
 
 .zoom-tools
-  button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1)"
+  button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1); $event.stopPropagation()"
     popover-placement="right"
     popover="Zoom In"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter touchend"
+    popover-popup-close-delay="1")
     span.icon.icon-plus
-  button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1)"
+  button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1); $event.stopPropagation()"
     popover-placement="right"
     popover="Zoom Out"
-    popover-trigger="mouseenter")
+    popover-trigger="click mouseenter touchend"
+    popover-popup-close-delay="1")
     span.icon.icon-minus
