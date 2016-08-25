@@ -36,9 +36,20 @@ drawnShapesRsponses =
 
 userUtils =
   cacheUserValues: sinon.stub()
+  getIdentityFromRequest: (req) ->
+    user:
+      id: 1
+    subscription: 'premium'
+    permissions: null
+    groups: null
+    environment: 'development'
+    profiles: []
+    currentProfileId: 1
 
 profileSvc =
   getAll: () ->
+    Promise.resolve(profilesResponses.getAll)
+  getProfileWhere: () ->
     Promise.resolve(profilesResponses.getAll)
   getAllBulk: () ->
     Promise.resolve(profilesResponses.getAll)

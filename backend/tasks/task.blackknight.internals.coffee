@@ -5,6 +5,7 @@ logger = require('../config/logger').spawn('task:blackknight:internals')
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 moment = require 'moment'
+PromiseSftp = require 'promise-sftp'
 
 
 NUM_ROWS_TO_PAGINATE = 2500

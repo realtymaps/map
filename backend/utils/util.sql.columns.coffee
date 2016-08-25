@@ -38,6 +38,7 @@ basicColumns = do ->
       'photo_count'
       'actual_photo_count'
       'status'
+      'days_on_market'
       'up_to_date'
     ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')
 
