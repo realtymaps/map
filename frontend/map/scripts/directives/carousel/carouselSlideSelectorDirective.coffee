@@ -82,13 +82,14 @@ app.directive 'slideSelectorControl', ($log) ->
         if newValue?.length > 0
           $scope.slideSelectorCurrent = newValue[0]
 
-      $scope.getLabel = ({slide}) ->
+      $scope.getLabel = (slidePayload) ->
+        {slide} = slidePayload
         if $scope.selectorLabelFn
           return $scope.selectorLabelFn($scope.carouselParentScope || $scope, {
             actual: slide.actual
           })
 
-        idx = ($scope.indexOfSlide(slide) + 1)
+        idx = ($scope.indexOfSlide(slidePayload) + 1)
         return 'Slide ' + idx
     ###eslint-disable###
     link: ($scope, $elem, $attrs, slideSelectorCtrl, carouselCtrl) ->
