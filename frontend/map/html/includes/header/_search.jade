@@ -21,7 +21,7 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
       span(ng-switch="searchScope")
         span.search-input(ng-switch-when="Owners")
           input.form-control(
-            tooltip="{{searchTooltip}}"
+            uib-tooltip="{{searchTooltip}}"
             tooltip-placement="bottom"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"

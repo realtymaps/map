@@ -4,15 +4,15 @@ span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsClientButtonCtrl"
   class="dropdown btn-group area-list"
-  dropdown
+  uib-dropdown
   auto-close="disabled"
   is-open="isOpens.client"
   on-toggle="togglePanel('client')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.client.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Clients"
+    uib-popover="Clients"
     popover-enable="!isOpens.client"
     popover-trigger="click mouseenter touchend")
     i.icon.fa.fa-user
@@ -26,7 +26,7 @@ span(
         rmaps-require-project-editor
         popover-placement="right"
         popover-trigger="mouseenter touchend"
-        popover="Add Client"
+        uib-popover="Add Client"
         ng-click="edit(); $event.stopPropagation()")
           span Share Project
 

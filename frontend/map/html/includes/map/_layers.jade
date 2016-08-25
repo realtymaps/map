@@ -2,7 +2,7 @@
   .desktop-only
     button.toggle-active.btn.btn-transparent(
       ng-attr-aria-expanded="{{layersOpen?'true':'false'}}"
-      popover-template="'LayersPopover'"
+      uib-popover-template="'LayersPopover'"
       popover-placement='right'
       popover-trigger='click touchend'
       ng-click="layersOpen=!layersOpen"
@@ -23,7 +23,7 @@
       ul.buttons
         li
           div(
-            tooltip="{{addressButtonLayerToolTip}}"
+            uib-tooltip="{{addressButtonLayerToolTip}}"
             tooltip-placement="top"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
@@ -37,7 +37,7 @@
             ) Address
         li
           div(
-            tooltip="{{priceButtonLayerToolTip}}"
+            uib-tooltip="{{priceButtonLayerToolTip}}"
             tooltip-placement="top"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"

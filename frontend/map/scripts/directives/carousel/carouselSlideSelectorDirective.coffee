@@ -24,14 +24,18 @@ app = require '../../app.coffee'
 ###
 
 # Show slide selector in carousel
+###eslint-disable###
 app.directive 'slideSelector', ($log) ->
+  ###eslint-enable###
   return {
     restrict: 'A'
-    require: '^carousel'
+    require: '^uibCarousel'
     priority: 0
     link: ($scope, $elem, $attrs, carouselCtrl) ->
       origSelect = carouselCtrl.select
+      ###eslint-disable###
       carouselCtrl.select = (nextSlide, direction) ->
+        ###eslint-enable###
         if $scope.selectorScope
           $scope.selectorScope.slideSelectorCurrent = nextSlide
 
@@ -49,7 +53,9 @@ app.directive 'slideSelector', ($log) ->
           $scope.selectorScope.selectorLabelFn = labelFn
   }
 
+###eslint-disable###
 app.directive 'slideSelectorLabel', ($parse, $log) ->
+  ###eslint-enable###
   return {
     restrict: 'A'
     require: 'slideSelector'
@@ -61,7 +67,9 @@ app.directive 'slideSelectorLabel', ($parse, $log) ->
   }
 
 # Slide selector add on for UI-Bootstrap Carousel
+###eslint-disable###
 app.directive 'slideSelectorControl', ($log) ->
+  ###eslint-enable###
   return {
     restrict: 'EA'
     require: '^?slideSelector'
@@ -82,8 +90,9 @@ app.directive 'slideSelectorControl', ($log) ->
 
         idx = ($scope.indexOfSlide(slide) + 1)
         return 'Slide ' + idx
-
+    ###eslint-disable###
     link: ($scope, $elem, $attrs, slideSelectorCtrl, carouselCtrl) ->
+      ###eslint-enable###
       if slideSelectorCtrl
         slideSelectorCtrl.registerSlideSelector($scope)
       else

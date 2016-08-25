@@ -116,7 +116,7 @@
               .row
                 h2 Price Quote
               .row
-                .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" tooltip="Only uploaded PDF content can be printed in color." tooltip-placement="left")
+                .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" uib-tooltip="Only uploaded PDF content can be printed in color." tooltip-placement="left")
                   .col-md-2
                     label Print in Color?
                   .col-md-10
@@ -131,7 +131,7 @@
                 .btn.btn-success(
                   ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
                   tooltip-trigger="mousehover"
-                  uib-tooltip="Click to submit this mailing!"
+                  uib-uib-tooltip="Click to submit this mailing!"
                   tooltip-enable="true"
                   ng-disabled="review.data.alert.msg"
                   ng-click="sendMail()")

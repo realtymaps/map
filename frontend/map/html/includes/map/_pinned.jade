@@ -4,14 +4,14 @@ include ../mixins/_circleNrMixin.jade
 span.pinned-list.dropdown.btn-group(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsPinnedCtrl"
-  dropdown
+  uib-dropdown
   is-open="isOpens.pinned"
   on-toggle="togglePanel('pinned')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Pinned Properties"
+    uib-popover="Pinned Properties"
     popover-enable="!isOpens.pinned"
     popover-trigger="click mouseenter touchend"
   )
@@ -31,7 +31,7 @@ span.pinned-list.dropdown.btn-group(
         span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle
           span.action Results
-        span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left" popover-trigger="click mouseenter" popover="New Mailing" ng-click="addMail()")
+        span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left" popover-trigger="click mouseenter" uib-popover="New Mailing" ng-click="addMail()")
           i.fa.fa-envelope
     .inner
       ul
