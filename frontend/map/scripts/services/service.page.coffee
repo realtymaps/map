@@ -88,7 +88,6 @@ app.provider 'rmapsPageService', () ->
 
       goToMap: (params = {}) ->
         params.project_id ?= rmapsProfilesService.currentProfile?.project_id
-
         if params.project_id?
 
           ## Clear the current map if any

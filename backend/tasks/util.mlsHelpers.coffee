@@ -350,7 +350,7 @@ storePhotosNew = (subtask, data_source_uuid) -> Promise.try () ->
 
           if row? && mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
             skipsCtr++
-            finePhotologger.debug 'photo has same updateDate (#{objectData?.uploadDate}) GTFO.'
+            finePhotologger.debug "photo has same updateDate (#{objectData?.uploadDate}) GTFO."
             return
 
           # Deterministic but partition-friendly bucket names (10000 prefixes)
