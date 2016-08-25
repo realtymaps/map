@@ -5,7 +5,7 @@ app.service 'rmapsMailTemplateFactory', (
   $rootScope,
   $log,
   $q,
-  $modal,
+  $uibModal,
   rmapsMailCampaignService,
   rmapsPrincipalService,
   rmapsMailTemplateTypeService,

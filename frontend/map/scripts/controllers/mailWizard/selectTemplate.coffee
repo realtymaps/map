@@ -5,7 +5,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, $q, Upload,
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $uibModal, $timeout, $q, Upload,
   rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions, rmapsMailPdfService) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
@@ -20,7 +20,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.hovered = -1
 
   $scope.deletePdf = (template) ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       template: confirmModalTemplate
       controller: 'rmapsConfirmCtrl'
@@ -79,7 +79,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
               $scope.uploadfile = null
               file.progress = -1
 
-              modalInstance = $modal.open
+              modalInstance = $uibModal.open
                 animation: true
                 template: confirmModalTemplate
                 controller: 'rmapsConfirmCtrl'
@@ -144,7 +144,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
     $scope.displayCategory = category
 
   confirmTemplateChange = () ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       template: confirmModalTemplate
       controller: 'rmapsConfirmCtrl'
@@ -178,7 +178,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       $scope.wizard.mail.setTemplateType(templateType)
 
   $scope.previewTemplate = (template) ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       template: previewModalTemplate
       controller: if template.category == 'pdf' then 'rmapsUploadedPdfPreviewCtrl' else 'rmapsMailTemplateIFramePreviewCtrl'
       openedClass: 'preview-mail-opened'

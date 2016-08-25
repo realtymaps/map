@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-createModalDirective = ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory, options) ->
+createModalDirective = ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options) ->
   restrict: 'A'
   link: (scope, element, attrs) ->
 #    $log = $log.spawn 'map:openAsModal'
@@ -31,7 +31,7 @@ createModalDirective = ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWi
       rmapsOpenAsModalWindowContextFactory.modalTitle = title
 
       # Open the modal
-      modal = $modal.open {
+      modal = $uibModal.open {
         animation: true
         scope: childScope
         controller: 'OpenAsModalWindowCtrl'
@@ -49,15 +49,15 @@ createModalDirective = ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWi
     scope.$on '$destroy', () ->
       element.unbind 'click', openModal
 
-app.directive 'openAsModal', ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory) ->
-  createModalDirective $parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory
+app.directive 'openAsModal', ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
+  createModalDirective $parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory
 
-app.directive 'mobileModal', ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory) ->
+app.directive 'mobileModal', ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
   options =
     windowTemplateUrl: "./includes/_mobile_modal_window.jade"
     windowClass: "mobile-view mobile-modal-window"
 
-  createModalDirective $parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory, options
+  createModalDirective $parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options
 
 app.controller 'OpenAsModalWindowCtrl', ($scope, rmapsOpenAsModalWindowContextFactory) ->
   $scope.context = rmapsOpenAsModalWindowContextFactory

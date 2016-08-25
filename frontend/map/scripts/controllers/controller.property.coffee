@@ -8,7 +8,7 @@ app.controller 'rmapsPropertyCtrl',
     $rootScope
     $stateParams
     $log
-    $modal
+    $uibModal
     rmapsPropertiesService
     rmapsFormattersService
     rmapsResultsFormatterService
@@ -66,7 +66,7 @@ app.controller 'rmapsPropertyCtrl',
     ]
 
     $scope.previewLetter = (mail) ->
-      $modal.open
+      $uibModal.open
         template: require('../../html/views/templates/modal-mailPreview.tpl.jade')()
         controller: 'rmapsReviewPreviewCtrl'
         openedClass: 'preview-mail-opened'
@@ -78,7 +78,7 @@ app.controller 'rmapsPropertyCtrl',
             title: 'Mail Review'
 
     $scope.showDMCA = (mls) ->
-      $modal.open
+      $uibModal.open
         template: require('../../html/views/templates/modal-dmca.tpl.jade')()
         controller: 'rmapsModalInstanceCtrl'
         resolve: model: -> mls
