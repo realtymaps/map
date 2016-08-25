@@ -130,7 +130,7 @@
                 .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
                 .btn.btn-success(
                   ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
-                  tooltip-trigger="mousehover"
+                  tooltip-trigger="'mousehover'"
                   uib-uib-tooltip="Click to submit this mailing!"
                   tooltip-enable="true"
                   ng-disabled="review.data.alert.msg"

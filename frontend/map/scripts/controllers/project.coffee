@@ -97,10 +97,11 @@ app.controller 'rmapsProjectCtrl',
       highlightProperty(propertyId)
 
   # When the carousel changes, highlight the selected property on the map
-  $scope.onSlideChanged = (nextSlide) ->
-    highlightProperty(nextSlide.actual.rm_property_id)
+  $scope.onSlideChanged = ({slide}) ->
+    highlightProperty(slide.actual.rm_property_id)
 
-
+  $scope.getLabel = (actual) ->
+    "#{actual.address.street} #{actual.address.unit}"
   #
   # Property carousel
   #

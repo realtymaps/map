@@ -14,7 +14,7 @@ span(
     popover-placement="bottom"
     uib-popover="Notes"
     popover-enable="!isOpens.notes"
-    popover-trigger="click mouseenter touchend")
+    popover-trigger="'click mouseenter touchend'")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
@@ -23,7 +23,7 @@ span(
         span(ng-show="!markerNotesLength()") No Notes
       span.results-btn(
         popover-placement="right"
-        popover-trigger="mouseenter"
+        popover\-trigger="'mouseenter'"
         uib-popover="Add Note"
         ng-click="Toggles.enableNoteTap()")
           span Add Note

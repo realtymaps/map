@@ -41,7 +41,7 @@ include ../mixins/property/_propertyAttributes.jade
           a.pinto(
             ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()"
             popover-placement="left"
-            popover-trigger="mouseenter touchend"
+            popover-trigger="'mouseenter touchend'"
             uib-popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}"
             ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin

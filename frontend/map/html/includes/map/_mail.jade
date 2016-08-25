@@ -13,7 +13,7 @@ span.pinned-list.dropdown.btn-group(
     uib-dropdown-toggle
     popover-placement="bottom"
     uib-popover="Mailings"
-    popover-trigger="click mouseenter touchend"
+    popover-trigger="'click mouseenter touchend'"
     popover-enable="!isOpens.mail")
     i.fa.fa-envelope.icon
 
@@ -25,7 +25,7 @@ span.pinned-list.dropdown.btn-group(
       span.results-btn(
         ng-controller="rmapsMailModalCtrl"
         popover-placement="right"
-        popover-trigger="mouseenter touchend"
+        popover-trigger="'mouseenter touchend'"
         uib-popover="New Mailing"
         ng-click="addMail()")
           span New Mail

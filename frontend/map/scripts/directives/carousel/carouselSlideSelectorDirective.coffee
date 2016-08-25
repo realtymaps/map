@@ -34,10 +34,10 @@ app.directive 'slideSelector', ($log) ->
     link: ($scope, $elem, $attrs, carouselCtrl) ->
       origSelect = carouselCtrl.select
       ###eslint-disable###
-      carouselCtrl.select = (nextSlide, direction) ->
+      carouselCtrl.select = ({slide}, direction) ->
         ###eslint-enable###
         if $scope.selectorScope
-          $scope.selectorScope.slideSelectorCurrent = nextSlide
+          $scope.selectorScope.slideSelectorCurrent = slide
 
         return origSelect.apply(this, arguments)
 
@@ -82,7 +82,7 @@ app.directive 'slideSelectorControl', ($log) ->
         if newValue?.length > 0
           $scope.slideSelectorCurrent = newValue[0]
 
-      $scope.getLabel = (slide) ->
+      $scope.getLabel = ({slide}) ->
         if $scope.selectorLabelFn
           return $scope.selectorLabelFn($scope.carouselParentScope || $scope, {
             actual: slide.actual

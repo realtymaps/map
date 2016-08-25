@@ -5,7 +5,7 @@
     ng-click="Toggles.togglePreviousLocation(); $event.stopPropagation()"
     popover-placement="right"
     uib-popover="Previous Location"
-    popover-trigger="click mouseenter touchend"
+    popover-trigger="'click mouseenter touchend'"
     uib-popover-popup-close-delay="1")
     span.icon.icon-undo2
   button.btn.btn-transparent.zoom-locate(
@@ -14,7 +14,7 @@
     findme="" ng:class="{'active' : showFollowMe }"
     popover-placement="right"
     uib-popover="My Location"
-    popover-trigger="click mouseenter touchend"
+    popover-trigger="'click mouseenter touchend'"
     uib-popover-popup-close-delay="1")
     span.icon.icon-location
 
@@ -22,12 +22,12 @@
   button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1); $event.stopPropagation()"
     popover-placement="right"
     uib-popover="Zoom In"
-    popover-trigger="click mouseenter touchend"
+    popover-trigger="'click mouseenter touchend'"
     uib-popover-popup-close-delay="1")
     span.icon.icon-plus
   button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1); $event.stopPropagation()"
     popover-placement="right"
     uib-popover="Zoom Out"
-    popover-trigger="click mouseenter touchend"
+    popover-trigger="'click mouseenter touchend'"
     uib-popover-popup-close-delay="1")
     span.icon.icon-minus

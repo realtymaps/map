@@ -14,7 +14,7 @@ span(
     popover-placement="bottom"
     uib-popover="Clients"
     popover-enable="!isOpens.client"
-    popover-trigger="click mouseenter touchend")
+    popover-trigger="'click mouseenter touchend'")
     i.icon.fa.fa-user
 
   .dropdown-menu.whiteblock
@@ -25,7 +25,7 @@ span(
       span.results-btn(
         rmaps-require-project-editor
         popover-placement="right"
-        popover-trigger="mouseenter touchend"
+        popover-trigger="'mouseenter touchend'"
         uib-popover="Add Client"
         ng-click="edit(); $event.stopPropagation()")
           span Share Project

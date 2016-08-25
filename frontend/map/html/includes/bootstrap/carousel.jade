@@ -1,4 +1,6 @@
-uib-carousel(ng-mouseenter="pause()" ng-mouseleave="play()" ng-swipe-right="prev()" ng-swipe-left="next()")
+// IMPORTANT DO NOT MARK THIS AS A DIRECTIVE uib-carousel as it is not!
+// Will result in an infinite loop
+div.carousel(ng-mouseenter="pause()" ng-mouseleave="play()" ng-swipe-right="prev()" ng-swipe-left="next()")
   ol(class="carousel-indicators" ng-show="slides.length > 1")
     li(ng-repeat="slide in slides | orderBy:indexOfSlide track by $index" ng-class="{active: isActive(slide)}" ng-click="select(slide)")
   div(class="carousel-inner" ng-transclude)
@@ -7,4 +9,4 @@ uib-carousel(ng-mouseenter="pause()" ng-mouseleave="play()" ng-swipe-right="prev
   a(class="right carousel-control" ng-click="next()" ng-show="slides.length > 1")
     span(class="glyphicon glyphicon-chevron-right")
 
-  uib-slide-selector-control(slides="slides")
+  slide-selector-control(slides="slides")

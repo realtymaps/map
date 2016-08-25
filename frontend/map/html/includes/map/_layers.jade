@@ -4,7 +4,7 @@
       ng-attr-aria-expanded="{{layersOpen?'true':'false'}}"
       uib-popover-template="'LayersPopover'"
       popover-placement='right'
-      popover-trigger='click touchend'
+      popover-trigger="'click touchend'"
       ng-click="layersOpen=!layersOpen"
     )
       span.icon.icon-layers
@@ -27,7 +27,7 @@
             tooltip-placement="top"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
-            tooltip-trigger="mouseenter focus"
+            tooltip-trigger="'mouseenter focus'"
             tooltip-enable="disableAddressButton()"
           )
             button.btn(
@@ -41,7 +41,7 @@
             tooltip-placement="top"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
-            tooltip-trigger="mouseenter focus"
+            tooltip-trigger="'mouseenter focus'"
             tooltip-enable="disablePriceButton()"
           )
             button.btn(
