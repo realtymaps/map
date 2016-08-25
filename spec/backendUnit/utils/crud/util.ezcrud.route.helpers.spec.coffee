@@ -2,10 +2,16 @@ _ = require 'lodash'
 sinon = require 'sinon'
 {basePath} = require '../../globalSetup'
 {validators} = require "#{basePath}/utils/util.validation"
-RouteCrud = require "#{basePath}/utils/crud/util.ezcrud.route.helpers"
+rewire = require 'rewire'
+RouteCrud = rewire "#{basePath}/utils/crud/util.ezcrud.route.helpers"
 ServiceCrud = require "#{basePath}/utils/crud/util.ezcrud.service.helpers"
 {expect} = require 'chai'
 require('chai').should()
+errorHandlingUtils = require '../../../../backend/utils/errors/util.error.partiallyHandledError'
+
+
+RouteCrud.__set__('RouteCrudError', class FakeRouteCrudError extends errorHandlingUtils.QuietlyHandledError)
+
 
 makeRequest = (method) ->
   request =

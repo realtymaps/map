@@ -22,6 +22,7 @@ describe 'utils.errors.args', ->
       subject.onMissingArgsFail
         args: {field1,field2}
         required: ['field1','field2']
+        quiet: true
 
     it 'fails on missing required field', ->
       {field1} = @testObj
@@ -30,4 +31,5 @@ describe 'utils.errors.args', ->
         subject.onMissingArgsFail
           args: {field1,field2:null}
           required: ['field1','field2']
+          quiet: true
       ).should.throw()

@@ -1,14 +1,14 @@
 require('chai').should()
 tables = require '../../../backend/config/tables'
 {basicColumns} = require '../../../backend/utils/util.sql.columns'
-userSessionInternals = require '../../../backend/routes/route.userSession.internals'
+userUtils = require '../../../backend/utils/util.user'
 
 describe 'tables', ->
 
   describe 'validate schema', ->
     describe 'auth', ->
       describe 'user', ->
-        userSessionInternals.safeUserFields.forEach (key) ->
+        userUtils.safeUserFields.forEach (key) ->
           it key, () ->
             tables.auth.user()
             .then (results) ->

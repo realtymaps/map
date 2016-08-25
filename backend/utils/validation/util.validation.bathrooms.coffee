@@ -29,7 +29,7 @@ module.exports = (options = {}) ->
         full = total
       if full? && half?
         if !full && !half
-          return {label: 'Baths', value: 'unknown', filter: null}
+          return {label: 'Baths', value: '-', filter: null}
         result =
           label: 'Baths (Full / Half)'
           value: "#{full} / #{half}"
@@ -39,7 +39,7 @@ module.exports = (options = {}) ->
         return result
       else if total?
         if !total
-          return {label: 'Baths', value: 'unknown', filter: null}
+          return {label: 'Baths', value: '-', filter: null}
         numStr = Math.floor(total*10).toString()
         numStr = numStr[0...-1]+'.'+numStr[-1..]
         result =

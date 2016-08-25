@@ -8,93 +8,112 @@ subject = rewire "../../../backend/tasks/util.mlsHelpers.internals"
 SqlMock = require '../../specUtils/sqlMock.coffee'
 mlsPhotoUtil = require '../../../backend/utils/util.mls.photos'
 
-
 describe 'util.mlsHelpers.internals', ->
+
+  # See SqlMock.coffee for explanation of blockToString
+  photo = new SqlMock('finalized', 'photo', blockToString: true)
+
+  tableMocks =
+    finalized:
+      photo: () -> photo
+
   beforeEach ->
+    photo.resetSpies()
 
-    listing = new SqlMock('normalized', 'listing')
+  describe 'makeUpdatePhoto', ->
 
-    @tables =
-      property:
-        listing: () -> listing
+    it 'cdnPhotoStr defined', (done) ->
+      data_source_id = 'data_source_id'
+      data_source_uuid = 'uuid'
+      row = {data_source_id, data_source_uuid}
+      cdnPhotoStr = 'http://cdn.com'
+      jsonObjStr = JSON.stringify crap: 'crap'
+      imageId = 'imageId'
+      photo_id = 'photo_id'
 
-    subject.__set__ 'tables', @tables
-
-describe 'makeInsertPhoto', ->
-  it 'cdnPhotoStr defined', ->
-    data_source_id = 'data_source_id'
-    data_source_uuid = 'uuid'
-    listingRow = {data_source_id, data_source_uuid}
-    cdnPhotoStr = 'http://cdn.com'
-    jsonObjStr = JSON.stringify crap: 'crap'
-    imageId = 'imageId'
-    photo_id = 'photo_id'
-
-    queryString = subject.makeInsertPhoto {
-      listingRow
-      cdnPhotoStr
-      jsonObjStr
-      imageId
-      photo_id
-      doReturnStr: true
-    }
-
-    jsonObjStr = jsonObjStr.replace(/\"/g, "\\\"")
-    queryString.should.contain("\"cdn_photo\" = '#{cdnPhotoStr}'")
-
-  it 'cdnPhotoStr undefined', ->
-    data_source_id = 'data_source_id'
-    data_source_uuid = 'uuid'
-    listingRow = {data_source_id, data_source_uuid}
-    jsonObjStr = JSON.stringify crap: 'crap'
-    imageId = 'imageId'
-    photo_id = 'photo_id'
-
-    queryString = subject.makeInsertPhoto {
-      listingRow
-      jsonObjStr
-      imageId
-      photo_id
-      doReturnStr: true
-    }
-
-    jsonObjStr = jsonObjStr.replace(/\"/g, "\\\"")
-    queryString.should.not.contain('cdn_photo')
-
-  it 'use a real cdnPhotoStr', ->
-    data_source_id = 'data_source_id'
-    data_source_uuid = 'uuid'
-    listingRow = {data_source_id, data_source_uuid}
-    jsonObjStr = JSON.stringify crap: 'crap'
-    imageId = 'imageId'
-    photo_id = 'photo_id'
-
-    cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard {
-      newFileName: 'crap.jpg'
-      listingRow
-      shardsPromise: Promise.resolve
-        one:
-          id: 0
-          url: 'cdn1.com'
-        two:
-          id: 1
-          url: 'cdn2.com'
-    }
-
-    cdnPhotoStrPromise
-    .then (cdnPhotoStr) ->
-
-      queryString = subject.makeInsertPhoto {
-        listingRow
+      query = subject.makeUpdatePhoto {
+        row
+        cdnPhotoStr
         jsonObjStr
         imageId
         photo_id
-        doReturnStr: true
-        cdnPhotoStr
+        table: tableMocks.finalized.photo
       }
 
-      jsonObjStr = jsonObjStr.replace(/\"/g, "\\\"")
+      tableMocks.finalized.photo().whereSpy.callCount.should.equal 1
+      tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal row
 
-      logger.debug queryString
+      tableMocks.finalized.photo().rawSpy.callCount.should.equal 1
+      tableMocks.finalized.photo().rawSpy.args[0][0].should.equal("jsonb_set(photos, '{#{imageId}}', ?, true)")
+      tableMocks.finalized.photo().rawSpy.args[0][1].should.equal(jsonObjStr)
 
-      queryString.should.contain("\"cdn_photo\" = '#{cdnPhotoStr}'")
+      tableMocks.finalized.photo().updateSpy.callCount.should.equal 1
+      tableMocks.finalized.photo().updateSpy.args[0][0].photos.should.be.ok
+      tableMocks.finalized.photo().updateSpy.args[0][0].cdn_photo.should.equal(cdnPhotoStr)
+
+      done()
+
+    it 'cdnPhotoStr undefined', (done) ->
+      data_source_id = 'data_source_id'
+      data_source_uuid = 'uuid'
+      row = {data_source_id, data_source_uuid}
+      jsonObjStr = JSON.stringify crap: 'crap'
+      imageId = 'imageId'
+      photo_id = 'photo_id'
+
+      queryString = subject.makeUpdatePhoto {
+        row
+        jsonObjStr
+        imageId
+        photo_id
+        table: tableMocks.finalized.photo
+      }
+
+      expect(tableMocks.finalized.photo().updateSpy.args[0][0].cdn_photo).to.be.undefined
+
+      done()
+
+    it 'use a real cdnPhotoStr', (done) ->
+      data_source_id = 'data_source_id'
+      data_source_uuid = 'uuid'
+      row = {data_source_id, data_source_uuid}
+      jsonObjStr = JSON.stringify crap: 'crap'
+      imageId = 'imageId'
+      photo_id = 'photo_id'
+
+      cdnPhotoStrPromise = mlsPhotoUtil.getCdnPhotoShard {
+        newFileName: 'crap.jpg'
+        row
+        shardsPromise: Promise.resolve
+          one:
+            id: 0
+            url: 'cdn1.com'
+          two:
+            id: 1
+            url: 'cdn2.com'
+      }
+
+      cdnPhotoStrPromise
+      .then (cdnPhotoStr) ->
+
+        queryString = subject.makeUpdatePhoto {
+          row
+          jsonObjStr
+          imageId
+          photo_id
+          cdnPhotoStr
+          table: tableMocks.finalized.photo
+        }
+
+        tableMocks.finalized.photo().whereSpy.callCount.should.equal 1
+        tableMocks.finalized.photo().whereSpy.args[0][0].should.deep.equal row
+
+        tableMocks.finalized.photo().rawSpy.callCount.should.equal 1
+        tableMocks.finalized.photo().rawSpy.args[0][0].should.equal("jsonb_set(photos, '{#{imageId}}', ?, true)")
+        tableMocks.finalized.photo().rawSpy.args[0][1].should.equal(jsonObjStr)
+
+        tableMocks.finalized.photo().updateSpy.callCount.should.equal 1
+        tableMocks.finalized.photo().updateSpy.args[0][0].photos.should.be.ok
+        tableMocks.finalized.photo().updateSpy.args[0][0].cdn_photo.should.equal(cdnPhotoStr)
+
+        done()

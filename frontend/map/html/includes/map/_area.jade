@@ -24,7 +24,7 @@ span(
           span(ng-show="!_.keys(areas).length") No Areas
         span.results-btn(
           ng-click="Toggles.toggleIsAreaDraw()")
-            span Draw New Area
+            span.draw-area-btn Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
           li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")

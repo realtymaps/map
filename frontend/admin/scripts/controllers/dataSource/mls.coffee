@@ -245,6 +245,7 @@ app.controller 'rmapsMlsCtrl',
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
       promises.push rmapsJobsService.updateTask($scope.mlsData.current.id, {active: $scope.mlsData.task.active})
+      promises.push rmapsJobsService.updateTask("#{$scope.mlsData.current.id}_photos", {active: $scope.mlsData.task.active})
       promises.push $scope.mlsData.current.save()
 
       if rmapsPrincipalService.hasPermission('change_mlsconfig_serverdata')

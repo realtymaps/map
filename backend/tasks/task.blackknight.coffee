@@ -8,13 +8,13 @@ logger = require('../config/logger').spawn('task:blackknight')
 countyHelpers = require './util.countyHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 PromiseSftp = require 'promise-sftp'
+awsService = require '../services/service.aws'
 _ = require 'lodash'
 keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
 moment = require 'moment'
 internals = require './task.blackknight.internals'
 validation = require '../utils/util.validation'
-awsService = require '../services/service.aws'
 
 
 copyFtpDrop = (subtask) ->
@@ -30,6 +30,7 @@ copyFtpDrop = (subtask) ->
   # dates for which we've processed blackknight files are tracked in keystore
   keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
   .then (copyDates) ->
+
     logger.debug () -> "dates for file search: #{JSON.stringify(copyDates)}"
 
     # establish ftp connection to blackknight
@@ -89,68 +90,87 @@ copyFtpDrop = (subtask) ->
       logger.debug () -> "Processing blackknight paths: #{JSON.stringify(paths)}"
 
       # traverse each path...
-      Promise.each paths, (path) ->
+      Promise.map paths, (path) ->
         ftp.list(path)
         .then (files) ->
+          _.forEach files, (el) -> el.fullpath = "#{path}/#{el.name}"
+          files
 
-          # traverse each file...
-          Promise.each files, (file) ->
-            fullpath = "#{path}/#{file.name}"
-            logger.debug () -> "processing blackknight file #{fullpath}, size=#{file.size}, type=#{file.type}"
-            # ignore empty files
-            if !file.size
-              logger.debug () -> "Skipping #{fullpath} due to 0 size..."
-              return
+      # queue up individual subtasks for each file transfer
+      .then (fileList) ->
 
-            # handy for reducing flow during debug, keeping in code comment:
-            # if fullpath.endsWith('.gz') and fullpath.indexOf('12021') < 0
-            #   return
+        # flatten list of lists from the Promise.map...
+        fileList = _.flatten(fileList)
 
-            # setup input ftp stream
-            ftp.get(fullpath)
-            .then (ftpStream) -> new Promise (resolve, reject) ->
+        # remove 0 size files
+        fileList = _.filter fileList, (el) -> el.size > 0
 
-              ftpStreamChunks = 0
-              s3UploadParts = 0
-
-              ftpStream.on('error', reject)
-              ftpStream.on 'data', (buffer) ->
-                ftpStreamChunks++
-
-              # procure writable aws stream
-              config =
-                extAcctName: awsService.buckets.BlackknightData
-                Key: fullpath.substring(1) # omit leading slash
-                ContentType: 'text/plain'
-              awsService.upload(config)
-              .then (upload) ->
-                logger.debug () -> "Acquired upload stream to s3, transfering file..."
-
-                upload.concurrentParts(10)
-                upload.on('error', reject)
-                upload.on 'uploaded', (details) ->
-                  logger.debug () ->  "#{fullpath} uploaded on #{new Date()}"
-                  resolve(details)
-
-                upload.on 'part', (details) ->
-                  s3UploadParts++
-                  logger.debug () -> "s3Upload (writing): Large file (#{file.size} Bytes), `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+        ftp.logout()
+        .then () ->
+          dbs.transaction 'main', (transaction) ->
+            fileProcessing = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true})
+            dates = keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
+            Promise.join fileProcessing, dates, () -> # empty handler
 
 
-                ftpStream.pipe(upload)
-            .catch (err) -> # catches ftp errors
-              throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
+copyFile = (subtask) ->
+  ftp = new PromiseSftp()
+  file = subtask.data
+  logger.debug () -> "copying blackknight file #{file.fullpath}, size=#{file.size}, type=#{file.type}"
 
+  externalAccounts.getAccountInfo('blackknight')
+  .then (accountInfo) ->
+    ftp.connect
+      host: accountInfo.url
+      user: accountInfo.username
+      password: accountInfo.password
+      autoReconnect: true
     .catch (err) ->
-      throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")
-    .then () ->
-      # save off dates
-      logger.debug () -> "Setting new dates for next copy: #{JSON.stringify(copyDates)}"
-      keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
-    .then () ->
-      internals.pushProcessingDates(copyDates)
-    .then () ->
-      ftp.logout()
+      if err.level == 'client-authentication'
+        throw new SoftFail('FTP authentication error')
+      else
+        throw err
+  .then () ->
+
+    # setup input ftp stream
+    ftp.get(file.fullpath)
+    .then (ftpStream) -> new Promise (resolve, reject) ->
+
+      # debug helpers
+      ftpStreamChunks = 0
+      s3UploadParts = 0
+
+      # stream events
+      ftpStream.on('error', reject)
+      ftpStream.on 'data', (buffer) ->
+        ftpStreamChunks++
+
+      # procure writable aws stream
+      config =
+        extAcctName: awsService.buckets.BlackknightData
+        Key: file.fullpath.substring(1) # omit leading slash
+        ContentType: 'text/plain'
+      awsService.upload(config)
+      .then (upload) ->
+        logger.debug () -> "Acquired upload stream to s3, transfering file..."
+
+        upload.concurrentParts(10)
+        upload.on('error', reject)
+        upload.on('uploaded', resolve)
+
+        upload.on 'part', (details) ->
+          s3UploadParts++
+          logger.debug () -> "s3Upload (writing): Large file (#{file.size} Bytes), `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+
+
+        ftpStream.pipe(upload)
+    .catch (err) -> # catches ftp errors
+      throw new SoftFail("SFTP error while copying #{file.fullpath}: #{err}")
+
+  .catch (err) ->
+    throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")
+  .then () ->
+    ftp.logout()
 
 
 checkFtpDrop = (subtask) ->
@@ -234,7 +254,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{normalizedData.parcel_id}")
+            throw new SoftFail(err, "Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, parcel_id=#{parcel_id}")
 
       else
         # get validation for data_source_uuid
@@ -254,7 +274,7 @@ deleteData = (subtask) ->
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
-            throw new SoftFail("Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}")
+            throw new SoftFail(err, "Error while updating delete for fips=#{row['FIPS Code']} batch_id=#{subtask.batch_id}, data_source_uuid=#{normalizedData.data_source_uuid}", err)
 
 
 normalizeData = (subtask) ->
@@ -347,6 +367,7 @@ recordChangeCounts = (subtask) ->
 
 subtasks = {
   copyFtpDrop
+  copyFile
   checkFtpDrop
   loadRawData
   deleteData

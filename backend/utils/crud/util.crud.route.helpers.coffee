@@ -8,9 +8,10 @@ NamedError = require '../errors/util.error.named'
 {handleQuery} = require '../util.route.helpers'
 
 class Crud extends BaseObject
+  # consider moving some of these params into opts
   constructor: (@svc, @paramIdKey = 'id', @name = 'Crud', @doLogRequest) ->
     unless @svc?
-      throw new NamedError(@name, "#{@name}: @svc must be defined.")
+      throw new NamedError(@name, "@svc must be defined.")
     #essentially clone the parts of a request we want to not mutate it
     @reqTransforms = defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
@@ -119,8 +120,8 @@ class HasManyCrud extends Crud
   constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud', doLogRequest) ->
     # console.log name
     super(svc, paramIdKey, name, doLogRequest)
-    unless @rootGETKey?
-      throw new NamedError(@name,'@rootGETKey must be defined')
+    if !@rootGETKey?
+      throw new NamedError(@name, '@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
     @maybeLogRequest req, 'req'

@@ -12,23 +12,69 @@ externalAccounts = require '../services/service.externalAccounts'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 ensureErrorUtil = require '../utils/errors/util.ensureError'
 NamedError = require '../utils/errors/util.error.named'
+_ = require 'lodash'
+sqlHelpers = require '../utils/util.sql.helpers'
+mlsPhotoUtil = require '../utils/util.mls.photos'
 
-makeInsertPhoto = ({listingRow, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction}) ->
+makeUpdatePhoto = ({row, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction, table}) ->
   doReturnStr ?= false
 
+  finePhotologger.debug jsonObjStr
+
   updatedInfo =
-    photos: tables.normalized.listing.raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
+    photos: table().raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
   if cdnPhotoStr
     updatedInfo.cdn_photo = cdnPhotoStr
 
-  query = tables.normalized.listing({transaction})
-  .where(listingRow)
+  query = table({transaction})
+  .where(row)
   .update(updatedInfo)
 
+  logger.debug query.toString()
+
   if doReturnStr
+    logger.debug query.toString()
     return query.toString()
   query
 
+makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
+
+  mlsPhotoUtil.getCdnPhotoShard({
+    newFileName
+    row
+  })
+  .then (cdn_photo) ->
+
+    query = sqlHelpers.upsert {
+      idObj: row
+      entityObj: {
+        photos: "#{imageId}": obj
+        cdn_photo
+        photo_last_mod_time: obj.objectData?.uploadDate
+        actual_photo_count: 1
+      }
+      conflictOverrideObj:
+        photos: table.raw(
+          'jsonb_set(??.photos, ?, ?, true)',
+          [
+            table.tableName
+            "{#{imageId}}"
+            obj
+          ]
+        )
+        actual_photo_count: table.raw(
+          '(select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)',
+          [
+            table.tableName
+            imageId
+          ]
+        )
+      dbFn: table
+      transaction
+    }
+
+    logger.debug query.toString()
+    query
 
 ###
 # these function works backwards from the validation for `fieldName` (e.g. "data_source_uuid") to determine the LongName and then the
@@ -56,7 +102,7 @@ getUuidField = (mlsId) -> # existed prior to `getMlsField` above; keeping it her
 
 # cdnPhotoStrPromise = Promise.resolve('')
 # if imageId == 0
-#   cdnPhotoStrPromise = mlsPhotoUtil.getCndPhotoShard(opts)
+#   cdnPhotoStrPromise = mlsPhotoUtil.getCdnPhotoShard(opts)
 #
 # cdnPhotoStrPromise
 # .then (cdnPhotoStr) ->
@@ -78,7 +124,6 @@ uploadPhoto = ({photoRes, newFileName, payload, row}) ->
       Metadata:
         data_source_id: row.data_source_id
         data_source_uuid: row.data_source_uuid
-        rm_property_id: row.rm_property_id
         height: photoRes.height
         width: photoRes.width
     .then (upload) ->
@@ -102,8 +147,15 @@ uploadPhoto = ({photoRes, newFileName, payload, row}) ->
 
 enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
   if key?
-    tables.deletes.photos({transaction})
-    .insert {key, batch_id}
+    query = sqlHelpers.upsert {
+      idObj: {key}
+      entityObj: {key, batch_id}
+      conflictOverrideObj: {}
+      dbFn: tables.deletes.photos
+      transaction
+    }
+    logger.debug query.toString()
+    query
   else
     Promise.resolve()
 
@@ -112,9 +164,9 @@ updatePhoto = (subtask, opts) -> Promise.try () ->
     logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
     return
 
-  {newFileName, imageId, photo_id, listingRow, objectData, transaction} = onMissingArgsFail
+  {newFileName, imageId, row, objectData, transaction, table, upsert} = onMissingArgsFail
     args: opts
-    required: ['newFileName', 'imageId', 'photo_id', 'listingRow']
+    required: ['newFileName', 'imageId', 'row', 'table']
 
   externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
@@ -130,20 +182,28 @@ updatePhoto = (subtask, opts) -> Promise.try () ->
       key: newFileName
       url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
 
+    if objectData
+      obj.objectData = objectData
 
-    obj.objectData = objectData if objectData
+    Promise.try ->
+      if upsert
+        makeUpsertPhoto {
+          row
+          obj
+          imageId
+          transaction
+          table
+          newFileName
+        }
+      else
+        makeUpdatePhoto {
+          row
+          jsonObjStr: JSON.stringify(obj)
+          imageId
+          transaction
+          table
+        }
 
-    jsonObjStr = JSON.stringify obj
-
-    finePhotologger.debug jsonObjStr
-
-    makeInsertPhoto {
-      listingRow
-      jsonObjStr
-      imageId
-      photo_id
-      transaction
-    }
     .catch (error) ->
       logger.spawn(subtask.task_name).error analyzeValue.getSimpleDetails(error)
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
@@ -153,7 +213,7 @@ module.exports = {
   uploadPhoto
   enqueuePhotoToDelete
   updatePhoto
-  makeInsertPhoto
+  makeUpdatePhoto
   getUuidField
   getMlsField
 }

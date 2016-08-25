@@ -83,8 +83,9 @@ class ProjectCrud extends ThenableCrud
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
-    profileSvc.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
-    .then sqlHelpers.singleRow
+    profileSvc.getProfileWhere project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
+    .then (data) ->
+      sqlHelpers.singleRow(data)
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
 
@@ -105,11 +106,11 @@ class ProjectCrud extends ThenableCrud
         reset =
           filters: {}
           map_results: {}
-          map_position: {}
+          map_position: profileSvc.getDefaultCenter()
           pins: {}
 
         # Reset the sandbox (profile and project fields)
-        promises.push profileSvc.update(_merge(reset, id: profile.id), idObj.auth_user_id)
+        promises.push profileSvc.update(_.merge(reset, id: profile.id), idObj.auth_user_id)
 
       else
         # Delete client profiles (not the users themselves)

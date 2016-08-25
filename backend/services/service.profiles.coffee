@@ -10,6 +10,18 @@ db = require('../config/dbs').get('main')
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
 
+getDefaultCenter = () ->
+  # when resetting a profile (such as when reseting sandbox) we need to set the default center for map_position
+  # this should be replaced eventually with something smarter and more fitting for any given user
+  center:
+    lng: -81.7784070968628
+    lat: 26.14334178654655
+    lon: -81.7784070968628
+    latitude: 26.14334178654655
+    longitude: -81.7784070968628
+    zoom: 14
+
+
 create = (newProfile) ->
   Promise.try () ->
     tables.user.project()
@@ -149,4 +161,5 @@ module.exports = {
   create
   createForProject
   getProfileWhere
+  getDefaultCenter
 }

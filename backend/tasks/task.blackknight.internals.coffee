@@ -67,7 +67,7 @@ columns[LOAD][UPDATE] = columns[LOAD][REFRESH]
 
 
 #
-# some classifiers for fitlerS3Contents
+# some classifiers for filterS3Contents
 #
 _isDelete = (fileName) ->
   if fileName.endsWith('.txt')
@@ -196,7 +196,6 @@ popProcessingDates = (dates) ->
     keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
     .then () ->
       return processDates
-
 
 pushProcessingDates = (dates) -> Promise.try () ->
   defaults = {}

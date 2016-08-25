@@ -1,3 +1,10 @@
+// .leaflet-control-layers
+//   display none
+.leaflet-control-layers-list
+  label
+    span
+      color $rm-medium-blue-darker
+
 .leaflet-container
   @extends .font-museo-500
 
@@ -32,6 +39,21 @@
     margin-bottom 0px !important
 
 .leaflet-marker-icon
+  &.textlabel
+    width 200px !important
+    height 100px !important
+
+    overflow auto !important
+
+    .textlabel-text, textarea
+      font-size 16px
+      font-weight bold
+      background-color $rm-sketch-label-background
+      opacity .9
+      padding 10px
+      color $rm-sketch-label-text
+      border-radius 3px
+
   .circle-nr
     height 100%
     width 100%

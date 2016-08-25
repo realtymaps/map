@@ -9,12 +9,13 @@ loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 Spinner = require('cli-spinner').Spinner
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+config = require '../config/config'
 
 buckets =
   PDF: 'aws-pdf-downloads'
   PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
-  BlackknightData: 'aws-blackknight-data'
+  BlackknightData: if config.ENV == 'production' then 'aws-blackknight-data' else 'test-aws-blackknight-data'
 
 
 _debug = (thing, thingName) ->

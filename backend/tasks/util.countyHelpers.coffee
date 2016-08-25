@@ -180,6 +180,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 
 
 finalizeData = ({subtask, id, data_source_id, transaction, finalizedParcel, forceFinalize}) ->
+  internals.__troubleshoot__(id, 'finalizeData start')
   parcelHelpers ?= require './util.parcelHelpers'  # delayed require due to circular dependency
 
   internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
@@ -196,6 +197,7 @@ finalizeData = ({subtask, id, data_source_id, transaction, finalizedParcel, forc
       else
         parcelsPromise = parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
       Promise.join mortgagePromise, parcelsPromise, (mortgageEntries, parcelEntries) ->
+        internals.__troubleshoot__(id, 'finalizeData: got data, doing join')
         internals.finalizeJoin {
           subtask
           id

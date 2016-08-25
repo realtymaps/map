@@ -7,18 +7,33 @@ analyzeValue = require '../../../common/utils/util.analyzeValue'
 #   The uuid reference will also be appended to the message so the user will hopefully see it
 class PartiallyHandledError extends VError
   constructor: (args...) ->
+    name = 'PartiallyHandledError'
+    if typeof(args[0]) == 'string' && args.length > 1
+      name = args.shift()
+    if typeof(args[0]) == 'object' && Object.keys(args[0]).length == 1 && ('quiet' of args[0])
+      @quiet = args[0].quiet
+      args.shift()
     super(args...)
-    @name = 'PartiallyHandledError'
-    if !@quiet && !(@jse_cause instanceof PartiallyHandledError)
-      ref = uuid.v1() # timestamp-based uuid
-      @message = @message + " (Error reference #{ref})"
-      logger.error analyzeValue.getSimpleDetails(@)
+    @name = name
+    if @jse_cause?.quiet
+      @quiet ?= true
+    if !(@jse_cause instanceof PartiallyHandledError)
+      @message = @message + " (Error reference #{uuid.v1()})"
+    if !@quiet
+      @logReference()
+
+  logReference: () ->
+    logger.error analyzeValue.getSimpleDetails(@)
 
 class QuietlyHandledError extends PartiallyHandledError
   constructor: (args...) ->
     @quiet = true
-    super(args...)
-    @name = 'QuietlyHandledError'
+    name = 'QuietlyHandledError'
+    if typeof(args[0]) == 'string' && args.length > 1
+      name = args.shift()
+    if typeof(args[0]) == 'object' && Object.keys(args[0]).length == 1 && ('quiet' of args[0])
+      args.shift()
+    super(name, args...)
 
 
 isUnhandled = (err) ->

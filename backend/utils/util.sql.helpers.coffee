@@ -168,11 +168,11 @@ singleRow = (rows) -> Promise.try ->
     return null
   return rows[0]
 
-expectSingleRow = (rows) ->
+expectSingleRow = (rows, opts={}) ->
   if !rows?.length
-    throw new ExpectedSingleRowError('Expected a single result and rows are empty!')
+    throw new ExpectedSingleRowError({quiet: opts.quiet}, 'Expected a single result and rows are empty!')
   if !rows[0]?
-    throw new ExpectedSingleRowError("Expected a single result and row is #{rows[0]}")  # undefined or null
+    throw new ExpectedSingleRowError({quiet: opts.quiet}, "Expected a single result and row is #{rows[0]}")  # undefined or null
   return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
@@ -236,9 +236,7 @@ buildRawBindings = (obj, opts={}) ->
     colPlaceholders.push('??')
     colBindings.push(k)
     valPlaceholders.push('?')
-    if _.isObject(v)
-      valBindings.push(JSON.stringify(v))
-    else if v?
+    if v?
       valBindings.push(v)
     else  # v == null
       if opts.defaultNulls
