@@ -30,6 +30,8 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
   readyPromises = []
   # load all task definitions to check for overridden "ready" method
   taskImpls = loaders.loadSubmodules(path.join(__dirname, '../tasks'), /^task\.(\w+)\.coffee$/)
+  #sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
+  #sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
   Promise.map Object.keys(taskImpls), (taskName) ->
     taskImpl = taskImpls[taskName]
     # task might define its own logic for determining if it should run
@@ -45,12 +47,10 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
   .then () ->
     internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
       tables.jobQueue.taskConfig(transaction: transaction)
-      .select()
+      .select("#{tables.jobQueue.taskConfig.tableName}.*", )
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
-      .where () ->
-        sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
-        sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
+      .leftJoin(tables.jobQueue.taskHistory.tableName, {"#{tables.jobQueue.taskConfig.tableName}.name": "#{tables.jobQueue.taskHistory.tableName}.name"})
         .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
           tables.jobQueue.taskHistory(transaction: this)
           .select(1)
