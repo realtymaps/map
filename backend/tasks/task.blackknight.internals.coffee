@@ -151,6 +151,9 @@ nextProcessingDates = () ->
 
   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (currentDateQueue) ->
+    logger.debug () -> "seeking next date"
+    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
+
     currentDateQueue[REFRESH].sort()
     currentDateQueue[UPDATE].sort()
     processDates =
@@ -172,6 +175,8 @@ popProcessingDates = (dates) ->
 
   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (currentDateQueue) ->
+    logger.debug () -> "popping #{JSON.stringify(dates)}"
+    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
     currentDateQueue[REFRESH].sort()
     currentDateQueue[UPDATE].sort()
 
@@ -203,10 +208,12 @@ pushProcessingDates = (dates) -> Promise.try () ->
   defaults[UPDATE] = []
   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (currentDateQueue) ->
+    logger.debug () -> "pushing #{JSON.stringify(dates)}"
+    logger.debug () -> "to #{JSON.stringify(currentDateQueue)}"
 
     # avoid adding dupes
     if _.includes(currentDateQueue[REFRESH], dates[REFRESH])
-      logger.warn("Processed date for `Refresh` has already been queued: #{dates[REFRESH]}")
+      logger.warn("Processed date for `Refresh` has already been queued: #{dates[REFRESH]}.")
     else
       currentDateQueue[REFRESH].push dates[REFRESH]
     if _.includes(currentDateQueue[UPDATE], dates[UPDATE])
@@ -244,6 +251,7 @@ getProcessInfo = (subtask, subtaskStartTime) ->
   # per date, filter and classify files as `Load` or `Delete`
   nextProcessingDates()
   .then (processDates) ->
+    logger.debug () -> "processDates: #{JSON.stringify(processDates)}"
     processInfo =
       dates: processDates
       hasFiles: false
@@ -291,6 +299,9 @@ getProcessInfo = (subtask, subtaskStartTime) ->
 
       if (processInfo[REFRESH].length + processInfo[UPDATE].length + processInfo[DELETE].length) > 0
         processInfo.hasFiles = true
+
+      logger.debug () -> "compiled `processInfo`: #{JSON.stringify(processInfo)}"
+
       return processInfo
 
 

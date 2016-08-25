@@ -60,7 +60,8 @@ _fetchS3 = (account, source, target, options) ->
   awsService.getObject(config)
   .then (streamable) -> new Promise (resolve, reject) ->
     streamable.createReadStream().pipe(fs.createWriteStream(target))
-    .on('finish', resolve)
+    .on 'finish', (details) ->
+      resolve(details)
     .on('error', reject)
   .catch (err) ->
     throw new SoftFail("S3 `getObject` error: #{err}")
@@ -69,9 +70,9 @@ _fetchS3 = (account, source, target, options) ->
 # loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
   filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+
   target = "/tmp/#{fileBaseName}.#{filetype}"
   source = subtask.data.path
 
@@ -104,10 +105,11 @@ loadRawData = (subtask, options) ->
       dataStreamPromise = dataStreamPromise
       .then () -> new Promise (resolve, reject) ->
         try
-          fs.createReadStream("/tmp/#{fileBaseName}.gz")
+          fs.createReadStream(target)
           .pipe(zlib.createGunzip())
           .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
-          .on('close', resolve)
+          .on 'close', (detail) ->
+            resolve(detail)
           .on('error', reject)
         catch err
           reject new SoftFail(err.toString())
