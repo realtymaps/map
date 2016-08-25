@@ -360,8 +360,6 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  console.log "recordChangeCounts()"
-  console.log "subtask:\n#{JSON.stringify(subtask,null,2)}"
   dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined'})
 
 
