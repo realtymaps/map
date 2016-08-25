@@ -103,6 +103,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     modalInstance.result.then ->
       rmapsProjectsService.delete id: project.project_id
       .then () ->
+        rmapsProfilesService.resetSyncFlags()
         $window.location.reload()
 
   $scope.setDefaultName = ({project, defaultName, inverseName, isCopy = false}) ->

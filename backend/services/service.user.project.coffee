@@ -106,7 +106,7 @@ class ProjectCrud extends ThenableCrud
         reset =
           filters: {}
           map_results: {}
-          map_position: {}
+          map_position: profileSvc.getDefaultCenter()
           pins: {}
 
         # Reset the sandbox (profile and project fields)
