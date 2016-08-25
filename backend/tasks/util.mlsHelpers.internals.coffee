@@ -54,7 +54,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
         actual_photo_count: 1
       }
       conflictOverrideObj:
-        photos: table().raw(
+        photos: table.raw(
           'jsonb_set(??.photos, ?, ?, true)',
           [
             table.tableName
@@ -62,7 +62,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
             obj
           ]
         )
-        actual_photo_count: table().raw(
+        actual_photo_count: table.raw(
           '(select count(*) from (select jsonb_object_keys(??.photos) union select ?) photoKeys)',
           [
             table.tableName
@@ -73,7 +73,7 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
       transaction
     }
 
-    # logger.debug query.toString()
+    logger.debug query.toString()
     query
 
 ###
@@ -146,10 +146,16 @@ uploadPhoto = ({photoRes, newFileName, payload, row}) ->
       reject(ensureError(error))
 
 enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
-  # TODO: this should be upsert
   if key?
-    tables.deletes.photos({transaction})
-    .insert {key, batch_id}
+    query = sqlHelpers.upsert {
+      idObj: {key}
+      entityObj: {key, batch_id}
+      conflictOverrideObj: {}
+      dbFn: tables.deletes.photos
+      transaction
+    }
+    logger.debug query.toString()
+    query
   else
     Promise.resolve()
 
