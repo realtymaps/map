@@ -58,7 +58,7 @@
                   .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
                   .content-value(ng-if="!property.sqft_finished") -
                   .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
-                    icon.fa.fa-question-circle(tooltip-placement="bottom" tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
+                    icon.fa.fa-question-circle(tooltip-placement="bottom" uib-tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
                   .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
 
               .row.content-row
@@ -309,7 +309,7 @@
               .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
               .content-value(ng-if="!property.sqft_finished") -
               .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
-                icon.fa.fa-question-circle(tooltip-placement="bottom" tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
+                icon.fa.fa-question-circle(tooltip-placement="bottom" uib-tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
               .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
 
           .row.content-row

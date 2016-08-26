@@ -8,7 +8,7 @@ selectIconTemplate = require('../../../html/views/templates/selectIcon.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl',
-  ($rootScope, $scope, $location, $state, $timeout, $modal, $q,
+  ($rootScope, $scope, $location, $state, $timeout, $uibModal, $q,
   rmapsMlsService,
   rmapsEventConstants,
   rmapsAdminConstants,
@@ -306,7 +306,7 @@ app.controller 'rmapsMlsCtrl',
     # modal for Create mlsData
     $scope.animationsEnabled = true
     $scope.openCreate = () ->
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         animation: $scope.animationsEnabled
         template: modalTemplate
         controller: 'rmapsModalCreateCtrl'
@@ -326,7 +326,7 @@ app.controller 'rmapsMlsCtrl',
           $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: msg }
 
     $scope.selectIcon = () ->
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         animation: $scope.animationsEnabled
         template: selectIconTemplate
         controller: 'rmapsModalLogoCtrl'
@@ -335,7 +335,7 @@ app.controller 'rmapsMlsCtrl',
             return $scope.mlsData.current
 
     $scope.passwordModal = () ->
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         animation: $scope.animationsEnabled
         template: changePasswordTemplate
         controller: 'rmapsModalPasswordCtrl'
@@ -346,20 +346,20 @@ app.controller 'rmapsMlsCtrl',
         $scope.saveServerPassword()
 
 app.controller 'rmapsModalCreateCtrl',
-  ($scope, $modalInstance, mlsModalData, rmapsAdminConstants) ->
+  ($scope, $uibModalInstance, mlsModalData, rmapsAdminConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id
 
     $scope.ok = () ->
-      $modalInstance.close($scope.mlsModalData)
+      $uibModalInstance.close($scope.mlsModalData)
 
     $scope.cancel = () ->
-      $modalInstance.dismiss('cancel')
+      $uibModalInstance.dismiss('cancel')
 
 
 app.controller 'rmapsModalLogoCtrl',
-  ($scope, $modalInstance, mlsModalData, rmapsAdminConstants, rmapsMainOptions) ->
+  ($scope, $uibModalInstance, mlsModalData, rmapsAdminConstants, rmapsMainOptions) ->
     $scope.iconList = rmapsMainOptions.mlsicons.filelist
     $scope.mlsModalData = mlsModalData
 
@@ -367,19 +367,19 @@ app.controller 'rmapsModalLogoCtrl',
       $scope.mlsModalData.disclaimer_logo = logo
 
     $scope.ok = () ->
-      $modalInstance.close($scope.mlsModalData)
+      $uibModalInstance.close($scope.mlsModalData)
 
     $scope.cancel = () ->
       $scope.mlsModalData.disclaimer_logo = null
-      $modalInstance.dismiss('cancel')
+      $uibModalInstance.dismiss('cancel')
 
 
 app.controller 'rmapsModalPasswordCtrl',
-  ($scope, $modalInstance) ->
+  ($scope, $uibModalInstance) ->
     $scope.newpassword = ''
 
     $scope.ok = () ->
-      $modalInstance.close($scope.newpassword)
+      $uibModalInstance.close($scope.newpassword)
 
     $scope.cancel = () ->
-      $modalInstance.dismiss('cancel')
+      $uibModalInstance.dismiss('cancel')

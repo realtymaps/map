@@ -9,7 +9,7 @@ app.controller 'rmapsReviewCtrl', (
   $scope,
   $log,
   $state,
-  $modal,
+  $uibModal,
   rmapsMailCampaignService,
   rmapsMailTemplateTypeService,
   rmapsMainOptions,
@@ -21,7 +21,7 @@ app.controller 'rmapsReviewCtrl', (
   $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   $scope.sendMail = () ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       template: require('../../../html/views/templates/modal-confirmMailSend.tpl.jade')()
       controller: 'rmapsModalSendMailCtrl'
       keyboard: false
@@ -37,13 +37,13 @@ app.controller 'rmapsReviewCtrl', (
 
   $scope.showAddresses = (addresses) ->
     $scope.addressList = addresses
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       template: require('../../../html/views/templates/modals/addressList.jade')()
       windowClass: 'address-list-modal'
       scope: $scope
 
   $scope.reviewPreview = () ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       template: previewModalTemplate
       controller: 'rmapsReviewPreviewCtrl'
       openedClass: 'preview-mail-opened'

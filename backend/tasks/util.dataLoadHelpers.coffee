@@ -616,6 +616,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 columns.push fieldName.replace(/\./g, '')
               _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
               .then () ->
+                logger.debug () -> "created raw table #{tableName}"
                 startedTransaction = true
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"

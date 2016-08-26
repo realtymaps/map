@@ -7,7 +7,7 @@ originator = 'map'
 app.controller 'rmapsClientButtonCtrl', (
 $rootScope,
 $scope,
-$modal,
+$uibModal,
 $stateParams,
 
 rmapsPrincipalService,
@@ -29,7 +29,7 @@ rmapsClientsFactory
 
   $scope.edit = (client) ->
     $scope.clientCopy = _.clone client || {}
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       scope: $scope
       template: require('../../html/views/templates/modals/addClient.jade')()
 

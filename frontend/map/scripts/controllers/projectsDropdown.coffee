@@ -7,7 +7,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   $rootScope,
   $scope,
   $state,
-  $modal,
+  $uibModal,
   $window,
   $log,
   rmapsEventConstants,
@@ -69,7 +69,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       copyCurrent: true
       name: (rmapsProfilesService.currentProfile.name or 'Sandbox') + ' copy'
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/addProjects.jade')()
@@ -96,7 +96,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     $scope.modalTitle = "Are you sure?"
     $scope.modalBody = "Sandbox will be cleared (pinned, favorites, notes and filters)"
     $scope.showCancelButton = true
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()

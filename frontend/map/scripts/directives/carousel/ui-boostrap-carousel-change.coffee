@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 
 app.directive 'onCarouselChange', ($parse) ->
   return {
-    require: 'carousel'
+    require: 'uibCarousel'
     link: (scope, element, attrs, carouselCtrl) ->
       fn = $parse(attrs.onCarouselChange)
       origSelect = carouselCtrl.select

@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
+app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $uibModal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')
 
   getPinned = (event, eventData) ->
@@ -27,7 +27,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
     else
       $scope.modalTitle = "Pin #{toPin.length} Properties?"
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
@@ -49,7 +49,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
     else
       $scope.modalTitle = "Unpin #{toPin.length} Properties?"
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
@@ -94,7 +94,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
     $scope.areaToShow = id: 'pinned', area_name: 'Pinned Properties'
     $scope.areaStatistics ?= {}
     $scope.areaStatistics.pinned = stats
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()

@@ -17,7 +17,7 @@ app.directive 'mobileModalHeader', (rmapsPageService) ->
 app.directive 'mobileCustomHeader', (rmapsPageService) ->
   rmapsPageService.mobile.custom = true
 
-app.directive 'mobileHeaderButtons', ($parse, $templateCache, $modal, $log, rmapsMobileHeaderContextFactory) ->
+app.directive 'mobileHeaderButtons', ($parse, $templateCache, $uibModal, $log, rmapsMobileHeaderContextFactory) ->
   $log = $log.spawn "mobileHeader"
   return {
     restrict: 'E'

@@ -1,4 +1,4 @@
-priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/_priceMarker.jade'
+priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/markers/_priceMarker.jade'
 
 describe "rmapsLayerFormattersService", ->
   beforeEach ->
