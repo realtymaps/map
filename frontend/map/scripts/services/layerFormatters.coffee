@@ -3,7 +3,7 @@ app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
-priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker\.jade'
+priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker.jade'
 noteMarkerTemplate  = require '../../html/includes/map/markers/_noteMarker.jade'
 currentLocationMarkerTemplate = require '../../html/includes/map/markers/_currentLocationMarker.jade'
 
