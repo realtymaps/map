@@ -171,7 +171,11 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 uncheckable) {{c}}
 
   .mobile-only
-    button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
+    button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
+      mobile-modal 
+      modal-template="'SettingsModalMobile'"
+      modal-title="'Filter by'"
+    )
       span.icon.icon-settings
 
   script(type="text/ng-template" id="SettingsModalMobile")

@@ -19,7 +19,7 @@
     "angular-ui-grid": "~3.0.0",
     "angular-ui-router": "~0.2.10",
     "angular-ui-utils": "~0.2.3",
-    "bootstrap": "3.3.6",
+    "bootstrap": "3.3.X",
     "d3": "~3.5.5",
     "fontawesome": "~4.4.0",
     "isteven-angular-multiselect": "~2.0.2",

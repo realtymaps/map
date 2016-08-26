@@ -1,7 +1,6 @@
 app = require '../app.coffee'
-_ = require 'lodash'
 
-createModalDirective = ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options) ->
+createModalDirective = ($parse, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options) ->
   restrict: 'A'
   link: (scope, element, attrs) ->
 #    $log = $log.spawn 'map:openAsModal'
@@ -15,8 +14,6 @@ createModalDirective = ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModa
       # Determine the window template url, if provided
       templateExpr = attrs.modalTemplate || options.modalTemplate
       templateName = scope.$eval templateExpr
-
-      template = $templateCache.get templateName
 
       # Determine the window class
       windowClass = 'open-as-modal'
@@ -35,7 +32,7 @@ createModalDirective = ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModa
         animation: true
         scope: childScope
         controller: 'OpenAsModalWindowCtrl'
-        template: template
+        templateUrl: templateName
         windowClass: windowClass
         windowTemplateUrl: attrs.windowTemplateUrl || options.windowTemplateUrl
       }
@@ -49,15 +46,15 @@ createModalDirective = ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModa
     scope.$on '$destroy', () ->
       element.unbind 'click', openModal
 
-app.directive 'openAsModal', ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
-  createModalDirective $parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory
+app.directive 'openAsModal', ($parse, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
+  createModalDirective $parse, $uibModal, $log, rmapsOpenAsModalWindowContextFactory
 
-app.directive 'mobileModal', ($parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
+app.directive 'mobileModal', ($parse, $uibModal, $log, rmapsOpenAsModalWindowContextFactory) ->
   options =
     windowTemplateUrl: "./includes/_mobile_modal_window.jade"
     windowClass: "mobile-view mobile-modal-window"
 
-  createModalDirective $parse, $templateCache, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options
+  createModalDirective $parse, $uibModal, $log, rmapsOpenAsModalWindowContextFactory, options
 
 app.controller 'OpenAsModalWindowCtrl', ($scope, rmapsOpenAsModalWindowContextFactory) ->
   $scope.context = rmapsOpenAsModalWindowContextFactory
@@ -69,4 +66,3 @@ app.factory 'rmapsOpenAsModalWindowContextFactory', () ->
     modalTitle: null
 
   return new OpenAsModalWindowContextFactory
-
