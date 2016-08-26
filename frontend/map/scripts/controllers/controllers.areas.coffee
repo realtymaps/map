@@ -111,7 +111,7 @@ rmapsLeafletHelpers) ->
       modalInstance = $modal.open
         animation: true
         scope: $scope
-        template: require('../../html/views/templates/modals/statisticsArea.jade')()
+        template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
 
   updateStatistics = (area_id) ->
     $log.debug "Querying for properties in area #{area_id}"
@@ -123,14 +123,36 @@ rmapsLeafletHelpers) ->
       }
     )
     .then ({data}) ->
-      resultsArray = _.values(data).filter (r) -> r.price && r.sqft_finished
       $log.debug "calculating area #{area_id} stats"
+      dataSet = _.values(data)
+
+      stats = d3.nest()
+      .key (d) ->
+        d.status
+      .rollup (status) ->
+        valid_price = status.filter (p) -> p.price?
+        valid_sqft = status.filter (p) -> p.sqft_finished?
+        valid_price_sqft = status.filter (p) -> p.price? && p.sqft_finished?
+        valid_dom = status.filter (p) -> p.days_on_market?
+        valid_acres = status.filter (p) -> p.acres?
+        count: status.length
+        price_avg: d3.mean(valid_price, (p) -> p.price)
+        price_n: valid_price.length
+        sqft_avg: d3.mean(valid_sqft, (p) -> p.sqft_finished)
+        sqft_n: valid_sqft.length
+        price_sqft_avg: d3.mean(valid_price_sqft, (p) -> p.price/p.sqft_finished)
+        price_sqft_n: valid_price_sqft.length
+        days_on_market_avg: d3.mean(valid_dom, (p) -> p.days_on_market)
+        days_on_market_n: valid_dom.length
+        acres_avg: d3.mean(valid_acres, (p) -> p.acres)
+        acres_n: valid_acres.length
+      .entries(dataSet)
+
+      stats = _.indexBy stats, 'key'
+      $log.debug stats
+
       $scope.areaStatistics ?= {}
-      $scope.areaStatistics[area_id] =
-        count: resultsArray.length
-        price_avg: d3.mean(resultsArray, (p) -> p.price)
-        sqft_avg: d3.mean(resultsArray, (p) -> p.sqft_finished)
-        price_sqft_avg: d3.mean(resultsArray, (p) -> p.price/p.sqft_finished)
+      $scope.areaStatistics[area_id] = stats
 
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,
