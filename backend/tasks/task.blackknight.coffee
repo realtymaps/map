@@ -1,4 +1,5 @@
-Buffer = require('buffer').Buffer
+fs = require 'fs'
+rimraf = require 'rimraf'
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
@@ -10,9 +11,9 @@ externalAccounts = require '../services/service.externalAccounts'
 PromiseSftp = require 'promise-sftp'
 awsService = require '../services/service.aws'
 _ = require 'lodash'
+dbs = require '../config/dbs'
 keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
-dbs = require '../config/dbs'
 moment = require 'moment'
 internals = require './task.blackknight.internals'
 validation = require '../utils/util.validation'
@@ -33,6 +34,8 @@ copyFtpDrop = (subtask) ->
   .then (copyDates) ->
 
     logger.debug () -> "dates for file search: #{JSON.stringify(copyDates)}"
+
+    newDates = _.cloneDeep copyDates
     # establish ftp connection to blackknight
     externalAccounts.getAccountInfo('blackknight')
     .then (accountInfo) ->
@@ -52,31 +55,32 @@ copyFtpDrop = (subtask) ->
       # REFRESH paths/files for tax, deed, and mortgage
       refreshPromise = internals.findNewFolders(ftp, internals.REFRESH, copyDates)
       .then (newFolders) ->
-        logger.debug () -> "Found #{Object.keys(newFolders).length} newFolders for REFRESH list"
         if _.isEmpty(newFolders)
+          logger.debug () -> "Found empty newFolders for REFRESH list"
           return []
+        logger.debug () -> "Found newFolders for REFRESH list"
 
         # sort to help us get oldest date...
         drops = Object.keys(newFolders).sort()
         refresh = newFolders[drops[0]]
         # track the dates we got here and send out the tax/deed/mortgage paths
-        copyDates[internals.REFRESH] = refresh.date
+        newDates[internals.REFRESH] = refresh.date
         return [refresh.tax.path, refresh.deed.path, refresh.mortgage.path]
 
       # UPDATE paths/files for tax, deed, and mortgage
       updatePromise = internals.findNewFolders(ftp, internals.UPDATE, copyDates)
       .then (newFolders) ->
-        logger.debug () -> "Found #{Object.keys(newFolders).length} newFolders for UPDATE list"
         if _.isEmpty(newFolders)
+          logger.debug () -> "Found empty newFolders for UPDATE list"
           return []
+        logger.debug () -> "Found newFolders for UPDATE list"
 
         # sort to help us get oldest date...
         drops = Object.keys(newFolders).sort()
         update = newFolders[drops[0]]
         # track the dates we got here and send out the tax/deed/mortgage paths
-        copyDates[internals.UPDATE] = update.date
+        newDates[internals.UPDATE] = update.date
         return [update.tax.path, update.deed.path, update.mortgage.path]
-
 
       # concat the paths from both sources
       Promise.join(refreshPromise, updatePromise)
@@ -106,12 +110,18 @@ copyFtpDrop = (subtask) ->
         # remove 0 size files
         fileList = _.filter fileList, (el) -> el.size > 0
 
+        logger.debug () -> "Queuing copy subtasks for files: #{JSON.stringify(_.pluck(fileList, 'fullpath'))}"
         ftp.logout()
+
         .then () ->
-          dbs.transaction 'main', (transaction) ->
-            fileProcessing = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true})
-            dates = keystore.setValuesMap(copyDates, namespace: internals.BLACKKNIGHT_COPY_DATES)
-            Promise.join fileProcessing, dates, () -> # empty handler
+          dbs.transaction 'main', (transaction) -> Promise.try () ->
+            # queue up files only if there are files to queue
+            if fileList.length > 0
+              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true})
+
+            # save / push new dates if they changed
+            if newDates[internals.UPDATE] != copyDates[internals.UPDATE] || newDates[internals.REFRESH] != copyDates[internals.REFRESH]
+              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {dates: newDates}, replace: true})
 
 
 copyFile = (subtask) ->
@@ -132,119 +142,70 @@ copyFile = (subtask) ->
       else
         throw err
   .then () ->
+    localfile = "/tmp/#{(new Date()).getTime()}_#{file.name}"
 
-    # setup input ftp stream
-    ftp.get(file.fullpath)
-    .then (ftpStream) -> new Promise (resolve, reject) ->
+    logger.debug () -> "fastGet file.fullpath (source): #{file.fullpath}"
+    logger.debug () -> "fastGet localfile     (target): #{localfile}"
 
-      ftpStreamChunks = 0
-      s3UploadParts = 0
+    # ensure local file doesn't exist
+    rimraf.async(localfile)
+    .then () ->
 
-      ftpStream.on('error', reject)
-      ftpStream.on 'data', (buffer) ->
-        ftpStreamChunks++
-        #logger.debug () -> "ftpStream (reading): Large file in progress, logging `data` buffer size:\n#{JSON.stringify(Buffer.byteLength(buffer),null,2)}"
+      # ftp down file
+      # Note: as of PromiseSftp version 0.9.9, using ftp.get() was buggy here; defered to fastGet which works
+      ftp.fastGet(file.fullpath, localfile)
+    .then () -> new Promise (resolve, reject) ->
 
-      # procure writable aws stream
       config =
         extAcctName: awsService.buckets.BlackknightData
         Key: file.fullpath.substring(1) # omit leading slash
         ContentType: 'text/plain'
+
+      # s3 up file
       awsService.upload(config)
       .then (upload) ->
         logger.debug () -> "Acquired upload stream to s3, transfering file..."
 
-        upload.concurrentParts(10)
         upload.on('error', reject)
         upload.on('uploaded', resolve)
 
-        upload.on 'part', (details) ->
-          s3UploadParts++
-          logger.debug () -> "s3Upload (writing): Large file (#{file.size} Bytes), `part` event ##{s3UploadParts}:\n#{JSON.stringify(details,null,2)}\nincludes #{ftpStreamChunks} ftp stream chunks."
+        fs.createReadStream(localfile).pipe(upload)
 
-
-        ftpStream.pipe(upload)
     .catch (err) -> # catches ftp errors
       throw new SoftFail("SFTP error while copying #{file.fullpath}: #{err}")
 
   .catch (err) ->
     throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")
   .then () ->
+    logger.debug () -> "File transfer complete."
     ftp.logout()
+
+saveCopyDates = (subtask) ->
+  keystore.setValuesMap(subtask.data.dates, namespace: internals.BLACKKNIGHT_COPY_DATES)
+  .then () ->
+    logger.debug () -> "saved blackknight copy dates: #{JSON.stringify(subtask.data.dates)}"
+    internals.pushProcessingDates(subtask.data.dates)
 
 
 checkFtpDrop = (subtask) ->
-  ftp = new PromiseSftp()
-  defaults = {}
-  defaults[internals.REFRESH] = '19700101'
-  defaults[internals.UPDATE] = '19700101'
-  defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
-  now = Date.now()
-  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (processDates) ->
-    externalAccounts.getAccountInfo('blackknight')
-    .then (accountInfo) ->
-      ftp.connect
-        host: accountInfo.url
-        user: accountInfo.username
-        password: accountInfo.password
-        autoReconnect: true
-      .catch (err) ->
-        if err.level == 'client-authentication'
-          throw new SoftFail('FTP authentication error')
-        else
-          throw err
-    .then () ->
-      internals.findNewFolders(ftp, internals.REFRESH, processDates)
-    .then (newFolders) ->
-      internals.findNewFolders(ftp, internals.UPDATE, processDates, newFolders)
-    .then (newFolders) ->
-      drops = Object.keys(newFolders).sort()  # sorts by date, with Refresh before Update
-      if drops.length == 0
-        logger.info "No new blackknight directories to process"
-      else
-        logger.debug "Found #{drops.length} blackknight dates to process"
-      processInfo = {dates: processDates}
-      processInfo[internals.REFRESH] = []
-      processInfo[internals.UPDATE] = []
-      processInfo[internals.DELETE] = []
-      internals.checkDropChain(ftp, processInfo, newFolders, drops, 0)
+  subtaskStartTime = Date.now()
+
+  # send classified file lists through downloading and processing
+  internals.getProcessInfo(subtask, subtaskStartTime)
   .then (processInfo) ->
-    ftpEnd = ftp.end()
-    # this transaction is important because we don't want the subtasks enqueued below to start showing up as available
-    # on their queue out-of-order; normally, subtasks enqueued by another subtask won't be considered as available
-    # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
-    # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
-    # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-    dbs.transaction 'main', (transaction) ->
-      if processInfo.hasFiles
-        deletes = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.DELETE], internals.DELETE)
-        refresh = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.REFRESH], internals.REFRESH, now)
-        update = internals.queuePerFileSubtasks(transaction, subtask, processInfo[internals.UPDATE], internals.UPDATE, now)
-        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: now}, replace: true})
-        fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
-          fipsCodes = _.extend(refreshFips, updateFips)
-          normalizedTablePromises = []
-          for fipsCode of fipsCodes
-            # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.TAX, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.DEED, fipsCode)
-            normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(internals.MORTGAGE, fipsCode)
-          Promise.all(normalizedTablePromises)
-      else
-        fileProcessing = Promise.resolve()
-      dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
-      Promise.join ftpEnd, fileProcessing, dates, () ->  # empty handler
+    internals.useProcessInfo(subtask, processInfo)
 
 
 loadRawData = (subtask) ->
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
+    # download and insert data with `countyHelpers`
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
       columnsHandler: columns
       delimiter: '\t'
-      sftp: true
+      s3account: awsService.buckets.BlackknightData
+
   .then (numRows) ->
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
@@ -263,7 +224,7 @@ loadRawData = (subtask) ->
 
 
 saveProcessDates = (subtask) ->
-  keystore.setValuesMap(subtask.data.dates, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
+  internals.popProcessingDates(subtask.data.dates)
 
 
 deleteData = (subtask) ->
@@ -376,25 +337,36 @@ ready = () ->
     defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
     keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
     .then (processDates) ->
-      today = moment.utc().format('YYYYMMDD')
-      yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-      dayOfWeek = moment.utc().isoWeekday()
-      if processDates[internals.NO_NEW_DATA_FOUND] != today
-        # needs to run using regular logic
-        return undefined
-      else if dayOfWeek == 7 || dayOfWeek == 1
-        # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
-        .then () ->
-          return false
-      else if processDates[internals.REFRESH] == yesterday && processDates[internals.UPDATE] == yesterday
-        # we've already processed yesterday's data
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_PROCESS_DATES)
-        .then () ->
-          return false
-      else
-        # no overrides, needs to run using regular logic
-        return undefined
+      # run task if there are dates to process
+      if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
+        return true
+
+      keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
+      .then (copyDates) ->
+        # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
+        today = moment.utc().format('YYYYMMDD')
+        yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
+        dayOfWeek = moment.utc().isoWeekday()
+
+        if copyDates[internals.NO_NEW_DATA_FOUND] != today
+          # needs to run using regular logic
+          return undefined
+        else if dayOfWeek == 7 || dayOfWeek == 1
+          # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
+
+        # check for empty processDates list?
+        else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
+          # we've already processed yesterday's data
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
+
+        else
+          # no overrides, needs to run using regular logic
+          return undefined
 
 
 recordChangeCounts = (subtask) ->
@@ -404,6 +376,7 @@ recordChangeCounts = (subtask) ->
 subtasks = {
   copyFtpDrop
   copyFile
+  saveCopyDates
   checkFtpDrop
   loadRawData
   deleteData
