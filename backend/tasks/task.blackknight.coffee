@@ -147,9 +147,13 @@ copyFile = (subtask) ->
     logger.debug () -> "fastGet file.fullpath (source): #{file.fullpath}"
     logger.debug () -> "fastGet localfile     (target): #{localfile}"
 
-    # ftp down file
-    # Note: as of PromiseSftp version 0.9.9, using ftp.get() was buggy here; defered to fastGet which works
-    ftp.fastGet(file.fullpath, localfile)
+    # ensure local file doesn't exist
+    rimraf.async(localfile)
+    .then () ->
+
+      # ftp down file
+      # Note: as of PromiseSftp version 0.9.9, using ftp.get() was buggy here; defered to fastGet which works
+      ftp.fastGet(file.fullpath, localfile)
     .then () -> new Promise (resolve, reject) ->
 
       config =
@@ -166,10 +170,6 @@ copyFile = (subtask) ->
         upload.on('uploaded', resolve)
 
         fs.createReadStream(localfile).pipe(upload)
-
-    # local remove file
-    .then () ->
-      rimraf.async(localfile)
 
     .catch (err) -> # catches ftp errors
       throw new SoftFail("SFTP error while copying #{file.fullpath}: #{err}")
