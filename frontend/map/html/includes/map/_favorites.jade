@@ -5,15 +5,15 @@ span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsPinnedCtrl"
   class="dropdown btn-group pinned-list"
-  dropdown
+  uib-dropdown
   is-open="isOpens.favorites"
   on-toggle="togglePanel('favorites')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Favorite Properties"
-    popover-trigger="click mouseenter"
+    uib-popover="Favorite Properties"
+    popover-trigger="'click mouseenter touchend'"
     popover-enable="!isOpens.favorites")
     i.icon.fa.fa-heart
 

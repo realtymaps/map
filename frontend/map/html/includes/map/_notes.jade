@@ -4,17 +4,17 @@ span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsMapNotesCtrl"
   class="dropdown btn-group notes-list"
-  dropdown
+  uib-dropdown
   auto-close="disabled"
   is-open="isOpens.notes"
   on-toggle="togglePanel('notes')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.notes.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Notes"
+    uib-popover="Notes"
     popover-enable="!isOpens.notes"
-    popover-trigger="click mouseenter")
+    popover-trigger="'click mouseenter touchend'")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
@@ -23,8 +23,8 @@ span(
         span(ng-show="!markerNotesLength()") No Notes
       span.results-btn(
         popover-placement="right"
-        popover-trigger="mouseenter"
-        popover="Add Note"
+        popover\-trigger="'mouseenter'"
+        uib-popover="Add Note"
         ng-click="Toggles.enableNoteTap()")
           span Add Note
     .inner

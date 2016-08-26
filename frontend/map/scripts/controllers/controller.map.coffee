@@ -16,7 +16,7 @@ app.controller 'rmapsMapCtrl', (
   $http,
   $location,
   $log,
-  $modal,
+  $uibModal,
   $q,
   $rootScope,
   $scope,

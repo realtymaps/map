@@ -1,3 +1,4 @@
+###globals L###
 app = require '../../app.coffee'
 
 # Leaflet control directive definitions should have these properties:
@@ -13,36 +14,39 @@ directiveControls = [
   name: 'navigation'
   options:
     position: 'topleft'
-  directive: ($log) ->
+  directive: () ->
     template: require('../../../html/includes/map/_navigation.jade')()
 ,
   name: 'properties'
   options:
     position: 'topright'
-  directive: ($log) ->
+  directive: () ->
     template: require('../../../html/includes/map/_propertiesButton.jade')()
 ,
   name: 'layer'
   options:
     position: 'bottomleft'
+  ###eslint-disable###
   directive: ($log) ->
     template: require('../../../html/includes/map/_layers.jade')()
     compile: (tElement, tAttrs, transclude) ->
       $log.debug 'LayerControl compile'
       (scope, iElement, iAttrs, controller, transcludeFn) ->
+        ###eslint-enable###
         $log.debug 'LayerControl link'
+
 ,
   name: 'location'
   options:
     position: 'bottomleft'
-  directive: ($log) ->
+  directive: () ->
     template: require('../../../html/includes/map/_location.jade')()
 ]
 
 for control in directiveControls
   do (control) ->
     control.dName = control.name[0].toUpperCase() + control.name.slice(1) + 'Control'
-    app.directive "rmaps#{control.dName}", ($log, $rootScope) -> control.directive($log.spawn("map:controls:#{control.dName}"))
+    app.directive "rmaps#{control.dName}", ($log) -> control.directive($log.spawn("map:controls:#{control.dName}"))
 
 # Leaflet usage:
 #    rmapsControlsService.{Some}Control position: 'botomleft', scope: mapScope
@@ -57,7 +61,9 @@ app.service 'rmapsControlsService', ($compile, $rootScope, $log) ->
         initialize: (options) ->
           $log.spawn("#{control.dName}").debug "init"
           super options
+        ###eslint-disable###
         onAdd: (map) ->
+          ###eslint-enable###
           $log.spawn("#{control.dName}").debug "onAdd"
           wrapper = L.DomUtil.create 'div', 'rmaps-control' + " rmaps-#{control.name}-control"
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
@@ -70,9 +76,9 @@ app.service 'rmapsControlsService', ($compile, $rootScope, $log) ->
             .on wrapper, 'dblclick', L.DomEvent.stopPropagation
             .on wrapper, 'mousewheel', L.DomEvent.stopPropagation
             wrapper
-          catch e
+          catch error
             $log.error "rmapsControlsService: #{control.name}"
-            $log.error e
+            $log.error error
       try
         svc[control.dName] = (options) -> new control.class(options)
       catch e

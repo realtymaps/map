@@ -115,7 +115,7 @@ app.controller 'rmapsMobileHeaderCtrl', ($scope, $element, $attrs, $compile, $lo
 #
 # Mobile header directive
 #
-app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
+app.directive 'mobileHeader', ($parse, $templateCache, $uibModal, $log) ->
   $log = $log.spawn "mobileHeader"
 
   return {

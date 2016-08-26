@@ -2,7 +2,7 @@ app = require '../app.coffee'
 module.exports = app
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService, rmapsMailCampaignService) ->
+app.controller 'rmapsMailModalCtrl', ($scope, $state, $uibModal, $log, rmapsPropertiesService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:rmapsMailModalCtrl'
   $log.debug 'MailModalCtrl'
 
@@ -42,7 +42,7 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropert
 
       $scope.showCancelButton = false
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()

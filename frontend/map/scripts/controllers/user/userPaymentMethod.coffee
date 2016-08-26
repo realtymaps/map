@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
 module.exports = app
 
-app.controller 'rmapsUserPaymentMethodCtrl', ($scope, $log, $modal, stripe, rmapsPaymentMethodService, rmapsCreditCardService) ->
+app.controller 'rmapsUserPaymentMethodCtrl', ($scope, $log, $uibModal, stripe, rmapsPaymentMethodService, rmapsCreditCardService) ->
   $log = $log.spawn("map:userPaymentMethod")
 
   $scope.payment = null
@@ -15,7 +15,7 @@ app.controller 'rmapsUserPaymentMethodCtrl', ($scope, $log, $modal, stripe, rmap
 
   # self-service modal for replacing CC
   $scope.replaceCC = () ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       template: replaceCCModalTemplate
       controller: 'rmapsReplaceCCModalCtrl'
