@@ -1,5 +1,5 @@
 app = require '../app.coffee'
 
-app.config ($tooltipProvider) ->
-  $tooltipProvider.setTriggers
+app.config ($uibTooltipProvider) ->
+  $uibTooltipProvider.setTriggers
     'keyup': 'keydown'

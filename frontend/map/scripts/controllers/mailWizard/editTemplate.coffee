@@ -5,7 +5,7 @@ modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jad
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $modal, rmapsPrincipalService, textAngularManager, rmapsMainOptions) ->
+($rootScope, $scope, $log, $uibModal, rmapsPrincipalService, textAngularManager, rmapsMainOptions) ->
   $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
@@ -54,7 +54,7 @@ app.controller 'rmapsEditTemplateCtrl',
   $scope.animationsEnabled = true
 
   $scope.doPreview = () ->
-    $modal.open
+    $uibModal.open
       animation: $scope.animationsEnabled
       template: modalTemplate
       controller: 'rmapsMailTemplatePdfPreviewCtrl'

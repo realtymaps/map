@@ -6,7 +6,7 @@ template = do require '../../html/views/templates/modals/areaModal.jade'
 app.controller 'rmapsAreasModalCtrl', (
 $rootScope,
 $scope,
-$modal,
+$uibModal,
 $http,
 $log,
 $state,
@@ -39,7 +39,7 @@ rmapsLeafletHelpers) ->
       data
 
   $scope.createModal = (area = {}) ->
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: rmapsMainOptions.modals.animationsEnabled
       template: template
       controller: 'rmapsModalInstanceCtrl'
@@ -84,7 +84,7 @@ rmapsLeafletHelpers) ->
 
   $scope.sendMail = (model) ->
     $scope.newMail = {}
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/mailArea.jade')()
@@ -108,7 +108,7 @@ rmapsLeafletHelpers) ->
 
     updateStatistics($scope.areaToShow.id)
     .then (stats) ->
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         animation: true
         scope: $scope
         template: require('../../html/views/templates/modals/statisticsArea.jade')()
