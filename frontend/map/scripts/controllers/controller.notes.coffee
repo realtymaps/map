@@ -7,7 +7,7 @@ originator = 'map'
 app.controller 'rmapsNotesModalCtrl', (
 $rootScope
 $scope
-$modal
+$uibModal
 rmapsNotesService
 rmapsMainOptions
 rmapsEventConstants
@@ -34,7 +34,7 @@ rmapsMapTogglesFactory
     modalScope = $scope.$new false
     modalScope.property = property
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: rmapsMainOptions.modals.animationsEnabled
       template: notesTemplate
       scope: modalScope
@@ -61,7 +61,7 @@ rmapsMapTogglesFactory
 
   $scope.remove = (note, confirm = false) ->
     if confirm
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         scope: $scope
         template: confirmTemplate
 

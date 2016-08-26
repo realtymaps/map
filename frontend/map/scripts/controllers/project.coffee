@@ -8,7 +8,7 @@ app.controller 'rmapsProjectCtrl',
 (
   $http,
   $log,
-  $modal,
+  $uibModal,
   $rootScope,
   $scope,
   $state,
@@ -97,10 +97,11 @@ app.controller 'rmapsProjectCtrl',
       highlightProperty(propertyId)
 
   # When the carousel changes, highlight the selected property on the map
-  $scope.onSlideChanged = (nextSlide) ->
-    highlightProperty(nextSlide.actual.rm_property_id)
+  $scope.onSlideChanged = ({slide}) ->
+    highlightProperty(slide.actual.rm_property_id)
 
-
+  $scope.getLabel = (actual) ->
+    "#{actual.address.street} #{actual.address.unit}"
   #
   # Property carousel
   #
@@ -130,7 +131,7 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.editClient = (client) ->
     $scope.clientCopy = _.clone client || {}
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       scope: $scope
       template: require('../../html/views/templates/modals/addClient.jade')()
 
@@ -148,7 +149,7 @@ app.controller 'rmapsProjectCtrl',
   $scope.editProject = (project) ->
     $scope.projectCopy = _.clone project || {}
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/editProject.jade')()

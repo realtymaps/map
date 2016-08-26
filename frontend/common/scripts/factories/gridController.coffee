@@ -2,7 +2,7 @@ _ = require 'lodash'
 mod = require '../module.coffee'
 createTemplate = require('../../../common/html/views/templates/gridCreateModal.jade')()
 
-mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModalFactory) ->
+mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmapsGridModalFactory) ->
   ($scope, opts = {}) ->
     $scope.nameFilters = ""
 
@@ -32,7 +32,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
       if !$scope.recordName
         return
 
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         animation: $scope.modalAnimationsEnabled
         template: createTemplate
         resolve:

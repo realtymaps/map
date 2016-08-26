@@ -2,8 +2,8 @@ span.btn-group
   button.btn.btn-transparent.nav-btn(
     ng-click="Toggles.toggleIsSketchMode();isOpens.sketch = !isOpens.sketch; togglePanel('sketch')"
     popover-placement="bottom"
-    popover="Add a Sketch"
-    popover-trigger="mouseenter"
+    uib-popover="Add a Sketch"
+    popover-trigger="'mouseenter touchend'"
     ng-class="Toggles.isSketchMode ? 'on' : ''"
   )
     span.icon.icon-pen2

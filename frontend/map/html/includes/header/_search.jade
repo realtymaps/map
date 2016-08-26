@@ -21,12 +21,12 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
       span(ng-switch="searchScope")
         span.search-input(ng-switch-when="Owners")
           input.form-control(
-            tooltip="{{searchTooltip}}"
+            uib-tooltip="{{searchTooltip}}"
             tooltip-placement="bottom"
             tooltip-popup-delay="500"
             tooltip-close-popup-delay="500"
             tooltip-enable="selectedFilters.ownerName.length > 0"
-            tooltip-trigger="keyup mouseenter focus"
+            tooltip-trigger="'keyup mouseenter focus'"
             placeholder="Enter a name"
             ng-model="selectedFilters.ownerName")
         span.search-input(ng-switch-when="Places")

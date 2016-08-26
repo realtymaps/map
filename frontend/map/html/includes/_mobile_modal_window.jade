@@ -16,4 +16,6 @@ ng-style="{'z-index': 1050 + index*10, display: 'block'}")
           a.mobile-header-close
             i.icon-close(class="fa fa-times" ng-click="close()")
     .mobile-modal-content-scroll
-      .modal-content(modal-transclude)
+      //uib-modal-transclude is not documented holy shit
+      // https://github.com/angular-ui/bootstrap/issues/5304
+      .modal-content(uib-modal-transclude)

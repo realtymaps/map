@@ -82,6 +82,7 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     else
       presetMax = maxValue
 
+    # TODO: delete this? It is not being used.
     config =
       min: minValue
       max: maxValue

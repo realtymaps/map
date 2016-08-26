@@ -18,7 +18,7 @@ options =
 
   # messaging
   message   # message to display to user
-  $modal    # exposed bootstrap modal service
+  $uibModal    # exposed bootstrap modal service
 
 ###
 
@@ -44,7 +44,7 @@ restrictElement = (scope, element, attrs, options) ->
       scope.authModal = (message) ->
         scope.modalTitle = "Restricted"
         scope.modalBody = message
-        modalInstance = options.$modal.open
+        modalInstance = options.$uibModal.open
           scope: scope
           template: require('../../html/views/templates/modals/confirm.jade')()
 
@@ -116,7 +116,7 @@ getOptions = (flags = "") ->
 
 
 # require the logged user to be a designated editor on current project
-app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $modal) ->
+app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $uibModal) ->
   restrict: 'A'
   terminal: true
   priority: 1000
@@ -127,7 +127,7 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $modal) 
       optionalFlags = if attrs.rmapsRequireProjectEditor == 'rmaps-require-project-editor' then "" else attrs.rmapsRequireProjectEditor
       options = _.merge getOptions(optionalFlags),
         message: "You must be the editor of your current project to do that."
-        $modal: $modal
+        $uibModal: $uibModal
 
       # restriction logic
       restrictElement(scope, element, attrs, options)
@@ -138,7 +138,7 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $modal) 
 
 
 # require the logged user to be an active subscriber
-app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $modal) ->
+app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $uibModal) ->
   restrict: 'A'
   terminal: true
   priority: 1000
@@ -149,7 +149,7 @@ app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $modal) ->
       optionalFlags = if attrs.rmapsRequireSubscriber == 'rmaps-require-subscriber' then "" else attrs.rmapsRequireSubscriber
       options = _.merge getOptions(optionalFlags),
         message: "You must have a paid subscription to do that."
-        $modal: $modal
+        $uibModal: $uibModal
 
       # restriction logic
       restrictElement(scope, element, attrs, options)
