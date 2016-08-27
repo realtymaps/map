@@ -339,7 +339,7 @@ ready = () ->
     .then (processDates) ->
       # run task if there are dates to process
       if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
-        return true
+        return undefined
 
       keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
       .then (copyDates) ->
