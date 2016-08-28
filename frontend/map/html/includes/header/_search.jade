@@ -4,8 +4,8 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
   div.search(ng-controller="DropdownCtrl" ng-show="openSearchTools")
     div.search-content
       span.search-type
-        span.dropdown(dropdown on-toggle="toggled(open)")
-          button.dropdown-toggle(href='#search-type' dropdown-toggle)
+        span.dropdown(uib-dropdown on-toggle="toggled(open)")
+          button.dropdown-toggle(href='#search-type' uib-dropdown-toggle)
             span
               span.type
                 | {{searchScope}}
