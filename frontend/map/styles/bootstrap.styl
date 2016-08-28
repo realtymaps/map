@@ -551,9 +551,15 @@ label
 //      top 50%
 
 .modal-title, .modal-content, .modal-body, .modal-footer
-  h1, h2, h3, h4, h5, h6, h7, span, p, div
-    color: $text_gray
   color $text_gray
+
+  h1, h2, h3, h4, h5, h6, h7, span, p, div
+    color $text_gray
+    &.tooltip
+      z-index 1060
+      .tooltip-inner
+        color $white
+
 .modal
   .modal-dialog
     .modal-content

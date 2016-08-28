@@ -63,21 +63,29 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $uibModal, rmapsEve
 
   $scope.getStatistics = () ->
     $log.debug "calculating pinned stats"
-    $log.debug _.values($scope.pinnedProperties)
+    dataSet = _.values($scope.pinnedProperties)
+
     stats = d3.nest()
     .key (d) ->
-      # $log.debug d
-      # $log.debug d.status
       d.status
     .rollup (status) ->
-      # $log.debug status
+      valid_price = status.filter (p) -> p.price?
+      valid_sqft = status.filter (p) -> p.sqft_finished?
+      valid_price_sqft = status.filter (p) -> p.price? && p.sqft_finished?
+      valid_dom = status.filter (p) -> p.days_on_market?
+      valid_acres = status.filter (p) -> p.acres?
       count: status.length
-      price_avg: d3.mean(status, (p) -> p.price)
-      sqft_avg: d3.mean(status, (p) -> p.sqft_finished)
-      price_sqft_avg: d3.mean(status, (p) -> p.price/p.sqft_finished)
-      days_on_market_avg: d3.mean(status, (p) -> p.days_on_market)
-      acres_avg: d3.mean(status, (p) -> p.acres)
-    .entries(_.values($scope.pinnedProperties))
+      price_avg: d3.mean(valid_price, (p) -> p.price)
+      price_n: valid_price.length
+      sqft_avg: d3.mean(valid_sqft, (p) -> p.sqft_finished)
+      sqft_n: valid_sqft.length
+      price_sqft_avg: d3.mean(valid_price_sqft, (p) -> p.price/p.sqft_finished)
+      price_sqft_n: valid_price_sqft.length
+      days_on_market_avg: d3.mean(valid_dom, (p) -> p.days_on_market)
+      days_on_market_n: valid_dom.length
+      acres_avg: d3.mean(valid_acres, (p) -> p.acres)
+      acres_n: valid_acres.length
+    .entries(dataSet)
 
     $log.debug stats
     stats = _.indexBy stats, 'key'
