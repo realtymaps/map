@@ -137,6 +137,7 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
       if filters.hasImages
+        @whereNotNull("photos")
         @where("photos", "!=", "{}")
 
       if queryParams.pins?.length
@@ -162,6 +163,8 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
+  query.leftOuterJoin(tables.finalized.photo.tableName, "#{tables.finalized.combined.tableName}.data_source_uuid", "#{tables.finalized.photo.tableName}.data_source_uuid")
+
   {bounds, state} = queryParams
   {filters} = state || {}
 
