@@ -1,13 +1,13 @@
 form.add-project
   .modal-header
-    h3.modal-title New Project
+    h3.modal-title {{newProject.modalTitle}}
     span.icon.icon-close(ng-click="cancelModal()")
   .modal-body
     .form-group
       label(for="name") Name your project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here" rmaps-autofocus="true" ng-keyup="checkSubmit($event)")
 
-    .form-group.project-options(ng-if="principal.getCurrentProfile()")
+    // .form-group.project-options(ng-if="principal.getCurrentProfile()")
       label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'New Project', inverseName: 'Sandbox'})")
         | Empty Project
       
@@ -89,4 +89,4 @@ form.add-project
               input.form-control(name="sqft" ng-model="newProject.sqft")
   .modal-footer
     // button.btn.btn-default(ng-click="cancelModal()") Cancel
-    button.btn.btn-primary(type="submit" ng-click="saveProject()") Create Project
+    button.btn.btn-primary(type="submit" ng-click="saveProject()") {{newProject.saveButtonLabel}}
