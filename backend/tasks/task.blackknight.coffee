@@ -117,7 +117,7 @@ copyFtpDrop = (subtask) ->
           dbs.transaction 'main', (transaction) -> Promise.try () ->
             # queue up files only if there are files to queue
             if fileList.length > 0
-              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true})
+              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true, concurrency: 10})
 
             # save / push new dates if they changed
             if newDates[internals.UPDATE] != copyDates[internals.UPDATE] || newDates[internals.REFRESH] != copyDates[internals.REFRESH]
