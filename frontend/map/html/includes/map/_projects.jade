@@ -1,10 +1,10 @@
 mixin projectsDropdown()
   span.dropdown.btn-group.projects-list(
     ng-hide="Toggles.getHideAnyDraw()"
-    dropdown is-open="projectDropdown.isOpen"
+    uib-dropdown is-open="projectDropdown.isOpen"
     ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
     
-    button.dropdown-toggle.btn.btn-transparent(dropdown-toggle)
+    button.dropdown-toggle.btn.btn-transparent(uib-dropdown-toggle)
       span
         h4(ng-show="principal.getCurrentProfile().sandbox") Sandbox
         h4(ng-show="!principal.getCurrentProfile().sandbox") {{principal.getCurrentProfile().name}}
