@@ -101,6 +101,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
     modalInstance.result.then ->
+      # Note, the ids can be confusing here: project.id corresponds to the profile-id, and project.project_id is the project-id
       rmapsProjectsService.delete id: project.project_id
       .then () ->
         rmapsProfilesService.resetSyncFlags()
