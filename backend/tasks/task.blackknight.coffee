@@ -115,13 +115,13 @@ copyFtpDrop = (subtask) ->
 
         .then () ->
           dbs.transaction 'main', (transaction) -> Promise.try () ->
-            # queue up files only if there are files to queue
             if fileList.length > 0
+              # queue up file copies
               jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true, concurrency: 10})
-              # save / push new dates if they changed
-              #if newDates[internals.UPDATE] != copyDates[internals.UPDATE] || newDates[internals.REFRESH] != copyDates[internals.REFRESH]
+              # save / push new dates
               jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {dates: newDates}, replace: true})
             else
+              # record that there isn't anything to see today
               keystore.setValue(internals.NO_NEW_DATA_FOUND, moment.utc().format('YYYYMMDD'), namespace: internals.BLACKKNIGHT_COPY_DATES)
 
 
@@ -351,7 +351,18 @@ ready = () ->
         dayOfWeek = now.isoWeekday()
 
         if copyDates[internals.NO_NEW_DATA_FOUND] == today
+          # we've already indicated there's no new data to find today
           return false
+        else if dayOfWeek == 7 || dayOfWeek == 1
+          # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
+        else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
+          # we've already processed yesterday's data
+          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+          .then () ->
+            return false
         else
           # no overrides, needs to run using regular logic
           return undefined
