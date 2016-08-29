@@ -118,8 +118,8 @@ $log) ->
 
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-        if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-          mapCtrl.openWindow?(model)
+        # if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+        #   mapCtrl.openWindow?(model)
 
         # Update model
         model.isMousedOver = true
@@ -163,15 +163,18 @@ $log) ->
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
-          $timeout ->
+          setTimeout ->
             return if _handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
               # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
             if _lastEvents.last != 'dblclick'
-              if model.markerType != 'price-group'
-                $scope.formatters.results.showModel(model)
-          , limits.clickDelayMilliSeconds
+              # if model.markerType != 'price-group'
+              #   $scope.formatters.results.showModel(model)
+              if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+                mapCtrl.openWindow?(model)
+
+          , limits.clickDelayMilliSeconds - 100
 
       dblclick: (event, lObject, model, modelName, layerName, type) ->
         _lastEvents.last = 'dblclick'
