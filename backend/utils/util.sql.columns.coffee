@@ -17,7 +17,7 @@ basicColumns = do ->
 
   ret =
     # columns returned for filter requests
-    filter: [
+    filter: ([
       'data_source_type',
       'data_source_id',
       'rm_property_id',
@@ -34,13 +34,13 @@ basicColumns = do ->
       'bedrooms',
       'price',
       'owner_address'
-      'cdn_photo'
-      'photo_count'
-      'actual_photo_count'
       'status'
       'days_on_market'
       'up_to_date'
-    ].map((name)-> tables.finalized.combined.tableName + '.' + name).join(', ')
+      ]
+      .map((name)-> tables.finalized.combined.tableName + '.' + name)
+      .concat(['photos', 'cdn_photo', 'actual_photo_count'].map((name)-> tables.finalized.photo.tableName + '.' + name))
+    ).join(', ')
 
     parcel: ['geometry_center'].concat(_parcel).join(', ')
 
@@ -71,17 +71,18 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
-    all: ['rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
+    all: ([
+      'rm_inserted_time', 'data_source_id', 'data_source_type', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
       'rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished',
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',
-      'property_type', 'photo_id', 'photo_count', 'photos', 'photo_last_mod_time',
-      'actual_photo_count', 'cdn_photo', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
-    ]
+      'property_type', 'baths', 'baths_total', 'zoning', 'description', 'original_price', 'status'
+      ]
+      .map((name)-> tables.finalized.combined.tableName + '.' + name)
+      .concat(['photos', 'cdn_photo', 'actual_photo_count'].map((name)-> tables.finalized.photo.tableName + '.' + name))
+    ).join(', ')
 
-    company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id',
-      'city', 'zip'
-    ]
+    company: [ 'name', 'fax', 'phone', 'address_1', 'address_2', 'us_state_id', 'website_url', 'account_image_id', 'city', 'zip' ]
 
     id: ['rm_property_id', 'data_source_type'] # `data_source_type` needed for finding "mls" or "county" category
 

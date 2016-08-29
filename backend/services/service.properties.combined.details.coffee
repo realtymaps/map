@@ -15,8 +15,12 @@ _propertyQuery = ({queryParams, profile, limit}) ->
     logger.debug permissions
 
     query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
-    .leftOuterJoin "#{tables.config.mls.tableName}", ->
-      @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin("#{tables.config.mls.tableName}",
+      "#{tables.config.mls.tableName}.id",
+      "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin(tables.finalized.photo.tableName,
+      "#{tables.finalized.combined.tableName}.data_source_uuid",
+      "#{tables.finalized.photo.tableName}.data_source_uuid")
 
     queryPermissions(query, permissions)
 
