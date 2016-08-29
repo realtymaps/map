@@ -53,10 +53,10 @@ queryPermissions = (query, permissions = {}) ->
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
       @orWhere ->
         @where("data_source_type", "mls")
-        sqlHelpers.whereIn(@, "data_source_id", mls)
+        sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if mls?.length
       @where("data_source_type", "mls")
-      sqlHelpers.whereIn(@, "data_source_id", mls)
+      sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if permissions.fips?.length
       @where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
