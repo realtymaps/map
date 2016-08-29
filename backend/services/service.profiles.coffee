@@ -121,17 +121,19 @@ _hasProfileStateChanged = (profile, partialState) ->
       break
   needsSave
 
-updateCurrent = (session, partialState = {}, safe) ->
+updateCurrent = (session, partialState = {}) ->
   sessionProfile = getCurrentSessionProfile(session)
 
   saveSessionPromise = if _hasProfileStateChanged(sessionProfile, partialState)
+    logger.debug "Profile HAS changed:", partialState
     _.extend(sessionProfile, partialState)
     session.saveAsync() #save immediately to prevent problems from overlapping AJAX calls
   else
+    logger.debug "Profile HAS NOT changed."
     Promise.resolve()
 
   saveSessionPromise.then () ->
-    update(sessionProfile, session.userid, safe)
+    update(sessionProfile, session.userid)
 
 module.exports = {
   getAll

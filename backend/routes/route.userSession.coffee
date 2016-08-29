@@ -13,7 +13,7 @@ alertIds = require '../../common/utils/enums/util.enums.alertIds'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
-
+moment = require 'moment'
 validation = require '../utils/util.validation'
 safeColumns = (require '../utils/util.sql.helpers').columns
 tables = require '../config/tables'
@@ -77,7 +77,17 @@ setCurrentProfile = (req, res, next) -> Promise.try () ->
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-  internals.updateCache(req, res, next)
+
+  rm_modified_time = moment()
+
+  userUtils.cacheUserValues(req)
+  .then () ->
+    # Update the timestamp on a profile whenever it is selected
+    profileService.updateCurrent(req.session, {rm_modified_time})
+  .then () ->
+    identity = userUtils.getIdentityFromRequest(req)
+    identity.profiles[req.session.current_profile_id].rm_modified_time = rm_modified_time
+    res.json {identity}
 
 updateState = (req, res, next) ->
   profileService.updateCurrent(req.session, req.body)
