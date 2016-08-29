@@ -24,6 +24,8 @@ app.directive 'propertyImages', (
 
   controller: ($scope) ->
 
+    $scope.active = 0
+
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope
       property: new rmapsPropertyFormatterService()
@@ -57,7 +59,7 @@ app.directive 'propertyImages', (
       # Skip the first image, it is expected to be a duplicate
       for i in [1..$scope.property.actual_photo_count - 1]
         photos.push
-          key: i
+          index: i - 1
           url: "#{resizeUrl}&image_id=#{i}"
     else
       imageLoaded()
