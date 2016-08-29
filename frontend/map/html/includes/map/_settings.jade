@@ -89,6 +89,11 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
               option(value='') No maximum
 
         li.row
+          span.label.col-md-3 Year Built
+          .col-md-9
+            input.form-control(type="text" numeral ng-model="selectedFilters.yearBuilt" placeholder="All")
+
+        li.row
           span.label.col-md-5 In Shapes / Areas
           .col-md-7
             .btn-group.pull-right

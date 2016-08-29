@@ -20,7 +20,6 @@ appendProjectId = (req, obj) ->
 
 captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransforms.body} = {}) ->
   (req, res, next) -> Promise.try () ->
-
     if handleStr
       logger.debug () -> "handle: #{handleStr}"
 
