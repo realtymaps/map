@@ -81,6 +81,14 @@ class ProjectCrud extends ThenableCrud
 
     super(arguments...)
 
+
+  update: (project, auth_user_id) ->
+    q = tables.user.project()
+    .update(project)
+    .where(id: project.id, auth_user_id)
+    q
+
+
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
     profileSvc.getProfileWhere project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
@@ -101,16 +109,22 @@ class ProjectCrud extends ThenableCrud
       # Remove shapes in all cases
       promises.push @drawnShapes.delete {}, doLogQuery, toRemove
 
+      # Reset if sandbox (profile and project)
       if profile.sandbox is true
 
-        reset =
-          filters: {}
+        resetProfile =
+          map_toggles: {}
+          # map_position: {} # don't remove position, keep it the same
           map_results: {}
-          map_position: profileSvc.getDefaultCenter()
-          pins: {}
+          favorites: {}
+        promises.push profileSvc.update(_.merge(resetProfile, id: profile.id), idObj.auth_user_id)
 
-        # Reset the sandbox (profile and project fields)
-        promises.push profileSvc.update(_.merge(reset, id: profile.id), idObj.auth_user_id)
+
+        resetProject =
+          pins: {}
+          archived: null
+        promises.push @update(_.merge(resetProject, id: idObj.id), idObj.auth_user_id)
+
 
       else
         # Delete client profiles (not the users themselves)

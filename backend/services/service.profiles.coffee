@@ -10,17 +10,6 @@ db = require('../config/dbs').get('main')
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
 
-getDefaultCenter = () ->
-  # when resetting a profile (such as when reseting sandbox) we need to set the default center for map_position
-  # this should be replaced eventually with something smarter and more fitting for any given user
-  center:
-    lng: -81.7784070968628
-    lat: 26.14334178654655
-    lon: -81.7784070968628
-    latitude: 26.14334178654655
-    longitude: -81.7784070968628
-    zoom: 14
-
 
 create = (newProfile) ->
   Promise.try () ->
@@ -117,14 +106,8 @@ update = (profile, auth_user_id) -> Promise.try () ->
   if !auth_user_id? then throw new Error("auth_user_id is undefined")
   updatePromises = []
 
-  # update the profile model portion of the profileProject data
   where = {id: profile.id, auth_user_id: auth_user_id}
-  profile = _.omit profile, ['favorites', 'pins']
-
-  # logger.debug () -> "updating profile with: #{util.inspect profile, depth: null}"
-  updatePromises.push _updateProfileWhere(profile, where)
-
-  Promise.all(updatePromises)
+  _updateProfileWhere(profile, where)
   .catch (err) ->
     logger.error "error while updating profile id #{profile.id}: #{err}"
     Promise.reject(err)
@@ -161,5 +144,4 @@ module.exports = {
   create
   createForProject
   getProfileWhere
-  getDefaultCenter
 }
