@@ -139,6 +139,9 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       if filters.hasImages
         @where("photos", "!=", "{}")
 
+      if filters.yearBuilt
+        @whereRaw("year_built->>'value' = ?", [filters.yearBuilt])
+
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
 

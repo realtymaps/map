@@ -87,5 +87,6 @@ app.factory 'rmapsFiltersFactory', () ->
     propertyType: null
     hasImages: false
     soldRange: '120 day'
+    yearBuilt: null
 
   {values, valueDefaults, MIN_BEDS, MAX_BEDS, MIN_BATHS, MAX_BATHS}
