@@ -1,5 +1,10 @@
 div(ng-controller="rmapsAlertsCtrl").alerts-area
-  alert(ng-repeat="alert in alerts",type="{{alert.type}}",close="hideAlert(alert.id)")
+  .alert.alert-dismissible(
+    uib-alert
+    ng-repeat="alert in alerts"
+    ng-class="'alert-' + alert.type"
+    close="hideAlert(alert.id)"
+  )
     span(ng-if="alert.reps")
       | ({{alert.reps+1}})&nbsp;&nbsp;
     span(ng-bind-html="alert.trustedMsg")
