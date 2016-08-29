@@ -96,7 +96,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
                 ng-repeat="c in ['on', 'off']"
                 ng-model="Toggles.propertiesInShapes"
-                btn-radio="{{c == 'on'}}"
+                uib-btn-radio="{{c == 'on'}}"
                 uncheckable) {{c}}
 
       ul.advanced(ng-if="showAdvanced" ng-cloak)
@@ -132,7 +132,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 type="text"
                 ng-focus="openDatepicker('closeDateMin')"
                 max-date="selectedFilters.closeDateMax"
-                datepicker-popup="MM/dd/yyyy"
+                uib-datepicker-popup="MM/dd/yyyy"
                 is-open="datepickers.closeDateMin"
                 show-weeks="false"
                 format-month="MMM"
@@ -149,7 +149,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 type="text"
                 ng-focus="openDatepicker('closeDateMax')"
                 min-date="selectedFilters.closeDateMin"
-                datepicker-popup="MM/dd/yyyy"
+                uib-datepicker-popup="MM/dd/yyyy"
                 is-open="datepickers.closeDateMax"
                 show-weeks="false"
                 format-month="MMM"
@@ -167,7 +167,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 ng-class="{active: selectedFilters.hasImages == (c == true)}"
                 ng-repeat="c in [true, false]"
                 ng-model="selectedFilters.hasImages"
-                btn-radio="{{c == true}}"
+                uib-btn-radio="{{c == true}}"
                 uncheckable) {{c}}
 
   .mobile-only
@@ -225,7 +225,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             ng-click="makeDirty()"
             ng-repeat="c in ['on', 'off']"
             ng-model="Toggles.propertiesInShapes"
-            btn-radio="{{c == 'on'}}"
+            uib-btn-radio="{{c == 'on'}}"
             uncheckable) {{c}}
 
       footer.mobile-footer.mobile-footer-modal
