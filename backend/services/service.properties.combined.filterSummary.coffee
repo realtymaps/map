@@ -141,10 +141,10 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
         @where("photos", "!=", "{}")
 
       if queryParams.pins?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.pins)
 
       if queryParams.favorites?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.favorites)
 
   else if queryParams.pins || queryParams.favorites
     logger.debug () -> "no status, so query for pins and favorites only"
