@@ -69,7 +69,6 @@ execute
 - forever script + git hook for custom deployment
 - nginx-buildpack for Heroku see above
 - make nginx installer work on more than OSX
-- mocha/karma frontend tests with or without web-pack
 - npm run gulp-prod (for prod)
 - figure out if global prequisite install is actually necessary
 - set things up so "foreman start" will do what we want for every environment
