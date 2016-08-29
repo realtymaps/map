@@ -38,6 +38,7 @@ unhandledRejections = []
 setup = (isParentProcess=false) ->
   if !isParentProcess
     process.on 'SIGINT', exit
+    process.on 'SIGUSR2', exit
     process.on 'SIGTERM', exit
 
   process.on 'uncaughtException', (err) ->
