@@ -38,6 +38,11 @@ include ../mixins/property/_propertyAttributes.jade
           .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
           img(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
         .card-info
-          a.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}" ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
+          a.pinto(
+            ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()"
+            popover-placement="left"
+            popover-trigger="'mouseenter touchend'"
+            uib-popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}"
+            ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin
           +propertyAttributes('property')

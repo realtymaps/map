@@ -23,7 +23,7 @@ protectedConfigPromise = () ->
   .then (config) ->
     ret.cartodb = config
 
-  googlePromise = externalAccounts.getAccountInfo('googlemaps')
+  googlePromise = externalAccounts.getAccountInfo('googlemaps', {quiet: true})
   .catch (err) ->
     null
   .then (accountInfo) ->

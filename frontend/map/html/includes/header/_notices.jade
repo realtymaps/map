@@ -1,6 +1,6 @@
 #notices(ng-controller="DropdownCtrl")
-    span(class="dropdown" dropdown on-toggle="toggled(open)")
-        button(href='#notices' class="dropdown-toggle icon-bell" dropdown-toggle) global notices
+    span(class="dropdown" uib-dropdown on-toggle="toggled(open)")
+        button(href='#notices' class="dropdown-toggle icon-bell" uib-dropdown-toggle) global notices
         ul(class="dropdown-menu right arrow")
             li
                 .block-notification
@@ -27,4 +27,3 @@
             li
                 .btn-actions
                     button(class='btn btn-primary') View all notifications
-

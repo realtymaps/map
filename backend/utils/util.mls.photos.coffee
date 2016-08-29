@@ -65,7 +65,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
   object.objectStream.once 'error', (error) ->
     try
-      logger.debug "error event received"
+      # logger.debug "error event received"
       cb(new photoErrors.ObjectsStreamError(error))
     catch err
       logger.debug analyzeValue.getSimpleDetails(err)
@@ -74,21 +74,21 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
   object.objectStream.on 'data', (event) ->
 
     try
-      logger.debug "data event received"
+      # logger.debug "data event received"
 
       if event?.error?
         logger.debug "data event has an error #{analyzeValue.getSimpleDetails(event.error)}"
         cb(event.error)
         return
 
-      logger.debug event.headerInfo
+      # logger.debug event.headerInfo
       listingId = event.headerInfo.contentId
       fileExt = event.headerInfo.contentType.replace('image/','')
       contentType = event.headerInfo.contentType
 
       everSentData = true
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
-      logger.debug "fileName: #{fileName}"
+      # logger.debug "fileName: #{fileName}"
 
       # not handling event.dataStream.once 'error' on purpose
       # this makes it easier to discern overall errors vs individual photo error
@@ -105,11 +105,11 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
   object.objectStream.once 'end', () ->
     try
-      logger.debug "end event received"
+      # logger.debug "end event received"
       if !everSentData and doThrowNoEvents
-        logger.debug "end event received -- callback with NoPhotoObjectsError"
+        # logger.debug "end event received -- callback with NoPhotoObjectsError"
         cb(new photoErrors.NoPhotoObjectsError 'No object events')
-      logger.debug "end event received -- no NoPhotoObjectsError"
+      # logger.debug "end event received -- no NoPhotoObjectsError"
       cb(null, null, true)
     catch err
       logger.debug analyzeValue.getSimpleDetails(err)
