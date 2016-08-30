@@ -115,13 +115,14 @@ copyFtpDrop = (subtask) ->
 
         .then () ->
           dbs.transaction 'main', (transaction) -> Promise.try () ->
-            # queue up files only if there are files to queue
             if fileList.length > 0
+              # queue up file copies
               jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true, concurrency: 10})
-
-            # save / push new dates if they changed
-            if newDates[internals.UPDATE] != copyDates[internals.UPDATE] || newDates[internals.REFRESH] != copyDates[internals.REFRESH]
+              # save / push new dates
               jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {dates: newDates}, replace: true})
+            else
+              # record that there isn't anything to see today
+              keystore.setValue(internals.NO_NEW_DATA_FOUND, moment.utc().format('YYYYMMDD'), namespace: internals.BLACKKNIGHT_COPY_DATES)
 
 
 copyFile = (subtask) ->
@@ -344,26 +345,24 @@ ready = () ->
       keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
       .then (copyDates) ->
         # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
-        today = moment.utc().format('YYYYMMDD')
-        yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
-        dayOfWeek = moment.utc().isoWeekday()
+        now = moment.utc()
+        today = now.format('YYYYMMDD')
+        yesterday = now.subtract(1, 'day').format('YYYYMMDD')
+        dayOfWeek = now.isoWeekday()
 
-        if copyDates[internals.NO_NEW_DATA_FOUND] != today
-          # needs to run using regular logic
-          return undefined
+        if copyDates[internals.NO_NEW_DATA_FOUND] == today
+          # we've already indicated there's no new data to find today
+          return false
         else if dayOfWeek == 7 || dayOfWeek == 1
           # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
           keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
           .then () ->
             return false
-
-        # check for empty processDates list?
         else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
           # we've already processed yesterday's data
           keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
           .then () ->
             return false
-
         else
           # no overrides, needs to run using regular logic
           return undefined
