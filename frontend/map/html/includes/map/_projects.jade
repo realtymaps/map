@@ -44,7 +44,7 @@ mixin projectsDropdown()
                       span(ng-show="project.totalProperties == 1") &#32;Property
                       span(ng-show="project.totalProperties != 1") &#32;Properties
                       span(ng-show="project.archived == true") &#32;(archived)
-                    span.col-md-4.text-right &#32;{{project.modified.format('MMM Do')}}
+                    span.col-md-4.text-right &#32;{{project.modified.format('ddd MMM Do ha')}}
                   .row.subtitle(ng-if="project.parent_name")
                     span.col-md-2 Owner:
                     span.col-md-10.parent-name &#32;{{project.parent_name}}
