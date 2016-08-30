@@ -12,8 +12,9 @@ include ../includes/mixins/_leafletMixin.jade
           slide-selector
           slide-selector-label="getLabel(actual)"
           on-carousel-change="onSlideChanged(nextSlide, direction)")
-            .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" active="property.activeSlide" actual="property")
-              .pin-image.prop-image.zoomable(ui-sref="property({ id: property.rm_property_id })")
+            .project-card.bordered(uib-slide ng-repeat="property in pins"
+              index="$index" active="property.activeSlide" actual="property")
+              .pin-image.prop-image.zoomable()
                 .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
                 property-images(property="property" image-width="656")
               .pin-attributes.content-block.zoomable(ui-sref="property({ id: property.rm_property_id })")
