@@ -231,7 +231,7 @@ app.factory 'rmapsMapFactory',
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManagerService.getFilters()
 
-        unless filters?.status?
+        if !filters?.status?
           @clearFilterSummary()
           return $q.resolve()
 
@@ -272,7 +272,6 @@ app.factory 'rmapsMapFactory',
 
         $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes(), @scope.map.getMail()]
         .then () =>
-        # $q.all(promises).then =>
           #every thing is setup, only draw once
           ###
           Not only is this efficent but it avoids (worksaround) ng-leaflet race

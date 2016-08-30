@@ -53,10 +53,10 @@ queryPermissions = (query, permissions = {}) ->
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
       @orWhere ->
         @where("data_source_type", "mls")
-        sqlHelpers.whereIn(@, "data_source_id", mls)
+        sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if mls?.length
       @where("data_source_type", "mls")
-      sqlHelpers.whereIn(@, "data_source_id", mls)
+      sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if permissions.fips?.length
       @where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
@@ -140,11 +140,14 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
         @whereNotNull("photos")
         @where("photos", "!=", "{}")
 
+      if filters.yearBuilt
+        @whereRaw("year_built->>'value' = ?", [filters.yearBuilt])
+
       if queryParams.pins?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.pins)
 
       if queryParams.favorites?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.favorites)
 
   else if queryParams.pins || queryParams.favorites
     logger.debug () -> "no status, so query for pins and favorites only"
