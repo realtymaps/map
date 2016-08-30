@@ -138,8 +138,8 @@
                     a(ng-click="showPVA(property.rm_property_id)") View PVA Website (opens new window) &nbsp;
                       icon.fa.fa-external-link
 
-          accordion.row.content-block.subscriber-groups(close-others="false")
-            accordion-group(ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
+          uib-accordion.row.content-block.subscriber-groups(close-others="false")
+            div(uib-accordion-group ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
               div(ng-class="{'table-striped-single': group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings', 'table-striped-pair': group.name == 'deedHistory' || group.name == 'mortgageHistory' || group.name == 'priorListings'}")
                 .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings'" ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4.field-label {{field.name}}
@@ -171,8 +171,8 @@
                     a(ng-click="deed.extra.showExtra = !deed.extra.showExtra")
                       span(ng-show="!deed.extra.showExtra") More
                       span(ng-show="deed.extra.showExtra") Less
-                  accordion.col-sm-12(ng-if="!deed.extra" close-others="false")
-                    accordion-group(ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}" is-open="deed[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':deed[group.subscriber][group.name].isAccordionOpen}")
+                  uib-accordion.col-sm-12(ng-if="!deed.extra" close-others="false")
+                    div(uib-accordion-group ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}" is-open="deed[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':deed[group.subscriber][group.name].isAccordionOpen}")
                       .table-striped-single
                         .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
@@ -202,8 +202,8 @@
                     a(ng-click="mortgage.extra.showExtra = !mortgage.extra.showExtra")
                       span(ng-show="!mortgage.extra.showExtra") More
                       span(ng-show="mortgage.extra.showExtra") Less
-                  accordion.col-sm-12(ng-if="!mortgage.extra" close-others="false")
-                    accordion-group(ng-repeat="group in groups" ng-if="mortgage[group.subscriber][group.name].length" heading="{{getLabel(group, mortgage)}}" is-open="mortgage[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':mortgage[group.subscriber][group.name].isAccordionOpen}")
+                  uib-accordion.col-sm-12(ng-if="!mortgage.extra" close-others="false")
+                    div(uib-accordion-group ng-repeat="group in groups" ng-if="mortgage[group.subscriber][group.name].length" heading="{{getLabel(group, mortgage)}}" is-open="mortgage[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':mortgage[group.subscriber][group.name].isAccordionOpen}")
                       .table-striped-single
                         .row.content-row(ng-if="group.name != 'mortgageHistory'" ng-repeat="field in mortgage[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
@@ -229,8 +229,8 @@
                     a(ng-click="listing.extra.showExtra = !listing.extra.showExtra" ng-show="listing.subscriber_groups")
                       span(ng-show="!listing.extra.showExtra") More
                       span(ng-show="listing.extra.showExtra") Less
-                  accordion.col-sm-12(ng-if="!listing.extra" close-others="false")
-                    accordion-group(ng-repeat="group in groups" ng-if="listing[group.subscriber][group.name].length" heading="{{getLabel(group, listing)}}" is-open="listing[group.subscriber][group.name].isAccordionOpen" ng-class="{'accordion-open':listing[group.subscriber][group.name].isAccordionOpen}")
+                  uib-accordion.col-sm-12(ng-if="!listing.extra" close-others="false")
+                    div(uib-accordion-group ng-repeat="group in groups" ng-if="listing[group.subscriber][group.name].length" heading="{{getLabel(group, listing)}}" is-open="listing[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':listing[group.subscriber][group.name].isAccordionOpen}")
                       .table-striped-single
                         .row.content-row(ng-if="group.name != 'priorListings'" ng-repeat="field in listing[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
@@ -389,4 +389,3 @@
                 .mls-disclaimer {{property.disclaimer_text}}
           .content-row(ng-show="property.disclaimer_logo || property.disclaimer_text")
             .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.mls_formal_name}}
-

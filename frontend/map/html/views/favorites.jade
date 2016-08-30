@@ -44,8 +44,8 @@ include ../includes/mixins/property/_propertyAttributes.jade
             .container
                 .row
                     .col-md-12(ng-controller="rmapsAccordionCtrl")
-                        accordion(close-others="oneAtATime")
-                            accordion-group(ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
+                        uib-accordion(close-others="oneAtATime")
+                            div(uib-accordion-group ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
                                 ul.favorites-list
                                     li(ng-repeat="id in enity.favorites")
                                         div.row

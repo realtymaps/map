@@ -24,8 +24,8 @@ getAssetCollection = (name) ->
     stylus: app + 'styles/**/*.styl'
     less: app + 'styles/**/*.less'
     svg: app + 'html/svg/*.svg'
-    html: app + 'html/**/*.html'
-    jade: app + 'html/**/*.jade'
+    html: [app + 'html/**/*.html', "frontend/common/html/**/*.html"]
+    jade: [app + 'html/**/*.jade', "frontend/common/html/**/*.jade"]
     json: app + 'json/**/*.json'
     assets: app + 'assets/**/*.*'
   }

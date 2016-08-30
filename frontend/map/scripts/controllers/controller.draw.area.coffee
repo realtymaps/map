@@ -38,14 +38,15 @@ rmapsMapTogglesFactory
         #requires rmapsAreasModalCtrl to be in scope (parent)
         $scope.create(geoJson)
 
-      deleteAction: (model) ->
-        if !Object.keys(drawnItems._layers).length
-          rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
-        else
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
 
-        #force refresh
-        $scope.$emit rmapsEventConstants.areas
+      deleteAction: (model) ->
+        $scope.remove(model, {skipAreas: true})
+        .then () ->
+          if !Object.keys(drawnItems._layers).length
+            rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+
+          #force refresh
+          $scope.$emit rmapsEventConstants.areas
 
     }
 

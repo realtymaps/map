@@ -15,9 +15,9 @@
           div(ng-hide="mlsData.current.id").config-panel
             div.select-pill Select an MLS...
           div(ng-class="{ 'fourth-opacity': !mlsData.current.id }").main-config-panel
-            accordion(close-others="false")
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
+            uib-accordion(close-others="false")
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
                   div
                     span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Server Info
                 table
@@ -40,8 +40,8 @@
                     td(colSpan=2)
                       button(ng-click="passwordModal()" ng-disabled="!principal.hasPermission('change_mlsconfig_serverdata')").btn.btn-primary Change Password
 
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
                   div
                     span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Management
                 table
@@ -66,8 +66,8 @@
                     td
                       input(type="checkbox" ng-model="mlsData.task.active" ng-disabled="!principal.hasPermission('change_mlsconfig') || !isReady(mlsData.current)").form-control
 
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
                   div
                     span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Disclaimer
                 table
@@ -94,8 +94,8 @@
                     td
                       textarea(ng-model="mlsData.current.disclaimer_text" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
                   div
                     span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
                 .row
@@ -140,8 +140,8 @@
                   .col-md-12
                     button(ng-click="assignConfigDefault(mlsData.current, 'listing_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
 
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
                   div
                     span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Other Configuration
                 .row
