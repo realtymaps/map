@@ -1,9 +1,9 @@
 .modal-header
   h3.modal-title {{areaToShow.area_name}} Statistics
 .modal-body
-  div(ng-repeat="status in ['sold', 'for sale']")
+  .statistics(ng-repeat="status in ['sold', 'for sale']" ng-if="areaStatistics[areaToShow.id][status]")
     h4(style="text-transform:capitalize;") {{status}}
-    .statistics(ng-show="areaStatistics[areaToShow.id][status]")
+    div
       .row
         .col-md-5 Number of Properties
         .col-md-4 {{areaStatistics[areaToShow.id][status].values.count}}
