@@ -34,7 +34,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $uibModal, $scope, $log, $
       .then ({data}) ->
 
         hash = (a) ->
-          "#{a.street ? ''} #{a.unit ? ''} #{a.citystate ? ''} #{a.zip ? ''}".trim()
+          "#{a.street ? ''} #{a.unit ? ''} #{a.citystate ? ''} #{a.zip ? ''}".trim().toLowerCase()
 
         property = {}
         owner = {}
