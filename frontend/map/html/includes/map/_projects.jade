@@ -49,7 +49,7 @@ mixin projectsDropdown()
                     span.col-md-2 Owner:
                     span.col-md-10.parent-name &#32;{{project.parent_name}}
               span.actions
-                span.action-button(rmaps-require-subscriber="disable" ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+                span.action-button(rmaps-require-subscriber="disable" ng-show="!project.sandbox && project.id != principal.getCurrentProfileId()" ng-click="archiveProject(project); $event.stopPropagation()")
                   span.action(ng-show="project.archived") Unarchive
                   span.action(ng-show="!project.archived") Archive
                   span.icon.icon-save_on_disk
