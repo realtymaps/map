@@ -14,6 +14,7 @@ awsService = require '../services/service.aws'
 RESTRICT_TO_FIPS = ['12021']
 NUM_ROWS_TO_PAGINATE = 2500
 BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
+BLACKKNIGHT_PROCESS_DATES_FINISHED = 'blackknight process dates finished'
 BLACKKNIGHT_COPY_DATES = 'blackknight copy dates'
 TAX = 'tax'
 DEED = 'deed'
@@ -173,10 +174,12 @@ popProcessingDates = (dates) ->
   defaults[REFRESH] = []
   defaults[UPDATE] = []
 
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "popping #{JSON.stringify(dates)}"
+  currentQueuePromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  finishedQueuePromise =   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES_FINISHED, defaultValues: defaults)
+  Promise.join currentQueuePromise, finishedQueuePromise, (currentDateQueue, finishedDateQueue) ->
+    logger.debug () -> "moving #{JSON.stringify(dates)}"
     logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
+    logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
     currentDateQueue[REFRESH].sort()
     currentDateQueue[UPDATE].sort()
 
@@ -194,11 +197,16 @@ popProcessingDates = (dates) ->
 
     if refreshIndex >= 0 && (refreshItem = currentDateQueue[REFRESH].splice(refreshIndex, 1))
       processDates[REFRESH] = refreshItem[0]
+      finishedDateQueue[REFRESH].push(refreshItem[0])
 
     if updateIndex >= 0 && (updateItem = currentDateQueue[UPDATE].splice(updateIndex, 1))
       processDates[UPDATE] = updateItem[0]
+      finishedDateQueue[UPDATE].push(updateItem[0])
 
-    keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
+    dbs.transaction (transaction) ->
+      keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES, transaction})
+      .then () ->
+        keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
     .then () ->
       return processDates
 
@@ -392,10 +400,10 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
     return
 
   fipsCodes = {}
-  filesForDelete = []
   if action == DELETE
-    filesForDelete = files
+    filesForDelete = []
   else
+    filesForDelete = files
     _.forEach files, (el) ->
       fipsCodes[el.normalSubid] = true
 
@@ -431,6 +439,7 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 module.exports = {
   NUM_ROWS_TO_PAGINATE
   BLACKKNIGHT_PROCESS_DATES
+  BLACKKNIGHT_PROCESS_DATES_FINISHED
   BLACKKNIGHT_COPY_DATES
   TAX
   DEED
@@ -440,6 +449,7 @@ module.exports = {
   NO_NEW_DATA_FOUND
   DELETE
   LOAD
+
   getColumns
   tableIdMap
   checkDropChain
