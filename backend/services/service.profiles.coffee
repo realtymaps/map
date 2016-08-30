@@ -125,11 +125,9 @@ updateCurrent = (session, partialState = {}) ->
   sessionProfile = getCurrentSessionProfile(session)
 
   saveSessionPromise = if _hasProfileStateChanged(sessionProfile, partialState)
-    logger.debug "Profile HAS changed:", partialState
     _.extend(sessionProfile, partialState)
     session.saveAsync() #save immediately to prevent problems from overlapping AJAX calls
   else
-    logger.debug "Profile HAS NOT changed."
     Promise.resolve()
 
   saveSessionPromise.then () ->
