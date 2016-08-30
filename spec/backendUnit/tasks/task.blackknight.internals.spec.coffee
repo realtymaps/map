@@ -12,9 +12,12 @@ fixture = require '../../fixtures/backend/tasks/task.blackknight.internals'
 _initialDateQueue =
   "#{bkServiceInternals.REFRESH}": ['19800103', '19800102', '19800101']
   "#{bkServiceInternals.UPDATE}": ['19900101', '19900102', '19900103']
+_initialFinishedDateQueue =
+  "#{bkServiceInternals.REFRESH}": ['19800100']
+  "#{bkServiceInternals.UPDATE}": ['19900100']
 
-_processDateQueue = {} # set this beforeEach test
 
+_dateQueues = {}
 _keystore =
   getValuesMap: () -> Promise.try () ->
     return _processDateQueue
@@ -26,9 +29,14 @@ bkServiceInternals.__set__ 'keystore', _keystore
 
 describe "task.blackknight.internal", () ->
 
-  describe "nextProcessingDates", () ->
-    it 'should return latest date from queue', (done) ->
-      _processDateQueue = _.cloneDeep _initialDateQueue
+  describe "processingDates", () ->
+
+    beforeEach () ->
+      _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES] = _.cloneDeep _initialDateQueue
+      _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED] = _.cloneDeep _initialFinishedDateQueue
+
+
+    it 'should return earliest date from queue', (done) ->
       expectedDates =
         "Refresh": "19800101"
         "Update": "19900101"
@@ -39,9 +47,7 @@ describe "task.blackknight.internal", () ->
         done()
 
 
-  describe "popProcessingDates", () ->
     it 'should return popped date from queue', (done) ->
-      _processDateQueue = _.cloneDeep _initialDateQueue
       expectedDates =
         "Refresh": "19800101"
         "Update": "19900101"
@@ -68,10 +74,7 @@ describe "task.blackknight.internal", () ->
         done()
 
 
-  describe "pushProcessingDates", () ->
     it 'should push given date to queue', (done) ->
-      _processDateQueue = _.cloneDeep _initialDateQueue
-
       expectedQueue =
         "Refresh": [
           "19800101"
