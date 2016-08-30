@@ -180,8 +180,8 @@ popProcessingDates = (dates) ->
     logger.debug () -> "moving #{JSON.stringify(dates)}"
     logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
     logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
-    currentDateQueue[REFRESH].sort()
-    currentDateQueue[UPDATE].sort()
+    _.uniq(currentDateQueue[REFRESH]).sort()
+    _.uniq(currentDateQueue[UPDATE]).sort()
 
     processDates =
       "#{REFRESH}": null
