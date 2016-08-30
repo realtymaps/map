@@ -82,10 +82,12 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
 
 
-  update: (project, auth_user_id) ->
+  update: (params, body, safe, doLogQuery) ->
     q = tables.user.project()
-    .update(project)
-    .where(id: project.id, auth_user_id)
+    .update(_.pick(body, safe))
+    .where(params)
+    if doLogQuery
+      logger.debug q.toString()
     q
 
 
