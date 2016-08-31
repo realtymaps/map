@@ -201,6 +201,8 @@ describe "task.blackknight.internal", () ->
       .then (fipsCodes) =>
         expect(fipsCodes).to.eql outputFipsCodes
         #expect(@jobQueueSpy.queueSubsequentSubtask.args[0][0]).to.eql loadRawDataTaskArgs
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+JSON.stringify(@jobQueueSpy.queueSubsequentSubtask.args[1][0],null,2))
+        console.log('================================== '+JSON.stringify(recordChangeCountsTaskArgs,null,2))
         expect(@jobQueueSpy.queueSubsequentSubtask.args[1][0]).to.eql recordChangeCountsTaskArgs
         @revert()
         done()
