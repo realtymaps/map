@@ -432,7 +432,50 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "recordChangeCounts",
-      "manualData": [],
+      "manualData": [
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/ASMT20160406/12021_Assessment_Update_20160406.txt.gz",
+          "fileName": "12021_Assessment_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "tax",
+          "rawTableSuffix": "12021_Assessment_Update_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        },
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/Deed20160406/12021_Deed_Update_20160406.txt.gz",
+          "fileName": "12021_Deed_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "deed",
+          "rawTableSuffix": "12021_Deed_Update_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        },
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/SAM20160406/12021_SAM_Update_20160406.txt.gz",
+          "fileName": "12021_SAM_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "mortgage",
+          "rawTableSuffix": "12021_SAM_Update_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        }
+      ],
       "replace": true
     }
 }
