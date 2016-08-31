@@ -6,7 +6,6 @@ userSessionService = require '../services/service.userSession'
 profileService = require '../services/service.profiles'
 userSvc = require('../services/services.user').user
 projectSvc = require('../services/services.user').project
-subscriptionSvc = require '../services/service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -56,20 +55,11 @@ login = (req, res, next) -> Promise.try () ->
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
-      subscriptionSvc.getStatus user
-      .then (subscription_status) ->
-        req.user = user
-        req.session.userid = user.id
-        req.session.subscription = subscription_status
-        userUtils.cacheUserValues(req)
-        .then () ->
-          req.session.saveAsync()
-        .then () ->
-          sessionSecurityService.ensureSessionCount(req)
-        .then () ->
-          sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
-        .then () ->
-          internals.getIdentity(req, res, next)
+      req.session.userid = user.id
+      sessionSecurityService.sessionLoginProcess(req, res, user)
+      .then () ->
+        internals.getIdentity(req, res, next)
+
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId

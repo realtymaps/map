@@ -7,6 +7,8 @@ keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 tables = require '../config/tables'
+subscriptionSvc = require './service.user_subscription.coffee'
+userUtils = require '../utils/util.user'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -79,8 +81,6 @@ ensureSessionCount = (req) -> Promise.try () ->
   .then (sessionSecurities=[]) ->
     sessionSecurities
 
-
-
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
@@ -103,9 +103,26 @@ getSecuritiesForSession = (sessionId) ->
     securities
 
 
-module.exports =
-  createNewSeries: createNewSeries
-  ensureSessionCount: ensureSessionCount
-  deleteSecurities: deleteSecurities
-  getSecuritiesForSession: getSecuritiesForSession
-  hashToken: hashToken
+sessionLoginProcess = (req, res, user) ->
+  subscriptionSvc.getStatus user
+  .then (subscription_status) ->
+    req.user = user
+    req.session.subscription = subscription_status
+    userUtils.cacheUserValues(req)
+
+  .then () ->
+    req.session.saveAsync()
+  .then () ->
+    ensureSessionCount(req)
+  .then () ->
+    createNewSeries(req, res, true)
+
+
+module.exports = {
+  createNewSeries
+  ensureSessionCount
+  deleteSecurities
+  getSecuritiesForSession
+  hashToken
+  sessionLoginProcess
+}
