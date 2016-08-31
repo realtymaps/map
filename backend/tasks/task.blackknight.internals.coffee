@@ -191,12 +191,12 @@ popProcessingDates = (dates) ->
 
     if refreshIndex >= 0 && ([refreshItem] = currentDateQueue[REFRESH].splice(refreshIndex, 1))
       processDates[REFRESH] = refreshItem
-      if finishedDateQueue[REFRESH].indexOf(refreshItem) != -1
+      if finishedDateQueue[REFRESH].indexOf(refreshItem) == -1
         finishedDateQueue[REFRESH].push(refreshItem)
 
     if updateIndex >= 0 && ([updateItem] = currentDateQueue[UPDATE].splice(updateIndex, 1))
       processDates[UPDATE] = updateItem
-      if finishedDateQueue[UPDATE].indexOf(updateItem) != -1
+      if finishedDateQueue[UPDATE].indexOf(updateItem) == -1
         finishedDateQueue[UPDATE].push(updateItem)
 
     dbs.transaction (transaction) ->
