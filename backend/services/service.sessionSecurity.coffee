@@ -125,7 +125,7 @@ sessionLoginProcess = (req, res, user) ->
   .then () ->
     ensureSessionCount(req)
   .then () ->
-    createNewSeries(req, res, true)
+    createNewSeries(req, res, !!req.body.remember_me)
 
 
 module.exports = {
