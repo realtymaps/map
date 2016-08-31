@@ -19,10 +19,10 @@ _initialFinishedDateQueue =
 
 _dateQueues = {}
 _keystore =
-  getValuesMap: () -> Promise.try () ->
-    return _processDateQueue
-  setValuesMap: (currentDateQueue) -> Promise.try () ->
-    _processDateQueue = currentDateQueue
+  getValuesMap: (namespace) -> Promise.try () ->
+    return _dateQueues[namespace]
+  setValuesMap: (currentDateQueue, opts={}) -> Promise.try () ->
+    _dateQueues[opts.namespace] = currentDateQueue
 
 bkServiceInternals.__set__ 'keystore', _keystore
 
@@ -61,6 +61,15 @@ describe "task.blackknight.internal", () ->
           "19900103",
           "19900102"
         ]
+      expectedFinishedQueue =
+        "Refresh": [
+          "19800100",
+          "19800101"
+        ]
+        "Update": [
+          "19900100",
+          "19900101"
+        ]
 
       input =
         "Refresh": "19800101"
@@ -69,8 +78,10 @@ describe "task.blackknight.internal", () ->
       bkServiceInternals.popProcessingDates(input)
       .then (dates) ->
         dates.should.deep.equal expectedDates
-        _processDateQueue['Refresh'].should.have.members expectedQueue['Refresh']
-        _processDateQueue['Update'].should.have.members expectedQueue['Update']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Refresh'].should.have.members expectedQueue['Refresh']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Update'].should.have.members expectedQueue['Update']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Refresh'].should.have.members expectedQueue['Refresh']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Update'].should.have.members expectedQueue['Update']
         done()
 
 
@@ -95,8 +106,8 @@ describe "task.blackknight.internal", () ->
 
       bkServiceInternals.pushProcessingDates(input)
       .then () ->
-        _processDateQueue['Refresh'].should.have.members expectedQueue['Refresh']
-        _processDateQueue['Update'].should.have.members expectedQueue['Update']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Refresh'].should.have.members expectedQueue['Refresh']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Update'].should.have.members expectedQueue['Update']
         done()
 
 
