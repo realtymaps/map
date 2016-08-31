@@ -80,8 +80,8 @@ describe "task.blackknight.internal", () ->
         dates.should.deep.equal expectedDates
         _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Refresh'].should.have.members expectedQueue['Refresh']
         _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES]['Update'].should.have.members expectedQueue['Update']
-        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Refresh'].should.have.members expectedQueue['Refresh']
-        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Update'].should.have.members expectedQueue['Update']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Refresh'].should.have.members expectedFinishedQueue['Refresh']
+        _dateQueues[bkServiceInternals.BLACKKNIGHT_PROCESS_DATES_FINISHED]['Update'].should.have.members expectedFinishedQueue['Update']
         done()
 
 
