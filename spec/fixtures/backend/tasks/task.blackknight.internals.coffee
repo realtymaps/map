@@ -315,30 +315,7 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "loadRawData",
-      "manualData": [
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/ASMT20160406/Assessment_Update_Delete_20160406.txt",
-          "fileName": "Assessment_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
-        },
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/SAM20160406/SAM_Update_Delete_20160406.txt",
-          "fileName": "SAM_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "mortgage",
-          "rawTableSuffix": "SAM_Update_Delete_20160406"
-        }
-      ],
+      "manualData": [],
       "replace": true,
       "concurrency": 10
     }
@@ -346,30 +323,7 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "recordChangeCounts",
-      "manualData": [
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/ASMT20160406/Assessment_Update_Delete_20160406.txt",
-          "fileName": "Assessment_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
-        },
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/SAM20160406/SAM_Update_Delete_20160406.txt",
-          "fileName": "SAM_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "mortgage",
-          "rawTableSuffix": "SAM_Update_Delete_20160406"
-        }
-      ],
+      "manualData": [],
       "replace": true
     }
 

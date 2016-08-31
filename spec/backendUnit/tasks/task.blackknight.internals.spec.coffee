@@ -186,7 +186,7 @@ describe "task.blackknight.internal", () ->
 
 
 
-    it 'should queue correct subtasks when action = DELETE', (done) ->
+    it 'should queue correct subtasks when action = UPDATE', (done) ->
       inputTransaction = fixture.queuePerFileSubtasks.inputTransaction2
       inputSubtask = fixture.queuePerFileSubtasks.inputSubtask2
       inputFiles = fixture.queuePerFileSubtasks.inputFiles2

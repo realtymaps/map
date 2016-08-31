@@ -401,9 +401,9 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
 
   fipsCodes = {}
   if action == DELETE
-    filesForDelete = []
+    filesForCounts = []
   else
-    filesForDelete = files
+    filesForCounts = files
     _.forEach files, (el) ->
       fipsCodes[el.normalSubid] = true
 
@@ -411,7 +411,7 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true})
 
   # non-delete `changeCounts` takes no data
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForDelete, replace: true})
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true})
 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
     fipsCodes
