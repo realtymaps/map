@@ -58,7 +58,8 @@ rmapsZoomLevelStateFactory
   stampit.methods
 
     mutateSummary: () ->
-
+      if @isClusterResults()
+        return
       overlays = @scope.map.layers.overlays
       Toggles = @scope.Toggles
 
