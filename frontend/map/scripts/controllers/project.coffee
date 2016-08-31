@@ -101,6 +101,8 @@ app.controller 'rmapsProjectCtrl',
     highlightProperty(slide.actual.rm_property_id)
 
   $scope.getLabel = (actual) ->
+    if !actual
+      return
     "#{actual.address.street} #{actual.address.unit}"
   #
   # Property carousel
