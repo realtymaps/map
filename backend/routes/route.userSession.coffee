@@ -54,7 +54,10 @@ login = (req, res, next) -> Promise.try () ->
       return next new ExpressResponse(alert: {
         msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
-      }, httpStatus.UNAUTHORIZED)
+      }, {
+        status: httpStatus.UNAUTHORIZED
+        quiet: true
+      })
     else
       subscriptionSvc.getStatus user
       .then (subscription_status) ->

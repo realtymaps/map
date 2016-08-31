@@ -14,25 +14,47 @@ doNextRedirect = (state, toState, nextLocation) ->
   state.go(redirectState)
 
 
-module.exports = app.controller 'rmapsLoginCtrl',
-  ($rootScope, $scope, $http, $location, $state, rmapsPrincipalService, rmapsEventConstants) ->
+module.exports = app.controller 'rmapsLoginCtrl', (
 
-    $scope.form = {}
-    $scope.doLoginPost = () ->
-      $http.post backendRoutes.userSession.login, $scope.form
-      .success (data, status) ->
-        if !httpStatus.isWithinOK status
-          return
-        $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
-        rmapsPrincipalService.setIdentity(data.identity)
+$rootScope
+$scope
+$http
+$log
+$location
+$state
+rmapsPrincipalService
+rmapsEventConstants) ->
 
-        doNextRedirect($state, $location.search().next, adminRoutes.mls.replace('/',''))
+  loginFailed = (response) ->
+    $log.error "Could not log in", response
+    $state.go 'login'
+
+  $scope.form = {}
+  $scope.doLoginPost = () ->
+    $http.post backendRoutes.userSession.login, $scope.form
+    .then ({data, status}) ->
+      if !httpStatus.isWithinOK(status)
+        return loginFailed("Bad Status #{status}")
+      if !data?.identity?
+        return loginFailed("no identity")
+
+      $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
+      rmapsPrincipalService.setIdentity(data.identity)
+
+      doNextRedirect($state, $location.search().next, adminRoutes.mls.replace('/',''))
+    .catch (response) ->
+      loginFailed(response)
 
 
-app.run ($rootScope, $location, $state, rmapsPrincipalService) ->
+app.run (
+$rootScope
+$location
+$state
+rmapsPrincipalService) ->
 
+  ###eslint-disable###
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
-
+    ###eslint-enable###
     # if we're entering the login state...
     if toState?.url != adminRoutes.login #toState.url is really just the state name here in admin
       return

@@ -116,7 +116,7 @@ app.use (data, req, res, next) ->
       # this is not strictly an error handler now, it is also used for routine final handling of a response,
       # something not easily done with the standard way of using express -- so only log as an error if the
       # status indicates that it is
-      logger.error (data.toString())
+      logger.error(data.toString())
 
     return data.send(res)
 
