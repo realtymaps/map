@@ -11,7 +11,6 @@ dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 
 
-RESTRICT_TO_FIPS = ['12021']
 NUM_ROWS_TO_PAGINATE = 2500
 BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
 BLACKKNIGHT_PROCESS_DATES_FINISHED = 'blackknight process dates finished'
@@ -82,11 +81,6 @@ _isDelete = (fileName) ->
 
 _isLoad = (fileName) ->
   if fileName.endsWith('.gz')
-    if RESTRICT_TO_FIPS.length > 0
-      fips = fileName.slice(0, 5)
-      if !_.includes(RESTRICT_TO_FIPS, fips)
-        logger.warn("Ignoring file due to FIPS code: #{fips}")
-        return false
     return true
   return false
 
@@ -180,8 +174,8 @@ popProcessingDates = (dates) ->
     logger.debug () -> "moving #{JSON.stringify(dates)}"
     logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
     logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
-    _.uniq(currentDateQueue[REFRESH]).sort()
-    _.uniq(currentDateQueue[UPDATE]).sort()
+    currentDateQueue[REFRESH] = _.uniq(currentDateQueue[REFRESH]).sort()
+    currentDateQueue[UPDATE] = _.uniq(currentDateQueue[UPDATE]).sort()
 
     processDates =
       "#{REFRESH}": null
@@ -195,18 +189,20 @@ popProcessingDates = (dates) ->
       refreshIndex = 0
       updateIndex = 0
 
-    if refreshIndex >= 0 && (refreshItem = currentDateQueue[REFRESH].splice(refreshIndex, 1))
-      processDates[REFRESH] = refreshItem[0]
-      finishedDateQueue[REFRESH].push(refreshItem[0])
+    if refreshIndex >= 0 && ([refreshItem] = currentDateQueue[REFRESH].splice(refreshIndex, 1))
+      processDates[REFRESH] = refreshItem
+      if finishedDateQueue[REFRESH].indexOf(refreshItem) != -1
+        finishedDateQueue[REFRESH].push(refreshItem)
 
-    if updateIndex >= 0 && (updateItem = currentDateQueue[UPDATE].splice(updateIndex, 1))
-      processDates[UPDATE] = updateItem[0]
-      finishedDateQueue[UPDATE].push(updateItem[0])
+    if updateIndex >= 0 && ([updateItem] = currentDateQueue[UPDATE].splice(updateIndex, 1))
+      processDates[UPDATE] = updateItem
+      if finishedDateQueue[UPDATE].indexOf(updateItem) != -1
+        finishedDateQueue[UPDATE].push(updateItem)
 
     dbs.transaction (transaction) ->
       keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES, transaction})
       .then () ->
-        keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
+        keystore.setValuesMap(finishedDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
     .then () ->
       return processDates
 
@@ -356,9 +352,6 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
         fileType = DELETE
       else if !file.name.endsWith('.gz')
         logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
-        continue
-      else if (file.name.endsWith('.gz') && !file.name.startsWith('12021'))
-        logger.warn("Ignoring file due to FIPS code: #{folderInfo.path}/#{file.name}")
         continue
       else
         fileType = folderInfo.action

@@ -1,14 +1,12 @@
 
-
 -- remove the data itself
 DELETE FROM data_combined where data_source_type = 'county';
 
 
--- one-time bootstrap needed here; delete this before re-using this migration
-INSERT INTO config_keystore (namespace, key, value)
-VALUES
-  ('blackknight process dates finished', 'Update', '["20160824","20160829"]'),
-  ('blackknight process dates finished', 'Refresh', '["20160824","20160829"]');
+-- the below update shouldn't be needed in the future, this is just to patch the data due to a code bug
+UPDATE config_keystore
+SET value = '["20160824","20160829","20160830"]'
+WHERE namespace = 'blackknight process dates finished';
 
 
 -- move the already-processed dates back into the queue
@@ -23,6 +21,7 @@ WHERE
   ck_finished.namespace = 'blackknight process dates finished' AND
   ck.key = ck_finished.key;
 DELETE FROM config_keystore WHERE namespace = 'blackknight process dates finished';
+
 
 
 -- leave the line below commented out unless we need to re-copy the files to S3
