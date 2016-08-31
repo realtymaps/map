@@ -2,13 +2,14 @@ Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
-logger = require '../config/logger'
+logger = require('../config/logger').spawn("service:sessionSecurity")
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 tables = require '../config/tables'
 subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
+errors = require '../utils/errors/util.errors.userSession'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -56,26 +57,35 @@ createNewSeries = (req, res, rememberMe) ->
 # make "room" for a new one
 ensureSessionCount = (req) -> Promise.try () ->
   if not req.user
-    #logger.debug "ensureSessionCount: anonymous users don't get session-counted"
+    logger.debug () -> "ensureSessionCount: anonymous users don't get session-counted"
     return Promise.resolve()
   if req.session.permissions['unlimited_logins']
-    #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
+    logger.debug () -> "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
   maxLoginsPromise = keystore.cache.getValuesMap('plans')
   .then (plans) ->
-    # logger.debug req.session.groups, true
-    plan =_.find Object.keys(plans), (plan) ->
-      !!req.session.groups[plan.toInitCaps() + ' Tier']
+    logger.debug plans
+
+    groups = Object.keys(req.session.groups)
+
+    if !groups.length
+      throw new errors.NeedsGroupPermissions('User has no groups')
+
+    plan =_.find Object.keys(plans), (p) ->
+      !!req.session.groups[p.toInitCaps() + ' Tier']
+
+    if !plan
+      logger.info 'groups: ' + groups.join(',')
+      logger.info 'plans: '+ Object.keys(plans).join(',')
+      throw new errors.InValidPlanError('plan not found')
+
     plan.maxLogins
-    
-  q = tables.auth.sessionSecurity().whereNotExists () ->
+
+  sessionSecuritiesPromise = tables.auth.sessionSecurity().whereNotExists () ->
     @select(1).from(tables.auth.session.tableName)
     .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
   .delete()
-
-  # logger.debug q.toString()
-
-  sessionSecuritiesPromise = q.then () ->
+  .then () ->
     tables.auth.sessionSecurity()
     .where(user_id: req.user.id)
   .then (sessionSecurities=[]) ->

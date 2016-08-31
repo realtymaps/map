@@ -12,9 +12,9 @@ mixin projectsDropdown()
     .dropdown-menu.whiteblock.no-margin
       .fixed-header
         div
-          div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Project
-          div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Projects
-          a(href="{{frontendRoutes.projects}}") View All
+          div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Active Project
+          div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Active Projects
+          a(href="{{frontendRoutes.projects}}") View All Projects
         div
           span.results-btn(
             rmaps-require-subscriber="disable"
@@ -32,7 +32,7 @@ mixin projectsDropdown()
               span Save As
       .inner
         ul
-          li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )
+          li(ng-repeat="project in projects | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)" ng-if="!project.archived")
             a
               span.enity
                 span.icon.icon-project
@@ -44,12 +44,12 @@ mixin projectsDropdown()
                       span(ng-show="project.totalProperties == 1") &#32;Property
                       span(ng-show="project.totalProperties != 1") &#32;Properties
                       span(ng-show="project.archived == true") &#32;(archived)
-                    span.col-md-4.text-right &#32;{{project.modified.format('MMM Do')}}
+                    span.col-md-4.text-right &#32;{{project.modified.format('ddd MMM Do ha')}}
                   .row.subtitle(ng-if="project.parent_name")
                     span.col-md-2 Owner:
                     span.col-md-10.parent-name &#32;{{project.parent_name}}
               span.actions
-                span.action-button(rmaps-require-subscriber="disable" ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+                span.action-button(rmaps-require-subscriber="disable" ng-show="!project.sandbox && project.id != principal.getCurrentProfileId()" ng-click="archiveProject(project); $event.stopPropagation()")
                   span.action(ng-show="project.archived") Unarchive
                   span.action(ng-show="!project.archived") Archive
                   span.icon.icon-save_on_disk

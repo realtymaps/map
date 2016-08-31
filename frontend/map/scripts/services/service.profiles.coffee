@@ -4,7 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'project_id']
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
-
 app.service 'rmapsCurrentProfilesService', (
 $http
 rmapsHttpTempCache
@@ -47,12 +46,17 @@ app.service 'rmapsProfilesService', (
   _current = (profile) ->
     $log.debug 'attempting to set current profile'
     rmapsCurrentProfilesService.setCurrent profile
-    .then () ->
+    .then ({data}) ->
       $log.debug 'set profile'
       $log.debug profile
 
+      # Ensure profile timestamp is up-to-date
+      if data.identity?.profiles?[profile.id]
+        profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
+
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
+
 
   _isSettingProfile = false
   _settingCurrentPromise = null

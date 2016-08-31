@@ -5,7 +5,6 @@ config = require '../config/config'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
 
-
 safeUserFields = [
   'cell_phone'
   'email'

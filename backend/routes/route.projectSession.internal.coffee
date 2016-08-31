@@ -217,5 +217,11 @@ class ProjectRouteCrud extends RouteCrud
     .then () ->
       identity: userUtils.getIdentityFromRequest req
 
+  byIdPUT: (req, res, next) ->
+    super(req, res, next)
+    .then () ->
+      userUtils.cacheUserValues req, profiles: true # to force profiles refresh in cache
+    .then () ->
+      true
 
 module.exports = ProjectRouteCrud

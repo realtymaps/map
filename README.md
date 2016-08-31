@@ -48,16 +48,14 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
                 - `foreman run gulp` or
                 - `foreman run scripts/runDev`
 
-            - Mayday or Remote Heroku Database:
-                - `foreman run scripts/runDev --mayday --bare-server`
+            - Remote Heroku Database:
+                - `foreman run scripts/runDev --bare-server`
 
         - **Run the server (HEROKU ONLY)**
             - `foreman start`
 
 ### Db change management
-- handled via Flyway
 - [full documentation here](https://realtymaps.atlassian.net/wiki/display/NDS/Database+change+management)
-- foreman run npm run flyway
 
 
 ___
@@ -71,7 +69,6 @@ execute
 - forever script + git hook for custom deployment
 - nginx-buildpack for Heroku see above
 - make nginx installer work on more than OSX
-- mocha/karma frontend tests with or without web-pack
 - npm run gulp-prod (for prod)
 - figure out if global prequisite install is actually necessary
 - set things up so "foreman start" will do what we want for every environment

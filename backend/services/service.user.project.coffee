@@ -82,12 +82,15 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
 
 
-  update: (project, auth_user_id) ->
+  update: (params, entity, safe, doLogQuery) ->
+    if safe
+      _.pick(entity, safe)
     q = tables.user.project()
-    .update(project)
-    .where(id: project.id, auth_user_id)
+    .update(entity)
+    .where(params)
+    if doLogQuery
+      logger.debug q.toString()
     q
-
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
@@ -119,11 +122,10 @@ class ProjectCrud extends ThenableCrud
           favorites: {}
         promises.push profileSvc.update(_.merge(resetProfile, id: profile.id), idObj.auth_user_id)
 
-
         resetProject =
           pins: {}
           archived: null
-        promises.push @update(_.merge(resetProject, id: idObj.id), idObj.auth_user_id)
+        promises.push @update(idObj, resetProject)
 
 
       else

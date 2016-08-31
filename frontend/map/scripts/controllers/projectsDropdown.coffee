@@ -23,22 +23,20 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   $scope.isSandbox = (project) ->
     !project.sandbox
 
-  $scope.isArchived = (project) ->
-    project.archived
-
   setScopeVariables = () ->
     rmapsPrincipalService.getIdentity()
     .then (identity) ->
       if !identity?.profiles
         return
       $scope.projects = _.values identity.profiles
-      $log.debug $scope.projects
       $scope.totalProjects = $scope.projects.length
 
       _.each $scope.projects, (project) ->
         project.modified = moment(project.rm_modified_time)
         project.totalProperties = (_.keys project.pins)?.length
         project.totalFavorites = (_.keys project.favorites)?.length
+
+      $log.debug $scope.projects
 
   setScopeVariables()
 

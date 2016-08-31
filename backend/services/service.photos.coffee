@@ -15,7 +15,7 @@ getMetaData = (opts) -> Promise.try () ->
     args: opts
     required: ['data_source_id', 'data_source_uuid', 'image_id']
 
-  query = tables.finalized.combined()
+  query = tables.finalized.photo()
   .select('photos')
   .where _.pick opts, ['data_source_id', 'data_source_uuid']
 

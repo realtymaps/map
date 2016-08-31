@@ -128,9 +128,9 @@ $fnMakeMapUlDropdown()
         p
           font-size 14px
           line-height 20px
-        .action   
+        .action
           margin 20px 0
-          color $light_blue   
+          color $light_blue
 
     .actions
       float right
@@ -150,7 +150,17 @@ $fnMakeMapUlDropdown()
         display flex
         align-items center
         justify-content space-around
-        padding 0 5px
+        padding 0 6px 0 10px
+        border 1px solid transparent
+        &:hover
+        &:focus
+          color $rm-map-btn-icon-hover
+          border 1px solid $rm-map-btn-icon-hover
+          background $white
+          .icon, .fa
+            color $rm-map-btn-icon-hover
+          .action
+            opacity 1
         &.disabled
           $fnDisabled()
         .action
@@ -164,8 +174,5 @@ $fnMakeMapUlDropdown()
           display inline-block
           font-size 18px
           float right
-          &:hover
-          &:focus
-            color $rm-map-btn-icon-hover
           &.icon-remove
             display none
