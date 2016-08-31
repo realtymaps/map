@@ -233,10 +233,8 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
-      if row['FIPS Code'] != '12021'
-        Promise.resolve()
 
-      else if subtask.data.action == internals.REFRESH
+      if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
