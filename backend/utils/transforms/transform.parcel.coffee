@@ -43,7 +43,8 @@ final =
     required: true
 
   data_source_uuid:
-    input: 'apn'
+    input: false
+    transform: validators.rm_property_id()
     required: true
 
   street_address_num: {}
