@@ -84,7 +84,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
 
     filteredImports = filteredImports.map (f) ->
       fileName: f
-      refreshThreshold: refreshThreshold
       startTime: now
 
     Promise.all [
@@ -98,7 +97,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
         subtask, laterSubtaskName: "activateNewData"
         manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
         replace: true
-        startTime: subtask.data.startTime
       }
     ]
 
