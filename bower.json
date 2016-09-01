@@ -20,7 +20,7 @@
     "angular-ui-router": "~0.2.10",
     "angular-ui-utils": "~0.2.3",
     "bootstrap": "3.3.X",
-    "d3": "~3.5.5",
+    "d3": "3.5.X",
     "fontawesome": "~4.4.0",
     "isteven-angular-multiselect": "~2.0.2",
     "leaflet": "0.7.x",
