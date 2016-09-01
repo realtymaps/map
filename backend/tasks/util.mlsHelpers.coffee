@@ -91,6 +91,10 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   delete mainEntry.hide_listing
   delete mainEntry.rm_inserted_time
   delete mainEntry.rm_modified_time
+  # eventually, we should probably remove those columns and set them in config_mls instead
+  delete mainEntry.photo_last_mod_time
+  delete mainEntry.photo_id
+
   mainEntry.prior_entries = sqlHelpers.safeJsonArray(entries)
   mainEntry.address = sqlHelpers.safeJsonArray(mainEntry.address)
   mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
