@@ -1,0 +1,7 @@
+ALTER TABLE listing
+DROP COLUMN IF EXISTS photos,
+DROP COLUMN IF EXISTS cdn_photo,
+DROP COLUMN IF EXISTS photo_count,
+DROP COLUMN IF EXISTS photo_last_mod_time,
+DROP COLUMN IF EXISTS photo_count,
+DROP COLUMN IF EXISTS photo_id;
