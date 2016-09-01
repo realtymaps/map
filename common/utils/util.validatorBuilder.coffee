@@ -136,17 +136,6 @@ _rules =
         alias: 'MLS Number'
         required: true
 
-      photo_id:
-        alias: 'Photo ID'
-
-      photo_count:
-        alias: 'Photo Count'
-        type: name: 'integer'
-
-      photo_last_mod_time:
-        alias: 'Photo Last Mod Time'
-        type: name: 'datetime'
-
       bedrooms:
         alias: 'Bedrooms'
         type: name: 'integer'
