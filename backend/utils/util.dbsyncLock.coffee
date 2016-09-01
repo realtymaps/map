@@ -1,7 +1,6 @@
 Promise = require('bluebird')
 logger = require('../config/logger').spawn('dbsyncLock')
 keystore = require '../services/service.keystore'
-_ = require 'lodash'
 
 
 releaseLock = () -> Promise.try () ->
