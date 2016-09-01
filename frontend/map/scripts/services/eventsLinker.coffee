@@ -17,8 +17,6 @@ app.service "rmapsEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLea
     markerEvents.map (name) ->
       eventName = "leafletDirectiveMarker.#{_getMapIdEventStr(mapId)}" + name
       $rootScope.$onRootScope eventName, (event, args) ->
-        if name == 'click'
-          s = 'click'
 
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           if handler[name]?
@@ -30,8 +28,6 @@ app.service "rmapsEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLea
     geojsonEvents.map (name) ->
       eventName = "leafletDirectiveGeoJson.#{_getMapIdEventStr(mapId)}" + name
       $rootScope.$onRootScope eventName, (event, args) ->
-        if name == 'click'
-          s = 'click'
 
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           {feature} = leafletObject
