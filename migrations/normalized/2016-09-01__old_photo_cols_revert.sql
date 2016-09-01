@@ -1,3 +1,3 @@
 ALTER TABLE listing
 ADD COLUMN photo_id TEXT,
-ADD COLUMN photo_last_mod_time;
+ADD COLUMN photo_last_mod_time TIMESTAMP WITHOUT TIME ZONE;
