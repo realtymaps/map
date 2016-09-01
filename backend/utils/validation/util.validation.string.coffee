@@ -24,7 +24,7 @@ module.exports = (options = {}) ->
         return Promise.reject new DataValidationError("string does not match regex: #{regex}", param, value)
     if options.in?
       if !_.includes options.in, value
-        return Promise.reject new DataValidationError("string is nothin within : [#{options.in.join(',')}] options.", param, value)
+        return Promise.reject new DataValidationError("string is not in: [#{options.in.join(',')}]", param, value)
 
     transformedValue = value
 

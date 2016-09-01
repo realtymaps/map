@@ -99,22 +99,7 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
 
   mainEntry.baths_total = mainEntry.baths?.filter
 
-  #compose photo finalized fields
-  photosLength = Object.keys(mainEntry.photos).length
-
-  if !photosLength
-    mainEntry.actual_photo_count = 0
-    return mainEntry
-
-  mainEntry.actual_photo_count = photosLength - 1  # photo 0 and 1 are the same
-
-  mlsPhotoUtil.getCdnPhotoShard {
-    newFileName: mainEntry.photos[0].key
-    row: mainEntry
-  }
-  .then (cdn_photo) ->
-    mainEntry.cdn_photo = cdn_photo
-    mainEntry
+  mainEntry
 
 
 finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, delay}) ->

@@ -5,7 +5,11 @@ validation = require '../util.validation'
 prepForRmPropertyId =
   apn:
     input: 'parcelapn'
-    transform: validators.string()
+    transform: [
+      # for some reason, there are parcels without an APN that get ?, ??, or ??? instead
+      validators.nullify(matcher: (s) -> !s || /^\?+$/.test(s))
+      validators.string()
+    ]
     required: true
 
   fipsCode:
