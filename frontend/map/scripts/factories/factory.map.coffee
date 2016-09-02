@@ -32,7 +32,7 @@ app.factory 'rmapsMapFactory',
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
     rmapsRenderingService,
-    rmapsResultsFlow
+    rmapsLayerManager
     rmapsResultsFormatterService,
     rmapsMapTogglesFactory,
     rmapsZoomLevelService,
@@ -240,7 +240,7 @@ app.factory 'rmapsMapFactory',
           # but gets buggy when rapidly changing zooms occurs.
           @scope.zoomLevelService.trackZoom(@scope)
 
-          rmapsResultsFlow {
+          rmapsLayerManager {
             @scope
             filters
             @hash
