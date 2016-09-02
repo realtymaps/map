@@ -1,13 +1,17 @@
 require '../../common/extensions/strings'
+logger = (require '../util/logger').spawn('styles')
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 _ = require 'lodash'
+rework = require 'gulp-rework'
+rework_url = require 'rework-plugin-url'
+path = require 'path'
 
 _testCb = null
 
-styles = ({app, doSourceMaps}) ->
+styles = ({app, doSourceMaps, cdn}) ->
   doSourceMaps ?= true
 
   stylesFn = () ->
@@ -36,6 +40,17 @@ styles = ({app, doSourceMaps}) ->
 
     .pipe $.order sourcePaths
     .pipe $.concat app + '.css'
+
+    # Running rework even when cdn = false serves as a sanity check for CSS errors
+    stream = stream.pipe rework rework_url  (url) ->
+      # We only want use CDN urls for these filetypes, and only for paths like "/assets/blah.jpg" NOT "//example.com/blah.jpg"
+      if cdn && url.match(/[.](jpg|jpeg|gif|png|svg|ico)([?].*)?(#.*)?$/i) and url.indexOf('/') == 0 && url[1] != '/'
+        shard = (url.charCodeAt(url.lastIndexOf('/') + 1) || 0) % 2 # randomization
+        r_url = "//prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{url}"
+        logger.debug "rework_url #{url} -> #{r_url}"
+        r_url
+      else
+        url
 
     if doSourceMaps
       stream = stream.pipe $.sourcemaps.write()
@@ -73,7 +88,7 @@ stylesWatch = (app) ->
 ###
 gulp.task 'styles', styles(app: 'map')
 
-gulp.task 'stylesProd', styles(app: 'map', doSourceMaps: false)
+gulp.task 'stylesProd', styles(app: 'map', doSourceMaps: false, cdn: true)
 
 gulp.task 'stylesWatch', (done) ->
   stylesWatch 'map'
