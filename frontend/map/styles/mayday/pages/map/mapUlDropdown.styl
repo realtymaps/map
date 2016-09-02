@@ -14,9 +14,9 @@ $fnMakeMapUlDropdown()
       border-bottom 1px solid $darker_white
       border-top 1px solid $darker_white
       color $dark_blue
-      font-size 12px
+      font-size 14px
       font-weight bold
-      padding 0 10px
+      padding 10px 20px
       min-height 45px
       display flex
       align-items center
@@ -36,17 +36,18 @@ $fnMakeMapUlDropdown()
         @extend .noselect
         float right
         cursor pointer
-        border 1px solid $black_10
+        border 1px solid $black_30
         border-radius 3px
-        padding 7px
+        padding 8px 12px
         margin-left 5px
+        color $gray_darker
+        background-color $white
         &.disabled
           $fnDisabled()
         .icon
           font-size 18px
         &:hover
-          background-color $darker_white
-          color $darker_blue
+          border-color $black_50
 
       .fa, .icon
         float left
@@ -64,6 +65,16 @@ $fnMakeMapUlDropdown()
         overflow auto
         width 100%
         li
+          > div
+            overflow hidden
+            padding 10px
+            position relative
+            &:hover
+            &:active
+            &:focus
+              background-color $light_blue_select
+            .location
+              display block !important
           a
             display block
             overflow hidden
@@ -95,7 +106,16 @@ $fnMakeMapUlDropdown()
 
               span.parent-name
                 color $green
-
+          .title
+            font-size 16px
+          .rename
+            font-size 11px
+            cursor pointer
+            color $light_blue
+            &:hover
+            &:focus
+            &:active
+              color $blue
 
           &:hover
           &:focus
@@ -103,15 +123,23 @@ $fnMakeMapUlDropdown()
               color $light_blue
             span.actions
               transform scale(1)
+      .dropdown-explanation
+        padding 10px 20px
+        p
+          font-size 14px
+          line-height 20px
+        .action   
+          margin 20px 0
+          color $light_blue   
 
     .actions
-      width 20%
       float right
 
       .icon, .fa, .action-button
         display inline-block
-        font-size 20px
+        font-size 16px
         padding 7px
+        color $black_60
         &:hover
         &:focus
           color $rm-map-btn-icon-hover

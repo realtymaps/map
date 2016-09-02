@@ -38,7 +38,10 @@ module.exports = (app) ->
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
         Promise.try () ->
+          logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           route.handle(req, res, next)
+        .catch isUnhandled, (error) ->
+          throw new PartiallyHandledError(error, 'uncaught route handler error (*** add better error handling code to cover this case! ***)')
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
@@ -46,10 +49,7 @@ module.exports = (app) ->
             returnStatus = status.UNAUTHORIZED
           else
             returnStatus = status.INTERNAL_SERVER_ERROR
-          next new ExpressResponse
-            alert:
-              msg: error.message
-            returnStatus
+          next new ExpressResponse({alert: msg: error.message}, {status: returnStatus, quiet: error.quiet})
     app[route.method](route.path, route.middleware..., wrappedHandle)
 
   paths = {}

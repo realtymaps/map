@@ -11,6 +11,7 @@ parcelsFetch = require '../services/service.parcels.fetcher.digimaps'
 parcelHelpers = require './util.parcelHelpers'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger.coffee').spawn('task:digimaps')
+importsLogger = require('../config/logger.coffee').spawn('task:digimaps:imports')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
@@ -23,18 +24,24 @@ NUM_ROWS_TO_PAGINATE = 250
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
+  importsLogger.debug () -> imports
+
   dataLoadHelpers.getLastUpdateTimestamp(subtask)
   .then (refreshThreshold) ->
     folderObjs = imports.map (l) ->
       name: l
       moment: moment(String.numeric(l), 'YYYYMMDD').utc()
 
-    folderObjs = _.filter folderObjs, (o) ->
-      o.moment.isAfter(moment(refreshThreshold).utc())
+    if refreshThreshold? && !subtask.data.skipRefreshThreshold
+      logger.debug '@@@ refreshThreshold @@@'
+      logger.debug refreshThreshold
+      logger.debug () -> moment(refreshThreshold).format('MMMM Do YYYY, h:mm:ss a')
 
+      folderObjs = _.filter folderObjs, (o) ->
+        o.moment.isAfter(moment(refreshThreshold).utc())
 
     if subtask.data.fipsCodeLimit?
-      logger.debug "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
+      logger.debug () -> "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
       folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
 
     # folderObjs = _.filter folderObjs, (f) -> #NOTE: for testing ONLY
@@ -276,13 +283,6 @@ recordChangeCounts = (subtask) ->
         normalSubid: subtask.data.subset.fips_code  # required for countyHelpers.finalizeData
         deletedParcel: true
     }
-
-# syncCartoDb: (subtask) -> Promise.try ->
-#   fipsCode = String.numeric path.basename subtask.task_data
-#   parcel.upload(fipsCode)
-#   .then ->
-#     parcel.synchronize(fipsCode)
-#     #WHAT ELSE IS THERE TO DO?
 
 
 module.exports = new TaskImplementation 'digimaps', {

@@ -13,7 +13,6 @@ internals = require './route.properties.internals'
 ourTransforms = require '../utils/transforms/transforms.properties'
 logger = require('../config/logger').spawn('route.properties')
 
-
 module.exports =
 
   mapState:
@@ -71,9 +70,9 @@ module.exports =
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
-            throw new ExpressResponse(
+            return next( new ExpressResponse(
               alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
-               httpStatus.NOT_FOUND)
+              {status: httpStatus.NOT_FOUND, quiet: true}))
 
           property
 
@@ -155,4 +154,5 @@ module.exports =
 
   pva:
     handle: (req, res, next) ->
+      res.set 'Access-Control-Allow-Origin', "*"
       internals.getPva({req, res, next})

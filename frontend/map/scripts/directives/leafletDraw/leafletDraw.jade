@@ -1,10 +1,11 @@
 //- Basic glued template driven by a drictives controller for custom templates
 //- Binding is one time (::) for everything to keep from having excessive evaluations
 div
-  button(
-    ng-repeat="toDraw in ::drawContexts"
-    ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
-      span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
+  div(ng-repeat="toDraw in ::drawContexts")
+    div(ng-if="::toDraw.template" ng-include="toDraw.template")
+    button(ng-if="::!toDraw.template"
+      ng-class="button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
+        span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
   
   button.save(ng-if="canSave"
     ng-class="::button.getClass('save')" ng-click="save()") {{::button.getText('save')}}

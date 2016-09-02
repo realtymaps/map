@@ -9,11 +9,13 @@ loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 Spinner = require('cli-spinner').Spinner
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+config = require '../config/config'
 
 buckets =
   PDF: 'aws-pdf-downloads'
   PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
+  BlackknightData: if config.ENV == 'production' then 'aws-blackknight-data' else 'test-aws-blackknight-data'
 
 
 _debug = (thing, thingName) ->
@@ -54,14 +56,20 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
       secretAccessKey: s3Info.other.secret_key
       region: 'us-east-1'
 
+    # some S3 api calls return streamable buffers...
+    if (s3FnName == 'getObject') && (opts.stream)
+      delete opts.stream
+      s3 = new AWS.S3()
+      # return the "createReadStream"-able response
+      return Promise.resolve(s3.getObject(_.extend({}, {Bucket: s3Info.other.bucket}, opts)))
+
     s3 = Promise.promisifyAll new AWS.S3()
 
     if (s3FnName == 'upload')
-      s3Stream = awsUploadFactory(s3)
-      return s3Stream.upload.call s3Stream, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+      return awsUploadFactory(s3).upload(extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts))
 
-    handle = s3[s3FnName + if nodeStyle then '' else 'Async']
-    handle.call s3, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+    s3FullFnName = s3FnName + if nodeStyle then '' else 'Async'
+    s3[s3FullFnName](extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts))
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, "AWS error encountered")
 
@@ -163,7 +171,7 @@ deleteAllObjects = (opts) ->
       return
     logger.debug "deleting page: #{pagesIdx}"
     summary.attempted += list.Contents.length
-    deleteObjects _.extend {}, opts,
+    deleteObjects _.extend {}, _.omit(opts, 'progress'),
       Delete: Objects: list.Contents.map (o) -> Key: o.Key
     .then (result) ->
       summary.deleted += (result.Deleted?.length||0)

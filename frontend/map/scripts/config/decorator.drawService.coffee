@@ -1,6 +1,10 @@
 ###globals angular###
 app = require '../app.coffee'
 
+
+app.run ($templateCache) ->
+  $templateCache.put 'drawMarker.tpl.html', require('../../html/views/templates/drawMarker.jade')()
+
 app.config ($provide) ->
   $provide.decorator 'rmapsLeafletDrawDirectiveCtrlDefaultsService', ($delegate) ->
 
@@ -10,6 +14,11 @@ app.config ($provide) ->
         'rectangle'
         'circle'
         'polygon'
+        {
+          name: 'marker'
+          template: 'drawMarker.tpl.html'
+        }
+        'text'
         'edit'
         'trash'
       ]

@@ -8,19 +8,22 @@ tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 internals = require './service.photos.internals'
 mlsConfigService = require './service.mls_config'
+errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
     args: opts
     required: ['data_source_id', 'data_source_uuid', 'image_id']
 
-  query = tables.finalized.combined()
+  query = tables.finalized.photo()
+  .select('photos')
   .where _.pick opts, ['data_source_id', 'data_source_uuid']
-  .where 'photos', '!=', '{}'
 
   logger.debug query.toString()
 
   query.then (rows) ->
+    rows = _.filter rows, (r) ->
+      !!Object.keys(r.photos).length
     row = sqlHelpers.expectSingleRow(rows)
     photo = row?.photos?[opts.image_id]
     logger.debug photo
@@ -39,7 +42,6 @@ getResizedPayload = (opts) -> Promise.try () ->
   {width, height, data_source_id, data_source_uuid, image_id} = opts
 
   logger.debug "Requested resize of photo #{data_source_uuid}##{image_id} to #{width||'?'}px x #{height||'?'}px"
-  newSize = {width, height}
 
   getRawPayload(opts)
   .then (payload) ->
@@ -50,9 +52,8 @@ getResizedPayload = (opts) -> Promise.try () ->
 
       if payload.meta?.width? && payload.meta?.height?
         logger.debug "Using photo metadata for originalSize: #{payload.meta.width} x #{payload.meta.height}"
-        originalSize =
-          width: payload.meta.width
-          height: payload.meta.height
+        width: payload.meta.width
+        height: payload.meta.height
       else
         mlsConfigService.getByIdCached(data_source_id)
         .then (mlsInfo) ->
@@ -78,7 +79,7 @@ getResizedPayload = (opts) -> Promise.try () ->
           #   stream = resizeStream
           #   meta = _.extend {}, payload.meta, {width, height}
 
-      Promise.try ->
+      Promise.try () ->
         if originalSize?.width && originalSize?.height # we can get aspect
           aspect = originalSize.width / originalSize.height
           if width && !height
@@ -89,8 +90,13 @@ getResizedPayload = (opts) -> Promise.try () ->
             _resize(width, height)
         else if width && height # no originalSize, so resize only if width and height provided
           _resize(width, height)
+      .catch (err) ->
+        if err.message == 'You cannot pipe after data has been emitted from the response.'
+          throw new errorUtils.QuietlyHandledError(err, 'no image available')
+        else
+          throw err
 
-    .then ->
+    .then () ->
 
       {stream, meta}
 

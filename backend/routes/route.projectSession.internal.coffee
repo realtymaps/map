@@ -215,6 +215,7 @@ class ProjectRouteCrud extends RouteCrud
         req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
     .then () ->
-      identity: routeUserSessionInternals.getIdentity req, res
+      identity: userUtils.getIdentityFromRequest req
+
 
 module.exports = ProjectRouteCrud

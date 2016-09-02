@@ -46,10 +46,11 @@ _getByFipsCode = (req, res, next, headersCb) ->
       .pipe(res)
 
   .catch validation.DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch (error) ->
+    # we shouldn't be throwing strings!!  see: http://www.devthought.com/2011/12/22/a-string-is-not-an-error/
     if _.isString error
-      return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus[error])
+      return next new ExpressResponse({alert: {msg: "#{error} for #{req.path}."}}, {status: httpStatus[error]})
     throw error
 
 

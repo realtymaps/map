@@ -12,7 +12,12 @@ app.factory 'rmapsEmptyFilterData', () ->
   overall flow:
   if this.promise exists then the mutation has been handled.
 ###
-app.factory 'rmapClusterMutation', ($q, rmapsLayerFormattersService, rmapsPropertiesService, rmapsEmptyFilterData) ->
+app.factory 'rmapClusterMutation', (
+$q
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsEmptyFilterData
+) ->
   {MLS} = rmapsLayerFormattersService
 
   stampit.methods
@@ -27,13 +32,18 @@ app.factory 'rmapClusterMutation', ($q, rmapsLayerFormattersService, rmapsProper
           # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
           clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = MLS.setMarkerManualClusterOptions(model)
         @scope.map.markers.backendPriceCluster = clusters
-        @promise = $q.resolve()
+
       @
 
   .compose(rmapsEmptyFilterData)
 
-app.factory 'rmapSummaryResultsMutation',
-($q, $log, rmapsLayerFormattersService, rmapsPropertiesService, rmapsZoomLevelStateFactory) ->
+app.factory 'rmapSummaryResultsMutation', (
+$q
+$log
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsZoomLevelStateFactory
+) ->
   $log = $log.spawn 'rmapSummaryResultsMutation'
 
   {setDataOptions, MLS} = rmapsLayerFormattersService
@@ -48,8 +58,6 @@ app.factory 'rmapSummaryResultsMutation',
   stampit.methods
 
     mutateSummary: () ->
-      if @promise
-        return @
 
       overlays = @scope.map.layers.overlays
       Toggles = @scope.Toggles
@@ -90,21 +98,33 @@ app.factory 'rmapSummaryResultsMutation',
 
       $log.debug @scope.map.markers.filterSummary
 
+      # turn our price marker layer back on if zooming from parcel-level
+      if @scope.zoomLevelService.isFromParcelZoom()
+        Toggles.showPrices = true
+
       if !@isAnyParcel()
         overlays?.parcels?.visible = false
-        if @scope.zoomLevelService.isFromPriceZoom()
-          Toggles.showPrices = true
         Toggles.showAddresses = false
         overlays?.parcelsAddresses?.visible = false
-        @promise = $q.resolve()
+
       @
+
   .compose rmapsZoomLevelStateFactory
 
-app.factory 'rmapParcelResultsMutation',
-($q, $log, rmapSummaryResultsMutation, rmapsZoomLevelStateFactory, rmapsPropertiesService, rmapsLayerFormattersService, rmapsEmptyFilterData) ->
+app.factory 'rmapParcelResultsMutation', (
+$q
+$log
+$timeout
+rmapSummaryResultsMutation
+rmapsZoomLevelStateFactory
+rmapsPropertiesService
+rmapsLayerFormattersService
+rmapsEmptyFilterData
+) ->
   $log = $log.spawn 'rmapParcelResultsMutation'
   stampit.methods
     handleGeoJsonResults: (data) ->
+      # clone (truned off), ui-leaflet, leaflet
       rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, data)
       .then (data) =>
         return if @isEmptyData()
@@ -115,11 +135,8 @@ app.factory 'rmapParcelResultsMutation',
           style: rmapsLayerFormattersService.Parcels.getStyle
 
     mutateParcel: () ->
-      if @promise
-        return @
-
       if !@isAnyParcel()
-        return @
+        return $q.resolve()
 
       overlays = @scope.map.layers.overlays
       Toggles = @scope.Toggles
@@ -128,21 +145,26 @@ app.factory 'rmapParcelResultsMutation',
       Toggles.showAddresses = @isAddressParcel()
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
-      @promise = @handleGeoJsonResults(@data?.singletons)
-      @
+      data = if @data?.singletons? then @data?.singletons else @data
+      @handleGeoJsonResults(data)
 
   .compose rmapsZoomLevelStateFactory, rmapsEmptyFilterData
 
-app.factory 'rmapsResultsFlow',
-(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation, $log) ->
+app.factory 'rmapsResultsFlow', (
+$log
+rmapParcelResultsMutation
+rmapClusterMutation
+rmapSummaryResultsMutation
+) ->
   $log = $log.spawn 'map:rmapsResultsFlow'
-  flowFact = stampit
-  .compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)
+  flowFact = stampit.compose(rmapParcelResultsMutation, rmapClusterMutation, rmapSummaryResultsMutation)
 
-  ({scope, filters, hash, mapState, data, cache}) ->
+  ({scope, filters, hash, mapState, data}) ->
     flow = flowFact({scope, filters, hash, mapState, data})
 
-    promise = flow.mutateCluster().mutateSummary().mutateParcel().promise
+    flow.mutateCluster().mutateSummary()
+
+    promise = flow.mutateParcel()
 
     #make the promise apparent as an undefined promise will just pass through and make
     #q.all a nightmare to debug. This was the main big bug originally in here

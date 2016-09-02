@@ -1,90 +1,65 @@
-sinon = require 'sinon'
-chai = require("chai")
-chai.use(require 'chai-as-promised')
-chai.should()
 {basePath} = require '../globalSetup'
+promiseUtils = require '../../specUtils/promiseUtils'
 rewire = require('rewire')
 TaskImplementation = rewire("#{basePath}/tasks/util.taskImplementation")
-errors = require("#{basePath}/utils/errors/util.errors.task")
 subject = null
 taskName = null
+errorHandlingUtils = require '../../../backend/utils/errors/util.error.partiallyHandledError'
 
 makeSubtasks = () ->
-  one: sinon.stub()
-  two: sinon.stub()
-  three: sinon.stub()
 
 describe 'util.taskImplementation', () ->
 
-  beforeEach ->
-    taskName = 'test'
-    subtasks = makeSubtasks()
-    subject = new TaskImplementation taskName, subtasks
+  taskName = 'test'
+  subtasks =
+    one: () ->
+    two: () ->
+    three: () ->
 
+  fakeErrors = {
+    TaskNameError: class FakeTaskNameError extends errorHandlingUtils.QuietlyHandledError
+    MissingSubtaskError: class FakeMissingSubtaskError extends errorHandlingUtils.QuietlyHandledError
+  }
+  TaskImplementation.__set__('errors', fakeErrors)
+  subject = new TaskImplementation taskName, subtasks
 
   describe 'executeSubtask', () ->
     describe 'throws', ->
       describe 'TaskNameError', () ->
 
         it 'undefined', ->
-          subject.executeSubtask(name: undefined).should
-          .be.rejectedWith(errors.TaskNameError, 'subtask.name must be defined')
+          promiseUtils.expectReject(subject.executeSubtask({name: undefined}), fakeErrors.TaskNameError)
 
         it 'null', ->
-          subject.executeSubtask(name: null).should
-          .be.rejectedWith(errors.TaskNameError, 'subtask.name must be defined')
+          promiseUtils.expectReject(subject.executeSubtask({name: null}), fakeErrors.TaskNameError)
 
         it 'non existent name', ->
           subtaskName = 'missing'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.TaskNameError,
-          """Task name is not contained in subtask name.
-          Where the valid format is taskname_subtaskname.
-          For subtask: #{subtaskName}.""".replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.TaskNameError)
 
         it 'bad _ order post _test', ->
           subtaskName = 'one_test'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.TaskNameError,
-          """Task name is not contained in subtask name.
-          Where the valid format is taskname_subtaskname.
-          For subtask: #{subtaskName}.""".replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.TaskNameError)
 
         it 'bad _ order post _test 2', ->
           subtaskName = '1test_one'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.TaskNameError,
-          """Task name is not contained in subtask name.
-          Where the valid format is taskname_subtaskname.
-          For subtask: #{subtaskName}.""".replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.TaskNameError)
 
         it 'bad order post test', ->
           subtaskName = 'testone'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.TaskNameError,
-          """Task name is not contained in subtask name.
-          Where the valid format is taskname_subtaskname.
-          For subtask: #{subtaskName}.""".replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.TaskNameError)
 
       describe 'MissingSubtaskError', ->
 
         it 'no subtask', ->
           subtaskName = 'test_'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.MissingSubtaskError,
-          """Can't find subtask code for #{subtaskName},
-          subtasks: #{Object.keys(subject.subtasks).join(',')} aval!!"""
-          .replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.MissingSubtaskError)
 
         it 'non-existent subtask', ->
           subtaskName = 'test_four'
-          subject.executeSubtask(name: subtaskName).should
-          .be.rejectedWith(errors.MissingSubtaskError,
-          """Can't find subtask code for #{subtaskName},
-          subtasks: #{Object.keys(subject.subtasks).join(',')} aval!!"""
-          .replace(/\n/g, ' '))
+          promiseUtils.expectReject(subject.executeSubtask({name: subtaskName}), fakeErrors.MissingSubtaskError)
 
-        Object.keys(makeSubtasks()).forEach (name) ->
+        for name of subtasks
           it "correct subtask #{name}", ->
             subtaskName = 'test_' + name
-            subject.executeSubtask(name: subtaskName)
+            promiseUtils.expectResolve(subject.executeSubtask({name: subtaskName}))

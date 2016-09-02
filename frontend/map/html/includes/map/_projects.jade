@@ -1,6 +1,10 @@
 mixin projectsDropdown()
-  span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
-    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+  span.dropdown.btn-group.projects-list(
+    ng-hide="Toggles.getHideAnyDraw()"
+    uib-dropdown is-open="projectDropdown.isOpen"
+    ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
+
+    button.dropdown-toggle.btn.btn-transparent(uib-dropdown-toggle)
       span
         h4(ng-show="principal.getCurrentProfile().sandbox") Sandbox
         h4(ng-show="!principal.getCurrentProfile().sandbox") {{principal.getCurrentProfile().name}}
@@ -11,14 +15,21 @@ mixin projectsDropdown()
           div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Project
           div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Projects
           a(href="{{frontendRoutes.projects}}") View All
-        span.results-btn(
-          rmaps-require-subscriber="disable"
-          popover-placement="right"
-          popover-trigger="click mouseenter"
-          popover="Add Project"
-          ng-click="addProject()")
-            span.icon.icon-project
-            span New Project
+        div
+          span.results-btn(
+            rmaps-require-subscriber="disable"
+            popover-placement="bottom"
+            popover-trigger="'click mouseenter touchend'"
+            uib-popover="Create a new blank project"
+            ng-click="addProject(false)")
+              span New Blank Project
+          span.results-btn(
+            rmaps-require-subscriber="disable"
+            popover-placement="bottom"
+            popover-trigger="'click mouseenter touchend'"
+            uib-popover="Save a copy of the current project"
+            ng-click="addProject(true)")
+              span Save As
       .inner
         ul
           li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )

@@ -12,9 +12,7 @@ rmapsMapDrawHandlesFactory
 rmapsMapIds
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
-leafletData
 ) ->
-
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
   isReadyPromise = $q.defer()
 
@@ -35,25 +33,20 @@ leafletData
       mapId
       drawnShapesSvc
       drawnItems
-      endDrawAction: () ->
-
-      commonPostDrawActions: () ->
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
-
-      announceCb: () ->
 
       createPromise: (geoJson) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
         $scope.create(geoJson)
 
-      deleteAction: (model) ->
-        if !Object.keys(drawnItems._layers).length
-          rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
 
-        #force refresh
-        $scope.$emit rmapsEventConstants.areas
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+      deleteAction: (model) ->
+        $scope.remove(model, {skipAreas: true})
+        .then () ->
+          if !Object.keys(drawnItems._layers).length
+            rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes false
+
+          #force refresh
+          $scope.$emit rmapsEventConstants.areas
 
     }
 
@@ -63,8 +56,6 @@ leafletData
         $scope
         handles
         drawnItems
-        postDrawAction: ->
-          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "area"
         itemsOptions:
           color: color
@@ -88,7 +79,7 @@ leafletData
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->
-          control.enableHandle 'rectangle'
+          control.enableHandle(handle: 'rectangle')
         return
       _drawCtrlFactory()
 

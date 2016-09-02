@@ -15,8 +15,12 @@ _propertyQuery = ({queryParams, profile, limit}) ->
     logger.debug permissions
 
     query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
-    .leftOuterJoin "#{tables.config.mls.tableName}", ->
-      @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin("#{tables.config.mls.tableName}",
+      "#{tables.config.mls.tableName}.id",
+      "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin(tables.finalized.photo.tableName,
+      "#{tables.finalized.combined.tableName}.data_source_uuid",
+      "#{tables.finalized.photo.tableName}.data_source_uuid")
 
     queryPermissions(query, permissions)
 
@@ -52,7 +56,7 @@ getProperty = ({query, profile}) ->
       transform: [validators.object(), validators.geojson(toCrs: true)]
 
     columns:
-      transform: validators.choice(choices: ['filter', 'address', 'all'])
+      transform: validators.choice(choices: ['filter', 'address', 'all', 'id'])
       required: true
 
   .then (queryParams) ->
@@ -66,15 +70,15 @@ getProperty = ({query, profile}) ->
       result[row.rm_property_id][row.data_source_type] ?= []
       result[row.rm_property_id][row.data_source_type].push(row)
 
-      if row.data_source_type == 'mls'
+      if row.data_source_type == 'mls' && row.data_source_id?
         mlsConfigSvc.getByIdCached(row.data_source_id)
         .then (mlsConfig) ->
           if mlsConfig
             row.mls_formal_name = mlsConfig.formal_name
             row.disclaimer_logo = mlsConfig.disclaimer_logo
             row.disclaimer_text = mlsConfig.disclaimer_text
-            row.dcma_contact_name = mlsConfig.dcma_contact_name
-            row.dcma_contact_address = mlsConfig.dcma_contact_address
+            row.dmca_contact_name = mlsConfig.dmca_contact_name
+            row.dmca_contact_address = mlsConfig.dmca_contact_address
 
     .then () ->
       _.map(result)[0]

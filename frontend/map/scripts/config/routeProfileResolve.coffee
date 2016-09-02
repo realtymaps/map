@@ -9,6 +9,7 @@ $stateParams
 rmapsProfilesService
 currentIdentity
 ) ->
+  $log = $log.spawn 'rmapsRouteProfileResolve'
   # Does the state or location define a project id?
   if $state.toState?.projectParam? and $state.toParams?[$state.toState.projectParam]?
     $log.debug "Loading project based on $state.current.projectParam #{$state.toState.projectParam}"
@@ -25,7 +26,7 @@ currentIdentity
 
     # Does the defined project exist?
     if profile?
-      $log.debug "Set current profile to", profile
+      $log.debug "Set current profile to", profile.id
       return rmapsProfilesService.setCurrentProfile profile
     else
       # Default to the session profile or the first profile for the identity

@@ -1,0 +1,37 @@
+.col-md-12.scroll
+  .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > lookupThreshold")
+    .col-md-2 Lookup has {{fieldData.current._lookups.length}} entries.
+    .col-md-2
+      .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all values anyway?
+
+
+.col-md-12.scroll
+  .col-md-5.row.lookup(ng-repeat="lookup in fieldData.current.lookups")
+    .col-md-8 {{lookup.LongValue}}
+    .col-md-4
+      select(
+        ng-if="lookupOptions[fieldData.current.output]"
+        ng-model="fieldData.current.config.mapping[lookup.LongValue]"
+        ng-change="updateRule()"
+        ng-disabled="fieldData.current.config.advanced"
+        ng-options="option for option in lookupOptions[fieldData.current.output]"
+      )
+        option(value="")
+      input(
+        ng-if="!lookupOptions[fieldData.current.output]"
+        ng-model="fieldData.current.config.mapping[lookup.LongValue]"
+        ng-change="updateRule()"
+        ng-disabled="fieldData.current.config.advanced"
+        type="text"
+        placeholder="Display value"
+      )
+  .col-md-6.help(ng-if="!lookupOptions[fieldData.current.output]" ng-show="$index == 0") Replace source values with more readable values where necessary
+
+
+.col-md-12.scroll
+  .row(ng-if="fieldData.current.type.name == 'array' && fieldData.current.config.Interpretation == 'LookupMulti'")
+    .col-md-2 Split by
+    .col-md-2
+      input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+    .col-md-8.help Enter the separator to use for splitting values in this field (a comma ',' is typical)
+ 

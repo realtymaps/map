@@ -5,15 +5,15 @@ span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsPinnedCtrl"
   class="dropdown btn-group pinned-list"
-  dropdown
+  uib-dropdown
   is-open="isOpens.favorites"
   on-toggle="togglePanel('favorites')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Favorite Properties"
-    popover-trigger="click mouseenter"
+    uib-popover="Favorite Properties"
+    popover-trigger="'click mouseenter touchend'"
     popover-enable="!isOpens.favorites")
     i.icon.fa.fa-heart
 
@@ -35,3 +35,7 @@ span(
               span.action-button(ng-click="formatters.results.clickFavoriteResultFromList(property); $event.stopPropagation()")
                 span.action Remove
                 i.fa.fa-heart
+      .dropdown-explanation(ng-show="!favoriteTotal")
+        p We don't see any favorites! You, or others on your project, can favorite properties by clicking the heart on any property.
+        p Favorites make it easy to see which properties your clients like.
+        .action Watch a 60 second video

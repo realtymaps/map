@@ -4,17 +4,17 @@ span(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsMapNotesCtrl"
   class="dropdown btn-group notes-list"
-  dropdown
+  uib-dropdown
   auto-close="disabled"
   is-open="isOpens.notes"
   on-toggle="togglePanel('notes')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.notes.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Notes"
+    uib-popover="Notes"
     popover-enable="!isOpens.notes"
-    popover-trigger="click mouseenter")
+    popover-trigger="'click mouseenter touchend'")
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
@@ -23,17 +23,16 @@ span(
         span(ng-show="!markerNotesLength()") No Notes
       span.results-btn(
         popover-placement="right"
-        popover-trigger="mouseenter"
-        popover="Add Note"
+        popover\-trigger="'mouseenter'"
+        uib-popover="Add Note"
         ng-click="Toggles.enableNoteTap()")
-          span.icon.icon-add_note
-          span New Note
+          span Add Note
     .inner
       ul(ng-controller="rmapsNotesModalCtrl")
         li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.id}}')
+              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.$index}}', true)
 
               // TODO - add sketch feature in
                 span.sketch
@@ -43,6 +42,10 @@ span(
                 span.comment
                   a(href="#comment") Leave a comment
 
-            span.actions(rmaps-require-project-editor)
-              span.icon.icon-remove(ng-click="remove(note); $event.stopPropagation()")
+            span.actions
+              span.icon.icon-remove(rmaps-require-project-editor ng-click="remove(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
+      .dropdown-explanation(ng-show="!markerNotesLength()")
+        p Click 'Add Note' and drop a note anywhere on the map. Or click the note button on any property you see.
+        p Your notes will show up in this list. Notes will be emailed to everyone in the project
+        .action Watch a 60 second video

@@ -1,5 +1,8 @@
 $fnMakeNav()
   .navigation
+    display: inline-block;
+    vertical-align: top;
+
     .dropdown-menu
       z-index $rm-modal-header-zindex + 1
 
@@ -24,6 +27,8 @@ $fnMakeNav()
         position static // Allow dropdowns to assume the size of this element
 
         > .btn
+          height $navbarInnerHeight
+          background-color #323a48
           color $white
           box-shadow none
           border none
@@ -37,7 +42,7 @@ $fnMakeNav()
           color $gray
           text-transform capitalize
           line-height $navbarHeight
-          padding 0 10px
+          padding 0 25px
           &:hover
           &:active
           &:focus
@@ -62,4 +67,3 @@ $fnMakeNav()
           a
             span
               @extends .notice-dot-blue
-

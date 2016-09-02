@@ -4,7 +4,9 @@ shutdown = require('./config/shutdown')
 config = require './config/config'
 cluster = require('cluster')
 analyzeValue = require '../common/utils/util.analyzeValue'
-
+workers = require './workers'
+Promise = require 'bluebird'
+errorHandlingUtils = require './utils/errors/util.error.partiallyHandledError'
 
 _intervalHandler = null
 
@@ -33,11 +35,17 @@ module.exports = {
 }
 
 
-
 if require.main == module  # run directly, not require()d
 
   if cluster.isMaster
     shutdown.setup()
+
+    # first, spawn off workers
+    for workerKey of workers
+      logger.debug "Forking #{workerKey}"
+      cluster.fork("#{workerKey}": true)
+
+    # then do real queueNeeds stuff
     workerId = null
     workerForked = false
     intervalsWaited = 0
@@ -85,6 +93,26 @@ if require.main == module  # run directly, not require()d
       setTimeout(masterLoop, wait)
   else  # is worker
     shutdown.setup()
+
+    for workerKey, val of workers
+      if process.env[workerKey]
+
+        return new Promise (resolve, reject) ->
+          try
+            setInterval( () ->
+              logger.debug "Running worker #{workerKey}"
+              resolve(val.worker())
+            , val.interval)
+          catch error
+            reject(error)
+        .catch errorHandlingUtils.isUnhandled, (error) ->
+          throw new errorHandlingUtils.PartiallyHandledError(error, "failed to run #{workerKey} worker.")
+        .catch (err) ->
+          logger.error err
+          logger.debug 'exiting'
+          process.exit(300)
+
+
     runOnce()
     .then () ->
       shutdown.exit()

@@ -40,18 +40,22 @@ base =
       client: 'pg'
       connection: process.env.MAIN_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     NORMALIZED:
       client: 'pg'
       connection: process.env.NORMALIZED_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
     TEST:
       client: 'pg'
       connection: process.env.TEST_DATABASE_URL
       pool: pingTimeout: 20*60*1000
+      acquireConnectionTimeout: 90000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
@@ -84,6 +88,7 @@ base =
     API_KEY: process.env.HIREFIRE_TOKEN || 'dummy'
     RUN_WINDOW: 60000  # 1 minute
     WARN_THRESHOLD: 300000  # 5 minutes
+  CARTO_WAKE_INTERVAL: 20*60*1000  # 20 minutes
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number

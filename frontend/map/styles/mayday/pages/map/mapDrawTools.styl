@@ -55,20 +55,51 @@ $fnMakeMapDrawTools()
       transform translateX(25%)
       .rmaps-leaflet-draw
         div
+          display inline
           button
             display inline
             box-shadow none
+        .dropdown
+          .dropdown-menu
+            min-width 192px
+            left -150%
+            padding 0 0 0 0
+            ul
+              margin 0 0 0 0
+            li
+              border-bottom 0px
+              &.blue
+                .btn
+                  .icon
+                    color $rm-medium-blue
+              &.yellow
+                .btn
+                  .icon
+                    color rgb(242, 205, 12)
+            .btn
+              &:hover
+                .icon
+                  color $light_blue
 
     .nav-btn
       font-size 28px
+
 
     .btn-transparent
       height $drawToolHeight
       background-color transparent
       color $white
 
+      &.active
+        background-color $rm-map-btn-icon-hover
+        &:hover
+          background-color $rm-map-btn-icon-hover !important
+          span
+            color $black !important
+
       &:hover
         background-color transparent
+
 
     /*Want to slide down*/
     &.ng-enter

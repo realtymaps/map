@@ -7,7 +7,7 @@ originator = 'map'
 app.controller 'rmapsNotesModalCtrl', (
 $rootScope
 $scope
-$modal
+$uibModal
 rmapsNotesService
 rmapsMainOptions
 rmapsEventConstants
@@ -34,7 +34,7 @@ rmapsMapTogglesFactory
     modalScope = $scope.$new false
     modalScope.property = property
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: rmapsMainOptions.modals.animationsEnabled
       template: notesTemplate
       scope: modalScope
@@ -61,7 +61,7 @@ rmapsMapTogglesFactory
 
   $scope.remove = (note, confirm = false) ->
     if confirm
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         scope: $scope
         template: confirmTemplate
 
@@ -178,7 +178,7 @@ rmapsMapTogglesFactory
             first_name: model.first_name
             last_name: model.last_name
             text: model.text
-            circleNrArg: model.id
+            circleNrArg: model.$index
           needToCompile: false
         })
 
@@ -193,18 +193,27 @@ rmapsMapTogglesFactory
     Object.keys($scope.map.markers.notes).length
 
   getNotes = (force = false) ->
-    rmapsNotesService.getList(force)
+    rmapsNotesService.getAll(force)
     .then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
       $scope.map.markers.notes = setMarkerNotesDataOptions(data)
 
+
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
-    getNotes(true).then ->
+    getNotes(true)
+    .then (notes) ->
       ###
         NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
         in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
         #https://github.com/tombatossals/angular-leaflet-directive/issues/820
       ###
+
+      # TODO This is ugly due to ui-leaflet
+      # delete old notes from map to force list and map to be in sync
+      $scope.map.markers.notes = {}
+      directiveControls.markers.create($scope.map.markers)#<-- me dangerous
+      # set new notes
+      $scope.map.markers.notes = notes
       directiveControls.markers.create($scope.map.markers)#<-- me dangerous
 
   $scope.map.getNotes = getNotes

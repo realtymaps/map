@@ -6,9 +6,52 @@ events = require '../../../common/scripts/utils/events.coffee'
 _isMarker = (type) ->
   type == 'marker'
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
-rmapsPropertiesService, rmapsMapEventEnums, $log) ->
+app.factory 'rmapsHoverQueue', (
+rmapsLayerFormattersService
+) ->
+  () ->
+    _queue = []
+
+    _handleHover = ({model, lObject, type, layerName} = {}) ->
+      return if !layerName or !type or !lObject
+      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
+        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
+      if type == 'geojson'
+        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
+        lObject.setStyle(opts)
+
+    enqueue = ({model, lObject, type, layerName} = {}) ->
+      if _queue.length
+        dequeue()
+      _queue.push {model, lObject, type, layerName}
+      _handleHover {model, lObject, type, layerName}
+
+    dequeue = () ->
+      item = _queue.shift()
+      if !item
+        return
+      {model, lObject, type, layerName} = item
+      model.isMousedOver = false
+      _handleHover {model, lObject, type, layerName}
+
+
+    {
+      enqueue
+      dequeue
+    }
+
+app.service 'rmapsMapEventsHandlerService', (
+$timeout
+rmapsMainOptions
+rmapsNgLeafletHelpersService
+rmapsNgLeafletEventGateService
+rmapsMapEventsLinkerService
+rmapsLayerFormattersService
+rmapsPropertiesService
+rmapsMapEventEnums
+rmapsHoverQueue
+rmapsZoomLevelService
+$log) ->
 
   _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
@@ -18,20 +61,13 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
   $log = $log.spawn("map:rmapsMapEventsHandlerService")
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
+    _hoverQueue = new rmapsHoverQueue()
     $scope = mapCtrl.scope
 
 
     _lastEvents =
       mouseover:null
       last: null
-
-    _handleHover = (model, lObject, type, layerName) ->
-      return if !layerName or !type or !lObject
-      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
-      if type == 'geojson'
-        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
-        lObject.setStyle(opts)
 
     _handleManualMarkerCluster = (model) ->
       if model.markerType == 'cluster'
@@ -41,12 +77,6 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         return true
       false
 
-    _isParcelPoly = (feature) ->
-      #crappy hack until leaflet fix
-      len = Object.keys(feature).length
-      len == 7
-
-
     _eventHandler =
       ###TODO:
       It would  be nice to make an open source event handling utility that automatically tracks
@@ -55,7 +85,14 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
       Thus in a two way event everything should be visited once.
       ###
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-
+        #toBack
+        #https://github.com/Leaflet/Leaflet/issues/3708
+        #http://jsfiddle.net/kytqgpjo/2/
+        if lObject?.bringToBack?
+          lObject.bringToBack()
+        else
+          e = lObject._icon.parentNode
+          e.insertBefore(lObject._icon, e.firstChild)
         # Grab some details about the original event for logging
         eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
 
@@ -63,14 +100,18 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
           # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
 
-         # Ignore when this is firing from previous marker
-        if (_lastEvents.mouseover?.lat == model.lat) && (_lastEvents.mouseover?.lng == model.lng)
+        # Ignore when this is firing from previous marker
+        if (_lastEvents.mouseover?.lat? && _lastEvents.mouseover?.lng? && (_lastEvents.mouseover.lat == model.coordinates[1]) && (_lastEvents.mouseover.lng == model.coordinates[0]))
           # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
-         # Ignore these types of markers
+        # Ignore these types of markers
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
           # $log.debug '[IGNORED:markertype] ' + eventInfo
+          return
+
+        if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
+          # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
         $log.debug eventInfo
@@ -85,7 +126,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         _lastEvents.mouseover = model
 
         # Update marker icon/style
-        _handleHover model, lObject, type, layerName
+        _hoverQueue.enqueue {model, lObject, type, layerName}
 
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
 
@@ -114,7 +155,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         _lastEvents.mouseover = null
 
         # Update marker icon/style
-        _handleHover model, lObject, type, layerName
+        _hoverQueue.dequeue()
 
       click: (event, lObject, model, modelName, layerName, type) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
@@ -125,7 +166,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
           $timeout ->
             return if _handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
-#              return mapCtrl.saveProperty(model, lObject)
+              # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
             if _lastEvents.last != 'dblclick'
               if model.markerType != 'price-group'
@@ -164,10 +205,15 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
-        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'all')
-        .then (data) ->
-          return if !data?.rm_property_id
-          $scope.formatters.results.showModel(data)
+        if rmapsZoomLevelService.isParcel($scope.map.center.zoom)
+          $log.debug 'Showing property details if a parcel was clicked'
+          rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'id')
+          .then (data) ->
+            model = data.mls?[0] || data.county?[0]
+            return if !model
+            $scope.formatters.results.showModel(model)
+        else
+          $log.debug 'Not close enough to show property details'
 
     , thisOriginator, ['click']
 

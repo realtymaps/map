@@ -23,8 +23,6 @@ app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rm
         selectedFilters.status.push(rmapsParcelEnums.status.pending)
       if (selectedFilters.sold)
         selectedFilters.status.push(rmapsParcelEnums.status.sold)
-      if (selectedFilters.notForSale)
-        selectedFilters.status.push(rmapsParcelEnums.status.notForSale)
       delete selectedFilters.forSale
       delete selectedFilters.pending
       delete selectedFilters.sold

@@ -3,7 +3,9 @@ app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
-priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
+priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker.jade'
+noteMarkerTemplate  = require '../../html/includes/map/markers/_noteMarker.jade'
+currentLocationMarkerTemplate = require '../../html/includes/map/markers/_currentLocationMarker.jade'
 
 app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
 
@@ -35,7 +37,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     normalColors[rmapsParcelEnums.status.sold] = rmapsStylusConstants.$rm_sold
     normalColors[rmapsParcelEnums.status.pending] = rmapsStylusConstants.$rm_pending
     normalColors[rmapsParcelEnums.status.forSale] = rmapsStylusConstants.$rm_forsale
-    normalColors[rmapsParcelEnums.status.notForSale] = rmapsStylusConstants.$rm_notforsale
+    normalColors[rmapsParcelEnums.status.discontinued] = rmapsStylusConstants.$rm_notforsale
     normalColors['saved'] = rmapsStylusConstants['$rm_saved']
     normalColors['default'] = 'transparent'
 
@@ -43,7 +45,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     hoverColors[rmapsParcelEnums.status.sold] = rmapsStylusConstants.$rm_sold_hover
     hoverColors[rmapsParcelEnums.status.pending] = rmapsStylusConstants.$rm_pending_hover
     hoverColors[rmapsParcelEnums.status.forSale] = rmapsStylusConstants.$rm_forsale_hover
-    hoverColors[rmapsParcelEnums.status.notForSale] = rmapsStylusConstants.$rm_notforsale_hover
+    hoverColors[rmapsParcelEnums.status.discontinued] = rmapsStylusConstants.$rm_notforsale_hover
     hoverColors['saved'] = rmapsStylusConstants['$rm_saved_hover']
     hoverColors['default'] = 'rgba(153,153,153,.8)'
 
@@ -132,12 +134,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         icon:
           type: 'div'
           iconSize: [30, 30]
-          html: """
-<div class='note-marker'>
-  <i class='fa fa-sticky-note'></i>
-  <div class='note-marker-inner'><span>#{model.id}</span></div>
-</div>
-"""
+          html: noteMarkerTemplate(model)
 
     setMarkerMailOptions: (model, number) ->
       _.extend model,
@@ -165,6 +162,18 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
   setMarkerNotesDataOptions = (data) ->
     setDataOptions(data, MLS.setMarkerNotesOptions)
 
+  setCurrentLocationMarkerOptions = (model) ->
+    return {} unless model
+    #important for the clusterer css a div must have child span
+    _.extend model,
+      coordinates: [model.longitude, model.latitude]
+      type: 'Point'
+      markerType: 'currentLocation'
+      icon:
+        type: 'div'
+        html: currentLocationMarkerTemplate()
+
+
   #public
   {
     Parcels
@@ -172,4 +181,5 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
     isVisible
     setDataOptions
     setMarkerNotesDataOptions
+    setCurrentLocationMarkerOptions
   }

@@ -7,7 +7,7 @@ require '../config/promisify'
 through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
-
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 getSystemData = (mlsId) ->
   internals.getRetsClient mlsId, (retsClient) ->
@@ -248,6 +248,11 @@ getDataChunks = (mlsId, opts, handler) ->
     handler = opts
     opts = {}
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
+
+    # override mls listing_data fields with optional `listing_data` if provided
+    if !_.isEmpty(opts?.listing_data)
+      _.merge(mlsInfo.listing_data, opts.listing_data)
+
     if !mlsInfo.listing_data.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
@@ -332,10 +337,10 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
     .catch (err) ->
-      console.log("error from service.rets#retsClient.objects.stream.getObjects: #{err}")
+      logger.debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getSimpleDetails(err)}")
       throw err
   .catch (err) ->
-    console.log("error from service.rets#internals.getRetsClient: #{err}")
+    logger.debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getSimpleDetails(err)}")
     throw err
 
 

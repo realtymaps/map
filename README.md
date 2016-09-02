@@ -48,16 +48,14 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
                 - `foreman run gulp` or
                 - `foreman run scripts/runDev`
 
-            - Mayday or Remote Heroku Database:
-                - `foreman run scripts/runDev --mayday --bare-server`
+            - Remote Heroku Database:
+                - `foreman run scripts/runDev --bare-server`
 
         - **Run the server (HEROKU ONLY)**
             - `foreman start`
 
 ### Db change management
-- handled via Flyway
 - [full documentation here](https://realtymaps.atlassian.net/wiki/display/NDS/Database+change+management)
-- foreman run npm run flyway
 
 
 ___

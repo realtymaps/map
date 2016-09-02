@@ -8,7 +8,7 @@ app.controller 'rmapsProjectsCtrl', (
   $http,
   $state,
   $log,
-  $modal,
+  $uibModal,
   rmapsPrincipalService,
   rmapsProfilesService,
   rmapsProjectsService,
@@ -28,7 +28,7 @@ app.controller 'rmapsProjectsCtrl', (
   $scope.addProject = () ->
     $scope.newProject = {}
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/addProjects.jade')()
@@ -58,7 +58,7 @@ app.controller 'rmapsProjectsCtrl', (
 
     $scope.modalBody = "All notes, drawings, pins and favorites will be discarded"
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()

@@ -5,4 +5,7 @@ mixin noteMixin(first_name, last_name, text, circleNrArg)
     +circleNrMixin(circleNrArg)
     span.content
       span.author #{first_name} #{last_name} &nbsp;
-      span.text #{text}
+      if text && text.length < 25
+        .text #{text}
+      else
+        .text.large #{text}

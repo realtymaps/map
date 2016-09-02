@@ -48,9 +48,6 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        field: _buildBaseRule {"output": "status", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
-       field: _buildBaseRule {"output": "substatus", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
-       transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
-      ,
        field: _buildBaseRule {"output": "status_display", "config": {"mapping": {"Active": "for sale", "Pending": "pending"}}}
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,

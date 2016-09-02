@@ -3,9 +3,14 @@ app = require '../../app.coffee'
 template = require './leafletDraw.jade'
 LeafletDrawApi = require './api.draw.js'
 
-app.directive 'rmapsLeafletDraw', ($log, $timeout, $q, leafletData,
-leafletDrawEvents, leafletIterators,
-rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
+app.directive 'rmapsLeafletDraw', (
+$log
+$timeout
+$q
+leafletData
+leafletIterators
+rmapsLeafletDrawDirectiveCtrlDefaultsService
+) ->
 
   errorHeader = "rmapsLeafletDraw"
 
@@ -116,45 +121,45 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
-        enableHandle = (handle) ->
+        enableHandle = ({handle, handleName, event, options}) ->
           scope.disable() #never have more than one active handle
 
           if typeof(handle) == 'string'
+            handleName ?= handle
             handle = drawModeHandles[handle] || editModeHandles[handle]
-          handle.handler.enable()
+
+          handle.handler.enable(event, options)
           scope.enabled = true
+          scope.activeHandle = handleName
           _currentHandler = handle.handler
 
         if options.control?
           options.control _deferred.promise
 
-          _deferred.resolve {
-            enableHandle
-          }
+          _deferred.resolve {enableHandle}
 
         ###eslint-disable###
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
-            scope['clicked' + handleName.toInitCaps()] = (event) ->
-              enableHandle legacyHandle, scope
+            scope['clicked' + handleName.toInitCaps()] = (event, options) ->
+              enableHandle {handle: legacyHandle, handleName, event, options}
 
-
-        scope.clickedPen = (event) ->
-          #kick off free draw
-        scope.clickedText = (event) ->
-          #kick off something that puts text on map
-        scope.clickedRedo = (event) ->
-          #pull out of drawItems cache and put it back on the map
-        scope.clickedUndo = (event) ->
-          #pull out of drawItems cache and put it back on the map
-
-
-        scope.clickedEdit = (event) ->
-          enableHandle editModeHandles?.edit, scope
+        scope.clickedEdit = (event, options) ->
+          enableHandle {
+            handle: editModeHandles?.edit
+            handleName: 'edit'
+            event
+            options
+          }
           scope.canSave = true
 
         scope.clickedTrash = (event) ->
-          enableHandle editModeHandles?.remove, scope
+          enableHandle {
+            handle: editModeHandles?.remove
+            handleName: 'delete'
+            event
+            options
+          }
           scope.canSave = true
 
         ###eslint-enable###
@@ -165,6 +170,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           _currentHandler?.disable()
           scope.enabled = false
           scope.canSave = false
+          scope.activeHandle = null
           scope.$evalAsync()
 
         scope.$watch 'enabled', (newVal) ->

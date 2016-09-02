@@ -21,7 +21,6 @@ moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
 
-
 DELETE =
   UNTOUCHED: 'untouched'
   INDICATED: 'indicated'
@@ -308,6 +307,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
+      if row["Assessor’s Parcel Number"]? && (row["Assessor’s Parcel Number"].indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1)
+        logger.spawn('troubleshoot').debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
@@ -488,23 +489,6 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-finalizeEntry = ({entries, subtask}) ->
-  entry = entries.shift()
-  entry.active = false
-  delete entry.deleted
-  delete entry.hide_address
-  delete entry.hide_listing
-  delete entry.rm_inserted_time
-  delete entry.rm_modified_time
-  entry.prior_entries = sqlHelpers.safeJsonArray(entries)
-  entry.address = sqlHelpers.safeJsonArray(entry.address)
-  entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
-  entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
-  entry.update_source = subtask.task_name
-  entry.actual_photo_count = _.keys(entry.photos).length - 1  # photo 0 and 1 are the same
-  entry.baths_total = entry.baths?.filter
-  entry
-
 _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   if !_.isArray columns
     columns = [columns]
@@ -632,6 +616,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 columns.push fieldName.replace(/\./g, '')
               _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
               .then () ->
+                logger.debug () -> "created raw table #{tableName}"
                 startedTransaction = true
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
@@ -717,7 +702,7 @@ ensureNormalizedTable = (dataType, subid) ->
         table.decimal('amount', 13, 2)
         table.timestamp('close_date', true)
         table.text('lender')
-        table.json('term')
+        table.text('term')
         table.text('financing_type')
         table.text('loan_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
@@ -731,35 +716,46 @@ ensureNormalizedTable = (dataType, subid) ->
       .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
     else
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date ASC NULLS FIRST)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
       .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, data_source_uuid)")
 
 
 getLastUpdateTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data update timestamps', defaultValue: 0)
 
-setLastUpdateTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data update timestamps')
+setLastUpdateTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data update timestamps')
 
 getLastRefreshTimestamp = (subtask) ->
   keystore.getValue(subtask.task_name, namespace: 'data refresh timestamps', defaultValue: 0)
 
-setLastRefreshTimestamp = (subtask) ->
-  keystore.setValue(subtask.task_name, subtask.data.startTime, namespace: 'data refresh timestamps')
+setLastRefreshTimestamp = (subtask, startTime) ->
+  keystore.setValue(subtask.task_name, startTime || subtask.data?.startTime, namespace: 'data refresh timestamps')
 
 # this is logic that checks to see if the last time something happened was before today, and if it is currently after a
 # given time of day (24-hour time).  Note this works based on eastern time zone, including DST
-checkReadyForRefresh = (subtask, {targetHour, targetMinute}) ->
+checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNever}) ->
   targetHour ?= 0
   targetMinute ?= 0
   getLastRefreshTimestamp(subtask)
   .then (refreshTimestamp) ->
+    logger.spawn(subtask.task_name).debug () -> refreshTimestamp
+    if runIfNever && refreshTimestamp == 0
+      return true
+
     now = Date.now()
     utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
 
     target = moment.utc(now).utcOffset(utcOffset).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
+
+    today = target.valueOf()
+    if targetDay?
+      target.day(targetDay)
+      if target.diff(today) != 0
+        # not the target day
+        return false
 
     target.hour(targetHour)
     target.minute(targetMinute)
@@ -798,7 +794,6 @@ module.exports = {
   normalizeData
   getRawRows
   getValues
-  finalizeEntry
   manageRawDataStream
   manageRawJSONStream
   ensureNormalizedTable

@@ -1,0 +1,56 @@
+#!/usr/bin/env coffee
+
+tables = require '../../backend/config/tables'
+argv = require('yargs').argv
+{createPasswordHash} = require '../../backend/services/service.userSession'
+{onMissingArgsFail} = require '../../backend/utils/errors/util.errors.args'
+
+###
+options:
+--email - ''
+--password - ''
+-- first_name - ''
+-- last_name - ''
+--passwordOnly
+###
+
+{email, password, first_name, last_name} = onMissingArgsFail args: argv, required: [
+  'email'
+  'password'
+  'first_name'
+  'last_name'
+]
+
+console.log("options: #{JSON.stringify(argv)}")
+
+createPasswordHash password
+.then (encrypted) ->
+  password = encrypted
+  if argv.passwordOnly
+    console.log "password: #{encrypted}"
+    process.exit(0)
+.then () ->
+  entity = {email, password, first_name, last_name}
+
+  fieldsToCheck = {
+    email_is_valid: true
+    is_active: true
+    is_staff: false
+  }
+
+  for k, defaulT of fieldsToCheck
+    if argv[k]?
+      entity[k] = argv[k]
+    else
+      entity[k] = defaulT
+
+  console.log("inserting user: #{first_name} #{last_name}")
+
+  tables.auth.user()
+  .insert(entity)
+  .then () ->
+    console.log('success')
+    process.exit(0)
+  .catch (error) ->
+    console.error(error)
+    process.exit(300)

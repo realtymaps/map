@@ -10,24 +10,23 @@ zlib = require 'zlib'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 utilStreams = require '../utils/util.streams'
-logger = require('../config/logger').spawn('task:util:countyHelpers')
+logger = require('../config/logger').spawn('task:countyHelpers')
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 internals = require './util.countyHelpers.internals'
 parcelHelpers = null  # required later to avoid circular dependency
+awsService = require '../services/service.aws'
 
 
-# loads all records from a ftp-dropped zip file
-loadRawData = (subtask, options) ->
-  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+# using FTP `account`, send files from `source` (ftp) to `target` (local) given certain `options`
+_fetchFTP = (account, source, target, options) ->
   if options.sftp
     ftp = new PromiseSftp()
   else
     ftp = new PromiseFtp()
-  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
-  dataStreamPromise = externalAccounts.getAccountInfo(subtask.task_name)
+
+  externalAccounts.getAccountInfo(account)
   .then (accountInfo) ->
     ftp.connect
       host: accountInfo.url
@@ -41,16 +40,50 @@ loadRawData = (subtask, options) ->
         throw err
   .then () ->
     if options.sftp
-      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
+      ftp.fastGet(source, target)
     else
-      ftp.get(subtask.data.path)
+      ftp.get(source)
       .then (dataStream) -> new Promise (resolve, reject) ->
-        dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
+        dataStream.pipe(fs.createWriteStream(target))
         .on('finish', resolve)
         .on('error', reject)
   .then () ->
     ftp.logout()
 
+# using an S3 bucket `account`, send files from `source` (s3) to `target` (local) given certain `options`
+_fetchS3 = (account, source, target, options) ->
+  config =
+    extAcctName: account
+    Key: source
+    stream: true
+
+  awsService.getObject(config)
+  .then (streamable) -> new Promise (resolve, reject) ->
+    streamable.createReadStream().pipe(fs.createWriteStream(target))
+    .on 'finish', (details) ->
+      resolve(details)
+    .on('error', reject)
+  .catch (err) ->
+    throw new SoftFail("S3 `getObject` error: #{err}")
+
+
+# loads all records from a specified source (e.g. FTP or S3)
+loadRawData = (subtask, options) ->
+  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+
+  target = "/tmp/#{fileBaseName}.#{filetype}"
+  source = subtask.data.path
+
+  # transfer files from a configured source...
+  if options.s3account
+    dataStreamPromise = _fetchS3(options.s3account, source, target, options)
+  else
+    # FTP / SFTP check done in `_fetchFTP`
+    dataStreamPromise = _fetchFTP(subtask.task_name, source, target, options)
+
+  # unzip the transfered files...
   switch filetype
     when 'zip'
       dataStreamPromise = dataStreamPromise
@@ -72,10 +105,11 @@ loadRawData = (subtask, options) ->
       dataStreamPromise = dataStreamPromise
       .then () -> new Promise (resolve, reject) ->
         try
-          fs.createReadStream("/tmp/#{fileBaseName}.gz")
+          fs.createReadStream(target)
           .pipe(zlib.createGunzip())
           .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
-          .on('close', resolve)
+          .on 'close', (detail) ->
+            resolve(detail)
           .on('error', reject)
         catch err
           reject new SoftFail(err.toString())
@@ -86,6 +120,7 @@ loadRawData = (subtask, options) ->
       .then () ->
         "/tmp/#{fileBaseName}.#{filetype}"
 
+  # process files...
   dataStreamPromise
   .then (localFilePath) ->
     fs.createReadStream(localFilePath)
@@ -146,7 +181,8 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   _.extend base, stats, data, commonData
 
 
-finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParcel, forceFinalize}) ->
+finalizeData = ({subtask, id, data_source_id, transaction, finalizedParcel, forceFinalize}) ->
+  internals.__troubleshoot__(id, 'finalizeData start')
   parcelHelpers ?= require './util.parcelHelpers'  # delayed require due to circular dependency
 
   internals.finalizeDataTax {subtask, id, data_source_id, transaction, forceFinalize}
@@ -157,18 +193,18 @@ finalizeData = ({subtask, id, data_source_id, transaction, delay, finalizedParce
     .then (deedEntries) ->
       if !deedEntries?
         return
-      mortgagePromise = internals.finalizeDataMortgage {subtask, id, data_source_id}
+      mortgagePromise = internals.finalizeDataMortgage({subtask, id, data_source_id})
       if finalizedParcel?
         parcelsPromise = Promise.resolve([finalizedParcel])
       else
         parcelsPromise = parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
       Promise.join mortgagePromise, parcelsPromise, (mortgageEntries, parcelEntries) ->
+        internals.__troubleshoot__(id, 'finalizeData: got data, doing join')
         internals.finalizeJoin {
           subtask
           id
           data_source_id
           transaction
-          delay
           taxEntries
           deedEntries
           mortgageEntries

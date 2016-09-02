@@ -11,7 +11,7 @@ module.exports =
     method: 'all'
     order: 9998 # needs to be first
     handle: (req, res, next) ->
-      next new ExpressResponse(alert: {msg: "Oops!  The API resource #{req.path} was not found.  Try reloading the page."}, httpStatus.NOT_FOUND)
+      next new ExpressResponse(alert: {msg: "Oops!  The API resource #{req.path} was not found.  Try reloading the page."}, {status: httpStatus.NOT_FOUND})
 
   admin:
     method: 'all'
@@ -27,5 +27,5 @@ module.exports =
       # if the request had a file-ish format (with a '.' in it), then return a 404 -- it would have been caught by the
       # static serving middleware if we had the file
       if req.path.indexOf('.') != -1
-        return next new ExpressResponse("Oops!  The resource #{req.path} was not found.  Try reloading the page, or try again later.", httpStatus.NOT_FOUND)
+        return next new ExpressResponse("Oops!  The resource #{req.path} was not found.  Try reloading the page, or try again later.", {status: httpStatus.NOT_FOUND})
       viewsRoute.rmap(req,res,next)

@@ -1,12 +1,12 @@
 include ../mixins/_avatarMixin.jade
 
 #userblock(ng-controller="DropdownCtrl")
-  span(class="dropdown" dropdown on-toggle="toggled(open)")
-    button(class="dropdown-toggle avtr" dropdown-toggle)
+  span(class="dropdown" uib-dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle avtr" uib-dropdown-toggle)
       +avatarMixin()(class='tiny-avatar')
     ul(class="dropdown-menu right arrow")
       li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a(ui-sref="logout") Sign Out
+        a.logout(ui-sref="logout") Sign Out
       li(ng-show="principal.isAuthenticated()", ng-cloak)
         a(ui-sref="user") {{user.email}}
       li(ng-show="principal.isStaff()", ng-cloak)

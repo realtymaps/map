@@ -14,11 +14,10 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 class CurrentProfileError extends Error
 class NotFoundError extends Error
 
-badRequest = (msg) ->
-  new ExpressResponse(alert: {msg: msg}, httpStatus.BAD_REQUEST)
-
 methodExec = (req, methods, next) ->
-  do(methods[req.method] or -> next(badRequest("HTTP METHOD: #{req.method} not supported for route.")))
+  if !methods[req.method]
+    return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: quiet, status: httpStatus.BAD_REQUEST})
+  methods[req.method]()
 
 currentProfile = (req) ->
   try
@@ -46,10 +45,17 @@ handleQuery = (q, res, lHandleQuery) ->
 
   q.then (result) ->
     Promise.try () ->
+      logger.debug () -> "#{res.req.url} response json:"
+      logger.debug () -> "#{JSON.stringify(result)}"  # this will err if circular, caught below, but url is still display from prev line for route check
       res.json(result)
     .catch TypeError, (err) ->
-      logger.error("#############  Circular reference detected in JSON response?  #############\n#{analyzeValue.getSimpleMessage(result)}")
+      logger.error("####        Circular reference detected in JSON response?         ####")
+      logger.error("\tEnsure that route `#{res.req.url}` is not processing an Express Response,")
+      logger.error("\tsuch as `req.json`, since that is already handled here.")
+      logger.error("#{analyzeValue.getSimpleMessage(result)}")
       throw err
+
+
 
 handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->
@@ -58,13 +64,14 @@ handleRoute = (req, res, next, toExec, isDirect) ->
 
     handleQuery toExec(req, res, next), res
   .catch DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch MissingVarError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
   .catch UpdateFailedError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
   .catch (err) ->
-    logger.error analyzeValue.getSimpleDetails(err)
+    if !err.quiet
+      logger.error analyzeValue.getSimpleDetails(err)
     next(err)
 
 wrapHandleRoutes = ({handles, isDirect}) ->
@@ -90,7 +97,6 @@ module.exports =
   methodExec: methodExec
   currentProfile: currentProfile
   CurrentProfileError: CurrentProfileError
-  badRequest: badRequest
   mergeHandles: mergeHandles
   NotFoundError: NotFoundError
   handleQuery: handleQuery

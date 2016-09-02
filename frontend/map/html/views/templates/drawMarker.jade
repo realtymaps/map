@@ -1,0 +1,49 @@
+span.dropdown(
+  uib-dropdown
+  auto-close="always"
+  is-open="dropdown.isOpen"
+  ng-controller="rmapsLeafletDrawMarkerDropdownCtrl"
+)
+  button.dropdown-toggle.button.btn.btn-transparent.nav-btn(
+    uib-dropdown-toggle
+  )
+    span.icon.icon-marker
+  
+  .dropdown-menu.no-margin(ng-if="dropdown.isOpen")
+    .inner
+      ul
+        li.blue
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-up-marker-blue')")
+            span.icon.icon-arrow-up
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-down-marker-blue')")
+            span.icon.icon-arrow-down
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-left-marker-blue')")
+            span.icon.icon-arrow-left
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-right-marker-blue')")
+            span.icon.icon-arrow-right
+        li.yellow
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-up-marker-yellow')")
+            span.icon.icon-arrow-up
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-down-marker-yellow')")
+            span.icon.icon-arrow-down
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-left-marker-yellow')")
+            span.icon.icon-arrow-left
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-arrow-right-marker-yellow')")
+            span.icon.icon-arrow-right
+        li
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-circled-marker-green')")
+            span.icon.icon-circled-marker-green
+              span.path1
+              span.path2
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-circled-marker-magenta')")
+            span.icon.icon-circled-marker-magenta
+              span.path1
+              span.path2
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-circled-marker-yellow')")
+            span.icon.icon-circled-marker-yellow
+              span.path1
+              span.path2
+          button.button.btn.btn-transparent.nav-btn(ng-click="clickedMarkerExt($event, 'leaflet-circled-marker-blue')")
+            span.icon.icon-circled-marker-blue
+              span.path1
+              span.path2

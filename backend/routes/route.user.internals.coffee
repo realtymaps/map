@@ -15,8 +15,8 @@ userCompanySvc = require '../services/service.user.company.coffee'
 getImage = ({res, next, entity, typeStr = 'user'}) -> Promise.try ->
   userInternalsSvc.getImage(entity)
   .then (result) ->
-    unless result?.blob?
-      return next new ExpressResponse({} , httpStatus.NOT_FOUND)
+    if !result?.blob?
+      return next new ExpressResponse({} , {status: httpStatus.NOT_FOUND})
 
     parsed = parseBase64(result.blob)
     res.setHeader('Content-Type', parsed.type)
@@ -40,17 +40,17 @@ getCompanyImage = (req, res, next) ->
 getBlobFromReq = ({req, next}) ->
   # logger.debug req.body.blob
   if !req.body?.blob.contains 'image/' or !req.body?.blob.contains 'base64'
-    return next new ExpressResponse({alert: 'image has incorrect formatting.'} , httpStatus.BAD_REQUEST)
+    return next new ExpressResponse({alert: 'image has incorrect formatting.'} , {status: httpStatus.BAD_REQUEST})
 
   if !req.body?
-    return next new ExpressResponse({alert: 'undefined image blob'} , httpStatus.BAD_REQUEST)
+    return next new ExpressResponse({alert: 'undefined image blob'} , {status: httpStatus.BAD_REQUEST})
 
   parsed = parseBase64(req.body.blob)
   buf = new Buffer(parsed.data, 'base64')
   dim = sizeOf buf
 
   if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
-    return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
+    return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , {status: httpStatus.BAD_REQUEST})
 
   req.body.blob
 

@@ -73,7 +73,7 @@ login = (req, res, next) -> Promise.try () ->
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
@@ -131,6 +131,10 @@ newProject = (req, res, next) ->
     else
       if req.body.copyCurrent is true
         _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
+      else
+        # we need a position to start with on the frontend, so copy the other profile's position
+        _.extend toSave, _.pick(profile, ['map_position'])
+        toSave = _.omit toSave, ['filters']
 
       profileService.create toSave
 

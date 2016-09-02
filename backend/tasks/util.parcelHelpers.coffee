@@ -116,8 +116,6 @@ finalizeData = (subtask, id, delay) -> Promise.try () ->
         dbs.transaction 'main', (transaction) ->
           internals.finalizeNewParcel {parcels, id, subtask, transaction}
           .then (finalizedParcel) ->
-            transforms.execFinalizeParcelAsDataCombined(finalizedParcel)
-          .then (finalizedParcel) ->
             internals.finalizeUpdateListing {id, subtask, transaction, finalizedParcel}
 
   .catch isUnhandled, (error) ->
@@ -169,7 +167,7 @@ getParcelsPromise = ({rm_property_id, active, transaction}) ->
   active ?= true
 
   tables.finalized.parcel(transaction: transaction)
-  .select('geometry_raw', 'geometry', 'geometry_center')
+  .select('geometry_raw', 'geometry', 'geometry_center', 'geometry_center_raw')
   .where({rm_property_id, active})
 
 

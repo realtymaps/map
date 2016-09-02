@@ -4,16 +4,16 @@ include ../mixins/_circleNrMixin.jade
 span.pinned-list.dropdown.btn-group(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsPinnedCtrl"
-  dropdown
+  uib-dropdown
   is-open="isOpens.pinned"
   on-toggle="togglePanel('pinned')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Pinned Properties"
+    uib-popover="Pinned Properties"
     popover-enable="!isOpens.pinned"
-    popover-trigger="click mouseenter"
+    popover-trigger="'click mouseenter touchend'"
   )
     span.icon.icon-pin
 
@@ -23,13 +23,19 @@ span.pinned-list.dropdown.btn-group(
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties
         span(ng-show="!pinnedTotal") No Pinned Properties
       span
+        span.results-btn(ng-click="getStatistics(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
+          span.fa.fa-bar-chart
         span.results-btn(ng-click="pinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-plus-circle
           span.action Results
         span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle
           span.action Results
-        span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left" popover-trigger="click mouseenter" popover="New Mailing" ng-click="addMail()")
+        span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left"
+          popover-trigger="'click mouseenter'"
+          uib-popover="New Mailing"
+          ng-click="addMail()"
+        )
           i.fa.fa-envelope
     .inner
       ul
@@ -44,3 +50,8 @@ span.pinned-list.dropdown.btn-group(
               span.action-button(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")
                 span.action Unpin
                 span.icon.icon-pin
+
+      .dropdown-explanation(ng-show="!pinnedTotal")
+        p You haven't pinned any properties yet. Click the pin to save properties in the project.  Everyone in the project will see the same pins.
+        p Pinning makes things easier to find: they'll show up right here in this list.
+        .action Watch a 60 second video

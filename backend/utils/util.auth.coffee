@@ -169,17 +169,19 @@ requireLogin = (options = {}) ->
       if options.redirectOnFail
         return res.json(doLogin: true)
       else
-        return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
 
 # route-specific middleware that requires profile and project for the user
 # optional: methods
-# optional: projectIdParam (needs to match the url param of the endpoint, though)
+# optional: projectIdParam (needs to match the id of the endpoint, such as `id` or `project_id`)
+#           Can use format like `body.project_id` or `params.id` to force where on `req` to get the id.
 requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -188,21 +190,27 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
     # middleware is not applicable for this req.method, move along
     return process.nextTick(next) if ignoreThisMethod(req.method, methods)
 
+    # get project id based on the `projectIdParam` argument in either `req.params` or
+    #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
+    #   `projectIdParam` on the `req` obj,     followed by `req.params`, since
+    #   that is where the restful resource id will often be found (in url)
+    queryParams = _.merge {}, req.query, req.params
+
     # get profile based on project param.  some endpoints will not have this,
     # so if project is not present, get it via `current_profile_id` off session
-    if getProjectFromSession != true and req.params? and projectIdParam of req.params
-      project_id = req.params[projectIdParam]
-      profile = _.find(req.session.profiles, project_id: Number(project_id))
+    if getProjectFromSession != true and queryParams? and projectIdParam of queryParams
+      project_id = _.get(req, projectIdParam, queryParams[projectIdParam]) # try using `projectIdParam as a "path" if possible
+      profile = _.find(req.session.profiles, project_id: Number(project_id)) # project_id == null, undefined, or NaN makes `profile` undefined here
     else
       profile = req.session.profiles["#{req.session.current_profile_id}"]
 
     # auth-ing
     if !profile?
-      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, {status: httpStatus.UNAUTHORIZED})
     if !req.user?
-      return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     if !req.session?.profiles? or Object.keys(req.session.profiles).length == 0
-      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, {status: httpStatus.UNAUTHORIZED})
 
     # attach to req for other project-oriented middlewares to use
     req.rmapsProfile = profile
@@ -217,7 +225,8 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -235,7 +244,7 @@ requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false}
 
       # auth-ing
       if !profile?.can_edit
-        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, {status: httpStatus.UNAUTHORIZED})
 
       return process.nextTick(next)
     )
@@ -248,7 +257,8 @@ requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false}
   methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  projectIdParam ?= 'id'
+  if projectIdParam == undefined
+    projectIdParam = 'id'
 
   # list-ize to defensively accept strings
   methods = [methods] if _.isString methods
@@ -266,7 +276,7 @@ requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false}
 
       # auth-ing
       if !profile? or (profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id)
-        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, {status: httpStatus.UNAUTHORIZED})
 
       return process.nextTick(next)
     )
@@ -287,7 +297,7 @@ requireSubscriber = ({methods} = {}) ->
     # there are a variety of statuses that imply grace periods,
     # trial, type of plan, etc so we just test for the inactive statuses.
     if !userUtils.isSubscriber(req)
-      return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, httpStatus.UNAUTHORIZED)
+      return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, {status: httpStatus.UNAUTHORIZED})
 
     return process.nextTick(next)
 
@@ -318,7 +328,7 @@ requirePermissions = (permissions, options = {}) ->
       if options.logoutOnFail
         return logout(req, res, next)
       else
-        return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, httpStatus.UNAUTHORIZED)
+        return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
 
 

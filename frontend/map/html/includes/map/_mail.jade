@@ -4,16 +4,16 @@ include ../mixins/_circleNrMixin.jade
 span.pinned-list.dropdown.btn-group(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-controller="rmapsMapMailCtrl"
-  dropdown
+  uib-dropdown
   is-open="isOpens.mail"
   on-toggle="togglePanel('mail')"
 )
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
     rmaps-require-project-editor="disable"
-    dropdown-toggle
+    uib-dropdown-toggle
     popover-placement="bottom"
-    popover="Mailings"
-    popover-trigger="click mouseenter"
+    uib-popover="Mailings"
+    popover-trigger="'click mouseenter touchend'"
     popover-enable="!isOpens.mail")
     i.fa.fa-envelope.icon
 
@@ -25,10 +25,9 @@ span.pinned-list.dropdown.btn-group(
       span.results-btn(
         ng-controller="rmapsMailModalCtrl"
         popover-placement="right"
-        popover-trigger="mouseenter"
-        popover="New Mailing"
+        popover-trigger="'mouseenter touchend'"
+        uib-popover="New Mailing"
         ng-click="addMail()")
-          i.fa.fa-envelope
           span New Mail
     .inner
       ul
@@ -39,3 +38,7 @@ span.pinned-list.dropdown.btn-group(
               span.content
                 span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.status}}
                 +propertyAttributes('property')
+      .dropdown-explanation(ng-show="!mailings.length")
+        p You haven't sent any mail yet. Maybe now's the time to start? You can send 1 letter or thousands of letters in just a few clicks.
+        p Find your house and send yourself a letter to see how easy it is!
+        .action Watch a 60 second video

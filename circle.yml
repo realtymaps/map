@@ -2,10 +2,12 @@ machine:
   node:
     version: v4.3.1
 
-# circleci 
+# circleci
 dependencies:
   pre:
     - sudo apt-get install libpoppler-cpp-dev
+  cache_directories:
+    - "nginx"
 
 deployment:
   prod:

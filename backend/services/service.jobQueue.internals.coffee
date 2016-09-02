@@ -202,11 +202,11 @@ handleSuccessfulTasks = (transaction=null) ->
       .whereNull("#{tables.jobQueue.currentSubtasks.tableName}.finished")
       .orWhereIn("#{tables.jobQueue.currentSubtasks.tableName}.status", ['hard fail', 'infrastructure fail', 'canceled'])
       .orWhere () ->
-        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'timeout')
-        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_timeouts", true)
+        this.where "#{tables.jobQueue.currentSubtasks.tableName}.status", 'timeout'
+        this.where "#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_timeouts", true
       .orWhere () ->
-        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'zombie')
-        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true)
+        this.where "#{tables.jobQueue.currentSubtasks.tableName}.status", 'zombie'
+        this.where "#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true
   .update
     status: 'success'
     status_changed: dbs.get('main').raw('NOW()')

@@ -1,0 +1,69 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+MAIN_DIR=`pwd`
+
+trap 'kill -TERM $PID1' TERM INT
+
+./node_modules/.bin/webdriver-manager update &>/dev/null
+
+echo 'Starting webdriver'
+./node_modules/.bin/webdriver-manager start &> /dev/null &
+PID2=$!
+
+
+killApp () {
+  if [[ "$PROTRACTOR_DO_START_APP" != "" ]]; then
+    echo "killing app "
+    kill -9 "$PID3"
+  fi
+}
+
+if [[ "$PROTRACTOR_DO_START_APP" != "" ]]; then
+  rm -f app.out
+
+  ./scripts/runDev --gulp-express > app.out 2>&1 &
+  PID3=$!
+
+  to_match="Finished 'express'"
+  i="0"
+
+  while [ $i -lt 10 ]
+  do
+    echo sleeping
+    sleep 30 #gulp will usually finish ~ 16s
+    echo "check for finished gulp"
+    if grep Finished app.out | grep express > /dev/null
+    then
+      # code if found
+      echo 'GULP Finish detected!!'
+      doLoop=false
+      break
+    fi
+    i=$[$i+1]
+  done
+
+  if [[ "$doLoop" == "" ]]; then
+    echo "App did not start in the alotted time."
+    killApp
+    exit 300
+  fi
+fi
+
+
+sleep 2
+echo 'Starting specs'
+./node_modules/.bin/protractor protractor.config.js &
+PID1=$!
+
+wait $PID1
+
+kill -9 $(echo `ps aux | grep webdriver-manager | grep -v grep |awk '{print $2}'`)
+
+killApp
+
+
+# not working
+# echo DRIVER_PID: $PID2
+# kill -9 $DRIVER_PID

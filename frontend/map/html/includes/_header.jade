@@ -1,18 +1,46 @@
 div(ng-controller="rmapsHeaderCtrl")
-  // Standard Site Header
-  .desktop-only
-    header.site-header
-      .inner
-        .container-fluid
-          include ./header/_logo
-          include ./header/_navigation
+  // Realtor/Subscriber Site Header
+  div(ng-if="desktopHeaderType() == 'OWNER'")
+    .desktop-only
+      header.site-header
+        .inner
+          .container-fluid
+            include ./header/_logo
+            include ./header/_navigation
 
-          .site-header-right
-            div(ng-if="principal.isAuthenticated()")
-              include ./header/_notices
-              include ./header/_userblock
-              include ./header/_search
-            include ./header/_rightnav
+            .site-header-right
+              div(ng-if="principal.isAuthenticated()")
+                include ./header/_notices
+                include ./header/_userblock
+                include ./header/_search
+              include ./header/_rightnav
+
+  // Project View Desktop Header
+  div(ng-if="desktopHeaderType() == 'VIEWER'")
+    .desktop-only
+      header.site-header
+        .inner
+          .container-fluid
+
+            .site-header-title(ng-if="hasParentName()")
+              img.header-owner-image(ng-if="hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
+              .header-r-logo(ng-if="!hasParentImage()" rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")
+
+              .header-title-info.hidden-xs.hidden-sm(ng-class="{ 'header-has-image': hasParentImage() }")
+                .header-title-major {{getProfile().parent_name}}
+                .header-title-minor {{getProfile().company_name || 'Project Owner' }}
+
+            div(ng-if="!hasParentName()")
+              include ./header/_logo
+
+            include ./header/_navigation
+
+            .site-header-right
+              div(ng-if="principal.isAuthenticated()")
+                include ./header/_notices
+                include ./header/_userblock
+                include ./header/_search
+              include ./header/_rightnav
 
   // Realtor/Subscriber Header for Mobile
   div(ng-if="mobileHeaderType() == 'OWNER'")
@@ -37,10 +65,9 @@ div(ng-controller="rmapsHeaderCtrl")
             .mobile-header-title(ng-if="rmapsPageService.getTitle()")
               span {{rmapsPageService.getTitle()}}
             .mobile-header-title(ng-if="!rmapsPageService.getTitle()")
-              div(ng-if="getProfile().parent_name && getProfile().company_name")
+              div(ng-if="getProfile().parent_name")
                 .header-title-major {{getProfile().parent_name}}
-                .header-title-minor {{getProfile().company_name}}
-              div(ng-if="!getProfile().parent_name || !getProfile().company_name") {{getProfile().parent_name || project.name}}
+                .header-title-minor {{getProfile().company_name || 'Project Owner' }}
           .mobile-header-right
             span(ng-cloak ng-if="hasParentImage()")
               img.header-owner-image(rmaps-cdn-image ng-src="{{parentImageUrl()}}" title="{{getProfile().parent_name}}")

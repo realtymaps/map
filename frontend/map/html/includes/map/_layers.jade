@@ -1,10 +1,20 @@
 .layers-tools
   .desktop-only
-    button.toggle-active.btn.btn-transparent(ng-attr-aria-expanded="{{layersOpen?'true':'false'}}" popover-template="'LayersPopover'", popover-placement='right' ng-click="layersOpen=!layersOpen")
+    button.toggle-active.btn.btn-transparent(
+      ng-attr-aria-expanded="{{layersOpen?'true':'false'}}"
+      uib-popover-template="'LayersPopover'"
+      popover-placement='right'
+      popover-trigger="'click touchend'"
+      ng-click="layersOpen=!layersOpen"
+    )
       span.icon.icon-layers
 
   .mobile-only
-    button.toggle-active.btn.btn-transparent(mobile-modal modal-template="'LayersPopoverMobile'" modal-title="'Map Layers'")
+    button.toggle-active.btn.btn-transparent(
+      mobile-modal
+      modal-template="'LayersPopoverMobile'"
+      modal-title="'Map Layers'"
+    )
       span.icon.icon-layers
 
   script(type="text/ng-template" id="LayersPopover")
@@ -12,20 +22,57 @@
       span.label Show
       ul.buttons
         li
-          button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
+          div(
+            uib-tooltip="{{addressButtonLayerToolTip}}"
+            tooltip-placement="top"
+            tooltip-popup-delay="500"
+            tooltip-close-popup-delay="500"
+            tooltip-trigger="'mouseenter focus'"
+            tooltip-enable="disableAddressButton()"
+          )
+            button.btn(
+              ng-disabled="disableAddressButton()"
+              ng-click="Toggles.toggleAddresses()"
+              ng-class="{'btn-inactive' : !Toggles.showAddresses }"
+            ) Address
         li
-          button.btn(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
+          div(
+            uib-tooltip="{{priceButtonLayerToolTip}}"
+            tooltip-placement="top"
+            tooltip-popup-delay="500"
+            tooltip-close-popup-delay="500"
+            tooltip-trigger="'mouseenter focus'"
+            tooltip-enable="disablePriceButton()"
+          )
+            button.btn(
+              ng-disabled="disablePriceButton()"
+              ng-click="Toggles.togglePrices()"
+              ng-class="{'btn-inactive' : !Toggles.showPrices }"
+            ) Price
         li
-          button.btn(ng-click="Toggles.toggleNotes()" ng-class="{'btn-inactive' : !Toggles.showNotes }") Notes
+          button.btn(
+            ng-click="Toggles.toggleNotes()"
+            ng-class="{'btn-inactive' : !Toggles.showNotes }"
+          ) Notes
         li
-          button.btn(rmaps-require-project-editor="disable" ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
+          button.btn(
+            rmaps-require-project-editor="disable"
+            ng-click="Toggles.toggleMail()"
+            ng-class="{'btn-inactive' : !Toggles.showMail }"
+          ) Sent Mail
     .filter-row
       span.label Status
       ul.buttons
         li
-          button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
+          button.btn.btn-forsale(
+            ng-click="selectedFilters.forSale = !selectedFilters.forSale"
+            ng-class="{'btn-inactive' : !selectedFilters.forSale }"
+          ) For Sale
         li
-          button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
+          button.btn.btn-pending(
+            ng-click="selectedFilters.pending = !selectedFilters.pending"
+            ng-class="{'btn-inactive' : !selectedFilters.pending }"
+          ) Pending
         li
           rmaps-sold-button(filters="selectedFilters" menu="top")
 
@@ -33,13 +80,41 @@
     .list(ng-controller="rmapsLayersMobileCtrl")
       .item-divider Show
       .item
-        button.button.button-block(ng-click="Toggles.toggleAddresses()" ng-class="{'button-inactive' : !Toggles.showAddresses }") Address
-        button.button.button-block(ng-click="Toggles.togglePrices()" ng-class="{'button-inactive' : !Toggles.showPrices }") Price
-        button.button.button-block(ng-click="Toggles.toggleNotes()" ng-class="{'button-inactive' : !Toggles.showNotes }") Notes
-        button.button.button-block(rmaps-require-project-editor="disable" ng-click="Toggles.toggleMail()" ng-class="{'button-inactive' : !Toggles.showMail }") Sent Mail
+        button.button.button-block(
+          ng-disabled="disableAddressButton()"
+          ng-click="Toggles.toggleAddresses()"
+          ng-class="{'button-inactive' : !Toggles.showAddresses }"
+        ) Address
+        button.button.button-block(
+          ng-disabled="disablePriceButton()"
+          ng-click="Toggles.togglePrices()"
+          ng-class="{'button-inactive' : !Toggles.showPrices }"
+        ) Price
+        button.button.button-block(
+          ng-click="Toggles.toggleNotes()"
+          ng-class="{'button-inactive' : !Toggles.showNotes }"
+        ) Notes
+        button.button.button-block(
+          rmaps-require-project-editor="disable"
+          ng-click="Toggles.toggleMail()"
+          ng-class="{'button-inactive' : !Toggles.showMail }"
+        ) Sent Mail
       .item-divider Status
       .item
-        button.button.button-block.button-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'button-inactive' : !selectedFilters.forSale }") For Sale
-        button.button.button-block.button-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'button-inactive' : !selectedFilters.pending }") Pending
-        button.button.button-block.button-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'button-inactive' : !selectedFilters.sold }") Sold in ..
-        select.form-control(ng-disabled="!selectedFilters.sold" ng-model="selectedFilters.soldRange" ng-options='c.value as c.name for c in filterValues.soldRangeValues')
+        button.button.button-block.button-forsale(
+          ng-click="selectedFilters.forSale = !selectedFilters.forSale"
+          ng-class="{'button-inactive' : !selectedFilters.forSale }"
+        ) For Sale
+        button.button.button-block.button-pending(
+          ng-click="selectedFilters.pending = !selectedFilters.pending"
+          ng-class="{'button-inactive' : !selectedFilters.pending }"
+        ) Pending
+        button.button.button-block.button-sold(
+          ng-click="selectedFilters.sold = !selectedFilters.sold"
+          ng-class="{'button-inactive' : !selectedFilters.sold }"
+        ) Sold in ..
+        select.form-control(
+          ng-disabled="!selectedFilters.sold"
+          ng-model="selectedFilters.soldRange"
+          ng-options='c.value as c.name for c in filterValues.soldRangeValues'
+        )

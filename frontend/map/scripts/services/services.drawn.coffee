@@ -134,6 +134,8 @@ app.service 'rmapsDrawnUtilsService',
       rmapsDrawnProfileFactory(profile)
 
   _getShapeModel = (layer) ->
+    if !layer?.model?
+      $log.error("_getShapeModel: no model")
     _.merge layer.model, layer.toGeoJSON()
 
   eachLayerModel = (layersObj, cb) ->

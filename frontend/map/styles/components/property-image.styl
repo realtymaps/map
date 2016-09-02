@@ -13,6 +13,9 @@
   &.prop-image-lg
     .property-img
       height 350px
+      &:hover
+        height 565px
+      transition: height 1s;
       overflow hidden
       display flex
       align-items center
@@ -20,8 +23,6 @@
     .carousel
       .item
         padding 0
-      img
-        height 350px
 
 
   &.prop-image-md
@@ -44,6 +45,7 @@
     font-weight: 500
     color $rm_status_on_background
     text-transform uppercase
+    z-index 1
 
     $fnPropertyStatus(background-color)
 

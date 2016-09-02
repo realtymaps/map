@@ -1,6 +1,18 @@
 app = require '../../app.coffee'
 directiveName = 'rmapsLeafletDrawDirectiveCtrl'
 
+app.constant 'leafletDrawEvents', [
+  'created'
+  'edited'
+  'deleted'
+  'drawstart'
+  'drawstop'
+  'editstart'
+  'editstop'
+  'deletestart'
+  'deletestop'
+  ].map (n) -> 'draw:' + n
+
 app.service "#{directiveName}DefaultsService", () ->
   drawContexts = [
     'pen'
@@ -8,6 +20,7 @@ app.service "#{directiveName}DefaultsService", () ->
     'rectangle'
     'circle'
     'polygon'
+    'marker'
     'text'
     'redo'
     'undo'
@@ -42,6 +55,7 @@ app.service "#{directiveName}DefaultsService", () ->
         rectangle: _spanCssCls + ' icon-android-checkbox-outline-blank'
         circle: _spanCssCls + ' icon-android-radio-button-off'
         polygon: _spanCssCls + ' icon-polygon'
+        marker: _spanCssCls + ' icon-marker'
         text: _spanCssCls + ' icon-text-create'
         redo: _spanCssCls + ' icon-redo2'
         undo: _spanCssCls + ' icon-undo'
@@ -57,6 +71,9 @@ app.service "#{directiveName}DefaultsService", () ->
         throw new Error "#{thing} required"
 
     {id, divType, subContext, drawContext} = opts
+
+    if typeof(drawContext) != 'string'
+      drawContext = drawContext.name
 
     maybeIdDivTypeContext = idToDefaultsMap?[id]?[subContext]?[divType]
     maybeIdDrawContext = maybeIdDivTypeContext?[drawContext]
@@ -82,6 +99,8 @@ app.service "#{directiveName}DefaultsService", () ->
   scopeContext = (scope, attrs) -> (divType) ->
     getClass: (drawContext) ->
       ret = explicitGets[divType].getClass(drawContext, attrs.id)
+      if scope.activeHandle == drawContext
+        ret += ' active'
       ret
 
     getText: (drawContext) ->

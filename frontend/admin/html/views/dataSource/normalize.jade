@@ -18,11 +18,11 @@
         .col-md-4
           button(ng-click="dlCSV(csv.getUrl(csv.rowCount))" ng-disabled="!mlsData.current.id").btn.btn-primary.header-button Download CSV
         .col-md-4
-          input(type="text" ng-model="csv.rowCount" tooltip="Number of records in CSV" ng-disabled="!mlsData.current.id").form-control.download-csv-input
+          input(type="text" ng-model="csv.rowCount" uib-tooltip="Number of records in CSV" ng-disabled="!mlsData.current.id").form-control.download-csv-input
     .col-md-3
       .row
         span.dropdown.btn-group(dropdown)
-          button.btn.btn-primary.header-button(dropdown-toggle) Global Rules
+          button.btn.btn-primary.header-button(uib-dropdown-toggle) Global Rules
           div.dropdown-menu.scroll.global-rules(dropdown-menu ng-click="$event.stopPropagation()")
             .row
               .col-md-4 Remove String
@@ -35,7 +35,7 @@
     .row
       input(ng-model="rootSearchText" placeholder="Search All")
     .row
-      .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
+      .close-icon(ng-click="showGrid=!showGrid" uib-tooltip="Grid view") ☰
 
       include ../../includes/dataSource/baseFieldsColumn.jade
       .col-md-2.list-container
@@ -62,12 +62,7 @@
 
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       include ../../includes/dataSource/fieldConfig/common/nonBase.jade
-      include ../../includes/dataSource/fieldConfig/mls/nonBase.jade
 
-    .col-md-12.scroll(
-      ng-if="fieldData.current.type.name == 'string'"
-      ng-repeat="lookup in fieldData.current.lookups"
-    )
-      include ../../includes/dataSource/fieldConfig/common/lookups.jade
+    include ../../includes/dataSource/fieldConfig/mls/lookups.jade
     include ../../includes/dataSource/fieldConfig/common/datetime.jade
     include ../../includes/dataSource/fieldConfig/common/advanced.jade
