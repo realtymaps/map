@@ -79,7 +79,7 @@ store = (subtask) -> Promise.try () ->
 
   Promise.each subtask.data.values, (idObj) ->
     # taskLogger.debug "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
-    mlsHelpers.storePhotosNew(subtask, idObj)
+    mlsHelpers.storePhotos(subtask, idObj)
     .then ({successCtr, skipsCtr, errorsCtr}) ->
       totalSuccess += successCtr
       totalSkips += skipsCtr
@@ -95,6 +95,9 @@ clearRetries = (subtask) ->
   tables.deletes.retry_photos()
   .whereNot(batch_id: subtask.batch_id)
   .delete()
+
+setLastUpdateTimestamp = (subtask) ->
+  dataLoadHelpers.setLastUpdateTimestamp(subtask)
 
 ready = () ->
   # don't automatically run if corresponding MLS is running
