@@ -107,9 +107,6 @@ $log) ->
 
         $log.debug eventInfo
 
-        # Close popup
-        closeWindow()
-
         # Update model
         model.isMousedOver = false
         events.last.mouseover = null
@@ -171,7 +168,12 @@ $log) ->
 
         $log.debug 'Showing property details if a parcel was clicked'
 
+        closeWindow()
 
-    , thisOriginator, ['click']
+      moveend: (event) ->
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
+        closeWindow()
+
+    , thisOriginator, ['click', 'moveend']
 
     return _eventHandler
