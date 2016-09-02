@@ -67,7 +67,7 @@ module.exports =
                   (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
                     moment(existing.up_to_date).isBefore(property.up_to_date))
 
-                if filterSummaryImpl == combined
+                if queryParams.returnType
                   encodedCenter = geohash.encode([property.geometry_center?.coordinates])
 
                   if encodedCenter
@@ -89,7 +89,7 @@ module.exports =
                     property.mls_formal_name = mlsConfig?.formal_name
             .then () ->
               resultGroupsCtr = 0
-              result = if filterSummaryImpl == combined
+              result = if queryParams.returnType
                 for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
                   if _.size(rm_property_ids) > 1
                     for rm_property_id of rm_property_ids
