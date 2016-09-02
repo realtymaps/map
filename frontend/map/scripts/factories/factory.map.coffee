@@ -27,9 +27,8 @@ app.factory 'rmapsMapFactory',
     rmapsLayerFormattersService,
     rmapsLeafletObjectFetcherFactory,
     rmapsMainOptions,
-    rmapsMapEventsHandlerService,
+    rmapsEventsHandlerService,
     rmapsMapIds,
-    rmapsPopupLoaderService,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
     rmapsRenderingService,
@@ -148,7 +147,7 @@ app.factory 'rmapsMapFactory',
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @eventHandle = rmapsMapEventsHandlerService(@)
+        @eventHandle = rmapsEventsHandlerService(@)
 
         _.merge @scope,
           streetViewPanorama:
@@ -340,16 +339,6 @@ app.factory 'rmapsMapFactory',
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
-
-      openWindow: (model) =>
-        opts = {@map, model}
-        $log.debug "openWindow", model
-        # Do not show infowindow for parcels without property data
-        if model.status || model.grouped
-          rmapsPopupLoaderService.load(opts)
-
-      closeWindow: ->
-        rmapsPopupLoaderService.close()
 
       centerOn: (result) =>
         @zoomTo(result, false)
