@@ -7,7 +7,7 @@ $ = require('gulp-load-plugins')()
 _ = require 'lodash'
 rework = require 'gulp-rework'
 rework_url = require 'rework-plugin-url'
-path = require 'path'
+gutil = require('gulp-util')
 
 _testCb = null
 
@@ -51,6 +51,11 @@ styles = ({app, doSourceMaps, cdn}) ->
         r_url
       else
         url
+
+    .on 'error', (err) ->
+      # Rework likes to dump the ENTIRE CSS FILE if there is an error
+      gutil.log gutil.colors.red('[rework]'), err.toString().slice(0,500)
+      @emit 'end'
 
     if doSourceMaps
       stream = stream.pipe $.sourcemaps.write()
