@@ -370,7 +370,6 @@ module.exports = {
   buildRecord
   finalizeData
   storePhotos
-  storePhotosNew
   deleteOldPhoto
   markUpToDate
   getMlsField
