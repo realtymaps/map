@@ -1,5 +1,5 @@
 externalAccounts = require '../services/service.externalAccounts'
-logger = require './logger'
+logger = require('./logger').spawn('googleMaps')
 
 
 locals = {}
@@ -15,7 +15,7 @@ module.exports =
       null  # we expect to not necessarily get a value here
     .then (accountInfo) ->
       if accountInfo?.api_key?
-        logger.info("Setting GoogleMaps API key")
+        logger.debug("Setting GoogleMaps API key")
         setLocals("&key=#{accountInfo.api_key}")
       else
         logger.warn("Not using a GoogleMaps API key")
