@@ -164,11 +164,19 @@ $log) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
-        getPropertyDetail(geometry_center: geojson.geometry)
 
-        $log.debug 'Showing property details if a parcel was clicked'
+        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
+        .then (data) ->
+          model = data.mls?[0] || data.county?[0]
+          return if !model
 
-        closeWindow()
+          model.coordinates ?= model.geometry_center?.coordinates
+          model.markerType = 'price'
+
+          setTimeout ->
+            if events.last.last != 'dblclick'
+              openWindow(model)
+          , limits.clickDelayMilliSeconds - 100
 
       moveend: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
