@@ -4,6 +4,8 @@ require '../../../common/extensions/strings'
 logger = require('../../config/logger').spawn('validation:address')
 usStates = require '../../../common/utils/util.usStates'
 _ = require 'lodash'
+regexEscape = require 'escape-string-regexp'
+
 
 module.exports = (options = {}) ->
   (param, value) ->
@@ -58,7 +60,7 @@ module.exports = (options = {}) ->
         result.street = value.streetFull
         if result.unit
           # Scrub the unit part of the street address
-          unitRe = new RegExp("\\W+#{result.unit}\\W+", 'i')
+          unitRe = new RegExp("\\W+#{regexEscape(result.unit)}\\W+", 'i')
           result.street = result.street.replace(result.street.match(unitRe)?[0], '')
 
       cityParts = []
