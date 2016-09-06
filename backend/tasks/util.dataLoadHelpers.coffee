@@ -510,13 +510,11 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
       table.text('rm_error_msg')
       for fieldName in columns
         table.text(fieldName)
-    promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
+    promiseQuery(createRawTable.toString())
 
 _endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
   if startedTransaction
-    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
-    .then () ->
-      promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
+    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
     .then () ->
       promiseQuery('COMMIT TRANSACTION')
     .then () ->
