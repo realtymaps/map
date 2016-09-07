@@ -76,7 +76,7 @@ module.exports =
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
     pdfUpload: 'user_pdf_uploads'
-  temp: 'raw_temp.raw'
+  temp: 'raw_temp.'
   event:
     history: 'data_event_history'
   cartodb:
