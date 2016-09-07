@@ -99,7 +99,9 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
           if sold
             @orWhere () ->
               @where("#{dbFn.tableName}.status", 'sold')
-              if filters.soldRange && filters.soldRange != 'all'
+              if filters.closeDateMin || filters.closeDateMax
+                sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
+              else if filters.soldRange && filters.soldRange != 'all'
                 @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
@@ -133,8 +135,6 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
 
       if filters.propertyType
         @where("#{dbFn.tableName}.property_type", filters.propertyType)
-
-      sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
 
       if filters.hasImages
         @whereNotNull("photos")

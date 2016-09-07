@@ -7,7 +7,10 @@ keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 tables = require '../config/tables'
+subscriptionSvc = require './service.user_subscription.coffee'
+userUtils = require '../utils/util.user'
 errors = require '../utils/errors/util.errors.userSession'
+
 
 # creates a bcrypt hash, without the built-in salt
 hashToken = (token, salt) ->
@@ -110,9 +113,26 @@ getSecuritiesForSession = (sessionId) ->
     securities
 
 
-module.exports =
-  createNewSeries: createNewSeries
-  ensureSessionCount: ensureSessionCount
-  deleteSecurities: deleteSecurities
-  getSecuritiesForSession: getSecuritiesForSession
-  hashToken: hashToken
+sessionLoginProcess = (req, res, user, opts={}) ->
+  subscriptionSvc.getStatus user
+  .then (subscription_status) ->
+    req.user = user
+    req.session.subscription = subscription_status
+    userUtils.cacheUserValues(req)
+
+  .then () ->
+    req.session.saveAsync()
+  .then () ->
+    ensureSessionCount(req)
+  .then () ->
+    createNewSeries(req, res, !!opts.rememberMe)
+
+
+module.exports = {
+  createNewSeries
+  ensureSessionCount
+  deleteSecurities
+  getSecuritiesForSession
+  hashToken
+  sessionLoginProcess
+}
