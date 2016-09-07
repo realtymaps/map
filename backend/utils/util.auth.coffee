@@ -5,7 +5,7 @@ logger = require('../config/logger').spawn('auth')
 config = require '../config/config'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
-userUtils = require '../utils/util.user'
+userUtils = require './util.user'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 tables = require '../config/tables'
@@ -126,17 +126,12 @@ checkSessionSecurity = (req, res) ->
           return Promise.reject(new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug'))
         if tokenHash != security.token
           return Promise.reject(new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn'))
+
         req.session.userid = context.cookieValues.userId
         getSessionUser(req)
         .then (user) ->
-          req.user = user
-          userUtils.cacheUserValues(req)
-        .then () ->
-          req.session.saveAsync()
-        .then () ->
-          sessionSecurityService.ensureSessionCount(req)
-        .then () ->
-          sessionSecurityService.createNewSeries(req, res, true)
+          sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: true)
+
   .catch SessionSecurityError, (err) ->
     # figure out what we need to invalidate and do it
     switch (err.invalidate)
