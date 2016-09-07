@@ -5,7 +5,7 @@ logger = require('../config/logger').spawn('auth')
 config = require '../config/config'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
-userUtils = require '../utils/util.user'
+userUtils = require './util.user'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 tables = require '../config/tables'
@@ -130,7 +130,7 @@ checkSessionSecurity = (req, res) ->
         req.session.userid = context.cookieValues.userId
         getSessionUser(req)
         .then (user) ->
-          sessionSecurityService.sessionLoginProcess(req, res, user)
+          sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: true)
 
   .catch SessionSecurityError, (err) ->
     # figure out what we need to invalidate and do it

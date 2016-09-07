@@ -56,7 +56,7 @@ login = (req, res, next) -> Promise.try () ->
       }, httpStatus.UNAUTHORIZED)
     else
       req.session.userid = user.id
-      sessionSecurityService.sessionLoginProcess(req, res, user)
+      sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->
         internals.getIdentity(req, res, next)
 

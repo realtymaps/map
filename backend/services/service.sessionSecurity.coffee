@@ -113,7 +113,7 @@ getSecuritiesForSession = (sessionId) ->
     securities
 
 
-sessionLoginProcess = (req, res, user) ->
+sessionLoginProcess = (req, res, user, opts={}) ->
   subscriptionSvc.getStatus user
   .then (subscription_status) ->
     req.user = user
@@ -125,7 +125,7 @@ sessionLoginProcess = (req, res, user) ->
   .then () ->
     ensureSessionCount(req)
   .then () ->
-    createNewSeries(req, res, !!req.body.remember_me)
+    createNewSeries(req, res, !!opts.rememberMe)
 
 
 module.exports = {
