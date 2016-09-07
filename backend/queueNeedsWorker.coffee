@@ -17,7 +17,7 @@ runOnce = () ->
     if needs?
       logger.spawn('needs').debug('Current queue needs:')
       for queue in needs
-        logger.spawn('needs').debug("    #{queue.name}: #{queue.quantity}")
+        logger.spawn('needs').debug () -> "    #{queue.name}: #{queue.quantity}"
 
 repeat = (period=config.HIREFIRE.RUN_WINDOW) ->
   _intervalHandler = setInterval(runOnce, period)

@@ -5,7 +5,7 @@ set -o pipefail
 
 
 if [ -n "$IS_HEROKU" ] ; then
-    echo "in Heroku, skipping stopServe script"
+    : # no-op
 else
 
 

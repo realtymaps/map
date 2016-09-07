@@ -91,7 +91,7 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
           if taskData == undefined
             logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
             return
-          logger.info("#{prefix} Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
+          logger.info("#{prefix} Queuing retry subtask ##{retrySubtask.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
@@ -178,6 +178,9 @@ handleZombies = (transaction=null) ->
   .orWhere () ->
     @whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
     @where(status: 'preparing')
+  .orWhere () ->
+    @whereNull('finished')
+    @whereRaw("heartbeat + #{config.JOB_QUEUE.HEARTBEAT}*('1 millisecond'::INTERVAL)*5 < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
       handleSubtaskError({
@@ -262,11 +265,29 @@ runWorkerImpl = (queueName, prefix, quit) ->
 
 
 executeSubtask = (subtask, prefix) ->
+  heartbeat = () ->
+    Promise.resolve()
+    .cancellable()
+    .then () ->
+      Promise.delay(config.JOB_QUEUE.HEARTBEAT)
+    .then () ->
+      tables.jobQueue.currentSubtasks()
+      .where(id: subtask.id)
+      .update(heartbeat: dbs.get('main').raw('NOW()'))
+    .then () ->
+      heartbeat()
+    .catch Promise.CancellationError, (err) ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "heartbeat cancelled"
+    .catch (err) ->
+      logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getSimpleDetails(err)}"
+      throw err
+  heartbeatPromise = heartbeat()
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
   .update
     status: 'running'
     started: dbs.get('main').raw('NOW()')
+    heartbeat: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
@@ -313,6 +334,8 @@ executeSubtask = (subtask, prefix) ->
       subtask: subtask
       error: err
     throw err
+  .finally () ->
+    heartbeatPromise.cancel()
 
 
 cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
