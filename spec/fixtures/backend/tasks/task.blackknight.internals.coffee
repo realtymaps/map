@@ -57,7 +57,7 @@ module.exports = {
           "fileType": "Delete",
           "startTime": 1471482558075,
           "dataType": "tax",
-          "rawTableSuffix": "U_DELETES_20160406_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         }
       ]
     }
