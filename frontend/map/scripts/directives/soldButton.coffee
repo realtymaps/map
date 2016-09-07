@@ -25,5 +25,7 @@ app.directive 'rmapsSoldButton', ($rootScope, $log, $compile, rmapsFiltersFactor
       option.value.match(/\d+ \w/)?[0] || option.value
 
     $scope.onClick = (option) ->
+      $scope.filters.closeDateMin = null
+      $scope.filters.closeDateMax = null
       $scope.filters.soldRange = option.value
       $scope.isOpen = false
