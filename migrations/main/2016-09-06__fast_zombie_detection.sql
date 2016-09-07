@@ -1,2 +1,2 @@
 ALTER TABLE jq_current_subtasks ADD COLUMN heartbeat TIMESTAMP WITHOUT TIME ZONE;
-ALTER TABLE jq_subtask_errors ADD COLUMN heartbeat TIMESTAMP WITHOUT TIME ZONE;
+ALTER TABLE jq_subtask_error_history ADD COLUMN heartbeat TIMESTAMP WITHOUT TIME ZONE;
