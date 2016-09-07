@@ -118,20 +118,24 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 
 
     if (classified = _isDelete(fileName))
+      date = fileName.slice(-12, -4)
       _.merge fileInfo,
         fileType: DELETE
         listType: DELETE
-        rawTableSuffix: "#{fileName.slice(0, -4)}"
+        rawTableSuffix: "#{config.action.slice(0,1)}_DELETES_#{date}"
 
     else if (classified = _isLoad(fileName))
+      fips = fileName.slice(0, 5)
+      date = fileName.slice(-15, -7)
       _.merge fileInfo,
         fileType: LOAD
-        rawTableSuffix: fileName.slice(0, -7)
-        normalSubid: fileName.slice(0, 5)
+        rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{date}"
+        normalSubid: fips
         indicateDeletes: (config.action == REFRESH)
         deletes: dataLoadHelpers.DELETE.INDICATED
       if fileInfo.normalSubid != '12021'
         logger.debug () -> "Skipping file due to FIPS code: #{fileInfo.path}"
+        classified = false
 
     if classified
       # apply to appropriate list

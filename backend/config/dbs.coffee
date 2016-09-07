@@ -103,7 +103,11 @@ transaction = (args...) -> Promise.try () ->
 
 
 buildTableName = (tableName) ->
-  (subid) -> "#{tableName}_#{subid}"
+  (subid) ->
+    if !tableName
+      subid
+    else
+      "#{tableName}_#{subid}"
 
 
 ensureTransaction = (trx, dbName, handler) -> Promise.try () ->
