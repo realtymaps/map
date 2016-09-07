@@ -493,7 +493,9 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   if !_.isArray columns
     columns = [columns]
 
-  promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+  promiseQuery('BEGIN TRANSACTION')
+  .then () ->
+    promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName).toString())
   .then () ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
@@ -501,8 +503,6 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   .then () ->
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
-  .then () ->
-    promiseQuery('BEGIN TRANSACTION')
   .then () ->
     createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
       table.increments('rm_raw_id').notNullable()
