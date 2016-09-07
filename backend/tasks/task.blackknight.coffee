@@ -188,7 +188,7 @@ saveCopyDates = (subtask) ->
     internals.pushProcessingDates(subtask.data.dates)
 
 
-checkFtpDrop = (subtask) ->
+checkProcessQueue = (subtask) ->
   subtaskStartTime = Date.now()
 
   # send classified file lists through downloading and processing
@@ -233,6 +233,9 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
+      if row['FIPS Code'] != '12021'
+        logger.debug () -> "Skipping delete row due to FIPS code: #{JSON.stringify(row)}"
+        return Promise.resolve()
 
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
@@ -374,7 +377,7 @@ subtasks = {
   copyFtpDrop
   copyFile
   saveCopyDates
-  checkFtpDrop
+  checkProcessQueue
   loadRawData
   deleteData
   normalizeData

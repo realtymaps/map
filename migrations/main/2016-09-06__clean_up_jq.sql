@@ -1,0 +1,49 @@
+TRUNCATE TABLE jq_task_history;
+TRUNCATE TABLE jq_current_subtasks;
+
+insert into jq_subtask_config (
+  name,
+  task_name,
+  queue_name,
+  step_num,
+  retry_delay_seconds,
+  hard_fail_timeouts,
+  hard_fail_after_retries,
+  hard_fail_zombies,
+  retry_max_count,
+  warn_timeout_seconds,
+  kill_timeout_seconds,
+  auto_enqueue,
+  active
+)
+values
+  (
+    'cleanup_taskHistory',
+    'cleanup',
+    'misc',
+    1,
+    30,
+    false,
+    true,
+    false,
+    2,
+    30,
+    60,
+    true,
+    true
+  ),
+  (
+    'cleanup_currentSubtasks',
+    'cleanup',
+    'misc',
+    1,
+    30,
+    false,
+    true,
+    false,
+    2,
+    30,
+    60,
+    true,
+    true
+  );

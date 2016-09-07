@@ -130,6 +130,8 @@ filterS3Contents = (contents, config) -> Promise.try () ->
         normalSubid: fileName.slice(0, 5)
         indicateDeletes: (config.action == REFRESH)
         deletes: dataLoadHelpers.DELETE.INDICATED
+      if fileInfo.normalSubid != '12021'
+        logger.debug () -> "Skipping file due to FIPS code: #{fileInfo.path}"
 
     if classified
       # apply to appropriate list
