@@ -8,8 +8,8 @@ prepForRmPropertyId =
     transform: [
       # for now, just kill any parcel that had OCR errors in the APN -- but eventually we might want to pull them in
       # with some sort of flag value so we can run a task to find them and try to fix the APN based on e.g. blackknight
-      validators.nullify(matcher: (s) -> !s || s.indexOf('?') != -1)
-      validators.string()
+      validators.string(stripFormatting: true)
+      validators.nullify(matcher: (s) -> !s || s.indexOf('?') != -1 || /^0+$/.test(s))
     ]
     required: true
 
