@@ -381,20 +381,22 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
 updateRecord = (opts) -> Promise.try () ->
-  {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, forceUpdate} = opts
+  {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
   diffExcludeKeys ?= []
   diffBooleanKeys ?= []
   delay ?= 100
   flattenRows ?= true
 
+  q = null
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
-    tables.normalized[dataType](subid: subid)
+    q = tables.normalized[dataType](subid: subid)
     .select('*')
     .where
       data_source_id: updateRow.data_source_id
       data_source_uuid: updateRow.data_source_uuid
+    q
   .then (result) ->
     if !result?.length
       # no existing row, just insert
@@ -405,9 +407,13 @@ updateRecord = (opts) -> Promise.try () ->
       .insert(updateRow)
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
+          if retried
+            err.rm_query = "Failed to detect existing row: #{q}"
+            throw err
+          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row: #{q}"
           delete updateRow.inserted
           newOpts = _.clone(opts)
-          newOpts.forceUpdate = true
+          newOpts.retried = true
           updateRecord(newOpts)
         else
           throw err

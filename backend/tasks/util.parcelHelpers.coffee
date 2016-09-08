@@ -37,7 +37,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     #these promises must happen in order since we might have multiple props of the same rm_property_id
     # due to apartments; and/or geometry or geometry_center for the same prop (since they come in sep payloads)
     #THIS FIXES insert collisions when they should be updates
-    #TODO: Bluebird 3.X use mapSeries
     Promise.each normalPayloadsPromise, (payload) ->
       # logger.debug payload
 
