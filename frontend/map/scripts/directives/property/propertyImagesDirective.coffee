@@ -19,10 +19,13 @@ app.directive 'propertyImages', (
   templateUrl: './includes/directives/property/_propertyImagesDirective.jade'
   scope:
     propertyParent: '=property'
-    imageWidth: '@imageWidth'
-    imageHeight: '@imageHeight'
+    imageWidth: '@'
+    imageHeight: '@'
+    coverImage: '@'
 
   controller: ($scope) ->
+
+    $scope.active = 0
 
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope
@@ -55,9 +58,9 @@ app.directive 'propertyImages', (
         resizeUrl += "&height=#{$scope.imageHeight}"
 
       # Skip the first image, it is expected to be a duplicate
-      for i in [1..$scope.property.actual_photo_count]
+      for i in [1..$scope.property.actual_photo_count - 1]
         photos.push
-          key: i
+          index: i - 1
           url: "#{resizeUrl}&image_id=#{i}"
     else
       imageLoaded()

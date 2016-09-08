@@ -16,12 +16,9 @@ include ../mixins/property/_propertyAttributes.jade
     #results-list-container(infinite-scroll='formatters.results.loadMore(false)' infinite-scroll-distance='1' infinite-scroll-container='"#results-list-container"')
       #results-list.list()
         ul.list
-          li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
-          ng-click="formatters.results.click(property,property);showDetails = !showDetails")
+          li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit")
             .property-card
-              div.property-img
-                span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
-                img(ng-cloak ng-src="{{formatters.property.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+              property-images(property="property" image-width="275" cover-image="true")
               +propertyAttributes('property')
               property-buttons(property='property'
                               pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
@@ -34,10 +31,13 @@ include ../mixins/property/_propertyAttributes.jade
       .detail-card(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
       ng-class="trayPosition($index)"
       ng-click="cardClick($index, property)")
-        .property-img
-          .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
-          img(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
+        property-images(property="property" image-width="85" cover-image="true")
         .card-info
-          a.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}" ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
+          a.pinto(
+            ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()"
+            popover-placement="left"
+            popover-trigger="'mouseenter touchend'"
+            uib-popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}"
+            ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin
           +propertyAttributes('property')

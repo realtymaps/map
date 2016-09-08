@@ -1,8 +1,8 @@
 .btn-group.properties-tools.desktop-only(
   ng-hide="Toggles.getHideAnyDraw()"
   ng-click="Toggles.toggleResults()")
-    span(ng-init="resultsInit('results-list')" class="dropdown btn-group properties-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
-      button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+    span(ng-init="resultsInit('results-list')" class="dropdown btn-group properties-list" uib-dropdown on-toggle="toggled(open)" auto-close="disabled")
+      button(class="dropdown-toggle btn btn-transparent" uib-dropdown-toggle)
         span
           span.icon.icon-property
           h4 {{resultsPotentialLength}} Results

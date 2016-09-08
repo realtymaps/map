@@ -35,6 +35,29 @@ save =
   body: validators.object subValidateSeparate:
     rm_property_id: validators.string(minLength:1)
 
+detail =
+  properties:
+    rm_property_id:
+      transform: validators.array()
+      required: true
+  property:
+    rm_property_id_or_geometry_center:
+      input: ["rm_property_id", "geometry_center"]
+      transform: validators.pickFirst()
+      required: true
+
+    rm_property_id:
+      transform: validators.string(minLength: 1)
+
+    geometry_center:
+      transform: [validators.object(), validators.geojson(toCrs: true)]
+
+    columns:
+      transform: validators.choice(choices: ['filter', 'address', 'all', 'id'])
+      required: true
+
+    no_alert: validators.boolean(truthy: true, falsy: false)
+
 filterSummary =
   state: validators.object
     subValidateSeparate:
@@ -61,6 +84,7 @@ filterSummary =
             ]
             hasImages: validators.boolean(truthy: true, falsy: false)
             soldRange: validators.string()
+            yearBuilt: validators.integer()
           validators.defaults(defaultValue: {})
       ]
   bounds:
@@ -84,4 +108,5 @@ module.exports = {
   save
   filterSummary
   drawnShapes
+  detail
 }

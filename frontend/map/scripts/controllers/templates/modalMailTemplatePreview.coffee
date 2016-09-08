@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 
 app.controller 'rmapsMailTemplateIFramePreviewCtrl', (
   $scope,
-  $modalInstance,
+  $uibModalInstance,
   $log,
   $window,
   $timeout,template
@@ -14,12 +14,12 @@ app.controller 'rmapsMailTemplateIFramePreviewCtrl', (
     $window.document.getElementById('mail-preview-iframe').srcdoc = $scope.template.content
 
   $scope.close = () ->
-    $modalInstance.dismiss()
+    $uibModalInstance.dismiss()
 
 
 app.controller 'rmapsMailTemplatePdfPreviewCtrl', (
   $scope,
-  $modalInstance,
+  $uibModalInstance,
   $log,
   $sce,
   template,
@@ -34,12 +34,12 @@ app.controller 'rmapsMailTemplatePdfPreviewCtrl', (
     $scope.processing = false
 
   $scope.close = () ->
-    $modalInstance.dismiss()
+    $uibModalInstance.dismiss()
 
 
 app.controller 'rmapsUploadedPdfPreviewCtrl', (
   $scope,
-  $modalInstance,
+  $uibModalInstance,
   $log,
   $sce,
   template,
@@ -54,12 +54,12 @@ app.controller 'rmapsUploadedPdfPreviewCtrl', (
     $scope.processing = false
 
   $scope.close = () ->
-    $modalInstance.dismiss()
+    $uibModalInstance.dismiss()
 
 
 app.controller 'rmapsReviewPreviewCtrl', (
   $scope,
-  $modalInstance,
+  $uibModalInstance,
   $log,
   $sce,
   wizard
@@ -70,4 +70,4 @@ app.controller 'rmapsReviewPreviewCtrl', (
   $scope.template.pdf = $sce.trustAsResourceUrl($scope.wizard.mail.review.pdf)
 
   $scope.close = () ->
-    $modalInstance.dismiss()
+    $uibModalInstance.dismiss()

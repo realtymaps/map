@@ -86,8 +86,6 @@ app.factory 'rmapsPopupFactory', (
       @lObj._container?.addEventListener 'mouseleave', (e) =>
         @popupIsHovered = false
         return if !@canClose
-        @closedCb(@index)
-        @map?.closePopup()
 
       @lObj._container?.addEventListener 'mouseover', (e) =>
         @popupIsHovered = true
@@ -111,7 +109,7 @@ app.service 'rmapsPopupLoaderService',(
   rmapsPopupFactory,
   $timeout
 ) ->
-  _queue = []
+  _popup = null
   _timeoutPromiseQueue = []
   $log = $log.spawn("map:rmapsPopupLoaderService")
 
@@ -123,18 +121,9 @@ app.service 'rmapsPopupLoaderService',(
       $timeout.cancel(promise) if promise?
 
     _timeoutPromiseQueue.push $timeout () ->
-      opts.index = _queue.length - 1
-      opts.closedCb = (index) ->
-        _queue.splice(index, 1)
-
-      _queue.push new rmapsPopupFactory opts
+      _popup = new rmapsPopupFactory opts
     , _delay
 
   close: () ->
-    $log.debug "popup closing in #{_delay}ms..."
-    setTimeout ->
-      if _queue.length > 1
-        popup = _queue.shift()
-        if popup? && !popup.isLoading
-          popup.close()
-    , 400
+    $log.debug "popup closing"
+    _popup?.close()

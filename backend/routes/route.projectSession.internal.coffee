@@ -215,6 +215,13 @@ class ProjectRouteCrud extends RouteCrud
         req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
     .then () ->
-      identity: routeUserSessionInternals.getIdentity req, res
+      identity: userUtils.getIdentityFromRequest req
+
+  byIdPUT: (req, res, next) ->
+    super(req, res, next)
+    .then () ->
+      userUtils.cacheUserValues req, profiles: true # to force profiles refresh in cache
+    .then () ->
+      true
 
 module.exports = ProjectRouteCrud

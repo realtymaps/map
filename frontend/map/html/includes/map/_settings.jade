@@ -3,16 +3,17 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
     span.dropdown.btn-group.settings-list(
       ng-controller="rmapsFiltersCtrl"
       ng-class="{open: isOpens.settings}"
-      popover-placement="bottom"
-      popover-trigger="mouseenter"
-      popover="Property Filters"
+      popover-placement="right"
+      popover\-trigger="'mouseenter'"
+      uib-popover="Property Filters"
       popover-enable="!isOpens.settings"
+      popover-popup-close-delay="500"
     )
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
-        popover-template="'SettingsPopoverDesktop'"
-        popover-is-open="isOpens.settings"
+        uib-popover-template="'SettingsPopoverDesktop'"
+        uib-popover-is-open="isOpens.settings"
         popover-placement="bottom"
-        popover-trigger="click"
+        popover-trigger="'click touchend'"
         ng-click="togglePanel('settings'); toggled()"
       )
         span.icon.icon-settings
@@ -88,6 +89,11 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
               option(value='') No maximum
 
         li.row
+          span.label.col-md-3 Year Built
+          .col-md-9
+            input.form-control(type="text" numeral ng-model="selectedFilters.yearBuilt" placeholder="All")
+
+        li.row
           span.label.col-md-5 In Shapes / Areas
           .col-md-7
             .btn-group.pull-right
@@ -95,7 +101,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
                 ng-repeat="c in ['on', 'off']"
                 ng-model="Toggles.propertiesInShapes"
-                btn-radio="{{c == 'on'}}"
+                uib-btn-radio="{{c == 'on'}}"
                 uncheckable) {{c}}
 
       ul.advanced(ng-if="showAdvanced" ng-cloak)
@@ -131,7 +137,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 type="text"
                 ng-focus="openDatepicker('closeDateMin')"
                 max-date="selectedFilters.closeDateMax"
-                datepicker-popup="MM/dd/yyyy"
+                uib-datepicker-popup="MM/dd/yyyy"
                 is-open="datepickers.closeDateMin"
                 show-weeks="false"
                 format-month="MMM"
@@ -148,7 +154,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 type="text"
                 ng-focus="openDatepicker('closeDateMax')"
                 min-date="selectedFilters.closeDateMin"
-                datepicker-popup="MM/dd/yyyy"
+                uib-datepicker-popup="MM/dd/yyyy"
                 is-open="datepickers.closeDateMax"
                 show-weeks="false"
                 format-month="MMM"
@@ -166,11 +172,15 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
                 ng-class="{active: selectedFilters.hasImages == (c == true)}"
                 ng-repeat="c in [true, false]"
                 ng-model="selectedFilters.hasImages"
-                btn-radio="{{c == true}}"
+                uib-btn-radio="{{c == true}}"
                 uncheckable) {{c}}
 
   .mobile-only
-    button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
+    button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
+      mobile-modal 
+      modal-template="'SettingsModalMobile'"
+      modal-title="'Filter by'"
+    )
       span.icon.icon-settings
 
   script(type="text/ng-template" id="SettingsModalMobile")
@@ -220,7 +230,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
             ng-click="makeDirty()"
             ng-repeat="c in ['on', 'off']"
             ng-model="Toggles.propertiesInShapes"
-            btn-radio="{{c == 'on'}}"
+            uib-btn-radio="{{c == 'on'}}"
             uncheckable) {{c}}
 
       footer.mobile-footer.mobile-footer-modal

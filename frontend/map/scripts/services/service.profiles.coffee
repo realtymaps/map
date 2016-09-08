@@ -4,7 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'project_id']
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
-
 app.service 'rmapsCurrentProfilesService', (
 $http
 rmapsHttpTempCache
@@ -35,7 +34,7 @@ app.service 'rmapsProfilesService', (
   rmapsFiltersFactory
 ) ->
 
-  $log = $log.spawn "rmapsProfileService"
+  $log = $log.spawn "rmapsProfilesService"
 
   #
   # Private functions
@@ -47,11 +46,17 @@ app.service 'rmapsProfilesService', (
   _current = (profile) ->
     $log.debug 'attempting to set current profile'
     rmapsCurrentProfilesService.setCurrent profile
-    .then () ->
+    .then ({data}) ->
       $log.debug 'set profile'
       $log.debug profile
+
+      # Ensure profile timestamp is up-to-date
+      if data.identity?.profiles?[profile.id]
+        profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
+
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
+
 
   _isSettingProfile = false
   _settingCurrentPromise = null
@@ -79,6 +84,10 @@ app.service 'rmapsProfilesService', (
 
   service =
     currentProfile: null
+
+    resetSyncFlags: () ->
+      _isSettingProfile = false
+      _settingCurrentPromise = null
 
     setCurrentProfileByProjectId: (project_id) ->
       project_id = Number(project_id) if _.isString project_id
@@ -116,22 +125,30 @@ app.service 'rmapsProfilesService', (
       # At boot @currentProfile is null and gets piled up on the Promise queue
       # if this does not exist
       if _isSettingProfile
+        $log.debug "detected `_isSettingProfile`, returning `_settingCurrentPromise`"
         return _settingCurrentPromise
 
       # If switching profiles, ensure the old one is up-to-date
       if @currentProfile
+        $log.debug "detected @currentProfile, populating..."
         @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
         @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? && status
         @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
 
         # Get the center of the main map if it has been created
+        $log.debug "rmapsMapFactory.currentMainMap: #{rmapsMapFactory.currentMainMap}"
         if rmapsMapFactory.currentMainMap
           @currentProfile.map_position = center: NgLeafletCenter(_.pick rmapsMapFactory.currentMainMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
 
       # Save the old and load the new profiles
+      $log.debug "calling _setCurrent..."
       return _setCurrent @currentProfile, profile
       .then () ->
-        return if !profile?.map_position?.center?
+        if !profile?.map_position?.center?
+          # bad things happen if we get this far w/o a map_position.center.  It should currently be accounted for in
+          # backend when creating new profiles/projects
+          $log.warn "Current profile has no map position!"
+          return
 
         $log.debug "Set current profile to: #{profile.id}"
 
@@ -174,7 +191,6 @@ app.service 'rmapsProfilesService', (
 
         # Handle profile filters
         #
-
         selectedFilters = _.defaults {}, profile.filters, rmapsFiltersFactory.valueDefaults
         delete selectedFilters.status
         delete selectedFilters.current_project_id

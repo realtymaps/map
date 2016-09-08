@@ -9,12 +9,13 @@ loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 Spinner = require('cli-spinner').Spinner
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+config = require '../config/config'
 
 buckets =
   PDF: 'aws-pdf-downloads'
   PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
-  BlackknightData: 'aws-blackknight-data'
+  BlackknightData: if config.ENV == 'production' then 'aws-blackknight-data' else 'test-aws-blackknight-data'
 
 
 _debug = (thing, thingName) ->
@@ -54,6 +55,13 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
       accessKeyId: s3Info.api_key
       secretAccessKey: s3Info.other.secret_key
       region: 'us-east-1'
+
+    # some S3 api calls return streamable buffers...
+    if (s3FnName == 'getObject') && (opts.stream)
+      delete opts.stream
+      s3 = new AWS.S3()
+      # return the "createReadStream"-able response
+      return Promise.resolve(s3.getObject(_.extend({}, {Bucket: s3Info.other.bucket}, opts)))
 
     s3 = Promise.promisifyAll new AWS.S3()
 

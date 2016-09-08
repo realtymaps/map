@@ -8,6 +8,7 @@ _ = require 'lodash'
 mlsConfigSvc = require './service.mls_config'
 Promise = require 'bluebird'
 moment = require 'moment'
+transforms = require('../utils/transforms/transforms.properties').detail
 
 _propertyQuery = ({queryParams, profile, limit}) ->
   getPermissions(profile)
@@ -15,8 +16,12 @@ _propertyQuery = ({queryParams, profile, limit}) ->
     logger.debug permissions
 
     query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
-    .leftOuterJoin "#{tables.config.mls.tableName}", ->
-      @.on("#{tables.config.mls.tableName}.id", "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin("#{tables.config.mls.tableName}",
+      "#{tables.config.mls.tableName}.id",
+      "#{tables.finalized.combined.tableName}.data_source_id")
+    .leftOuterJoin(tables.finalized.photo.tableName,
+      "#{tables.finalized.combined.tableName}.data_source_uuid",
+      "#{tables.finalized.photo.tableName}.data_source_uuid")
 
     queryPermissions(query, permissions)
 
@@ -39,25 +44,9 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 
 # Retrieve a single property by rm_property_id OR geometry_center
 getProperty = ({query, profile}) ->
-  validation.validateAndTransform query,
-    rm_property_id_or_geometry_center:
-      input: ["rm_property_id", "geometry_center"]
-      transform: validators.pickFirst()
-      required: true
-
-    rm_property_id:
-      transform: validators.string(minLength: 1)
-
-    geometry_center:
-      transform: [validators.object(), validators.geojson(toCrs: true)]
-
-    columns:
-      transform: validators.choice(choices: ['filter', 'address', 'all', 'id'])
-      required: true
-
+  validation.validateAndTransform query, transforms.property
   .then (queryParams) ->
     _propertyQuery({queryParams, profile})
-
   .then (data) ->
     result = {}
 
@@ -81,11 +70,7 @@ getProperty = ({query, profile}) ->
 
 # Retrieve a set of properties by rm_property_id (filter data only)
 getProperties = ({query, profile}) ->
-  validation.validateAndTransform query,
-    rm_property_id:
-      transform: validators.array()
-      required: true
-
+  validation.validateAndTransform query, transforms.properties
   .then (queryParams) ->
     queryParams.columns = 'filter'
     _propertyQuery({queryParams, profile})

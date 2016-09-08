@@ -8,7 +8,7 @@
         placeholder="YYYY-MM-DD[T]HH:mm:ss"
         ng-disabled="fieldData.current.config.advanced"
         ng-change="updateRule()"
-        typeahead="format for format in dateFormats | filter:$viewValue"
+        uib-typeahead="format for format in dateFormats | filter:$viewValue"
         typeahead-min-length=0
         typeahead-on-select="updateRule()"
       )

@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 
 ###
@@ -10,7 +11,6 @@ module.exports = app.controller 'rmapsFiltersCtrl', ($scope, $timeout, $log, rma
 
   #initialize values for filter options in the select tags
   $scope.filterValues = rmapsFiltersFactory.values
-
 
   $scope.bedsSlider = options: floor: rmapsFiltersFactory.MIN_BEDS, ceil: rmapsFiltersFactory.MAX_BEDS, step: 1
   $scope.bathsSlider = options: floor: rmapsFiltersFactory.MIN_BATHS, ceil: rmapsFiltersFactory.MAX_BATHS, step: 0.5, precision: 1

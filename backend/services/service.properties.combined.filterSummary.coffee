@@ -53,10 +53,10 @@ queryPermissions = (query, permissions = {}) ->
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
       @orWhere ->
         @where("data_source_type", "mls")
-        sqlHelpers.whereIn(@, "data_source_id", mls)
+        sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if mls?.length
       @where("data_source_type", "mls")
-      sqlHelpers.whereIn(@, "data_source_id", mls)
+      sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if permissions.fips?.length
       @where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
@@ -99,7 +99,9 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
           if sold
             @orWhere () ->
               @where("#{dbFn.tableName}.status", 'sold')
-              if filters.soldRange && filters.soldRange != 'all'
+              if filters.closeDateMin || filters.closeDateMax
+                sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
+              else if filters.soldRange && filters.soldRange != 'all'
                 @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
@@ -134,16 +136,18 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       if filters.propertyType
         @where("#{dbFn.tableName}.property_type", filters.propertyType)
 
-      sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
-
       if filters.hasImages
+        @whereNotNull("photos")
         @where("photos", "!=", "{}")
 
+      if filters.yearBuilt
+        @whereRaw("year_built->>'value' = ?", [filters.yearBuilt])
+
       if queryParams.pins?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.pins)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.pins)
 
       if queryParams.favorites?.length
-        sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.favorites)
+        sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.favorites)
 
   else if queryParams.pins || queryParams.favorites
     logger.debug () -> "no status, so query for pins and favorites only"
@@ -162,6 +166,8 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
   query ?= getDefaultQuery()
+  query.leftOuterJoin(tables.finalized.photo.tableName, "#{tables.finalized.combined.tableName}.data_source_uuid", "#{tables.finalized.photo.tableName}.data_source_uuid")
+
   {bounds, state} = queryParams
   {filters} = state || {}
 

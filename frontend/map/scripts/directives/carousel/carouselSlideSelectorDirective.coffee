@@ -24,16 +24,20 @@ app = require '../../app.coffee'
 ###
 
 # Show slide selector in carousel
+###eslint-disable###
 app.directive 'slideSelector', ($log) ->
+  ###eslint-enable###
   return {
     restrict: 'A'
-    require: '^carousel'
+    require: '^uibCarousel'
     priority: 0
     link: ($scope, $elem, $attrs, carouselCtrl) ->
       origSelect = carouselCtrl.select
-      carouselCtrl.select = (nextSlide, direction) ->
+      ###eslint-disable###
+      carouselCtrl.select = ({slide}, direction) ->
+        ###eslint-enable###
         if $scope.selectorScope
-          $scope.selectorScope.slideSelectorCurrent = nextSlide
+          $scope.selectorScope.slideSelectorCurrent = slide
 
         return origSelect.apply(this, arguments)
 
@@ -49,7 +53,9 @@ app.directive 'slideSelector', ($log) ->
           $scope.selectorScope.selectorLabelFn = labelFn
   }
 
+###eslint-disable###
 app.directive 'slideSelectorLabel', ($parse, $log) ->
+  ###eslint-enable###
   return {
     restrict: 'A'
     require: 'slideSelector'
@@ -61,7 +67,9 @@ app.directive 'slideSelectorLabel', ($parse, $log) ->
   }
 
 # Slide selector add on for UI-Bootstrap Carousel
+###eslint-disable###
 app.directive 'slideSelectorControl', ($log) ->
+  ###eslint-enable###
   return {
     restrict: 'EA'
     require: '^?slideSelector'
@@ -74,16 +82,18 @@ app.directive 'slideSelectorControl', ($log) ->
         if newValue?.length > 0
           $scope.slideSelectorCurrent = newValue[0]
 
-      $scope.getLabel = (slide) ->
+      $scope.getLabel = (slidePayload) ->
+        {slide} = slidePayload
         if $scope.selectorLabelFn
           return $scope.selectorLabelFn($scope.carouselParentScope || $scope, {
             actual: slide.actual
           })
 
-        idx = ($scope.indexOfSlide(slide) + 1)
+        idx = ($scope.indexOfSlide(slidePayload) + 1)
         return 'Slide ' + idx
-
+    ###eslint-disable###
     link: ($scope, $elem, $attrs, slideSelectorCtrl, carouselCtrl) ->
+      ###eslint-enable###
       if slideSelectorCtrl
         slideSelectorCtrl.registerSlideSelector($scope)
       else

@@ -45,10 +45,17 @@ handleQuery = (q, res, lHandleQuery) ->
 
   q.then (result) ->
     Promise.try () ->
+      logger.debug () -> "#{res.req.url} response json:"
+      logger.debug () -> "#{JSON.stringify(result)}"  # this will err if circular, caught below, but url is still display from prev line for route check
       res.json(result)
     .catch TypeError, (err) ->
-      logger.error("#############  Circular reference detected in JSON response?  #############\n#{analyzeValue.getSimpleMessage(result)}")
+      logger.error("####        Circular reference detected in JSON response?         ####")
+      logger.error("\tEnsure that route `#{res.req.url}` is not processing an Express Response,")
+      logger.error("\tsuch as `req.json`, since that is already handled here.")
+      logger.error("#{analyzeValue.getSimpleMessage(result)}")
       throw err
+
+
 
 handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->

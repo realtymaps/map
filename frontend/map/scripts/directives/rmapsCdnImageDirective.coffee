@@ -11,6 +11,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
 
   restrict: 'A'
   priority: 1000
+  terminal: true
 
   link: (scope, element, attrs) ->
     if element[0].tagName != 'IMG'
@@ -18,14 +19,15 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
       return
 
     remap = (srcAttr, originalSrc = element.attr(srcAttr)) ->
-      $log.debug originalSrc
+      $log.debug "original #{srcAttr}:", originalSrc
 
       if originalSrc?.indexOf('http') != 0
         shard = (originalSrc.match(/.*\/(\w+)\.\w+/)?[1]?.charCodeAt(0) || 0) % 2
         element.attr(srcAttr, "//prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{originalSrc}")
-        $log.debug element.attr(srcAttr)
+        $log.debug "new #{srcAttr}", element.attr(srcAttr)
 
         element.bind 'error', ->
+          $log.debug "falling back to #{originalSrc}"
           element.unbind 'error'
           element.attr('src', originalSrc)
 
@@ -37,4 +39,4 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
       return
 
     element.removeAttr('rmaps-cdn-image')
-    $compile(element.contents())(scope)
+    $compile(element)(scope)

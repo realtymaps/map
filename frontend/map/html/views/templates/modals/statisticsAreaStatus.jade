@@ -1,0 +1,39 @@
+.modal-header
+  h3.modal-title {{areaToShow.area_name}} Statistics
+.modal-body
+  .statistics(ng-repeat="status in ['sold', 'for sale']" ng-if="areaStatistics[areaToShow.id][status]")
+    h4(style="text-transform:capitalize;") {{status}}
+    div
+      .row
+        .col-md-5 Number of Properties
+        .col-md-4 {{areaStatistics[areaToShow.id][status].values.count}}
+
+      .row
+        .col-md-5 Average Price
+        .col-md-4(ng-if="areaStatistics[areaToShow.id][status].values.price_avg") {{areaStatistics[areaToShow.id][status].values.price_avg | currency:"$":0}}
+        .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.price_avg") -
+        .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.price_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.price_n}} properties)
+
+      .row
+        .col-md-5 Average Sq Ft
+        .col-md-4(ng-if="areaStatistics[areaToShow.id][status].values.sqft_avg") {{areaStatistics[areaToShow.id][status].values.sqft_avg | number:0}}
+        .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.sqft_avg") -
+        .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.sqft_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.sqft_n}} properties)
+
+      .row
+        .col-md-5 Average Price / Sq Ft
+        .col-md-4(ng-if="areaStatistics[areaToShow.id][status].values.price_sqft_avg") {{areaStatistics[areaToShow.id][status].values.price_sqft_avg | currency:"$":0}}
+        .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.price_sqft_avg") -
+        .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.price_sqft_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.price_sqft_n}} properties)
+
+      .row
+        .col-md-5 Average Days On Market
+        .col-md-4(ng-if="areaStatistics[areaToShow.id][status].values.days_on_market_avg") {{areaStatistics[areaToShow.id][status].values.days_on_market_avg | number:0}}
+        .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.days_on_market_avg") -
+        .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.days_on_market_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.days_on_market_n}} properties)
+
+      .row
+        .col-md-5 Average Lot Size
+        .col-md-4(ng-if="areaStatistics[areaToShow.id][status].values.acres_avg") {{areaStatistics[areaToShow.id][status].values.acres_avg | number:2}} acres / {{areaStatistics[areaToShow.id][status].values.acres_avg * 43560| number:0}} sqft
+        .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.acres_avg") -
+        .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.acres_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.acres_n}} properties)

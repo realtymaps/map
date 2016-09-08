@@ -10,7 +10,7 @@ app.controller 'rmapsSatMapCtrl',
   rmapsBaseMapFactory,
   leafletData,
   $scope,
-  rmapsMapEventsHandlerService,
+  rmapsEventsHandlerService,
   rmapsMainOptions,
   rmapsOverlays
 ) ->
@@ -25,7 +25,7 @@ app.controller 'rmapsSatMapCtrl',
   @satMapFactory = new rmapsBaseMapFactory($scope, limits.options, limits.redrawDebounceMilliSeconds, 'satMap', _mapId)
   # Don't show the main map controls here
   $scope.controls.custom = []
-  rmapsMapEventsHandlerService(@satMapFactory, 'satMap')
+  rmapsEventsHandlerService(@satMapFactory, 'satMap')
   _.merge $scope,
     satMap:
       markers:

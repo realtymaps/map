@@ -90,23 +90,31 @@ transaction = (args...) -> Promise.try () ->
   if typeof(args[0]) != 'string'
     args.unshift('main')
   [dbName, queryCb, errCb] = args
-  get(dbName).transaction (trx) ->
+  handler = (trx) ->
     queryCb(trx)
     .catch (err) ->
       logger.debug "transaction reverted: #{err}"
       errCb?(err)
       throw err
+  if !_enabled
+    handler(connectionless)
+  else
+    get(dbName).transaction(handler)
 
 
 buildTableName = (tableName) ->
-  (subid) -> "#{tableName}_#{subid}"
+  (subid) ->
+    if !tableName
+      subid
+    else
+      "#{tableName}_#{subid}"
 
 
-ensureTransaction = (transaction, dbName, handler) -> Promise.try () ->
-  if transaction?
-    handler(transaction)
+ensureTransaction = (trx, dbName, handler) -> Promise.try () ->
+  if trx?
+    handler(trx)
   else
-    get(dbName).transaction(handler)
+    transaction(dbName, handler)
 
 
 module.exports = {

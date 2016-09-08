@@ -45,7 +45,7 @@ describe 'transform.parcel', ->
       valid.should.be.eql
         fips_code: '12021'
         rm_property_id: '12021_00000556623_001'
-        data_source_uuid: '556623'
+        data_source_uuid: '12021_00000556623_001'
         street_address_num: '620'
         street_unit_num: '123'
         geometry: geo
@@ -56,7 +56,7 @@ describe 'transform.parcel', ->
       valid.should.be.eql
         fips_code: '12021'
         rm_property_id: '12021_00000556623_001'
-        data_source_uuid: '556623'
+        data_source_uuid: '12021_00000556623_001'
         street_address_num: '620'
         street_unit_num: '123'
         geometry: geo

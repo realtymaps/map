@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 app.directive 'carouselImageError', ($parse, $log) ->
   $log = $log.spawn 'carouselImageError'
 
-  require: 'carousel'
+  require: 'uibCarousel'
   link: (scope, element, attrs, carouselCtrl) ->
 
     placeholderImage = attrs.carouselImageError

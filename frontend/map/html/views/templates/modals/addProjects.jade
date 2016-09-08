@@ -1,19 +1,19 @@
 form.add-project
   .modal-header
-    h3.modal-title New Project
+    h3.modal-title {{newProject.modalTitle}}
     span.icon.icon-close(ng-click="cancelModal()")
   .modal-body
     .form-group
       label(for="name") Name your project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here" rmaps-autofocus="true" ng-keyup="checkSubmit($event)")
 
-    .form-group.project-options(ng-if="principal.getCurrentProfile()")
-      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'New Project', inverseName: 'Sandbox'})")
+    // .form-group.project-options(ng-if="principal.getCurrentProfile()")
+      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" uib-btn-radio="false" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'New Project', inverseName: 'Sandbox'})")
         | Empty Project
       
-      label.btn.btn-white.btn-radio(ng-show="principal.getCurrentProfile().sandbox" ng-model="newProject.copyCurrent" btn-radio="true" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'Sandbox', inverseName: 'New Project', isCopy: true})")
+      label.btn.btn-white.btn-radio(ng-show="principal.getCurrentProfile().sandbox" ng-model="newProject.copyCurrent" uib-btn-radio="true" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'Sandbox', inverseName: 'New Project', isCopy: true})")
         | Copy Sandbox
-      label.btn.btn-white.btn-radio(ng-show="!principal.getCurrentProfile().sandbox" ng-model="newProject.copyCurrent" btn-radio="true" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'Sandbox', inverseName: 'New Project', isCopy: true})")
+      label.btn.btn-white.btn-radio(ng-show="!principal.getCurrentProfile().sandbox" ng-model="newProject.copyCurrent" uib-btn-radio="true" uncheckable ng-click="setDefaultName({project: newProject, defaultName: 'Sandbox', inverseName: 'New Project', isCopy: true})")
         | Copy {{principal.getCurrentProfile().name}}
 
     // button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo" disabled) + Add Client Info
@@ -89,4 +89,4 @@ form.add-project
               input.form-control(name="sqft" ng-model="newProject.sqft")
   .modal-footer
     // button.btn.btn-default(ng-click="cancelModal()") Cancel
-    button.btn.btn-primary(type="submit" ng-click="saveProject()") Create Project
+    button.btn.btn-primary(type="submit" ng-click="saveProject()") {{newProject.saveButtonLabel}}

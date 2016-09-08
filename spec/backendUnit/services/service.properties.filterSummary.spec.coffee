@@ -17,7 +17,7 @@ describe "service.properties.filterSummary", ->
 
     beforeEach ->
 
-      validBody = {}
+      validBody = {returnType: 'clusterOrDefault'}
       profile =
         id: 1
         pins: _.mapValues

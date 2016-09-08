@@ -7,7 +7,7 @@ originator = 'map'
 app.controller 'rmapsNotesModalCtrl', (
 $rootScope
 $scope
-$modal
+$uibModal
 rmapsNotesService
 rmapsMainOptions
 rmapsEventConstants
@@ -34,7 +34,7 @@ rmapsMapTogglesFactory
     modalScope = $scope.$new false
     modalScope.property = property
 
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       animation: rmapsMainOptions.modals.animationsEnabled
       template: notesTemplate
       scope: modalScope
@@ -61,7 +61,7 @@ rmapsMapTogglesFactory
 
   $scope.remove = (note, confirm = false) ->
     if confirm
-      modalInstance = $modal.open
+      modalInstance = $uibModal.open
         scope: $scope
         template: confirmTemplate
 
@@ -78,14 +78,14 @@ rmapsMapTogglesFactory
   $log
   $scope,
   leafletIterators,
-  rmapsMapEventsLinkerService,
+  rmapsEventsLinkerService,
   rmapsMapIds,
   rmapsNgLeafletEventGateService,
   toastr
 ) ->
 
   mapId = rmapsMapIds.mainMap()
-  linker = rmapsMapEventsLinkerService
+  linker = rmapsEventsLinkerService
   $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
   createFromModal = $scope.create
 
@@ -139,7 +139,7 @@ rmapsMapTogglesFactory
   leafletIterators,
   rmapsEventConstants,
   rmapsLayerFormattersService,
-  rmapsMapEventsLinkerService,
+  rmapsEventsLinkerService,
   rmapsMapIds,
   rmapsNotesService,
   rmapsPopupLoaderService
@@ -147,7 +147,7 @@ rmapsMapTogglesFactory
 
   mapId = rmapsMapIds.mainMap()
   {setMarkerNotesDataOptions} = rmapsLayerFormattersService
-  linker = rmapsMapEventsLinkerService
+  linker = rmapsEventsLinkerService
   directiveControls = null
   popup = rmapsPopupLoaderService
   markersUnSubs = null

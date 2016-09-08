@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $state, rmapsPropertiesService) ->
+app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $uibModal, $scope, $log, $state, rmapsPropertiesService) ->
   $log = $log.spawn 'mail:recipientInfo'
   $log.debug 'rmapsRecipientInfoCtrl'
 
@@ -15,7 +15,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
 
   $scope.showAddresses = (addresses) ->
     $scope.addressList = addresses
-    modalInstance = $modal.open
+    modalInstance = $uibModal.open
       template: require('../../../html/views/templates/modals/addressList.jade')()
       windowClass: 'address-list-modal'
       scope: $scope
@@ -34,7 +34,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
       .then ({data}) ->
 
         hash = (a) ->
-          "#{a.street ? ''} #{a.unit ? ''} #{a.citystate ? ''} #{a.zip ? ''}".trim()
+          "#{a.street ? ''} #{a.unit ? ''} #{a.citystate ? ''} #{a.zip ? ''}".trim().toLowerCase()
 
         property = {}
         owner = {}

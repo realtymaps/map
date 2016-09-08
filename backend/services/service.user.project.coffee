@@ -81,10 +81,22 @@ class ProjectCrud extends ThenableCrud
 
     super(arguments...)
 
+
+  update: (params, entity, safe, doLogQuery) ->
+    if safe
+      _.pick(entity, safe)
+    q = tables.user.project()
+    .update(entity)
+    .where(params)
+    if doLogQuery
+      logger.debug q.toString()
+    q
+
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
-    profileSvc.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
-    .then sqlHelpers.singleRow
+    profileSvc.getProfileWhere project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id
+    .then (data) ->
+      sqlHelpers.singleRow(data)
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
 
@@ -100,16 +112,21 @@ class ProjectCrud extends ThenableCrud
       # Remove shapes in all cases
       promises.push @drawnShapes.delete {}, doLogQuery, toRemove
 
+      # Reset if sandbox (profile and project)
       if profile.sandbox is true
 
-        reset =
-          filters: {}
+        resetProfile =
+          map_toggles: {}
+          # map_position: {} # don't remove position, keep it the same
           map_results: {}
-          map_position: {}
-          pins: {}
+          favorites: {}
+        promises.push profileSvc.update(_.merge(resetProfile, id: profile.id), idObj.auth_user_id)
 
-        # Reset the sandbox (profile and project fields)
-        promises.push profileSvc.update(_merge(reset, id: profile.id), idObj.auth_user_id)
+        resetProject =
+          pins: {}
+          archived: null
+        promises.push @update(idObj, resetProject)
+
 
       else
         # Delete client profiles (not the users themselves)

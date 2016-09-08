@@ -76,7 +76,7 @@ module.exports =
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
     pdfUpload: 'user_pdf_uploads'
-  temp: 'raw_temp.raw'
+  temp: 'raw_temp.'
   event:
     history: 'data_event_history'
   cartodb:
@@ -122,7 +122,7 @@ _setup = (baseObject) ->
           # syntactic sugar to allow opts to be left out, but the handler to always be the last param
           handler = opts
           opts = undefined
-        dbs.get(dbName).transaction (trx) ->
+        dbs.transaction dbName, (trx) ->
           fullOpts = _.extend({}, opts, {transaction: trx})
           handler(query(fullOpts), trx)
       query.tableName = tableName

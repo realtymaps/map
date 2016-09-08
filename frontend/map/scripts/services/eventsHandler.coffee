@@ -1,81 +1,41 @@
 ###globals _, L###
-NgLeafletCenter = require('../../../../common/utils/util.geometries.coffee').NgLeafletCenter
 app = require '../app.coffee'
-events = require '../../../common/scripts/utils/events.coffee'
+eventUtil = require '../../../common/scripts/utils/events.coffee'
 
 _isMarker = (type) ->
   type == 'marker'
 
-app.factory 'rmapsHoverQueue', (
-rmapsLayerFormattersService
-) ->
-  () ->
-    _queue = []
-
-    _handleHover = ({model, lObject, type, layerName} = {}) ->
-      return if !layerName or !type or !lObject
-      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormattersService.MLS.setMarkerOptions(model)
-      if type == 'geojson'
-        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
-        lObject.setStyle(opts)
-
-    enqueue = ({model, lObject, type, layerName} = {}) ->
-      if _queue.length
-        dequeue()
-      _queue.push {model, lObject, type, layerName}
-      _handleHover {model, lObject, type, layerName}
-
-    dequeue = () ->
-      item = _queue.shift()
-      if !item
-        return
-      {model, lObject, type, layerName} = item
-      model.isMousedOver = false
-      _handleHover {model, lObject, type, layerName}
-
-
-    {
-      enqueue
-      dequeue
-    }
-
-app.service 'rmapsMapEventsHandlerService', (
+app.service 'rmapsEventsHandlerService', (
 $timeout
 rmapsMainOptions
 rmapsNgLeafletHelpersService
 rmapsNgLeafletEventGateService
-rmapsMapEventsLinkerService
+rmapsEventsLinkerService
 rmapsLayerFormattersService
 rmapsPropertiesService
 rmapsMapEventEnums
 rmapsHoverQueue
 rmapsZoomLevelService
+rmapsPopupLoaderService
+rmapsEventsHandlerInternalsService
 $log) ->
-
+  internals = rmapsEventsHandlerInternalsService
   _gate = rmapsNgLeafletEventGateService
-  limits = rmapsMainOptions.map
-  _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
-  _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents
 
-  $log = $log.spawn("map:rmapsMapEventsHandlerService")
+  _hoverQueue = new rmapsHoverQueue()
+
+  $log = $log.spawn("map:rmapsEventsHandlerService")
+
+  {limits, events, inject} = internals
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
-    _hoverQueue = new rmapsHoverQueue()
+
     $scope = mapCtrl.scope
+    _hoverQueue = new rmapsHoverQueue()
 
-
-    _lastEvents =
-      mouseover:null
-      last: null
-
-    _handleManualMarkerCluster = (model) ->
-      if model.markerType == 'cluster'
-        center = NgLeafletCenter(model)
-        center.setZoom($scope[mapPath].center.zoom + 1)
-        $scope[mapPath].center = center
-        return true
-      false
+    {
+      handleManualMarkerCluster, getPropertyDetail, openWindow, closeWindow
+    } = inject({mapCtrl, mapPath, thisOriginator})
 
     _eventHandler =
       ###TODO:
@@ -94,14 +54,14 @@ $log) ->
           e = lObject._icon.parentNode
           e.insertBefore(lObject._icon, e.firstChild)
         # Grab some details about the original event for logging
-        eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
+        eventInfo = if event?.originalEvent then eventUtil.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
 
         if originator == thisOriginator and maybeCaller? # indicates recursion, bail
           # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
 
         # Ignore when this is firing from previous marker
-        if (_lastEvents.mouseover?.lat? && _lastEvents.mouseover?.lng? && (_lastEvents.mouseover.lat == model.coordinates[1]) && (_lastEvents.mouseover.lng == model.coordinates[0]))
+        if (events.last.mouseover?.lat? && events.last.mouseover?.lng? && (events.last.mouseover.lat == model.coordinates[1]) && (events.last.mouseover.lng == model.coordinates[0]))
           # $log.debug '[IGNORED:child] ' + eventInfo
           return
 
@@ -118,12 +78,12 @@ $log) ->
 
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-        if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-          mapCtrl.openWindow?(model)
+        # if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+        #   _openWindow(model)
 
         # Update model
         model.isMousedOver = true
-        _lastEvents.mouseover = model
+        events.last.mouseover = model
 
         # Update marker icon/style
         _hoverQueue.enqueue {model, lObject, type, layerName}
@@ -131,7 +91,7 @@ $log) ->
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
 
         # Grab some details about the original event for logging
-        eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseout - no originalEvent'
+        eventInfo = if event?.originalEvent then eventUtil.targetInfo(event.originalEvent) else 'mouseout - no originalEvent'
 
         if originator == thisOriginator and maybeCaller? # indicates recursion, bail
           # $log.debug '[IGNORED:recursion] ' + eventInfo
@@ -147,12 +107,9 @@ $log) ->
 
         $log.debug eventInfo
 
-        # Close popup
-        mapCtrl.closeWindow?()
-
         # Update model
         model.isMousedOver = false
-        _lastEvents.mouseover = null
+        events.last.mouseover = null
 
         # Update marker icon/style
         _hoverQueue.dequeue()
@@ -163,25 +120,28 @@ $log) ->
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
-          $timeout ->
-            return if _handleManualMarkerCluster(model)
+          setTimeout ->
+            return if handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
               # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
-            if _lastEvents.last != 'dblclick'
-              if model.markerType != 'price-group'
-                $scope.formatters.results.showModel(model)
-          , limits.clickDelayMilliSeconds
+            if events.last.last != 'dblclick'
+              # if model.markerType != 'price-group'
+              #   $scope.formatters.results.showModel(model)
+              if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+                openWindow(model)
 
-      dblclick: (event, lObject, model, modelName, layerName, type) ->
-        _lastEvents.last = 'dblclick'
+          , limits.clickDelayMilliSeconds - 100
+
+      dblclick: (event, lObject, model, modelName, layerName) ->
+        events.last.last = 'dblclick'
         {originalEvent} = event
         if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
 
         rmapsPropertiesService.pinUnpinProperty model
         $timeout ->
           #cleanup
-          _lastEvents.last = undefined
+          events.last.last = undefined
         , limits.clickDelayMilliSeconds + 100
     #end prep w dependencies
 
@@ -190,31 +150,30 @@ $log) ->
     obj[mapPath] =
       events:
         markers:
-          enable: _markerEvents
+          enable: events.marker
         geojson:
-          enable: _geojsonEvents
+          enable: events.geojson
 
     _.merge $scope,obj
 
-    rmapsMapEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
-    rmapsMapEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
+    rmapsEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
+    rmapsEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
 
-    rmapsMapEventsLinkerService.hookMap mapCtrl.mapId,
+    rmapsEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
+        getPropertyDetail(geometry_center: geojson.geometry)
 
-        if rmapsZoomLevelService.isParcel($scope.map.center.zoom)
-          $log.debug 'Showing property details if a parcel was clicked'
-          rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'id')
-          .then (data) ->
-            model = data.mls?[0] || data.county?[0]
-            return if !model
-            $scope.formatters.results.showModel(model)
-        else
-          $log.debug 'Not close enough to show property details'
+        $log.debug 'Showing property details if a parcel was clicked'
 
-    , thisOriginator, ['click']
+        closeWindow()
+
+      moveend: (event) ->
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
+        closeWindow()
+
+    , thisOriginator, ['click', 'moveend']
 
     return _eventHandler

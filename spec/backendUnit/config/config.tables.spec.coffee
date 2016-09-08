@@ -9,4 +9,4 @@ describe 'config.tables', () ->
   describe 'buildTableName', () ->
 
     it 'should build correct tableName from subid', () ->
-      tables.temp.buildTableName('subidString').should.be.eql 'raw_subidString'
+      tables.temp.buildTableName('subidString').should.be.eql 'subidString'

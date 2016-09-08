@@ -1,8 +1,8 @@
 mod = require '../module.coffee'
 mod.factory 'rmapsGridModalFactory', ($log) ->
   ->
-    [ '$scope', '$modalInstance', 'columnDefs', 'record', 'gridName', 'fieldTypeMap',
-      ($scope, $modalInstance, columnDefs, record, gridName, fieldTypeMap) ->
+    [ '$scope', '$uibModalInstance', 'columnDefs', 'record', 'gridName', 'fieldTypeMap',
+      ($scope, $uibModalInstance, columnDefs, record, gridName, fieldTypeMap) ->
         $scope.gridName = gridName
         $scope.record = record
         $scope.fieldTypeMap = fieldTypeMap
@@ -12,8 +12,8 @@ mod.factory 'rmapsGridModalFactory', ($log) ->
             $scope.record[c.name] = if _.isFunction v then v() else v
 
         $scope.ok = () ->
-          $modalInstance.close($scope.record)
+          $uibModalInstance.close($scope.record)
 
         $scope.cancel = () ->
-          $modalInstance.dismiss('cancel')
+          $uibModalInstance.dismiss('cancel')
   ]
