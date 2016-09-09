@@ -4,17 +4,17 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
       ng-controller="rmapsFiltersCtrl"
       ng-class="{open: isOpens.settings}"
       popover-placement="right"
-      popover\-trigger="'mouseenter'"
+      popover-trigger="'mouseenter'"
       uib-popover="Property Filters"
       popover-enable="!isOpens.settings"
       popover-popup-close-delay="500"
     )
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
         uib-popover-template="'SettingsPopoverDesktop'"
-        uib-popover-is-open="isOpens.settings"
+        popover-is-open="isOpens.settings"
         popover-placement="bottom"
         popover-trigger="'click touchend'"
-        ng-click="togglePanel('settings'); toggled()"
+        ng-click="isOpens.settings = !isOpens.settings; togglePanel('settings'); toggled()"
       )
         span.icon.icon-settings
 
@@ -177,7 +177,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
 
   .mobile-only
     button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
-      mobile-modal 
+      mobile-modal
       modal-template="'SettingsModalMobile'"
       modal-title="'Filter by'"
     )
