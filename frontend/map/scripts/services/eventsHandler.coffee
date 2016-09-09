@@ -115,8 +115,13 @@ $log) ->
         _hoverQueue.dequeue()
 
       click: (event, lObject, model, modelName, layerName, type) ->
+        eventInfo = if event?.originalEvent then eventUtil.targetInfo(event.originalEvent) else 'mouseout - no originalEvent'
+
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.geojson.click) and type is 'geojson'
+
+        $log.debug eventInfo
+
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
@@ -162,9 +167,16 @@ $log) ->
     rmapsEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
-
+        $log.debug event
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
+        getPropertyDetail(geometry_center: geojson.geometry)
+
+        $log.debug 'Showing property details if a parcel was clicked'
+
+        closeWindow()
+
+        ### Alternate code to show infowindow instead of property details
         rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
         .then (data) ->
           model = data.mls?[0] || data.county?[0]
@@ -177,6 +189,7 @@ $log) ->
             if events.last.last != 'dblclick'
               openWindow(model)
           , limits.clickDelayMilliSeconds - 100
+        ###
 
       moveend: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
