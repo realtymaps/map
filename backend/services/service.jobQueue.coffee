@@ -77,13 +77,12 @@ queueManualTask = (taskName, initiator) ->
           throw new Error("Task not found: #{taskName}")
         # also need to be sure there isn't a lock preventing this task from running
         if result[0].data?.blockedWhen?.length
-          q = tables.config.keystore({transaction})
+          tables.config.keystore({transaction})
           .select('key')
           .where(namespace: 'locks')
           .whereIn('key', result[0].data.blockedWhen)
           .whereRaw("value::TEXT = 'true'")
-          console.log("@@@@@@@@@@@@@@@@@@@@: #{q.toString()}")
-          q.then (blockingLocks=[]) ->
+          .then (blockingLocks=[]) ->
             if blockingLocks.length
               throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingLocks.length} blocking locks: #{_.pluck(blockingLocks, 'key').join(', ')}")
             return result[0]
