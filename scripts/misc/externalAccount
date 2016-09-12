@@ -35,7 +35,7 @@ then
         fi
     done
 else
-    DB_TARGETS=`heroku apps | tail -n +2`
+    DB_TARGETS=`heroku apps | tail -n +2 | cut -f1 -d' '`
 fi
 
 
