@@ -11,14 +11,14 @@ form.add-project
           .row
             .col-sm-6
               label.required(for="first_name" ) First Name
-              input.form-control(name="first_name" ng-model="clientCopy.first_name")
+              input.form-control(name="first_name" ng-model="clientCopy.first_name" required)
             .col-sm-6
-              label(for="last_name") Last Name
-              input.form-control(name="last_name" ng-model="clientCopy.last_name")
+              label.required(for="last_name") Last Name
+              input.form-control(name="last_name" ng-model="clientCopy.last_name" required)
         .form-group
           .row
             .col-sm-6
-              label(for="email") Email
+              label.required(for="email") Email
               input.form-control(name="email" ng-model="clientCopy.email" placeholder="name@email.com" required)
             .col-sm-3
               label(for="cell_phone") Work #

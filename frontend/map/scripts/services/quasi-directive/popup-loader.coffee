@@ -1,4 +1,4 @@
-_delay = 400 #ms
+_delay = 0 #ms
 
 ###globals L###
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
@@ -101,9 +101,6 @@ app.factory 'rmapsPopupFactory', (
         @scope = null
         return
 
-      @needsToClose = true
-
-
 app.service 'rmapsPopupLoaderService',(
   $log,
   rmapsPopupFactory,
@@ -125,5 +122,9 @@ app.service 'rmapsPopupLoaderService',(
     , _delay
 
   close: () ->
-    $log.debug "popup closing"
-    _popup?.close()
+    popupExists = _popup?
+    if popupExists
+      $log.debug "popup closing"
+      _popup?.close()
+      _popup = null
+    return popupExists

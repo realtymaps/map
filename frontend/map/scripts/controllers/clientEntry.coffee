@@ -3,9 +3,21 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
 
-module.exports = app.controller 'rmapsClientEntryCtrl', ($rootScope, $scope, $log, $state,
-rmapsClientEntryService, rmapsEventConstants, rmapsPrincipalService, rmapsProfilesService, rmapsMapAuthorizationFactory) ->
+module.exports = app.controller 'rmapsClientEntryCtrl', (
+  $rootScope,
+  $scope,
+  $log,
+  $state,
+  rmapsClientEntryService,
+  rmapsEventConstants,
+  rmapsPrincipalService,
+  rmapsProfilesService,
+  rmapsMapAuthorizationFactory,
+  rmapsResponsiveViewService
+) ->
   $log = $log.spawn 'rmapsClientEntryCtrl'
+
+  mobileView = rmapsResponsiveViewService.isMobileView()
 
   $scope.login = () ->
     $scope.loginInProgress = true
@@ -23,7 +35,10 @@ rmapsClientEntryService, rmapsEventConstants, rmapsPrincipalService, rmapsProfil
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        $state.go 'project', id: $scope.project.id
+        if mobileView
+          $state.go 'project', id: $scope.project.id
+        else
+          $state.go 'map', id: $scope.project.id
     , (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
