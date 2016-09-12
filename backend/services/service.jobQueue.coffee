@@ -33,7 +33,9 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
         # allow for task-specific logic to say it still isn't ready to run
         TaskImplementation.getTaskCode(task.name)
         .then (taskImpl) ->
-          if !taskImpl.ready()
+          taskImpl.ready()
+        .then (isReady) ->
+          if !isReady
             return
           queueTask(transaction, batchId, task, '<scheduler>')
           .catch jobQueueErrors.TaskNotImplemented, (err) ->
