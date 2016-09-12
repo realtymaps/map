@@ -107,10 +107,10 @@ class ProjectCrud extends ThenableCrud
       promises = []
 
       # Remove notes in all cases
-      promises.push @notes.delete {}, doLogQuery, toRemove
+      promises.push @notes.delete {}, doLogQuery, toRemove # signature is different from CRUD!
 
       # Remove shapes in all cases
-      promises.push @drawnShapes.delete {}, doLogQuery, toRemove
+      promises.push @drawnShapes.delete project_id: profile.project_id # signature is different for EZCRUD!
 
       # Reset if sandbox (profile and project)
       if profile.sandbox is true
