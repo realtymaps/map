@@ -292,8 +292,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsName}/#{data_source_uuid}")
   .catch (error) ->
     errorDetails ?= analyzeValue.getSimpleDetails(error)
-    if errorDetails.indexOf("20403 (NO_OBJECT_FOUND)") == -1
-      needsRetry = true
+    needsRetry = true
     taskLogger.debug () -> "overall error: #{errorDetails}"
   .then () ->
     taskLogger.debug "Photos uploaded: #{successCtr} | skipped: #{skipsCtr} | errors: #{errorsCtr}"
