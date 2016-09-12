@@ -26,7 +26,7 @@ TASK_CONFIG = tables.jobQueue.taskConfig.tableName
 
 
 getPossiblyReadyTasks = (transaction) ->
-  q = tables.jobQueue.taskConfig(transaction: transaction)                                      # get task config...
+  tables.jobQueue.taskConfig(transaction: transaction)                                          # get task config...
   .leftJoin TASK_HISTORY,                                                                       # (left outer) joined with task history, when:
     "#{TASK_CONFIG}.name": "#{TASK_HISTORY}.name"                                                   # task names match...
     "#{TASK_HISTORY}.current": tables.jobQueue.taskHistory.raw('true')                              # and it is the most recent run for that task
@@ -58,8 +58,6 @@ getPossiblyReadyTasks = (transaction) ->
     .where(namespace: 'locks')                                                                          # that are locks...
     .whereRaw("#{TASK_CONFIG}.blocked_by_locks \\? key")                                                # which block this task...
     .whereRaw("value::TEXT = 'true'")                                                                   # and are currently set
-  console.log q.toString()
-  q
 
 summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
