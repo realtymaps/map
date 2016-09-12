@@ -23,7 +23,6 @@ app.controller 'rmapsMapCtrl', (
   $state,
   $timeout,
   $window,
-
   rmapsDrawnUtilsService,
   rmapsEventConstants,
   rmapsLeafletHelpers,

@@ -1,20 +1,14 @@
+### globals _ ###
 app = require '../../app.coffee'
 
 module.exports = app
 
 app.factory 'rmapsMapContext', (
   $log
-
   rmapsGeometries
   rmapsUtilLayersBase
 ) ->
   $log = $log.spawn('RmapsMapContext')
-
-  _baseLayers = {}
-
-  rmapsUtilLayersBase
-  .then (data) ->
-    _.extend(_baseLayers, data)
 
   #
   # This class represents the Leaflet configuration values placed in the scope and access by the Leaflet directive
@@ -37,7 +31,7 @@ app.factory 'rmapsMapContext', (
     events: {}
     geojson: null
     layers:
-      baselayers: _baseLayers
+      baselayers: {}
       overlays: {}
 
     markers: {}
@@ -52,6 +46,12 @@ app.factory 'rmapsMapContext', (
     #
     constructor: (mapId) ->
       @mapId = mapId
+      @baseLayers
+
+      rmapsUtilLayersBase.init()
+      .then (data) =>
+        _.extend(@layers.baselayers, data)
+
 
     #
     # Public functions

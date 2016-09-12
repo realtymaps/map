@@ -23,6 +23,26 @@ rmapsMapAuthorizationFactory) ->
   $scope.loginInProgress = false
   $scope.form = {}
 
+  isLoggedIn = () ->
+    $http.get backendRoutes.config.protectedConfig
+    .then ({data} = {}) ->
+      if !data || data.doLogin == true
+        return false
+      true
+
+  # just because loggin succeeded does not mean the backend is synced with the profile
+  # check until it is synced
+  checkLoggIn = (maybeLoggedIn) ->
+    if maybeLoggedIn
+      rmapsMapAuthorizationFactory.goToPostLoginState()
+      return
+
+    isLoggedIn()
+    .then (loggedIn) ->
+      setTimeout ->
+        checkLoggIn(loggedIn)
+      , 500
+
   loginFailed = (response) ->
     $log.error "Could not log in", response
     $scope.loginInProgress = false
@@ -44,6 +64,6 @@ rmapsMapAuthorizationFactory) ->
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        rmapsMapAuthorizationFactory.goToPostLoginState()
+        checkLoggIn()
     .catch (response) ->
       loginFailed(response)
