@@ -233,7 +233,7 @@ waitForExclusiveAccess = (subtask) ->
   .then () ->
     tables.jobQueue.taskHistory()
     .where(current: true)
-    .whereRaw("data->>'blockedWhen' LIKE '%\"digimapsExclusiveAccess\"%'")
+    .whereRaw("blocked_by_locks \\? 'digimapsExclusiveAccess'")
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
