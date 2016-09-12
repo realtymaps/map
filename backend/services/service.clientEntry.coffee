@@ -6,6 +6,7 @@ dbs = require '../config/dbs'
 {transaction} = require '../config/dbs'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {createPasswordHash} =  require '../services/service.userSession'
+errorHelpers = require '../utils/errors/util.error.partiallyHandledError'
 
 _updateClient = (client) ->
   # TODO:  handle if client already exists
@@ -20,6 +21,8 @@ _updateClient = (client) ->
     .then (savedClient) ->
       # return original client for login to use original form
       client
+    .catch errorHelpers.isUnhandled, (err) ->
+      throw new errorHelpers.PartiallyHandledError(err, 'ClientEntry error while updating new client (are you sure this client was already created correctly?)')
 
 getClientEntry = (key) ->
   dbs.transaction 'main', (trx) ->
