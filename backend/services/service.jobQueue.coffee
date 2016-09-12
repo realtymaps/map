@@ -62,32 +62,33 @@ queueManualTask = (taskName, initiator) ->
       if task?.length && !task[0].finished
         throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}")
     .then () ->
-      tables.jobQueue.taskConfig(transaction: transaction)
+      tables.jobQueue.taskConfig({transaction})
       .select()
       .where(name: taskName)
       .then (result) ->
         if result.length == 0
           throw new Error("Task not found: #{taskName}")
 
-        if result[0].blocked_by_locks.length
+        taskConfig = result[0]
+        if taskConfig.blocked_by_locks.length
           # need to be sure there isn't another running task that blocks this task
           taskBlockPromise = tables.jobQueue.taskHistory({transaction})
           .select('name')
           .where(current: true)
           .whereNull('finished')
-          .whereIn('name', result[0].blocked_by_tasks)
+          .whereIn('name', taskConfig.blocked_by_tasks)
           .then (blockingTasks) ->
             if blockingTasks.length
               throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingTasks.length} blocking tasks: #{_.pluck(blockingTasks, 'name').join(', ')}")
         else
           taskBlockPromise = Promise.resolve()
 
-        if result[0].blocked_by_locks.length
+        if taskConfig.blocked_by_locks.length
           # need to be sure there isn't a lock set that prevents this task from running
           lockBlockPromise = tables.config.keystore({transaction})
           .select('key')
           .where(namespace: 'locks')
-          .whereIn('key', result[0].blocked_by_locks)
+          .whereIn('key', taskConfig.blocked_by_locks)
           .whereRaw("value::TEXT = 'true'")
           .then (blockingLocks) ->
             if blockingLocks.length
@@ -96,7 +97,7 @@ queueManualTask = (taskName, initiator) ->
           lockBlockPromise = Promise.resolve()
 
         Promise.join taskBlockPromise, lockBlockPromise, () ->
-          return result[0]
+          return taskConfig
 
     .then (taskConfig) ->
       batchId = (Date.now()).toString(36)

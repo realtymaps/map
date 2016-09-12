@@ -282,7 +282,7 @@ recordChangeCounts = (subtask) ->
     }
 
 releaseExclusiveAccess = (subtask) ->
-  keystore.setValue('data_combined', null, namespace: 'locks')
+  keystore.setValue('data_combined', false, namespace: 'locks')
 
 
 module.exports = new TaskImplementation 'digimaps', {
