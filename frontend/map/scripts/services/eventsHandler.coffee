@@ -167,29 +167,29 @@ $log) ->
     rmapsEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
-        $log.debug event
-        geojson = (new L.Marker(event.latlng)).toGeoJSON()
+        $log.debug -> event
 
-        getPropertyDetail(geometry_center: geojson.geometry)
+        popupWasClosed = closeWindow()
 
-        $log.debug 'Showing property details if a parcel was clicked'
+        if !popupWasClosed && rmapsZoomLevelService.isParcel($scope.map.center.zoom)
+          geojson = (new L.Marker(event.latlng)).toGeoJSON()
+          getPropertyDetail(geometry_center: geojson.geometry)
+          $log.debug 'Showing property details if a parcel was clicked'
 
-        closeWindow()
+          ### Alternate code to show infowindow instead of property details
+          rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
+          .then (data) ->
+            model = data.mls?[0] || data.county?[0]
+            return if !model
 
-        ### Alternate code to show infowindow instead of property details
-        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
-        .then (data) ->
-          model = data.mls?[0] || data.county?[0]
-          return if !model
+            model.coordinates ?= model.geometry_center?.coordinates
+            model.markerType = 'price'
 
-          model.coordinates ?= model.geometry_center?.coordinates
-          model.markerType = 'price'
-
-          setTimeout ->
-            if events.last.last != 'dblclick'
-              openWindow(model)
-          , limits.clickDelayMilliSeconds - 100
-        ###
+            setTimeout ->
+              if events.last.last != 'dblclick'
+                openWindow(model)
+            , limits.clickDelayMilliSeconds - 100
+          ###
 
       moveend: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
