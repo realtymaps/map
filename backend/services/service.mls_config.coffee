@@ -10,6 +10,7 @@ memoize = require 'memoizee'
 
 mlsServerFields = ['url', 'username', 'password']
 
+
 class MlsConfigService extends ServiceCrud
 
   constructor: (args...) ->
@@ -85,6 +86,7 @@ class MlsConfigService extends ServiceCrud
         .where(name: '<default_mls_config>')
         .then ([taskConfig]) ->
           taskConfig.name = newMls.id
+          taskConfig.data = JSON.stringify(taskConfig.data).replace(/<default_mls_config>/g, newMls.id)
           tables.jobQueue.taskConfig({transaction})
           .insert(taskConfig)
         .then () ->
@@ -103,6 +105,7 @@ class MlsConfigService extends ServiceCrud
               .where(name: '<default_mls_photos_config>')
               .then ([taskConfig]) ->
                 taskConfig.name = "#{newMls.id}_photos"
+                taskConfig.data = JSON.stringify(taskConfig.data).replace(/<default_mls_photos_config>/g, "#{newMls.id}_photos")
                 tables.jobQueue.taskConfig({transaction})
                 .insert(taskConfig)
               .then () ->

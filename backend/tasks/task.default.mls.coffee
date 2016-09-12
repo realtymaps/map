@@ -92,23 +92,6 @@ finalizeData = (subtask) ->
     mlsHelpers.finalizeData {subtask, id}
   Promise.map(subtask.data.values, impl)
 
-ready = () ->
-  # don't automatically run if digimaps or photos is running
-  query = tables.jobQueue.taskHistory()
-  .where(current: true)
-  .whereIn('name', ['digimaps', "#{@taskName}_photos"])
-  .whereNull('finished')
-  .then (results) ->
-    if results?.length
-      # found an instance of digimaps, GTFO
-      return false
-
-    # if we didn't bail, signal to use normal enqueuing logic
-    return undefined
-
-  logger.debug query.toString()
-  query
-
 
 markUpToDate = (subtask) ->
   mlsHelpers.markUpToDate(subtask)
@@ -129,6 +112,6 @@ factory = (taskName, overrideSubtasks) ->
     fullSubtasks = _.extend({}, subtasks, overrideSubtasks)
   else
     fullSubtasks = subtasks
-  new TaskImplementation(taskName, fullSubtasks, ready)
+  new TaskImplementation(taskName, fullSubtasks)
 
 module.exports = memoize(factory, length: 1)

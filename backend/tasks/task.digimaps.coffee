@@ -18,6 +18,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
 util = require 'util'
+keystore = require '../services/service.keystore'
 
 
 NUM_ROWS_TO_PAGINATE = 250
@@ -228,13 +229,11 @@ Since parcels can modify both mls and county rows in data_combined weird results
 The opposite is true of county and mls since they only modify their perspective and exclusive rows.
 ###
 waitForExclusiveAccess = (subtask) ->
-  tables.config.mls()
-  .select('id')
-  .then (excludeIds) ->
-    excludeIds.concat(subtask.data.additionalExclusions)
+  keystore.setValue('digimapsExclusiveAccess', true, namespace: 'locks')
+  .then () ->
     tables.jobQueue.taskHistory()
     .where(current: true)
-    .whereIn('name', excludeIds)
+    .whereRaw("data->>'blockedWhen' LIKE '%\"digimapsExclusiveAccess\"%'")
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
@@ -282,6 +281,9 @@ recordChangeCounts = (subtask) ->
         deletedParcel: true
     }
 
+releaseExclusiveAccess = (subtask) ->
+  keystore.setValue('data_combined', null, namespace: 'locks')
+
 
 module.exports = new TaskImplementation 'digimaps', {
   loadRawDataPrep
@@ -292,4 +294,5 @@ module.exports = new TaskImplementation 'digimaps', {
   waitForExclusiveAccess
   finalizeData
   activateNewData: parcelHelpers.activateNewData
+  releaseExclusiveAccess
 }
