@@ -47,6 +47,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
       .then () ->
         result
 
+
 queueManualTask = (taskName, initiator) ->
   if !taskName
     throw new Error('Task name required!')
@@ -61,39 +62,47 @@ queueManualTask = (taskName, initiator) ->
       if task?.length && !task[0].finished
         throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}")
     .then () ->
-      # also need to be sure there isn't another task that blocks this task
-      tables.jobQueue.taskHistory({transaction})
-      .select('name')
-      .where(current: true)
-      .whereNull('finished')
-      .whereRaw("data->>'blocksTasks' LIKE '%\"#{taskName}\"%'")
-    .then (blockingNames=[]) ->
-      if blockingNames.length
-        throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingNames.length} blocking tasks: #{_.pluck(blockingNames, 'name').join(', ')}")
-    .then () ->
       tables.jobQueue.taskConfig(transaction: transaction)
       .select()
       .where(name: taskName)
       .then (result) ->
         if result.length == 0
           throw new Error("Task not found: #{taskName}")
-        # also need to be sure there isn't a lock preventing this task from running
-        if result[0].data?.blockedWhen?.length
-          tables.config.keystore({transaction})
+
+        if result[0].blocked_by_locks.length
+          # need to be sure there isn't another running task that blocks this task
+          taskBlockPromise = tables.jobQueue.taskHistory({transaction})
+          .select('name')
+          .where(current: true)
+          .whereNull('finished')
+          .whereIn('name', result[0].blocked_by_tasks)
+          .then (blockingTasks) ->
+            if blockingTasks.length
+              throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingTasks.length} blocking tasks: #{_.pluck(blockingTasks, 'name').join(', ')}")
+        else
+          taskBlockPromise = Promise.resolve()
+
+        if result[0].blocked_by_locks.length
+          # need to be sure there isn't a lock set that prevents this task from running
+          lockBlockPromise = tables.config.keystore({transaction})
           .select('key')
           .where(namespace: 'locks')
-          .whereIn('key', result[0].data.blockedWhen)
+          .whereIn('key', result[0].blocked_by_locks)
           .whereRaw("value::TEXT = 'true'")
-          .then (blockingLocks=[]) ->
+          .then (blockingLocks) ->
             if blockingLocks.length
               throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingLocks.length} blocking locks: #{_.pluck(blockingLocks, 'key').join(', ')}")
-            return result[0]
         else
+          lockBlockPromise = Promise.resolve()
+
+        Promise.join taskBlockPromise, lockBlockPromise, () ->
           return result[0]
+
     .then (taskConfig) ->
       batchId = (Date.now()).toString(36)
       logger.info "Queueing #{taskName} for #{initiator} using batchId #{batchId}"
       queueTask(transaction, batchId, taskConfig, initiator)
+
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
   logger.spawn("task:#{task.name}").debug () -> "Queueing task for batchId #{batchId}: #{task.name}"
@@ -204,20 +213,20 @@ cancelTask = internals.cancelTaskImpl
 
 cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
   logger.spawn("manual").debug("Canceling all tasks -- forget:#{forget}, status:#{status}, withPrejudice:#{withPrejudice}")
-  tables.jobQueue.taskHistory()
-  .where
-    current: true
-  .whereNull('finished')
-  .map (task) ->
-    cancelTask(task.name, status, withPrejudice)
-    .then () ->
-      if forget
-        tables.jobQueue.taskHistory()
-        .where
-          name: task.name
-          current: true
-        .whereNotNull('finished')
-        .delete()
+  dbs.transaction (transaction) ->
+    tables.jobQueue.taskHistory({transaction})
+    .where
+      current: true
+    .whereNull('finished')
+    .map (task) ->
+      cancelTask(task.name, status, withPrejudice, transaction)
+      .then () ->
+        if forget
+          tables.jobQueue.taskHistory({transaction})
+          .where
+            name: task.name
+            current: true
+          .delete()
 
 
 # convenience helper for dev/troubleshooting
