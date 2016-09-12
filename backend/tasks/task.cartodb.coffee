@@ -76,12 +76,6 @@ syncDone = (subtask) ->
 
 ready = () ->
   dataLoadHelpers.checkReadyForRefresh({task_name: 'cartodb'}, {targetHour: 2, targetDay: 'Saturday', runIfNever: true})
-  .then (doRefresh) ->
-    if !doRefresh
-      # not ready yet
-      return false
-    # otherwise, use regular logic i.e. error retry delays
-    return undefined
 
 
 module.exports = new TaskImplementation('cartodb', {syncPrep, sync, syncDone}, ready)
