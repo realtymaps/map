@@ -37,6 +37,11 @@ app.controller 'rmapsMapCtrl', (
   rmapsSearchboxService
 ) ->
 
+  map = null
+  $scope.map = null
+
+  # console.log "\n\ninit map!"
+  # console.log "map? #{map?}"
   $scope.mapId = mapId = rmapsMapIds.mainMap()
 
   $log = $log.spawn("map:controller")
@@ -54,6 +59,10 @@ app.controller 'rmapsMapCtrl', (
   #
   if !map? or !$scope.map?
     map = new rmapsMapFactory($scope)
+    console.log "instantiated new map"
+    console.log "map:"
+    console.log map
+
 
   #
   # Utility functions to load a new Project and optional Property from the Map based selection tool

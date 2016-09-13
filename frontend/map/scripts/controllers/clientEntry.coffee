@@ -9,6 +9,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $log,
   $state,
   $http,
+  $stickyState,
   rmapsClientEntryService,
   rmapsEventConstants,
   rmapsPrincipalService,
@@ -23,7 +24,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   isLoggedIn = () ->
     $http.get backendRoutes.config.protectedConfig
     .then ({data} = {}) ->
-      console.log "protectedConfig, data:\n#{JSON.stringify(data)}"
+      console.log "protectedConfig:\n#{JSON.stringify(data)}"
       if !data || data.doLogin == true
         return false
       true
@@ -33,10 +34,6 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   checkLoggIn = (maybeLoggedIn) ->
     if maybeLoggedIn
       #rmapsMapAuthorizationFactory.goToPostLoginState()
-      if mobileView
-        $state.go 'project', id: $scope.project.id
-      else
-        $state.go 'map', id: $scope.project.id
 
       return
 
@@ -52,6 +49,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
     # based on login controller
     rmapsClientEntryService.setPasswordAndBounce $scope.client
     .then ({data, status}) ->
+      console.log "clientLogin data:\n#{JSON.stringify(data)}"
       if !httpStatus.isWithinOK status
         $scope.loginInProgress = false
         return
@@ -62,7 +60,12 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        checkLoggIn()
+        $stickyState.reset('map')
+        if mobileView
+          $state.go 'project', id: $scope.project.id
+        else
+          $state.go('map', {id: $scope.project.id}, {reload: true})
+
     , (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
@@ -73,7 +76,3 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
     $scope.client = data.client
     $scope.parent = data.parent
     $scope.project = data.project
-
-
-
-
