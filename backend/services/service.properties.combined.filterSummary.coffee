@@ -14,12 +14,15 @@ getDefaultQuery = ->
   .where(active: true)
 
 getPermissions = (profile) -> Promise.try ->
+  logger.debug () -> "Getting permissions..."
   tables.auth.user()
   .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
   .where(id: profile.auth_user_id)
   .then ([user]) ->
     if !user
+      logger.debug "no user found."
       return {}
+    logger.debug () -> "Found user: #{JSON.stringify(user)}"
 
     # Skip permissions for superusers
     if user.is_superuser
@@ -38,11 +41,13 @@ getPermissions = (profile) -> Promise.try ->
         return tables.auth.user()
           .select('mlses_verified')
           .where('id', profile.parent_auth_user_id).then ([owner]) ->
+            logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
             permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
             permissions
       logger.debug "@@@@ permissions @@@@"
       logger.debug permissions
       return permissions
+
 
 queryPermissions = (query, permissions = {}) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
@@ -162,6 +167,7 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
     return mockQuery
 
   query
+
 
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
