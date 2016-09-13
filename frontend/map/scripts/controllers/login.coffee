@@ -65,5 +65,7 @@ rmapsMapAuthorizationFactory) ->
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
         checkLoggIn()
+        # Currently we can not go directly to login as the session is not synced
+        # rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
     .catch (response) ->
       loginFailed(response)
