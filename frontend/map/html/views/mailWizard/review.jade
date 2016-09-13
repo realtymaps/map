@@ -121,11 +121,6 @@
                     label Print in Color?
                   .col-md-10
                     input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="wizard.mail.campaign.custom_content" ng-change="refreshColorPrice()")
-                .row
-                  .col-md-2
-                    label Double Sided?
-                  .col-md-10
-                    | Yes
                 .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
                 .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
                 .btn.btn-success(
