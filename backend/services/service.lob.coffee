@@ -281,7 +281,11 @@ sendCampaign = (userId, campaignId) ->
     [campaign] = campaign
     {stripe_customer_id} = authUser
 
-    if not campaign
+    # Keep track of stripe errors
+    errors = campaign?.stripe_charge?.errors || []
+    errorToSave = null
+
+    if !campaign
       throw new PartiallyHandledError("Campaign #{campaignId} not found")
 
     if campaign.status != 'ready'
@@ -306,9 +310,6 @@ sendCampaign = (userId, campaignId) ->
       .then ({pricePerLetter, price}) ->
         dbs.transaction 'main', (transaction) ->
 
-          # Keep track of stripe errors
-          errors = campaign.stripe_charge?.errors || []
-
           # save off pricePerLetter for lob task to use
           tables.mail.campaign({transaction})
           .update
@@ -318,6 +319,9 @@ sendCampaign = (userId, campaignId) ->
           .then () ->
 
             logger.debug "Creating $#{price.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
+
+            idempotency_key = "charge_campaign_#{campaign.id}_attempt_#{errors.length}"
+
             payment.customers.charge
               customer: stripe_customer_id
               source: stripeCustomer.default_source
@@ -325,30 +329,26 @@ sendCampaign = (userId, campaignId) ->
               capture: false # funds held but not actually charged until letters are sent to LOB
               description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
               ,
-              "charge_campaign_#{campaign.id}_attempt_#{errors.length}" # unique identifier to prevent duplicate charges
+              idempotency_key # unique identifier to prevent duplicate charges
 
             .catch isUnhandled, (err) ->
 
+              errorToSave = err
+              errorToSave.idempotency_key = idempotency_key
+
               if err?.type == 'StripeCardError'
-                errors.push(err)
-                dbs.transaction 'main', (tx2) ->
-                  tables.mail.campaign({transaction: tx2})
-                  .update
-                    stripe_charge: {errors}
-                  .where
-                    id: campaign.id
-                  .then () ->
-                    throw new QuietlyHandledError(err)
+                throw new QuietlyHandledError(err)
 
               else if err?.type in [
-                  'RateLimitError'
-                  'StripeAPIError'
                   'StripeConnectionError'
-                  'StripeAuthenticationError']
-                throw new QuietlyHandledError "Oops, something went wrong. Please try again later"
+                  'RateLimitError']
+                throw new QuietlyHandledError "Oops, something went wrong. Please try again later."
 
-              else if err?.type == 'StripeInvalidRequestError'
-                throw new PartiallyHandledError(err, "Oops, something went wrong. Please try again later")
+              else if err?.type in [
+                  'StripeAPIError'
+                  'StripeAuthenticationError'
+                  'StripeInvalidRequestError']
+                throw new PartiallyHandledError(err, "Oops, something went wrong. Please contact support.")
 
             .then (stripeCharge) ->
               # Whether or not mailing API is turned on, only queue real letters if payment is live
@@ -373,6 +373,19 @@ sendCampaign = (userId, campaignId) ->
 
               .catch isUnhandled, (err) ->
                 throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
+
+        .catch (err) ->
+          if errorToSave?
+            errors.push(errorToSave)
+            tables.mail.campaign()
+            .update
+              stripe_charge: {errors}
+            .where
+              id: campaign.id
+            .then () ->
+              throw err
+          else
+            throw err
 
 module.exports =
   getLetter: getLetter
