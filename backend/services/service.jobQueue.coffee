@@ -119,6 +119,8 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       initiator: initiator
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
+      blocked_by_tasks: task.blocked_by_tasks
+      blocked_by_locks: task.blocked_by_locks
   .then () -> # clear out any subtasks for prior runs of this task
     tables.jobQueue.currentSubtasks(transaction: transaction)
     .where(task_name: task.name)
@@ -298,7 +300,7 @@ getQueueNeeds = () ->
       # anything from steps past that (in this task)
       for step in steps
         # this step is "acceptably done" if it only consists of subtasks with soft fail, canceled, and/or success
-        # statuses, and/or possibly timeout/zombie statuses if they isn't counted as a hard fail for the subtask
+        # statuses, and/or possibly timeout/zombie statuses if they aren't counted as a hard fail for the subtask
         acceptablyDone = true
         for subtask in taskSteps[step]
           if (subtask.status not in ['soft fail', 'canceled', 'success']) && (subtask.status != 'timeout' || subtask.hard_fail_timeouts) && (subtask.status != 'zombie' || subtask.hard_fail_zombies)
