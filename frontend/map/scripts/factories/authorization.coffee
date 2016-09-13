@@ -51,15 +51,19 @@ app.factory 'rmapsMapAuthorizationFactory', (
       $state.go 'login'
 
     # After a successful login, either go to the prior state or the map
-    goToPostLoginState: () ->
+    goToPostLoginState: ({clear}) ->
       prior = rmapsPriorStateService.getPrior()
-      if prior
+
+      if prior && !clear
         $state.go prior.state, prior.params
 
         # Clear the prior state
         rmapsPriorStateService.clearPrior()
-      else
-        $state.go 'map'
+        return
+
+      if clear
+        rmapsPriorStateService.clearPrior()
+      $state.go 'map'
 
     # Ensure that this state change is correctly authenticated and authorized, or redirect to login
     # If the state requires a profile or a profile is specified on the URL, load it now
@@ -94,7 +98,7 @@ app.factory 'rmapsMapAuthorizationFactory', (
   return service
 
 app.run ($rootScope, rmapsMapAuthorizationFactory, rmapsEventConstants, $state, $log) ->
-  $log = $log.spawn('map:router')
+  $log = $log.spawn('router')
   $log.debug "attaching Map $stateChangeStart event"
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     $log.debug -> "$stateChangeStart: #{toState.name} params: #{JSON.stringify toParams} from: #{fromState?.name} params: #{JSON.stringify fromParams}"

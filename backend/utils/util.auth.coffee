@@ -160,7 +160,7 @@ requireLogin = (options = {}) ->
     redirectOnFail: false
   options = _.merge(defaultOptions, options)
   return (req, res, next) -> Promise.try () ->
-    if not req.user
+    if !req.user
       if options.redirectOnFail
         return res.json(doLogin: true)
       else

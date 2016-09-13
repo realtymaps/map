@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('util:user')
 config = require '../config/config'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
@@ -42,12 +42,14 @@ cacheUserValues = (req, reload = {}) ->
     logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
+      logger.debug 'req.session.permissions.then'
       req.session.permissions = permissionsHash
 
   if !req.session.groups or reload?.groups
     logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
+      logger.debug 'req.session.groups.then'
       req.session.groups = groupsHash
 
 

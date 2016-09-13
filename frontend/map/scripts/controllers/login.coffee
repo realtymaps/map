@@ -34,7 +34,7 @@ rmapsMapAuthorizationFactory) ->
   # check until it is synced
   checkLoggIn = (maybeLoggedIn) ->
     if maybeLoggedIn
-      rmapsMapAuthorizationFactory.goToPostLoginState()
+      rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
       return
 
     isLoggedIn()
