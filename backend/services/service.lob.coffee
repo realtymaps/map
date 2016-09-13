@@ -350,6 +350,9 @@ sendCampaign = (userId, campaignId) ->
                   'StripeInvalidRequestError']
                 throw new PartiallyHandledError(err, "Oops, something went wrong. Please contact support.")
 
+              else
+                throw new PartiallyHandledError(err, "Oops, something went wrong. Please contact support.")
+
             .then (stripeCharge) ->
               # Whether or not mailing API is turned on, only queue real letters if payment is live
               apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
