@@ -23,6 +23,12 @@ rmapsMapAuthorizationFactory) ->
   $scope.loginInProgress = false
   $scope.form = {}
 
+  ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    We need to figure out why after login succedes that some post processing routes still think we are not logged in.
+
+    Hence why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
+    we are actual logged in.
+  ###
   isLoggedIn = () ->
     $http.get backendRoutes.config.protectedConfig
     .then ({data} = {}) ->
@@ -42,6 +48,8 @@ rmapsMapAuthorizationFactory) ->
       setTimeout ->
         checkLoggIn(loggedIn)
       , 500
+
+  # END TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   loginFailed = (response) ->
     $log.error "Could not log in", response
