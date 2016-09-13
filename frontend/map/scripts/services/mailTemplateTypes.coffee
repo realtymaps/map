@@ -53,12 +53,6 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'saleOfRental':
-      content: require('../../html/includes/mail/sale-of-rental-template.jade')()
-      name: "Sale of Rental"
-      thumb: "/assets/base/template_img.png"
-      category: 'letter'
-
     'sellerValuableAsset':
       content: require('../../html/includes/mail/seller-valuable-asset-template.jade')()
       name: "Seller - Home is a Valuable Asset"
