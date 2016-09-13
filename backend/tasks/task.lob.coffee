@@ -151,14 +151,15 @@ createLetter = (subtask) ->
         throw new SoftFail(error, "Lob API server error - retry later")
 
     .then (lobResponse) ->
-      logger.debug -> "Sent letter #{lobResponse.id}"
-      tables.mail.letters()
-      .update
-        lob_response: lobResponse
-        status: 'sent'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+      if lobResponse
+        logger.debug -> "Sent letter #{lobResponse.id}"
+        tables.mail.letters()
+        .update
+          lob_response: lobResponse
+          status: 'sent'
+          retries: letter.retries + 1
+        .where
+          id: letter.id
 
     .catch isUnhandled, (error) ->
       throw new HardFail(error, "Error updating letter #{letter.id}!")
