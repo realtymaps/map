@@ -128,6 +128,8 @@ save = ({type, rm_property_id}) ->
 
 getAll = () ->
   profile = routeHelpers.currentProfile()
+  console.log "properties.save, getAll()"
+  console.log "profile:\n#{JSON.stringify(profile,null,2)}"
 
   Promise.join _pinsPromise(profile), _favoritesPromise(profile), ([{pins}], [{favorites}]) ->
     { pins, favorites }

@@ -8,6 +8,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $scope,
   $log,
   $state,
+  $http,
   rmapsClientEntryService,
   rmapsEventConstants,
   rmapsPrincipalService,
@@ -18,6 +19,32 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $log = $log.spawn 'rmapsClientEntryCtrl'
 
   mobileView = rmapsResponsiveViewService.isMobileView()
+
+  isLoggedIn = () ->
+    $http.get backendRoutes.config.protectedConfig
+    .then ({data} = {}) ->
+      console.log "protectedConfig, data:\n#{JSON.stringify(data)}"
+      if !data || data.doLogin == true
+        return false
+      true
+
+  # just because loggin succeeded does not mean the backend is synced with the profile
+  # check until it is synced
+  checkLoggIn = (maybeLoggedIn) ->
+    if maybeLoggedIn
+      #rmapsMapAuthorizationFactory.goToPostLoginState()
+      if mobileView
+        $state.go 'project', id: $scope.project.id
+      else
+        $state.go 'map', id: $scope.project.id
+
+      return
+
+    isLoggedIn()
+    .then (loggedIn) ->
+      setTimeout ->
+        checkLoggIn(loggedIn)
+      , 500
 
   $scope.login = () ->
     $scope.loginInProgress = true
@@ -35,10 +62,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        if mobileView
-          $state.go 'project', id: $scope.project.id
-        else
-          $state.go 'map', id: $scope.project.id
+        checkLoggIn()
     , (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
@@ -49,3 +73,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
     $scope.client = data.client
     $scope.parent = data.parent
     $scope.project = data.project
+
+
+
+

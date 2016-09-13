@@ -73,13 +73,12 @@ class ClientsCrud extends RouteCrud
       project:
         id: req.params.id
         name: req.body.project_name
-      profile: _.pick(profileImport, ['map_position', 'map_results', 'filters'])
+      profile: _.pick(profileImport, ['map_position'])
       evtdata:
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
 
     projectSvc.addClient clientEntryValue
-
 
 
   ###

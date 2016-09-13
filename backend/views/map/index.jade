@@ -1,11 +1,13 @@
 extends ../_layout
 
+
 block customHead
   //TODO: angular-stripe, stripe-promisified, all expect Stipe to be loaded into DOM immediatley
   // to much of a PAIN to refactor
   script(type='application/javascript' src="https://js.stripe.com/v2/")
   script.
     function addScript( url, callback ) {
+      console.log("url:"+url);
       var script = document.createElement( 'script' );
       if(callback)
         script.onload = callback;
@@ -15,7 +17,8 @@ block customHead
     } 
     function loadAsyncScripts() {
         addScript("!{google.mapsSdkUrl}&callback=mapsApiReady");
-        window.removeEventListener('load', loadAsyncScripts);
+        setTimeout(window.removeEventListener('load', loadAsyncScripts), 3000);
+        
     }
     function mapsApiReady() {
       console.log('GOOGLE LOADED');

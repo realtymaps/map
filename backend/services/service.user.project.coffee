@@ -191,6 +191,7 @@ class ProjectCrud extends ThenableCrud
             auth_user_id: user.id
             parent_auth_user_id: user.parent_id
             project_id: project.id
+            favorites: {}
 
           profileSvc.createForProject newProfile, trx
 
