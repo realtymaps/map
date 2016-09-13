@@ -19,17 +19,11 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
   rmapsUtilLayersBase
   rmapsNgLeafletEventGateService
 ) ->
-  _baseLayers = null
-
-  rmapsUtilLayersBase
-  .then (data) ->
-    _baseLayers = data
 
   $log = nemSimpleLogger.spawn("map:baseFactory")
 
   class
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
-      baseLayers ?= _baseLayers
 
       settings =
         options: options
@@ -54,7 +48,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
           center: options.json.center
           dragging: false
           layers:
-            baselayers: baseLayers
+            baselayers: {}
 
           events:
             map:
@@ -72,9 +66,19 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
                 rmapsNgLeafletEventGateService.enableMapCommonEvents(@mapId)
                 @zoomBox.activate()
 
+      if baseLayers?
+        @scope[mapPath].layers.baselayers = baseLayers
+      else
+        rmapsUtilLayersBase.init()
+        .then (data) =>
+          @scope[mapPath].layers.baselayers = data
+          return null
+
       angular.extend @scope, settings
 
-    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers, mapEvents = _mapDrawEvents.concat ['click']) ->
+    constructor: ({@scope, options, redrawDebounceMilliSeconds, mapPath, @mapId, baseLayers, mapEvents}) ->
+      mapPath ?= 'map'
+      mapEvents ?= _mapDrawEvents.concat ['click']
 
       _throttler =  _eventThrottler($log, options)
       @initScopeSettings(options, mapPath, baseLayers, mapEvents)

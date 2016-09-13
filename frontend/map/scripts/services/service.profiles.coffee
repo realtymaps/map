@@ -57,6 +57,11 @@ app.service 'rmapsProfilesService', (
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
 
+  # IMPORTANT we need to unset the current profile upon logout
+  # otherwise upon login we would try to reuse the existing / dead profile
+  # if we don't then identity's currentProfileId is never set and thus getCurrentProfile is null
+  _unsetCurrent = () ->
+    service.currentProfile = null
 
   _isSettingProfile = false
   _settingCurrentPromise = null
@@ -84,6 +89,9 @@ app.service 'rmapsProfilesService', (
 
   service =
     currentProfile: null
+
+    unsetCurrentProfile: () ->
+      _unsetCurrent()
 
     resetSyncFlags: () ->
       _isSettingProfile = false

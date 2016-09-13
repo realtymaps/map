@@ -119,9 +119,8 @@ sessionLoginProcess = (req, res, user, opts={}) ->
     req.user = user
     req.session.subscription = subscription_status
     userUtils.cacheUserValues(req)
-
   .then () ->
-    req.session.saveAsync()
+    req.session.saveAsync() # this appears to return early
   .then () ->
     ensureSessionCount(req)
   .then () ->

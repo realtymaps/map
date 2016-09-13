@@ -1,3 +1,4 @@
+### globals _###
 app = require '../app.coffee'
 
 
@@ -15,14 +16,19 @@ app.controller 'rmapsSatMapCtrl',
   rmapsOverlays
 ) ->
 
-  rmapsOverlays
+  rmapsOverlays.init()
   .then (overlays) ->
     _.merge $scope.satMap, layers: {overlays}
 
   limits = rmapsMainOptions.map
-  _mapId = 'detailSatMap'
 
-  @satMapFactory = new rmapsBaseMapFactory($scope, limits.options, limits.redrawDebounceMilliSeconds, 'satMap', _mapId)
+  @satMapFactory = new rmapsBaseMapFactory {
+    scope: $scope
+    options: limits.options
+    redrawDebounceMilliSeconds: limits.redrawDebounceMilliSeconds
+    mapPath: 'satMap'
+    mapId: 'detailSatMap'
+  }
   # Don't show the main map controls here
   $scope.controls.custom = []
   rmapsEventsHandlerService(@satMapFactory, 'satMap')
@@ -34,5 +40,5 @@ app.controller 'rmapsSatMapCtrl',
         addresses:{}
       init: ->
 
-  leafletData.getMap(_mapId).then (map) ->
+  leafletData.getMap(@mapId).then (map) ->
     map.invalidateSize()
