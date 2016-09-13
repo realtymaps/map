@@ -5,7 +5,7 @@ LobFactory = require 'lob'
 logger = require('../config/logger').spawn('service:lob')
 _ = require 'lodash'
 config = require '../config/config'
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isUnhandled, QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
@@ -265,7 +265,7 @@ sendCampaign = (userId, campaignId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options', 'stripe_charge')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire
@@ -304,10 +304,13 @@ sendCampaign = (userId, campaignId) ->
         throw new PartiallyHandledError(err, "Could not get price quote for campaign #{campaign.id}")
 
       .then ({pricePerLetter, price}) ->
-        dbs.transaction 'main', (tx) ->
+        dbs.transaction 'main', (transaction) ->
+
+          # Keep track of stripe errors
+          errors = campaign.stripe_charge?.errors || []
 
           # save off pricePerLetter for lob task to use
-          tables.mail.campaign(transaction: tx)
+          tables.mail.campaign({transaction})
           .update
             price_per_letter: pricePerLetter
           .where
@@ -322,10 +325,30 @@ sendCampaign = (userId, campaignId) ->
               capture: false # funds held but not actually charged until letters are sent to LOB
               description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
               ,
-              "charge_campaign_#{campaign.id}" # unique identifier to prevent duplicate charges
+              "charge_campaign_#{campaign.id}_attempt_#{errors.length}" # unique identifier to prevent duplicate charges
 
             .catch isUnhandled, (err) ->
-              throw new PartiallyHandledError(err, "CC hold failed for customer #{stripe_customer_id}")
+
+              if err?.type == 'StripeCardError'
+                errors.push(err)
+                dbs.transaction 'main', (tx2) ->
+                  tables.mail.campaign({transaction: tx2})
+                  .update
+                    stripe_charge: {errors}
+                  .where
+                    id: campaign.id
+                  .then () ->
+                    throw new QuietlyHandledError(err)
+
+              else if err?.type in [
+                  'RateLimitError'
+                  'StripeAPIError'
+                  'StripeConnectionError'
+                  'StripeAuthenticationError']
+                throw new QuietlyHandledError "Oops, something went wrong. Please try again later"
+
+              else if err?.type == 'StripeInvalidRequestError'
+                throw new PartiallyHandledError(err, "Oops, something went wrong. Please try again later")
 
             .then (stripeCharge) ->
               # Whether or not mailing API is turned on, only queue real letters if payment is live
@@ -333,7 +356,7 @@ sendCampaign = (userId, campaignId) ->
 
               logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId} using API #{apiName}"
               logger.debug -> "#{JSON.stringify stripeCharge}"
-              tables.mail.letters(transaction: tx)
+              tables.mail.letters({transaction})
               .insert _.map campaign.recipients, (recipient) ->
                 letter = buildLetter campaign, recipient
                 letter.lob_api = apiName
@@ -344,7 +367,7 @@ sendCampaign = (userId, campaignId) ->
 
               .then (inserted) ->
                 logger.debug "Queued #{campaign.recipients.length} letters, changing status of campaign #{campaignId} -> 'sending'"
-                tables.mail.campaign(transaction: tx)
+                tables.mail.campaign({transaction})
                 .update(status: 'sending', stripe_charge: stripeCharge)
                 .where(id: campaignId, auth_user_id: userId)
 
