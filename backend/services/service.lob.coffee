@@ -337,7 +337,7 @@ sendCampaign = (userId, campaignId) ->
               errorToSave.idempotency_key = idempotency_key
 
               if err?.type == 'StripeCardError'
-                throw new QuietlyHandledError(err, "Oops, please ensure your payment information is up-to-date. Your payment was not processed because\n")
+                throw new QuietlyHandledError(err, "Please check that your payment information is up-to-date. Your payment was not processed because")
 
               else if err?.type in [
                   'StripeConnectionError'
