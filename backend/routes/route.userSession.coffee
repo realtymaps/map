@@ -63,8 +63,6 @@ login = (req, res, next) -> Promise.try () ->
       sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->
         internals.getIdentity(req, res, next)
-      .catch (err) ->
-        console.log "login err: #{err}"
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
