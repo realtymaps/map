@@ -29,8 +29,10 @@ _getTaskCode = (taskName) ->
 
 class TaskImplementation
 
-  constructor: (@taskName, @subtasks, @ready) ->
+  constructor: (@taskName, @subtasks, ready) ->
     @name = 'TaskImplementation'
+    if ready
+      @ready = ready
 
   executeSubtask: (subtask) -> Promise.try () =>
     # call the handler for the subtask
@@ -53,12 +55,8 @@ class TaskImplementation
       if !subtasks.length
         return 0
       require('../services/service.jobQueue').queueSubtasks({transaction, batchId, subtasks})
-    .then (count) =>
-      if count == 0
-        throw new Error("0 subtasks enqueued for #{@taskName}")
-      count
 
-  ready: null  # to properly set prototype
+  ready: () -> true
 
 
 TaskImplementation.getTaskCode = memoize.promise(_getTaskCode, primitive: true)

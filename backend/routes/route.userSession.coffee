@@ -58,6 +58,7 @@ login = (req, res, next) -> Promise.try () ->
         quiet: true
       })
     else
+      logger.debug () -> "acquired user: #{JSON.stringify(user)}"
       req.session.userid = user.id
       sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->

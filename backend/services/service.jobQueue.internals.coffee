@@ -21,6 +21,44 @@ enqueueNotification = notifications.notifyFlat {
 }
 
 
+TASK_HISTORY = tables.jobQueue.taskHistory.tableName
+TASK_CONFIG = tables.jobQueue.taskConfig.tableName
+
+
+getPossiblyReadyTasks = (transaction) ->
+  tables.jobQueue.taskConfig(transaction: transaction)                                          # get task config...
+  .leftJoin TASK_HISTORY,                                                                       # (left outer) joined with task history, when:
+    "#{TASK_CONFIG}.name": "#{TASK_HISTORY}.name"                                                   # task names match...
+    "#{TASK_HISTORY}.current": tables.jobQueue.taskHistory.raw('true')                              # and it is the most recent run for that task
+  .select("#{TASK_CONFIG}.*")                                                                   # only consider:
+  .where("#{TASK_CONFIG}.active": true)                                                             # active tasks...
+  .whereRaw("COALESCE(#{TASK_CONFIG}.ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()")              # whose time has come...
+  .where () ->                                                                                      # that...
+    @whereNull("#{TASK_HISTORY}.name")                                                                  # never ran...
+    .orWhereNotNull("#{TASK_HISTORY}.finished")                                                         # or are done running...
+    .whereNot () ->                                                                                         # but not:
+      @where("#{TASK_HISTORY}.status": 'success')                                                               # tasks that succeeded...
+      .where () ->
+        @whereNull("#{TASK_CONFIG}.repeat_period_minutes")                                                      # if they don't repeat...
+        .orWhereRaw("#{TASK_HISTORY}.started+#{TASK_CONFIG}.repeat_period_minutes*'1 minute'::INTERVAL>NOW()")  # or haven't passed the success repeat delay
+    .whereNot () ->                                                                                         # and not:
+      @whereIn("#{TASK_HISTORY}.status", ['hard fail','canceled','timeout'])                                    # tasks that failed...
+      .where () ->
+        @whereNull("#{TASK_CONFIG}.fail_retry_minutes")                                                         # if they don't retry...
+        .orWhereRaw("#{TASK_HISTORY}.finished+#{TASK_CONFIG}.fail_retry_minutes*'1 minute'::INTERVAL>NOW()")    # or haven't passed the fail retry delay
+  .whereNotExists () ->
+    tables.jobQueue.taskHistory(transaction: @)                                                     # and with no tasks...
+    .select(1)
+    .where(current: true)                                                                               # that are the most recent run for the task...
+    .whereNull('finished')                                                                              # and are still running...
+    .whereRaw("#{TASK_CONFIG}.blocked_by_tasks \\? name")                                               # and block this task from running
+  .whereNotExists () ->
+    tables.config.keystore(transaction: @)                                                          # and with no keystore rows...
+    .select(1)
+    .where(namespace: 'locks')                                                                          # that are locks...
+    .whereRaw("#{TASK_CONFIG}.blocked_by_locks \\? key")                                                # which block this task...
+    .whereRaw("value::TEXT = 'true'")                                                                   # and are currently set
+
 summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
 
@@ -173,14 +211,13 @@ handleZombies = (transaction=null) ->
   tables.jobQueue.currentSubtasks(transaction: transaction)
   .whereNull('finished')
   .whereNotNull('started')
-  .whereNotNull('kill_timeout_seconds')
-  .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
+  .where () ->
+    @whereNotNull('kill_timeout_seconds')
+    @whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * ('1 second'::INTERVAL) < NOW()")
+    @orWhereRaw("heartbeat + #{config.JOB_QUEUE.HEARTBEAT}*('1 millisecond'::INTERVAL)*5 < NOW()")
   .orWhere () ->
     @whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
     @where(status: 'preparing')
-  .orWhere () ->
-    @whereNull('finished')
-    @whereRaw("heartbeat + #{config.JOB_QUEUE.HEARTBEAT}*('1 millisecond'::INTERVAL)*5 < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
       handleSubtaskError({
@@ -338,11 +375,11 @@ executeSubtask = (subtask, prefix) ->
     heartbeatPromise.cancel()
 
 
-cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
+cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
 # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
 # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
-  dbs.transaction 'main', (transaction) ->
+  dbs.ensureTransaction trx, (transaction) ->
     tables.jobQueue.taskHistory(transaction: transaction)
     .where
       name: taskName
@@ -424,6 +461,7 @@ buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
   data
 
 module.exports = {
+  getPossiblyReadyTasks
   summary
   withDbLock
   checkTask

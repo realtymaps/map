@@ -34,6 +34,24 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         width: 250
         cellClass: 'clickable-cell'
       ,
+        field: 'blocked_by_tasks'
+        displayName: 'Blocking Tasks'
+        type: 'object'
+        enableCellEdit: true
+        editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+        defaultValue: "[]"
+        width: 250
+        cellClass: 'clickable-cell'
+      ,
+        field: 'blocked_by_locks'
+        displayName: 'Blocking Locks'
+        type: 'object'
+        enableCellEdit: true
+        editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+        defaultValue: "[]"
+        width: 250
+        cellClass: 'clickable-cell'
+      ,
         field: 'ignore_until'
         displayName: 'Ignore Until'
         type: 'date'

@@ -112,6 +112,8 @@ buildTableName = (tableName) ->
 
 ensureTransaction = (trx, dbName, handler) -> Promise.try () ->
   if trx?
+    if typeof(dbName) != 'string'
+      handler = dbName
     handler(trx)
   else
     transaction(dbName, handler)

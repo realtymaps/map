@@ -37,6 +37,7 @@ subtaskErrors = (subtask) ->
 
 taskHistory = (subtask) ->
   tables.jobQueue.taskHistory()
+  .where(current: false)
   .whereRaw("started < now_utc() - '#{config.CLEANUP.TASK_HISTORY_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->

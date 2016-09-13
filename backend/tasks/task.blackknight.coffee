@@ -318,52 +318,41 @@ finalizeData = (subtask) ->
 
 
 ready = () ->
-  # don't automatically run if digimaps is running
-  tables.jobQueue.taskHistory()
-  .where
-    current: true
-    name: 'digimaps'
-  .whereNull('finished')
-  .then (results) ->
-    if results?.length
-      # found an instance of digimaps, GTFO
-      return false
+  # if we didn't bail above, do some other special logic for efficiency
+  defaults = {}
+  defaults[internals.REFRESH] = '19700101'
+  defaults[internals.UPDATE] = '19700101'
+  defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  .then (processDates) ->
+    # definitely run task if there are dates to process
+    if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
+      return true
 
-    # if we didn't bail above, do some other special logic for efficiency
-    defaults = {}
-    defaults[internals.REFRESH] = '19700101'
-    defaults[internals.UPDATE] = '19700101'
-    defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
-    keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-    .then (processDates) ->
-      # run task if there are dates to process
-      if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
-        return undefined
+    keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
+    .then (copyDates) ->
+      # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
+      now = moment.utc()
+      today = now.format('YYYYMMDD')
+      yesterday = now.subtract(1, 'day').format('YYYYMMDD')
+      dayOfWeek = now.isoWeekday()
 
-      keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
-      .then (copyDates) ->
-        # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
-        now = moment.utc()
-        today = now.format('YYYYMMDD')
-        yesterday = now.subtract(1, 'day').format('YYYYMMDD')
-        dayOfWeek = now.isoWeekday()
-
-        if copyDates[internals.NO_NEW_DATA_FOUND] == today
-          # we've already indicated there's no new data to find today
+      if copyDates[internals.NO_NEW_DATA_FOUND] == today
+        # we've already indicated there's no new data to find today
+        return false
+      else if dayOfWeek == 7 || dayOfWeek == 1
+        # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
+        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+        .then () ->
           return false
-        else if dayOfWeek == 7 || dayOfWeek == 1
-          # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
-          .then () ->
-            return false
-        else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
-          # we've already processed yesterday's data
-          keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
-          .then () ->
-            return false
-        else
-          # no overrides, needs to run using regular logic
-          return undefined
+      else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
+        # we've already processed yesterday's data
+        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+        .then () ->
+          return false
+      else
+        # no overrides, ready to run
+        return true
 
 
 recordChangeCounts = (subtask) ->
