@@ -15,7 +15,8 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   rmapsPrincipalService,
   rmapsProfilesService,
   rmapsMapAuthorizationFactory,
-  rmapsResponsiveViewService
+  rmapsResponsiveViewService,
+  rmapsGoogleService
 ) ->
   $log = $log.spawn 'rmapsClientEntryCtrl'
 
@@ -60,7 +61,8 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        $stickyState.reset('map')
+        #rmapsGoogleService.requireReload = true
+        # $stickyState.reset('map')
         if mobileView
           $state.go 'project', id: $scope.project.id
         else

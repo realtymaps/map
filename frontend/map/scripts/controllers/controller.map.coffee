@@ -34,7 +34,8 @@ app.controller 'rmapsMapCtrl', (
   rmapsProfilesService
   rmapsProjectsService,
   rmapsPropertiesService,
-  rmapsSearchboxService
+  rmapsSearchboxService,
+  rmapsGoogleService
 ) ->
 
   map = null
@@ -54,11 +55,20 @@ app.controller 'rmapsMapCtrl', (
 
   rmapsSearchboxService(mapId)
 
+  # console.log "rmapsGoogleService:"
+  # console.log rmapsGoogleService
+
   #
   # Create the Map Factory
   #
-  if !map? or !$scope.map?
+
+  console.log "$scope.mapId: #{$scope.mapId}"
+  console.log "map null?: #{!map?}"
+
+  if !map? or !$scope.map?# or rmapsGoogleService.requireReload
+
     map = new rmapsMapFactory($scope)
+
     console.log "instantiated new map"
     console.log "map:"
     console.log map

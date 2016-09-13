@@ -14,6 +14,8 @@ app.service 'rmapsGoogleService', ($http, $log) ->
       apiKey = "&key=#{data.google}"
 
   service =
+    requireReload: false
+
     ConfigPromise: _googleConfigPromise
 
     GeoJsonTo: do ->
