@@ -22,6 +22,7 @@ promisifySession = (req, res) -> Promise.try () ->
   req.session.regenerateAsync = () ->
     req.session.regenerateAsyncImpl()
     .then () ->
+      # it would be nice to have some explanation here on to why we recurse
       promisifySession(req, res)
   Promise.resolve()
 

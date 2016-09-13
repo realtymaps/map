@@ -4,7 +4,15 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 ###
   Logout controller
 ###
-module.exports = app.controller 'rmapsLogoutCtrl', ($state, $http, $timeout, rmapsPrincipalService, rmapsMainOptions, rmapsSpinnerService) ->
+module.exports = app.controller 'rmapsLogoutCtrl', (
+$state
+$http
+$timeout
+rmapsPrincipalService
+rmapsMainOptions
+rmapsSpinnerService
+rmapsProfilesService
+) ->
   logoutStr = 'logout'
 
   # this controller manages loadingCount manually because we're putting an artificial min delay on logout,
@@ -28,3 +36,4 @@ module.exports = app.controller 'rmapsLogoutCtrl', ($state, $http, $timeout, rma
         delayedUrl()
       .finally ->
         rmapsPrincipalService.unsetIdentity()
+        rmapsProfilesService.unsetCurrentProfile()

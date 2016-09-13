@@ -1,5 +1,3 @@
-_ = require 'lodash'
-config = require '../config/config'
 userUtils = require '../utils/util.user'
 
 #main entry point to update root user info

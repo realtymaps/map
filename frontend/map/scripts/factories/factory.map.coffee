@@ -56,17 +56,23 @@ app.factory 'rmapsMapFactory',
       @currentMainMap: null
 
       constructor: ($scope) ->
-        rmapsOverlays
+        super {
+          scope: $scope
+          options: limits.options
+          redrawDebounceMilliSeconds: limits.redrawDebounceMilliSeconds
+          mapPath: 'map'
+          mapId: rmapsMapIds.mainMap()
+        }
+
+        @constructor.currentMainMap = @
+        @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
+        _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
+
+        rmapsOverlays.init()
         .then (overlays) ->
           #using merge to not clobber objects
           _.merge $scope.map, layers: {overlays}
 
-        @constructor.currentMainMap = @
-        @mapId = rmapsMapIds.mainMap()
-        @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
-
-        _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
-        super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map', @mapId
 
         _initToggles $scope, limits.toggles
 
