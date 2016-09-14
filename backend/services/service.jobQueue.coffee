@@ -243,7 +243,7 @@ requeueManualTask = (taskName, initiator, withPrejudice=false) ->
 doMaintenance = () ->
   maintenanceLogger = logger.spawn("maintenance")
   maintenanceLogger.debug('Doing maintenance...')
-  internals.withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+  internals.tryWithDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->

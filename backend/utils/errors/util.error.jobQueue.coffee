@@ -15,7 +15,14 @@ class TaskNotImplemented extends NamedError
     @quiet = true
     super('TaskNotImplemented', args...)
 
-module.exports =
-  SoftFail: SoftFail
-  HardFail: HardFail
-  TaskNotImplemented: TaskNotImplemented
+class LockError extends NamedError
+  constructor: (args...) ->
+    @quiet = true
+    super('LockError', args...)
+
+module.exports = {
+  SoftFail
+  HardFail
+  TaskNotImplemented
+  LockError
+}

@@ -25,15 +25,7 @@ describe 'service.jobs.spec.coffee', ->
         get: () =>
           @dbs_main
 
-      _jobQueue = # nullifying the jobQueue.doMaintenance call used in JobService
-        doMaintenance: () ->
-          _then =
-            then: (fn) =>
-              fn()
-          _then
-
       # rewire modules used directly inside service logic
-      svc.__set__('jobQueue', _jobQueue)
       svc.__set__('dbs', @mainDBS)
       svc.__set__('tables', @tables)
 
@@ -43,26 +35,6 @@ describe 'service.jobs.spec.coffee', ->
       @jobQueue_taskHistory.whereRawSpy.calledOnce.should.be.true
       expect(@jobQueue_taskHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - started <= interval '30 days'" # the default
       done()
-
-
-  describe 'history with doMaintenance', ->
-    beforeEach ->
-      @maintenanceSpy = sinon.spy(svc.__get__('jobQueue').doMaintenance)
-      svc.__set__('jobQueue', doMaintenance: @maintenanceSpy)
-      @jobQueue_summary = new SqlMock 'jobQueue', 'summary'
-
-      # aquire service class to be tested
-      JobServiceClass = svc.__get__('JobService')
-
-      # create service instance to test on
-      jobTest = new JobServiceClass @jobQueue_summary.dbFn()
-
-      # reset module 'tasks' object to this test instance
-      svc.summary = jobTest
-
-    it 'should query summary with doMaintenance', () ->
-      svc.summary.getAll().then (d) =>
-        @maintenanceSpy.called.should.be.true
 
 
   describe 'history error service', ->
