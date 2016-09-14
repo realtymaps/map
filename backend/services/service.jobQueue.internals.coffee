@@ -120,26 +120,18 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
         else
           logger.warn("#{prefix} Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
       else
-        # get fresh config from the db -- this lets us change subtask config on the fly for retries
-        tables.jobQueue.subtaskConfig()
-        .where
-          name: subtask.name
-          task_name: subtask.task_name
-        .then (subtaskConfig={}) ->
-          retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
-          retrySubtask.retry_num += 1
-          retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
-          # we have to keep an paginated data or other values dynamically set on the subtask, as well as things like retry_num
-          _.defaultsDeep(subtaskConfig, retrySubtask)
-          checkTask(null, subtask.batch_id, subtask.task_name)
-          .then (taskData) ->
-            # need to make sure we don't continue to retry subtasks if the task has errored in some way
-            if taskData == undefined
-              logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-              return
-            logger.info("#{prefix} Queuing retry subtask ##{subtaskConfig.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-            tables.jobQueue.currentSubtasks()
-            .insert subtaskConfig
+        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
+        retrySubtask.retry_num += 1
+        retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
+        checkTask(null, subtask.batch_id, subtask.task_name)
+        .then (taskData) ->
+          # need to make sure we don't continue to retry subtasks if the task has errored in some way
+          if taskData == undefined
+            logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
+            return
+          logger.info("#{prefix} Queuing retry subtask ##{retrySubtask.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
+          tables.jobQueue.currentSubtasks()
+          .insert retrySubtask
   .then () ->
     tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
