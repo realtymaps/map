@@ -38,9 +38,6 @@ app.controller 'rmapsMapCtrl', (
   rmapsBounds
 ) ->
 
-  map = null
-  $scope.map = null
-
   $scope.mapId = mapId = rmapsMapIds.mainMap()
 
   $log = $log.spawn("map:controller")
@@ -56,10 +53,8 @@ app.controller 'rmapsMapCtrl', (
   #
   # Create the Map Factory
   #
-
   if !map? or !$scope.map?
     map = new rmapsMapFactory($scope)
-
 
   #
   # Utility functions to load a new Project and optional Property from the Map based selection tool
@@ -119,6 +114,7 @@ app.controller 'rmapsMapCtrl', (
 
     # center on pins if they exist; (subuser/client will have map_position populated from parent, which is used if no pins)
     else if centerOnPins and !_.isEmpty(rmapsPropertiesService.pins)
+      rmapsClientEntryService.notFirstLoginAnymore()
       bounds = rmapsBounds.boundsFromPropertyArray(rmapsPropertiesService.pins)
       $timeout(() ->
         boundsReformat = [

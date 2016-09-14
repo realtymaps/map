@@ -9,14 +9,12 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $log,
   $state,
   $http,
-  $stickyState,
   rmapsClientEntryService,
   rmapsEventConstants,
   rmapsPrincipalService,
   rmapsProfilesService,
   rmapsMapAuthorizationFactory,
-  rmapsResponsiveViewService,
-  rmapsGoogleService
+  rmapsResponsiveViewService
 ) ->
   $log = $log.spawn 'rmapsClientEntryCtrl'
 
@@ -46,7 +44,6 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
       else
         #$state.go('map', {id: $scope.project.id}, {reload: true})
         rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
-      rmapsClientEntryService.notFirstLoginAnymore()
       return
 
     isLoggedIn()

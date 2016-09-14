@@ -73,13 +73,14 @@ class ClientsCrud extends RouteCrud
       project:
         id: req.params.id
         name: req.body.project_name
+      # inherit fields from parent profile
+      # `map_position` will only be used for subuser if the project has no pins to center on
       profile: _.pick(profileImport, ['map_position'])
       evtdata:
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
 
     projectSvc.addClient clientEntryValue
-
 
   ###
     Update user contact info - but only if the request came from the parent user

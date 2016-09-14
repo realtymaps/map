@@ -53,6 +53,7 @@ app.factory 'rmapsMapAuthorizationFactory', (
     # After a successful login, either go to the prior state or the map
     goToPostLoginState: ({clear}) ->
       prior = rmapsPriorStateService.getPrior()
+
       if prior && !clear
         $state.go prior.state, prior.params
 
