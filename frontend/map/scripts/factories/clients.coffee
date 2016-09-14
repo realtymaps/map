@@ -13,6 +13,8 @@ app.factory 'rmapsClientsFactory', ($http, $rootScope) ->
       .then ({data}) ->
         _.filter data, (d) ->
           isNotCurrent = d.id != $rootScope.principal.getCurrentProfileId()
+          # if we are a project owner we might want to allow other owners to be shown
+          # this would probably be another constructor option
           hasParent = !!d.parent_auth_user_id
           isNotCurrent && hasParent
 
