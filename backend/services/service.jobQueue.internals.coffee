@@ -120,7 +120,7 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
         else
           logger.warn("#{prefix} Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
       else
-        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
+        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
         retrySubtask.retry_num += 1
         retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
         checkTask(null, subtask.batch_id, subtask.task_name)
