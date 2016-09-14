@@ -323,7 +323,7 @@ executeSubtask = (subtask, prefix) ->
   .where
     name: subtask.name
     task_name: subtask.task_name
-  .then (subtaskConfig={}) ->
+  .then ([subtaskConfig={}]=[]) ->
     _.defaultsDeep(subtaskConfig, subtask)
     subtask = _.clone(subtaskConfig)
     tables.jobQueue.currentSubtasks()
