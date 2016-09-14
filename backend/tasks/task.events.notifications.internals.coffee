@@ -161,18 +161,44 @@ cleanupNotifications = (subtask) ->
   .then () ->
     dbs.transaction (transaction) ->
       #get maxed out rows and move them out
-      tables.user.notificationQueue({transaction})
+      maxQuery = tables.user.notificationQueue({transaction})
       .whereNotNull 'last_attempt_time'
       .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
       .where 'attempts', '>=', config.NOTIFICATIONS.MAX_ATTEMPTS
-      .then (maxedOutRows) ->
+
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+      logger.debug maxQuery.toString()
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+
+
+      maxQuery.then (maxedOutRows) ->
+        badRows = []
+
+        maxedOutRows = _.filter maxedOutRows, (r) ->
+          exists = !!r.id
+          if !exists
+            badRows.push r
+          exists
+
         if !maxedOutRows.length
+          logger.debug -> "@@@@ MAXXED OUT ROWS: GTFO @@@@"
           return
-        logger.debug "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-        logger.debug maxedOutRows
+
+        logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
+        logger.debug -> maxedOutRows
+
+        if badRows.length
+          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
+          logger.debug -> "@@@@ BAD ROWS LENGTH: #{badRows.length}"
+          logger.debug -> badRows
+          # what should I do with the badRows if I have no id to update them with?
+
         tables.user.notificationExpired({transaction})
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
+          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
+          logger.debug -> maxedOutRows
+
           tables.user.notificationQueue({transaction})
           .whereIn 'id', _.pluck 'id', maxedOutRows
           .delete()
