@@ -277,7 +277,7 @@ runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
+      logger.spawn("task:#{subtask.task_name}").debug () ->  "#{prefix} Preparing to execute subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
       return executeSubtask(subtask, prefix)
       .then nextIteration
     else
@@ -319,15 +319,23 @@ executeSubtask = (subtask, prefix) ->
       logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getSimpleDetails(err)}"
       throw err
   heartbeatPromise = heartbeat()
-  tables.jobQueue.currentSubtasks()
-  .where(id: subtask.id)
-  .update
-    status: 'running'
-    started: dbs.get('main').raw('NOW()')
-    heartbeat: dbs.get('main').raw('NOW()')
+  tables.jobQueue.subtaskConfig()
+  .where
+    name: subtask.name
+    task_name: subtask.task_name
+  .then (subtaskConfig={}) ->
+    _.defaultsDeep(subtaskConfig, subtask)
+    subtask = _.clone(subtaskConfig)
+    tables.jobQueue.currentSubtasks()
+    .where(id: subtask.id)
+    .update _.extend subtaskConfig,
+      status: 'running'
+      started: dbs.get('main').raw('NOW()')
+      heartbeat: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
+    logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
