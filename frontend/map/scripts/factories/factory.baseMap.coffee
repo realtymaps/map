@@ -179,5 +179,5 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
     #public fns
     isZoomIn: (newValue, oldValue) -> newValue > oldValue
 
-    fitBounds: (bounds) ->
-      @map.fitBounds bounds
+    fitBounds: (bounds, options) ->
+      @map.fitBounds bounds, options

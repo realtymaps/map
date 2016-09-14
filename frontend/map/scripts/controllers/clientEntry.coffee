@@ -42,11 +42,11 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
     if maybeLoggedIn
 
       if mobileView
-        $state.go 'project', id: $scope.project.id
+        $state.go('project', {id: $scope.project.id}, {reload: true})
       else
         #$state.go('map', {id: $scope.project.id}, {reload: true})
         rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
-
+      rmapsClientEntryService.notFirstLoginAnymore()
       return
 
     isLoggedIn()
