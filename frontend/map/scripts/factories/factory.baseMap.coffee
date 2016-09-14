@@ -117,20 +117,26 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
           return diff
         false
 
-      _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
-        #_pingPass ans debounce are all things to mimick map "idle" event
-        leafletEvent = leaflet?.leafletEvent or undefined
+      _lastTimeoutId = null
 
-        _maybePingTime = _pingPass()
+      _maybeDraw = (leafletDirectiveEvent, leaflet) =>
+        if _lastTimeoutId
+          clearTimeout(_lastTimeoutId)
 
-        if leafletEvent?.type == 'zoomend'
-          self.clearBurdenLayers()
-          $log.debug "zoom: #{@scope.map?.center?.zoom}"
+        _lastTimeoutId = setTimeout =>
+          #_pingPass ans debounce are all things to mimick map "idle" event
+          leafletEvent = leaflet?.leafletEvent or undefined
 
-        $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
-        $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
-        self.draw? 'idle'
-      , redrawDebounceMilliSeconds
+          _maybePingTime = _pingPass()
+
+          if leafletEvent?.type == 'zoomend'
+            self.clearBurdenLayers()
+            $log.debug "zoom: #{@scope.map?.center?.zoom}"
+
+          $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
+          $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
+          self.draw? 'idle'
+        , redrawDebounceMilliSeconds
 
       leafletData.getDirectiveControls(@mapId)
       .then (controls) =>
@@ -154,6 +160,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         $timeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
           leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpersService.events.getMapIdEventStr(@mapId)}"
+
           _mapDrawEvents.forEach (eventName) =>
             eventName =  leafletPreNamespace + eventName
             return @scope.$on eventName, _maybeDraw
@@ -172,6 +179,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
          before Google Maps gets it. So if we cancel the event,
          Google Maps will never receive it.
         ###
+        mapElement.addEventListener('moveend', _throttler.throttle_events, true)
         mapElement.addEventListener('mousemove', _throttler.throttle_events, true)
 
       # $log.info 'BaseMap: ' + @
