@@ -117,8 +117,6 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
           return diff
         false
 
-      _lastTimeoutId = null
-
       _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
         _maybeDraw.cancel()
         #_pingPass ans debounce are all things to mimick map "idle" event
