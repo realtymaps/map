@@ -327,12 +327,19 @@ executeSubtask = (subtask, prefix) ->
       logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getSimpleDetails(err)}"
       throw err
   heartbeatPromise = heartbeat()
-  tables.jobQueue.currentSubtasks()
-  .where(id: subtask.id)
-  .update
-    status: 'running'
-    started: dbs.get('main').raw('NOW()')
-    heartbeat: dbs.get('main').raw('NOW()')
+  tables.jobQueue.subtaskConfig()
+  .where
+    name: subtask.name
+    task_name: subtask.task_name
+  .then (subtaskConfig={}) ->
+    _.defaultsDeep(subtaskConfig, subtask)
+    subtask = _.clone(subtaskConfig)
+    tables.jobQueue.currentSubtasks()
+    .where(id: subtask.id)
+    .update _.extend subtaskConfig,
+      status: 'running'
+      started: dbs.get('main').raw('NOW()')
+      heartbeat: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
