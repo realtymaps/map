@@ -9,7 +9,7 @@ source $SCRIPT_DIR/app/syncVars
 
 if [[ "$IS_HEROKU" != "" ]]
 then
-    bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/queueNeedsWorker.coffee
+    bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/masterWorker.coffee
 else
-    coffee $SCRIPT_DIR/../backend/queueNeedsWorker.coffee
+    coffee $SCRIPT_DIR/../backend/masterWorker.coffee
 fi

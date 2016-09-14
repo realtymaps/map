@@ -25,7 +25,7 @@
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
     "job-queue": "./scripts/app/processJobQueue",
-    "queue-needs": "./scripts/app/updateQueueNeeds",
+    "master-worker": "./scripts/app/masterWorker",
     "cmocha": "foreman run ./scripts/misc/cmocha",
     "cmochaDebug": "foreman run ./scripts/misc/cmocha --debug",
     "stylus": "stylus",
