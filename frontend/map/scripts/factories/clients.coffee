@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.factory 'rmapsClientsFactory', ($http) ->
+app.factory 'rmapsClientsFactory', ($http, $rootScope) ->
 
   class Clients
     constructor: (@projectId) ->
@@ -11,7 +11,10 @@ app.factory 'rmapsClientsFactory', ($http) ->
     getAll: (query) ->
       $http.get @endpoint, cache: false, params: query
       .then ({data}) ->
-        data
+        _.filter data, (d) ->
+          isNotCurrent = d.id != $rootScope.principal.getCurrentProfileId()
+          hasParent = !!d.parent_auth_user_id
+          isNotCurrent && hasParent
 
     create: (entity) ->
       $http.post @endpoint, entity

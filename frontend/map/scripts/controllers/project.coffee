@@ -219,7 +219,7 @@ app.controller 'rmapsProjectCtrl',
     #
     # Load supporting data
     #
-    clientsService = new rmapsClientsFactory project.id unless clientsService
+    clientsService = new rmapsClientsFactory(project.id) if !clientsService
     loadClients()
     loadNotes()
     loadAreas()
