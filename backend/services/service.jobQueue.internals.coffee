@@ -285,7 +285,7 @@ runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
+      logger.spawn("task:#{subtask.task_name}").debug () ->  "#{prefix} Preparing to execute subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
       return executeSubtask(subtask, prefix)
       .then nextIteration
     else
@@ -343,6 +343,7 @@ executeSubtask = (subtask, prefix) ->
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
+    logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
