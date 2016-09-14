@@ -14,12 +14,21 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.mousex = e.clientX
       scope.mousey = e.clientY
 
+    # update macros while you type
     element.on 'keyup', (e) ->
       update = () ->
         scope.macroAction.whenTyped e
         ngModel.$commitViewValue()
         ngModel.$render()
+      scope.$evalAsync update
 
+    # set a handler on so it gets destroyed upon backspace
+    element.on 'keydown', (e) ->
+      update = () ->
+        if e.keyCode == 8 # if backspace key...
+          scope.macroAction.whenBackspaced e
+          ngModel.$commitViewValue()
+          ngModel.$render()
       scope.$evalAsync update
 
     $timeout ->
@@ -27,9 +36,11 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.editor?.scope?.$on 'rmaps-drag-end', (e, opts) ->
         scope.macroAction.whenDropped e
 
+
     scope.$on '$destroy', () ->
       element.unbind 'dragover', element
       element.unbind 'keyup', element
+      element.unbind 'keydown', element
 
     $rootScope.$on 'rmaps-drag-end', (e) ->
       scope.editor.editorFunctions.focus()
@@ -144,9 +155,18 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           # add a new text node right after placement of new macro span (part of caret placement)
           nextTextElement = newMacroEl.nextSibling
           parent = newMacroEl.parentNode
-          newNode = _doc.createTextNode(" ")
           referenceNode = nextTextElement
-          parent.insertBefore newNode, referenceNode
+
+          # reference node will be null if we're at the end of a <p>
+          if !referenceNode?
+            # for some reason here, raw space " " gets trimmed when at end of tag, so we need to add a nbsp
+            # Still counts as space, and renders as such in wysiwyg and pdf
+            newNode = _doc.createTextNode('\u00A0')
+            parent.appendChild newNode
+          else
+            # if we're inside other text, just add the regular space (not &nbsp) to be consistent
+            newNode = _doc.createTextNode(" ")
+            parent.insertBefore newNode, referenceNode
 
           # procure a new range for (part of caret placement)
           range = rangy.createRange()
@@ -156,7 +176,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           selection = rangy.getSelection()
           selection.removeAllRanges()
           selection.setSingleRange range
-
 
     scope.caretFromPoint = () ->
       # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
@@ -190,6 +209,14 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         # alter macro class depending on validity of macro
         if sel?.focusNode?.data? and scope.isMacroNode sel.focusNode
           scope.setMacroClass sel.focusNode
+
+      whenBackspaced: (e) ->
+        sel = rangy.getSelection()
+        maybeMacroSpan = sel.focusNode.parentNode
+
+        # remove entire macro span if we backspace on it
+        if scope.isMacroNode(maybeMacroSpan)
+          sel.focusNode.parentNode.parentNode.removeChild(maybeMacroSpan)
 
 
     # helper for holding a macro value during drag-and-drop
