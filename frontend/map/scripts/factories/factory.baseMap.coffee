@@ -119,24 +119,21 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
 
       _lastTimeoutId = null
 
-      _maybeDraw = (leafletDirectiveEvent, leaflet) =>
-        if _lastTimeoutId
-          clearTimeout(_lastTimeoutId)
+      _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
+        _maybeDraw.cancel()
+        #_pingPass ans debounce are all things to mimick map "idle" event
+        leafletEvent = leaflet?.leafletEvent or undefined
 
-        _lastTimeoutId = setTimeout =>
-          #_pingPass ans debounce are all things to mimick map "idle" event
-          leafletEvent = leaflet?.leafletEvent or undefined
+        _maybePingTime = _pingPass()
 
-          _maybePingTime = _pingPass()
+        if leafletEvent?.type == 'zoomend'
+          self.clearBurdenLayers()
+          $log.debug "zoom: #{@scope.map?.center?.zoom}"
 
-          if leafletEvent?.type == 'zoomend'
-            self.clearBurdenLayers()
-            $log.debug "zoom: #{@scope.map?.center?.zoom}"
-
-          $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
-          $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
-          self.draw? 'idle'
-        , redrawDebounceMilliSeconds
+        $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
+        $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
+        self.draw? 'idle'
+      , redrawDebounceMilliSeconds
 
       leafletData.getDirectiveControls(@mapId)
       .then (controls) =>
@@ -157,7 +154,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         #due to the router hiding the map and timing the map needs to be resized
         #figuring out exactly when this is has been tricky (might try element .load)
         #however this might be easier making our own directive instead of factories
-        $timeout =>
+        setTimeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
           leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpersService.events.getMapIdEventStr(@mapId)}"
 
