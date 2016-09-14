@@ -15,7 +15,7 @@ block customHead
     } 
     function loadAsyncScripts() {
         addScript("!{google.mapsSdkUrl}&callback=mapsApiReady");
-        window.removeEventListener('load', loadAsyncScripts)
+        window.removeEventListener('load', loadAsyncScripts);
     }
     function mapsApiReady() {
       console.log('GOOGLE LOADED');
