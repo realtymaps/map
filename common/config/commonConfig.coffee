@@ -85,8 +85,20 @@ commonConfig =
       return (firstPage + ((pages-1) * extraPage))
 
     macros:
-      address: '{{address}}'
-      name: '{{name}}'
+      campaign_name: '{{campaign_name}}'
+      recipient_name: '{{recipient_name}}'
+      recipient_address_line1: '{{recipient_address_line1}}'
+      recipient_address_line2: '{{recipient_address_line2}}'
+      recipient_city: '{{recipient_city}}'
+      recipient_state: '{{recipient_state}}'
+      recipient_zip: '{{recipient_zip}}'
+      sender_name: '{{sender_name}}'
+      sender_address_line1: '{{sender_address_line1}}'
+      sender_address_line2: '{{sender_address_line2}}'
+      sender_city: '{{sender_city}}'
+      sender_state: '{{sender_state}}'
+      sender_zip: '{{sender_zip}}'
+
     s3_upload:
       host: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
       AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
