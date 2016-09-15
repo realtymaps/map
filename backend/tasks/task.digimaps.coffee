@@ -18,9 +18,10 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
 util = require 'util'
+keystore = require '../services/service.keystore'
 
 
-NUM_ROWS_TO_PAGINATE = 250
+NUM_ROWS_TO_PAGINATE = 1000
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->
@@ -84,7 +85,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
 
     filteredImports = filteredImports.map (f) ->
       fileName: f
-      refreshThreshold: refreshThreshold
       startTime: now
 
     Promise.all [
@@ -98,7 +98,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
         subtask, laterSubtaskName: "activateNewData"
         manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
         replace: true
-        startTime: subtask.data.startTime
       }
     ]
 
@@ -230,13 +229,11 @@ Since parcels can modify both mls and county rows in data_combined weird results
 The opposite is true of county and mls since they only modify their perspective and exclusive rows.
 ###
 waitForExclusiveAccess = (subtask) ->
-  tables.config.mls()
-  .select('id')
-  .then (excludeIds) ->
-    excludeIds.concat(subtask.data.additionalExclusions)
+  keystore.setValue('digimapsExclusiveAccess', true, namespace: 'locks')
+  .then () ->
     tables.jobQueue.taskHistory()
     .where(current: true)
-    .whereIn('name', excludeIds)
+    .whereRaw("blocked_by_locks \\? 'digimapsExclusiveAccess'")
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
@@ -284,6 +281,9 @@ recordChangeCounts = (subtask) ->
         deletedParcel: true
     }
 
+releaseExclusiveAccess = (subtask) ->
+  keystore.setValue('data_combined', false, namespace: 'locks')
+
 
 module.exports = new TaskImplementation 'digimaps', {
   loadRawDataPrep
@@ -294,4 +294,5 @@ module.exports = new TaskImplementation 'digimaps', {
   waitForExclusiveAccess
   finalizeData
   activateNewData: parcelHelpers.activateNewData
+  releaseExclusiveAccess
 }

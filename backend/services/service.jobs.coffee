@@ -6,13 +6,6 @@ jobQueue = require './service.jobQueue'
 dbs = require '../config/dbs'
 
 
-# makes sure task maintenance and counts are updated whenever we query for task data
-class JobService extends crudService.Crud
-  getAll: (query = {}, doLogQuery = false) ->
-    jobQueue.doMaintenance()
-    .then () =>
-      return super(query, doLogQuery)
-
 class TaskService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
     substrFields = {}
@@ -176,10 +169,10 @@ errorHistoryDbFn = () ->
   return _queryFn
 
 module.exports =
-  taskHistory: new JobService(historyDbFn, 'name')
-  subtaskErrorHistory: new JobService(errorHistoryDbFn, 'id')
+  taskHistory: new crudService.Crud(historyDbFn, 'name')
+  subtaskErrorHistory: new crudService.Crud(errorHistoryDbFn, 'id')
   queues: new TaskService(tables.jobQueue.queueConfig, 'name')
   tasks: new TaskService(tables.jobQueue.taskConfig, 'name')
   subtasks: new TaskService(tables.jobQueue.subtaskConfig, 'name')
-  summary: new JobService(tables.jobQueue.summary)
+  summary: new crudService.Crud(tables.jobQueue.summary)
   health: crudService.crud(healthDbFn)

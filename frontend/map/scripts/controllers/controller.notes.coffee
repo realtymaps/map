@@ -78,14 +78,14 @@ rmapsMapTogglesFactory
   $log
   $scope,
   leafletIterators,
-  rmapsMapEventsLinkerService,
+  rmapsEventsLinkerService,
   rmapsMapIds,
   rmapsNgLeafletEventGateService,
   toastr
 ) ->
 
   mapId = rmapsMapIds.mainMap()
-  linker = rmapsMapEventsLinkerService
+  linker = rmapsEventsLinkerService
   $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
   createFromModal = $scope.create
 
@@ -139,7 +139,7 @@ rmapsMapTogglesFactory
   leafletIterators,
   rmapsEventConstants,
   rmapsLayerFormattersService,
-  rmapsMapEventsLinkerService,
+  rmapsEventsLinkerService,
   rmapsMapIds,
   rmapsNotesService,
   rmapsPopupLoaderService
@@ -147,7 +147,7 @@ rmapsMapTogglesFactory
 
   mapId = rmapsMapIds.mainMap()
   {setMarkerNotesDataOptions} = rmapsLayerFormattersService
-  linker = rmapsMapEventsLinkerService
+  linker = rmapsEventsLinkerService
   directiveControls = null
   popup = rmapsPopupLoaderService
   markersUnSubs = null

@@ -121,7 +121,7 @@ _hasProfileStateChanged = (profile, partialState) ->
       break
   needsSave
 
-updateCurrent = (session, partialState = {}, safe) ->
+updateCurrent = (session, partialState = {}) ->
   sessionProfile = getCurrentSessionProfile(session)
 
   saveSessionPromise = if _hasProfileStateChanged(sessionProfile, partialState)
@@ -131,7 +131,7 @@ updateCurrent = (session, partialState = {}, safe) ->
     Promise.resolve()
 
   saveSessionPromise.then () ->
-    update(sessionProfile, session.userid, safe)
+    update(sessionProfile, session.userid)
 
 module.exports = {
   getAll

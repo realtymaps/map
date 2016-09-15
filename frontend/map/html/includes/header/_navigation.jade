@@ -19,5 +19,6 @@ nav.navigation(role="navigation")
     //li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
     //  a(ui-sref="history")
     //    span history
+  ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
     li(ng-cloak ng-hide="$state.is('main')")
       +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")

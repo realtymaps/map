@@ -19,17 +19,11 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
   rmapsUtilLayersBase
   rmapsNgLeafletEventGateService
 ) ->
-  _baseLayers = null
-
-  rmapsUtilLayersBase
-  .then (data) ->
-    _baseLayers = data
 
   $log = nemSimpleLogger.spawn("map:baseFactory")
 
   class
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
-      baseLayers ?= _baseLayers
 
       settings =
         options: options
@@ -54,7 +48,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
           center: options.json.center
           dragging: false
           layers:
-            baselayers: baseLayers
+            baselayers: {}
 
           events:
             map:
@@ -72,9 +66,19 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
                 rmapsNgLeafletEventGateService.enableMapCommonEvents(@mapId)
                 @zoomBox.activate()
 
+      if baseLayers?
+        @scope[mapPath].layers.baselayers = baseLayers
+      else
+        rmapsUtilLayersBase.init()
+        .then (data) =>
+          @scope[mapPath].layers.baselayers = data
+          return null
+
       angular.extend @scope, settings
 
-    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers, mapEvents = _mapDrawEvents.concat ['click']) ->
+    constructor: ({@scope, options, redrawDebounceMilliSeconds, mapPath, @mapId, baseLayers, mapEvents}) ->
+      mapPath ?= 'map'
+      mapEvents ?= _mapDrawEvents.concat ['click']
 
       _throttler =  _eventThrottler($log, options)
       @initScopeSettings(options, mapPath, baseLayers, mapEvents)
@@ -114,6 +118,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         false
 
       _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
+        _maybeDraw.cancel()
         #_pingPass ans debounce are all things to mimick map "idle" event
         leafletEvent = leaflet?.leafletEvent or undefined
 
@@ -147,9 +152,10 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         #due to the router hiding the map and timing the map needs to be resized
         #figuring out exactly when this is has been tricky (might try element .load)
         #however this might be easier making our own directive instead of factories
-        $timeout =>
+        setTimeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
           leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpersService.events.getMapIdEventStr(@mapId)}"
+
           _mapDrawEvents.forEach (eventName) =>
             eventName =  leafletPreNamespace + eventName
             return @scope.$on eventName, _maybeDraw
@@ -168,6 +174,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
          before Google Maps gets it. So if we cancel the event,
          Google Maps will never receive it.
         ###
+        mapElement.addEventListener('moveend', _throttler.throttle_events, true)
         mapElement.addEventListener('mousemove', _throttler.throttle_events, true)
 
       # $log.info 'BaseMap: ' + @

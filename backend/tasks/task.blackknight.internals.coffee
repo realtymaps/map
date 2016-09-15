@@ -11,9 +11,9 @@ dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 
 
-RESTRICT_TO_FIPS = ['12021']
 NUM_ROWS_TO_PAGINATE = 2500
 BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
+BLACKKNIGHT_PROCESS_DATES_FINISHED = 'blackknight process dates finished'
 BLACKKNIGHT_COPY_DATES = 'blackknight copy dates'
 TAX = 'tax'
 DEED = 'deed'
@@ -81,11 +81,6 @@ _isDelete = (fileName) ->
 
 _isLoad = (fileName) ->
   if fileName.endsWith('.gz')
-    if RESTRICT_TO_FIPS.length > 0
-      fips = fileName.slice(0, 5)
-      if !_.includes(RESTRICT_TO_FIPS, fips)
-        logger.warn("Ignoring file due to FIPS code: #{fips}")
-        return false
     return true
   return false
 
@@ -123,16 +118,19 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 
 
     if (classified = _isDelete(fileName))
+      date = fileName.slice(-12, -4)
       _.merge fileInfo,
         fileType: DELETE
         listType: DELETE
-        rawTableSuffix: "#{fileName.slice(0, -4)}"
+        rawTableSuffix: "#{config.action.slice(0,1)}_DELETES_#{date}"
 
     else if (classified = _isLoad(fileName))
+      fips = fileName.slice(0, 5)
+      date = fileName.slice(-15, -7)
       _.merge fileInfo,
         fileType: LOAD
-        rawTableSuffix: fileName.slice(0, -7)
-        normalSubid: fileName.slice(0, 5)
+        rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{date}"
+        normalSubid: fips
         indicateDeletes: (config.action == REFRESH)
         deletes: dataLoadHelpers.DELETE.INDICATED
 
@@ -173,12 +171,14 @@ popProcessingDates = (dates) ->
   defaults[REFRESH] = []
   defaults[UPDATE] = []
 
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "popping #{JSON.stringify(dates)}"
+  currentQueuePromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  finishedQueuePromise =   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES_FINISHED, defaultValues: defaults)
+  Promise.join currentQueuePromise, finishedQueuePromise, (currentDateQueue, finishedDateQueue) ->
+    logger.debug () -> "moving #{JSON.stringify(dates)}"
     logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
-    currentDateQueue[REFRESH].sort()
-    currentDateQueue[UPDATE].sort()
+    logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
+    currentDateQueue[REFRESH] = _.uniq(currentDateQueue[REFRESH]).sort()
+    currentDateQueue[UPDATE] = _.uniq(currentDateQueue[UPDATE]).sort()
 
     processDates =
       "#{REFRESH}": null
@@ -192,13 +192,20 @@ popProcessingDates = (dates) ->
       refreshIndex = 0
       updateIndex = 0
 
-    if refreshIndex >= 0 && (refreshItem = currentDateQueue[REFRESH].splice(refreshIndex, 1))
-      processDates[REFRESH] = refreshItem[0]
+    if refreshIndex >= 0 && ([refreshItem] = currentDateQueue[REFRESH].splice(refreshIndex, 1))
+      processDates[REFRESH] = refreshItem
+      if finishedDateQueue[REFRESH].indexOf(refreshItem) == -1
+        finishedDateQueue[REFRESH].push(refreshItem)
 
-    if updateIndex >= 0 && (updateItem = currentDateQueue[UPDATE].splice(updateIndex, 1))
-      processDates[UPDATE] = updateItem[0]
+    if updateIndex >= 0 && ([updateItem] = currentDateQueue[UPDATE].splice(updateIndex, 1))
+      processDates[UPDATE] = updateItem
+      if finishedDateQueue[UPDATE].indexOf(updateItem) == -1
+        finishedDateQueue[UPDATE].push(updateItem)
 
-    keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
+    dbs.transaction (transaction) ->
+      keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES, transaction})
+      .then () ->
+        keystore.setValuesMap(finishedDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
     .then () ->
       return processDates
 
@@ -349,9 +356,6 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
       else if !file.name.endsWith('.gz')
         logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
         continue
-      else if (file.name.endsWith('.gz') && !file.name.startsWith('12021'))
-        logger.warn("Ignoring file due to FIPS code: #{folderInfo.path}/#{file.name}")
-        continue
       else
         fileType = folderInfo.action
       fileInfo = _.clone(folderInfo)
@@ -392,10 +396,10 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
     return
 
   fipsCodes = {}
-  filesForDelete = []
   if action == DELETE
-    filesForDelete = files
+    filesForCounts = []
   else
+    filesForCounts = files
     _.forEach files, (el) ->
       fipsCodes[el.normalSubid] = true
 
@@ -403,7 +407,7 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true})
 
   # non-delete `changeCounts` takes no data
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForDelete, replace: true})
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true})
 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
     fipsCodes
@@ -431,6 +435,7 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 module.exports = {
   NUM_ROWS_TO_PAGINATE
   BLACKKNIGHT_PROCESS_DATES
+  BLACKKNIGHT_PROCESS_DATES_FINISHED
   BLACKKNIGHT_COPY_DATES
   TAX
   DEED
@@ -440,6 +445,7 @@ module.exports = {
   NO_NEW_DATA_FOUND
   DELETE
   LOAD
+
   getColumns
   tableIdMap
   checkDropChain

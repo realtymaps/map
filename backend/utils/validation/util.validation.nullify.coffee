@@ -6,5 +6,5 @@ module.exports = (options = {}) ->
   if options.value?
     values = [options.value]
   else
-    values = options.values
+    values = options.values || options.matcher
   return defaultsValidation(test: values, defaultValue: null)

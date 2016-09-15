@@ -21,6 +21,44 @@ enqueueNotification = notifications.notifyFlat {
 }
 
 
+TASK_HISTORY = tables.jobQueue.taskHistory.tableName
+TASK_CONFIG = tables.jobQueue.taskConfig.tableName
+
+
+getPossiblyReadyTasks = (transaction) ->
+  tables.jobQueue.taskConfig(transaction: transaction)                                          # get task config...
+  .leftJoin TASK_HISTORY,                                                                       # (left outer) joined with task history, when:
+    "#{TASK_CONFIG}.name": "#{TASK_HISTORY}.name"                                                   # task names match...
+    "#{TASK_HISTORY}.current": tables.jobQueue.taskHistory.raw('true')                              # and it is the most recent run for that task
+  .select("#{TASK_CONFIG}.*")                                                                   # only consider:
+  .where("#{TASK_CONFIG}.active": true)                                                             # active tasks...
+  .whereRaw("COALESCE(#{TASK_CONFIG}.ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()")              # whose time has come...
+  .where () ->                                                                                      # that...
+    @whereNull("#{TASK_HISTORY}.name")                                                                  # never ran...
+    .orWhereNotNull("#{TASK_HISTORY}.finished")                                                         # or are done running...
+    .whereNot () ->                                                                                         # but not:
+      @where("#{TASK_HISTORY}.status": 'success')                                                               # tasks that succeeded...
+      .where () ->
+        @whereNull("#{TASK_CONFIG}.repeat_period_minutes")                                                      # if they don't repeat...
+        .orWhereRaw("#{TASK_HISTORY}.started+#{TASK_CONFIG}.repeat_period_minutes*'1 minute'::INTERVAL>NOW()")  # or haven't passed the success repeat delay
+    .whereNot () ->                                                                                         # and not:
+      @whereIn("#{TASK_HISTORY}.status", ['hard fail','canceled','timeout'])                                    # tasks that failed...
+      .where () ->
+        @whereNull("#{TASK_CONFIG}.fail_retry_minutes")                                                         # if they don't retry...
+        .orWhereRaw("#{TASK_HISTORY}.finished+#{TASK_CONFIG}.fail_retry_minutes*'1 minute'::INTERVAL>NOW()")    # or haven't passed the fail retry delay
+  .whereNotExists () ->
+    tables.jobQueue.taskHistory(transaction: @)                                                     # and with no tasks...
+    .select(1)
+    .where(current: true)                                                                               # that are the most recent run for the task...
+    .whereNull('finished')                                                                              # and are still running...
+    .whereRaw("#{TASK_CONFIG}.blocked_by_tasks \\? name")                                               # and block this task from running
+  .whereNotExists () ->
+    tables.config.keystore(transaction: @)                                                          # and with no keystore rows...
+    .select(1)
+    .where(namespace: 'locks')                                                                          # that are locks...
+    .whereRaw("#{TASK_CONFIG}.blocked_by_locks \\? key")                                                # which block this task...
+    .whereRaw("value::TEXT = 'true'")                                                                   # and are currently set
+
 summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
 
@@ -36,6 +74,23 @@ withDbLock = (lockId, handler) ->
       handler(transaction)
     .finally () ->
       logger.spawn('dbLock').debug () -> "---- <#{id}> Releasing lock: #{lockId}"
+
+
+tryWithDbLock = (lockId, handler) ->
+  id = cluster.worker?.id ? 'X'
+  dbs.transaction 'main', (transaction) ->
+    logger.spawn('dbLock').debug () -> "---- <#{id}>   Getting lock (try): #{lockId}"
+    transaction
+    .select(dbs.get('main').raw("pg_try_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId}) AS got_lock"))
+    .then ([result]) ->
+      if result.got_lock
+        logger.spawn('dbLock').debug () -> "---- <#{id}>  Acquired lock: #{lockId}"
+        handler(transaction)
+        .finally () ->
+          logger.spawn('dbLock').debug () -> "---- <#{id}> Releasing lock: #{lockId}"
+      else
+        logger.spawn('dbLock').debug () -> "---- <#{id}>  Failed to acquire lock: #{lockId}"
+        throw new jobQueueErrors.LockError("could not acquire db lock for lockId: #{lockId}")
 
 
 checkTask = (transaction, batchId, taskName) ->
@@ -69,61 +124,62 @@ getQueuedSubtask = (queueName) ->
 
 handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
   logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} error caught for subtask #{subtask.name}: #{JSON.stringify({errorType: status, hard, error: error.toString()})}"
-  Promise.try () ->
-    if hard
-      logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
-    else
-      if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
-        if subtask.hard_fail_after_retries
-          hard = true
-          status = 'hard fail'
-          error = "max retries exceeded due to: #{error}"
-          logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
-        else
-          logger.warn("#{prefix} Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
+  dbs.transaction (transaction) ->
+    Promise.try () ->
+      if hard
+        logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
       else
-        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
-        retrySubtask.retry_num += 1
-        retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
-        checkTask(null, subtask.batch_id, subtask.task_name)
-        .then (taskData) ->
-          # need to make sure we don't continue to retry subtasks if the task has errored in some way
-          if taskData == undefined
-            logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-            return
-          logger.info("#{prefix} Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-          tables.jobQueue.currentSubtasks()
-          .insert retrySubtask
-  .then () ->
-    tables.jobQueue.currentSubtasks()
-    .where(id: subtask.id)
-    .update
-      status: status
-      finished: dbs.get('main').raw('NOW()')
-    .returning('*')
-  .then (updatedSubtask) ->
-    # handle condition where currentSubtasks table gets cleared before the update -- it shouldn't happen under normal
-    # conditions, but then again we're in an error handler so who knows what could be going on by the time we get here.
-    # ideally we want to get a fresh copy of the data, but if it's gone, just use what we already had
-    if !updatedSubtask?[0]?
-      errorSubtask = _.clone(subtask)
-      errorSubtask.status = status
-      errorSubtask.finished = dbs.get('main').raw('NOW()')
-    else
-      errorSubtask = updatedSubtask[0]
-    errorSubtask.error = "#{error}"
-    details = analyzeValue.getSimpleDetails(error)
-    if details != errorSubtask.error
-      errorSubtask.stack = details
-    tables.jobQueue.subtaskErrorHistory()
-    .insert errorSubtask
-  .then () ->
-    if hard
-      Promise.join cancelTaskImpl(subtask.task_name, 'hard fail'), enqueueNotification
-        payload:
-          subject: 'subtask: hard fail'
-          subtask: subtask
-          error: "subtask: #{error}"
+        if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
+          if subtask.hard_fail_after_retries
+            hard = true
+            status = 'hard fail'
+            error = "max retries exceeded due to: #{error}"
+            logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
+          else
+            logger.warn("#{prefix} Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
+        else
+          retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
+          retrySubtask.retry_num += 1
+          retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
+          checkTask(transaction, subtask.batch_id, subtask.task_name)
+          .then (taskData) ->
+            # need to make sure we don't continue to retry subtasks if the task has errored in some way
+            if taskData == undefined
+              logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
+              return
+            logger.info("#{prefix} Queuing retry subtask ##{retrySubtask.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
+            tables.jobQueue.currentSubtasks({transaction})
+            .insert retrySubtask
+    .then () ->
+      tables.jobQueue.currentSubtasks({transaction})
+      .where(id: subtask.id)
+      .update
+        status: status
+        finished: dbs.get('main').raw('NOW()')
+      .returning('*')
+    .then (updatedSubtask) ->
+      # handle condition where currentSubtasks table gets cleared before the update -- it shouldn't happen under normal
+      # conditions, but then again we're in an error handler so who knows what could be going on by the time we get here.
+      # ideally we want to get a fresh copy of the data, but if it's gone, just use what we already had
+      if !updatedSubtask?[0]?
+        errorSubtask = _.clone(subtask)
+        errorSubtask.status = status
+        errorSubtask.finished = dbs.get('main').raw('NOW()')
+      else
+        errorSubtask = updatedSubtask[0]
+      errorSubtask.error = "#{error}"
+      details = analyzeValue.getSimpleDetails(error)
+      if details != errorSubtask.error
+        errorSubtask.stack = details
+      tables.jobQueue.subtaskErrorHistory({transaction})
+      .insert errorSubtask
+    .then () ->
+      if hard
+        Promise.join cancelTaskImpl(subtask.task_name, 'hard fail', false, transaction), enqueueNotification
+          payload:
+            subject: 'subtask: hard fail'
+            subtask: subtask
+            error: "subtask: #{error}"
 
 
 getQueueLockId = (queueName) ->
@@ -173,8 +229,10 @@ handleZombies = (transaction=null) ->
   tables.jobQueue.currentSubtasks(transaction: transaction)
   .whereNull('finished')
   .whereNotNull('started')
-  .whereNotNull('kill_timeout_seconds')
-  .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
+  .where () ->
+    @whereNotNull('kill_timeout_seconds')
+    @whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * ('1 second'::INTERVAL) < NOW()")
+    @orWhereRaw("heartbeat + #{config.JOB_QUEUE.HEARTBEAT}*('1 millisecond'::INTERVAL)*5 < NOW()")
   .orWhere () ->
     @whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
     @where(status: 'preparing')
@@ -237,7 +295,7 @@ runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
+      logger.spawn("task:#{subtask.task_name}").debug () ->  "#{prefix} Preparing to execute subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
       return executeSubtask(subtask, prefix)
       .then nextIteration
     else
@@ -262,14 +320,42 @@ runWorkerImpl = (queueName, prefix, quit) ->
 
 
 executeSubtask = (subtask, prefix) ->
-  tables.jobQueue.currentSubtasks()
-  .where(id: subtask.id)
-  .update
-    status: 'running'
-    started: dbs.get('main').raw('NOW()')
+  heartbeat = () ->
+    Promise.resolve()
+    .cancellable()
+    .then () ->
+      Promise.delay(config.JOB_QUEUE.HEARTBEAT)
+    .then () ->
+      tables.jobQueue.currentSubtasks()
+      .where(id: subtask.id)
+      .update(heartbeat: dbs.get('main').raw('NOW()'))
+    .then () ->
+      heartbeat()
+    .catch Promise.CancellationError, (err) ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "heartbeat cancelled"
+    .catch (err) ->
+      logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getSimpleDetails(err)}"
+      throw err
+  heartbeatPromise = heartbeat()
+  tables.jobQueue.subtaskConfig()
+  .where
+    name: subtask.name
+    task_name: subtask.task_name
+  .then ([subtaskConfig={}]=[]) ->
+    subtaskConfig.data ?= {}
+    _.defaultsDeep(subtaskConfig, subtask)
+    delete subtaskConfig.active
+    subtask = _.clone(subtaskConfig)
+    tables.jobQueue.currentSubtasks()
+    .where(id: subtask.id)
+    .update _.extend subtaskConfig,
+      status: 'running'
+      started: dbs.get('main').raw('NOW()')
+      heartbeat: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
+    logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
@@ -313,13 +399,15 @@ executeSubtask = (subtask, prefix) ->
       subtask: subtask
       error: err
     throw err
+  .finally () ->
+    heartbeatPromise.cancel()
 
 
-cancelTaskImpl = (taskName, status='canceled', withPrejudice=false) ->
+cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
 # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
 # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
-  dbs.transaction 'main', (transaction) ->
+  dbs.ensureTransaction trx, (transaction) ->
     tables.jobQueue.taskHistory(transaction: transaction)
     .where
       name: taskName
@@ -401,8 +489,10 @@ buildQueuePaginatedSubtaskDatas = ({totalOrList, maxPage, mergeData}) ->
   data
 
 module.exports = {
+  getPossiblyReadyTasks
   summary
   withDbLock
+  tryWithDbLock
   checkTask
   handleSubtaskError
   getQueueLockId

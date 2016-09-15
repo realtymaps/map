@@ -19,8 +19,9 @@ app.directive 'propertyImages', (
   templateUrl: './includes/directives/property/_propertyImagesDirective.jade'
   scope:
     propertyParent: '=property'
-    imageWidth: '@imageWidth'
-    imageHeight: '@imageHeight'
+    imageWidth: '@'
+    imageHeight: '@'
+    coverImage: '@'
 
   controller: ($scope) ->
 

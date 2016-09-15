@@ -41,7 +41,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471482558075,
           "dataType": "tax",
-          "rawTableSuffix": "12021_Assessment_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -57,7 +57,7 @@ module.exports = {
           "fileType": "Delete",
           "startTime": 1471482558075,
           "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         }
       ]
     }
@@ -224,7 +224,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471483858343,
           "dataType": "tax",
-          "rawTableSuffix": "12021_Assessment_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -238,7 +238,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471483858343,
           "dataType": "deed",
-          "rawTableSuffix": "12021_Deed_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -252,7 +252,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471483858343,
           "dataType": "mortgage",
-          "rawTableSuffix": "12021_SAM_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -268,7 +268,7 @@ module.exports = {
           "fileType": "Delete",
           "startTime": 1471483858343,
           "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         },
         {
           "action": "Update",
@@ -279,7 +279,7 @@ module.exports = {
           "fileType": "Delete",
           "startTime": 1471483858343,
           "dataType": "mortgage",
-          "rawTableSuffix": "SAM_Update_Delete_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         }
       ]
     }
@@ -296,7 +296,7 @@ module.exports = {
         "fileType": "Delete",
         "startTime": 1471551965727,
         "dataType": "tax",
-        "rawTableSuffix": "Assessment_Update_Delete_20160406"
+        "rawTableSuffix": "U_DELETES_20160406"
       },
       {
         "action": "Update",
@@ -307,7 +307,7 @@ module.exports = {
         "fileType": "Delete",
         "startTime": 1471551965727,
         "dataType": "mortgage",
-        "rawTableSuffix": "SAM_Update_Delete_20160406"
+        "rawTableSuffix": "U_DELETES_20160406"
       }
     ]
     inputAction1: 'Delete'
@@ -315,30 +315,7 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "loadRawData",
-      "manualData": [
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/ASMT20160406/Assessment_Update_Delete_20160406.txt",
-          "fileName": "Assessment_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
-        },
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/SAM20160406/SAM_Update_Delete_20160406.txt",
-          "fileName": "SAM_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "mortgage",
-          "rawTableSuffix": "SAM_Update_Delete_20160406"
-        }
-      ],
+      "manualData": [],
       "replace": true,
       "concurrency": 10
     }
@@ -346,30 +323,7 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "recordChangeCounts",
-      "manualData": [
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/ASMT20160406/Assessment_Update_Delete_20160406.txt",
-          "fileName": "Assessment_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "tax",
-          "rawTableSuffix": "Assessment_Update_Delete_20160406"
-        },
-        {
-          "action": "Update",
-          "listType": "Delete",
-          "date": "20160406",
-          "path": "Managed_Update/SAM20160406/SAM_Update_Delete_20160406.txt",
-          "fileName": "SAM_Update_Delete_20160406.txt",
-          "fileType": "Delete",
-          "startTime": 1471551965727,
-          "dataType": "mortgage",
-          "rawTableSuffix": "SAM_Update_Delete_20160406"
-        }
-      ],
+      "manualData": [],
       "replace": true
     }
 
@@ -388,7 +342,7 @@ module.exports = {
         "fileType": "Load",
         "startTime": 1471552572294,
         "dataType": "tax",
-        "rawTableSuffix": "12021_Assessment_Update_20160406",
+        "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
         "indicateDeletes": false,
         "deletes": "indicated"
@@ -402,7 +356,7 @@ module.exports = {
         "fileType": "Load",
         "startTime": 1471552572294,
         "dataType": "deed",
-        "rawTableSuffix": "12021_Deed_Update_20160406",
+        "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
         "indicateDeletes": false,
         "deletes": "indicated"
@@ -416,7 +370,7 @@ module.exports = {
         "fileType": "Load",
         "startTime": 1471552572294,
         "dataType": "mortgage",
-        "rawTableSuffix": "12021_SAM_Update_20160406",
+        "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
         "indicateDeletes": false,
         "deletes": "indicated"
@@ -437,7 +391,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471552572294,
           "dataType": "tax",
-          "rawTableSuffix": "12021_Assessment_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -451,7 +405,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471552572294,
           "dataType": "deed",
-          "rawTableSuffix": "12021_Deed_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -465,7 +419,7 @@ module.exports = {
           "fileType": "Load",
           "startTime": 1471552572294,
           "dataType": "mortgage",
-          "rawTableSuffix": "12021_SAM_Update_20160406",
+          "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
           "indicateDeletes": false,
           "deletes": "indicated"
@@ -478,7 +432,50 @@ module.exports = {
       "transaction": "transaction",
       "subtask": {},
       "laterSubtaskName": "recordChangeCounts",
-      "manualData": [],
+      "manualData": [
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/ASMT20160406/12021_Assessment_Update_20160406.txt.gz",
+          "fileName": "12021_Assessment_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "tax",
+          "rawTableSuffix": "U_12021_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        },
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/Deed20160406/12021_Deed_Update_20160406.txt.gz",
+          "fileName": "12021_Deed_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "deed",
+          "rawTableSuffix": "U_12021_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        },
+        {
+          "action": "Update",
+          "listType": "Update",
+          "date": "20160406",
+          "path": "Managed_Update/SAM20160406/12021_SAM_Update_20160406.txt.gz",
+          "fileName": "12021_SAM_Update_20160406.txt.gz",
+          "fileType": "Load",
+          "startTime": 1471552572294,
+          "dataType": "mortgage",
+          "rawTableSuffix": "U_12021_20160406",
+          "normalSubid": "12021",
+          "indicateDeletes": false,
+          "deletes": "indicated"
+        }
+      ],
       "replace": true
     }
 }

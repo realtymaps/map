@@ -60,7 +60,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      internals.captureMapFilterState(handleStr:"detail")
+      internals.captureMapFilterState(handleStr:"detail", transforms: ourTransforms.detail.property)
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
@@ -70,9 +70,13 @@ module.exports =
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
-            return next( new ExpressResponse(
-              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
-              {status: httpStatus.NOT_FOUND, quiet: true}))
+            if !req.validBody.no_alert
+              return next( new ExpressResponse(
+                alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
+                {status: httpStatus.NOT_FOUND, quiet: true}))
+
+            return next(new ExpressResponse({status: httpStatus.NOT_FOUND, quiet: true}))
+
 
           property
 

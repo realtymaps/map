@@ -35,6 +35,27 @@ subtaskErrors = (subtask) ->
   .then (count) ->
     logger.debug () -> "Deleted #{count} rows from subtask error history"
 
+taskHistory = (subtask) ->
+  tables.jobQueue.taskHistory()
+  .where(current: false)
+  .whereRaw("started < now_utc() - '#{config.CLEANUP.TASK_HISTORY_DAYS} days'::INTERVAL")
+  .delete()
+  .then (count) ->
+    logger.debug () -> "Deleted #{count} rows from task history"
+
+currentSubtasks = (subtask) ->
+  dbs.transaction (transaction) ->
+    tables.jobQueue.taskHistory({transaction})
+    .select('name')
+    .where(current: true)
+    .whereRaw("finished < now_utc() - '#{config.CLEANUP.CURRENT_SUBTASKS_DAYS} days'::INTERVAL")
+    .then (oldTasks) ->
+      tables.jobQueue.currentSubtasks({transaction})
+      .whereIn("task_name", oldTasks)
+      .delete()
+  .then (count) ->
+    logger.debug () -> "Deleted #{count} rows from current subtasks"
+
 deleteMarkers = (subtask) ->
   tables.deletes.combined()
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
@@ -81,6 +102,8 @@ deletePhotos = (subtask) ->
 module.exports = new TaskImplementation 'cleanup', {
   rawTables
   subtaskErrors
+  taskHistory
+  currentSubtasks
   deleteMarkers
   deleteParcels
   deleteInactiveRows

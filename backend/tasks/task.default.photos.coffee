@@ -79,7 +79,7 @@ store = (subtask) -> Promise.try () ->
 
   Promise.each subtask.data.values, (idObj) ->
     # taskLogger.debug "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
-    mlsHelpers.storePhotosNew(subtask, idObj)
+    mlsHelpers.storePhotos(subtask, idObj)
     .then ({successCtr, skipsCtr, errorsCtr}) ->
       totalSuccess += successCtr
       totalSkips += skipsCtr
@@ -96,22 +96,8 @@ clearRetries = (subtask) ->
   .whereNot(batch_id: subtask.batch_id)
   .delete()
 
-ready = () ->
-  # don't automatically run if corresponding MLS is running
-  query = tables.jobQueue.taskHistory()
-  .where(current: true)
-  .where('name', @taskName.replace('_photos', ''))
-  .whereNull('finished')
-  .then (results) ->
-    if results?.length
-      # found an instance of this MLS, GTFO
-      return false
-
-    # if we didn't bail, signal to use normal enqueuing logic
-    return undefined
-
-  logger.debug query.toString()
-  query
+setLastUpdateTimestamp = (subtask) ->
+  dataLoadHelpers.setLastUpdateTimestamp(subtask)
 
 subtasks = {
   storePrep
@@ -124,6 +110,6 @@ factory = (taskName, overrideSubtasks) ->
     fullSubtasks = _.extend({}, subtasks, overrideSubtasks)
   else
     fullSubtasks = subtasks
-  new TaskImplementation(taskName, fullSubtasks, ready)
+  new TaskImplementation(taskName, fullSubtasks)
 
 module.exports = memoize(factory, length: 1)

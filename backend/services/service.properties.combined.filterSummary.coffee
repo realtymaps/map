@@ -14,12 +14,15 @@ getDefaultQuery = ->
   .where(active: true)
 
 getPermissions = (profile) -> Promise.try ->
+  logger.debug () -> "Getting permissions..."
   tables.auth.user()
   .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
   .where(id: profile.auth_user_id)
   .then ([user]) ->
     if !user
+      logger.debug "no user found."
       return {}
+    logger.debug () -> "Found user: #{JSON.stringify(user)}"
 
     # Skip permissions for superusers
     if user.is_superuser
@@ -38,11 +41,13 @@ getPermissions = (profile) -> Promise.try ->
         return tables.auth.user()
           .select('mlses_verified')
           .where('id', profile.parent_auth_user_id).then ([owner]) ->
+            logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
             permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
             permissions
       logger.debug "@@@@ permissions @@@@"
       logger.debug permissions
       return permissions
+
 
 queryPermissions = (query, permissions = {}) ->
   mls = _.union(permissions.mls, permissions.mls_proxy)
@@ -53,10 +58,10 @@ queryPermissions = (query, permissions = {}) ->
         sqlHelpers.whereIn(@, "fips_code", permissions.fips)
       @orWhere ->
         @where("data_source_type", "mls")
-        sqlHelpers.whereIn(@, "data_source_id", mls)
+        sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if mls?.length
       @where("data_source_type", "mls")
-      sqlHelpers.whereIn(@, "data_source_id", mls)
+      sqlHelpers.whereIn(@, tables.finalized.combined.tableName + ".data_source_id", mls)
     else if permissions.fips?.length
       @where("data_source_type", "county")
       sqlHelpers.whereIn(@, "fips_code", permissions.fips)
@@ -99,7 +104,9 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
           if sold
             @orWhere () ->
               @where("#{dbFn.tableName}.status", 'sold')
-              if filters.soldRange && filters.soldRange != 'all'
+              if filters.closeDateMin || filters.closeDateMax
+                sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
+              else if filters.soldRange && filters.soldRange != 'all'
                 @whereRaw("#{dbFn.tableName}.close_date >= (now()::DATE - '#{filters.soldRange}'::INTERVAL)")
 
           if hardStatuses.length > 0
@@ -134,11 +141,12 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       if filters.propertyType
         @where("#{dbFn.tableName}.property_type", filters.propertyType)
 
-      sqlHelpers.between(@, "#{dbFn.tableName}.close_date", filters.closeDateMin, filters.closeDateMax)
-
       if filters.hasImages
         @whereNotNull("photos")
         @where("photos", "!=", "{}")
+
+      if filters.yearBuilt
+        @whereRaw("year_built->>'value' = ?", [filters.yearBuilt])
 
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.pins)
@@ -159,6 +167,7 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
     return mockQuery
 
   query
+
 
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->

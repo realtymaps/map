@@ -21,6 +21,8 @@ rmapsMapTogglesFactory
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
+    # drawnItems.bringToBack() # Areas block parcel clicks, but this seems to hide areas altogether
+
     #filter drawItems which are only areas / frontend or backend
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 

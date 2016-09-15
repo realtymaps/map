@@ -14,11 +14,13 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
     LOAD_MORE_LENGTH: 10
 
     _isWithinBounds = (map, prop) ->
-      pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon
-      .toBounds(prop.geometry or prop.geometry or prop.geometry_center)
 
+      location = prop.geometry or prop.geometry or prop.geometry_center
+      return if !location?.type? || !location?.coordinates?
+
+      pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon.toBounds(location)
       isVisible = map.getBounds().intersects(pointBounds)
-      return unless isVisible
+      return if !isVisible
       prop
 
     constructor: (@mapCtrl) ->
@@ -111,21 +113,32 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       $log.debug "throttledLoadMore()"
 
       amountToLoad = @getAmountToLoad()
+      resultsPotentialLength = 0
 
       if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
         @filterSummaryInBounds = []
         _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
-          return unless prop
-          @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
+          if prop && _isWithinBounds(@mapCtrl.map, prop)
+            @filterSummaryInBounds.push prop
+            if prop.grouped?.properties?.length
+              resultsPotentialLength += prop.grouped.properties.length
+            else
+              resultsPotentialLength++
 
-        @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+        @mapCtrl.scope.resultsPotentialLength = resultsPotentialLength
 
       return unless _.keys(@filterSummaryInBounds).length
 
       if not @mapCtrl.scope.results.length # only do this once (per map bound)
         _.each @filterSummaryInBounds, (summary) =>
-          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
-            @mapCtrl.scope.results[summary.rm_property_id] = summary
+          if summary.grouped?.properties?.length
+            properties = summary.grouped?.properties
+          else
+            properties = [summary]
+          _.each properties, (property) =>
+            if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, property)
+              $log.debug property
+              @mapCtrl.scope.results[property.rm_property_id] = property
 
       @mapCtrl.scope.resultsLimit = Math.min @mapCtrl.scope.resultsLimit + amountToLoad, @mapCtrl.scope.resultsPotentialLength
 

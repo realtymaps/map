@@ -87,7 +87,7 @@ getLetter = (subtask) ->
         .where
           id: letter.id
         .then ->
-          throw new SoftFail("Mutltiple letters with uuid #{letter.uuid} found. This is unexpected!")
+          throw new SoftFail("Multiple letters with uuid #{letter.uuid} found. This is unexpected!")
 
     .catch  LobErrors.LobRateLimitError,
             LobErrors.LobUnauthorizedError,

@@ -27,18 +27,18 @@ app.factory 'rmapsMapFactory',
     rmapsLayerFormattersService,
     rmapsLeafletObjectFetcherFactory,
     rmapsMainOptions,
-    rmapsMapEventsHandlerService,
+    rmapsEventsHandlerService,
     rmapsMapIds,
-    rmapsPopupLoaderService,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
     rmapsRenderingService,
-    rmapsResultsFlow
+    rmapsLayerManager
     rmapsResultsFormatterService,
     rmapsMapTogglesFactory,
     rmapsZoomLevelService,
     rmapsZoomLevelStateFactory,
     rmapsOverlays
+    rmapsLayerUtilService
   ) ->
 
     limits = rmapsMainOptions.map
@@ -56,17 +56,23 @@ app.factory 'rmapsMapFactory',
       @currentMainMap: null
 
       constructor: ($scope) ->
-        rmapsOverlays
+        super {
+          scope: $scope
+          options: limits.options
+          redrawDebounceMilliSeconds: limits.redrawDebounceMilliSeconds
+          mapPath: 'map'
+          mapId: rmapsMapIds.mainMap()
+        }
+
+        @constructor.currentMainMap = @
+        @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
+        _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
+
+        rmapsOverlays.init()
         .then (overlays) ->
           #using merge to not clobber objects
           _.merge $scope.map, layers: {overlays}
 
-        @constructor.currentMainMap = @
-        @mapId = rmapsMapIds.mainMap()
-        @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
-
-        _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
-        super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map', @mapId
 
         _initToggles $scope, limits.toggles
 
@@ -148,7 +154,7 @@ app.factory 'rmapsMapFactory',
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @eventHandle = rmapsMapEventsHandlerService(@)
+        @eventHandle = rmapsEventsHandlerService(@)
 
         _.merge @scope,
           streetViewPanorama:
@@ -241,7 +247,7 @@ app.factory 'rmapsMapFactory',
           # but gets buggy when rapidly changing zooms occurs.
           @scope.zoomLevelService.trackZoom(@scope)
 
-          rmapsResultsFlow {
+          rmapsLayerManager {
             @scope
             filters
             @hash
@@ -272,6 +278,13 @@ app.factory 'rmapsMapFactory',
 
         $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes(), @scope.map.getMail()]
         .then () =>
+          # handle ui-leaflet / leaflet polygon stacked no click bug
+          # https://realtymaps.atlassian.net/browse/MAPD-1295
+          rmapsLayerUtilService.filterParcelsFromSummary {
+            parcels: @scope.map?.geojson?._parcelBase?.data
+            props: @scope.map?.geojson?.filterSummaryPoly?.data
+          }
+
           #every thing is setup, only draw once
           ###
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
@@ -340,16 +353,6 @@ app.factory 'rmapsMapFactory',
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
-
-      openWindow: (model) =>
-        opts = {@map, model}
-        $log.debug "openWindow", model
-        # Do not show infowindow for parcels without property data
-        if model.status || model.grouped
-          rmapsPopupLoaderService.load(opts)
-
-      closeWindow: ->
-        rmapsPopupLoaderService.close()
 
       centerOn: (result) =>
         @zoomTo(result, false)

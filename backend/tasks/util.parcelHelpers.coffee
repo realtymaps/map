@@ -35,9 +35,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
     logger.debug "got #{normalPayloadsPromise.length} normalized rows"
 
     #these promises must happen in order since we might have multiple props of the same rm_property_id
-    # due to appartments; and or geometry or geometry_center for the same prop (since they come in sep payloads)
+    # due to apartments; and/or geometry or geometry_center for the same prop (since they come in sep payloads)
     #THIS FIXES insert collisions when they should be updates
-    #TODO: Bluebird 3.X use mapSeries
     Promise.each normalPayloadsPromise, (payload) ->
       # logger.debug payload
 
@@ -66,8 +65,8 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       #  .where({rm_raw_id})
       #  .update(rm_valid: true, rm_error_msg: null)
       .catch analyzeValue.isKnexError, (err) ->
-        jsonData = util.inspect(row, depth: null)
-        logger.warn "#{analyzeValue.getSimpleMessage(err)}\nData: #{jsonData}"
+        jsonData = util.inspect(row, depth: 1)
+        logger.warn "knex error while writing normalized parcel record: #{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}"
         throw new HardFail(err.message)
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
@@ -163,12 +162,10 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
     if numRawRows?
       numRawRows
 
-getParcelsPromise = ({rm_property_id, active, transaction}) ->
-  active ?= true
-
+getParcelsPromise = ({rm_property_id, transaction}) ->
   tables.finalized.parcel(transaction: transaction)
   .select('geometry_raw', 'geometry', 'geometry_center', 'geometry_center_raw')
-  .where({rm_property_id, active})
+  .where({rm_property_id, active: true})
 
 
 module.exports = {

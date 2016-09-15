@@ -32,7 +32,14 @@ app.controller 'rmapsModalSendMailCtrl', (
           $scope.bodyMessage = data.errmsg.text
           if data.errmsg.troubleshooting
             $scope.bodyMessage += "\n#{data.errmsg.troubleshooting}"
-        else
+        else if data?.alert?.msg
+          errorMessage = data?.alert?.msg
+          errorReference = errorMessage.match(/\(Error reference.*\)/)?[0]
+          if errorReference
+            errorMessage = data.alert.msg.replace(errorReference, '')
+            $scope.errorReference = errorReference
+          $scope.bodyMessage = errorMessage
+        else # generic message
           $scope.bodyMessage = commonConfig.UNEXPECTED_MESSAGE()
         $scope.sendingFlag = false
     else

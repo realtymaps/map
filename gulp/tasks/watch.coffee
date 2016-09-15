@@ -1,5 +1,6 @@
 gulp = require 'gulp'
 paths = require '../../common/config/paths'
+require './otherAssets'
 
 specCommon = 'spec/common/**/*.coffee'
 
@@ -8,7 +9,7 @@ gulp.task 'watch_vendor', (done) ->
   gulp.watch paths.bower, gulp.series 'vendor'
   done()
 
-gulp.task 'watch_all_front', gulp.parallel 'angularWatch', 'angularWatchAdmin'
+gulp.task 'watch_all_front', gulp.parallel 'angularWatch', 'angularWatchAdmin', 'watch_otherAssets'
 
 gulp.task 'watch', gulp.series 'watch_all_front', (done) ->
   gulp.watch ['gulp/**/*.coffee','spec/gulp/**/*.coffee', specCommon], gulp.series 'gulpSpec'

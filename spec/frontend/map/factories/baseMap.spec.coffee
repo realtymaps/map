@@ -1,3 +1,4 @@
+### globals _, angular, inject###
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 describe "BaseMapCtrl", ->
@@ -16,7 +17,11 @@ describe "BaseMapCtrl", ->
       @$rootScope = $rootScope
 
       @ctor = rmapsBaseMapFactory
-      @subject = new rmapsBaseMapFactory($rootScope.$new(), @mocks.options, @mocks.zoomThresholdMilli)
+      @subject = new rmapsBaseMapFactory {
+        scope: $rootScope.$new()
+        options: @mocks.options
+        redrawDebounceMilliSeconds: @mocks.zoomThresholdMilli
+      }
 
   it 'ctor exists', ->
     @ctor.should.be.ok

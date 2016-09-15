@@ -1,7 +1,4 @@
-Promise = require 'bluebird'
-logger = require('./logger').spawn('shutdown')
-analyzeValue = require '../../common/utils/util.analyzeValue'
-
+# this module gets used in memory-sensitive situations, so lazy-load dependencies
 
 exitHandlers = []
 onExit = (handler) ->
@@ -9,6 +6,9 @@ onExit = (handler) ->
 
 exiting = false
 exit = (opts={}) ->
+  logger = require('./logger').spawn('shutdown')
+  analyzeValue = require '../../common/utils/util.analyzeValue'
+  Promise = require 'bluebird'
   if exiting
     return
   exiting = true
@@ -36,6 +36,8 @@ unhandledRejections = []
 
 
 setup = (isParentProcess=false) ->
+  logger = require('./logger').spawn('shutdown')
+  analyzeValue = require '../../common/utils/util.analyzeValue'
   if !isParentProcess
     process.on 'SIGINT', exit
     process.on 'SIGUSR2', exit

@@ -5,7 +5,12 @@ validation = require '../util.validation'
 prepForRmPropertyId =
   apn:
     input: 'parcelapn'
-    transform: validators.string()
+    transform: [
+      # for now, just kill any parcel that had OCR errors in the APN -- but eventually we might want to pull them in
+      # with some sort of flag value so we can run a task to find them and try to fix the APN based on e.g. blackknight
+      validators.string(stripFormatting: true)
+      validators.nullify(matcher: (s) -> !s || /^0+$/.test(s))
+    ]
     required: true
 
   fipsCode:
@@ -38,7 +43,8 @@ final =
     required: true
 
   data_source_uuid:
-    input: 'apn'
+    input: false
+    transform: validators.rm_property_id()
     required: true
 
   street_address_num: {}

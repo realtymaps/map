@@ -6,14 +6,13 @@ userSessionService = require '../services/service.userSession'
 profileService = require '../services/service.profiles'
 userSvc = require('../services/services.user').user
 projectSvc = require('../services/services.user').project
-subscriptionSvc = require '../services/service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
-
+moment = require 'moment'
 validation = require '../utils/util.validation'
 safeColumns = (require '../utils/util.sql.helpers').columns
 tables = require '../config/tables'
@@ -54,22 +53,17 @@ login = (req, res, next) -> Promise.try () ->
       return next new ExpressResponse(alert: {
         msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
-      }, httpStatus.UNAUTHORIZED)
+      }, {
+        status: httpStatus.UNAUTHORIZED
+        quiet: true
+      })
     else
-      subscriptionSvc.getStatus user
-      .then (subscription_status) ->
-        req.user = user
-        req.session.userid = user.id
-        req.session.subscription = subscription_status
-        userUtils.cacheUserValues(req)
-        .then () ->
-          req.session.saveAsync()
-        .then () ->
-          sessionSecurityService.ensureSessionCount(req)
-        .then () ->
-          sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
-        .then () ->
-          internals.getIdentity(req, res, next)
+      logger.debug () -> "acquired user: #{JSON.stringify(user)}"
+      req.session.userid = user.id
+      sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
+      .then () ->
+        internals.getIdentity(req, res, next)
+
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
@@ -77,7 +71,17 @@ setCurrentProfile = (req, res, next) -> Promise.try () ->
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-  internals.updateCache(req, res, next)
+
+  rm_modified_time = moment()
+
+  userUtils.cacheUserValues(req)
+  .then () ->
+    # Update the timestamp on a profile whenever it is selected
+    profileService.updateCurrent(req.session, {rm_modified_time})
+  .then () ->
+    identity = userUtils.getIdentityFromRequest(req)
+    identity.profiles[req.session.current_profile_id].rm_modified_time = rm_modified_time
+    res.json {identity}
 
 updateState = (req, res, next) ->
   profileService.updateCurrent(req.session, req.body)

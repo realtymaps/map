@@ -381,20 +381,22 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
 updateRecord = (opts) -> Promise.try () ->
-  {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, forceUpdate} = opts
+  {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
   diffExcludeKeys ?= []
   diffBooleanKeys ?= []
   delay ?= 100
   flattenRows ?= true
 
+  q = null
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
-    tables.normalized[dataType](subid: subid)
+    q = tables.normalized[dataType](subid: subid)
     .select('*')
     .where
       data_source_id: updateRow.data_source_id
       data_source_uuid: updateRow.data_source_uuid
+    q
   .then (result) ->
     if !result?.length
       # no existing row, just insert
@@ -405,9 +407,13 @@ updateRecord = (opts) -> Promise.try () ->
       .insert(updateRow)
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
+          if retried
+            err.rm_query = "Failed to detect existing row: #{q}"
+            throw err
+          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row: #{q}"
           delete updateRow.inserted
           newOpts = _.clone(opts)
-          newOpts.forceUpdate = true
+          newOpts.retried = true
           updateRecord(newOpts)
         else
           throw err
@@ -493,7 +499,9 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
   if !_.isArray columns
     columns = [columns]
 
-  promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+  promiseQuery('BEGIN TRANSACTION')
+  .then () ->
+    promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName).toString())
   .then () ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
@@ -502,21 +510,17 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
   .then () ->
-    promiseQuery('BEGIN TRANSACTION')
-  .then () ->
     createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
       table.increments('rm_raw_id').notNullable()
       table.boolean('rm_valid')
       table.text('rm_error_msg')
       for fieldName in columns
         table.text(fieldName)
-    promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
+    promiseQuery(createRawTable.toString())
 
 _endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
   if startedTransaction
-    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
-    .then () ->
-      promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
+    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
     .then () ->
       promiseQuery('COMMIT TRANSACTION')
     .then () ->

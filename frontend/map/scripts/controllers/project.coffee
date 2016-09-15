@@ -101,6 +101,8 @@ app.controller 'rmapsProjectCtrl',
     highlightProperty(slide.actual.rm_property_id)
 
   $scope.getLabel = (actual) ->
+    if !actual
+      return
     "#{actual.address.street} #{actual.address.unit}"
   #
   # Property carousel
@@ -217,7 +219,7 @@ app.controller 'rmapsProjectCtrl',
     #
     # Load supporting data
     #
-    clientsService = new rmapsClientsFactory project.id unless clientsService
+    clientsService = new rmapsClientsFactory(project.id) if !clientsService
     loadClients()
     loadNotes()
     loadAreas()
