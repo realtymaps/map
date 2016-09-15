@@ -65,7 +65,7 @@ loadRouteOptions = (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
     route = createRoute routeId, moduleId, require('../../common/config/routes.backend'), options
     normalizedRoutes.push(route)
 
-  modules = loadSubmodules(directoryName, regex)
+  modules = loadSubmodules(directoryName, '.', regex)
   for moduleId, routeOptions of modules
     for routeId, options of routeOptions
       unless options.methods?
