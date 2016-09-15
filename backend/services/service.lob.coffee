@@ -100,21 +100,19 @@ lobPromise = () ->
 
         apis
 
+getAddress = (r) ->
+  name: (r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()) || 'Homeowner'
+  company: r.co ? ''
+  address_line1: r.address_line1 ? r.street ? ''
+  address_line2: r.address_line2 ? r.unit ? ''
+  address_city: r.address_city ? r.citystate?.match(/([ \w]+),[ \w]+/)?[1]?.trim() ? ''
+  address_state: r.address_state ? r.citystate?.match(/[ \w]+,([ \w]+)/)?[1]?.trim() ? ''
+  address_zip: r.address_zip ? r.zip ? ''
+
 #
 # Create letter for outgoing mail table. sendLetter() expects object with this structure
 #
 buildLetter = (campaign, recipient) ->
-
-  getAddress = (r) ->
-    #
-    name: (r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()) || 'Homeowner'
-    company: r.co ? ''
-    address_line1: r.address_line1 ? r.street ? ''
-    address_line2: r.address_line2 ? r.unit ? ''
-    address_city: r.address_city ? r.citystate?.match(/([ \w]+),[ \w]+/)?[1]?.trim() ? ''
-    address_state: r.address_state ? r.citystate?.match(/[ \w]+,([ \w]+)/)?[1]?.trim() ? ''
-    address_zip: r.address_zip ? r.zip ? ''
-
   address_to = getAddress recipient
   address_from = getAddress campaign.sender_info
 
@@ -135,21 +133,23 @@ buildLetter = (campaign, recipient) ->
         userId: campaign.auth_user_id
         recipientType: recipient.type
         uuid: uuid.v1() # important for retries
-      data: # These may act as placeholders in HTML content
-        campaign_name: campaign.name
-        recipient_name: address_to.name
-        recipient_address_line1: address_to.address_line1
-        recipient_address_line2: address_to.address_line2
-        recipient_city: address_to.address_city
-        recipient_state: address_to.address_state
-        recipient_zip: address_to.address_zip
-        sender_name: address_from.name
-        sender_address_line1: address_from.address_line1
-        sender_address_line2: address_from.address_line2
-        sender_city: address_from.address_city
-        sender_state: address_from.address_state
-        sender_zip: address_from.address_zip
+      data: getMacroData(campaign, address_to, address_from)
 
+getMacroData = (campaign, address_to, address_from) ->
+  # These may act as placeholders in HTML content
+  campaign_name: campaign.name
+  recipient_name: address_to.name
+  recipient_address_line1: address_to.address_line1
+  recipient_address_line2: address_to.address_line2
+  recipient_city: address_to.address_city
+  recipient_state: address_to.address_state
+  recipient_zip: address_to.address_zip
+  sender_name: address_from.name
+  sender_address_line1: address_from.address_line1
+  sender_address_line2: address_from.address_line2
+  sender_city: address_from.address_city
+  sender_state: address_from.address_state
+  sender_zip: address_from.address_zip
 
 ################
 # Public methods
@@ -178,8 +178,15 @@ getPriceQuote = (userId, campaignId) ->
       throw new Error("recipients must be an array")
 
     # manually created content might not have aws_key: so make one if not, return the key if so
-    (if !campaign.aws_key? then pdfService.createFromCampaign(campaign) else Promise.resolve(campaign.aws_key))
-    .then (aws_key) ->
+    if !campaign.aws_key
+      address_from = getAddress(campaign.sender_info)
+      address_to = getAddress(campaign.recipients[0])
+      macros = getMacroData(campaign, address_to, address_from)
+      promise = pdfService.createFromCampaign(campaign, macros)
+    else
+      promise = Promise.resolve(campaign.aws_key)
+
+    promise.then (aws_key) ->
       awsService.getTimedDownloadUrl
         extAcctName: awsService.buckets.PDF
         Key: aws_key
