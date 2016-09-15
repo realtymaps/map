@@ -196,12 +196,15 @@ cleanupNotifications = (subtask) ->
         tables.user.notificationExpired({transaction})
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
-          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
+          query = null
 
-          query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', _.pluck 'id', maxedOutRows)
-          .delete()
+          Promise.try () ->
+            logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
 
-          query
+            query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', _.pluck 'id', maxedOutRows)
+            .delete()
+
+            query
           .catch errorHandlingUtils.isUnhandled, (error) ->
             logger.debug -> query.toString()
             logger.debug -> maxedOutRows
