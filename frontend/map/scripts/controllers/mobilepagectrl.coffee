@@ -1,3 +1,4 @@
+### globals angular, _ ###
 app = require '../app.coffee'
 
 module.exports = app.controller 'rmapsMobilePageCtrl', (

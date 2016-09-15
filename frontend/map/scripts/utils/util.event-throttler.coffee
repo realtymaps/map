@@ -1,3 +1,4 @@
+###globals _###
 module.exports = ($log, options) ->
   last =
     time: new Date() # last time we let an event pass.

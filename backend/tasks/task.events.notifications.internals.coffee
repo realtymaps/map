@@ -11,6 +11,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 notifyQueueSvc = require('../services/service.notification.queue').instance
 notificationsSvc = require '../services/service.notifications'
 utilEvents = require './util.events.coffee'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 NUM_ROWS_TO_PAGINATE = 100
@@ -185,7 +186,6 @@ cleanupNotifications = (subtask) ->
           return
 
         logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-        logger.debug -> maxedOutRows
 
         if badRows.length
           logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
@@ -197,11 +197,15 @@ cleanupNotifications = (subtask) ->
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
           logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
-          logger.debug -> maxedOutRows
 
-          tables.user.notificationQueue({transaction})
-          .whereIn 'id', _.pluck 'id', maxedOutRows
+          query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', _.pluck 'id', maxedOutRows)
           .delete()
+
+          query
+          .catch errorHandlingUtils.isUnhandled, (error) ->
+            logger.debug -> query.toString()
+            logger.debug -> maxedOutRows
+            throw new errorHandlingUtils.PartiallyHandledError(error, "failed to clean maxedOutRows")
 
 
 module.exports = {

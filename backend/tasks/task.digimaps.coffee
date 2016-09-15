@@ -21,7 +21,7 @@ util = require 'util'
 keystore = require '../services/service.keystore'
 
 
-NUM_ROWS_TO_PAGINATE = 250
+NUM_ROWS_TO_PAGINATE = 1000
 DELAY_MILLISECONDS = 250
 
 _filterImports = (subtask, imports) ->

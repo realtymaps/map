@@ -17,7 +17,7 @@ transforms =
     required: true
 
 
-_getBaseParcelQueryByBounds = (bounds, limit) ->
+getBaseParcelQueryByBounds = (bounds, limit) ->
   query = sqlHelpers.select(tables.finalized.parcel(), 'parcel', false)
   sqlHelpers.whereInBounds(query, 'geometry_raw', bounds)
   query.where(active: true)
@@ -26,29 +26,18 @@ _getBaseParcelQueryByBounds = (bounds, limit) ->
 _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try () ->
   validation.validateAndTransform(filters, transforms)
   .then (filters) ->
-    query = _getBaseParcelQueryByBounds(filters.bounds, limit)
+    query = getBaseParcelQueryByBounds(filters.bounds, limit)
     return query.stream() if doStream
     query
 
-_upsert = (obj, insertCb, updateCb) ->
-  throw new Error('rm_property_id must be of type String') unless _.isString obj.rm_property_id
-  #nmccready - note this might not be unique enough, I think parcels has dupes
-  # TODO: this must be dead code, safe to delete?
-  tables.property.rootParcel()
-  .where rm_property_id: obj.rm_property_id
-  .then (rows) ->
-    if rows?.length
-      # logger.debug JSON.stringify(rows)
-      return updateCb(rows[0])
-    return insertCb(obj)
+# pseudo-new implementation
+getBaseParcelData = (state, filters) ->
+  _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
+  .then (data) ->
+    type: 'FeatureCollection'
+    features: data
 
-module.exports =
-  getBaseParcelQueryByBounds: _getBaseParcelQueryByBounds
-  getBaseParcelDataUnwrapped: _getBaseParcelDataUnwrapped
-  # pseudo-new implementation
-  getBaseParcelData: (state, filters) ->
-    _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
-    .then (data) ->
-      type: 'FeatureCollection'
-      features: data
-  upsert: _upsert
+module.exports = {
+  getBaseParcelQueryByBounds
+  getBaseParcelData
+}
