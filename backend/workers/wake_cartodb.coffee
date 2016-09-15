@@ -1,17 +1,18 @@
-Promise = require 'bluebird'
-request = require 'request'
-request = Promise.promisify(request)
-config = require '../config/config'
-cartodbConfig = require '../config/cartodb/cartodb'
-analyzeValue = require '../../common/utils/util.analyzeValue'
+# workers should lazy-load their dependencies
 
-logger = require('../config/logger').spawn('workers:wake_cartodb')
+wakeCartodb = () ->
+  Promise = require 'bluebird'
+  request = require 'request'
+  request = Promise.promisify(request)
+  config = require '../config/config'
+  cartodbConfig = require '../config/cartodb/cartodb'
+  analyzeValue = require '../../common/utils/util.analyzeValue'
 
-wakeCartodb = () -> Promise.try () ->
+  logger = require('../config/logger').spawn('workers:wake_cartodb')
 
-  logger.debug 'started'
-
-  cartodbConfig()
+  Promise.try () ->
+    logger.debug 'started'
+    cartodbConfig()
   .then (cartoConfig) ->
     logger.debug 'Cartodb config:'
     logger.debug cartoConfig
@@ -29,7 +30,7 @@ wakeCartodb = () -> Promise.try () ->
 
 module.exports = {
   worker: wakeCartodb
-  interval: config.CARTO_WAKE_INTERVAL
+  interval: 20*60*1000  # 20 minutes
   silentWait: 0
   gracefulTermination: 1
   kill: 2

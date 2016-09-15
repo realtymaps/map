@@ -1,11 +1,12 @@
-hirefire = require('../services/service.hirefire')
-jobQueueErrors = require '../utils/errors/util.error.jobQueue'
-config = require '../config/config'
-
-logger = require('../config/logger').spawn('workers:queueNeeds')
-
+# workers should lazy-load their dependencies
 
 queueNeeds = () ->
+  hirefire = require('../services/service.hirefire')
+  jobQueueErrors = require '../utils/errors/util.error.jobQueue'
+  config = require '../config/config'
+
+  logger = require('../config/logger').spawn('workers:queueNeeds')
+
   logger.debug("Executing updateQueueNeeds...")
   hirefire.updateQueueNeeds()
   .catch jobQueueErrors.LockError, (err) ->
@@ -19,7 +20,7 @@ queueNeeds = () ->
 
 module.exports = {
   worker: queueNeeds
-  interval: config.HIREFIRE.RUN_WINDOW
+  interval: 60000  # 1 minute
   silentWait: 2
   gracefulTermination: 5
   kill: 6

@@ -2,11 +2,10 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('utils:validation')
 DataValidationError = require './errors/util.error.dataValidation'
 loaders = require './util.loaders'
-path = require 'path'
 doValidationSteps = require './validation/util.impl.doValidationSteps'
 validateAndTransformSingleOutput = require './validation/util.impl.validateAndTransformSingleOutput'
 validateAndTransform = require './validation/util.impl.validateAndTransform'
-validators = loaders.loadSubmodules(path.join(__dirname, 'validation'), /^util\.validation\.(\w+)\.coffee$/)
+validators = loaders.loadSubmodules(__dirname, './validation', /^util\.validation\.(\w+)\.coffee$/)
 
 ###
   Does the same as validateAndTransform, but also removes all properties

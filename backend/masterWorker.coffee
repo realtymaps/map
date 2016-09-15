@@ -1,14 +1,10 @@
 logger = require('./config/logger').spawn('masterWorker')
 shutdown = require('./config/shutdown')
-config = require './config/config'
 cluster = require('cluster')
 analyzeValue = require '../common/utils/util.analyzeValue'
 loaders = require './utils/util.loaders'
 
-Promise = require 'bluebird'
-errorHandlingUtils = require './utils/errors/util.error.partiallyHandledError'
-path = require 'path'
-workers = loaders.loadSubmodules(path.join(__dirname, 'workers'), /^(\w+)\.coffee$/)
+workers = loaders.loadSubmodules(__dirname, './workers', /^(\w+)\.coffee$/)
 
 
 if require.main == module  # run directly, not require()d
@@ -18,8 +14,6 @@ if require.main == module  # run directly, not require()d
     # do setup
 
     shutdown.setup()
-
-    intervalsWaited = {}
 
     spawnQueue = []
     forkingWorkerKey = undefined
@@ -44,7 +38,7 @@ if require.main == module  # run directly, not require()d
 
     checkWorkerStatus = (workerKey) ->
       workerConfig = workers[workerKey]
-      if !workers[workerKey].id?
+      if !workerConfig.id?
         logger.spawn(workerKey).debug "attempting fork..."
         spawnQueue.push(workerKey)
         if !forkingWorkerKey
@@ -66,10 +60,15 @@ if require.main == module  # run directly, not require()d
         cluster.workers[workerConfig.id]?.kill('SIGTERM')
 
     # kick things off
+    delay = 0
     for workerKey of workers
-      workers[workerKey].intervalsWaited = 0
-      checkWorkerStatus(workerKey)
-      setInterval(checkWorkerStatus, workers[workerKey].interval, workerKey)
+      doStuff = () ->
+        workerConfig = workers[workerKey]
+        workerConfig.intervalsWaited = 0
+        checkWorkerStatus(workerKey)
+        setInterval(checkWorkerStatus, workerConfig.interval, workerKey)
+      setTimeout(doStuff, delay)
+      delay += 10000  # stagger startups by 10s
 
 
   else  # is worker
