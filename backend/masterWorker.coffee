@@ -62,12 +62,12 @@ if require.main == module  # run directly, not require()d
     # kick things off
     delay = 0
     for workerKey of workers
-      doStuff = () ->
+      doStuff = (workerKey) ->
         workerConfig = workers[workerKey]
         workerConfig.intervalsWaited = 0
         checkWorkerStatus(workerKey)
         setInterval(checkWorkerStatus, workerConfig.interval, workerKey)
-      setTimeout(doStuff, delay)
+      setTimeout(doStuff, delay, workerKey)
       delay += 10000  # stagger startups by 10s
 
 
