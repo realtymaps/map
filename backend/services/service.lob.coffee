@@ -337,7 +337,7 @@ sendCampaign = (userId, campaignId) ->
               errorToSave.idempotency_key = idempotency_key
 
               if err?.type == 'StripeCardError'
-                throw new QuietlyHandledError(err)
+                throw new QuietlyHandledError(err, "Please check that your payment information is up-to-date. Your payment was not processed because")
 
               else if err?.type in [
                   'StripeConnectionError'
@@ -355,7 +355,9 @@ sendCampaign = (userId, campaignId) ->
 
             .then (stripeCharge) ->
               # Whether or not mailing API is turned on, only queue real letters if payment is live
-              apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
+              # TODO: Safeguard disabled for testing - re-enable afterward
+              # apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
+              apiName = lob.live.apiName
 
               logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId} using API #{apiName}"
               logger.debug -> "#{JSON.stringify stripeCharge}"

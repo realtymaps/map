@@ -86,9 +86,7 @@ base =
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN || 'dummy'
-    RUN_WINDOW: 60000  # 1 minute
     WARN_THRESHOLD: 300000  # 5 minutes
-  CARTO_WAKE_INTERVAL: 20*60*1000  # 20 minutes
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number

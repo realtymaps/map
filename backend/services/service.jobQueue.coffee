@@ -119,8 +119,8 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       initiator: initiator
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
-      blocked_by_tasks: task.blocked_by_tasks
-      blocked_by_locks: task.blocked_by_locks
+      blocked_by_tasks: sqlHelpers.safeJsonArray(task.blocked_by_tasks)
+      blocked_by_locks: sqlHelpers.safeJsonArray(task.blocked_by_locks)
   .then () -> # clear out any subtasks for prior runs of this task
     tables.jobQueue.currentSubtasks(transaction: transaction)
     .where(task_name: task.name)
@@ -243,7 +243,7 @@ requeueManualTask = (taskName, initiator, withPrejudice=false) ->
 doMaintenance = () ->
   maintenanceLogger = logger.spawn("maintenance")
   maintenanceLogger.debug('Doing maintenance...')
-  internals.withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+  internals.tryWithDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
