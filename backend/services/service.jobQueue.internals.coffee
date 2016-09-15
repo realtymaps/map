@@ -342,6 +342,7 @@ executeSubtask = (subtask, prefix) ->
     name: subtask.name
     task_name: subtask.task_name
   .then ([subtaskConfig={}]=[]) ->
+    subtaskConfig.data ?= {}
     _.defaultsDeep(subtaskConfig, subtask)
     delete subtaskConfig.active
     subtask = _.clone(subtaskConfig)
