@@ -1,14 +1,7 @@
-fs = require 'fs'
-path = require 'path'
-config = require '../config/config'
-logger = require '../config/logger'
-backendRoutes = require '../../common/config/routes.backend.coffee'
-_ = require 'lodash'
+# this module gets used in memory-sensitive situations, so lazy-load dependencies
 
 createRoute = (routeId, moduleId, backendRoutes, options) ->
-  # logger.debug "moduleId: #{moduleId}"
-  # logger.debug "routeId: #{routeId}"
-  # logger.debug "options: #{_.keys options}"
+  _ = require 'lodash'
   route =
     moduleId: moduleId
     routeId: routeId
@@ -26,7 +19,10 @@ createRoute = (routeId, moduleId, backendRoutes, options) ->
   route
 
 
-loadSubmodules = (directoryName, regex) ->
+loadSubmodules = (cwd, searchPath, regex) ->
+  path = require 'path'
+  fs = require 'fs'
+  directoryName = path.join(cwd, searchPath)
   result = {}
   fs.readdirSync(directoryName).forEach (file) ->
     submoduleHandle = null
@@ -41,28 +37,51 @@ loadSubmodules = (directoryName, regex) ->
       result[submoduleHandle] = require(filePath)
   return result
 
-module.exports =
-  loadSubmodules: loadSubmodules
 
-  loadRouteOptions: (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
-    normalizedRoutes = []
+lazyLoadSubmodules = (cwd, searchPath, regex) ->
+  path = require 'path'
+  fs = require 'fs'
+  directoryName = path.join(cwd, searchPath)
+  result = {}
+  fs.readdirSync(directoryName).forEach (file) ->
+    submoduleHandle = null
+    if regex
+      match = regex.exec(file)
+      if (match)
+        submoduleHandle = match[1]
+    else
+      submoduleHandle = file
+    if submoduleHandle
+      filePath = path.join directoryName, file
+      result[submoduleHandle] = () -> require(filePath)
+  return result
 
-    create = ->
-      route = createRoute routeId, moduleId, backendRoutes, options
-      normalizedRoutes.push(route)
 
-    modules = loadSubmodules(directoryName, regex)
-    for moduleId, routeOptions of modules
-      for routeId, options of routeOptions
-        unless options.methods?
-          create()
-          continue
+loadRouteOptions = (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
+  _ = require 'lodash'
+  normalizedRoutes = []
 
-        for key, method of options.methods
-          #clone route options to have a new instance of a method
-          options = _.merge {}, options, method: method
-          # logger.debug method
-          # logger.debug _.keys options
-          create()
+  create = ->
+    route = createRoute routeId, moduleId, require('../../common/config/routes.backend'), options
+    normalizedRoutes.push(route)
 
-    normalizedRoutes
+  modules = loadSubmodules(directoryName, regex)
+  for moduleId, routeOptions of modules
+    for routeId, options of routeOptions
+      unless options.methods?
+        create()
+        continue
+
+      for key, method of options.methods
+        #clone route options to have a new instance of a method
+        options = _.merge {}, options, method: method
+        create()
+
+  normalizedRoutes
+
+
+module.exports = {
+  loadSubmodules
+  lazyLoadSubmodules
+  loadRouteOptions
+}
