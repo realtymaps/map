@@ -21,8 +21,8 @@ queueNeeds = () ->
 module.exports = {
   worker: queueNeeds
   interval: 60000  # 1 minute
-  silentWait: 2
-  gracefulTermination: 5
-  kill: 6
-  crash: 7
+  silentWait: 5
+  gracefulTermination: 8
+  kill: 9
+  crash: 10
 }
