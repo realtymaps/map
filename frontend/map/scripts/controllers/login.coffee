@@ -18,38 +18,39 @@ $state
 rmapsPrincipalService
 rmapsProfilesService
 rmapsEventConstants
+rmapsLoginHack
 rmapsMapAuthorizationFactory) ->
 
   $scope.loginInProgress = false
   $scope.form = {}
 
-  ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    We need to figure out why after login succedes that some post processing routes still think we are not logged in.
+  # ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #   We need to figure out why after login succedes that some post processing routes still think we are not logged in.
 
-    Hence why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
-    we are actual logged in.
-  ###
-  isLoggedIn = () ->
-    $http.get backendRoutes.config.protectedConfig
-    .then ({data} = {}) ->
-      if !data || data.doLogin == true
-        return false
-      true
+  #   Hence why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
+  #   we are actual logged in.
+  # ###
+  # isLoggedIn = () ->
+  #   $http.get backendRoutes.config.protectedConfig
+  #   .then ({data} = {}) ->
+  #     if !data || data.doLogin == true
+  #       return false
+  #     true
 
-  # just because loggin succeeded does not mean the backend is synced with the profile
-  # check until it is synced
-  checkLoggIn = (maybeLoggedIn) ->
-    if maybeLoggedIn
-      rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
-      return
+  # # just because loggin succeeded does not mean the backend is synced with the profile
+  # # check until it is synced
+  # checkLoggIn = (maybeLoggedIn) ->
+  #   if maybeLoggedIn
+  #     rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
+  #     return
 
-    isLoggedIn()
-    .then (loggedIn) ->
-      setTimeout ->
-        checkLoggIn(loggedIn)
-      , 500
+  #   isLoggedIn()
+  #   .then (loggedIn) ->
+  #     setTimeout ->
+  #       checkLoggIn(loggedIn)
+  #     , 500
 
-  # END TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # # END TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   loginFailed = (response) ->
     $log.error "Could not log in", response
@@ -72,7 +73,9 @@ rmapsMapAuthorizationFactory) ->
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        checkLoggIn()
+        cb = () ->
+          rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
+        rmapsLoginHack.checkLoggIn(cb)
         # Currently we can not go directly to login as the session is not synced
         # rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
     .catch (response) ->
