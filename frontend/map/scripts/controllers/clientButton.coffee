@@ -1,19 +1,15 @@
-###global _, L###
+###global _###
 app = require '../app.coffee'
-notesTemplate = do require '../../html/views/templates/modals/note.jade'
-confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
-originator = 'map'
 
 app.controller 'rmapsClientButtonCtrl', (
-$rootScope,
-$scope,
-$uibModal,
-$stateParams,
-
-rmapsPrincipalService,
+$rootScope
+$scope
+$uibModal
+$stateParams
+rmapsPrincipalService
 rmapsClientsFactory
 ) ->
-  
+
   profile = rmapsPrincipalService.getCurrentProfile()
   clientsService = new rmapsClientsFactory profile.project_id
 
