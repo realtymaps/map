@@ -118,6 +118,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         false
 
       _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
+        _maybeDraw.cancel()
         #_pingPass ans debounce are all things to mimick map "idle" event
         leafletEvent = leaflet?.leafletEvent or undefined
 
@@ -151,9 +152,10 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
         #due to the router hiding the map and timing the map needs to be resized
         #figuring out exactly when this is has been tricky (might try element .load)
         #however this might be easier making our own directive instead of factories
-        $timeout =>
+        setTimeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
           leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpersService.events.getMapIdEventStr(@mapId)}"
+
           _mapDrawEvents.forEach (eventName) =>
             eventName =  leafletPreNamespace + eventName
             return @scope.$on eventName, _maybeDraw
@@ -172,6 +174,7 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
          before Google Maps gets it. So if we cancel the event,
          Google Maps will never receive it.
         ###
+        mapElement.addEventListener('moveend', _throttler.throttle_events, true)
         mapElement.addEventListener('mousemove', _throttler.throttle_events, true)
 
       # $log.info 'BaseMap: ' + @

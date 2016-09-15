@@ -8,7 +8,7 @@ app.constant 'rmapsMainOptions', do () ->
   res = _.merge common,
     map:
       clickDelayMilliSeconds: 300
-      redrawDebounceMilliSeconds: 700
+      redrawDebounceMilliSeconds: 1000
       options:
         logLevel: if isDev then 'debug' else 'error'
         disableDoubleClickZoom: false #does not work well with dblclick properties
