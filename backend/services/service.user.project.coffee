@@ -142,7 +142,7 @@ class ProjectCrud extends ThenableCrud
         true
 
   addClient: (clientEntryValue) ->
-    {user, project, evtdata} = clientEntryValue
+    {user, project, profile, evtdata} = clientEntryValue
     dbs.transaction 'main', (trx) ->
       # get the invited user if exists
       tables.auth.user(transaction: trx)
@@ -185,14 +185,16 @@ class ProjectCrud extends ThenableCrud
             transaction: trx
           permissionsService.setPermissionForUserId permission
 
-
         # profile stuff
         .then ->
-          newProfile =
+          newProfile = _.merge profile,
             auth_user_id: user.id
             parent_auth_user_id: user.parent_id
             project_id: project.id
+            favorites: {}
+
           profileSvc.createForProject newProfile, trx
+
 
 #temporary to not conflict with project
 module.exports = ProjectCrud

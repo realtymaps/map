@@ -171,6 +171,7 @@ module.exports = app.config (
     #parent: null
     loginRequired: false
     permissionsRequired: false
+    sticky: false
 
   buildState 'profiles'
   buildState 'history'

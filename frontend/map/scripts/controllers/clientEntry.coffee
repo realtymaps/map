@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
 
@@ -8,12 +7,14 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $scope,
   $log,
   $state,
+  #$http,
   rmapsClientEntryService,
   rmapsEventConstants,
   rmapsPrincipalService,
   rmapsProfilesService,
   rmapsMapAuthorizationFactory,
-  rmapsResponsiveViewService
+  rmapsResponsiveViewService,
+  rmapsLoginHack
 ) ->
   $log = $log.spawn 'rmapsClientEntryCtrl'
 
@@ -35,14 +36,18 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
       rmapsPrincipalService.setIdentity(data.identity)
       rmapsProfilesService.setCurrentProfileByIdentity data.identity
       .then () ->
-        if mobileView
-          $state.go 'project', id: $scope.project.id
-        else
-          $state.go 'map', id: $scope.project.id
+        cb = () ->
+          if mobileView
+            $state.go('project', {id: $scope.project.id}, {reload: true})
+          else
+            #$state.go('map', {id: $scope.project.id}, {reload: true})
+            rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
+
+        rmapsLoginHack.checkLoggIn(cb)
+
     , (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
-
 
   rmapsClientEntryService.getClientEntry $state.params.key
   .then (data) ->
