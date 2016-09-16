@@ -33,7 +33,9 @@ app.controller 'rmapsMapCtrl', (
   rmapsProfilesService
   rmapsProjectsService,
   rmapsPropertiesService,
-  rmapsSearchboxService
+  rmapsSearchboxService,
+  rmapsClientEntryService,
+  rmapsBounds
 ) ->
 
   $scope.mapId = mapId = rmapsMapIds.mainMap()
@@ -88,10 +90,13 @@ app.controller 'rmapsMapCtrl', (
       $location.search 'property_id', undefined
 
   #
-  # Center on an area if requested
+  # Center on an area if requested, or other special bounds to center on
   #
-  checkCenterOnArea = () ->
+  checkCenterOnBounds = () ->
     areaId = $state.params.area_id || $location.search().area_id
+
+    # we intend to center a subuser client to pins upon first login
+    centerOnPins = rmapsClientEntryService.isFirstLogin()
 
     if areaId
       #zoom to bounds on shapes
@@ -107,13 +112,24 @@ app.controller 'rmapsMapCtrl', (
           $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, bounds
         , 10)
 
+    # center on pins if they exist; (subuser/client will have map_position populated from parent, which is used if no pins)
+    else if centerOnPins and !_.isEmpty(rmapsPropertiesService.pins)
+      rmapsClientEntryService.notFirstLoginAnymore()
+      bounds = rmapsBounds.boundsFromPropertyArray(rmapsPropertiesService.pins)
+      $timeout(() ->
+        boundsReformat = [
+          [bounds.northEast.lat, bounds.northEast.lng]
+          [bounds.southWest.lat, bounds.southWest.lng]
+        ]
+        $rootScope.$emit rmapsEventConstants.map.fitBoundsProperty, boundsReformat, {padding: [80, 80]}
+      )
 
   #
   # Set $scope variables for the Project selector tool
   #
   setScopeVariables = () ->
     $scope.loadProperty rmapsProfilesService.currentProfile
-    checkCenterOnArea()
+    checkCenterOnBounds()
 
   #
   # Watch for changes to the current profile. This is necessary since the map state is sticky

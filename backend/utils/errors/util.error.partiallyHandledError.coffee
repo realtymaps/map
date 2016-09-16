@@ -1,6 +1,6 @@
 VError = require 'verror'
 uuid = require 'node-uuid'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
 analyzeValue = require '../../../common/utils/util.analyzeValue'
 
 # If the first argument passed is an Error object, a uuid reference will be logged along with the stack trace
@@ -40,6 +40,10 @@ isUnhandled = (err) ->
   !err? || !(err instanceof PartiallyHandledError)
 
 
+isKnexUndefined = (err) ->
+  err? && (err instanceof Error) && /Undefined binding\(s\) detected when compiling.*/.test(err.message)
+
+
 isCausedBy = (errorType, _err) ->
   check = (err) ->
     return getRootCause(err) instanceof errorType
@@ -62,4 +66,5 @@ module.exports = {
   isUnhandled
   isCausedBy
   getRootCause
+  isKnexUndefined
 }

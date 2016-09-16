@@ -11,6 +11,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 notifyQueueSvc = require('../services/service.notification.queue').instance
 notificationsSvc = require '../services/service.notifications'
 utilEvents = require './util.events.coffee'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 NUM_ROWS_TO_PAGINATE = 100
@@ -185,7 +186,6 @@ cleanupNotifications = (subtask) ->
           return
 
         logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-        logger.debug -> maxedOutRows
 
         if badRows.length
           logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
@@ -196,12 +196,27 @@ cleanupNotifications = (subtask) ->
         tables.user.notificationExpired({transaction})
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
-          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
-          logger.debug -> maxedOutRows
+          query = null
+          clauseArg =  _.pluck('id', maxedOutRows)
 
-          tables.user.notificationQueue({transaction})
-          .whereIn 'id', _.pluck 'id', maxedOutRows
+          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
+
+          logIfError = (logQuery = false) ->
+            logger.debug -> query.toString() if logQuery
+            logger.debug "@@@@ maxedOutRows @@@@"
+            logger.debug -> maxedOutRows
+            logger.debug "@@@@ clauseArg @@@@"
+            logger.debug -> clauseArg
+
+          query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', clauseArg)
           .delete()
+
+          .catch errorHandlingUtils.isKnexUndefined, (error) ->
+            logIfError()
+            throw new errorHandlingUtils.PartiallyHandledError(error, "isKnexUndefined: failed to clean maxedOutRows")
+          .catch errorHandlingUtils.isUnhandled, (error) ->
+            logIfError(true)
+            throw new errorHandlingUtils.PartiallyHandledError(error, "isUnhandled: failed to clean maxedOutRows")
 
 
 module.exports = {

@@ -3,6 +3,8 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 clientEntryAPI = backendRoutes.clientEntry
 
 app.service 'rmapsClientEntryService', ($http, $sce) ->
+  _clientFirstLogin = false
+
   getClientEntry: (key) ->
     $http.get clientEntryAPI.getClientEntry,
       params:
@@ -15,4 +17,13 @@ app.service 'rmapsClientEntryService', ($http, $sce) ->
 
   setPasswordAndBounce: (entity) ->
     $http.post backendRoutes.clientEntry.setPasswordAndBounce, entity
+    .then (response) ->
+      _clientFirstLogin = true
+      response
+
+  isFirstLogin: () ->
+    return _clientFirstLogin
+
+  notFirstLoginAnymore: () ->
+    _clientFirstLogin = false
 

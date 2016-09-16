@@ -9,7 +9,9 @@ describe 'Login: ', ->
     login()
 
   it 'location is at /map', ->
-    expect(browser.getLocationAbsUrl()).toEqual('/map')
+    Promise.delay 1000
+    .then ->
+      expect(browser.getLocationAbsUrl()).toEqual('/map')
 
   it 'map is visible', () ->
     Promise.delay 1000

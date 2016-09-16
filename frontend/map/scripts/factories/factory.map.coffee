@@ -91,8 +91,8 @@ app.factory 'rmapsMapFactory',
         $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
           @zoomTo result, doChangeZoom
 
-        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds) =>
-          @fitBounds bounds
+        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
+          @fitBounds bounds, options
 
         $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
 
