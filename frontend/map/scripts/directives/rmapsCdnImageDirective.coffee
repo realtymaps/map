@@ -35,6 +35,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile, $interpolate) ->
     if 'src' of attrs
       remap 'src'
     else if 'ngSrc' of attrs
+      $log.debug "ngSrc: #{attrs.ngSrc}"
       remap 'ng-src', attrs.ngSrc
     else
       return

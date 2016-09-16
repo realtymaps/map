@@ -1,20 +1,15 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('route.user.internals')
+logger = require('../config/logger').spawn('route:user:internals')
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
 config = require '../config/config'
 dimensionLimits = config.IMAGES.dimensions.profile
-transforms = require '../utils/transforms/transforms.user'
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
-validation = require '../utils/util.validation'
 userInternalsSvc = require '../services/service.user.internals'
-userCompanySvc = require '../services/service.user.company.coffee'
 
-
-getImage = ({res, next, entity, typeStr = 'user'}) -> Promise.try ->
-  userInternalsSvc.getImage(entity)
-  .then (result) ->
+_handleBlob = ({promise, res, next}) -> Promise.try ->
+  promise.then (result) ->
     if !result?.blob?
       return next new ExpressResponse({} , {status: httpStatus.NOT_FOUND})
 
@@ -23,19 +18,22 @@ getImage = ({res, next, entity, typeStr = 'user'}) -> Promise.try ->
     buf = new Buffer(parsed.data, 'base64')
     dim = sizeOf buf
     if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
-      logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for entity.id: #{entity.id}; type: #{typeStr}"
+      logger.error "Dimensions of #{JSON.stringify dim} are outside of limits"
     res.send(buf)
 
+getImage = ({res, next, entity}) ->
+  _handleBlob {
+    res
+    promise: userInternalsSvc.getImage(entity)
+    next
+  }
+
 getCompanyImage = (req, res, next) ->
-  validation.validateAndTransformRequest(req.params, transforms.image)
-  .then (validParams) ->
-    getImage {
-      req
-      res
-      next
-      entity: {account_image_id: validParams.account_image_id}
-      typeStr: 'company'
-    }
+  _handleBlob {
+    res
+    promise: userInternalsSvc.getImageByCompany req.user.company_id
+    next
+  }
 
 getBlobFromReq = ({req, next}) ->
   # logger.debug req.body.blob
@@ -54,16 +52,19 @@ getBlobFromReq = ({req, next}) ->
 
   req.body.blob
 
-updateImage = ({req, next, entity, svc = userInternalsSvc}) ->
+updateImage = ({req, next, entity, context}) ->
   blob = getBlobFromReq({req, next})
-  svc.upsertImage(entity, blob)
+  logger.debug "@@@@ entity @@@@"
+  logger.debug -> entity
+
+  userInternalsSvc.upsertImage({entity, blob, context})
 
 updateCompanyImage = ({req, next, entity}) ->
   updateImage {
     req
     next
     entity
-    svc: userCompanySvc
+    context: 'company'
   }
 
 
