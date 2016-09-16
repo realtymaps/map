@@ -2,9 +2,9 @@ logger = require('../config/logger').spawn('map:filterSummary:drawnShapes')
 combined = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 tables = require '../config/tables'
-sqlHelpers = require '../utils/util.sql.helpers'
 {distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
 drawnShapesTransforms = require('../utils/transforms/transforms.properties.coffee').drawnShapes
+internals = require './service.properties.combined.filterSummary.internals'
 
 ###
 override:
@@ -79,4 +79,5 @@ module.exports = {
   getFilterSummaryAsQuery
   getPropertyIdsInArea
   transforms: drawnShapesTransforms
+  cluster: internals
 }
