@@ -20,7 +20,7 @@ createFromCampaign = (campaign, macros) ->
 
     # replace macros in html content
     for key, value of macros
-      html = html.replace(new RegExp("{{#{key}}}", "gi"), value)
+      html = html.replace(new RegExp("{{#{key}}}", "gi"), value || '')
 
     # draft key and options
     key = config.MAILING_PLATFORM.S3_UPLOAD.getKey()

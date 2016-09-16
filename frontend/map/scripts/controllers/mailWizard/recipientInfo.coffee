@@ -57,6 +57,8 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $uibModal, $scope, $log, $
 
           if oKey = hash(oAddr)
             $log.debug "Adding #{oAddr.name}'s address: #{oKey}"
+            # Save the property address along with the owner address for mail macros
+            oAddr.property = _.pick(p.address, 'co', 'street', 'unit', 'citystate', 'zip')
             owner[oKey] = oAddr
 
         $scope.propertyAndOwner = _.values _.defaults {}, property, owner
