@@ -197,18 +197,26 @@ cleanupNotifications = (subtask) ->
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
           query = null
+          clauseArg =  _.pluck('id', maxedOutRows)
 
-          Promise.try () ->
-            logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
+          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
 
-            query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', _.pluck 'id', maxedOutRows)
-            .delete()
-
-            query
-          .catch errorHandlingUtils.isUnhandled, (error) ->
-            logger.debug -> query.toString()
+          logIfError = (logQuery = false) ->
+            logger.debug -> query.toString() if logQuery
+            logger.debug "@@@@ maxedOutRows @@@@"
             logger.debug -> maxedOutRows
-            throw new errorHandlingUtils.PartiallyHandledError(error, "failed to clean maxedOutRows")
+            logger.debug "@@@@ clauseArg @@@@"
+            logger.debug -> clauseArg
+
+          query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', clauseArg)
+          .delete()
+
+          .catch errorHandlingUtils.isKnexUndefined, (error) ->
+            logIfError()
+            throw new errorHandlingUtils.PartiallyHandledError(error, "isKnexUndefined: failed to clean maxedOutRows")
+          .catch errorHandlingUtils.isUnhandled, (error) ->
+            logIfError(true)
+            throw new errorHandlingUtils.PartiallyHandledError(error, "isUnhandled: failed to clean maxedOutRows")
 
 
 module.exports = {
