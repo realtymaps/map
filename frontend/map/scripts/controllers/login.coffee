@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
@@ -23,34 +22,6 @@ rmapsMapAuthorizationFactory) ->
 
   $scope.loginInProgress = false
   $scope.form = {}
-
-  # ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #   We need to figure out why after login succedes that some post processing routes still think we are not logged in.
-
-  #   Hence why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
-  #   we are actual logged in.
-  # ###
-  # isLoggedIn = () ->
-  #   $http.get backendRoutes.config.protectedConfig
-  #   .then ({data} = {}) ->
-  #     if !data || data.doLogin == true
-  #       return false
-  #     true
-
-  # # just because loggin succeeded does not mean the backend is synced with the profile
-  # # check until it is synced
-  # checkLoggIn = (maybeLoggedIn) ->
-  #   if maybeLoggedIn
-  #     rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
-  #     return
-
-  #   isLoggedIn()
-  #   .then (loggedIn) ->
-  #     setTimeout ->
-  #       checkLoggIn(loggedIn)
-  #     , 500
-
-  # # END TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   loginFailed = (response) ->
     $log.error "Could not log in", response

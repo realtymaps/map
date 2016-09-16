@@ -4,7 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 module.exports = app.service 'rmapsLoginHack', (
   $log
   $http
-  rmapsMapAuthorizationFactory
 ) ->
   $log = $log.spawn 'loginHack'
   #
@@ -17,8 +16,8 @@ module.exports = app.service 'rmapsLoginHack', (
   ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     We need to figure out why after login succedes that some post processing routes still think we are not logged in.
 
-    Hence why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
-    we are actual logged in.
+    Hence, why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
+    we are actually logged in.
   ###
   isLoggedIn = () ->
     $http.get backendRoutes.config.protectedConfig
