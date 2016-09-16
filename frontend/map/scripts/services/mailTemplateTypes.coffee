@@ -37,7 +37,7 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
 
     'inquirySinglePartyShortTermListing':
       content: require('../../html/includes/mail/inquiry-single-party-short-term-listing-template.jade')()
-      name: "Inquiry Single Party Short Term Listing"
+      name: "Inquiry Short Term Listing"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
