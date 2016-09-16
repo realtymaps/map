@@ -234,7 +234,6 @@ sendLetter = (letter, apiName) ->
   lobPromise()
   .then (lob) ->
     Promise.try ->
-
       if letter.options.custom_content # custom/wysiwyg content will be sent as HTML so that LOB will swap out macro `data`
         letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
         letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color
