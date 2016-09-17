@@ -119,7 +119,6 @@ describe "service.lob", ->
       .then (result) ->
         LobFactory.prototype.letters.create.callCount.should.equal 1
         LobFactory.prototype.letters.create.args[0][0].file.should.equal mockLetter.file
-        LobFactory.prototype.letters.create.args[0][0].double_sided.should.be.true
         LobFactory.prototype.letters.create.args[0][0].color.should.be.false
         LobFactory.prototype.letters.create.args[0][0].address_placement.should.equal 'top_first_page'
         done()
@@ -162,7 +161,6 @@ describe "service.lob", ->
       .then (result) ->
         LobFactory.prototype.letters.create.callCount.should.equal 1
         LobFactory.prototype.letters.create.args[0][0].file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
-        LobFactory.prototype.letters.create.args[0][0].double_sided.should.be.true
         LobFactory.prototype.letters.create.args[0][0].color.should.be.true
         LobFactory.prototype.letters.create.args[0][0].address_placement.should.equal 'insert_blank_page'
         done()

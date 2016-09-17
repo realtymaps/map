@@ -234,18 +234,18 @@ sendLetter = (letter, apiName) ->
   lobPromise()
   .then (lob) ->
     Promise.try ->
-      # acquire s3 url to the content pdf
-      awsService.getTimedDownloadUrl
-        extAcctName: awsService.buckets.PDF
-        Key: letter.options.aws_key
-      .then (file) ->
-        letter.file = file
-        letter.double_sided = true
-        if letter.options.custom_content
-          letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
-          letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color
-        else
-          letter.options.address_placement = 'insert_blank_page'
+      if letter.options.custom_content # custom/wysiwyg content will be sent as HTML so that LOB will swap out macro `data`
+        letter.options.address_placement = 'top_first_page' # our wysiwyg accounts for address area
+        letter.options.color = false # wysiwyg will only be b/w for now, so don't allow color
+      else
+        letter.options.address_placement = 'insert_blank_page'
+
+        # acquire s3 url to the content pdf
+        awsService.getTimedDownloadUrl
+          extAcctName: awsService.buckets.PDF
+          Key: letter.options.aws_key
+        .then (file) ->
+          letter.file = file
 
     .catch (err) ->
       throw new Error(err, "Could not acquire a signed url.")
@@ -258,6 +258,7 @@ sendLetter = (letter, apiName) ->
       letter = _.pick letter, LOB_LETTER_FIELDS
 
       lob[apiName].sendLetter letter
+      
 
 #
 # Creates a CC hold for the mail campaign and places letters in the outgoing mail table
