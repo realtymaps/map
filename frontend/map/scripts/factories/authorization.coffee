@@ -10,7 +10,8 @@ app.factory 'rmapsMapAuthorizationFactory', (
   $timeout,
   rmapsPrincipalService,
   rmapsPriorStateService,
-  rmapsUrlHelpersService
+  rmapsUrlHelpersService,
+  rmapsProfilesService
 ) ->
 
   $log = $log.spawn('map:rmapsMapAuthorizationFactory')
@@ -63,7 +64,8 @@ app.factory 'rmapsMapAuthorizationFactory', (
 
       if clear
         rmapsPriorStateService.clearPrior()
-      $state.go 'map'
+
+      $state.go 'map', {id: rmapsProfilesService.currentProfile?.project_id}, {reload: true}
 
     # Ensure that this state change is correctly authenticated and authorized, or redirect to login
     # If the state requires a profile or a profile is specified on the URL, load it now
