@@ -101,6 +101,8 @@ transaction = (args...) -> Promise.try () ->
   else
     get(dbName).transaction(handler)
 
+raw = (dbName, args...) ->
+  get(dbName).raw(args...)
 
 buildTableName = (tableName) ->
   (subid) ->
@@ -124,6 +126,7 @@ module.exports = {
   get
   getPlainClient
   transaction
+  raw
   connectionless
   isEnabled: () -> _enabled
   enable: () -> _enabled = true

@@ -280,23 +280,20 @@ setFinishedTimestamps = (transaction=null) ->
     .limit(1)
 
 
-_taskCountColumns = _.map [
-  "COUNT(*) AS subtasks_created"
-  "COUNT(status = 'preparing' OR NULL) AS subtasks_preparing"
-  "COUNT(status = 'running' OR NULL) AS subtasks_running"
-  "COUNT(status = 'soft fail' OR NULL) AS subtasks_soft_failed"
-  "COUNT(status = 'hard fail' OR NULL) AS subtasks_hard_failed"
-  "COUNT(status = 'infrastructure fail' OR NULL) AS subtasks_infrastructure_failed"
-  "COUNT(status = 'canceled' OR NULL) AS subtasks_canceled"
-  "COUNT(status = 'timeout' OR NULL) AS subtasks_timeout"
-  "COUNT(status = 'zombie' OR NULL) AS subtasks_zombie"
-  "COUNT(finished IS NOT NULL OR NULL) AS subtasks_finished"
-  "COUNT(status = 'success' OR NULL) AS subtasks_succeeded"
-  "COUNT(status NOT IN ('queued', 'preparing', 'running', 'success', 'canceled') OR NULL) AS subtasks_failed"
-], (col) -> dbs.get('main').raw(col)
 _updateTaskCountsImpl = (transaction, taskCriteria) ->
   tables.jobQueue.currentSubtasks({transaction})
-  .select(_taskCountColumns...)
+  .select(dbs.raw('main', "COUNT(*) AS subtasks_created"))
+  .select(dbs.raw('main', "COUNT(status = 'preparing' OR NULL) AS subtasks_preparing"))
+  .select(dbs.raw('main', "COUNT(status = 'running' OR NULL) AS subtasks_running"))
+  .select(dbs.raw('main', "COUNT(status = 'soft fail' OR NULL) AS subtasks_soft_failed"))
+  .select(dbs.raw('main', "COUNT(status = 'hard fail' OR NULL) AS subtasks_hard_failed"))
+  .select(dbs.raw('main', "COUNT(status = 'infrastructure fail' OR NULL) AS subtasks_infrastructure_failed"))
+  .select(dbs.raw('main', "COUNT(status = 'canceled' OR NULL) AS subtasks_canceled"))
+  .select(dbs.raw('main', "COUNT(status = 'timeout' OR NULL) AS subtasks_timeout"))
+  .select(dbs.raw('main', "COUNT(status = 'zombie' OR NULL) AS subtasks_zombie"))
+  .select(dbs.raw('main', "COUNT(finished IS NOT NULL OR NULL) AS subtasks_finished"))
+  .select(dbs.raw('main', "COUNT(status = 'success' OR NULL) AS subtasks_succeeded"))
+  .select(dbs.raw('main', "COUNT(status NOT IN ('queued', 'preparing', 'running', 'success', 'canceled') OR NULL) AS subtasks_failed"))
   .where({task_name: taskCriteria.name, batch_id: taskCriteria.batch_id})
   .then ([counts]) ->
     tables.jobQueue.taskHistory({transaction})
