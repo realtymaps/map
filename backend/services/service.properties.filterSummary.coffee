@@ -8,6 +8,7 @@ validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
 geohash = require 'geohash64'
 moment = require 'moment'
+errorHandlingUtils =  require '../utils/errors/util.error.partiallyHandledError'
 
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
@@ -36,6 +37,10 @@ module.exports =
 
 
         cluster = () ->
+          if !filterSummaryImpl.cluster
+            logger.debug -> filterSummaryImpl
+            throw new errorHandlingUtils.PartiallyHandledError "filterSummaryImpl.cluster is undefined"
+
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
 
           # does not need limit as clusterQuery will only return 1 row
