@@ -8,6 +8,7 @@ app.controller 'rmapsPropertyCtrl',
     $rootScope
     $stateParams
     $log
+    $http
     $uibModal
     rmapsPropertiesService
     rmapsFormattersService
@@ -16,7 +17,7 @@ app.controller 'rmapsPropertyCtrl',
     rmapsGoogleService
     rmapsMailCampaignService
     rmapsFiltersFactory
-    $http
+    rmapsNotesService
   ) ->
 
     $log = $log.spawn 'rmapsPropertyCtrl'
@@ -83,10 +84,19 @@ app.controller 'rmapsPropertyCtrl',
         controller: 'rmapsModalInstanceCtrl'
         resolve: model: -> mls
 
+    $scope.newNotes = {}
+
+    $scope.createNote = (property) ->
+      project = {project_id: $rootScope.principal.getCurrentProjectId()}
+      rmapsNotesService.createNote {property, project, $scope}
+      .then (newNote) ->
+        $scope.selectedResult.notes.push newNote
+
     getPropertyDetail = (propertyId) ->
       rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', true)
       .then (property) ->
         $scope.selectedResult = property
+        $scope.selectedResult.rm_property_id = propertyId
 
         $scope.dataSources = (property.mls||[]).concat(property.county||[])
 

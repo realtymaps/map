@@ -1,5 +1,6 @@
 @import './results'
 @import '../components/property-attr-functions.styl'
+@import '../components/noteItem.styl'
 
 /*****************
 Property Detail Modal
@@ -22,6 +23,9 @@ Property Detail Modal
 
   .property-detail-container
     padding-top: 25px;
+
+    .notes
+      @extend .note-item
 
     .content-value
       text-transform capitalize

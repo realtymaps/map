@@ -45,21 +45,42 @@ rmapsHttpTempCache
       @getAll(force, cache).then (data) ->
         _.values data
 
-    createFromText: (noteText, projectId, propertyId, geomPointJson) ->
+    createFromText: ({text, project_id, rm_property_id, geometry_center} = {}) ->
       note = {
-        text: noteText,
-        rm_property_id : propertyId
-        geometry_center : geomPointJson
-        project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
+        text
+        rm_property_id
+        geometry_center
+        project_id: project_id || rmapsPrincipalService.getCurrentProfile().project_id || undefined
       }
 
-      return service.create(note)
+      service.create(note)
+
+    createNote: ({project, property, $scope} = {}) ->
+      @createFromText({
+        text: $scope.newNotes[property.rm_property_id].text
+        project_id: project.project_id
+        rm_property_id: property.rm_property_id
+        geometry_center: property.geometry_center
+      }).then (result) ->
+        $rootScope.$emit rmapsEventConstants.notes
+        delete $scope.newNotes[property.rm_property_id]
+        result
+
+    createProjectNote: ({project, $scope} = {}) ->
+      @createFromText({
+        text: $scope.newNotes['project'].text,
+        project_id: project.project_id
+      }).then (result) ->
+        $rootScope.$emit rmapsEventConstants.notes
+        delete $scope.newNotes['project']
+        result
 
     create: (entity) ->
       entity.text = encodeURIComponent(entity.text)
       $http.post(backendRoutes.notesSession.apiBase, entity, {cache:false})
-      .then () =>
+      .then ({data}) =>
         @getList(true)
+        data
 
     remove: (id) ->
       throw new Error('must have id') unless id
@@ -73,8 +94,9 @@ rmapsHttpTempCache
       throw new Error('entity must have id') unless entity.id
       id = '/' + entity.id
       $http.put(backendRoutes.notesSession.apiBase + id, entity, cache: false)
-      .then () =>
+      .then ({data}) =>
         @getList(true)
+        data
 
     hasNotes: (propertyId) ->
       return false unless propertyId

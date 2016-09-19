@@ -1,3 +1,5 @@
+include ../../includes/mixins/_noteInputMixin.jade
+
 .row
   .col-sm-6.col-xs-12
     .bordered
@@ -24,13 +26,9 @@
               .note-author {{note.first_name}} {{note.last_name}}
               .note-text {{note.text}}
 
-      .note-input
-        form.note(name="createNoteForm_{{property.rm_property_id}}" ng-submit="createNote(project, property)")
-          .input-group
-            textarea.form-control(cols="25" rows="2"
-            placeholder="Add a note about this property"
-            name="noteText"
-            type="text"
-            ng-model="newNotes[property.rm_property_id].text"
-            validator="minlength=1")
-            span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") Add
+      +noteInputMixin(
+        "createNoteForm_{{property.rm_property_id}}",
+        "createNote(project, property)",
+        "newNotes[property.rm_property_id].text",
+        "createNote(project, property)"
+      )
