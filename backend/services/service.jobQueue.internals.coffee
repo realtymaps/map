@@ -28,8 +28,8 @@ TASK_CONFIG = tables.jobQueue.taskConfig.tableName
 getPossiblyReadyTasks = (transaction) ->
   tables.jobQueue.taskConfig(transaction: transaction)                                          # get task config...
   .leftJoin TASK_HISTORY,                                                                       # (left outer) joined with task history, when:
-    "#{TASK_CONFIG}.name": "#{TASK_HISTORY}.name"                                                   # task names match...
-    "#{TASK_HISTORY}.current": tables.jobQueue.taskHistory.raw('true')                              # and it is the most recent run for that task
+    "#{TASK_HISTORY}.current": tables.jobQueue.taskHistory.raw('true')                              # it is the most recent run for that task...
+    "#{TASK_CONFIG}.name": "#{TASK_HISTORY}.name"                                                   # and task names match
   .select("#{TASK_CONFIG}.*")                                                                   # only consider:
   .where("#{TASK_CONFIG}.active": true)                                                             # active tasks...
   .whereRaw("COALESCE(#{TASK_CONFIG}.ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()")              # whose time has come...
@@ -175,7 +175,7 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
       .insert errorSubtask
     .then () ->
       if hard
-        Promise.join cancelTaskImpl(subtask.task_name, 'hard fail', false, transaction), enqueueNotification
+        Promise.join cancelTaskImpl(subtask.task_name, {newTaskStatus: 'hard fail', withPrejudice: false, transaction}), enqueueNotification
           payload:
             subject: 'subtask: hard fail'
             subtask: subtask
@@ -194,9 +194,9 @@ getQueueLockId = memoize.promise(getQueueLockId, primitive: true)
 sendLongTaskWarnings = (transaction=null) ->
   # warn about long-running tasks
   tables.jobQueue.taskHistory(transaction: transaction)
+  .where(current: true)
   .whereNull('finished')
   .whereNotNull('warn_timeout_minutes')
-  .where(current: true)
   .whereRaw("started + warn_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
     enqueueNotification
@@ -208,35 +208,37 @@ sendLongTaskWarnings = (transaction=null) ->
 
 killLongTasks = (transaction=null) ->
   # kill long-running tasks
-  tables.jobQueue.taskHistory(transaction: transaction)
+  tables.jobQueue.taskHistory({transaction})
+  .where(current: true)
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
-  .where(current: true)
   .whereRaw("started + kill_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
     cancelPromise = Promise.map tasks, (task) ->
       logger.warn("Task for batchId #{task.batch_id} has timed out: #{task.name}")
-      cancelTaskImpl(task.name, 'timeout')
-    notificationPromise = enqueueNotification payload:
-      subject: 'task: long run killed'
-      tasks: tasks
-      error: 'tasks have been running for longer than expected'
+      cancelTaskImpl(task.name, {newTaskStatus: 'timeout', transaction})
+    notificationPromise = Promise.try () ->
+      enqueueNotification payload:
+        subject: 'task: long run killed'
+        tasks: tasks
+        error: 'tasks have been running for longer than expected'
     Promise.join cancelPromise, notificationPromise
 
 
 handleZombies = (transaction=null) ->
   # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks
-  tables.jobQueue.currentSubtasks(transaction: transaction)
-  .whereNull('finished')
-  .whereNotNull('started')
+  mainZombiesPromise = tables.jobQueue.currentSubtasks(transaction: transaction)
+  .where(status: 'running')
   .where () ->
     @whereNotNull('kill_timeout_seconds')
     @whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * ('1 second'::INTERVAL) < NOW()")
     @orWhereRaw("heartbeat + #{config.JOB_QUEUE.HEARTBEAT}*('1 millisecond'::INTERVAL)*5 < NOW()")
-  .orWhere () ->
-    @whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
-    @where(status: 'preparing')
-  .then (subtasks=[]) ->
+  preparedZombiesPromise = tables.jobQueue.currentSubtasks(transaction: transaction)
+    .where(status: 'preparing')
+    .whereRaw("preparing_started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + INTERVAL '1 second' < NOW()")
+  Promise.join mainZombiesPromise, preparedZombiesPromise, (mainZombies=[], preparedZombies=[]) ->
+    preparedIds = _.pluck(preparedZombies, 'id')
+    subtasks = _.reject(mainZombies, (s) -> s.id in preparedIds).concat(preparedZombies)
     Promise.map subtasks, (subtask) ->
       handleSubtaskError({
         prefix: "<#{subtask.queue_name}-unknown>"
@@ -250,21 +252,14 @@ handleZombies = (transaction=null) ->
 handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
   tables.jobQueue.taskHistory(transaction: transaction)
-  .where(status: 'running')
+  .where
+    current: true
+    status: 'running'
   .whereNotExists () ->
     tables.jobQueue.currentSubtasks(transaction: this)
     .select(1)
     .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
-    .where () ->
-      this
-      .whereNull("#{tables.jobQueue.currentSubtasks.tableName}.finished")
-      .orWhereIn("#{tables.jobQueue.currentSubtasks.tableName}.status", ['hard fail', 'infrastructure fail', 'canceled'])
-      .orWhere () ->
-        this.where "#{tables.jobQueue.currentSubtasks.tableName}.status", 'timeout'
-        this.where "#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_timeouts", true
-      .orWhere () ->
-        this.where "#{tables.jobQueue.currentSubtasks.tableName}.status", 'zombie'
-        this.where "#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true
+    .whereNull("#{tables.jobQueue.currentSubtasks.tableName}.finished")
   .update
     status: 'success'
     status_changed: dbs.get('main').raw('NOW()')
@@ -272,21 +267,49 @@ handleSuccessfulTasks = (transaction=null) ->
 
 setFinishedTimestamps = (transaction=null) ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
-  tables.jobQueue.currentSubtasks(transaction: transaction)
-  .select('task_name', dbs.get('main').raw('MAX(finished) AS finished'))
-  .groupBy('task_name')
-  .then (tasks=[]) ->
-    Promise.map tasks, (task) ->
-      tables.jobQueue.taskHistory(transaction: transaction)
-      .where
-        current: true
-        name: task.task_name
-      .whereNotIn('status', ['preparing', 'running'])
-      .update(finished: task.finished)
+  tables.jobQueue.taskHistory(transaction: transaction)
+  .where(current: true)
+  .whereNotIn('status', ['preparing', 'running'])
+  .update 'finished', () ->
+    # an optimized query to get the max finished value over all subtasks for the task, using an index
+    tables.jobQueue.currentSubtasks(transaction: this)
+    .select('finished')
+    .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
+    .orderBy("#{tables.jobQueue.currentSubtasks.tableName}.task_name")
+    .orderByRaw("finished DESC NULLS LAST")
+    .limit(1)
 
 
+_taskCountColumns = _.map [
+  "COUNT(*) AS subtasks_created"
+  "COUNT(status = 'preparing' OR NULL) AS subtasks_preparing"
+  "COUNT(status = 'running' OR NULL) AS subtasks_running"
+  "COUNT(status = 'soft fail' OR NULL) AS subtasks_soft_failed"
+  "COUNT(status = 'hard fail' OR NULL) AS subtasks_hard_failed"
+  "COUNT(status = 'infrastructure fail' OR NULL) AS subtasks_infrastructure_failed"
+  "COUNT(status = 'canceled' OR NULL) AS subtasks_canceled"
+  "COUNT(status = 'timeout' OR NULL) AS subtasks_timeout"
+  "COUNT(status = 'zombie' OR NULL) AS subtasks_zombie"
+  "COUNT(finished IS NOT NULL OR NULL) AS subtasks_finished"
+  "COUNT(status = 'success' OR NULL) AS subtasks_succeeded"
+  "COUNT(status NOT IN ('queued', 'preparing', 'running', 'success', 'canceled') OR NULL) AS subtasks_failed"
+], (col) -> dbs.get('main').raw(col)
+_updateTaskCountsImpl = (transaction, taskCriteria) ->
+  tables.jobQueue.currentSubtasks({transaction})
+  .select(_taskCountColumns...)
+  .where({task_name: taskCriteria.name, batch_id: taskCriteria.batch_id})
+  .then ([counts]) ->
+    tables.jobQueue.taskHistory({transaction})
+    .where(taskCriteria)
+    .update(counts)
 updateTaskCounts = (transaction) ->
-  transaction.select(dbs.get('main').raw('jq_update_task_counts()'))
+  tables.jobQueue.taskHistory({transaction})
+  .select('name', 'batch_id')
+  .whereNull('finished')
+  .orWhereRaw("finished >= (NOW() - '1 day'::INTERVAL)")
+  .then (tasks) ->
+    Promise.map tasks, (taskCriteria) ->
+      _updateTaskCountsImpl(transaction, taskCriteria)
 
 
 runWorkerImpl = (queueName, prefix, quit) ->
@@ -352,6 +375,7 @@ executeSubtask = (subtask, prefix) ->
       status: 'running'
       started: dbs.get('main').raw('NOW()')
       heartbeat: dbs.get('main').raw('NOW()')
+      preparing_started: null
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
@@ -403,22 +427,29 @@ executeSubtask = (subtask, prefix) ->
     heartbeatPromise.cancel()
 
 
-cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
-# note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
-# worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
-  dbs.ensureTransaction trx, (transaction) ->
-    tables.jobQueue.taskHistory(transaction: transaction)
+cancelTaskImpl = (taskName, opts) ->
+  {transaction, newTaskStatus, withPrejudice} = opts
+  newTaskStatus ?= 'canceled'
+  # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
+  # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
+  logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{newTaskStatus}, withPrejudice:#{withPrejudice}")
+
+  dbs.ensureTransaction transaction, (trx) ->
+    tables.jobQueue.taskHistory({transaction: trx})
     .where
-      name: taskName
       current: true
+      name: taskName
     .whereNull('finished')
+    .returning('batch_id')
     .update
-      status: status
+      status: newTaskStatus
       status_changed: dbs.get('main').raw('NOW()')
       finished: dbs.get('main').raw('NOW()')
-    .then () ->
-      subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction: transaction)
+    .then ([batch_id]) ->
+      if !batch_id
+        logger.spawn("task:#{taskName}").debug () -> "No unfinished #{taskName} task to cancel."
+        return
+      subtaskCancelQuery = tables.jobQueue.currentSubtasks({transaction: trx})
       .where(task_name: taskName)
       if withPrejudice
         subtaskCancelQuery = subtaskCancelQuery
@@ -430,8 +461,12 @@ cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
       .update
         status: 'canceled'
         finished: dbs.get('main').raw('NOW()')
-    .then (count) ->
-      logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
+      .then (count) ->
+        _updateTaskCountsImpl trx,
+          name: taskName
+          batch_id: batch_id
+        .then () ->
+          logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
 
 # non db portion of queueSubtask
 buildQueueSubtaskDatas = ({subtask, manualData, replace}) ->

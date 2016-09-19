@@ -197,7 +197,7 @@ cleanupNotifications = (subtask) ->
         .insert(maxedOutRows.map (r) -> _.omit r, 'id')
         .then () ->
           query = null
-          clauseArg =  _.pluck('id', maxedOutRows)
+          clauseArg = _.pluck(maxedOutRows, 'id')
 
           logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
 

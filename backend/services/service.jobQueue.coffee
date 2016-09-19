@@ -25,7 +25,7 @@ MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)
-  internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+  internals.tryWithDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
     internals.getPossiblyReadyTasks(transaction)
     .then (possiblyTasks=[]) ->
       result = []
@@ -222,7 +222,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
       current: true
     .whereNull('finished')
     .map (task) ->
-      cancelTask(task.name, status, withPrejudice, transaction)
+      cancelTask(task.name, {newTaskStatus: status, withPrejudice, transaction})
       .then () ->
         if forget
           tables.jobQueue.taskHistory({transaction})
@@ -235,7 +235,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
-  cancelTask(taskName, 'canceled', withPrejudice)
+  cancelTask(taskName, {newTaskStatus: 'canceled', withPrejudice})
   .then () ->
     queueManualTask(taskName, initiator)
 
@@ -281,8 +281,14 @@ getQueueNeeds = () ->
   queueConfigPromise = tables.jobQueue.queueConfig()
   .select('*')
   .where(active: true)
-  subtasksPromise = tables.jobQueue.currentSubtasks()
-  .select('*')
+  subtasksPromise = tables.jobQueue.taskHistory()
+  .select('name')
+  .where(current: true)
+  .whereNotNull('finished')
+  .then (runningTasks) ->
+    tables.jobQueue.currentSubtasks()
+    .select('*')
+    .whereIn('task_name', _.pluck(runningTasks, 'name'))
 
   Promise.join queueConfigPromise , subtasksPromise, (queueConfigs, currentSubtasks) ->
     queueConfigs = _.indexBy(queueConfigs, 'name')
@@ -299,11 +305,11 @@ getQueueNeeds = () ->
       # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
       # anything from steps past that (in this task)
       for step in steps
-        # this step is "acceptably done" if it only consists of subtasks with soft fail, canceled, and/or success
-        # statuses, and/or possibly timeout/zombie statuses if they aren't counted as a hard fail for the subtask
+        # this step is "acceptably done" if it only consists of subtasks that are finished, since we've already excluded
+        # subtasks of tasks that have finished
         acceptablyDone = true
         for subtask in taskSteps[step]
-          if (subtask.status not in ['soft fail', 'canceled', 'success']) && (subtask.status != 'timeout' || subtask.hard_fail_timeouts) && (subtask.status != 'zombie' || subtask.hard_fail_zombies)
+          if !subtask.finished?
             acceptablyDone = false
           if subtask.status in ['queued', 'preparing', 'running'] && (!subtask.ignore_until? || subtask.ignore_until < Date.now())
             queueNeeds[subtask.queue_name] += 1
