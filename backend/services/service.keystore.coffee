@@ -40,11 +40,8 @@ _getValue = (key, namespace, defaultValue, transaction) ->
 
 # setValue resolves to the previous value for the namespace/key (or undefined if it didn't exist)
 setValue = (key, value, options={}) ->
-  if options.transaction?
-    _setValueImpl(key, value, options, options.transaction)
-  else
-    dbs.transaction 'main', (transaction) ->
-      _setValueImpl(key, value, options, transaction)
+  dbs.ensureTransaction options.transaction, (transaction) ->
+    _setValueImpl(key, value, options, transaction)
 
 _setValueImpl = (key, value, options, transaction) ->
   query = tables.config.keystore(transaction: transaction)
@@ -84,10 +81,7 @@ setValuesMap = (map, options={}) -> Promise.try () ->
     for key,value of map
       resultsPromises[key] = _setValueImpl(key, value, options, transaction)
     return Promise.props resultsPromises
-  if options.transaction?
-    return handler(options.transaction)
-  else
-    return dbs.transaction('main', handler)
+  dbs.ensureTransaction(options.transaction, handler)
 
 
 _cached = {}

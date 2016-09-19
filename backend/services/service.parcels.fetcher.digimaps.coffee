@@ -8,6 +8,7 @@ PromiseFtp = require 'promise-ftp'
 logger = require('../config/logger').spawn('digimaps:parcelFetcher')
 clientClose = require '../utils/util.client.close'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
+jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 
 DIGIMAPS =
   DIRECTORIES:[{name:'DELIVERIES'}, {name: 'DMP_DELIVERY_', doParseDate:true}, {name:'ZIPS'}]
@@ -26,16 +27,15 @@ _ftpClientFactory = (creds) -> Promise.try () ->
     autoReconnect: true
   .then (serverMsg) ->
     if !serverMsg?
-      throw new Error "No Parcel Server Response"
+      throw new Error "No parcel server response"
     ftp
+  .catch (err) ->
+    throw new jobQueueErrors.SoftFail(err, 'Error connecting to FTP server')
 
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
-
 - 1 Get All new Imports (folderNamesToProcess) post last_start_time
-
 - 2 For each folderNamesToProcess create an entry to process each FILE
-
 - 3 then insert each object into data_load_history
 ###
 defineImports = (opts) -> Promise.try ->
@@ -60,8 +60,7 @@ defineImports = (opts) -> Promise.try ->
 
         paths = ls.map (l) -> l.name
         #ignore ARCHIVED since it has no dumps (ONLY xls)
-        _.filter paths, (p) ->
-          !p.match(/archived/i)
+        _.reject paths, (p) -> p.match(/archived/i)
     .finally ->
       logger.debug 'closing client'
       client.end()
@@ -71,21 +70,19 @@ defineImports = (opts) -> Promise.try ->
 
       _getImports = (lPath) ->
         #unique client for each pwd / ls combo as multiple Promises will occur at once
-        #otherwise a single client will race itself and cause wierd errors
-        _ftpClientFactory(creds).then (getClient) ->
+        #otherwise a single client will race itself and cause weird errors
+        _ftpClientFactory(creds)
+        .then (getClient) ->
           Promise.try () ->
-            # logger.debug "lPath!!!!!!!!!!!!!!!"
-            # logger.debug lPath
-            getClient.cwd(lPath).then ->
-              getClient.pwd().then (path) ->
-                logger.debug "pwd: #{path}"
-              getClient.list()
+            logger.debug "pwd: #{lPath}"
+            getClient.cwd(lPath)
+          .then () ->
+            getClient.list()
           .then (ls) ->
             logger.debug "defineImports: step 2, file count: #{ls?.length}"
             if ls?
               importsToAdd.push "#{lPath}/#{l.name}" for l in ls
-
-          .finally ->
+          .finally () ->
             logger.debug 'closing getClient'
             getClient.end()
 
