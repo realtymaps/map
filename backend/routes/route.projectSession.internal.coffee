@@ -52,6 +52,12 @@ class ClientsCrud extends RouteCrud
   rootPOST: (req, res) ->
     throw new Error('User not logged in') unless req.user
     throw new Error('Project ID required') unless req.params.id
+
+    try
+      profileImport = req.session.profiles[req.session.current_profile_id]
+    catch err
+      throw new Error(err, "Error accessing profileid #{req.session.current_profile_id} for userid #{req.user.id}")
+
     clientEntryValue =
       user:
         date_invited: new Date()
@@ -67,6 +73,9 @@ class ClientsCrud extends RouteCrud
       project:
         id: req.params.id
         name: req.body.project_name
+      # inherit fields from parent profile
+      # `map_position` will only be used for subuser if the project has no pins to center on
+      profile: _.pick(profileImport, ['map_position'])
       evtdata:
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
