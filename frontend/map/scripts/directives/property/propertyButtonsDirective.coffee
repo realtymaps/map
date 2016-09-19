@@ -56,7 +56,7 @@ app.directive 'propertyButtons', (
       if $scope.propertyParent
         $scope.property = angular.copy($scope.propertyParent)
       else
-        $log.error("Property Buttons Directive is not passed a Property argument")
+        $log.warn("Property Buttons Directive is not passed a Property argument")
 
       $scope.$watchCollection "propertyParent", (newValue) ->
         $scope.property = newValue
