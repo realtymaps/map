@@ -222,7 +222,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
       current: true
     .whereNull('finished')
     .map (task) ->
-      cancelTask(task.name, status, withPrejudice, transaction)
+      cancelTask(task.name, {newTaskStatus: status, withPrejudice, transaction})
       .then () ->
         if forget
           tables.jobQueue.taskHistory({transaction})
@@ -235,7 +235,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
-  cancelTask(taskName, 'canceled', withPrejudice)
+  cancelTask(taskName, {newTaskStatus: 'canceled', withPrejudice})
   .then () ->
     queueManualTask(taskName, initiator)
 

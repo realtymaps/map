@@ -175,7 +175,7 @@ handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
       .insert errorSubtask
     .then () ->
       if hard
-        Promise.join cancelTaskImpl(subtask.task_name, 'hard fail', false, transaction), enqueueNotification
+        Promise.join cancelTaskImpl(subtask.task_name, {newTaskStatus: 'hard fail', withPrejudice: false, transaction}), enqueueNotification
           payload:
             subject: 'subtask: hard fail'
             subtask: subtask
@@ -208,7 +208,7 @@ sendLongTaskWarnings = (transaction=null) ->
 
 killLongTasks = (transaction=null) ->
   # kill long-running tasks
-  tables.jobQueue.taskHistory(transaction: transaction)
+  tables.jobQueue.taskHistory({transaction})
   .where(current: true)
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
@@ -216,11 +216,12 @@ killLongTasks = (transaction=null) ->
   .then (tasks=[]) ->
     cancelPromise = Promise.map tasks, (task) ->
       logger.warn("Task for batchId #{task.batch_id} has timed out: #{task.name}")
-      cancelTaskImpl(task.name, 'timeout')
-    notificationPromise = enqueueNotification payload:
-      subject: 'task: long run killed'
-      tasks: tasks
-      error: 'tasks have been running for longer than expected'
+      cancelTaskImpl(task.name, {newTaskStatus: 'timeout', transaction})
+    notificationPromise = Promise.try () ->
+      enqueueNotification payload:
+        subject: 'task: long run killed'
+        tasks: tasks
+        error: 'tasks have been running for longer than expected'
     Promise.join cancelPromise, notificationPromise
 
 
@@ -239,7 +240,6 @@ handleZombies = (transaction=null) ->
     preparedIds = _.pluck(preparedZombies, 'id')
     subtasks = _.reject(mainZombies, (s) -> s.id in preparedIds).concat(preparedZombies)
     Promise.map subtasks, (subtask) ->
-      ids[subtask.id] = true
       handleSubtaskError({
         prefix: "<#{subtask.queue_name}-unknown>"
         subtask
@@ -270,7 +270,7 @@ setFinishedTimestamps = (transaction=null) ->
   tables.jobQueue.taskHistory(transaction: transaction)
   .where(current: true)
   .whereNotIn('status', ['preparing', 'running'])
-  .update finished: () ->
+  .update 'finished', () ->
     # an optimized query to get the max finished value over all subtasks for the task, using an index
     tables.jobQueue.currentSubtasks(transaction: this)
     .select('finished')
@@ -294,21 +294,23 @@ _taskCountColumns = _.map [
   "COUNT(status = 'success' OR NULL) AS subtasks_succeeded"
   "COUNT(status NOT IN ('queued', 'preparing', 'running', 'success', 'canceled') OR NULL) AS subtasks_failed"
 ], (col) -> dbs.get('main').raw(col)
-
+_updateTaskCountsImpl = (transaction, taskCriteria) ->
+  tables.jobQueue.currentSubtasks({transaction})
+  .select(_taskCountColumns...)
+  .where({task_name: taskCriteria.name, batch_id: taskCriteria.batch_id})
+  .then ([counts]) ->
+    tables.jobQueue.taskHistory({transaction})
+    .where(taskCriteria)
+    .update(counts)
 updateTaskCounts = (transaction) ->
   tables.jobQueue.taskHistory({transaction})
   .select('name', 'batch_id')
   .whereNull('finished')
   .orWhereRaw("finished >= (NOW() - '1 day'::INTERVAL)")
-    .then (tasks) ->
-      Promise.map tasks, (taskCriteria) ->
-        tables.jobQueue.currentSubtasks({transaction})
-        .select(_taskCountColumns...)
-        .where({task_name: taskCriteria.name, batch_id: taskCriteria.batch_id})
-        .then (counts) ->
-          tables.jobQueue.taskHistory({transaction})
-          .where(taskCriteria)
-          .update(counts)
+  .then (tasks) ->
+    Promise.map tasks, (taskCriteria) ->
+      _updateTaskCountsImpl(transaction, taskCriteria)
+
 
 runWorkerImpl = (queueName, prefix, quit) ->
   logger.spawn("queue:#{queueName}").debug () -> "#{prefix} Getting next subtask..."
@@ -425,22 +427,29 @@ executeSubtask = (subtask, prefix) ->
     heartbeatPromise.cancel()
 
 
-cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
-# note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
-# worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
-  dbs.ensureTransaction trx, (transaction) ->
-    tables.jobQueue.taskHistory(transaction: transaction)
+cancelTaskImpl = (taskName, opts) ->
+  {transaction, newTaskStatus, withPrejudice} = opts
+  newTaskStatus ?= 'canceled'
+  # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
+  # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
+  logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{newTaskStatus}, withPrejudice:#{withPrejudice}")
+
+  dbs.ensureTransaction transaction, (trx) ->
+    tables.jobQueue.taskHistory({transaction: trx})
     .where
       current: true
       name: taskName
     .whereNull('finished')
+    .returning('batch_id')
     .update
-      status: status
+      status: newTaskStatus
       status_changed: dbs.get('main').raw('NOW()')
       finished: dbs.get('main').raw('NOW()')
-    .then () ->
-      subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction: transaction)
+    .then ([batch_id]) ->
+      if !batch_id
+        logger.spawn("task:#{taskName}").debug () -> "No unfinished #{taskName} task to cancel."
+        return
+      subtaskCancelQuery = tables.jobQueue.currentSubtasks({transaction: trx})
       .where(task_name: taskName)
       if withPrejudice
         subtaskCancelQuery = subtaskCancelQuery
@@ -452,8 +461,12 @@ cancelTaskImpl = (taskName, status='canceled', withPrejudice=false, trx) ->
       .update
         status: 'canceled'
         finished: dbs.get('main').raw('NOW()')
-    .then (count) ->
-      logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
+      .then (count) ->
+        _updateTaskCountsImpl trx,
+          name: taskName
+          batch_id: batch_id
+        .then () ->
+          logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
 
 # non db portion of queueSubtask
 buildQueueSubtaskDatas = ({subtask, manualData, replace}) ->
