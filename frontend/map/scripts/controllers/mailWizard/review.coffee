@@ -50,7 +50,9 @@ app.controller 'rmapsReviewCtrl', (
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
-        wizard: -> $scope.wizard
+        template: () ->
+          pdf: $scope.wizard.mail.review.pdf
+          title: 'Mail Review'
 
   $scope.viewMap = () ->
     rmapsMapTogglesFactory.currentToggles?.showMail = true
