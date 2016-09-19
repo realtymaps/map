@@ -1,20 +1,20 @@
 div.btn-actions
-  button.favorite(ng-click="favorite($event)" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }")
+  button.favorite(ng-click="favorite($event)" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }" ng-disabled="!property")
     i.fa.fa-heart(ng-class="{'fa-heart':formatters.property.isFavoriteResult(property), 'fa-heart-o':!formatters.property.isFavoriteResult(property)}") &nbsp;
     .button-help Favorite
 
-  button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isPinnedResult(property) }")
+  button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isPinnedResult(property) }" ng-disabled="!property")
     span.icon.icon-pin
     .button-help {{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}
 
-  button.send(rmaps-require-project-editor="disable" ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }")
+  button.send(rmaps-require-project-editor="disable" ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }" ng-disabled="!property")
     i.fa.fa-envelope
     .button-help Mailing
 
-  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property, project.id); $event.stopPropagation()" ng-class="{ 'button-has-notes': hasNotes(property) }")
+  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property, project.id); $event.stopPropagation()" ng-class="{ 'button-has-notes': hasNotes(property) }" ng-disabled="!property")
     i.fa.fa-sticky-note &nbsp;
     .button-help Note
 
-  button.snail(ng-click="zoomTo($event);")
+  button.snail(ng-click="zoomTo($event);" ng-disabled="!property")
     i.fa.fa-map-marker &nbsp;
     .button-help Zoom

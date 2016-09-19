@@ -10,10 +10,10 @@
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
 
-        .col-sm-8(ng-repeat="property in dataSources" ng-show="tab.selected == '{{property.data_source_id}}'")
-          .prop-image.prop-image-lg
+        .col-sm-8(ng-repeat="property in dataSources" ng-if="tab.selected == property.data_source_id")
+          .prop-image.prop-image-lg(ng-if="tab.selected == property.data_source_id")
 
-            property-images(property="property" image-width="750")
+            property-images(property="property" image-width="750" panorama-controls="true")
 
             .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
 
@@ -257,13 +257,13 @@
   .mobile-only
     mobile-header-buttons(header-id="page-modal-header")
       .property-modal-buttons
-        property-buttons(property = 'property')
+        property-buttons(property="dataSources[0]")
 
     .property-detail-container(ng-repeat="property in dataSources")
       .prop-image.prop-image-md
-        //background-color:transparent; must be here to override googles meddling where it forces style via element
-        ui-gmap-street-view-panorama.prop-image-panorama(ng-cloak,style="background-color:transparent;",focalcoord="property.geometry_center",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
-        include ../includes/map/_satilite.jade
+
+        property-images(property="property" image-height="205" image-width="{{windowWidth}}")
+
         .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
           span(ng-if="property.data_source_type == 'county'") - Tax Record
           span(ng-if="property.data_source_type == 'mls'") - {{property.mls_formal_name}}

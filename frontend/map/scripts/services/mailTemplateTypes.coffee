@@ -6,29 +6,82 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
   _categoryLists = {}
   _meta =
     'basicLetter':
-      content: require('../../html/includes/mail/basic-letter-template.jade')()
-      name: "Basic Letter #1"
+      content: require('../../html/includes/mail/blank-letter-template.jade')()
+      name: "Blank Letter"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'introductionLetter':
-      content: require('../../html/includes/mail/introduction-letter-template.jade')()
-      name: "Introduction Letter"
+    'adjacentPropertyOwnerLetter':
+      content: require('../../html/includes/mail/adjacent-property-owner-template.jade')()
+      name: "Adjacent Property Owner Letter"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'prospectingLetter':
-      content: require('../../html/includes/mail/prospecting-letter-template.jade')()
-      name: "Prospecting Letter"
+    'introLetter':
+      content: require('../../html/includes/mail/intro-letter-template.jade')()
+      name: "Intro / No Obligation Letter"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'neighborhoodFarmingLetter':
-      content: require('../../html/includes/mail/neighborhood-farming-letter-template.jade')()
-      name: "Neighborhood Farming Letter"
+    'inquiryNoBroker':
+      content: require('../../html/includes/mail/inquiry-template.jade')()
+      name: "Inquiry No Broker"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
+    'aggressiveInquiryNoBroker':
+      content: require('../../html/includes/mail/aggressive-inquiry-template.jade')()
+      name: "Aggressive Inquiry No Broker"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'inquirySinglePartyShortTermListing':
+      content: require('../../html/includes/mail/inquiry-single-party-short-term-listing-template.jade')()
+      name: "Inquiry Short Term Listing"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'socialMediaServices':
+      content: require('../../html/includes/mail/social-media-template.jade')()
+      name: "Social Media"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'saleOfRental':
+      content: require('../../html/includes/mail/sale-of-rental-template.jade')()
+      name: "Sale of Rental"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'sellerValuableAsset':
+      content: require('../../html/includes/mail/seller-valuable-asset-template.jade')()
+      name: "Seller - Home is a Valuable Asset"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'lookingForSellers':
+      content: require('../../html/includes/mail/looking-for-sellers-template.jade')()
+      name: "Looking for Interested Sellers"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'topOfMind':
+      content: require('../../html/includes/mail/top-of-mind-template.jade')()
+      name: "Top of Mind Letter"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'thinkingOfMoving':
+      content: require('../../html/includes/mail/thinking-of-moving-template.jade')()
+      name: "Thinking of Moving Letter"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
+
+    'fsbo':
+      content: require('../../html/includes/mail/fsbo-template.jade')()
+      name: "FSBO Letter"
+      thumb: "/assets/base/template_img.png"
+      category: 'letter'
 
   _buildCategoryLists = () ->
     _categoryLists = {}

@@ -25,7 +25,7 @@ MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)
-  internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+  internals.tryWithDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
     internals.getPossiblyReadyTasks(transaction)
     .then (possiblyTasks=[]) ->
       result = []
@@ -222,7 +222,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
       current: true
     .whereNull('finished')
     .map (task) ->
-      cancelTask(task.name, status, withPrejudice, transaction)
+      cancelTask(task.name, {newTaskStatus: status, withPrejudice, transaction})
       .then () ->
         if forget
           tables.jobQueue.taskHistory({transaction})
@@ -235,7 +235,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
-  cancelTask(taskName, 'canceled', withPrejudice)
+  cancelTask(taskName, {newTaskStatus: 'canceled', withPrejudice})
   .then () ->
     queueManualTask(taskName, initiator)
 
@@ -281,48 +281,54 @@ getQueueNeeds = () ->
   queueConfigPromise = tables.jobQueue.queueConfig()
   .select('*')
   .where(active: true)
-  subtasksPromise = tables.jobQueue.currentSubtasks()
-  .select('*')
+  tasksPromise = tables.jobQueue.taskHistory()
+  .select('name')
+  .where(current: true)
+  .whereNull('finished')
 
-  Promise.join queueConfigPromise , subtasksPromise, (queueConfigs, currentSubtasks) ->
+  Promise.join queueConfigPromise , tasksPromise, (queueConfigs, runningTasks) ->
     queueConfigs = _.indexBy(queueConfigs, 'name')
     for name of queueConfigs
       queueNeeds[name] = 0
       queueZombies[name] = 0
-    currentSubtasks = _.groupBy(currentSubtasks, 'task_name')
-    for taskName,subtaskList of currentSubtasks
-      if !queueConfigs[subtaskList[0]?.queue_name]?.active
-        # any task running on an inactive queue (or a queue without config) can be ignored without further processing
-        continue
-      taskSteps = _.groupBy(subtaskList, 'task_step')
-      steps = _.keys(taskSteps).sort()
-      # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
-      # anything from steps past that (in this task)
-      for step in steps
-        # this step is "acceptably done" if it only consists of subtasks with soft fail, canceled, and/or success
-        # statuses, and/or possibly timeout/zombie statuses if they aren't counted as a hard fail for the subtask
-        acceptablyDone = true
-        for subtask in taskSteps[step]
-          if (subtask.status not in ['soft fail', 'canceled', 'success']) && (subtask.status != 'timeout' || subtask.hard_fail_timeouts) && (subtask.status != 'zombie' || subtask.hard_fail_zombies)
-            acceptablyDone = false
-          if subtask.status in ['queued', 'preparing', 'running'] && (!subtask.ignore_until? || subtask.ignore_until < Date.now())
-            queueNeeds[subtask.queue_name] += 1
-          if subtask.status == 'zombie'
-            queueZombies[subtask.queue_name] += 1
-        if !acceptablyDone
-          break
-    result = []
-    for name of queueConfigs
-      # if the queue has nothing that's not a zombie, let it scale down to 0; otherwise we need to leave something
-      # running for the zombies too, or else we could get ourselves stuck in deadlock where zombies have eaten all the
-      # resources (like they do)
-      needs = 0
-      if queueNeeds[name] > 0
-        needs = queueNeeds[name] * queueConfigs[name].priority_factor + queueZombies[name]
-        needs /= (queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno)
-        needs = Math.ceil(needs)
-      result.push(name: name, quantity: needs)
-    return result
+    Promise.each runningTasks, (taskConfig) ->
+      taskName = taskConfig.name
+      dbs.get('main')
+      .select('*')
+      .from () ->
+        tables.jobQueue.currentSubtasks(transaction: @)
+        .select('task_step', 'queue_name')
+        .select(dbs.raw('main', "BOOL_AND(finished IS NOT NULL) AS finished"))
+        .select(dbs.raw('main', "COUNT(finished IS NULL AND (ignore_until IS NULL OR ignore_until < NOW()) OR NULL)::INTEGER AS needs"))
+        .select(dbs.raw('main', "COUNT(status = 'zombie' OR NULL)::INTEGER AS zombies"))
+        .where('task_name', taskName)
+        .groupBy('task_step')
+        .groupBy('queue_name')
+        .orderBy('task_step')
+        .as('x')
+      .where(finished: false)
+      .limit(1)
+      .then ([activeStep]) ->
+        if !activeStep
+          return
+        if !queueConfigs[activeStep.queue_name]?.active
+          # any task running on an inactive queue (or a queue without config) can be ignored
+          return
+        queueNeeds[activeStep.queue_name] += activeStep.needs
+        queueZombies[activeStep.queue_name] += activeStep.zombies
+    .then () ->
+      result = []
+      for name of queueConfigs
+        # if the queue has nothing that's not a zombie, let it scale down to 0; otherwise we need to leave something
+        # running for the zombies too, or else we could get ourselves stuck in deadlock where zombies have eaten all the
+        # resources (like they do)
+        needs = 0
+        if queueNeeds[name] > 0
+          needs = queueNeeds[name] * queueConfigs[name].priority_factor + queueZombies[name]
+          needs /= (queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno)
+          needs = Math.ceil(needs)
+        result.push(name: name, quantity: needs)
+      return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
 queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency}) ->

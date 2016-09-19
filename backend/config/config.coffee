@@ -5,7 +5,7 @@ common =  require '../../common/config/commonConfig.coffee'
 toBool = require '../utils/util.toBool.coffee'
 
 scriptName = path.basename(require?.main?.filename, '.coffee')
-if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
+if scriptName not in ['server','jobQueueWorker','masterWorker']
   scriptName = '__REPL'  # this makes it easier to use the result as keys in a hash
 
 

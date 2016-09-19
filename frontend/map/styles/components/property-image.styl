@@ -13,20 +13,26 @@
   &.prop-image-lg
     .property-img
       height 350px
-      &:hover
+      &:not(.static):hover
         height 565px
       transition: height 1s;
       overflow hidden
       display flex
       align-items center
       justify-content center
-    .carousel
-      .item
-        padding 0
 
+  .carousel
+    .item
+      padding 0
+      border 0
 
   &.prop-image-md
-    height: 205px;
+    .property-img
+      height: 205px;
+      overflow hidden
+      display flex
+      align-items center
+      justify-content center
 
   .prop-image-panorama
   .property-img-satellite

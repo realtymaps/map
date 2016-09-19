@@ -6,7 +6,7 @@ app = require '../app.coffee'
 # Example: <img rmaps-cdn-image src="/assets/some_image.png" />
 #      or  <img rmaps-cdn-image ng-src="/assets/{{some_image}}.png" />
 #
-app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
+app.directive 'rmapsCdnImage', ($rootScope, $log, $compile, $interpolate) ->
   $log = $log.spawn 'rmapsCdnImage'
 
   restrict: 'A'
@@ -27,6 +27,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
         $log.debug "new #{srcAttr}", element.attr(srcAttr)
 
         element.bind 'error', ->
+          originalSrc = $interpolate(originalSrc)(scope)
           $log.debug "falling back to #{originalSrc}"
           element.unbind 'error'
           element.attr('src', originalSrc)
@@ -34,6 +35,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile) ->
     if 'src' of attrs
       remap 'src'
     else if 'ngSrc' of attrs
+      $log.debug "ngSrc: #{attrs.ngSrc}"
       remap 'ng-src', attrs.ngSrc
     else
       return

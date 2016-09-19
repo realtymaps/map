@@ -116,12 +116,12 @@ getOptions = (flags = "") ->
 
 
 # require the logged user to be a designated editor on current project
-app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $uibModal) ->
+app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $uibModal, rmapsPrincipalService) ->
   restrict: 'A'
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
-    if !$rootScope.principal.isProjectEditor()
+    if !rmapsPrincipalService.isProjectEditor()
 
       # options and services to pass around
       optionalFlags = if attrs.rmapsRequireProjectEditor == 'rmaps-require-project-editor' then "" else attrs.rmapsRequireProjectEditor
@@ -138,12 +138,12 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $uibModa
 
 
 # require the logged user to be an active subscriber
-app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $uibModal) ->
+app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $uibModal, rmapsPrincipalService) ->
   restrict: 'A'
   terminal: true
   priority: 1000
   link: (scope, element, attrs) ->
-    if !$rootScope.principal.isSubscriber()
+    if !rmapsPrincipalService.isSubscriber()
 
       # options and services to pass around
       optionalFlags = if attrs.rmapsRequireSubscriber == 'rmaps-require-subscriber' then "" else attrs.rmapsRequireSubscriber
