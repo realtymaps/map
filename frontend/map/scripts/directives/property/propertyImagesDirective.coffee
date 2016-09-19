@@ -22,6 +22,7 @@ app.directive 'propertyImages', (
     imageWidth: '@'
     imageHeight: '@'
     coverImage: '@'
+    panoramaControls: '@'
 
   controller: ($scope) ->
 
@@ -31,6 +32,15 @@ app.directive 'propertyImages', (
       results: new rmapsResultsFormatterService  scope: $scope
       property: new rmapsPropertyFormatterService()
     }
+
+    $scope.panorama =
+      status: 'loading' # cannot be null or angular google maps doesn't set it?
+
+    $scope.panoramaOk = ->
+      if !$scope.panorama.status? || $scope.panorama.status == 'loading'
+        return true
+      else
+        return $scope.panorama.status == 'OK'
 
     if $scope.propertyParent
       $scope.property = angular.copy($scope.propertyParent)
