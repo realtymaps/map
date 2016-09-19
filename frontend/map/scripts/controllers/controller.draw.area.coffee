@@ -39,6 +39,9 @@ rmapsMapTogglesFactory
       createPromise: (geoJson) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
         $scope.create(geoJson)
+        .then (result) ->
+          $scope.$emit rmapsEventConstants.areas
+          result
 
 
       deleteAction: (model) ->

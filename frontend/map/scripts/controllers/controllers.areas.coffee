@@ -172,7 +172,7 @@ rmapsLeafletHelpers) ->
       $scope.areas = data
 
   $scope.areaListToggled = (isOpen) ->
-    getAll()
+    getAll(false)
     $rootScope.$emit rmapsEventConstants.areas.dropdownToggled, isOpen
 
   #
@@ -180,7 +180,7 @@ rmapsLeafletHelpers) ->
   #
 
   $scope.$onRootScope rmapsEventConstants.areas, () ->
-    getAll()
+    getAll(false)
 
   #
   # Load the area list
