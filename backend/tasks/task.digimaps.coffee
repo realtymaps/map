@@ -117,10 +117,8 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
   .then (processInfo) ->
-    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ BEFORE '+JSON.stringify(processInfo,null,2))
     _getLoadFile(subtask, processInfo)
   .then (loadInfo) ->
-    console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ AFTER '+JSON.stringify(loadInfo,null,2))
     dbs.transaction (transaction) ->
       keystore.setValuesMap(loadInfo.processInfo, {namespace: DIGIMAPS_PROCESS_INFO, transaction})
       .then () ->
