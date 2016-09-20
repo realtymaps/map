@@ -1,0 +1,8 @@
+.modal-header
+  h3.modal-title Mail for {{property.address.street}}
+  i.icon.icon-close(ng-click="$dismiss()")
+.modal-body(ng-show="modalBody")
+  property-mail(property="property")
+.modal-footer
+  button.btn.btn-default(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel
+  button.btn.btn-primary(type='button', ng-click='(modalOk || $close)(); $event.stopPropagation()') New Mail
