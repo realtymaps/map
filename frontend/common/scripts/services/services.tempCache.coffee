@@ -4,7 +4,7 @@ module.factory 'rmapsTempCacheFactory', ($q, $cacheFactory, $timeout) ->
   ({cacheName, cache}) ->
     cache ?= $cacheFactory.get(cacheName)
 
-    ({url, promise, ttlMilliSec}) ->
+    ret = ({url, promise, ttlMilliSec}) ->
       promise ?= $q.resolve()
       ttlMilliSec ?= 1000
 
@@ -14,6 +14,9 @@ module.factory 'rmapsTempCacheFactory', ($q, $cacheFactory, $timeout) ->
           cache.remove(url)
         , ttlMilliSec
         result
+
+    ret.remove = (url) -> cache.remove(url)
+    ret
 
 module.service 'rmapsHttpTempCache', (rmapsEventConstants, rmapsTempCacheFactory, $cacheFactory, $http, $rootScope, $log) ->
   $log = $log.spawn 'rmapsHttpTempCache'
