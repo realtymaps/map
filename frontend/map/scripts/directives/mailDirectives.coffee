@@ -244,12 +244,12 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           sel.focusNode.parentNode.parentNode.removeChild(maybeMacroSpan)
 
           # necessary for avoiding the reappearing-span bug (https://realtymaps.atlassian.net/browse/MAPD-1333)
-          range = rangy.createRange()
-          range.setStartAndEnd(sibling, 0)
-          selection = rangy.getSelection()
-          selection.removeAllRanges()
-          selection.setSingleRange range
-
+          if sibling
+            range = rangy.createRange()
+            range.setStartAndEnd(sibling, 0)
+            selection = rangy.getSelection()
+            selection.removeAllRanges()
+            selection.setSingleRange range
 
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->
