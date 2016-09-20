@@ -101,6 +101,9 @@ app.directive 'propertyButtons', (
         if proceed
           rmapsPropertiesService.favoriteProperty($scope.property)
 
+      $scope.getMail = (property) ->
+        rmapsMailCampaignService.getMail(property.rm_property_id)
+
       $scope.addMail = (maybeParcel) ->
 
         savedProperties = rmapsPropertiesService.pins
@@ -108,13 +111,15 @@ app.directive 'propertyButtons', (
         if maybeParcel?
           property_ids = [maybeParcel.rm_property_id]
           $scope.property = maybeParcel
+          template = require('../../../html/views/templates/modals/modal-mailHistory.jade')()
+          $scope.modalTitle = "Mail Campaigns"
         else
           property_ids = _.keys savedProperties
+          template = require('../../../html/views/templates/modals/confirm.jade')()
+          $scope.modalTitle = "Create Mail Campaign"
 
         $scope.newMail =
           property_ids: property_ids
-
-        $scope.modalTitle = "Create Mail Campaign"
 
         if $scope.newMail.property_ids.length
           $scope.modalBody = "Do you want to create a campaign for the #{$scope.newMail.property_ids.length} selected properties?"
@@ -138,8 +143,7 @@ app.directive 'propertyButtons', (
         modalInstance = $uibModal.open
           animation: true
           scope: $scope
-          template: require('../../../html/views/templates/modals/confirm.jade')()
+          template: template
 
       rmapsMailCampaignService.getProjectMail()
-
   }
