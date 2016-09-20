@@ -41,6 +41,9 @@ validation =
     (?=.*[a-z])             #one lowercase
     (?=.*[A-Z]).*$///       #one uppercase
 
+  alphanumeric: /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]$/
+
+
 commonConfig =
   SUPPORT_EMAIL: 'support@realtymaps.com'
   UNEXPECTED_MESSAGE: (troubleshooting) ->
