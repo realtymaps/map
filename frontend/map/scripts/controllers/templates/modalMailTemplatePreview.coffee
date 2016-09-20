@@ -62,12 +62,11 @@ app.controller 'rmapsReviewPreviewCtrl', (
   $uibModalInstance,
   $log,
   $sce,
-  wizard
+  template
 ) ->
-  $scope.template = {}
-  $scope.wizard = wizard
+  template.pdf = $sce.trustAsResourceUrl(template.pdf)
+  $scope.template = template
   $scope.mediaType = 'pdf'
-  $scope.template.pdf = $sce.trustAsResourceUrl($scope.wizard.mail.review.pdf)
 
   $scope.close = () ->
     $uibModalInstance.dismiss()

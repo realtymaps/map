@@ -424,7 +424,7 @@ executeSubtask = (subtask, prefix) ->
     heartbeatPromise.cancel()
 
 
-cancelTaskImpl = (taskName, opts) ->
+cancelTaskImpl = (taskName, opts={}) ->
   {transaction, newTaskStatus, withPrejudice} = opts
   newTaskStatus ?= 'canceled'
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the

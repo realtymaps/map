@@ -67,15 +67,33 @@ module.config(($httpProvider) ->
 
       promise
 
+    getCache = (config) ->
+      if angular.isObject(config?.cache)
+        config.cache
+      else if angular.isObject($delegate.defaults.cache)
+        $delegate.defaults.cache
+      else
+        $cacheFactory.get('http')
+
+    # if we are telling the cache not to be used make sure the old cache item is gone
+    # this way when we re-cache we have update values
+    maybeRemoveCacheItem = ({url, config}) ->
+      cache = getCache(config)
+      if config?.cache == false
+        cache.remove(url)
+      return
+
     #pretty much straight copy paste from angular
     methods.forEach (method) ->
       $delegate[method] = (url, config) ->
+        maybeRemoveCacheItem {url, config}
         $delegate angular.extend config or {},
           method: method
           url: url
 
     dataMethods.forEach (method) ->
       $delegate[method] = (url, data, config) ->
+        maybeRemoveCacheItem {url, config}
         $delegate angular.extend config or {},
           method: method
           url: url

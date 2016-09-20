@@ -19,38 +19,45 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {NoShapeFilesError, UnzipError} = require('shp2jsonx').errors
 util = require 'util'
 keystore = require '../services/service.keystore'
+dbs = require '../config/dbs'
 
 
 NUM_ROWS_TO_PAGINATE = 1000
 DELAY_MILLISECONDS = 250
 
-_filterImports = (subtask, imports) ->
+LAST_PROCESS_DATE = 'last process date'
+NO_NEW_DATA_FOUND = 'no new data found'
+QUEUED_FILES = 'queued files'
+DIGIMAPS_PROCESS_INFO = 'digimaps process info'
+
+
+_getFileDate = (filename) ->
+  return filename.split('/')[2].split('_')[2]
+
+_getFileFips = (filename) ->
+  return filename.split('/')[4].slice(8,13)
+
+_filterImports = (subtask, imports, refreshThreshold) ->
   importsLogger.debug () -> imports
 
-  dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  .then (refreshThreshold) ->
-    folderObjs = imports.map (l) ->
-      name: l
-      moment: moment(String.numeric(l), 'YYYYMMDD').utc()
+  folderObjs = imports.map (l) ->
+    name: l
+    date: _getFileDate(l)
 
-    if refreshThreshold? && !subtask.data.skipRefreshThreshold
-      logger.debug '@@@ refreshThreshold @@@'
-      logger.debug refreshThreshold
-      logger.debug () -> moment(refreshThreshold).format('MMMM Do YYYY, h:mm:ss a')
+  if refreshThreshold? && !subtask.data.skipRefreshThreshold
+    logger.debug '@@@ refreshThreshold @@@'
+    logger.debug refreshThreshold
 
-      folderObjs = _.filter folderObjs, (o) ->
-        o.moment.isAfter(moment(refreshThreshold).utc())
+    folderObjs = _.filter folderObjs, (o) ->
+      o.date > refreshThreshold
 
     if subtask.data.fipsCodeLimit?
       logger.debug () -> "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
       folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
 
-    # folderObjs = _.filter folderObjs, (f) -> #NOTE: for testing ONLY
-      # bad = f.match /17049/
-      # good = f.match /06009/
-
     fileNames = folderObjs.map (f) -> f.name
-    fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+    fileNames.sort()
+    fipsCodes = fileNames.map (name) -> _getFileFips(name)
 
     logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     logger.debug fipsCodes
@@ -58,54 +65,98 @@ _filterImports = (subtask, imports) ->
     if subtask.data.fipsCodes? && _.isArray subtask.data.fipsCodes
       fileNames = _.filter fileNames, (name) ->
         _.any subtask.data.fipsCodes, (code) ->
-          name.match new RegExp(code)
+          name.endsWith("_#{code}.zip")
 
-      fipsCodes = fileNames.map (name) -> String.numeric path.basename name
+      fipsCodes = fileNames.map (name) -> _getFileFips(name)
 
     logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     logger.debug fipsCodes
 
-    {
-      filteredImports: fileNames
-      refreshThreshold
-      fipsCodes
+    return fileNames
+
+_getLoadFile = (subtask, processInfo) -> Promise.try () ->
+  now = Date.now()
+
+  if processInfo[QUEUED_FILES].length > 0
+    return {
+      load:
+        fileName: processInfo[QUEUED_FILES][0]
+        startTime: now
+      processInfo
     }
+  else
+    externalAccounts.getAccountInfo(subtask.task_name)
+    .then (creds) ->
+      parcelsFetch.defineImports({creds})
+    .then (imports) ->
+      _filterImports(subtask, imports, processInfo[LAST_PROCESS_DATE])
+    .then (filteredImports) ->
+      if filteredImports.length == 0
+        processInfo[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
+        return {
+          load: null
+          processInfo
+        }
+      else
+        processInfo[QUEUED_FILES] = filteredImports
+        nextFile = filteredImports[0]
+        processInfo[LAST_PROCESS_DATE] = _getFileDate(nextFile)
+        return {
+          load:
+            fileName: nextFile
+            startTime: now
+          processInfo
+        }
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
-  now = Date.now()
-
-  externalAccounts.getAccountInfo(subtask.task_name)
-  .then (creds) ->
-    parcelsFetch.defineImports({creds})
-  .then (imports) ->
-    _filterImports(subtask, imports)
-  .then ({filteredImports, refreshThreshold}) ->
-
-    filteredImports = filteredImports.map (f) ->
-      fileName: f
-      startTime: now
-
-    Promise.all [
-      jobQueue.queueSubsequentSubtask {
-        subtask
-        manualData: filteredImports
-        laterSubtaskName: 'loadRawData'
-      }
-
-      jobQueue.queueSubsequentSubtask {
-        subtask, laterSubtaskName: "activateNewData"
-        manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
-        replace: true
-      }
-    ]
+  defaults = {}
+  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[NO_NEW_DATA_FOUND] = '19700101'
+  defaults[QUEUED_FILES] = []
+  keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
+  .then (processInfo) ->
+    _getLoadFile(subtask, processInfo)
+  .then (loadInfo) ->
+    dbs.transaction (transaction) ->
+      keystore.setValuesMap(loadInfo.processInfo, {namespace: DIGIMAPS_PROCESS_INFO, transaction})
+      .then () ->
+        if loadInfo.load?
+          jobQueue.queueSubsequentSubtask {
+            subtask
+            manualData: loadInfo.load
+            laterSubtaskName: 'loadRawData'
+            transaction
+          }
+          .then () ->
+            jobQueue.queueSubsequentSubtask {
+              subtask
+              laterSubtaskName: "waitForExclusiveAccess"
+              transaction
+            }
+          .then () ->
+            jobQueue.queueSubsequentSubtask {
+              subtask
+              laterSubtaskName: "activateNewData"
+              manualData:
+                deletes: dataLoadHelpers.DELETE.INDICATED
+                startTime: loadInfo.load.startTime
+              replace: true
+              transaction
+            }
+          .then () ->
+            jobQueue.queueSubsequentSubtask {
+              subtask
+              laterSubtaskName: "cleanup"
+              transaction
+            }
 
 loadRawData = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
   {fileName} = subtask.data
-  fipsCode = String.numeric path.basename fileName
+  fipsCode = _getFileFips(fileName)
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   subtask.data.rawTableSuffix = fipsCode
@@ -232,12 +283,13 @@ waitForExclusiveAccess = (subtask) ->
   keystore.setValue('digimapsExclusiveAccess', true, namespace: 'locks')
   .then () ->
     tables.jobQueue.taskHistory()
+    .select('name')
     .where(current: true)
     .whereRaw("blocked_by_locks \\? 'digimapsExclusiveAccess'")
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
-        logger.info("Waiting for exclusive data_combined access; #{results.length} tasks remaining: #{results.join(', ')}")
+        logger.info("Waiting for exclusive data_combined access; #{results.length} tasks remaining: #{_.pluck(results, 'name').join(', ')}")
         # Create a promise that doesn't finish on its own -- it just waits to get timed out and retried.  This is safer
         # than trying to poll internally, because a polling flow can't handle zombies, but a retrying flow can
         return new Promise (resolve, reject) ->  # noop
@@ -281,11 +333,41 @@ recordChangeCounts = (subtask) ->
         deletedParcel: true
     }
 
-releaseExclusiveAccess = (subtask) ->
-  keystore.setValue('data_combined', false, namespace: 'locks')
+cleanup = (subtask) ->
+  keystore.setValue('digimapsExclusiveAccess', false, namespace: 'locks')
+  .then () ->
+    defaults = {}
+    defaults[LAST_PROCESS_DATE] = '19700101'
+    defaults[NO_NEW_DATA_FOUND] = '19700101'
+    defaults[QUEUED_FILES] = []
+    keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
+    .then (processInfo) ->
+      processInfo[QUEUED_FILES].shift()
+      keystore.setValuesMap(processInfo, namespace: DIGIMAPS_PROCESS_INFO)
 
 
-module.exports = new TaskImplementation 'digimaps', {
+ready = () ->
+  # do some special logic for efficiency
+  defaults = {}
+  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[NO_NEW_DATA_FOUND] = '19700101'
+  defaults[QUEUED_FILES] = []
+  keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
+  .then (processInfo) ->
+    # definitely run task if there are queued files
+    if processInfo[QUEUED_FILES].length > 0
+      return true
+
+    oneWeekAgo = moment.utc().subtract(1, 'week').format('YYYYMMDD')
+
+    if processInfo[NO_NEW_DATA_FOUND] >= oneWeekAgo
+      # we've already indicated there's no new data to find within the last week
+      return false
+    # no overrides, ready to run
+    return true
+
+
+subtasks = {
   loadRawDataPrep
   loadRawData
   normalizeData
@@ -294,5 +376,6 @@ module.exports = new TaskImplementation 'digimaps', {
   waitForExclusiveAccess
   finalizeData
   activateNewData: parcelHelpers.activateNewData
-  releaseExclusiveAccess
+  cleanup
 }
+module.exports = new TaskImplementation('digimaps', subtasks, ready)

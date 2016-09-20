@@ -30,7 +30,6 @@ LOB_LETTER_FIELDS = [
    'metadata'
 ]
 
-
 #
 # Retrieve API keys from external accounts (once)
 #  The test API is always available for price quotes / previews
@@ -163,16 +162,14 @@ getMacroData = (campaign, address_to, address_from, address_property = {}) ->
     property_zip: address_property.address_zip
 
   for addr in ['sender', 'recipient', 'property']
-    ret["#{addr}_address"] = (
-      for part in ['address_line1', 'address_line2', 'city', 'state', 'zip']
-        ret["#{addr}_#{part}"]
+    ret["#{addr}_address"] = (for part in ['address_line1', 'address_line2', 'city', 'state', 'zip']
+      ret["#{addr}_#{part}"]
     )
     .filter (v) -> v
     .map (v) -> v.trim()
     .join ' '
 
   ret
-
 
 ################
 # Public methods
@@ -282,7 +279,7 @@ sendLetter = (letter, apiName) ->
       letter = _.pick letter, LOB_LETTER_FIELDS
 
       lob[apiName].sendLetter letter
-      
+
 
 #
 # Creates a CC hold for the mail campaign and places letters in the outgoing mail table

@@ -318,18 +318,22 @@ finalizeData = (subtask) ->
 
 
 ready = () ->
-  # if we didn't bail above, do some other special logic for efficiency
-  defaults = {}
-  defaults[internals.REFRESH] = '19700101'
-  defaults[internals.UPDATE] = '19700101'
-  defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
-  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
+  # do some special logic for efficiency
+  processDefaults = {}
+  processDefaults[internals.REFRESH] = []
+  processDefaults[internals.UPDATE] = []
+  processDefaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+  copyDefaults = {}
+  copyDefaults[internals.REFRESH] = '19700101'
+  copyDefaults[internals.UPDATE] = '19700101'
+  copyDefaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: processDefaults)
   .then (processDates) ->
     # definitely run task if there are dates to process
     if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
       return true
 
-    keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
+    keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: copyDefaults)
     .then (copyDates) ->
       # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
       now = moment.utc()
