@@ -1,11 +1,12 @@
-.row.content-row.vertical-align(ng-repeat="mail in mailings | orderBy: 'mail.lob.date_created'")
-  a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
-  .col-sm-3.content-body
-    span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
-  .col-sm-4.content-body
-    span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
-  .col-sm-2.content-body.pull-right.text-right
-    button.btn.btn-sm.btn-white(ng-click="previewLetter(mail)") Preview
-      i.fa.fa-envelope
-.row.content-row(ng-if="!mailings.length")
-  .col-sm-12.content-body No prior mailings
+.container-fluid
+  .row.content-row.vertical-align(ng-repeat="mail in mailings | orderBy: 'mail.lob.date_created'")
+    a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+    .col-sm-3.content-body
+      span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+    .col-sm-3.content-body
+      span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
+    .col-sm-3.content-body.pull-right.text-right
+      button.btn.btn-sm.btn-white(ng-click="previewLetter(mail)") Preview
+        i.fa.fa-envelope
+  .row.content-row(ng-if="!mailings.length")
+    .col-sm-12.content-body No prior mailings
