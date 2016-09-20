@@ -139,7 +139,9 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
             jobQueue.queueSubsequentSubtask {
               subtask
               laterSubtaskName: "activateNewData"
-              manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}
+              manualData:
+                deletes: dataLoadHelpers.DELETE.INDICATED
+                startTime: loadInfo.load.startTime
               replace: true
               transaction
             }

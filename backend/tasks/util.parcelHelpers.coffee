@@ -133,7 +133,7 @@ activateNewData = (subtask) -> Promise.try () ->
       transaction
     })
     activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
-    Promise.join activateParcels, activateDataCombined, () ->  # noop
+    Promise.join activateParcels, activateDataCombined, () ->  # no-op
 
 
 handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
