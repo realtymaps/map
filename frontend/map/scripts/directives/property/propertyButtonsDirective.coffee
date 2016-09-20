@@ -105,7 +105,7 @@ app.directive 'propertyButtons', (
         rmapsMailCampaignService.getMail(property.rm_property_id)
 
       $scope.addMail = (maybeParcel) ->
-
+        $log.debug 'wtf'
         savedProperties = rmapsPropertiesService.pins
 
         if maybeParcel?

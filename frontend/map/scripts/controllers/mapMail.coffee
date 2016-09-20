@@ -63,7 +63,4 @@ app.controller 'rmapsMapMailCtrl', ($scope, $log, rmapsLayerFormattersService, r
 
   $scope.map.getMail = getMail
 
-  $scope.$watch 'Toggles.showMail', (newVal) ->
-    $scope.map.layers.overlays.mail.visible = newVal
-
   getMail()

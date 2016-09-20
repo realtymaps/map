@@ -131,9 +131,10 @@ $log) ->
               # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
             if events.last.last != 'dblclick'
-              # if model.markerType != 'price-group'
-              #   $scope.formatters.results.showModel(model)
-              if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+              if model.markerType == 'mail'
+                true
+
+              else if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
                 openWindow(model)
 
           , limits.clickDelayMilliSeconds - 100
