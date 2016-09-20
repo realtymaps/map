@@ -31,3 +31,11 @@ CREATE INDEX data_combined_price_idx ON data_combined USING btree (price);
 
 DROP INDEX IF EXISTS data_combined_bedrooms_idx;
 CREATE INDEX data_combined_bedrooms_idx ON data_combined USING btree (bedrooms);
+
+
+
+
+DROP INDEX IF EXISTS parcel_rm_property_id_data_source_id_active_idx;
+DROP INDEX IF EXISTS parcel_carto_idx;
+
+CREATE INDEX parcel_fips_code_idx ON data_parcel USING btree (fips_code);
