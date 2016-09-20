@@ -57,6 +57,9 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
     # convert existing macros that aren't already styled
     $timeout ->
+      # `checkExistingMacros` is important in case macro definitions change, this forces saved
+      #   campaigns to re-evaluate "macro-ized" spans for validity
+      ngModel.$setViewValue scope.checkExistingMacros()
       ngModel.$setViewValue scope.convertMacros()
       ngModel.$render()
 
@@ -101,6 +104,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           classedNode.classList.remove 'macro-display'
         classedNode.classList.add 'macro-display-error'
 
+
     # generic recursive tree walker
     # provide collection, containerName, and a test function with a process function to run on child if test passes
     scope.walk = (collection, containerName, test, process) ->
@@ -109,6 +113,29 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           process(child)
         if containerName of child and child[containerName].length > 0
           scope.walk child[containerName], containerName, test, process
+
+
+    # checks all "macro-ized" spans for validity
+    scope.checkExistingMacros = () ->
+      # DOM-ize our letter content for easier traversal/processing
+      content = ngModel.$viewValue
+      letterDoc = new DOMParser().parseFromString(content, 'text/html')
+
+      # helper func passed to 'walk'
+      _test = (n) ->
+        return scope.isMacroNode(n)
+
+      # helper func passed to 'walk'
+      # re-tests macro for validity
+      _process = (n) ->
+        scope.setMacroClass(n)
+
+      # apply test and processing to DOM-ized letter...
+      scope.walk letterDoc.childNodes, 'childNodes', _test, _process
+
+      # return the resulting content
+      letterDoc.documentElement.innerHTML
+
 
     # convert unwrapped macro-markup into spans
     scope.convertMacros = () ->
@@ -142,6 +169,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
     # filter selected node for macros
     scope.macroFilter = (sel) ->
+      console.log "macroFilter()"
       # make macro span if it needs
       if /{{.*?}}/.test(sel.focusNode?.data)
         if not scope.isMacroNode(sel.focusNode)

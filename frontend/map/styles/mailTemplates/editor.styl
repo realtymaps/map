@@ -20,10 +20,14 @@ $content-scale-factor = 1.155
 
       .letter-body
         zoom $content-scale-factor
+        -moz-transform: scale($content-scale-factor)
+        -moz-transform-origin: 0 0;
 
       .letter-editor
         margin auto // centers the editor
         zoom $wysiwyg-scale-factor
+        -moz-transform: scale($wysiwyg-scale-factor)
+        -moz-transform-origin: left center;
         height 11in
         width 8.5in
         background-color $white
@@ -81,12 +85,14 @@ $content-scale-factor = 1.155
         top 0.5in
         width 3.25in
         height 0.875in
+        z-index 1000
 
       .recipient-address-window
         left 0.625in
         top 1.5in
         width 4.0in
         height 1.0in
+        z-index 1000
 
       .return-address-text,
       .recipient-address-text
