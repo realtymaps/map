@@ -5,7 +5,7 @@ modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jad
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $uibModal, rmapsPrincipalService, textAngularManager, rmapsMainOptions) ->
+($rootScope, $scope, $log, $uibModal, $timeout, rmapsPrincipalService, rmapsMainOptions) ->
   $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 

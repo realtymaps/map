@@ -162,14 +162,16 @@ getMacroData = (campaign, address_to, address_from, address_property = {}) ->
     property_zip: address_property.address_zip
 
   for addr in ['sender', 'recipient', 'property']
-    ret["#{addr}_address"] = (for part in ['address_line1', 'address_line2', 'city', 'state', 'zip']
+    ret["#{addr}_address"] = (
+      for part in ['address_line1', 'address_line2', 'city', 'state', 'zip']
         ret["#{addr}_#{part}"]
-      )
-      .filter (v) -> v
-      .map (v) -> v.trim()
-      .join ' '
+    )
+    .filter (v) -> v
+    .map (v) -> v.trim()
+    .join ' '
 
   ret
+
 
 ################
 # Public methods
