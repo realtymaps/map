@@ -165,24 +165,11 @@ app.controller 'rmapsProjectCtrl',
       .then () ->
         _.assign $scope.project, $scope.projectCopy
 
-  # Create Note
   $scope.createNote = (project, property) ->
-    rmapsNotesService.createFromText(
-      $scope.newNotes[property.rm_property_id].text,
-      project.project_id,
-      property.rm_property_id,
-      property.geometry_center
-    ).then () ->
-      $rootScope.$emit rmapsEventConstants.notes
-      delete $scope.newNotes[property.rm_property_id]
+    rmapsNotesService.createNote({project, property, $scope})
 
   $scope.createProjectNote = (project) ->
-    rmapsNotesService.createFromText(
-      $scope.newNotes['project'].text,
-      project.project_id
-    ).then () ->
-      $rootScope.$emit rmapsEventConstants.notes
-      delete $scope.newNotes['project']
+    rmapsNotesService.createProjectNote({project, $scope})
 
   $scope.goDashboardState = (state, params = {}) ->
     params.scrollTo = 'project-dashboard'

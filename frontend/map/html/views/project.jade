@@ -74,7 +74,7 @@ include ../includes/mixins/_leafletMixin.jade
 
     .list.bordered
       .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true | limitTo:5")
-        div(ng-include="'./views/project/_projectNotesInclude.jade'")
+        div(ng-include="'./includes/_noteItem.jade'")
 
       .item.text-center(ng-if="notes.length > 5" ng-click="goDashboardState('projectNotes', { id: project.id })")
         .note-data.note-view-all View All Notes

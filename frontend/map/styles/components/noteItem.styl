@@ -1,0 +1,44 @@
+.note-item
+  //
+  // Notes
+  //
+  .notes-title
+    text-transform: uppercase;
+    a
+      color: black;
+      font-weight: 600;
+
+  .note-title
+    font-weight: 500;
+
+  .note-author
+    font-weight: 600;
+
+  .note-date
+    float: right;
+    text-align: right;
+
+  .note-address
+    color: $text_gray_lightest;
+    font-weight: 500;
+
+    span:after
+      content: ', '
+
+    span:last-of-type:after
+      content: ''
+
+  .note-image
+    width: 110px;
+    min-height: 1px;
+    max-height: 100px;
+    float: left;
+
+  .note-data-wrapper
+    //min-height: 100px;
+    width: calc(100% - 110px);
+    float: left;
+
+  .note-view-all
+    cursor: pointer;
+    font-weight: 600;

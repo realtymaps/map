@@ -1,3 +1,5 @@
+@import '../components/noteItemMobile.styl'
+
 .mobile-view
   #project-dashboard
 
@@ -99,25 +101,7 @@
         top: 100px;
         margin-top: 0;
 
-    //
-    // Notes
-    //
-    .notes-title
-      margin-bottom: 10px;
-
-    .note-image
-      width: 58px;
-      max-height: 58px;
-
-    .note-data-wrapper
-      //min-height: 58px;
-      width: calc(100% - 58px);
-      float: left;
-      padding-left: 15px;
-
-    .note-data
-      font-size: 13px;
-      color: $text_gray_lighter;
+    @extend .note-item-mobile
 
     //
     // PINS and FAVORITES
@@ -163,5 +147,5 @@
     // Project NOTES Tab
     //
     .project-notes-container
-      .project-note-input
+      .note-input
         margin-bottom: 15px;
