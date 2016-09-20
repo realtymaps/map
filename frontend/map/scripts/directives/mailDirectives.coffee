@@ -169,7 +169,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
     # filter selected node for macros
     scope.macroFilter = (sel) ->
-      console.log "macroFilter()"
       # make macro span if it needs
       if /{{.*?}}/.test(sel.focusNode?.data)
         if not scope.isMacroNode(sel.focusNode)
