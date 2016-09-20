@@ -15,6 +15,7 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $uibModal, $log, rmapsProp
 
     if maybeParcel?
       property_ids = [maybeParcel.rm_property_id]
+      $scope.property = maybeParcel
     else
       property_ids = _.keys savedProperties
 

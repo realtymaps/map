@@ -2,6 +2,7 @@
   h3.modal-title {{modalTitle}}
 .modal-body(ng-show="modalBody")
   b {{modalBody}}
+  property-mail(property="property")
 .modal-footer
   button.btn.btn-default(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel
   button.btn.btn-primary(type='button', ng-click='(modalOk || $close)(); $event.stopPropagation()') OK

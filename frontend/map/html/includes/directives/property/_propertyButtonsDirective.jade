@@ -7,7 +7,7 @@ div.btn-actions
     span.icon.icon-pin
     .button-help {{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}
 
-  button.send(rmaps-require-project-editor="disable" ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }" ng-disabled="!property")
+  button.send(rmaps-require-project-editor="disable" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }" ng-disabled="!property")
     i.fa.fa-envelope
     .button-help Mailing
 

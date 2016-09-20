@@ -26,9 +26,6 @@ app.controller 'rmapsPropertyCtrl',
 
     $scope.google = rmapsGoogleService
 
-    $scope.getMail = () ->
-      rmapsMailCampaignService.getMail $stateParams.id
-
     $scope.tab = selected: ''
 
     $scope.formatters =

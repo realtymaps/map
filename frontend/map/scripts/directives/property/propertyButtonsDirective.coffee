@@ -23,6 +23,8 @@ app.directive 'propertyButtons', (
   rmapsPropertiesService,
   rmapsPropertyFormatterService,
   rmapsResultsFormatterService,
+  rmapsMailCampaignService,
+  $uibModal
 ) ->
 #  $log.debug "Property Buttons directive: ", template
   return {
@@ -98,5 +100,46 @@ app.directive 'propertyButtons', (
 
         if proceed
           rmapsPropertiesService.favoriteProperty($scope.property)
+
+      $scope.addMail = (maybeParcel) ->
+
+        savedProperties = rmapsPropertiesService.pins
+
+        if maybeParcel?
+          property_ids = [maybeParcel.rm_property_id]
+          $scope.property = maybeParcel
+        else
+          property_ids = _.keys savedProperties
+
+        $scope.newMail =
+          property_ids: property_ids
+
+        $scope.modalTitle = "Create Mail Campaign"
+
+        if $scope.newMail.property_ids.length
+          $scope.modalBody = "Do you want to create a campaign for the #{$scope.newMail.property_ids.length} selected properties?"
+
+          $scope.modalOk = () ->
+            modalInstance.dismiss('save')
+            $log.debug "$state.go 'recipientInfo'..."
+            $state.go 'recipientInfo', {property_ids: $scope.newMail.property_ids}, {reload: true}
+
+          $scope.cancelModal = () ->
+            modalInstance.dismiss('cancel')
+
+        else
+          $scope.modalBody = "Pin some properties first"
+
+          $scope.modalOk = () ->
+            modalInstance.dismiss('cancel')
+
+          $scope.showCancelButton = false
+
+        modalInstance = $uibModal.open
+          animation: true
+          scope: $scope
+          template: require('../../../html/views/templates/modals/confirm.jade')()
+
+      rmapsMailCampaignService.getProjectMail()
 
   }
