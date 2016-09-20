@@ -1,6 +1,7 @@
 ###global: rangy###
 app = require '../app.coffee'
 _ = require 'lodash'
+config = require '../../../../common/config/commonConfig.coffee'
 
 
 app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularManager) ->
@@ -40,7 +41,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
         if scope.isMacroNode(sel.focusNode)
           # using for alphanumeric keys to suppress:
           # http://stackoverflow.com/questions/12052825/regular-expression-for-all-printable-characters-in-javascript
-          if /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]$/.test(e.key)
+          if config.validation.alphanumeric.test(e.key)
             e.preventDefault()
             return false
 
