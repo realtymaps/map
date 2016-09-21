@@ -10,6 +10,8 @@ mod.constant 'rmapsEventConstants',
       dropdownToggled: 1
       drawItems: 1
       removeDrawItem: 1
+      mouseOver: 1
+      mouseLeave: 1
     map:
       locationChange: 1
       results: 1
