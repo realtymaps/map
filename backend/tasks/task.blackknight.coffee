@@ -198,8 +198,10 @@ checkProcessQueue = (subtask) ->
 
 
 loadRawData = (subtask) ->
+  console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData STARTING')
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData GOT COLUMNS')
     # download and insert data with `countyHelpers`
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
@@ -208,6 +210,7 @@ loadRawData = (subtask) ->
       s3account: awsService.buckets.BlackknightData
 
   .then (numRows) ->
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData QUEUING NEXT SUBTASKS')
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
@@ -222,6 +225,8 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
+  .then (numRows) ->
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData DONE')
 
 
 saveProcessDates = (subtask) ->

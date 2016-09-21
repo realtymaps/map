@@ -69,6 +69,7 @@ _fetchS3 = (account, source, target, options) ->
 
 # loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
+  console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData STARTING')
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
   filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
@@ -77,6 +78,7 @@ loadRawData = (subtask, options) ->
   source = subtask.data.path
 
   # transfer files from a configured source...
+  console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData DOWNLOADING')
   if options.s3account
     dataStreamPromise = _fetchS3(options.s3account, source, target, options)
   else
@@ -127,14 +129,19 @@ loadRawData = (subtask, options) ->
   .catch isUnhandled, (err) ->
     throw new SoftFail(err.toString())
   .then (rawDataStream) ->
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData READING FROM FILE')
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData INITIALIZING DATA STREAM')
     objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData MANAGING DATA STREAM')
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
+  .then () ->
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData DONE')
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->
