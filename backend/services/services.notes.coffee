@@ -50,9 +50,13 @@ class NotesService extends ServiceCrud
     dbs.transaction (transaction) =>
       options.query = @dbFn({transaction})
 
-      promise = super(entity, options).knex.returning('id')
-      .then ([id]) ->
+      promise = super(entity, options).knex.returning(['id', 'rm_inserted_time'])
+      .then ([{id, rm_inserted_time}]) ->
         entity.id = id
+        entity.text = decodeURIComponent(entity.text)
+        entity.rm_inserted_time = rm_inserted_time
+        console.log  "WWTTTTTFFFFFFFFF"
+        console.log entity
         entity
 
       @enqueueEvent {

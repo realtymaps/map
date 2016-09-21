@@ -3,6 +3,7 @@ validation = require '../utils/util.validation'
 {validators} = validation
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
+dbs = require '../config/dbs'
 {getPermissions, queryPermissions, scrubPermissions} = require './service.properties.combined.filterSummary'
 _ = require 'lodash'
 mlsConfigSvc = require './service.mls_config'
@@ -42,6 +43,35 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 
       return data
 
+_queryNotes = ({rm_property_id, project_id}) ->
+  query = tables.user.notes()
+  .select(
+    "#{tables.user.notes.tableName}.id",
+    "#{tables.user.notes.tableName}.auth_user_id",
+    "#{tables.user.notes.tableName}.rm_inserted_time",
+    "rm_property_id",
+    'project_id',
+    'text',
+    'first_name',
+    'last_name',
+    'email',
+  )
+  .select(dbs.raw('main', "geometry_center->'coordinates' as coordinates"))
+  .innerJoin(tables.auth.user.tableName,
+    "#{tables.auth.user.tableName}.id",
+    "#{tables.user.notes.tableName}.auth_user_id")
+  .where {
+    rm_property_id
+    project_id
+  }
+
+  logger.debug () -> query.toString()
+  query.then (notes) ->
+    for n in notes
+      n.text = decodeURIComponent(n.text)
+    notes
+
+
 # Retrieve a single property by rm_property_id OR geometry_center
 getProperty = ({query, profile}) ->
   validation.validateAndTransform query, transforms.property
@@ -64,7 +94,12 @@ getProperty = ({query, profile}) ->
             row.disclaimer_text = mlsConfig.disclaimer_text
             row.dmca_contact_name = mlsConfig.dmca_contact_name
             row.dmca_contact_address = mlsConfig.dmca_contact_address
-
+      _queryNotes {rm_property_id: row.rm_property_id, project_id: profile.project_id}
+      .then (notes) ->
+        if notes.length
+          logger.debug "@@@@ NOTES @@@@"
+          logger.debug () -> notes
+          result[row.rm_property_id].notes = notes
     .then () ->
       _.map(result)[0]
 

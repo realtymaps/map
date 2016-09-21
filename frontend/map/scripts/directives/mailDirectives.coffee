@@ -1,6 +1,7 @@
 ###global: rangy###
 app = require '../app.coffee'
 _ = require 'lodash'
+config = require '../../../../common/config/commonConfig.coffee'
 
 
 app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularManager) ->
@@ -22,14 +23,27 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
         ngModel.$render()
       scope.$evalAsync update
 
-    # set a handler on so it gets destroyed upon backspace
+    # picky about keystroke actions on macro
     element.on 'keydown', (e) ->
-      update = () ->
-        if e.keyCode == 8 # if backspace key...
+
+      # remove macro on backspace
+      # key / keyCode compatibilities: http://www.quirksmode.org/js/keys.html
+      if e.keyCode == 8
+        update = () ->
           scope.macroAction.whenBackspaced e
           ngModel.$commitViewValue()
           ngModel.$render()
-      scope.$evalAsync update
+        scope.$evalAsync update
+
+      # suppress typing in macro
+      else
+        sel = rangy.getSelection()
+        if scope.isMacroNode(sel.focusNode)
+          # using for alphanumeric keys to suppress:
+          # http://stackoverflow.com/questions/12052825/regular-expression-for-all-printable-characters-in-javascript
+          if config.validation.alphanumeric.test(e.key)
+            e.preventDefault()
+            return false
 
     $timeout ->
       scope.editor = textAngularManager.retrieveEditor 'wysiwyg'
@@ -57,6 +71,9 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
     # convert existing macros that aren't already styled
     $timeout ->
+      # `checkExistingMacros` is important in case macro definitions change, this forces saved
+      #   campaigns to re-evaluate "macro-ized" spans for validity
+      ngModel.$setViewValue scope.checkExistingMacros()
       ngModel.$setViewValue scope.convertMacros()
       ngModel.$render()
 
@@ -67,10 +84,20 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       if exchange
         range.setEnd textnode, offset+macro.length
         range.deleteContents()
-      el = angular.element("<span>#{macro}</span>")[0]
-      scope.setMacroClass el
-      range.insertNode el
+      el = angular.element("<span>#{macro}</span>")
+      scope.setMacroClass el[0]
+      range.insertNode el[0]
       return el
+
+    # useful getter/setter unique-macro-id if we need to keep explicit track of specific macros (currently unused)
+    scope.setMacroLabel = (node) ->
+      node.classList.add "macrolabel_" + Math.floor(Math.floor(Math.random() * 1000000000))
+    scope.getMacroLabel = (node) ->
+      if scope.isMacroNode(node)
+        for maybeLabel in node.classList
+          if maybeLabel.startsWith('macrolabel_')
+            return maybeLabel
+      return null
 
     # determine if the node has been flagged as macro span (whether valid or not), by class
     # this is *not* macro validation
@@ -101,6 +128,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           classedNode.classList.remove 'macro-display'
         classedNode.classList.add 'macro-display-error'
 
+
     # generic recursive tree walker
     # provide collection, containerName, and a test function with a process function to run on child if test passes
     scope.walk = (collection, containerName, test, process) ->
@@ -109,6 +137,29 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           process(child)
         if containerName of child and child[containerName].length > 0
           scope.walk child[containerName], containerName, test, process
+
+
+    # checks all "macro-ized" spans for validity
+    scope.checkExistingMacros = () ->
+      # DOM-ize our letter content for easier traversal/processing
+      content = ngModel.$viewValue
+      letterDoc = new DOMParser().parseFromString(content, 'text/html')
+
+      # helper func passed to 'walk'
+      _test = (n) ->
+        return scope.isMacroNode(n)
+
+      # helper func passed to 'walk'
+      # re-tests macro for validity
+      _process = (n) ->
+        scope.setMacroClass(n)
+
+      # apply test and processing to DOM-ized letter...
+      scope.walk letterDoc.childNodes, 'childNodes', _test, _process
+
+      # return the resulting content
+      letterDoc.documentElement.innerHTML
+
 
     # convert unwrapped macro-markup into spans
     scope.convertMacros = () ->
@@ -153,8 +204,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           sel.focusNode.data = sel.focusNode.data.trim()
 
           # add a new text node right after placement of new macro span (part of caret placement)
-          nextTextElement = newMacroEl.nextSibling
-          parent = newMacroEl.parentNode
+          nextTextElement = newMacroEl[0].nextSibling
+          parent = newMacroEl[0].parentNode
           referenceNode = nextTextElement
 
           # reference node will be null if we're at the end of a <p>
@@ -203,6 +254,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       whenTyped: (e) ->
         $log.debug -> "whenTyped, event:\n#{JSON.stringify e}"
         sel = rangy.getSelection()
+
         # while typing, filter for macros and wrap if necessary
         scope.macroFilter(sel)
 
@@ -213,11 +265,19 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       whenBackspaced: (e) ->
         sel = rangy.getSelection()
         maybeMacroSpan = sel.focusNode.parentNode
+        sibling = maybeMacroSpan.nextSibling
 
         # remove entire macro span if we backspace on it
         if scope.isMacroNode(maybeMacroSpan)
           sel.focusNode.parentNode.parentNode.removeChild(maybeMacroSpan)
 
+          # necessary for avoiding the reappearing-span bug (https://realtymaps.atlassian.net/browse/MAPD-1333)
+          if sibling
+            range = rangy.createRange()
+            range.setStartAndEnd(sibling, 0)
+            selection = rangy.getSelection()
+            selection.removeAllRanges()
+            selection.setSingleRange range
 
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->

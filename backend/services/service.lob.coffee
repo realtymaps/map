@@ -138,36 +138,41 @@ buildLetter = (campaign, recipient) ->
 
 getMacroData = (campaign, address_to, address_from, address_property = {}) ->
   # These may act as placeholders in HTML content
+  # NOTE: keep updated along with macro list: commonConfig.coffee:mail.macros
   ret =
     campaign_name: campaign.name
     recipient_name: address_to.name
     recipient_address_line1: address_to.address_line1
     recipient_address_line2: address_to.address_line2
     recipient_city: address_to.address_city
+
     recipient_state: address_to.address_state
     recipient_zip: address_to.address_zip
     sender_name: address_from.name
     sender_address_line1: address_from.address_line1
     sender_address_line2: address_from.address_line2
+
     sender_city: address_from.address_city
     sender_state: address_from.address_state
     sender_zip: address_from.address_zip
     sender_phone: campaign.sender_info.phone
     sender_email: campaign.sender_info.email
+
     sender_business_name: campaign.sender_info.company
     property_address_line1: address_property.address_line1
     property_address_line2: address_property.address_line2
     property_city: address_property.address_city
     property_state: address_property.address_state
+
     property_zip: address_property.address_zip
 
   for addr in ['sender', 'recipient', 'property']
     ret["#{addr}_address"] = (for part in ['address_line1', 'address_line2', 'city', 'state', 'zip']
-        ret["#{addr}_#{part}"]
-      )
-      .filter (v) -> v
-      .map (v) -> v.trim()
-      .join ' '
+      ret["#{addr}_#{part}"]
+    )
+    .filter (v) -> v
+    .map (v) -> v.trim()
+    .join ' '
 
   ret
 
@@ -279,7 +284,7 @@ sendLetter = (letter, apiName) ->
       letter = _.pick letter, LOB_LETTER_FIELDS
 
       lob[apiName].sendLetter letter
-      
+
 
 #
 # Creates a CC hold for the mail campaign and places letters in the outgoing mail table

@@ -41,6 +41,9 @@ validation =
     (?=.*[a-z])             #one lowercase
     (?=.*[A-Z]).*$///       #one uppercase
 
+  alphanumeric: /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]$/
+
+
 commonConfig =
   SUPPORT_EMAIL: 'support@realtymaps.com'
   UNEXPECTED_MESSAGE: (troubleshooting) ->
@@ -84,26 +87,32 @@ commonConfig =
     getPrice: ({firstPage, extraPage, pages}) ->
       return (firstPage + ((pages-1) * extraPage))
 
+    # NOTE: macros are filled in at: service.lob.coffee:getMacroData()
     macros:
       campaign_name: '{{campaign_name}}'
       recipient_name: '{{recipient_name}}'
       recipient_address: '{{recipient_address}}'
       recipient_address_line1: '{{recipient_address_line1}}'
       recipient_address_line2: '{{recipient_address_line2}}'
+
       recipient_city: '{{recipient_city}}'
       recipient_state: '{{recipient_state}}'
       recipient_zip: '{{recipient_zip}}'
       sender_name: '{{sender_name}}'
       sender_address: '{{sender_address}}'
+
       sender_address_line1: '{{sender_address_line1}}'
       sender_address_line2: '{{sender_address_line2}}'
       sender_city: '{{sender_city}}'
       sender_state: '{{sender_state}}'
       sender_zip: '{{sender_zip}}'
+
       sender_email: '{{sender_email}}'
       sender_business_name: '{{sender_business_name}}'
+      sender_phone: '{{sender_phone}}'
       property_address: '{{property_address}}'
       property_address_line1: '{{property_address_line1}}'
+
       property_address_line2: '{{property_address_line2}}'
       property_city: '{{property_city}}'
       property_state: '{{property_state}}'

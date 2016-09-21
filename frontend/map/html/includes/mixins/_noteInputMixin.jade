@@ -1,0 +1,22 @@
+mixin noteInputMixin(name, submit, model, click)
+  .note-input
+    form.note(
+      name="#{name}"
+      ng-submit="#{submit}"
+    )
+      .input-group
+        
+        textarea.form-control(
+          cols="25"
+          rows="2"
+          placeholder="Add a note about this property"
+          name="noteText"
+          type="text"
+          ng-model="#{model}"
+          validator="minlength=1"
+        )
+        
+        span.input-group-addon(
+          ng-click="#{click}"
+          validation-submit="#{name}"
+        ) Add

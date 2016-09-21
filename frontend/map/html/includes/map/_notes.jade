@@ -19,8 +19,8 @@ span(
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
       span
-        a(ng-show="markerNotesLength()" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{markerNotesLength()}} Notes
-        span(ng-show="!markerNotesLength()") No Notes
+        a(ng-show="notesListLength()" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{notesListLength()}} Notes
+        span(ng-show="!notesListLength()") No Notes
       span.results-btn(
         popover-placement="right"
         popover\-trigger="'mouseenter'"
@@ -29,7 +29,7 @@ span(
           span Add Note
     .inner
       ul(ng-controller="rmapsNotesModalCtrl")
-        li(ng-repeat="note in map.markers.notes" ng-cloak ng-click="centerOn(note)")
+        li(ng-repeat="note in map.notesList" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
               +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.$index}}', true)
@@ -45,7 +45,7 @@ span(
             span.actions
               span.icon.icon-remove(rmaps-require-project-editor ng-click="remove(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="update(note); $event.stopPropagation()")
-      .dropdown-explanation(ng-show="!markerNotesLength()")
+      .dropdown-explanation(ng-show="!notesListLength()")
         p Click 'Add Note' and drop a note anywhere on the map. Or click the note button on any property you see.
         p Your notes will show up in this list. Notes will be emailed to everyone in the project
         .action Watch a 60 second video

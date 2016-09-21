@@ -189,13 +189,16 @@ rmapsMapTogglesFactory
       leafletIterators.each markersUnSubs, (unsub) ->
         unsub()
 
-  $scope.markerNotesLength = () ->
-    Object.keys($scope.map.markers.notes).length
+  $scope.notesListLength = () ->
+    if !$scope.map?.notesList?
+      return 0
+    Object.keys($scope.map.notesList).length
 
   getNotes = (force = false) ->
     rmapsNotesService.getAll(force)
     .then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
+      $scope.map.notesList = data
       $scope.map.markers.notes = setMarkerNotesDataOptions(data)
 
 

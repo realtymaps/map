@@ -1,15 +1,13 @@
+include ../../includes/mixins/_noteInputMixin.jade
+
 .project-notes-container(ng-controller="rmapsNotesModalCtrl")
-  .project-note-input
-    form.note(name="createProjectNoteForm" ng-submit="createNote(project)")
-      .input-group
-        textarea.form-control(cols="25" rows="2"
-        placeholder="Add a note about this project"
-        name="noteText"
-        type="text"
-        ng-model="newNotes['project'].text"
-        validator="minlength=1")
-        span.input-group-addon(ng-click="createProjectNote(project)" validation-submit="createProjectNoteForm") Add
+  +noteInputMixin(
+    "createProjectNoteForm",
+    "createNote(project)",
+    "newNotes['project'].text",
+    "createProjectNote(project)"
+  )
 
   .list.bordered
     .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
-      div(ng-include="'./views/project/_projectNotesInclude.jade'")
+      div(ng-include="'./includes/_noteItem.jade'")

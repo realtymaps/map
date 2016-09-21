@@ -83,6 +83,7 @@ leafletDrawEvents
             enable: leafletDrawEvents
 
       $scope.$on '$destroy', ->
+        # need to disable events for shapes
         _destroy()
         $log.debug('destroyed')
       #END SCOPE Extensions
