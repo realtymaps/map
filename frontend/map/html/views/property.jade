@@ -29,13 +29,13 @@ include ../includes/mixins/_noteInputMixin.jade
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='property')
-              
-          
+
+
           uib-accordion.row.content-block.subscriber-groups.content-heading.notes-title(close-others="false" ng-if="selectedResult.notes && selectedResult.notes.length")
             div(uib-accordion-group heading="Notes ({{selectedResult.notes.length || 0}})")
               .item.project-note(ng-repeat="note in selectedResult.notes | orderBy:rm_inserted_time:true")
                 div(ng-include="'./includes/_noteItem.jade'")
-            
+
               +noteInputMixin(
                 "createNoteForm_{{selectedResult.rm_property_id}}",
                 "createNote(selectedResult)",
@@ -43,7 +43,7 @@ include ../includes/mixins/_noteInputMixin.jade
                 "createNote(selectedResult)"
               )
 
-          .content-block.prop-attrs.border-bottom
+          .content-block.prop-attrs.border-bottom(ng-if="getMail()")
             .content-heading Mail Campaigns
 
             property-mail(property='property')
