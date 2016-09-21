@@ -74,8 +74,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       # `checkExistingMacros` is important in case macro definitions change, this forces saved
       #   campaigns to re-evaluate "macro-ized" spans for validity
       ngModel.$setViewValue scope.checkExistingMacros()
-      ngModel.$setViewValue scope.convertMacros()
-      ngModel.$setViewValue scope.convertHighlights()
+      ngModel.$setViewValue scope.convertMacrosAndHighlights()
+      #ngModel.$setViewValue scope.convertHighlights()
       ngModel.$render()
 
 
@@ -84,6 +84,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     #
 
     createSpan = (textnode, offset, text, options={}) ->
+      console.log "text:"
+      console.log text
       range = rangy.createRange()
       range.setStart textnode, offset
       if options?.exchange # removes existing text to create new span in its place
@@ -222,16 +224,17 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       textAngularWalker(_test, _process)
 
 
-    # convert unwrapped macro-markup into spans
-    scope.convertMacros = () ->
+    # convert unwrapped macro and highlight markup into spans
+    # it's necessary to do both macros and highlights together since the order of creating spans in a single parent is important
+    scope.convertMacrosAndHighlights = () ->
       # helper func passed to 'walk'
       _test = (n) ->
-        return n?.nodeType == 3 && not scope.isMacroNode(n) && /{{.*?}}/.test(n.data)
+        return n?.nodeType == 3 && !scope.isMacroNode(n) && !scope.isHighlightNode(n) && /({{.*?}})|(\[\[.*?\]\])/.test(n.data)
 
       # helper func passed to 'walk'
       # pulls macro-markup from data of text node to convert to styled macro
       _process = (n) ->
-        re = new RegExp(/{{(.*?)}}/g)
+        re = new RegExp(/({{(.*?)}})|(\[\[(.*?)\]\])/g)
         # js list push/pop acts like lifo queue, useful here to process last child first (from behind)
         # since the element changes as we pass
         conversions = []
@@ -239,31 +242,12 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         while m = re.exec(s)
           conversions.push [n, m.index, m[0]]
         while p = conversions.pop()
-          scope.convertMacrosInSpan p[0], p[1], p[2], exchange: true
-
-      # apply test and processing to DOM-ized letter...
-      textAngularWalker(_test, _process)
-
-
-    # convert unwrapped highlight-markup into spans
-    scope.convertHighlights = () ->
-      console.log "convertHighlights()"
-      # helper func passed to 'walk'
-      _test = (n) ->
-        return n?.nodeType == 3 && not scope.isHighlightNode(n) && /\[\[.*?\]\]/.test(n.data)
-
-      # helper func passed to 'walk'
-      # pulls highlight-markup from data of text node to convert to styled, (usually yellow) highlight
-      _process = (n) ->
-        re = new RegExp(/\[\[(.*?)\]\]/g)
-        # js list push/pop acts like lifo queue, useful here to process last child first (from behind)
-        # since the element changes as we pass
-        conversions = []
-        s = n.data
-        while m = re.exec(s)
-          conversions.push [n, m.index, m[0]]
-        while p = conversions.pop()
-          scope.convertHighlightInSpan p[0], p[1], p[2], exchange: true
+          console.log "popped:"
+          console.log p
+          if /^{{.*?}}$/.test(p[2])
+            scope.convertMacrosInSpan p[0], p[1], p[2], exchange: true
+          else
+            scope.convertHighlightInSpan p[0], p[1], p[2], exchange: true
 
       # apply test and processing to DOM-ized letter...
       textAngularWalker(_test, _process)
