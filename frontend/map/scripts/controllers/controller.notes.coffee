@@ -22,8 +22,8 @@ rmapsMapTogglesFactory
 
   _signalUpdate = (promise) ->
     return $rootScope.$emit rmapsEventConstants.notes unless promise
-    promise.then ->
-      $rootScope.$emit rmapsEventConstants.notes
+    promise.then (result) ->
+      $rootScope.$emit rmapsEventConstants.notes, result
 
   $scope.activeView = 'notes'
 

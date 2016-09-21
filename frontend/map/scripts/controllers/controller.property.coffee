@@ -18,7 +18,14 @@ app.controller 'rmapsPropertyCtrl',
     rmapsMailCampaignService
     rmapsFiltersFactory
     rmapsNotesService
+    rmapsEventConstants
   ) ->
+
+    $rootScope.$on rmapsEventConstants.notes, (event, result) ->
+      if !$scope.selectedResult.notes?
+        $scope.selectedResult.notes = []
+
+      $scope.selectedResult.notes.push result
 
     $log = $log.spawn 'rmapsPropertyCtrl'
     $log.debug "rmapsPropertyCtrl for id: #{$stateParams.id}"
