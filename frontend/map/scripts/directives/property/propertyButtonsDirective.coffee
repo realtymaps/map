@@ -102,7 +102,8 @@ app.directive 'propertyButtons', (
           rmapsPropertiesService.favoriteProperty($scope.property)
 
       $scope.getMail = (property) ->
-        rmapsMailCampaignService.getMail(property.rm_property_id)
+        if property?
+          rmapsMailCampaignService.getMail(property.rm_property_id)
 
       $scope.addMail = (property) ->
         $scope.property = property
