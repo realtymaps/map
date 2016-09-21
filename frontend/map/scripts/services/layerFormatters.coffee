@@ -7,7 +7,13 @@ priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker.jade
 noteMarkerTemplate  = require '../../html/includes/map/markers/_noteMarker.jade'
 currentLocationMarkerTemplate = require '../../html/includes/map/markers/_currentLocationMarker.jade'
 
-app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
+app.service 'rmapsLayerFormattersService', (
+  $log,
+  rmapsParcelEnums,
+  $rootScope,
+  rmapsStylusConstants,
+  rmapsMailCampaignService
+) ->
 
   $log = $log.spawn('map:layerFormatter')
 
@@ -114,7 +120,12 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         icon:
           type: 'div'
           iconSize: [60, 30]
-          html: priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{markersBSLabel[status]}#{hovered}")
+          html: priceMarkerTemplate(
+            price:formattedPrice,
+            priceClasses: "label-#{markersBSLabel[status]}#{hovered}",
+            hasMail: !!rmapsMailCampaignService.getMail(model.rm_property_id)
+            rm_property_id: model.rm_property_id
+          )
 
     setMarkerPriceGroupOptions: (models) ->
       return {} unless models
@@ -144,6 +155,7 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           type: 'div'
           iconSize: [12, 12]
           html: "<i class=\"mail-marker icon fa fa-envelope\"></i>"
+        zIndexOffset: 1000
 
     setMarkerManualClusterOptions: (model) ->
       return {} unless model

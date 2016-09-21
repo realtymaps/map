@@ -18,7 +18,8 @@ rmapsHoverQueue
 rmapsZoomLevelService
 rmapsPopupLoaderService
 rmapsEventsHandlerInternalsService
-$log) ->
+$log
+$uibModal) ->
   internals = rmapsEventsHandlerInternalsService
   _gate = rmapsNgLeafletEventGateService
 
@@ -130,10 +131,21 @@ $log) ->
             if event.ctrlKey or event.metaKey
               # return mapCtrl.saveProperty(model, lObject)
               rmapsPropertiesService.pinUnpinProperty model
+
             if events.last.last != 'dblclick'
-              # if model.markerType != 'price-group'
-              #   $scope.formatters.results.showModel(model)
-              if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+
+              if model.markerType == 'mail'
+                modalScope = $scope.$new()
+                modalScope.property = model
+                modalScope.newMail =
+                  property_ids: [model.rm_property_id]
+
+                modalInstance = $uibModal.open
+                  animation: true
+                  scope: modalScope
+                  template: require('../../html/views/templates/modals/modal-mailHistory.jade')()
+
+              else if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
                 openWindow(model)
 
           , limits.clickDelayMilliSeconds - 100

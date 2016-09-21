@@ -26,7 +26,7 @@ app.service 'rmapsProfilesService', (
   rmapsCurrentProfilesService
   rmapsEventConstants
   rmapsMainOptions
-  rmapsMapFactory
+  rmapsCurrentMapService
   rmapsMapTogglesFactory
   rmapsParcelEnums
   rmapsPrincipalService
@@ -136,6 +136,9 @@ app.service 'rmapsProfilesService', (
         $log.debug "detected `_isSettingProfile`, returning `_settingCurrentPromise`"
         return _settingCurrentPromise
 
+      # Get reference to the current main map
+      currentMap = rmapsCurrentMapService.get()
+
       # If switching profiles, ensure the old one is up-to-date
       if @currentProfile
         $log.debug "detected @currentProfile, populating..."
@@ -144,9 +147,9 @@ app.service 'rmapsProfilesService', (
         @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
 
         # Get the center of the main map if it has been created
-        $log.debug "rmapsMapFactory.currentMainMap: #{rmapsMapFactory.currentMainMap}"
-        if rmapsMapFactory.currentMainMap
-          @currentProfile.map_position = center: NgLeafletCenter(_.pick rmapsMapFactory.currentMainMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
+        $log.debug "rmapsCurrentMap: #{currentMap}"
+        if currentMap
+          @currentProfile.map_position = center: NgLeafletCenter(_.pick currentMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
 
       # Save the old and load the new profiles
       $log.debug "calling _setCurrent..."
@@ -172,14 +175,14 @@ app.service 'rmapsProfilesService', (
           map_position = rmapsMainOptions.map.options.json.center
           map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
-        if rmapsMapFactory.currentMainMap?.scope?.map?
+        if currentMap?.scope?.map?
           ### eslint-disable###
-          oldCenter = _.extend {}, rmapsMapFactory?.currentMainMap?.scope?.map?.center
+          oldCenter = _.extend {}, currentMap?.scope?.map?.center
           ### eslint-enable###
           if map_position?.center?
             newCenter = NgLeafletCenter(map_position.center || rmapsMainOptions.map.options.json.center)
             newCenter.docWhere = 'rmapsProfilesService currentMainMap'
-            if !newCenter.isEqual(rmapsMapFactory.currentMainMap.scope.map.center)
+            if !newCenter.isEqual(currentMap.scope.map.center)
               $log.debug "Profile changed and map factory exists, recentering map"
               $log.debug "old lat: #{oldCenter.lat}, new lat: #{map_position.center.lat}"
               $log.debug "old lon: #{oldCenter.lon}, new lon: #{map_position.center.lon}"
@@ -224,9 +227,9 @@ app.service 'rmapsProfilesService', (
         # Set the Filter toggles based on the current profile
         #
 
-        if rmapsMapFactory.currentMainMap?
+        if currentMap?
           $log.debug "Profile change, updating current map Toggles"
-          rmapsMapFactory.currentMainMap.updateToggles profile.map_toggles
+          currentMap.updateToggles profile.map_toggles
         else
           $log.debug "Initial profile set, create Map Toggles Factory"
           rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(profile.map_toggles)

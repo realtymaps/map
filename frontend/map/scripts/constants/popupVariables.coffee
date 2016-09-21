@@ -22,10 +22,3 @@ app.constant 'rmapsPopupConstants',
       left: 150
       right: -150
     templateFn: require('../../html/includes/map/_notesPopup.jade')
-  'mail':
-    offsets:
-      top: 147
-      bottom: 5
-      left: 181
-      right: -181
-    templateFn: require('../../html/includes/map/_mailPopup.jade')

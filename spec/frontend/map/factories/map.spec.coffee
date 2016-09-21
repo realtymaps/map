@@ -37,6 +37,7 @@ describe "rmapsMapFactory factory", ->
         profiles: {
           1: {
             id: 1
+            project_id: 2
           }
         }
       }
@@ -44,6 +45,7 @@ describe "rmapsMapFactory factory", ->
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )
       $httpBackend.when( 'POST', backendRoutes.userSession.currentProfile).respond( identity: identity )
       $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
+      $httpBackend.when( 'GET', backendRoutes.getProperties).respond([])
 
       $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
         data = JSON.parse dataString
