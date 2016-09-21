@@ -289,10 +289,9 @@ waitForExclusiveAccess = (subtask) ->
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
-        logger.info("Waiting for exclusive data_combined access; #{results.length} tasks remaining: #{_.pluck(results, 'name').join(', ')}")
-        # Create a promise that doesn't finish on its own -- it just waits to get timed out and retried.  This is safer
-        # than trying to poll internally, because a polling flow can't handle zombies, but a retrying flow can
-        return new Promise (resolve, reject) ->  # noop
+        # Throw a SoftFail so this subtask will be retried.  This is safer than trying to poll internally, because a
+        # polling flow can't handle zombies, but a retrying flow can
+        throw new SoftFail("exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}")
       else
         logger.info("Exclusive data_combined access obtained")
         # go ahead and resolve, so the subtask will finish and the task will continue
