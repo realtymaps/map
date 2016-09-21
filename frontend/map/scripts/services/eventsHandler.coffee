@@ -19,8 +19,7 @@ rmapsZoomLevelService
 rmapsPopupLoaderService
 rmapsEventsHandlerInternalsService
 $log
-$uibModal
-$state) ->
+$uibModal) ->
   internals = rmapsEventsHandlerInternalsService
   _gate = rmapsNgLeafletEventGateService
 
