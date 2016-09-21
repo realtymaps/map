@@ -12,19 +12,20 @@ QUEUE_NEEDS = 'queue needs'
 
 
 updateQueueNeeds = () ->
-  logger.debug('Doing maintenance...')
+  logger.spawn('work').debug('Doing maintenance...')
   jobQueue.doMaintenance()
   .then () ->
-    logger.debug('Queueing ready tasks...')
+    logger.spawn('work').debug('Queueing ready tasks...')
     jobQueue.queueReadyTasks(dieOnMissingTask: false)
   .then () ->
-    logger.debug('Determining queue needs...')
+    logger.spawn('work').debug('Determining queue needs...')
     now = Date.now()
     jobQueue.getQueueNeeds()
     .then (needs) ->
       store = {}
       store[RUN_TIMESTAMP] = now
       store[QUEUE_NEEDS] = needs
+      logger.spawn('work').debug('Saving statistics...')
       keystore.setValuesMap(store, namespace: NAMESPACE)
       .then () ->
         needs

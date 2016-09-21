@@ -109,7 +109,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
   _finalizeEntry({entries: taxEntries, subtask})
   .then (tax) ->
     tax.data_source_type = 'county'
-    _.extend(tax, parcelEntries[0])
+    if parcelEntries[0]
+      tax.geometry = parcelEntries[0].geometry
+      tax.geometry_raw = parcelEntries[0].geometry_raw
+      tax.geometry_center = parcelEntries[0].geometry_center
+      tax.geometry_center_raw = parcelEntries[0].geometry_center_raw
 
     # all county data gets 'sold' status -- it will be differentiated by the frontend's sold timeframe filter
     tax.status = 'sold'

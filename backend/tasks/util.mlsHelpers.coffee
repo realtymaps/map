@@ -128,7 +128,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   else
     parcelHelpers.getParcelsPromise {rm_property_id: id, transaction}
 
-  Promise.join listingsPromise, parcelPromise, (listings=[], parcel=[]) ->
+  Promise.join listingsPromise, parcelPromise, (listings=[], [parcel]=[]) ->
 
     if listings.length == 0
       # might happen if a singleton listing is changed to hidden during the day
@@ -137,7 +137,11 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
     _finalizeEntry({entries: listings, subtask})
     .then (listing) ->
       listing.data_source_type = 'mls'
-      _.extend(listing, parcel[0])
+      if parcel
+        listing.geometry = parcel.geometry
+        listing.geometry_raw = parcel.geometry_raw
+        listing.geometry_center = parcel.geometry_center
+        listing.geometry_center_raw = parcel.geometry_center_raw
       Promise.delay(delay)  #throttle for heroku's sake
       .then () ->
         # do owner name and zoning promotion logic

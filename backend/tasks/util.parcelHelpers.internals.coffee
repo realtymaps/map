@@ -77,7 +77,7 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
           }
         else
           logger.debug "countyHelpers.finalizeData"
-          #delay is zero since higher up the change we have already been delayed
+          #delay is zero since higher up the chain we have already been delayed
           countyHelpers.finalizeData {
             subtask
             id
