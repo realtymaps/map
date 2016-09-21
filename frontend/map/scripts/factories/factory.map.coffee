@@ -9,7 +9,7 @@ _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
 
-app.factory 'rmapsCurrentMapService', () ->
+app.service 'rmapsCurrentMapService', () ->
   _currentMainMap = null
   set: (map) ->
     _currentMainMap = map
