@@ -147,7 +147,7 @@ queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try (
     return 0
   internals.checkTask(transaction, batchId, subtasks[0].task_name)
   .then (taskData) ->
-    # need to make sure we don't continue to queue subtasks if the task has errorred in some way
+    # need to make sure we don't continue to queue subtasks if the task has errored in some way
     if taskData == undefined
       # return an array indicating we queued 0 subtasks
       logger.spawn("task:#{subtasks[0].task_name}").debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
@@ -160,7 +160,7 @@ queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try (
 # convenience function to get another subtask config and then enqueue it based on the current subtask
 queueSubsequentSubtask = ({transaction, subtask, laterSubtaskName, manualData, replace, concurrency}) ->
   subtaskName = "#{subtask.task_name}_#{laterSubtaskName}"
-  getSubtaskConfig(transaction, subtaskName, subtask.task_name)
+  internals.getSubtaskConfig(subtaskName, subtask.task_name, transaction)
   .then (laterSubtask) ->
     queueSubtask({transaction, batchId: subtask.batch_id, subtask: laterSubtask, manualData, replace, concurrency})
 
@@ -280,7 +280,6 @@ getQueueNeeds = () ->
   queueZombies = {}
   queueConfigPromise = tables.jobQueue.queueConfig()
   .select('*')
-  .where(active: true)
   tasksPromise = tables.jobQueue.taskHistory()
   .select('name')
   .where(current: true)
@@ -293,20 +292,15 @@ getQueueNeeds = () ->
       queueZombies[name] = 0
     Promise.each runningTasks, (taskConfig) ->
       taskName = taskConfig.name
-      dbs.get('main')
-      .select('*')
-      .from () ->
-        tables.jobQueue.currentSubtasks(transaction: @)
-        .select('task_step', 'queue_name')
-        .select(dbs.raw('main', "BOOL_AND(finished IS NOT NULL) AS finished"))
-        .select(dbs.raw('main', "COUNT(finished IS NULL AND (ignore_until IS NULL OR ignore_until < NOW()) OR NULL)::INTEGER AS needs"))
-        .select(dbs.raw('main', "COUNT(status = 'zombie' OR NULL)::INTEGER AS zombies"))
-        .where('task_name', taskName)
-        .groupBy('task_step')
-        .groupBy('queue_name')
-        .orderBy('task_step')
-        .as('x')
-      .where(finished: false)
+      tables.jobQueue.currentSubtasks()
+      .select('task_step', 'queue_name')
+      .select(dbs.raw('main', "COUNT(finished IS NULL AND (ignore_until IS NULL OR ignore_until < NOW()) OR NULL)::INTEGER AS needs"))
+      .select(dbs.raw('main', "COUNT(status = 'zombie' OR NULL)::INTEGER AS zombies"))
+      .where('task_name', taskName)
+      .groupBy('task_step')
+      .groupBy('queue_name')
+      .orderBy('task_step')
+      .havingRaw('BOOL_AND(finished IS NOT NULL) = FALSE')
       .limit(1)
       .then ([activeStep]) ->
         if !activeStep
@@ -332,7 +326,7 @@ getQueueNeeds = () ->
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
 queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency}) ->
-  getSubtaskConfig(transaction, "#{subtask.task_name}_#{laterSubtaskName}", subtask.task_name)
+  internals.getSubtaskConfig("#{subtask.task_name}_#{laterSubtaskName}", subtask.task_name, transaction)
   .then (laterSubtask) ->
     queuePaginatedSubtask({transaction, batchId: subtask.batch_id, totalOrList, maxPage, subtask: laterSubtask, mergeData, concurrency})
 
@@ -341,16 +335,6 @@ queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, 
   if !data
     return
   queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency})
-
-getSubtaskConfig = (transaction, subtaskName, taskName) ->
-  tables.jobQueue.subtaskConfig(transaction: transaction)
-  .where
-    name: subtaskName
-    task_name: taskName
-  .then (subtasks) ->
-    if !subtasks?.length
-      throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
-    return subtasks[0]
 
 runWorker = (queueName, id, quit=false) ->
   if cluster.worker?
@@ -389,7 +373,6 @@ module.exports = {
   getQueueNeeds
   queuePaginatedSubtask
   queueSubsequentPaginatedSubtask
-  getSubtaskConfig
   runWorker
   getLastTaskStartTime
   cancelAllRunningTasks

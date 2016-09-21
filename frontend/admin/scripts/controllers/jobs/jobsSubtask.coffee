@@ -44,8 +44,8 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
         width: 125
         cellClass: 'clickable-cell'
       ,
-        field: 'retry_delay_seconds'
-        displayName: 'Retry Delay'
+        field: 'retry_delay_minutes'
+        displayName: 'Retry Delay min'
         width: 125
         cellClass: 'clickable-cell'
       ,
@@ -54,34 +54,13 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
         width: 125
         cellClass: 'clickable-cell'
       ,
-        field: 'hard_fail_timeouts'
-        displayName: 'HF Timeout?'
-        type: 'boolean'
-        defaultValue: true
-        width: 100
-        cellClass: 'clickable-cell'
-      ,
-        field: 'hard_fail_after_retries'
-        displayName: 'HF Retry?'
-        type: 'boolean'
-        defaultValue: true
-        width: 100
-        cellClass: 'clickable-cell'
-      ,
-        field: 'hard_fail_zombies'
-        displayName: 'HF Zombie?'
-        type: 'boolean'
-        defaultValue: true
-        width: 100
-        cellClass: 'clickable-cell'
-      ,
-        field: 'warn_timeout_seconds'
-        displayName: 'Warn TO sec'
+        field: 'warn_timeout_minutes'
+        displayName: 'Warn TO min'
         width: 125
         cellClass: 'clickable-cell'
       ,
-        field: 'kill_timeout_seconds'
-        displayName: 'Kill TO sec'
+        field: 'kill_timeout_minutes'
+        displayName: 'Kill TO min'
         width: 125
         cellClass: 'clickable-cell'
       ,
