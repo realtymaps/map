@@ -1,5 +1,5 @@
 .row.content-row.vertical-align(ng-repeat="mail in mailings | orderBy: 'mail.lob.date_created'")
-  a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+  a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})" ui-sref-opts="{reload:true}") {{mail.campaign_name}}
   .col-sm-3.content-body
     span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
   .col-sm-4.content-body

@@ -1,7 +1,6 @@
 .modal-header
   h3.modal-title Mail for {{property.address.street}}
-.modal-body(ng-show="modalBody")
+.modal-body
   property-mail(property="property")
 .modal-footer
-  button.btn.btn-default(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel
-  button.btn.btn-primary(type='button', ng-click='(modalOk || $close)(); $event.stopPropagation()') New Mail
+  button.btn.btn-primary(type='button', ui-sref="recipientInfo({property_ids: newMail.property_ids})" ui-sref-opts="{reload: true}") New Mail
