@@ -21,6 +21,7 @@ WHERE EXISTS (
   SELECT 1 FROM (
     SELECT mls, COUNT(*) AS total
     FROM lookup_mls
+    GROUP BY mls
   ) AS x
   WHERE x.total > 1 AND x.mls = lookup_mls.mls
 );
