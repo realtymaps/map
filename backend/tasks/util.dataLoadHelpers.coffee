@@ -596,7 +596,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
 
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
-  doDebug = tableName.endsWith('_blackknight_tax_R_12001_20160824')
+  doDebug = tableName.indexOf('_blackknight_') != -1
   if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream START')
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false

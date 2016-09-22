@@ -70,7 +70,7 @@ _fetchS3 = (account, source, target, options) ->
 # loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  doDebug = rawTableName.endsWith('_blackknight_tax_R_12001_20160824')
+  doDebug = true
   if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData STARTING')
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
   filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)

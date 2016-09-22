@@ -199,6 +199,8 @@ checkProcessQueue = (subtask) ->
 
 loadRawData = (subtask) ->
   doDebug = (subtask.data.normalSubid == '12001')
+  if !doDebug
+    return
   if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData STARTING')
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
