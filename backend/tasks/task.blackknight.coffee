@@ -98,8 +98,10 @@ copyFtpDrop = (subtask) ->
       Promise.map paths, (path) ->
         ftp.list(path)
         .then (files) ->
-          _.forEach files, (el) -> el.fullpath = "#{path}/#{el.name}"
-          files
+          for file of files
+            name: file.name
+            path: path
+            size: file.size
 
       # queue up individual subtasks for each file transfer
       .then (fileList) ->
@@ -128,7 +130,8 @@ copyFtpDrop = (subtask) ->
 copyFile = (subtask) ->
   ftp = new PromiseSftp()
   file = subtask.data
-  logger.debug () -> "copying blackknight file #{file.fullpath}, size=#{file.size}, type=#{file.type}"
+  fullpath = "#{file.path}/#{file.name}"
+  logger.debug () -> "copying blackknight file #{fullpath}, size=#{file.size}"
 
   externalAccounts.getAccountInfo('blackknight')
   .then (accountInfo) ->
@@ -145,8 +148,8 @@ copyFile = (subtask) ->
   .then () ->
     localfile = "/tmp/#{(new Date()).getTime()}_#{file.name}"
 
-    logger.debug () -> "fastGet file.fullpath (source): #{file.fullpath}"
-    logger.debug () -> "fastGet localfile     (target): #{localfile}"
+    logger.debug () -> "fastGet from (source): #{fullpath}"
+    logger.debug () -> "fastGet to   (target): #{localfile}"
 
     # ensure local file doesn't exist
     rimraf.async(localfile)
@@ -154,12 +157,12 @@ copyFile = (subtask) ->
 
       # ftp down file
       # Note: as of PromiseSftp version 0.9.9, using ftp.get() was buggy here; defered to fastGet which works
-      ftp.fastGet(file.fullpath, localfile)
+      ftp.fastGet(fullpath, localfile)
     .then () -> new Promise (resolve, reject) ->
 
       config =
         extAcctName: awsService.buckets.BlackknightData
-        Key: file.fullpath.substring(1) # omit leading slash
+        Key: fullpath.substring(1) # omit leading slash
         ContentType: 'text/plain'
 
       # s3 up file
@@ -173,7 +176,7 @@ copyFile = (subtask) ->
         fs.createReadStream(localfile).pipe(upload)
 
     .catch (err) -> # catches ftp errors
-      throw new SoftFail("SFTP error while copying #{file.fullpath}: #{err}")
+      throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
 
   .catch (err) ->
     throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")
@@ -198,13 +201,8 @@ checkProcessQueue = (subtask) ->
 
 
 loadRawData = (subtask) ->
-  doDebug = (subtask.data.normalSubid == '12001')
-  if !doDebug
-    return
-  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData STARTING')
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData GOT COLUMNS')
     # download and insert data with `countyHelpers`
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
@@ -213,7 +211,6 @@ loadRawData = (subtask) ->
       s3account: awsService.buckets.BlackknightData
 
   .then (numRows) ->
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData QUEUING NEXT SUBTASKS')
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
@@ -228,8 +225,6 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
-  .then (numRows) ->
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ blackknight.loadRawData DONE')
 
 
 saveProcessDates = (subtask) ->
