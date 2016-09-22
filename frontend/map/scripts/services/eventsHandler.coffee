@@ -19,7 +19,9 @@ rmapsZoomLevelService
 rmapsPopupLoaderService
 rmapsEventsHandlerInternalsService
 $log
-$uibModal) ->
+$uibModal,
+rmapsOpenAsModalWindowContextFactory,
+$state) ->
   internals = rmapsEventsHandlerInternalsService
   _gate = rmapsNgLeafletEventGateService
 
@@ -146,7 +148,25 @@ $uibModal) ->
                   template: require('../../html/views/templates/modals/modal-mailHistory.jade')()
 
               else if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-                openWindow(model)
+
+                if $scope.mobileView
+                  # Open the modal
+                  if model.markerType == 'price'
+                    $state.go 'property', id: model.rm_property_id
+                  else if model.markerType == 'price-group'
+                    rmapsOpenAsModalWindowContextFactory.modalTitle = "Multiple Units"
+                    modalScope = $scope.$new()
+                    modalScope.model = model
+                    modal = $uibModal.open {
+                      scope: modalScope
+                      controller: 'OpenAsModalWindowCtrl'
+                      template: require('../../html/includes/map/_priceGroupPopup.jade')()
+                      windowClass: 'open-as-modal'
+                    }
+                    rmapsOpenAsModalWindowContextFactory.modal = modal
+
+                else # desktop
+                  openWindow(model)
 
           , limits.clickDelayMilliSeconds - 100
 
