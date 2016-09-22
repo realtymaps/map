@@ -495,18 +495,22 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-_createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
+_createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory, doDebug}) ->
+  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._createRawTable START')
   if !_.isArray columns
     columns = [columns]
 
   promiseQuery('BEGIN TRANSACTION')
   .then () ->
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._createRawTable DROP TABLE')
     promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName).toString())
   .then () ->
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._createRawTable DATA_LOAD_HISTORY DELETE')
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
     .delete()
   .then () ->
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._createRawTable DATA_LOAD_HISTORY INSERT')
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
   .then () ->
@@ -516,26 +520,34 @@ _createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
       table.text('rm_error_msg')
       for fieldName in columns
         table.text(fieldName)
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._createRawTable CREATE RAW TABLE: '+createRawTable.toString())
     promiseQuery(createRawTable.toString())
 
-_endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
+_endRawTable = ({startedTransaction, count, tableName, promiseQuery, doDebug}) ->
+  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._endRawTable START')
   if startedTransaction
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._endRawTable CREATE INDEX')
     promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
     .then () ->
+      if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._endRawTable COMMIT')
       promiseQuery('COMMIT TRANSACTION')
     .then () ->
+      if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._endRawTable DATA_LOAD_HISTORY UPDATE')
       tables.jobQueue.dataLoadHistory()
       .where(raw_table_name: tableName)
       .update(raw_rows: count)
     .then () ->
       return count
   else
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers._endRawTable NO TRANSACTION')
     return count
 
-rollback = ({err, tableName, promiseQuery}) ->
+rollback = ({err, tableName, promiseQuery, doDebug}) ->
+  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.rollback START')
   logger.error("problem streaming to #{tableName}: #{err}")
   promiseQuery('ROLLBACK TRANSACTION')
   .then () ->
+    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.rollback DATA_LOAD_HISTORY DELETE')
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
     .delete()
@@ -584,6 +596,8 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
 
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
+  doDebug = tableName.endsWith('_blackknight_tax_R_12001_20160824')
+  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream START')
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     new Promise (resolve, reject) ->
@@ -612,9 +626,11 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               this.push('\n')
               callback()
             when 'delimiter'
+              if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream DELIMITER')
               delimiter = event.payload
               callback()
             when 'columns'
+              if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream COLUMNS START')
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
@@ -624,13 +640,17 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 startedTransaction = true
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+                if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream COLUMNS SQL: '+copyStart)
                 dbStream = streamQuery(copyStream.from(copyStart))
+                if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream COLUMNS DONE')
                 dbStreamer.pipe(dbStream)
                 callback()
             when 'done'
+              if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream DONE')
               donePayload = event.payload
               callback()
             when 'error'
+              if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream ERROR')
               if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
                 # make sure it is a true error, not just no records returned
                 onError(event.payload)
@@ -638,9 +658,11 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
             else
               callback()
         catch error
+          if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream CATCH')
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
+        if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ dataLoadHelpers.manageRawDataStream FLUSH')
         if startedTransaction
           this.push('\\.\n')
         callback()
