@@ -98,19 +98,20 @@ copyFtpDrop = (subtask) ->
       Promise.map paths, (path) ->
         ftp.list(path)
         .then (files) ->
-          for file of files
-            name: file.name
-            path: path
-            size: file.size
+          filteredFiles = []
+          for file in files
+            if file.size > 0
+              filteredFiles.push
+                name: file.name
+                path: path
+                size: file.size
+          return filteredFiles
 
       # queue up individual subtasks for each file transfer
       .then (fileList) ->
 
         # flatten list of lists from the Promise.map...
         fileList = _.flatten(fileList)
-
-        # remove 0 size files
-        fileList = _.filter fileList, (el) -> el.size > 0
 
         logger.debug () -> "Queuing copy subtasks for files: #{JSON.stringify(_.pluck(fileList, 'fullpath'))}"
         ftp.logout()
