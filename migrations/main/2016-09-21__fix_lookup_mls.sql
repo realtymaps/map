@@ -5,7 +5,7 @@ SET
   mls = TRIM(BOTH FROM mls);
 
 UPDATE lookup_mls
-SET mls = 'SEAK'
+SET mls = 'SEAMLS'
 WHERE state = 'AK' AND full_name = 'Southeast Alaska Board of Realtors';
 
 
