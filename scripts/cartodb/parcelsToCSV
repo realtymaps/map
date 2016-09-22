@@ -1,0 +1,57 @@
+#!/usr/bin/env coffee
+
+###
+Simple script cartodb import via our service upload by fipsCode
+
+options:
+--fipsCode - single or multiple fipsCodes
+###
+Promise = require 'bluebird'
+argv = require('yargs').argv
+# rewire = require('rewire')
+Spinner = require('cli-spinner').Spinner
+cartodb = require '../../backend/services/service.cartodb'
+debug = require('debug')('cartodb:rmaps:parcelToGeo')
+# console.log(cartodb)
+
+makeSpinner = () ->
+  spinner = new Spinner('running.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+  spinner
+
+
+if !argv.fipsCode
+  console.error('fipsCode required')
+  process.exit(1)
+
+debug argv.fipsCode
+debug typeof(argv.fipsCode)
+
+fipsCodes = argv.fipsCode.toString().split(',')
+
+spin = makeSpinner()
+
+Promise.each fipsCodes, (fips_code) ->
+  fileName = argv.filename || argv.fileName
+  fileName ?= fips_code.toString()
+  fileName = '/tmp/' + fileName
+
+
+  method  = if !argv.psql? then 'toCSV' else 'toPsqlCSV'
+
+  cartodb[method]({fileName, fips_code})
+  .then (result) ->
+    debug("fipsCode: #{fips_code} completed")
+    debug(result)
+.then () ->
+  debug("@@@@ TOTAL SUCCESS @@@@")
+.finally ->
+  spin.stop()
+.catch  (error) ->
+  debug("@@@@ ERROR @@@@")
+  console.error(error)
+  if(error)
+    debug("@@@@ STACK @@@@")
+    debug(error.stack)
+  process.exit(2)

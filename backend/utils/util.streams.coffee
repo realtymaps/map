@@ -97,8 +97,9 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   inputStream.pipe(splitStream).pipe(outputStream)
 
 
-module.exports =
-  pgStreamEscape: pgStreamEscape
-  geoJsonFormatter: geoJsonFormatter
-  StringStream: StringStream
-  delimitedTextToObjectStream: delimitedTextToObjectStream
+module.exports = {
+  pgStreamEscape
+  geoJsonFormatter
+  StringStream
+  delimitedTextToObjectStream
+}
