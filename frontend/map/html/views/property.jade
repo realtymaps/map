@@ -29,13 +29,13 @@ include ../includes/mixins/_noteInputMixin.jade
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='property')
-              
-          
+
+
           uib-accordion.row.content-block.subscriber-groups.content-heading.notes-title(close-others="false" ng-if="selectedResult.notes && selectedResult.notes.length")
             div(uib-accordion-group heading="Notes ({{selectedResult.notes.length || 0}})")
               .item.project-note(ng-repeat="note in selectedResult.notes | orderBy:rm_inserted_time:true")
                 div(ng-include="'./includes/_noteItem.jade'")
-            
+
               +noteInputMixin(
                 "createNoteForm_{{selectedResult.rm_property_id}}",
                 "createNote(selectedResult)",
@@ -43,7 +43,7 @@ include ../includes/mixins/_noteInputMixin.jade
                 "createNote(selectedResult)"
               )
 
-          .content-block.prop-attrs.border-bottom
+          .content-block.prop-attrs.border-bottom(ng-if="getMail()")
             .content-heading Mail Campaigns
 
             property-mail(property='property')
@@ -162,7 +162,7 @@ include ../includes/mixins/_noteInputMixin.jade
                   .col-sm-2 Doc Type
                   .col-sm-1
 
-                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra")
+                .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra track by $index")
                   .col-sm-2(ng-if="deed.extra && deed.sale_date") {{deed.sale_date | date}}
                   .col-sm-2(ng-if="deed.extra && !deed.sale_date") -
                   .col-sm-2(ng-if="deed.extra && deed.price != null") {{deed.price | currency:"$":0}}
@@ -196,7 +196,7 @@ include ../includes/mixins/_noteInputMixin.jade
                   .col-sm-2 Purpose
                   .col-sm-1
 
-                .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra")
+                .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra track by $index")
                   .col-sm-2(ng-if="mortgage.extra && mortgage.close_date") {{mortgage.close_date | date}}
                   .col-sm-2(ng-if="mortgage.extra && !mortgage.close_date") -
                   .col-sm-2(ng-if="mortgage.extra && mortgage.amount != null") {{mortgage.amount | currency:"$":0}}
@@ -226,7 +226,7 @@ include ../includes/mixins/_noteInputMixin.jade
                   .col-sm-2 Price
                   .col-sm-1
 
-                .row.content-row.history(ng-if="group.name == 'priorListings'" ng-show="listing.extra || listing.showExtra" ng-repeat="listing in property[group.subscriber].priorListingsExtra")
+                .row.content-row.history(ng-if="group.name == 'priorListings'" ng-show="listing.extra || listing.showExtra" ng-repeat="listing in property[group.subscriber].priorListingsExtra track by $index")
                   .col-sm-2(ng-if="listing.extra && !listing.discontinued_date") {{listing.close_date | date}}
                   .col-sm-2(ng-if="listing.extra && listing.discontinued_date") {{listing.discontinued_date | date}}
                   .col-sm-2(ng-if="listing.extra") {{listing.status}}

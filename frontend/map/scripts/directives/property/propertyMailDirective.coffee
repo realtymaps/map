@@ -36,9 +36,7 @@ app.directive 'propertyMail', (
               title: 'Mail Review'
 
       if $scope.property?
-        $log.debug $scope.property
         rmapsMailCampaignService.getProjectMail()
         .then ->
           $scope.mailings = (rmapsMailCampaignService.getMail($scope.property.rm_property_id))?.mailings
-          $log.debug $scope.mailings
   }

@@ -9,6 +9,13 @@ _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
 
+app.service 'rmapsCurrentMapService', () ->
+  _currentMainMap = null
+  set: (map) ->
+    _currentMainMap = map
+  get: () ->
+    _currentMainMap
+
 ###
   Our Main Map Implementation
 ###
@@ -38,7 +45,8 @@ app.factory 'rmapsMapFactory',
     rmapsZoomLevelService,
     rmapsZoomLevelStateFactory,
     rmapsOverlays
-    rmapsLayerUtilService
+    rmapsLayerUtilService,
+    rmapsCurrentMapService
   ) ->
 
     limits = rmapsMainOptions.map
@@ -53,8 +61,6 @@ app.factory 'rmapsMapFactory',
 
     class Map extends rmapsBaseMapFactory
 
-      @currentMainMap: null
-
       constructor: ($scope) ->
         super {
           scope: $scope
@@ -64,7 +70,7 @@ app.factory 'rmapsMapFactory',
           mapId: rmapsMapIds.mainMap()
         }
 
-        @constructor.currentMainMap = @
+        rmapsCurrentMapService.set(@)
         @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
 
@@ -110,14 +116,24 @@ app.factory 'rmapsMapFactory',
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
 
+          $scope.$watch 'Toggles.showMail', (newVal) ->
+            $log.debug 'Toggles.showMail', $scope.map.layers.overlays?.mail?.visible, newVal
+            $scope.map.layers.overlays?.mail?.visible = newVal
+
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
-            if(_.get($scope, 'map.layers.overlays.parcelsAddresses')?)
-              $scope.map.layers.overlays.parcelsAddresses.visible = newVal
+            $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
 
           $scope.$watch 'Toggles.propertiesInShapes', (newVal, oldVal) =>
             $log.debug "Map Factory - Watch Toggles.propertiesInShapes: #{newVal} from #{oldVal}"
             $rootScope.propertiesInShapes = newVal
             @redraw()
+
+          $scope.$watch 'map.layers.overlays', (newVal) =>
+            $scope.map.layers.overlays?.filterSummary?.visible = !!$scope.Toggles.showPrices
+            $scope.map.layers.overlays?.mail?.visible = !!$scope.Toggles.showMail
+            if !!$rootScope.propertiesInShapes != !!$scope.Toggles.propertiesInShapes
+              $rootScope.propertiesInShapes = !!$scope.Toggles.propertiesInShapes
+              @redraw()
 
           [
             rmapsEventConstants.map.filters.updated
