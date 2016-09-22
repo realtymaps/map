@@ -70,16 +70,13 @@ _fetchS3 = (account, source, target, options) ->
 # loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  doDebug = rawTableName.endsWith('_blackknight_tax_R_12001_20160824')
-  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData STARTING')
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
-  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+  filetype = options.processingType || subtask.data.fileName.substr(subtask.data.fileName.lastIndexOf('.')+1)
 
   target = "/tmp/#{fileBaseName}.#{filetype}"
-  source = subtask.data.path
+  source = subtask.data.path+subtask.data.fileName
 
   # transfer files from a configured source...
-  if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData DOWNLOADING')
   if options.s3account
     dataStreamPromise = _fetchS3(options.s3account, source, target, options)
   else
@@ -130,19 +127,14 @@ loadRawData = (subtask, options) ->
   .catch isUnhandled, (err) ->
     throw new SoftFail(err.toString())
   .then (rawDataStream) ->
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData READING FROM FILE')
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData INITIALIZING DATA STREAM')
     objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData MANAGING DATA STREAM')
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
-  .then () ->
-    if doDebug then console.log('@@@@@@@@@@@@@@@@@@@@@@@@@ countyHelpers.loadRawData DONE')
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->
