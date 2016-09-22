@@ -110,7 +110,7 @@ filterS3Contents = (contents, config) -> Promise.try () ->
       action: config.action                # 'Refresh' | 'Update'             # does NOT include 'Delete'
       listType: config.action              # 'Refresh' | 'Update' | 'Delete'  # includes 'Delete'
       date: config.date
-      path: item.Key
+      path: folderPrefix
       fileName: fileName
       fileType: null                       # 'Delete' | 'Load'
       startTime: config.startTime
@@ -400,7 +400,7 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
     filesForCounts = []
   else
     filesForCounts = files
-    _.forEach files, (el) ->
+    for el in files
       fipsCodes[el.normalSubid] = true
 
   # load task
