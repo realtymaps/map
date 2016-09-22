@@ -1,4 +1,4 @@
-mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow, tackFn)
+mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow, tackFn, tackedBool)
   //.desktop-only TODO (wont show)
   //hint if you want only drawings to show sometimes use ng-if (will kill controller)
   .draw-tools.container(ng-show="#{toggleBoolean}")&attributes(attributes)
@@ -30,5 +30,5 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
         span.pull-right(ng-click="#{toggleFn}")
           i.fa.fa-lg.fa-close
         if tackFn
-          span.pull-right(ng-click="#{tackFn}" ng-class="tacked ? 'active': ''")
+          span.pull-right(ng-click="#{tackFn}" ng-class="#{tackedBool} ? 'active': ''")
             i.fa.fa-lg.fa-thumb-tack

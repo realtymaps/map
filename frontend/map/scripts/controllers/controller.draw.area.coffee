@@ -17,9 +17,6 @@ rmapsFeatureGroupUtil
 ) ->
   $scope.tacked = false
 
-  $scope.tack = () ->
-    $scope.tacked = !$scope.tacked
-
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
 
   isReadyPromise = $q.defer()
@@ -58,7 +55,7 @@ rmapsFeatureGroupUtil
         $scope.create(geoJson)
         .then (result) ->
           $scope.$emit rmapsEventConstants.areas
-          if !$scope.tacked
+          if !$scope.Toggles.isTackedAreasDrawBar
             $scope.Toggles.isAreaDraw = false
           result
 
