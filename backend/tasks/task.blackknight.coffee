@@ -98,17 +98,20 @@ copyFtpDrop = (subtask) ->
       Promise.map paths, (path) ->
         ftp.list(path)
         .then (files) ->
-          _.forEach files, (el) -> el.fullpath = "#{path}/#{el.name}"
-          files
+          filteredFiles = []
+          for file in files
+            if file.size > 0
+              filteredFiles.push
+                name: file.name
+                path: path
+                size: file.size
+          return filteredFiles
 
       # queue up individual subtasks for each file transfer
       .then (fileList) ->
 
         # flatten list of lists from the Promise.map...
         fileList = _.flatten(fileList)
-
-        # remove 0 size files
-        fileList = _.filter fileList, (el) -> el.size > 0
 
         logger.debug () -> "Queuing copy subtasks for files: #{JSON.stringify(_.pluck(fileList, 'fullpath'))}"
         ftp.logout()
@@ -128,7 +131,8 @@ copyFtpDrop = (subtask) ->
 copyFile = (subtask) ->
   ftp = new PromiseSftp()
   file = subtask.data
-  logger.debug () -> "copying blackknight file #{file.fullpath}, size=#{file.size}, type=#{file.type}"
+  fullpath = "#{file.path}/#{file.name}"
+  logger.debug () -> "copying blackknight file #{fullpath}, size=#{file.size}"
 
   externalAccounts.getAccountInfo('blackknight')
   .then (accountInfo) ->
@@ -145,8 +149,8 @@ copyFile = (subtask) ->
   .then () ->
     localfile = "/tmp/#{(new Date()).getTime()}_#{file.name}"
 
-    logger.debug () -> "fastGet file.fullpath (source): #{file.fullpath}"
-    logger.debug () -> "fastGet localfile     (target): #{localfile}"
+    logger.debug () -> "fastGet from (source): #{fullpath}"
+    logger.debug () -> "fastGet to   (target): #{localfile}"
 
     # ensure local file doesn't exist
     rimraf.async(localfile)
@@ -154,12 +158,12 @@ copyFile = (subtask) ->
 
       # ftp down file
       # Note: as of PromiseSftp version 0.9.9, using ftp.get() was buggy here; defered to fastGet which works
-      ftp.fastGet(file.fullpath, localfile)
+      ftp.fastGet(fullpath, localfile)
     .then () -> new Promise (resolve, reject) ->
 
       config =
         extAcctName: awsService.buckets.BlackknightData
-        Key: file.fullpath.substring(1) # omit leading slash
+        Key: fullpath.substring(1) # omit leading slash
         ContentType: 'text/plain'
 
       # s3 up file
@@ -173,7 +177,7 @@ copyFile = (subtask) ->
         fs.createReadStream(localfile).pipe(upload)
 
     .catch (err) -> # catches ftp errors
-      throw new SoftFail("SFTP error while copying #{file.fullpath}: #{err}")
+      throw new SoftFail("SFTP error while copying #{fullpath}: #{err}")
 
   .catch (err) ->
     throw new SoftFail("Error transfering files from Blackknight to S3: #{err}")

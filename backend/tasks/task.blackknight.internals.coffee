@@ -110,7 +110,7 @@ filterS3Contents = (contents, config) -> Promise.try () ->
       action: config.action                # 'Refresh' | 'Update'             # does NOT include 'Delete'
       listType: config.action              # 'Refresh' | 'Update' | 'Delete'  # includes 'Delete'
       date: config.date
-      path: item.Key
+      path: folderPrefix
       fileName: fileName
       fileType: null                       # 'Delete' | 'Load'
       startTime: config.startTime
@@ -400,14 +400,14 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
     filesForCounts = []
   else
     filesForCounts = files
-    _.forEach files, (el) ->
+    for el in files
       fipsCodes[el.normalSubid] = true
 
   # load task
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true})
 
   # non-delete `changeCounts` takes no data
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true})
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true, concurrency: 80})
 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
     fipsCodes

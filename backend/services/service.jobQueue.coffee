@@ -278,51 +278,47 @@ doMaintenance = () ->
 getQueueNeeds = () ->
   queueNeeds = {}
   queueZombies = {}
-  queueConfigPromise = tables.jobQueue.queueConfig()
-  .select('*')
-  tasksPromise = tables.jobQueue.taskHistory()
-  .select('name')
-  .where(current: true)
-  .whereNull('finished')
-
-  Promise.join queueConfigPromise , tasksPromise, (queueConfigs, runningTasks) ->
-    queueConfigs = _.indexBy(queueConfigs, 'name')
-    for name of queueConfigs
-      queueNeeds[name] = 0
-      queueZombies[name] = 0
-    Promise.each runningTasks, (taskConfig) ->
-      taskName = taskConfig.name
-      tables.jobQueue.currentSubtasks()
+  queueConfigs = {}
+  dbs.transaction (transaction) ->
+    queueConfigPromise = tables.jobQueue.queueConfig({transaction})
+    .select('*')
+    .then (_queueConfigs) ->
+      for queueConfig in _queueConfigs
+        queueNeeds[queueConfig.name] = 0
+        queueConfigs[queueConfig.name] = queueConfig
+    activeStepsPromise = tables.jobQueue.taskHistory({transaction})
+    .select('name')
+    .where(current: true)
+    .whereNull('finished')
+    .map (taskConfig) ->
+      tables.jobQueue.currentSubtasks({transaction})
       .select('task_step', 'queue_name')
       .select(dbs.raw('main', "COUNT(finished IS NULL AND (ignore_until IS NULL OR ignore_until < NOW()) OR NULL)::INTEGER AS needs"))
-      .select(dbs.raw('main', "COUNT(status = 'zombie' OR NULL)::INTEGER AS zombies"))
-      .where('task_name', taskName)
+      .where('task_name', taskConfig.name)
       .groupBy('task_step')
       .groupBy('queue_name')
       .orderBy('task_step')
       .havingRaw('BOOL_AND(finished IS NOT NULL) = FALSE')
       .limit(1)
-      .then ([activeStep]) ->
-        if !activeStep
-          return
-        if !queueConfigs[activeStep.queue_name]?.active
-          # any task running on an inactive queue (or a queue without config) can be ignored
-          return
-        queueNeeds[activeStep.queue_name] += activeStep.needs
-        queueZombies[activeStep.queue_name] += activeStep.zombies
-    .then () ->
-      result = []
-      for name of queueConfigs
-        # if the queue has nothing that's not a zombie, let it scale down to 0; otherwise we need to leave something
-        # running for the zombies too, or else we could get ourselves stuck in deadlock where zombies have eaten all the
-        # resources (like they do)
-        needs = 0
-        if queueNeeds[name] > 0
-          needs = queueNeeds[name] * queueConfigs[name].priority_factor + queueZombies[name]
-          needs /= (queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno)
-          needs = Math.ceil(needs)
-        result.push(name: name, quantity: needs)
-      return result
+    Promise.join activeStepsPromise, queueConfigPromise, (activeSteps, dummy) ->
+      return activeSteps
+  .then (activeSteps) ->
+    for [activeStep] in activeSteps
+      if !activeStep
+        continue
+      if !queueConfigs[activeStep.queue_name]?.active
+        # any task running on an inactive queue (or a queue without config) can be ignored
+        continue
+      queueNeeds[activeStep.queue_name] += activeStep.needs
+    result = []
+    for name of queueConfigs
+      needs = 0
+      if queueNeeds[name] > 0
+        needs = queueNeeds[name] * queueConfigs[name].priority_factor
+        needs /= (queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno)
+        needs = Math.ceil(needs)
+      result.push(name: name, quantity: needs)
+    return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
 queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency}) ->

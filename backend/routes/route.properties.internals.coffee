@@ -41,6 +41,9 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
       logger.debug "MapState saved"
       next()
 
+    .catch (err) ->
+      next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+
 handleRoute = (res, next, serviceCall) ->
   Promise.try () ->
     serviceCall()

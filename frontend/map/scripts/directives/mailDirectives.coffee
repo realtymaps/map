@@ -38,7 +38,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       # suppress typing in macro
       else
         sel = rangy.getSelection()
-        if scope.isMacroNode(sel.focusNode)
+        if scope.isMacroNode(sel.focusNode) || scope.isHighlightNode(sel.focusNode)
           # using for alphanumeric keys to suppress:
           # http://stackoverflow.com/questions/12052825/regular-expression-for-all-printable-characters-in-javascript
           if config.validation.alphanumeric.test(e.key)
@@ -74,44 +74,82 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       # `checkExistingMacros` is important in case macro definitions change, this forces saved
       #   campaigns to re-evaluate "macro-ized" spans for validity
       ngModel.$setViewValue scope.checkExistingMacros()
-      ngModel.$setViewValue scope.convertMacros()
+      ngModel.$setViewValue scope.convertMacrosAndHighlights()
+      #ngModel.$setViewValue scope.convertHighlights()
       ngModel.$render()
 
-    # wrap the macro markup within a textnode in a span that can be styled
-    scope.convertMacrosInSpan = (textnode, offset, macro, exchange=false) ->
+
+    #
+    # General tools for operating on elements and dom
+    #
+
+    createSpan = (textnode, offset, text, options={}) ->
+      console.log "text:"
+      console.log text
       range = rangy.createRange()
       range.setStart textnode, offset
-      if exchange
-        range.setEnd textnode, offset+macro.length
+      if options?.exchange # removes existing text to create new span in its place
+        range.setEnd textnode, offset+text.length
         range.deleteContents()
-      el = angular.element("<span>#{macro}</span>")
-      scope.setMacroClass el[0]
+      el = angular.element("<span>#{text}</span>")
       range.insertNode el[0]
       return el
 
-    # useful getter/setter unique-macro-id if we need to keep explicit track of specific macros (currently unused)
-    scope.setMacroLabel = (node) ->
-      node.classList.add "macrolabel_" + Math.floor(Math.floor(Math.random() * 1000000000))
-    scope.getMacroLabel = (node) ->
-      if scope.isMacroNode(node)
-        for maybeLabel in node.classList
-          if maybeLabel.startsWith('macrolabel_')
-            return maybeLabel
-      return null
+    # generic recursive tree walker
+    # provide collection, containerName, and a test function with a process function to run on child if test passes
+    walk = (collection, containerName, test, process) ->
+      for child in collection
+        if test(child)
+          process(child)
+        if containerName of child and child[containerName].length > 0
+          walk(child[containerName], containerName, test, process)
 
-    # determine if the node has been flagged as macro span (whether valid or not), by class
-    # this is *not* macro validation
-    scope.isMacroNode = (node) ->
-      classedNode = if node.nodeType == 3 then node.parentNode else node
-      # this regex accounts for classname with/without "-error" flag
-      return /macro-display/.test(classedNode.className)
+    textAngularWalker = (testFn, processFn) ->
+      # DOM-ize our letter content for easier traversal/processing
+      content = ngModel.$viewValue
+      letterDoc = new DOMParser().parseFromString(content, 'text/html')
 
-    # macro or not?
-    scope.validateMacro = (macro) ->
-      return _.contains(_.map(scope.macros), macro)
+      # apply test and processing to DOM-ized letter...
+      walk(letterDoc.childNodes, 'childNodes', testFn, processFn)
+
+      # return the resulting content
+      letterDoc.documentElement.innerHTML
+
+    caretFromPoint = () ->
+      # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
+      if _doc.caretPositionFromPoint
+        range = _doc.caretPositionFromPoint scope.mousex, scope.mousey
+        textNode = range.offsetNode
+        offset = range.offset
+      else if _doc.caretRangeFromPoint
+        range = _doc.caretRangeFromPoint scope.mousex, scope.mousey
+        textNode = range.startContainer
+        offset = range.startOffset
+      return {range, textNode, offset}
+
+
+    #
+    # element creation tools
+    #
+
+    # wrap the macro markup within a textnode in a span that can be styled
+    scope.convertMacrosInSpan = (textnode, offset, macro, options={}) ->
+      el = createSpan(textnode, offset, macro, options)
+      scope.setMacroClass el
+      return el
+
+    # wrap the highlighted markup within a textnode in a span that can be styled
+    scope.convertHighlightInSpan = (textnode, offset, highlight, options={}) ->
+      el = createSpan(textnode, offset, highlight, options)
+      scope.setHighlightClass el
+      return el
 
     # apply correct class to a new or existing macro node
     scope.setMacroClass = (node) ->
+      # ensure we handle an html node, even if given a jqLite iterable
+      if node.length == 1 && node[0].nodeType?
+        node = node[0]
+
       if node.nodeType == 3
         classedNode = node.parentNode
         macro = node.data
@@ -128,23 +166,51 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           classedNode.classList.remove 'macro-display'
         classedNode.classList.add 'macro-display-error'
 
+    # apply highlight class to a node
+    scope.setHighlightClass = (node) ->
+      # ensure we handle an html node, even if given a jqLite iterable
+      if node.length == 1 && node[0].nodeType?
+        node = node[0]
 
-    # generic recursive tree walker
-    # provide collection, containerName, and a test function with a process function to run on child if test passes
-    scope.walk = (collection, containerName, test, process) ->
-      for child in collection
-        if test(child)
-          process(child)
-        if containerName of child and child[containerName].length > 0
-          scope.walk child[containerName], containerName, test, process
+      if node.nodeType == 3
+        classedNode = node.parentNode
+        macro = node.data
+      else
+        classedNode = node
+        macro = node.childNodes[0].data
 
+      #if !classedNode.classList.contains 'highlight-display'
+      classedNode.classList.add 'highlight-display'
+
+
+    #
+    # checks & validations
+    #
+
+    # determine if the node has been flagged as macro span (whether valid or not), by class
+    # this is *not* macro validation
+    scope.isMacroNode = (node) ->
+      classedNode = if node.nodeType == 3 then node.parentNode else node
+      # this regex accounts for classname with/without "-error" flag
+      return /macro-display/.test(classedNode.className)
+
+    # determine if node is a highlighted node
+    scope.isHighlightNode = (node) ->
+      classedNode = if node.nodeType == 3 then node.parentNode else node
+      # this regex accounts for classname with/without "-error" flag
+      return /highlight-display/.test(classedNode.className)
+
+    # macro or not?
+    scope.validateMacro = (macro) ->
+      return _.contains(_.map(scope.macros), macro)
+
+
+    #
+    # methods for operating the entire document
+    #
 
     # checks all "macro-ized" spans for validity
     scope.checkExistingMacros = () ->
-      # DOM-ize our letter content for easier traversal/processing
-      content = ngModel.$viewValue
-      letterDoc = new DOMParser().parseFromString(content, 'text/html')
-
       # helper func passed to 'walk'
       _test = (n) ->
         return scope.isMacroNode(n)
@@ -155,26 +221,20 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         scope.setMacroClass(n)
 
       # apply test and processing to DOM-ized letter...
-      scope.walk letterDoc.childNodes, 'childNodes', _test, _process
-
-      # return the resulting content
-      letterDoc.documentElement.innerHTML
+      textAngularWalker(_test, _process)
 
 
-    # convert unwrapped macro-markup into spans
-    scope.convertMacros = () ->
-      # DOM-ize our letter content for easier traversal/processing
-      content = ngModel.$viewValue
-      letterDoc = new DOMParser().parseFromString(content, 'text/html')
-
+    # convert unwrapped macro and highlight markup into spans
+    # it's necessary to do both macros and highlights together since the order of creating spans in a single parent is important
+    scope.convertMacrosAndHighlights = () ->
       # helper func passed to 'walk'
       _test = (n) ->
-        return n?.nodeType == 3 && not scope.isMacroNode(n) && /{{.*?}}/.test(n.data)
+        return n?.nodeType == 3 && !scope.isMacroNode(n) && !scope.isHighlightNode(n) && /({{.*?}})|(\[\[.*?\]\])/.test(n.data)
 
       # helper func passed to 'walk'
       # pulls macro-markup from data of text node to convert to styled macro
       _process = (n) ->
-        re = new RegExp(/{{(.*?)}}/g)
+        re = new RegExp(/({{(.*?)}})|(\[\[(.*?)\]\])/g)
         # js list push/pop acts like lifo queue, useful here to process last child first (from behind)
         # since the element changes as we pass
         conversions = []
@@ -182,23 +242,29 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         while m = re.exec(s)
           conversions.push [n, m.index, m[0]]
         while p = conversions.pop()
-          scope.convertMacrosInSpan p[0], p[1], p[2], true
+          console.log "popped:"
+          console.log p
+          if /^{{.*?}}$/.test(p[2])
+            scope.convertMacrosInSpan p[0], p[1], p[2], exchange: true
+          else
+            scope.convertHighlightInSpan p[0], p[1], p[2], exchange: true
 
       # apply test and processing to DOM-ized letter...
-      scope.walk letterDoc.childNodes, 'childNodes', _test, _process
-
-      # return the resulting content
-      letterDoc.documentElement.innerHTML
+      textAngularWalker(_test, _process)
 
 
-    # filter selected node for macros
+    #
+    # event handlers, real-time manipulators
+    #
+
+    # real-time filter/update document text for macros (used when macros get typed, dragged, inserted, etc)
     scope.macroFilter = (sel) ->
       # make macro span if it needs
       if /{{.*?}}/.test(sel.focusNode?.data)
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
-          newMacroEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, true
+          newMacroEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, exchange: true
 
           # trim/clean data
           sel.focusNode.data = sel.focusNode.data.trim()
@@ -228,25 +294,13 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           selection.removeAllRanges()
           selection.setSingleRange range
 
-    scope.caretFromPoint = () ->
-      # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
-      if _doc.caretPositionFromPoint
-        range = _doc.caretPositionFromPoint scope.mousex, scope.mousey
-        textNode = range.offsetNode
-        offset = range.offset
-      else if _doc.caretRangeFromPoint
-        range = _doc.caretRangeFromPoint scope.mousex, scope.mousey
-        textNode = range.startContainer
-        offset = range.startOffset
-      return {range, textNode, offset}
-
     # act on macros when events occur
     scope.macroAction =
       whenDropped: (e) ->
         scope.editor.editorFunctions.focus() # make sure editor has focus on drop
         sel = $window.getSelection()
         e.targetScope.displayElements.text[0].focus()
-        {range, textNode, offset} = scope.caretFromPoint()
+        {range, textNode, offset} = caretFromPoint()
 
         # macro-ize markup
         scope.convertMacrosInSpan textNode, offset, scope.macro
@@ -268,7 +322,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         sibling = maybeMacroSpan.nextSibling
 
         # remove entire macro span if we backspace on it
-        if scope.isMacroNode(maybeMacroSpan)
+        if scope.isMacroNode(maybeMacroSpan) || scope.isHighlightNode(maybeMacroSpan)
           sel.focusNode.parentNode.parentNode.removeChild(maybeMacroSpan)
 
           # necessary for avoiding the reappearing-span bug (https://realtymaps.atlassian.net/browse/MAPD-1333)

@@ -49,7 +49,7 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
   externalAccounts.getAccountInfo(extAcctName)
   .catch (error) ->
     logger.debug "Did you forget to import account into externalAccounts?"
-    throw new errorHandlingUtils.PartiallyHandledError(error, "AWS external account lookup failed")
+    throw new errorHandlingUtils.PartiallyHandledError(error, "AWS external account lookup failed for '#{extAcctName}'")
   .then (s3Info) ->
     AWS.config.update
       accessKeyId: s3Info.api_key

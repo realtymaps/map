@@ -71,10 +71,10 @@ _fetchS3 = (account, source, target, options) ->
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
-  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+  filetype = options.processingType || subtask.data.fileName.substr(subtask.data.fileName.lastIndexOf('.')+1)
 
   target = "/tmp/#{fileBaseName}.#{filetype}"
-  source = subtask.data.path
+  source = subtask.data.path+subtask.data.fileName
 
   # transfer files from a configured source...
   if options.s3account
