@@ -103,6 +103,7 @@ subtasks = {
   storePrep
   store
   clearRetries
+  setLastUpdateTimestamp
 }
 
 factory = (taskName, overrideSubtasks) ->
