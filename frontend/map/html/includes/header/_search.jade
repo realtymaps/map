@@ -34,4 +34,5 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
             ng-model="result.googlePlace"
             g-places-autocomplete
             placeholder="Enter an address or place"
-            ng-change="addressChange()")
+            ng-change="addressChange()"
+            force-selection="true")
