@@ -324,7 +324,8 @@ module.exports = {
       "subtask": {},
       "laterSubtaskName": "recordChangeCounts",
       "manualData": [],
-      "replace": true
+      "replace": true,
+      "concurrency": 41
     }
 
 
@@ -476,6 +477,7 @@ module.exports = {
           "deletes": "indicated"
         }
       ],
-      "replace": true
+      "replace": true,
+      "concurrency": 41
     }
 }
