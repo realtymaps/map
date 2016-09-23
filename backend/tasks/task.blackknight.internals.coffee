@@ -407,7 +407,7 @@ queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () -
   loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true})
 
   # non-delete `changeCounts` takes no data
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true})
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true, concurrency: 41})
 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
     fipsCodes
