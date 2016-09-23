@@ -306,6 +306,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
         idObj:
           data_source_id: mlsName
           data_source_uuid: data_source_uuid
+          photo_id: photo_id
           batch_id: subtask.batch_id
         entityObj:
           error: errorDetails
