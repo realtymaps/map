@@ -5,8 +5,18 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $uibModal, $timeout, $q, Upload,
-  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions, rmapsMailPdfService) ->
+app.controller 'rmapsSelectTemplateCtrl', (
+  $rootScope,
+  $scope,
+  $log,
+  $uibModal,
+  $timeout,
+  $q,
+  Upload,
+  rmapsMailTemplateTypeService,
+  rmapsMainOptions,
+  rmapsMailPdfService
+) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
@@ -178,15 +188,22 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $uibModal, 
       $scope.wizard.mail.setTemplateType(templateType)
 
   $scope.previewTemplate = (template) ->
+    if template.category == 'pdf'
+      previewCtrl = 'rmapsUploadedPdfPreviewCtrl'
+      content = rmapsMailTemplateTypeService.getMailContent(template.type)
+    else
+      previewCtrl = 'rmapsMailTemplateIFramePreviewCtrl'
+      content = $scope.wizard.mail.createLobHtml(rmapsMailTemplateTypeService.getMailContent(template.type))
+
     modalInstance = $uibModal.open
       template: previewModalTemplate
-      controller: if template.category == 'pdf' then 'rmapsUploadedPdfPreviewCtrl' else 'rmapsMailTemplateIFramePreviewCtrl'
+      controller: previewCtrl
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () ->
-          content: rmapsMailTemplateTypeService.getMailContent(template.type)
+          content: content
           category: template.category
           title: template.name
 
