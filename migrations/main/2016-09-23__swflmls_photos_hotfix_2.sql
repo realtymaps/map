@@ -37,5 +37,8 @@ update retry_photos set photo_id='29083851' where data_source_uuid='215051101';
 update retry_photos set photo_id='29084038' where data_source_uuid='215051109';
 update retry_photos set photo_id='29581203' where data_source_uuid='215070302';
 
+DELETE FROM retry_photos
+WHERE data_source_uuid = '213022320';
+
 
 ALTER TABLE retry_photos ALTER COLUMN photo_id SET NOT NULL;
