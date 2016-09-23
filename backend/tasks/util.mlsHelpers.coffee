@@ -311,12 +311,13 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
         idObj:
           data_source_id: mlsName
           data_source_uuid: data_source_uuid
-          photo_id: photo_id
           batch_id: subtask.batch_id
         entityObj:
+          photo_id: photo_id
           error: errorDetails
         conflictOverrideObj:
           error: undefined
+          photo_id: undefined
   .then () ->
     {successCtr, skipsCtr, errorsCtr}
 
