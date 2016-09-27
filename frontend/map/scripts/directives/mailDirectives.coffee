@@ -75,7 +75,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       #   campaigns to re-evaluate "macro-ized" spans for validity
       ngModel.$setViewValue scope.checkExistingMacros()
       ngModel.$setViewValue scope.convertMacrosAndHighlights()
-      #ngModel.$setViewValue scope.convertHighlights()
       ngModel.$render()
 
 
@@ -84,8 +83,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     #
 
     createSpan = (textnode, offset, text, options={}) ->
-      console.log "text:"
-      console.log text
       range = rangy.createRange()
       range.setStart textnode, offset
       if options?.exchange # removes existing text to create new span in its place
@@ -179,7 +176,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         classedNode = node
         macro = node.childNodes[0].data
 
-      #if !classedNode.classList.contains 'highlight-display'
       classedNode.classList.add 'highlight-display'
 
 
@@ -242,8 +238,6 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         while m = re.exec(s)
           conversions.push [n, m.index, m[0]]
         while p = conversions.pop()
-          console.log "popped:"
-          console.log p
           if /^{{.*?}}$/.test(p[2])
             scope.convertMacrosInSpan p[0], p[1], p[2], exchange: true
           else
