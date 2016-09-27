@@ -1,5 +1,5 @@
 module.exports = {
-  filterS3Contents:
+  _filterS3Contents:
     inputContents: [
       {
         "Key": "Managed_Update/ASMT20160406/12021_Assessment_Update_20160406.txt.gz",

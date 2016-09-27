@@ -11,15 +11,20 @@ dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 
 
-NUM_ROWS_TO_PAGINATE = 2500
-BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
+NUM_ROWS_TO_PAGINATE = 1000
+BLACKKNIGHT_PROCESS_INFO = 'blackknight process info'
 BLACKKNIGHT_PROCESS_DATES_FINISHED = 'blackknight process dates finished'
-BLACKKNIGHT_COPY_DATES = 'blackknight copy dates'
+BLACKKNIGHT_COPY_INFO = 'blackknight copy info'
 TAX = 'tax'
 DEED = 'deed'
 MORTGAGE = 'mortgage'
 REFRESH = 'Refresh'
 UPDATE = 'Update'
+DATES_QUEUED = 'dates queued'
+FIPS_QUEUED = 'fips queued'
+CURRENT_PROCESS_DATE = 'current process date'
+LAST_COMPLETED_DATE = 'last completed date'
+DATES_COMPLETED = 'dates completed'
 NO_NEW_DATA_FOUND = 'no new data found'
 DELETE = 'Delete'
 LOAD = 'Load'
@@ -67,7 +72,7 @@ columns[LOAD][UPDATE] = columns[LOAD][REFRESH]
 
 
 #
-# some classifiers for filterS3Contents
+# some classifiers for _filterS3Contents
 #
 _isDelete = (fileName) ->
   if fileName.endsWith('.txt')
@@ -86,7 +91,7 @@ _isLoad = (fileName) ->
 
 
 # Filter s3, classify as data to DELETE or LOAD based on filename
-filterS3Contents = (contents, config) -> Promise.try () ->
+_filterS3Contents = (contents, config) -> Promise.try () ->
   # required params, mostly for going ahead and populating the "fileInfo" objects used later
   if !("action" of config && "tableId" of config && "date" of config && "startTime" of config)
     throw new HardFail("S3 filtering requires config parameters: `action`, `date`, `tableId`, and `startTime`")
@@ -142,121 +147,102 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 #
 # timestamp / processing date queue maintenance
 #
-nextProcessingDates = () ->
+nextProcessingSet = () ->
   defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
-
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "seeking next date"
-    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
-
-    currentDateQueue[REFRESH].sort()
-    currentDateQueue[UPDATE].sort()
-    processDates =
-      "#{REFRESH}": null
-      "#{UPDATE}": null
-
-    if (refreshItem = currentDateQueue[REFRESH].shift())
-      processDates[REFRESH] = refreshItem
-
-    if (updateItem = currentDateQueue[UPDATE].shift())
-      processDates[UPDATE] = updateItem
-
-    processDates
+  defaults[DATES_QUEUED] = []
+  defaults[FIPS_QUEUED] = []
+  keystore.getValue(BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
+  .then (processInfo) ->
+    logger.debug () -> "seeking next date from #{JSON.stringify(datesQueued)}"
+    result =
+      nextDate: processInfo[DATES_QUEUED].sort().shift() || null
+      nextFips: processInfo[FIPS_QUEUED].sort().shift() || null
+    return result
 
 popProcessingDates = (dates) ->
   defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
+  defaults[DATES_QUEUED] = []
+  defaults[DATES_COMPLETED] = []
 
-  currentQueuePromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  finishedQueuePromise =   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES_FINISHED, defaultValues: defaults)
-  Promise.join currentQueuePromise, finishedQueuePromise, (currentDateQueue, finishedDateQueue) ->
+  processInfoPromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
+  Promise.join processInfoPromise, (processInfo) ->
     logger.debug () -> "moving #{JSON.stringify(dates)}"
-    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
-    logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
-    currentDateQueue[REFRESH] = _.uniq(currentDateQueue[REFRESH]).sort()
-    currentDateQueue[UPDATE] = _.uniq(currentDateQueue[UPDATE]).sort()
-
-    processDates =
-      "#{REFRESH}": null
-      "#{UPDATE}": null
+    logger.debug () -> "from #{DATES_QUEUED}"
+    logger.debug () -> "to #{DATES_COMPLETED}"
+    logger.debug () -> "in #{JSON.stringify(processInfo)}"
+    processInfo[DATES_QUEUED] = _.uniq(processInfo[REFRESH]).sort()
 
     # simply remove the given "dates" if exists, otherwise pull the 0th element (since sorted)
     if dates?
-      refreshIndex = currentDateQueue[REFRESH].indexOf(dates[REFRESH])
-      updateIndex = currentDateQueue[UPDATE].indexOf(dates[UPDATE])
+      refreshIndex = processInfo[REFRESH].indexOf(dates[REFRESH])
+      updateIndex = processInfo[UPDATE].indexOf(dates[UPDATE])
     else
       refreshIndex = 0
       updateIndex = 0
 
-    if refreshIndex >= 0 && ([refreshItem] = currentDateQueue[REFRESH].splice(refreshIndex, 1))
+    if refreshIndex >= 0 && ([refreshItem] = processInfo[REFRESH].splice(refreshIndex, 1))
       processDates[REFRESH] = refreshItem
       if finishedDateQueue[REFRESH].indexOf(refreshItem) == -1
         finishedDateQueue[REFRESH].push(refreshItem)
 
-    if updateIndex >= 0 && ([updateItem] = currentDateQueue[UPDATE].splice(updateIndex, 1))
+    if updateIndex >= 0 && ([updateItem] = processInfo[UPDATE].splice(updateIndex, 1))
       processDates[UPDATE] = updateItem
       if finishedDateQueue[UPDATE].indexOf(updateItem) == -1
         finishedDateQueue[UPDATE].push(updateItem)
 
     dbs.transaction (transaction) ->
-      keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES, transaction})
+      keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO, transaction})
       .then () ->
         keystore.setValuesMap(finishedDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
     .then () ->
       return processDates
 
-pushProcessingDates = (dates) -> Promise.try () ->
-  defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "pushing #{JSON.stringify(dates)}"
-    logger.debug () -> "to #{JSON.stringify(currentDateQueue)}"
+pushProcessingDate = (date) -> Promise.try () ->
+  keystore.getValue(DATES_QUEUED, namespace: BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
+  .then (datesQueued) ->
+    logger.debug () -> "pushing #{JSON.stringify(date)}"
+    logger.debug () -> "to #{JSON.stringify(datesQueued)}"
 
     # avoid adding dupes
-    if _.includes(currentDateQueue[REFRESH], dates[REFRESH])
-      logger.warn("Processed date for `Refresh` has already been queued: #{dates[REFRESH]}.")
+    if _.includes(datesQueued, date)
+      logger.warn("Processed date has already been queued: #{date}.")
     else
-      currentDateQueue[REFRESH].push dates[REFRESH]
-    if _.includes(currentDateQueue[UPDATE], dates[UPDATE])
-      logger.warn("Processed date for `Update` has already been queued: #{dates[UPDATE]}")
-    else
-      currentDateQueue[UPDATE].push dates[UPDATE]
+      datesQueued.push(date)
 
-    keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
+    keystore.setValue(DATES_QUEUED, datesQueued, namespace: BLACKKNIGHT_PROCESS_INFO)
 
 
 #
 # helpers for organizing, classifying, and processing files to process
 #
-findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
+findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
   ftp.list("/Managed_#{action}")
   .then (rootListing) ->
 
+    nextFolderSet = {date: '99999999'}
     for dir in rootListing when dir.type == 'd'
       date = dir.name.slice(-8)
       type = tableIdMap[dir.name.slice(0, -8)]
-      if !processDates[action]? || !type
+      if !type
         logger.warn("Unexpected directory found in blackknight FTP drop: /Managed_#{action}/#{dir.name}")
         continue
-      if processDates[action] >= date
+      if copyDate >= date
         continue
+      logger.info("New blackknight directory found: /Managed_#{action}/#{dir.name}")
 
-      newFolders["#{date}_#{action}"] ?= {date, action}
-      newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
-      logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
-    newFolders
+      if date < nextFolderSet.date
+        nextFolderSet = {date}
+      nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
+    if nextFolderSet.date == '99999999'
+      logger.debug () -> "found no new folders for #{action}"
+      return null
+    return nextFolderSet
 
 
 # scan and classify (into Load or Delete) file data for processing
 getProcessInfo = (subtask, subtaskStartTime) ->
   # per date, filter and classify files as `Load` or `Delete`
-  nextProcessingDates()
+  nextProcessingSet()
   .then (processDates) ->
     logger.debug () -> "processDates: #{JSON.stringify(processDates)}"
     processInfo =
@@ -280,11 +266,11 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       # pull sets of filtered (and classified as `Load` or `Delete`) keys
       refreshPromise = awsService.listObjects(refreshConfig)
       .then (refreshResponse) ->
-        filterS3Contents(refreshResponse.Contents, {action: REFRESH, tableId, date: processDates.Refresh, startTime: subtaskStartTime})
+        _filterS3Contents(refreshResponse.Contents, {action: REFRESH, tableId, date: processDates.Refresh, startTime: subtaskStartTime})
 
       updatePromise = awsService.listObjects(updateConfig)
       .then (updateResponse) ->
-        filterS3Contents(updateResponse.Contents, {action: UPDATE, tableId, date: processDates.Update, startTime: subtaskStartTime})
+        _filterS3Contents(updateResponse.Contents, {action: UPDATE, tableId, date: processDates.Update, startTime: subtaskStartTime})
 
       # combine the Update and Refresh lists (both filter processes may yield some `Delete` items)
       Promise.join(refreshPromise, updatePromise)
@@ -339,58 +325,6 @@ useProcessInfo = (subtask, processInfo) ->
     Promise.join fileProcessing, dates, () ->  # empty handler
 
 
-# deprecated
-_checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
-  ftp.list(folderInfo.path)
-  .then (folderListing) ->
-    for file in folderListing
-      if file.name.endsWith('.txt')
-        if file.name.startsWith('metadata_')  #ignore `metadata_*_.txt`
-          continue
-        if file.name.indexOf('_Delete_') == -1
-          logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
-          continue
-        if file.size == 0   #ignore empty file
-          continue
-        fileType = DELETE
-      else if !file.name.endsWith('.gz')
-        logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
-        continue
-      else
-        fileType = folderInfo.action
-      fileInfo = _.clone(folderInfo)
-      fileInfo.name = file.name
-      processLists[fileType].push(fileInfo)
-
-
-# deprecated
-checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
-  if i >= drops.length
-    logger.debug "Finished processing all blackknight drops; no files found."
-    # we've iterated over the whole list
-    processInfo.dates[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
-    return processInfo
-  drop = newFolders[drops[i]]
-  if !drop[TAX] || !drop[DEED] || !drop[MORTGAGE]
-    return Promise.reject(new Error("Partial #{drop.action} drop for #{drop.date}: #{Object.keys(drop).join(', ')}"))
-
-  logger.debug "Processing blackknight drops for #{drop.date}"
-  processInfo.dates[drop.action] = drop.date
-  _checkFolder(ftp, drop[TAX], processInfo)
-  .then () ->
-    _checkFolder(ftp, drop[DEED], processInfo)
-  .then () ->
-    _checkFolder(ftp, drop[MORTGAGE], processInfo)
-  .then () ->
-    if processInfo[REFRESH].length + processInfo[UPDATE].length + processInfo[DELETE].length == 0
-      # nothing in this folder, move on to the next thing in the drop
-      return checkDropChain(ftp, processInfo, newFolders, drops, i+1)
-    # we found files!  resolve the results
-    logger.debug "Found blackknight files to process: #{drop.action}/#{drop.date}.  Refresh: #{processInfo[REFRESH].length}, Update: #{processInfo[UPDATE].length}, Delete: #{processInfo[DELETE].length}."
-    processInfo.hasFiles = true
-    processInfo
-
-
 queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () ->
   if !files?.length
     return
@@ -434,28 +368,30 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 
 module.exports = {
   NUM_ROWS_TO_PAGINATE
-  BLACKKNIGHT_PROCESS_DATES
-  BLACKKNIGHT_PROCESS_DATES_FINISHED
-  BLACKKNIGHT_COPY_DATES
+  BLACKKNIGHT_PROCESS_INFO
+  BLACKKNIGHT_COPY_INFO
   TAX
   DEED
   MORTGAGE
   REFRESH
   UPDATE
+  DATES_QUEUED
+  FIPS_QUEUED
   NO_NEW_DATA_FOUND
+  LAST_COMPLETED_DATE
+  CURRENT_PROCESS_DATE
+  DATES_COMPLETED
   DELETE
   LOAD
 
   getColumns
   tableIdMap
-  checkDropChain
   queuePerFileSubtasks
-  findNewFolders
+  findNextFolderSet
 
-  filterS3Contents
-  nextProcessingDates
+  nextProcessingSet
   popProcessingDates
-  pushProcessingDates
+  pushProcessingDate
   getProcessInfo
   useProcessInfo
 }

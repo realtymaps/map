@@ -25,7 +25,7 @@ dbs = require '../config/dbs'
 NUM_ROWS_TO_PAGINATE = 1000
 DELAY_MILLISECONDS = 250
 
-LAST_PROCESS_DATE = 'last process date'
+LAST_COMPLETED_DATE = 'last completed date'
 NO_NEW_DATA_FOUND = 'no new data found'
 QUEUED_FILES = 'queued files'
 DIGIMAPS_PROCESS_INFO = 'digimaps process info'
@@ -89,7 +89,7 @@ _getLoadFile = (subtask, processInfo) -> Promise.try () ->
     .then (creds) ->
       parcelsFetch.defineImports({creds})
     .then (imports) ->
-      _filterImports(subtask, imports, processInfo[LAST_PROCESS_DATE])
+      _filterImports(subtask, imports, processInfo[LAST_COMPLETED_DATE])
     .then (filteredImports) ->
       if filteredImports.length == 0
         processInfo[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
@@ -100,7 +100,7 @@ _getLoadFile = (subtask, processInfo) -> Promise.try () ->
       else
         processInfo[QUEUED_FILES] = filteredImports
         nextFile = filteredImports[0]
-        processInfo[LAST_PROCESS_DATE] = _getFileDate(nextFile)
+        processInfo[LAST_COMPLETED_DATE] = _getFileDate(nextFile)
         return {
           load:
             fileName: nextFile
@@ -112,7 +112,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
   defaults = {}
-  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[LAST_COMPLETED_DATE] = '19700101'
   defaults[NO_NEW_DATA_FOUND] = '19700101'
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
@@ -336,7 +336,7 @@ cleanup = (subtask) ->
   keystore.setValue('digimapsExclusiveAccess', false, namespace: 'locks')
   .then () ->
     defaults = {}
-    defaults[LAST_PROCESS_DATE] = '19700101'
+    defaults[LAST_COMPLETED_DATE] = '19700101'
     defaults[NO_NEW_DATA_FOUND] = '19700101'
     defaults[QUEUED_FILES] = []
     keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
@@ -348,7 +348,7 @@ cleanup = (subtask) ->
 ready = () ->
   # do some special logic for efficiency
   defaults = {}
-  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[LAST_COMPLETED_DATE] = '19700101'
   defaults[NO_NEW_DATA_FOUND] = '19700101'
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)

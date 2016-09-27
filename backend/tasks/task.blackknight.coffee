@@ -21,21 +21,13 @@ validation = require '../utils/util.validation'
 
 copyFtpDrop = (subtask) ->
   ftp = new PromiseSftp()
-  now = Date.now()
 
-  # path containers that are populated below
-  defaults = {}
-  defaults[internals.REFRESH] = '19700101'
-  defaults[internals.UPDATE] = '19700101'
-  defaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+  # date for which blackknight files we've processed is tracked in keystore
+  keystore.getValue(internals.LAST_COMPLETED_DATE, namespace: internals.BLACKKNIGHT_COPY_INFO, defaultValues: defaults)
+  .then (copyDate) ->
 
-  # dates for which we've processed blackknight files are tracked in keystore
-  keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: defaults)
-  .then (copyDates) ->
+    logger.debug () -> "date for file search: #{JSON.stringify(copyDate)}"
 
-    logger.debug () -> "dates for file search: #{JSON.stringify(copyDates)}"
-
-    newDates = _.cloneDeep copyDates
     # establish ftp connection to blackknight
     externalAccounts.getAccountInfo('blackknight')
     .then (accountInfo) ->
@@ -53,79 +45,62 @@ copyFtpDrop = (subtask) ->
     .then () ->
 
       # REFRESH paths/files for tax, deed, and mortgage
-      refreshPromise = internals.findNewFolders(ftp, internals.REFRESH, copyDates)
-      .then (newFolders) ->
-        if _.isEmpty(newFolders)
-          logger.debug () -> "Found empty newFolders for REFRESH list"
-          return []
-        logger.debug () -> "Found newFolders for REFRESH list"
-
-        # sort to help us get oldest date...
-        drops = Object.keys(newFolders).sort()
-        refresh = newFolders[drops[0]]
-        # track the dates we got here and send out the tax/deed/mortgage paths
-        newDates[internals.REFRESH] = refresh.date
-        return [refresh.tax.path, refresh.deed.path, refresh.mortgage.path]
+      refreshPromise = internals.findNextFolderSet(ftp, internals.REFRESH, copyDate)
 
       # UPDATE paths/files for tax, deed, and mortgage
-      updatePromise = internals.findNewFolders(ftp, internals.UPDATE, copyDates)
-      .then (newFolders) ->
-        if _.isEmpty(newFolders)
-          logger.debug () -> "Found empty newFolders for UPDATE list"
-          return []
-        logger.debug () -> "Found newFolders for UPDATE list"
-
-        # sort to help us get oldest date...
-        drops = Object.keys(newFolders).sort()
-        update = newFolders[drops[0]]
-        # track the dates we got here and send out the tax/deed/mortgage paths
-        newDates[internals.UPDATE] = update.date
-        return [update.tax.path, update.deed.path, update.mortgage.path]
+      updatePromise = internals.findNextFolderSet(ftp, internals.UPDATE, copyDate)
 
       # concat the paths from both sources
-      Promise.join(refreshPromise, updatePromise)
-      .then ([refreshPaths, updatePaths]) ->
-        return refreshPaths.concat updatePaths
+      Promise.join refreshPromise, updatePromise, (refresh, update) ->
+        if refresh.date == update.date
+          return {
+            date: refresh.date
+            paths: [refresh.tax, refresh.deed, refresh.mortgage, update.tax, update.deed, update.mortgage]
+          }
+        if refresh.date < update.date
+          return {
+            date: refresh.date
+            paths: [refresh.tax, refresh.deed, refresh.mortgage]
+          }
+        else if update.date < refresh.date
+          return {
+            date: update.date
+            paths: [update.tax, update.deed, update.mortgage]
+          }
 
     .catch (err) ->
       throw new SoftFail("Error reading blackknight FTP: #{err}")
 
-    # expect a list of 6 paths here, for one date of processing
-    .then (paths) ->
-      logger.debug () -> "Processing blackknight paths: #{JSON.stringify(paths)}"
+  # expect 6 paths in the folder set
+  .then (folderSet) ->
+    logger.debug () -> "Processing blackknight paths: #{JSON.stringify(folderSet)}"
 
-      # traverse each path...
-      Promise.map paths, (path) ->
-        ftp.list(path)
-        .then (files) ->
-          filteredFiles = []
-          for file in files
-            if file.size > 0
-              filteredFiles.push
-                name: file.name
-                path: path
-                size: file.size
-          return filteredFiles
+    # traverse each path...
+    filteredFiles = []
+    Promise.each folderSet.paths, (path) ->
+      ftp.list(path)
+      .then (files) ->
+        for file in files
+          if file.size > 0
+            filteredFiles.push
+              name: file.name
+              path: path
+              size: file.size
+    # queue up individual subtasks for each file transfer
+    .then () ->
 
-      # queue up individual subtasks for each file transfer
-      .then (fileList) ->
-
-        # flatten list of lists from the Promise.map...
-        fileList = _.flatten(fileList)
-
-        logger.debug () -> "Queuing copy subtasks for files: #{JSON.stringify(_.pluck(fileList, 'fullpath'))}"
-        ftp.logout()
-
-        .then () ->
-          dbs.transaction 'main', (transaction) -> Promise.try () ->
-            if fileList.length > 0
-              # queue up file copies
-              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: fileList, replace: true, concurrency: 10})
-              # save / push new dates
-              jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {dates: newDates}, replace: true})
-            else
-              # record that there isn't anything to see today
-              keystore.setValue(internals.NO_NEW_DATA_FOUND, moment.utc().format('YYYYMMDD'), namespace: internals.BLACKKNIGHT_COPY_DATES)
+      logger.debug () -> "Queuing copy subtasks for files: #{JSON.stringify(filteredFiles)}"
+      ftp.logout()
+      .then () ->
+        dbs.transaction (transaction) -> Promise.try () ->
+          if filteredFiles.length > 0
+            # queue up file copies
+            jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: filteredFiles, replace: true, concurrency: 10})
+            # save / push new dates
+            jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {date: folderSet.date}, replace: true})
+          else
+            # record that there isn't anything to see today
+            keystore.setValue(internals.NO_NEW_DATA_FOUND, moment.utc().format('YYYYMMDD'), namespace: internals.BLACKKNIGHT_COPY_INFO)
 
 
 copyFile = (subtask) ->
@@ -185,11 +160,11 @@ copyFile = (subtask) ->
     logger.debug () -> "File transfer complete."
     ftp.logout()
 
-saveCopyDates = (subtask) ->
-  keystore.setValuesMap(subtask.data.dates, namespace: internals.BLACKKNIGHT_COPY_DATES)
+saveCopyDate = (subtask) ->
+  keystore.setValue(internals.LAST_COMPLETED_DATE, subtask.data.date, namespace: internals.BLACKKNIGHT_COPY_INFO)
   .then () ->
-    logger.debug () -> "saved blackknight copy dates: #{JSON.stringify(subtask.data.dates)}"
-    internals.pushProcessingDates(subtask.data.dates)
+    logger.debug () -> "saved blackknight copy date: #{JSON.stringify(subtask.data.date)}"
+    internals.pushProcessingDate(subtask.data.date)
 
 
 checkProcessQueue = (subtask) ->
@@ -324,20 +299,19 @@ finalizeData = (subtask) ->
 ready = () ->
   # do some special logic for efficiency
   processDefaults = {}
-  processDefaults[internals.REFRESH] = []
-  processDefaults[internals.UPDATE] = []
-  processDefaults[internals.NO_NEW_DATA_FOUND] = '19700101'
+  processDefaults[internals.DATES_QUEUED] = []
+  processDefaults[internals.FIPS_QUEUED] = []
   copyDefaults = {}
   copyDefaults[internals.REFRESH] = '19700101'
   copyDefaults[internals.UPDATE] = '19700101'
   copyDefaults[internals.NO_NEW_DATA_FOUND] = '19700101'
-  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_DATES, defaultValues: processDefaults)
-  .then (processDates) ->
-    # definitely run task if there are dates to process
-    if processDates[internals.REFRESH].length > 0 || processDates[internals.UPDATE].length > 0
+  keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_INFO, defaultValues: processDefaults)
+  .then (processInfo) ->
+    # definitely run task if there are new dates and/or FIPS to process
+    if processInfo[internals.DATES_QUEUED].length > 0 || processInfo[internals.FIPS_QUEUED].length > 0
       return true
 
-    keystore.getValuesMap(internals.BLACKKNIGHT_COPY_DATES, defaultValues: copyDefaults)
+    keystore.getValuesMap(internals.BLACKKNIGHT_COPY_INFO, defaultValues: copyDefaults)
     .then (copyDates) ->
       # UTC for us will effectively be 8:00pm our time (barring DST, the approximate time here + or - an hour is fine)
       now = moment.utc()
@@ -350,12 +324,12 @@ ready = () ->
         return false
       else if dayOfWeek == 7 || dayOfWeek == 1
         # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_INFO)
         .then () ->
           return false
       else if copyDates[internals.REFRESH] == yesterday && copyDates[internals.UPDATE] == yesterday
         # we've already processed yesterday's data
-        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_DATES)
+        keystore.setValue(internals.NO_NEW_DATA_FOUND, today, namespace: internals.BLACKKNIGHT_COPY_INFO)
         .then () ->
           return false
       else

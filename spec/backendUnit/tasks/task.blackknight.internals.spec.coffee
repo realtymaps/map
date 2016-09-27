@@ -111,13 +111,13 @@ describe "task.blackknight.internal", () ->
         done()
 
 
-  describe "filterS3Contents", () ->
+  describe "_filterS3Contents", () ->
     it 'should correctly classify files', (done) ->
-      inputContents = fixture.filterS3Contents.inputContents
-      inputConfig = fixture.filterS3Contents.inputConfig
-      outputFiltered = fixture.filterS3Contents.outputFiltered
+      inputContents = fixture._filterS3Contents.inputContents
+      inputConfig = fixture._filterS3Contents.inputConfig
+      outputFiltered = fixture._filterS3Contents.outputFiltered
 
-      bkServiceInternals.filterS3Contents(inputContents, inputConfig)
+      bkServiceInternals.__get__('_filterS3Contents')(inputContents, inputConfig)
       .then (filtered) ->
         expect(filtered).to.eql outputFiltered
         done()
