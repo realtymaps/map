@@ -1,3 +1,4 @@
+
 app = require '../app.coffee'
 color = 'red'
 
@@ -12,8 +13,12 @@ rmapsMapDrawHandlesFactory
 rmapsMapIds
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
+rmapsFeatureGroupUtil
 ) ->
+  $scope.tacked = false
+
   $log = $log.spawn("map:rmapsDrawAreaCtrl")
+
   isReadyPromise = $q.defer()
 
   mapId = rmapsMapIds.mainMap()
@@ -21,9 +26,18 @@ rmapsMapTogglesFactory
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
-    # drawnItems.bringToBack() # Areas block parcel clicks, but this seems to hide areas altogether
 
-    #filter drawItems which are only areas / frontend or backend
+    featureGroupUtil = rmapsFeatureGroupUtil(drawnItems)
+
+    $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
+      $log.debug 'list mouseover'
+      featureGroupUtil.onMouseOver(model)
+
+    $rootScope.$on rmapsEventConstants.areas.mouseLeave, (event, model) ->
+      $log.debug 'list mouseleave'
+      featureGroupUtil.onMouseLeave(model)
+
+    # filter drawItems which are only areas / frontend or backend
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     if !Object.keys(drawnItems._layers).length
@@ -41,6 +55,8 @@ rmapsMapTogglesFactory
         $scope.create(geoJson)
         .then (result) ->
           $scope.$emit rmapsEventConstants.areas
+          if !$scope.Toggles.isTackedAreasDrawBar
+            $scope.Toggles.isAreaDraw = false
           result
 
 
@@ -89,11 +105,4 @@ rmapsMapTogglesFactory
       _drawCtrlFactory()
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
-      toRemove = null
-
-      for key, val of drawnItems._layers
-        if val.model.properties?.id == geojsonModel.properties.id
-          toRemove = val
-          break
-
-      drawnItems.removeLayer toRemove
+      drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)

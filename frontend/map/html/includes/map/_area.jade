@@ -27,7 +27,10 @@ span(
             span.draw-area-btn Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
-          li(ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)")
+          li(
+            ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)"
+            ng-mouseenter="onMouseOver(model)"
+            ng-mouseleave="onMouseLeave(model)")
             div
               span.content
                 .title {{model.properties.area_name}}

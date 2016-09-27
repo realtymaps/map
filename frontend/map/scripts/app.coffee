@@ -1,8 +1,7 @@
 ###globals _###
 'use strict'
 
-require '../../../common/extensions/strings.coffee'
-require '../../../common/extensions/angular.coffee'
+require '../../../common/extensions/index.coffee'
 
 appName = 'rmapsMapApp'
 
