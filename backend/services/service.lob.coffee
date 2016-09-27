@@ -195,7 +195,7 @@ getLetter = (lobId, apiName = 'live') ->
 getPriceQuote = (userId, campaignId) ->
 
   tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options', 'custom_content')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
