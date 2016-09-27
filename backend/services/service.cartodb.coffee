@@ -1,94 +1,115 @@
-sqlHelpers = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:cartodb')
-cartodbConfig = require '../config/cartodb/cartodb'
-cartodb = require 'cartodb-api'
-cartodbSql = require '../utils/util.cartodb.sql'
-tables = require '../config/tables'
+cartodbSqlFact = require '../utils/util.cartodb.sql'
+internals = require './service.cartodb.internals'
+exec = require('child_process').exec
+###
+  Public: Queries fipsCoded parcels to then upload to cartodb
 
-{geoJsonFormatter} = require '../utils/util.streams'
+  Returns the Promise(tableName)
+###
+upload = (fips_code) -> Promise.try () ->
+  # NOTE:
+  # can't implement below due to https://github.com/CartoDB/cartodb-nodejs/issues/57
+  # stream = internals.fipsCodeQuery({fips_code}).stream()
+  # internals.upload {stream, fileName: fips_code}
 
+  fileName = "/tmp/#{fips_code.toString()}"
 
-_execCartodbSql = (sql) ->
-  cartodbConfig()
-  .then (config) ->
-    cartodb.sql
-      account: config.ACCOUNT
-      apiKey: config.API_KEY
-      sql:sql
+  toCSV {fips_code, fileName}
+  .then () ->
+    #NOTE: cartodb does have limits on file size uploads depending on Plans (un-documented)
 
-_upload = (stream, fileName) -> Promise.try ->
+    # PRO - import row limit of 500,000 and an import file size of 1.6GB
+    # Therefore using linux / split may make it much easier to split this across
+    # EXAMPLE: `split -l 1000 /tmp/12047.csv new`
+    # http://stackoverflow.com/questions/20721120/how-to-split-csv-files-as-per-number-of-rows-specified
+    internals.uploadFile(fileName + ".csv")
 
-  filteredStream = stream.pipe(geoJsonFormatter([
-    'rm_property_id'
-    'street_address_num'
-    'geometry_center'
-    'passedFilters'
-  ]))
+###
+  Public: Utility function to export our parcel data of a specific
+  fips_code to csv to easily push to cartodb:
 
-  # writeStream = fs.createWriteStream './output.json'
-  # filteredStream.pipe(process.stdout) #uncomment to send to console
-  # filteredStream.pipe(writeStream) #uncomment to write file
-  cartodbConfig()
-  .then (config) ->
-    cartodb.upload
-      account: config.ACCOUNT
-      apiKey: config.API_KEY
-      stream: filteredStream
-      uploadFileName: fileName
+ - `fileName`  Optional filename {string}
+ - `fips_code` {string}.
 
-_fipsCodeQuery = (opts) ->
-  if !opts?.fips_code?
-    throw new Error('opts.fips_code required!')
+  Returns promisfied exec function
 
-  query = sqlHelpers.select(tables.finalized.parcel(), 'cartodb_parcel', false)
-  .where {
-    fips_code: opts.fips_code
-    active: true
+  Reference: https://carto.com/docs/carto-engine/import-api/importing-geospatial-data/#csv
+
+  Post usage:
+  -- import / upload:
+  `curl -v -F file=@/tmp/{fips_code or filename}.csv https://realtymaps.carto.com/api/v1/imports?api_key={YOUR_KEY}`
+  -- verify import success:
+  `curl -v "https://realtymaps.carto.com/api/v1/imports/item_queue_id?api_key={YOUR_KEY}"`
+
+###
+toCSV = ({fileName, fips_code}) -> Promise.try () ->
+  fileName ?= fips_code
+
+  logger.debug "fileName: #{fileName}, fips_code: #{fips_code}"
+
+  internals.saveFile {
+    stream: internals.fipsCodeQuery({fips_code}).stream()
+    fileName
   }
-  .whereNotNull 'rm_property_id'
-  .orderBy 'rm_property_id'
 
-  if opts?.limit?
-    query.limit(opts.limit)
-  if opts?.start_rm_property_id?
-    query.whereRaw("rm_property_id > '#{opts.start_rm_property_id}'")
-  if opts?.nesw?
-    # logger.debug opts.nesw
-    query = sqlHelpers.whereInBounds(query, 'geometry_raw', opts.nesw)
+###
+Useful for comparing csv-stringfy to to fix problems.. so LEAVE this
+###
+toPsqlCSV = ({fileName, fips_code}) -> Promise.try ->
+  fileName ?= fips_code
 
-  query
+  subQuery = internals.fipsCodeQuery({fips_code}).toString()
 
-parcel =
-  upload: (fips_code) -> Promise.try () ->
-    _upload _fipsCodeQuery({fips_code}).stream(), fips_code
+  query = "\"COPY (#{subQuery}) To '#{fileName}.csv' CSV HEADER;\""
 
-  #merge data to parcels cartodb table
-  synchronize: (fipsCode) -> Promise.try ->
-    _execCartodbSql(cartodbSql.update(fipsCode))
-    .then ->
-      _execCartodbSql(cartodbSql.insert(fipsCode))
-    .then ->
-      _execCartodbSql(cartodbSql.delete(fipsCode))
-    .then ->
-      _execCartodbSql(cartodbSql.drop(fipsCode))
+  cmd = "psql -d realtymaps_main -c #{query}"
 
-  getByFipsCode: (opts) -> Promise.try () ->
-    _fipsCodeQuery(opts)
+  execAsync = Promise.promisify exec
 
-module.exports =
+  execAsync(cmd)
 
-  parcel: parcel
-  restful:
-    getByFipsCode: (opts) ->
-      # logger.debug opts,true
-      cartodbConfig()
-      .then (config) ->
-        if opts?.api_key != config.API_KEY_TO_US
-          throw new Error('UNAUTHORIZED')
-        if !opts.fips_code?
-          throw new Error('BADREQUEST')
-      .then () ->
-        parcel.getByFipsCode(opts)
-    uploadParcel: (state, filters) -> Promise.try ->
-      parcel.uploadParcel(filters.fips_code)
+
+#merge data to parcels cartodb table
+synchronize = ({fipsCode, tableName, destinationTable}) -> Promise.try () ->
+  cartodbSql = cartodbSqlFact(destinationTable)
+
+  indexes({tableName, destinationTable})
+  .then ->
+    internals.execSql(cartodbSql.update({fipsCode, tableName}))
+  .then ->
+    internals.execSql(cartodbSql.insert({fipsCode, tableName}))
+  .then ->
+    internals.execSql(cartodbSql.delete({fipsCode, tableName}))
+  .then ->
+    internals.execSql(cartodbSql.drop({fipsCode, tableName}))
+
+
+drop = ({fipsCode, tableName, destinationTable}) ->
+  cartodbSql = cartodbSqlFact(destinationTable)
+  internals.execSql(cartodbSql.drop({fipsCode, tableName}))
+
+
+indexes = ({tableName, destinationTable}) ->
+  cartodbSql = cartodbSqlFact(destinationTable)
+  internals.execSql(cartodbSql.indexes({tableName}))
+
+sql = (sqlStr) ->
+  internals.execSql(sqlStr)
+
+getByFipsCode = (opts) -> Promise.try () ->
+  internals.fipsCodeQuery(opts)
+
+
+module.exports = {
+  upload
+  uploadFile: internals.uploadFile
+  synchronize
+  toCSV
+  toPsqlCSV
+  drop
+  indexes
+  sql
+  getByFipsCode
+}

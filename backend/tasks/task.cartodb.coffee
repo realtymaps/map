@@ -1,10 +1,10 @@
 Promise = require 'bluebird'
 TaskImplementation = require './util.taskImplementation'
-logger = require('../config/logger').spawn('backend:task:cartodb')
-loggerSyncPrep = require('../config/logger').spawn('backend:task:cartodb:syncPep')
-loggerSync = require('../config/logger').spawn('backend:task:cartodb:sync')
+logger = require('../config/logger').spawn('task:cartodb')
+loggerSyncPrep = require('../config/logger').spawn('task:cartodb:syncPep')
+loggerSync = require('../config/logger').spawn('task:cartodb:sync')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
-{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 cartodbSvc = require '../services/service.cartodb'
 jobQueue = require '../services/service.jobQueue'
@@ -12,12 +12,8 @@ tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 
-NUM_ROWS_TO_PAGINATE = 10
-
 syncPrep = (subtask) ->
   loggerSyncPrep.debug "@@@@@@@@ cartodb:syncPrep @@@@@@@@"
-
-  maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
 
   tables.cartodb.syncQueue()
   .select('id', 'fips_code', 'batch_id')
@@ -25,13 +21,14 @@ syncPrep = (subtask) ->
     loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
     loggerSyncPrep.debug rows
 
-    jobQueue.queueSubsequentPaginatedSubtask {
-      subtask
-      totalOrList: rows
-      maxPage
-      laterSubtaskName: 'sync'
-      mergeData: {}
-    }
+    #NOTE Concurrency is 3 as this is the CartoDB's Import queue limit for our current plan
+    Promise.all Promise.map rows, (row) ->
+      jobQueue.queueSubsequentSubtask {
+        subtask
+        manualData: row
+        laterSubtaskName: 'sync'
+        concurrency: 3
+      }
   .then () ->
     jobQueue.queueSubsequentSubtask {
       subtask
@@ -42,27 +39,39 @@ syncPrep = (subtask) ->
 
 sync = (subtask) ->
 
-  if !subtask.data?.values?.length
+  if !subtask.data?
     return
 
-  Promise.all Promise.map subtask.data.values, (row) ->
-    {fips_code} = row
+  row = subtask.data
+  {fips_code} = row
 
-    loggerSync.debug "uploading fips_code to cartodb: #{fips_code}"
+  loggerSync.debug "uploading fips_code to cartodb: #{fips_code}"
 
-    cartodbSvc.parcel.upload(fips_code)
-    .then () ->
-      loggerSync.debug "syncing fips_code to cartodb: #{fips_code}"
-      cartodbSvc.parcel.synchronize(fips_code)
-    .then () ->
-      loggerSync.debug "dequeing: id: #{row.id}, batch_id: #{row.batch_id}"
-      tables.cartodb.syncQueue()
-      .where(id: row.id)
-      .delete()
+  cartodbSvc.upload(fips_code)
+  .then (tableName) ->
+    loggerSync.debug "syncing #{tableName} fips_code to cartodb: #{fips_code}"
+    cartodbSvc.synchronize({fipsCode:fips_code, tableName})
+    .catch (error) ->
+      # back out bad import
+      cartodbSvc.drop({fipsCode:fips_code, tableName})
+      .then () ->
+        throw error
+  .then () ->
+    loggerSync.debug "dequeing: id: #{row.id}, batch_id: #{row.batch_id}"
+    tables.cartodb.syncQueue()
+    .where(id: row.id)
+    .delete()
   .then () ->
     loggerSync.debug('All Sync CartoDB Success!!')
   .catch errorHandlingUtils.isUnhandled, (error) ->
-    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to sync cartodb')
+    msg = 'failed to sync cartodb: '
+    if typeof(error) == 'string'
+      throw new errorHandlingUtils.PartiallyHandledError(msg + error)
+    else if typeof(error) == 'object'
+      if error.message
+        throw new errorHandlingUtils.PartiallyHandledError(error, msg)
+      else
+        throw new errorHandlingUtils.PartiallyHandledError(msg + JSON.stringify(error))
   .catch (error) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
