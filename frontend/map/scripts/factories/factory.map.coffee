@@ -398,8 +398,10 @@ app.factory 'rmapsMapFactory',
         resultCenter.zoom = 20 if @scope.satMap?
 
       pinPropertyEventHandler: (event, eventData) =>
-        result = eventData.property
+        # GTFO if the instance of this handler is NOT the active mainMap
+        return if rmapsMapIds.mainMap() != @mapId
 
+        result = eventData.property
         if result
           wasPinned = result?.savedDetails?.isPinned
 
@@ -421,12 +423,13 @@ app.factory 'rmapsMapFactory',
 
           if wasPinned and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
-
         @redraw(false)
 
       favoritePropertyEventHandler: (event, eventData) =>
-        result = eventData.property
+        # GTFO if the instance of this handler is NOT the active mainMap
+        return if rmapsMapIds.mainMap() != @mapId
 
+        result = eventData.property
         if result
           wasFavorite = result?.savedDetails?.isFavorite
           if wasFavorite and !@scope.results[result.rm_property_id]

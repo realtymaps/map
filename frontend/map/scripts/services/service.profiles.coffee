@@ -136,21 +136,6 @@ app.service 'rmapsProfilesService', (
         $log.debug "detected `_isSettingProfile`, returning `_settingCurrentPromise`"
         return _settingCurrentPromise
 
-      # Get reference to the current main map
-      currentMap = rmapsCurrentMapService.get()
-
-      # If switching profiles, ensure the old one is up-to-date
-      if @currentProfile
-        $log.debug "detected @currentProfile, populating..."
-        @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-        @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? && status
-        @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
-
-        # Get the center of the main map if it has been created
-        $log.debug "rmapsCurrentMap: #{currentMap}"
-        if currentMap
-          @currentProfile.map_position = center: NgLeafletCenter(_.pick currentMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
-
       # Save the old and load the new profiles
       $log.debug "calling _setCurrent..."
       return _setCurrent @currentProfile, profile
@@ -160,6 +145,22 @@ app.service 'rmapsProfilesService', (
           # backend when creating new profiles/projects
           $log.warn "Current profile has no map position!"
           return
+
+        # Get reference to the current main map
+        currentMap = rmapsCurrentMapService.get()
+
+        # update pins and filters now that we've updated profile / project
+        if @currentProfile
+          $log.debug "detected @currentProfile, populating..."
+          @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+          @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? && status
+          @currentProfile.pins = _.mapValues rmapsPropertiesService.pins, 'savedDetails'
+
+          # Get the center of the main map if it has been created
+          $log.debug "rmapsCurrentMap: #{currentMap}"
+          if currentMap
+            @currentProfile.map_position = center: NgLeafletCenter(_.pick currentMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
+
 
         $log.debug "Set current profile to: #{profile.id}"
 

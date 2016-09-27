@@ -94,9 +94,10 @@ app.provider 'rmapsPageService', () ->
           rmapsMapIds.incrementMainMap()
 
           $stickyState.reset('map')
-          $state.go 'map', params, { reload: true }
+          rmapsProfilesService.setCurrentProfileByProjectId params.project_id
           .then ->
-            rmapsProfilesService.setCurrentProfileByProjectId params.project_id
+            $state.go 'map', params, { reload: true }
+
         else
           $state.go 'main'
 
