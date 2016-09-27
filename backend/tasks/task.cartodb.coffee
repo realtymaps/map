@@ -48,16 +48,23 @@ sync = (subtask) ->
   loggerSync.debug "uploading fips_code to cartodb: #{fips_code}"
 
   cartodbSvc.upload(fips_code)
-  .then (tableName) ->
-    loggerSync.debug "syncing #{tableName} fips_code to cartodb: #{fips_code}"
-    cartodbSvc.synchronize({fipsCode:fips_code, tableName})
+  .then (tableNames) ->
+
+    cartodbSvc.syncDequeue({
+      fipsCode:fips_code
+      tableNames
+      batch_id: row.batch_id
+      id: row.id
+    })
     .catch (error) ->
       # back out bad import
-      cartodbSvc.drop({fipsCode:fips_code, tableName})
+      Promise.each tableNames, (tableName) ->
+        logger.debug "backing out imports, tableName: #{tableName}"
+        cartodbSvc.drop({fipsCode:fips_code, tableName})
       .then () ->
         throw error
   .then () ->
-    loggerSync.debug "dequeing: id: #{row.id}, batch_id: #{row.batch_id}"
+
     tables.cartodb.syncQueue()
     .where(id: row.id)
     .delete()
@@ -84,7 +91,12 @@ syncDone = (subtask) ->
 
 
 ready = () ->
+  logger.debug -> 'ready'
   dataLoadHelpers.checkReadyForRefresh({task_name: 'cartodb'}, {targetHour: 2, targetDay: 'Saturday', runIfNever: true})
+  .then (result) ->
+    logger.debug ->'checkReadyForRefresh'
+    logger.debug -> result
+    result
 
 
 module.exports = new TaskImplementation('cartodb', {syncPrep, sync, syncDone}, ready)

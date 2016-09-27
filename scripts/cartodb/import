@@ -46,28 +46,27 @@ spin = makeSpinner()
 concurrency = argv.concurrency || 3
 concurrent = {}
 
-
 run = (code) ->
   if Object.keys(concurrent).length >= concurrency
     return Promise.delay(500).then ->
       run(code)
 
   promise = cartodb.upload(code)
-  .then (tableName) ->
+  .then (tableNames) ->
     debug("fipsCode: #{code} completed")
-    if argv.synchronize
-      debug("@@@@@@@ synching #{tableName} @@@@@@@")
-      cartodb.synchronize({fipsCode:code, tableName})
-      .then () ->
-        tables.cartodb.syncQueue()
-        .where(fips_code: code)
-        .delete()
+    if argv.synchronize?
+      cartodb.syncDequeue({tableNames, fipsCode: code})
 
   concurrent[code] = promise
   concurrent[code].finally ->
     delete concurrent[code]
 
   promise
+
+if argv.syncOnly?
+  run = (fipsCode) ->
+    tableNames = argv.tableNames.split(",")
+    cartodb.syncDequeue {tableNames, fipsCode}
 
 fipsCodesPromise.then (fipsCodes) ->
   debug(fipsCodes)
@@ -76,6 +75,8 @@ fipsCodesPromise.then (fipsCodes) ->
   debug("@@@@ TOTAL SUCCESS @@@@")
 .finally ->
   spin.stop()
+.then ->
+  process.exit(0)
 .catch  (error) ->
   debug("@@@@ ERROR @@@@")
   console.error(error)

@@ -8,4 +8,4 @@ _ = require 'lodash'
   Returns the cleaned object.
 ###
 _.cleanObject = (object) ->
-  _.omit(object, (it) -> it == null)
+  _.omit(object, (it) -> _.isUndefined it )

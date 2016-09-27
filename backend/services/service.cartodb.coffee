@@ -2,13 +2,23 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:cartodb')
 cartodbSqlFact = require '../utils/util.cartodb.sql'
 internals = require './service.cartodb.internals'
-exec = require('child_process').exec
+execAsync = Promise.promisify require('child_process').exec
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+tables = require '../config/tables'
+require '../../common/extensions/lodash'
+_ = require 'lodash'
+
+
+MAX_LINE_COUNT = 150000
+
 ###
   Public: Queries fipsCoded parcels to then upload to cartodb
 
-  Returns the Promise(tableName)
+  Returns the Promise(Array<tableName:String>)
 ###
-upload = (fips_code) -> Promise.try () ->
+upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) -> Promise.try () ->
+  cmds = internals.splitCommands(fipsCode: fips_code, lineCount:lineMaxCount)
+  {wc} = cmds
   # NOTE:
   # can't implement below due to https://github.com/CartoDB/cartodb-nodejs/issues/57
   # stream = internals.fipsCodeQuery({fips_code}).stream()
@@ -19,12 +29,21 @@ upload = (fips_code) -> Promise.try () ->
   toCSV {fips_code, fileName}
   .then () ->
     #NOTE: cartodb does have limits on file size uploads depending on Plans (un-documented)
-
     # PRO - import row limit of 500,000 and an import file size of 1.6GB
-    # Therefore using linux / split may make it much easier to split this across
-    # EXAMPLE: `split -l 1000 /tmp/12047.csv new`
-    # http://stackoverflow.com/questions/20721120/how-to-split-csv-files-as-per-number-of-rows-specified
-    internals.uploadFile(fileName + ".csv")
+    execAsync(wc)
+    .then (count) ->
+      logger.debug -> "lineCount: #{count}"
+      parseInt(count) < lineMaxCount
+    .then (isLessThanMax) ->
+      if isLessThanMax
+        logger.debug -> "isLessThanMax: normal upload"
+        return internals.uploadFile(fileName + ".csv").then (tableName) -> [tableName]
+
+
+      logger.debug -> "is NOT isLessThanMax: split upload"
+      internals.splitUpload(cmds)
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new new errorHandlingUtils.PartiallyHandledError error, "uploadFile failed"
 
 ###
   Public: Utility function to export our parcel data of a specific
@@ -47,7 +66,7 @@ upload = (fips_code) -> Promise.try () ->
 toCSV = ({fileName, fips_code}) -> Promise.try () ->
   fileName ?= fips_code
 
-  logger.debug "fileName: #{fileName}, fips_code: #{fips_code}"
+  logger.debug -> "fileName: #{fileName}, fips_code: #{fips_code}"
 
   internals.saveFile {
     stream: internals.fipsCodeQuery({fips_code}).stream()
@@ -59,14 +78,11 @@ Useful for comparing csv-stringfy to to fix problems.. so LEAVE this
 ###
 toPsqlCSV = ({fileName, fips_code}) -> Promise.try ->
   fileName ?= fips_code
-
   subQuery = internals.fipsCodeQuery({fips_code}).toString()
-
+  logger.debug -> subQuery
   query = "\"COPY (#{subQuery}) To '#{fileName}.csv' CSV HEADER;\""
 
   cmd = "psql -d realtymaps_main -c #{query}"
-
-  execAsync = Promise.promisify exec
 
   execAsync(cmd)
 
@@ -95,16 +111,38 @@ indexes = ({tableName, destinationTable}) ->
   cartodbSql = cartodbSqlFact(destinationTable)
   internals.execSql(cartodbSql.indexes({tableName}))
 
+
 sql = (sqlStr) ->
   internals.execSql(sqlStr)
+
 
 getByFipsCode = (opts) -> Promise.try () ->
   internals.fipsCodeQuery(opts)
 
 
+syncDequeue = ({tableNames, fipsCode, batch_id, id}) ->
+  if !Array.isArray(tableNames)
+    tableNames = [tableNames]
+
+  Promise.each tableNames, (tableName) ->
+    logger.debug("@@@@@@@ synching #{tableName} @@@@@@@")
+    synchronize({fipsCode, tableName})
+  .then () ->
+    logger.debug "dequeing: id: #{id}, batch_id: #{batch_id}"
+    entity = _.extend {}, {fips_code: fipsCode, batch_id, id}
+    entity = _.cleanObject entity
+
+    tables.cartodb.syncQueue()
+    .where(entity)
+    .delete()
+
+
+
 module.exports = {
   upload
   uploadFile: internals.uploadFile
+  split: internals.split
+  splitUpload: internals.splitUpload
   synchronize
   toCSV
   toPsqlCSV
@@ -112,4 +150,7 @@ module.exports = {
   indexes
   sql
   getByFipsCode
+  splitCommands: internals.splitCommands
+  syncDequeue
+  MAX_LINE_COUNT
 }
