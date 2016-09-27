@@ -23,14 +23,6 @@
           span(style="text-transform: capitalize;") Campaign Review
 
         button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()" ng-disabled="!review.pdf") View Letter
-        //- button.btn.review-preview-button(
-        //-   ng-if="wizard.mail.campaign.recipients.length > 0 && !wizard.mail.isSubmitted()"
-        //-   ng-disabled="review.data.alert.msg || !review.pdf"
-        //-   ng-click="sendMail()"
-        //-   ng-class="{'btn-success': !review.data.alert.msg, 'btn-danger': review.data.alert.msg}"
-        //-   )
-        //-     span(ng-show="review.data.alert.msg") Issues Exist
-        //-     span(ng-show="!review.data.alert.msg") Send Letters
 
       .row.review-items
         div
@@ -53,6 +45,12 @@
                   p Letters Shipped:
                 .col-md-9
                   p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
+              .row(ng-show="wizard.mail.isSubmitted()")
+                .col-md-3
+                  p Estimated Delivery:
+                .col-md-9
+                  p(ng-show="review.single_lob_response.expected_delivery_date") {{review.single_lob_response.expected_delivery_date | date:'MM/dd/yyyy'}}
+                  p(ng-hide="review.single_lob_response.expected_delivery_date") N/A
 
           .row.separator.recipients
             .col-md-12
@@ -65,34 +63,6 @@
                     ng-pluralize
                     count="wizard.mail.campaign.recipients.length"
                     when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
-
-          //- .row.separator
-          //-   .col-md-12
-          //-     .row
-          //-       h2 Pricing
-          //-     .row
-          //-       .col-md-12
-          //-         .color-selector.btn-group(ng-class="{'disabled': wizard.mail.campaign.custom_content}")
-          //-           span.to-bnw.btn.btn-default(ng-disabled="wizard.mail.campaign.custom_content")
-          //-             label Black and White
-          //-             br
-          //-             input(
-          //-               type="radio"
-          //-               ng-model="wizard.mail.campaign.options.color"
-          //-               ng-value="false"
-          //-               ng-disabled="wizard.mail.campaign.custom_content")
-
-          //-           span.to-color.btn.btn-default(ng-disabled="wizard.mail.campaign.custom_content")
-          //-             label Color
-          //-             br
-          //-             input(
-          //-               type="radio"
-          //-               ng-model="wizard.mail.campaign.options.color"
-          //-               ng-value="true"
-          //-               ng-disabled="wizard.mail.campaign.custom_content")
-
-          //-         .mail-prices-review-container
-          //-           include ../../includes/mail_pricing_table.jade
 
           .row.separator.errors(ng-show="review.data.alert.msg")
             .col-md-12

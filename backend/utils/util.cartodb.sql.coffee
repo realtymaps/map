@@ -1,46 +1,63 @@
-_destTable = 'parcels'
+dbs = require '../config/dbs'
 
-_plusSign='%2B'
+cartodbSqlFactory = (destTable = 'parcels') ->
+  if !destTable
+    throw new Error 'destTable undefined'
 
-_sql =
-    update: """UPDATE #{_destTable}
-        set street_address_num=subq.street_address_num,
-        the_geom=subq.the_geom,
-        num_updates=#{_destTable}.num_updates #{_plusSign} 1,
-        is_active=1
-        FROM (SELECT * FROM $frmTable) subq
-        where #{_destTable}.rm_property_id = subq.rm_property_id;"""
+  #NOTE: KNEX does not handle postgress :: cast well at all so use () to cast
+  _sql =
+      update: """UPDATE :destTable:
+          set street_address_num=subq.street_address_num,
+          the_geom=subq.the_geom,
+          num_updates=:destTable:."num_updates" + 1,
+          is_active=1
+          FROM (SELECT * FROM :frmTable:) subq
+          where :destTable:."rm_property_id" = subq.rm_property_id;"""
 
-    insert:"""
-        INSERT INTO #{_destTable} (rm_property_id, the_geom, created_at, updated_at, is_active, num_updates, fips_code, street_address_num)
-        SELECT rm_property_id, the_geom, created_at, updated_at, (not is_active::boolean)::int, 1, fips_code, street_address_num
-        FROM $frmTable
-        WHERE NOT EXISTS (
-                SELECT * FROM #{_destTable}
-                WHERE
-                rm_property_id = $frmTable.rm_property_id
-            );
-        """
-    'delete':"""
-        DELETE FROM #{_destTable}
-        where rm_property_id in (
-        select #{_destTable}.rm_property_id
-        from #{_destTable}
-        LEFT JOIN $frmTable on #{_destTable}.rm_property_id = $frmTable.rm_property_id
-        where $frmTable.rm_property_id isnull and #{_destTable}.fips_code = '$fipsCode'
-        );
-        """
+      insert:"""
+          INSERT INTO :destTable: (rm_property_id, the_geom, created_at, updated_at, is_active, num_updates, fips_code, street_address_num)
+          SELECT rm_property_id, the_geom, created_at, updated_at, CAST(not CAST(is_active as boolean) as int), 1, fips_code, street_address_num
+          FROM :frmTable:
+          WHERE NOT EXISTS (
+                  SELECT * FROM :destTable:
+                  WHERE
+                  rm_property_id = :frmTable:."rm_property_id"
+              );
+          """
+      'delete':"""
+          DELETE FROM :destTable:
+          where rm_property_id in (
+          select :destTable:."rm_property_id"
+          from :destTable:
+          LEFT JOIN :frmTable: on :destTable:."rm_property_id" = :frmTable:."rm_property_id"
+          where :frmTable:."rm_property_id" isnull and :destTable:."fips_code" = :fipsCode
+          );
+          """
 
-    drop:'DROP TABLE $frmTable;'
+      drop:'DROP TABLE :frmTable:;'
 
-_format = (sql, fipsCode) ->
-  sql
-  .replace('$frmTable', 'table_' + String(fipsCode))
-  .replace('$fipsCode', String(fipsCode))
+      indexes: """
+      CREATE INDEX idx_:frmTable:_rm_property_id ON :frmTable: USING btree (rm_property_id);
+      CREATE INDEX idx_:frmTable:_fips_code_id ON :frmTable: USING btree (fips_code);
+      CREATE INDEX idx_:frmTable:_the_geom_fips_code_id ON :frmTable: USING gist (the_geom);
+      """
 
-obj = {}
-['update', 'insert', 'delete', 'drop'].forEach  (method) ->
-  obj[method] = (fipsCode) ->
-    _format(_sql[method], fipsCode)
+  _format = ({sql, fipsCode, tableName}) ->
+    dbs.get('main').raw(sql, {
+      destTable
+      frmTable: tableName
+      fipsCode
+    }).toString()
 
-module.exports = obj
+  obj = {}
+
+  for method in ['update', 'insert', 'delete', 'drop', 'indexes']
+    do (method) ->
+      obj[method] = ({fipsCode = '', tableName} = {}) ->
+        fipsCode = fipsCode.toString() + ''
+        if method != 'indexes'
+          return _format {sql: _sql[method], fipsCode, tableName}
+        _sql[method].replace(/:frmTable:/g, tableName)
+  obj
+
+module.exports = cartodbSqlFactory
