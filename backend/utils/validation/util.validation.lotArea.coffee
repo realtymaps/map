@@ -17,6 +17,6 @@ module.exports = (options = {}) ->
       if intermediate.acres
         return intermediate.acres
       else if intermediate.sqft
-        return intermediate.sqft/43560
+        return intermediate.sqft/43560  # conversion from sqft to acres
       else
         return null
