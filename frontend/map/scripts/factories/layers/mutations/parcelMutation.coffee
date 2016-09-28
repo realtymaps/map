@@ -35,6 +35,7 @@ rmapsLayerUtil
       overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
       data = if @data?.singletons? then @data?.singletons else @data
+
       @handleGeoJsonResults(data)
 
   .compose rmapsZoomLevelStateFactory, rmapsLayerUtil

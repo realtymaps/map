@@ -26,19 +26,25 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $t
       # Reposition the map on the selected place and set an appropriate zoom level
       zoom = 16
 
-      if place.types.indexOf("address") != -1 # property
-        zoom = 16
-      else if place.types.indexOf("locality") != -1 # city
+      place_type = place.types.join(' ')
+
+      $log.debug place_type
+
+      if place_type.indexOf("address") != -1 # property
+        zoom = 20
+      else if place_type.indexOf("locality") != -1 # city
         zoom = 12
-      else if place.types.indexOf("administrative_area_level_1") != -1 # state
+      else if place_type.indexOf("administrative_area_level_1") != -1 # state
         zoom = 7
-      else if place.types.indexOf("country") != -1 # country
+      else if place_type.indexOf("country") != -1 # country
         zoom = 5
 
-      $rootScope.$emit rmapsEventConstants.map.center, coords:
-        latitude: place.geometry.location.lat()
-        longitude: place.geometry.location.lng()
+      $rootScope.$emit rmapsEventConstants.map.center,
+        coords:
+          latitude: place.geometry.location.lat()
+          longitude: place.geometry.location.lng()
         zoom: zoom
+        showCenter: true
 
       # Add address to property filters -- if available this property should be returned independent of other filters
       $timeout () ->

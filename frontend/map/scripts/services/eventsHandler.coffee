@@ -51,6 +51,10 @@ $state) ->
         #toBack
         #https://github.com/Leaflet/Leaflet/issues/3708
         #http://jsfiddle.net/kytqgpjo/2/
+
+        if model?.rm_property_id
+          $log.debug model.rm_property_id, model
+
         if lObject?.bringToBack?
           lObject.bringToBack()
         else
