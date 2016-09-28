@@ -126,6 +126,7 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 
     else if (classified = _isLoad(fileName))
       fips = fileName.slice(0, 5)
+      # TODO: remove when we turn on all FIPS codes
       if fips != '12021' && fips != '12099'
         classified = false
       else
