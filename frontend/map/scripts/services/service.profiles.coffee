@@ -43,7 +43,7 @@ app.service 'rmapsProfilesService', (
   _update = (profile) ->
     $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
-  _current = (profile) ->
+  _current = (profile, opts) ->
     $log.debug 'attempting to set current profile'
     rmapsCurrentProfilesService.setCurrent profile
     .then ({data}) ->
@@ -55,7 +55,7 @@ app.service 'rmapsProfilesService', (
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
       service.currentProfile = profile
-      rmapsPrincipalService.setCurrentProfile profile
+      rmapsPrincipalService.setCurrentProfile profile, opts
 
   # IMPORTANT we need to unset the current profile upon logout
   # otherwise upon login we would try to reuse the existing / dead profile
@@ -66,14 +66,14 @@ app.service 'rmapsProfilesService', (
   _isSettingProfile = false
   _settingCurrentPromise = null
 
-  _setCurrent = (oldProfile, newProfile) ->
+  _setCurrent = (oldProfile, newProfile, opts) ->
     _isSettingProfile = true
 
     _settingCurrentPromise = if oldProfile?
       $log.debug 'updating old profile'
       _update(oldProfile)
       .then () ->
-        _current newProfile
+        _current newProfile, opts
     else
       _current newProfile
 
@@ -105,6 +105,15 @@ app.service 'rmapsProfilesService', (
           profile = _.find(identity.profiles, project_id: project_id)
           return @setCurrentProfile profile
 
+    # similar to setCurrentProfileByProjectId and changes the current profile, but suppresses the profile.updated emit
+    updateCurrentProfileByProjectId: (project_id) ->
+      project_id = Number(project_id) if _.isString project_id
+      rmapsPrincipalService.getIdentity()
+      .then (identity) =>
+        if identity
+          profile = _.find(identity.profiles, project_id: project_id)
+          return @setCurrentProfile profile, noEmit: true
+
     setCurrentProfileByProfileId: (profile_id) ->
       profile_id = Number(profile_id) if _.isString profile_id
       rmapsPrincipalService.getIdentity()
@@ -120,11 +129,14 @@ app.service 'rmapsProfilesService', (
         # open most recently modified
         return @setCurrentProfile _.sortByOrder(_.values(identity.profiles), 'rm_modified_time','desc')[0]
 
+
+
+
     ###
       Public: This function gets hammered by watchers and or page resolves at boot.
         Therefore we have a few GTFOS
     ###
-    setCurrentProfile: (profile) ->
+    setCurrentProfile: (profile, opts) ->
       # GTFO 1
       if profile == @currentProfile || profile?.id == @currentProfile?.id
         $log.debug "Profile is already set as current profile, returning"
@@ -139,7 +151,7 @@ app.service 'rmapsProfilesService', (
 
       # Save the old and load the new profiles
       $log.debug "calling _setCurrent..."
-      return _setCurrent @currentProfile, profile
+      return _setCurrent @currentProfile, profile, opts
       .then () ->
         if !profile?.map_position?.center?
           # bad things happen if we get this far w/o a map_position.center.  It should currently be accounted for in

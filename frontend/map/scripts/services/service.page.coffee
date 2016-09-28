@@ -1,5 +1,6 @@
 ###globals _, angular###
 app = require '../app.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 
 ### eslint-disable ###
 app.run (rmapsPageService) ->
@@ -90,13 +91,17 @@ app.provider 'rmapsPageService', () ->
         params.project_id ?= rmapsProfilesService.currentProfile?.project_id
         if params.project_id?
 
-          ## Clear the current map if any
-          rmapsMapIds.incrementMainMap()
+          # not useful while we do the $window.location page refresh below
+          # ## Clear the current map if any
+          # rmapsMapIds.incrementMainMap()
 
           $stickyState.reset('map')
-          rmapsProfilesService.setCurrentProfileByProjectId params.project_id
+          rmapsProfilesService.updateCurrentProfileByProjectId params.project_id
           .then ->
-            $state.go 'map', params, { reload: true }
+            # sledgehammer approach
+            url = "/map?project_id=#{params.project_id}"
+            $window.location.href = url
+            #$state.go 'map', params, { reload: true }
 
         else
           $state.go 'main'
