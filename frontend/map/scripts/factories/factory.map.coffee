@@ -276,6 +276,7 @@ app.factory 'rmapsMapFactory',
       redraw: (cache = true) ->
         verboseLogger.debug 'redraw() cache=', cache
         promise = null
+        centerParcel = null
         #consider renaming parcels to addresses as that is all they are used for now
         if @showClientSideParcels()
           verboseLogger.debug 'isAddressParcel'
@@ -286,35 +287,16 @@ app.factory 'rmapsMapFactory',
             # note: multiple calls to redraw may occur, the correct one happens to have cache = true
             #   this feels like a hack to me, how can it be avoided?
             if cache
-              centers = {}
-              parcels = []
               for parcel in data.features
-                center = "#{parcel.geometry_center.coordinates[0]},#{parcel.geometry_center.coordinates[1]}"
-                # Show only parcels with unique centers
-                if !centers[center]
-                  centers[center] = parcel
-                  parcels.push parcel
-                  if parcel.map_center
-                    if @showCenter
-                      $log.debug "center set!!!", parcel.rm_property_id
-                      centerParcel = parcel
-                      parcel.isHighlighted = true
-
-              data.features = parcels
+                if parcel.map_center && @showCenter
+                  $log.debug "center set!!!", parcel.rm_property_id
+                  centerParcel = parcel
+                  parcel.isHighlighted = true
 
             #_parcelBase is a naming hack to have parcelBase render before individual filterPolys (allows them to be on top)
             @scope.map.geojson._parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
-
-            # note: multiple calls to redraw may occur, this ensures the center parcel is styled correctly
-            if centerParcel && @showCenter
-              $timeout =>
-                $log.debug "center force!!!", centerParcel.rm_property_id
-                lObject = @leafletDataMainMap.get(centerParcel.rm_property_id, '_parcelBase')?.lObject
-                lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(centerParcel))
-                @showCenter = false
-              , 250
 
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
@@ -341,6 +323,16 @@ app.factory 'rmapsMapFactory',
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
+
+            # note: multiple calls to redraw may occur, this ensures the center parcel is styled correctly
+            if centerParcel && @showCenter
+              $timeout =>
+                $log.debug "center force!!!", centerParcel.rm_property_id
+                lObject = @leafletDataMainMap.get(centerParcel.rm_property_id, '_parcelBase')?.lObject
+                lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(centerParcel))
+                @showCenter = false
+              , 250
+
           @scope.$evalAsync =>
             $log.debug 'map.coffee - redraw calling results reset()'
             @scope.formatters.results?.reset()
