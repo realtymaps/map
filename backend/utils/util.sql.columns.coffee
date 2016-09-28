@@ -45,7 +45,7 @@ basicColumns = do ->
     parcel: ['geometry_center'].concat(_parcel).join(', ')
 
     #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
-    cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
+    cartodb_parcel: ['0 as is_active', '0 as num_updates', 'rm_inserted_time as created_at', 'rm_modified_time as updated_at' ].concat(_parcel).join(', ')
 
     notes: _commonProjectCols.concat ['rm_property_id', 'geometry_center', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
