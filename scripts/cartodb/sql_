@@ -36,9 +36,10 @@ promise
 .then (result) ->
   debug(result)
   debug("@@@@ TOTAL SUCCESS @@@@")
-.finally ->
   spin.stop()
+  process.exit(0)
 .catch  (error) ->
+  spin.stop()
   debug("@@@@ ERROR @@@@")
   console.error(error)
   if(error)

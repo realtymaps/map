@@ -38,14 +38,25 @@ Promise.each fipsCodes, (fips_code) ->
   fileName = '/tmp/' + fileName
 
 
-  method  = if !argv.psql? then 'toCSV' else 'toPsqlCSV'
+  method  = if !argv.psql?
+    if argv.split?
+      'split'
+    else
+      'toCSV'
+  else 'toPsqlCSV'
 
-  cartodb[method]({fileName, fips_code})
+  opts = if !argv.split
+    {fileName, fips_code}
+  else
+    cartodb.splitCommands {fileName, fips_code, lineCount: cartodb.MAX_LINE_COUNT}
+
+  cartodb[method](opts)
   .then (result) ->
     debug("fipsCode: #{fips_code} completed")
     debug(result)
 .then () ->
   debug("@@@@ TOTAL SUCCESS @@@@")
+  process.exit(0)
 .finally ->
   spin.stop()
 .catch  (error) ->

@@ -8,6 +8,8 @@ CsvStringify = require('csv-stringify')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 fs = require 'fs'
 moment = require 'moment'
+execAsync = Promise.promisify require('child_process').exec
+lsAsync = Promise.promisify require('fs').readdir
 
 csvStringifyFact = (opts) ->
   opts ?= {
@@ -124,6 +126,77 @@ fipsCodeQuery = (opts) ->
 
   query
 
+###
+  Atomic creation of commands to execute. It is atomic in the sense that
+  the majority of the commands name directories and files based on the current PID.
+  This is to keep from file collisions.
+
+ - `lineCount` number of lines to split a file {number}.
+ - `fips_code/fipsCode`   fipsCode {string}.
+
+  Returns a command object
+###
+splitCommands = ({lineCount, fipsCode, fips_code}) ->
+  fipsCode = fipsCode || fips_code
+  path = "/tmp/#{fipsCode}"
+  dirname = "#{path}_#{process.pid}"
+  origFile = "#{path}.csv"
+  path = dirname
+
+  wc: "wc -l #{origFile} | awk '{print $1}'" #aka line count
+  split: "split -l #{lineCount} #{origFile} #{dirname}_"
+  mkdir: "mkdir -p #{dirname}"
+  mv: "mv #{dirname}_* #{dirname}"
+  rename: "cd #{dirname};rename s/$/\.csv/ *"
+  path: path
+  dirname: dirname
+  prependHeader: (brokenFileName) ->
+    source = "#{dirname}/#{brokenFileName}"
+    temp = "#{dirname}/#{brokenFileName}_tmp"
+    """
+    head -n 1 #{origFile} > #{temp};
+    cat #{source} >> #{temp};
+    mv #{temp} #{source}
+    """
+
+
+execSplit = (cmds) ->
+  {split, mkdir, mv, rename, path, prependHeader} = cmds
+
+  runCommand = (cmd) ->
+    logger.debug -> cmd
+    execAsync(cmd)
+
+  runCommand(split)
+  .then () ->
+    runCommand(mkdir)
+  .then () ->
+    runCommand(mv)
+  .then ()->
+    lsAsync(path)
+    .then (files) ->
+      files.shift() #skip first as it already has the header
+      Promise.each files, (f) ->
+        prepend = prependHeader(f)
+        runCommand(prepend)
+  .then () ->
+    runCommand(rename)
+  .then () ->
+    lsAsync(path)
+
+splitUpload = (cmds) ->
+  {dirname} = cmds
+  tableNames = []
+
+  execSplit(cmds)
+  .then (filenames) ->
+    # we can't use Promise.map because overall there should only be one upload going on per fips_code
+    Promise.each filenames, (brokenFile) ->
+      uploadFile("#{dirname}/#{brokenFile}")
+      .then (tableName) ->
+        tableNames.push tableName
+    .then () ->
+      tableNames
 
 module.exports = {
   execSql
@@ -132,4 +205,7 @@ module.exports = {
   saveFile
   fipsCodeQuery
   csvStringifyFact
+  splitCommands
+  splitUpload
+  split: execSplit
 }
