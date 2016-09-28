@@ -59,34 +59,42 @@ summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
 
 
-withDbLock = (lockId, handler) ->
+withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new Promise (resolve, reject) ->
+  if maxWaitSeconds == undefined
+    maxWaitSeconds = 0
+  start = Date.now()
   id = cluster.worker?.id ? 'X'
-  dbs.transaction 'main', (transaction) ->
-    logger.spawn('dbLock').debug () -> "---- <#{id}>   Getting lock: #{lockId}"
-    transaction
-    .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
-    .then () ->
-      logger.spawn('dbLock').debug () -> "---- <#{id}>  Acquired lock: #{lockId}"
-      handler(transaction)
-    .finally () ->
-      logger.spawn('dbLock').debug () -> "---- <#{id}> Releasing lock: #{lockId}"
-
-
-tryWithDbLock = (lockId, handler) ->
-  id = cluster.worker?.id ? 'X'
-  dbs.transaction 'main', (transaction) ->
-    logger.spawn('dbLock').debug () -> "---- <#{id}>   Getting lock (try): #{lockId}"
-    transaction
-    .select(dbs.get('main').raw("pg_try_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId}) AS got_lock"))
-    .then ([result]) ->
-      if result.got_lock
-        logger.spawn('dbLock').debug () -> "---- <#{id}>  Acquired lock: #{lockId}"
-        handler(transaction)
-        .finally () ->
-          logger.spawn('dbLock').debug () -> "---- <#{id}> Releasing lock: #{lockId}"
+  dbLockLogger = logger.spawn('dbLock')
+  attempt = (attemptNum) ->
+    retry = false
+    dbs.transaction 'main', (transaction) ->
+      dbLockLogger.debug () -> "---- <#{id}>   Attempting to get lock (attempt ##{attemptNum}): #{lockId}"
+      transaction
+      .select(dbs.get('main').raw("pg_try_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId}) AS got_lock"))
+      .then ([result]) ->
+        if result.got_lock
+          dbLockLogger.debug () -> "---- <#{id}>  Acquired lock: #{lockId}"
+          handler(transaction)
+          .finally () ->
+            dbLockLogger.debug () -> "---- <#{id}> Releasing lock: #{lockId}"
+        else
+          if maxWaitSeconds != null
+            waited = Math.floor((Date.now()-start)/1000)
+            if waited >= maxWaitSeconds
+              dbLockLogger.debug () -> "---- <#{id}>  Failed to acquire lock after #{waited}s: #{lockId}"
+              throw new jobQueueErrors.LockError("could not acquire db lock for lockId: #{lockId}")
+          retry = true
+    .then (result) ->
+      if retry
+        dbLockLogger.debug () -> "---- <#{id}>  Retrying lock attempt in #{retryIntervalSeconds}s: #{lockId}"
+        Promise.delay(retryIntervalSeconds*1000)
+        .then () ->
+          attempt(attemptNum+1)
       else
-        logger.spawn('dbLock').debug () -> "---- <#{id}>  Failed to acquire lock: #{lockId}"
-        throw new jobQueueErrors.LockError("could not acquire db lock for lockId: #{lockId}")
+        resolve(result)
+    .catch (err) ->
+      reject(err)
+  attempt(1)
 
 
 checkTask = (transaction, batchId, taskName) ->
@@ -107,7 +115,7 @@ checkTask = (transaction, batchId, taskName) ->
 getQueuedSubtask = (queueName) ->
   getQueueLockId(queueName)
   .then (queueLockId) ->
-    withDbLock queueLockId, (transaction) ->
+    withDbLock {lockId: queueLockId, maxWaitSeconds: 60}, (transaction) ->
       currentTasksPromise = tables.jobQueue.taskHistory({transaction})
       .select('name')
       .select('status')
@@ -559,7 +567,6 @@ module.exports = {
   getPossiblyReadyTasks
   summary
   withDbLock
-  tryWithDbLock
   checkTask
   handleSubtaskError
   getQueueLockId
