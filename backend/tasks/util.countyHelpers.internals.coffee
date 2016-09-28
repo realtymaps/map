@@ -9,15 +9,7 @@ moment = require 'moment'
 sqlHelpers = require '../utils/util.sql.helpers'
 
 
-__troubleshoot__ = (id, msg) ->
-  if id? && (id == '12021_11080160001_001' || id.indexOf('6231520007') != -1)
-    logger.spawn("troubleshoot:#{id}").debug(msg)
-    return true
-  return false
-
-
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
-  __troubleshoot__(id, "getting normalized tax data")
   q = tables.normalized.tax(subid: subtask.data.normalSubid)
   .select('*')
   .where
@@ -27,16 +19,12 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   .orderBy('rm_property_id')
   .orderBy('deleted')
   .orderByRaw('recording_date DESC NULLS LAST')
-  __troubleshoot__(id, () -> "tax query: #{q.toString()}")
   q
   .then (taxEntries=[]) ->
     if taxEntries.length == 0
-      __troubleshoot__(id, "no tax rows found")
       return null  # sometimes this might cover up a real error, but there are semi-legitimate cases where this can happen
-    __troubleshoot__(id, "#{taxEntries.length} tax entries found")
     if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0].batch_id == subtask.batch_id
       logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
-      __troubleshoot__(id, "GTFO to allow finalize from tax instead of #{subtask.data.cause} in batch #{subtask.batch_id}: #{taxEntries[0]}")
       # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
       # of the given enqueue source, in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
       # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
@@ -46,7 +34,6 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
 
 
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
-  __troubleshoot__(id, "getting normalized deed data")
   q= tables.normalized.deed(subid: subtask.data.normalSubid)
   .select('*')
   .where
@@ -56,20 +43,16 @@ finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   .orderBy('rm_property_id')
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS LAST')
-  __troubleshoot__(id, () -> "deed query: #{q.toString()}")
   q
   .then (deedEntries=[]) ->
-    __troubleshoot__(id, "#{deedEntries.length} deed entries found")
     if !forceFinalize && subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
       logger.debug "GTFO to allow finalize from deed instead of: #{subtask.data.cause}"
-      __troubleshoot__(id, "GTFO to allow finalize from deed instead of #{subtask.data.cause} in batch #{subtask.batch_id}: #{deedEntries[0]}")
       # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
       return null
     return deedEntries
 
 
 finalizeDataMortgage = ({subtask, id, data_source_id}) ->
-  __troubleshoot__(id, "getting normalized deed data")
   q = tables.normalized.mortgage(subid: subtask.data.normalSubid)
   .select('*')
   .where
@@ -80,7 +63,6 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS LAST')
   q.then (mortgageEntries) ->
-    __troubleshoot__(id, "#{mortgageEntries?.length} mortgage entries found")
     return mortgageEntries
 
 
@@ -105,7 +87,6 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
 
 
 _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  __troubleshoot__(taxEntries[0].rm_property_id, "_promotValues start")
   _finalizeEntry({entries: taxEntries, subtask})
   .then (tax) ->
     tax.data_source_type = 'county'
@@ -141,13 +122,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         deedRecordingDate = moment(lastSale.sale_date).startOf('day')
         taxRecordingDate = moment(tax.recording_date).startOf('day')
         if deedRecordingDate.isAfter(taxRecordingDate)
-          __troubleshoot__(tax.rm_property_id, "Deed recording date #{deedRecordingDate} is AFTER tax recording date #{taxRecordingDate}")
           tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
           tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
           for field in saleFields
             tax[field] = lastSale[field]
         else if deedRecordingDate.isSame(taxRecordingDate)
-          __troubleshoot__(tax.rm_property_id, "Deed recording date #{deedRecordingDate} is BEFORE tax recording date #{taxRecordingDate}")
           for field in saleFields
             tax[field] ?= lastSale[field]
       catch err
@@ -157,11 +136,6 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
         logger.warn("lastSale:  #{JSON.stringify(lastSale)}")
         logger.warn("tax:  #{JSON.stringify(tax)}")
         throw new SoftFail(msg)
-    else
-      if __troubleshoot__(tax.rm_property_id, "Last sale was not found!\ntax.legal_unit_number: #{tax.legal_unit_number} / tax.recording_date: #{tax.recording_date}")
-        for deedEntry,i in deedEntries
-          __troubleshoot__(tax.rm_property_id, "deed.legal_unit_number: #{deedEntry.legal_unit_number} / deed.sale_date: #{deedEntry.sale_date}")
-
 
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
@@ -171,6 +145,7 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
       owner_name: tax.owner_name
       owner_name_2: tax.owner_name_2
       zoning: tax.zoning
+      appraised_value: tax.appraised_value
 
     tax.subscriber_groups.mortgageHistory = mortgageEntries
     tax.subscriber_groups.deedHistory = deedEntries
@@ -218,5 +193,4 @@ module.exports = {
   finalizeDataDeed
   finalizeDataMortgage
   finalizeJoin
-  __troubleshoot__
 }

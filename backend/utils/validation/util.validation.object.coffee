@@ -20,7 +20,7 @@ module.exports = (options = {}) ->
       return {}
     if options.isNullProtect && !_.isEmpty values
       return null
-    if options.subValidateSeparate #against INDIVIDUAL (Separate) validaion function
+    if options.subValidateSeparate #against INDIVIDUAL (Separate) validation function
       # applies transformations for a sub object or array
       validateAndTransform values, options.subValidateSeparate
 
