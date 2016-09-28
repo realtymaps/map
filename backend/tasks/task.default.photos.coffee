@@ -99,7 +99,7 @@ clearRetries = (subtask) ->
   .delete()
 
 setLastUpdateTimestamp = (subtask) ->
-  dataLoadHelpers.setLastUpdateTimestamp(subtask)
+  dataLoadHelpers.setLastUpdateTimestamp(subtask, Date.now())
 
 subtasks = {
   storePrep
