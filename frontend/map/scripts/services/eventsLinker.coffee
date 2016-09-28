@@ -37,6 +37,7 @@ app.service "rmapsEventsLinkerService", ($rootScope, nemSimpleLogger, rmapsNgLea
             handler[name](leafletEvent, leafletObject, feature, feature.rm_property_id, layerName, 'geojson', originator)
 
   hookMap = (mapId, handler, originator, mapEvents) ->
+    $log.debug 'hookMap!'
     #return a array of unsubscibers if you want to early unsubscibe
     mapEvents.map (name) ->
       eventName = "leafletDirectiveMap.#{_getMapIdEventStr(mapId)}" + name
