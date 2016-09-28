@@ -52,7 +52,7 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
        field: _buildBaseRule {"output": "acres"}
-       transform: '[validators.float({}),validators.nullify({"value":0})]'
+       transform: '[validators.lotArea({}),validators.nullify({"value":0})]'
       ,
        field: _buildBaseRule {"output": "parcel_id"}
        transform: '[validators.string({"stripFormatting":true,"trim":true}),validators.nullify({"value":""})]'
