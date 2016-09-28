@@ -25,7 +25,7 @@ MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)
-  internals.tryWithDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+  internals.withDbLock {lockId: config.JOB_QUEUE.SCHEDULING_LOCK_ID, maxWaitSeconds: 0}, (transaction) ->
     internals.getPossiblyReadyTasks(transaction)
     .then (possiblyTasks=[]) ->
       result = []
@@ -51,7 +51,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
 queueManualTask = (taskName, initiator) ->
   if !taskName
     throw new Error('Task name required!')
-  internals.withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+  internals.withDbLock {lockId: config.JOB_QUEUE.SCHEDULING_LOCK_ID, maxWaitSeconds: 20, retryIntervalSeconds: 5}, (transaction) ->
     # need to be sure it's not already running
     tables.jobQueue.taskHistory({transaction})
     .select()
@@ -243,7 +243,7 @@ requeueManualTask = (taskName, initiator, withPrejudice=false) ->
 doMaintenance = () ->
   maintenanceLogger = logger.spawn("maintenance")
   maintenanceLogger.debug('Doing maintenance...')
-  internals.tryWithDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+  internals.withDbLock {lockId: config.JOB_QUEUE.MAINTENANCE_LOCK_ID, maxWaitSeconds: 0}, (transaction) ->
     maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
