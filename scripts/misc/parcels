@@ -1,0 +1,30 @@
+#!/usr/bin/env coffee
+
+###
+Simple script to run a subtask at any step directly
+
+options:
+--fileName - task file name
+--debug - logs arguments
+###
+Promise = require 'bluebird'
+argv = require('yargs').argv
+parcelFetcher = require '../../backend/services/service.parcels.fetcher.digimaps'
+debug = require 'debug'
+JSONStream = require 'JSONStream'
+
+debug = debug('script:parcels')
+
+
+if argv.debug
+  debug argv
+
+parcelFetcher.getParcelJsonStream(argv.fileName)
+.then (stream) ->
+  s = stream.pipe(JSONStream.stringify()).pipe process.stdout
+
+  s.once 'done', ->
+    process.exit 0
+  s.once 'error', (error) ->
+    console.error error
+    process.exit 200
