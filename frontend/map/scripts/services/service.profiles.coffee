@@ -117,7 +117,8 @@ app.service 'rmapsProfilesService', (
       if identity.currentProfileId?
         return @setCurrentProfileByProfileId identity.currentProfileId
       else
-        return @setCurrentProfile _.values(identity.profiles)[0]
+        # open most recently modified
+        return @setCurrentProfile _.sortByOrder(_.values(identity.profiles), 'rm_modified_time','desc')[0]
 
     ###
       Public: This function gets hammered by watchers and or page resolves at boot.

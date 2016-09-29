@@ -14,10 +14,21 @@ NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 250
 MAX_PAGES = 0
 
 storePrep = (subtask) ->
+  idsObj = {}
   logger.debug "storePrep for #{subtask.task_name}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
   mlsName = subtask.task_name.replace('_photos', '')
   logger.debug "mlsName is #{mlsName}"
+
+  retryPhotosPromise = tables.deletes.retry_photos()
+  .where(data_source_id: mlsName)
+  .whereNot(batch_id: subtask.batch_id)
+  .then (rows) ->
+    logger.debug () -> "Found #{rows.length} retries"
+    for row in rows
+      idsObj[row.data_source_uuid] =
+        data_source_uuid: row.data_source_uuid
+        photo_id: row.photo_id
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
   lastModPromise = mlsHelpers.getMlsField(mlsName, 'photo_last_mod_time')
@@ -25,46 +36,37 @@ storePrep = (subtask) ->
   photoIdPromise = mlsHelpers.getMlsField(mlsName, 'photo_id')
 
   # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
-  Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
+  updatedPhotosPromise = Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
     logger.debug arguments
     dataOptions = {minDate: updateThreshold, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
     if MAX_PAGES
       dataOptions.searchOptions.limit = NUM_ROWS_TO_PAGINATE_FOR_PHOTOS * MAX_PAGES
     logger.debug dataOptions
-    idsObj = {}
-    retryPhotosPromise = tables.deletes.retry_photos()
-    .where(data_source_id: mlsName)
-    .whereNot(batch_id: subtask.batch_id)
-    .then (rows) ->
-      logger.debug "Found #{rows.length} retries"
-      for row in rows
-        idsObj[row[uuidField]] =
-          data_source_uuid: row[uuidField]
-          photo_id: row[photoIdField]
 
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
         return
-      logger.debug "Found #{chunk.length} updated rows in chunk"
+      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
       for row in chunk
         idsObj[row[uuidField]] =
           data_source_uuid: row[uuidField]
           photo_id: row[photoIdField]
 
     logger.debug "Getting data chunks for #{mlsName}"
-    updatedPhotosPromise = retsService.getDataChunks(mlsName, dataOptions, handleChunk)
-    Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
-      logger.debug "Got #{Object.keys(idsObj).length} updates + retries"
-      jobQueue.queueSubsequentPaginatedSubtask({
-        subtask
-        totalOrList: _.values(idsObj)
-        maxPage: numRowsToPagePhotos
-        laterSubtaskName: "store"
-        # this makes debugging easier
-        # MAIN REASON is WE are limited to a single login for many MLSes
-        # THIS IS A MAJOR BOTTLE KNECK
-        concurrency: 1
-      })
+    return retsService.getDataChunks(mlsName, dataOptions, handleChunk)
+
+  Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
+    logger.debug "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
+    jobQueue.queueSubsequentPaginatedSubtask({
+      subtask
+      totalOrList: _.values(idsObj)
+      maxPage: numRowsToPagePhotos
+      laterSubtaskName: "store"
+      # this makes debugging easier
+      # MAIN REASON is WE are limited to a single login for many MLSes
+      # THIS IS A MAJOR BOTTLE KNECK
+      concurrency: 1
+    })
 
 store = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
@@ -97,7 +99,7 @@ clearRetries = (subtask) ->
   .delete()
 
 setLastUpdateTimestamp = (subtask) ->
-  dataLoadHelpers.setLastUpdateTimestamp(subtask)
+  dataLoadHelpers.setLastUpdateTimestamp(subtask, Date.now())
 
 subtasks = {
   storePrep

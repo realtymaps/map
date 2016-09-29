@@ -1,0 +1,86 @@
+#!/usr/bin/env coffee
+
+###
+Simple script cartodb import via our service upload by fipsCode
+
+options:
+--fipsCode - single or multiple fipsCodes
+###
+Promise = require 'bluebird'
+argv = require('yargs').argv
+# rewire = require('rewire')
+Spinner = require('cli-spinner').Spinner
+cartodb = require '../../backend/services/service.cartodb'
+debug = require('debug')('cartodb:rmaps:import')
+tables = require '../../backend/config/tables'
+_ = require 'lodash'
+# console.log(cartodb)
+
+makeSpinner = () ->
+  spinner = new Spinner('running.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+  spinner
+
+if argv.filename
+  return cartodb.uploadFile(argv.filename)
+
+if !argv.fipsCode && !argv.useQueue
+  console.error('fipsCode required')
+  process.exit(1)
+
+
+debug argv.fipsCode
+debug typeof(argv.fipsCode)
+
+fipsCodesPromise = if !argv.useQueue
+  Promise.resolve argv.fipsCode.toString().split(',')
+else
+  tables.cartodb.syncQueue()
+  .select('fips_code')
+  .then (results) ->
+    _.pluck results, 'fips_code'
+
+spin = makeSpinner()
+
+concurrency = argv.concurrency || 3
+concurrent = {}
+
+run = (code) ->
+  if Object.keys(concurrent).length >= concurrency
+    return Promise.delay(500).then ->
+      run(code)
+
+  promise = cartodb.upload(code)
+  .then (tableNames) ->
+    debug("fipsCode: #{code} completed")
+    if argv.synchronize?
+      cartodb.syncDequeue({tableNames, fipsCode: code})
+
+  concurrent[code] = promise
+  concurrent[code].finally ->
+    delete concurrent[code]
+
+  promise
+
+if argv.syncOnly?
+  run = (fipsCode) ->
+    tableNames = argv.tableNames.split(",")
+    cartodb.syncDequeue {tableNames, fipsCode}
+
+fipsCodesPromise.then (fipsCodes) ->
+  debug(fipsCodes)
+  Promise.all Promise.map fipsCodes, run
+.then () ->
+  debug("@@@@ TOTAL SUCCESS @@@@")
+.finally ->
+  spin.stop()
+.then ->
+  process.exit(0)
+.catch  (error) ->
+  debug("@@@@ ERROR @@@@")
+  console.error(error)
+  if(error)
+    debug("@@@@ STACK @@@@")
+    debug(error.stack)
+  process.exit(2)

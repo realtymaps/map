@@ -28,6 +28,8 @@ rmapsLeafletHelpers) ->
 
   $scope.activeView = 'areas'
 
+  $scope.drawController = null
+
   $scope.centerOn = (model) ->
     #zoom to bounds on shapes
     #handle polygons, circles, and points
@@ -82,6 +84,12 @@ rmapsLeafletHelpers) ->
         $scope.$emit rmapsEventConstants.areas.removeDrawItem, model
         $scope.$emit rmapsEventConstants.map.mainMap.redraw, redraw
       , 100
+
+  $scope.onMouseOver = (model) ->
+    $scope.$emit rmapsEventConstants.areas.mouseOver, model
+
+  $scope.onMouseLeave = (model) ->
+    $scope.$emit rmapsEventConstants.areas.mouseLeave, model
 
   $scope.sendMail = (model) ->
     $scope.newMail = {}

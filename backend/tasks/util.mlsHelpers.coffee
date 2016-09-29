@@ -293,6 +293,11 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
             taskLogger.debug analyzeValue.getSimpleDetails(err)
             throw err
   .catch errorHandlingUtils.isUnhandled, (error) ->
+    rootError = errorHandlingUtils.getRootCause(error)
+    if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
+      # assume the listing has been deleted / we no longer have access
+      taskLogger.debug () -> "Listing no longer accessible, skipping: #{mlsName}/#{data_source_uuid}"
+      return
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsName}/#{data_source_uuid}")
   .catch (error) ->
     errorDetails ?= analyzeValue.getSimpleDetails(error)
@@ -308,9 +313,11 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
           data_source_uuid: data_source_uuid
           batch_id: subtask.batch_id
         entityObj:
+          photo_id: photo_id
           error: errorDetails
         conflictOverrideObj:
           error: undefined
+          photo_id: undefined
   .then () ->
     {successCtr, skipsCtr, errorsCtr}
 

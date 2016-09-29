@@ -7,6 +7,10 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
   _fireLocationChange = (position) ->
     $rootScope.$emit rmapsEventConstants.map.locationChange, position
 
+  ### MapToggles:
+    TODO: We should consider changing the name of this to something revolving around user state as almost all UI switch like
+    settings are saved here.
+  ###
   class MapToggles
     @currentToggles: null
 
@@ -26,6 +30,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @showNotes = false
       @showMail = false
       @propertiesInShapes = false
+      @isTackedAreasDrawBar = false
 
       if json?
         _.extend @, json
@@ -110,6 +115,9 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
 
       @togglePreviousLocation = ->
         _fireLocationChange()
+
+      @toggleTackDrawBar = () ->
+        @isTackedAreasDrawBar = !@isTackedAreasDrawBar
 
       @setLocation = _fireLocationChange
 

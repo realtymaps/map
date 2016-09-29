@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('map:parcels')
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
+sqlColumns = require './../utils/util.sql.columns.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 _ = require 'lodash'
 tables = require '../config/tables'
@@ -20,7 +21,8 @@ transforms =
       center: validation.validators.object()
 
 getBaseParcelQueryByBounds = (bounds, limit, center) ->
-  query = sqlHelpers.select(tables.finalized.parcel(), 'parcel', false)
+  parcel = tables.finalized.parcel()
+  query = parcel.select(parcel.raw("distinct on (geometry_center) #{sqlColumns.basicColumns.parcel}"))
   sqlHelpers.whereInBounds(query, 'geometry_raw', bounds)
   if center?
     query.select(query.raw("st_contains(geometry_raw, st_setsrid(st_makepoint(?,?), #{coordSys.UTM})) as map_center", [center.lng, center.lat]))
