@@ -24,95 +24,13 @@ internals = require './task.digimaps.internals'
 {
   NUM_ROWS_TO_PAGINATE
   DELAY_MILLISECONDS
-  LAST_PROCESS_DATE
+  LAST_COMPLETED_DATE
   NO_NEW_DATA_FOUND
   QUEUED_FILES
   DIGIMAPS_PROCESS_INFO
 } = internals
 
 
-LAST_COMPLETED_DATE = 'last completed date'
-NO_NEW_DATA_FOUND = 'no new data found'
-QUEUED_FILES = 'queued files'
-DIGIMAPS_PROCESS_INFO = 'digimaps process info'
-
-
-_getFileDate = (filename) ->
-  return filename.split('/')[2].split('_')[2]
-
-_getFileFips = (filename) ->
-  return filename.split('/')[4].slice(8,13)
-
-_filterImports = (subtask, imports, refreshThreshold) ->
-  importsLogger.debug () -> imports
-
-  folderObjs = imports.map (l) ->
-    name: l
-    date: _getFileDate(l)
-
-  if refreshThreshold? && !subtask.data.skipRefreshThreshold
-    logger.debug '@@@ refreshThreshold @@@'
-    logger.debug refreshThreshold
-
-    folderObjs = _.filter folderObjs, (o) ->
-      o.date > refreshThreshold
-
-    if subtask.data.fipsCodeLimit?
-      logger.debug () -> "@@@@@@@@@@@@@ fipsCodeLimit: #{subtask.data.fipsCodeLimit}"
-      folderObjs = _.take folderObjs, subtask.data.fipsCodeLimit
-
-    fileNames = folderObjs.map (f) -> f.name
-    fileNames.sort()
-    fipsCodes = fileNames.map (name) -> _getFileFips(name)
-
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug fipsCodes
-
-    if subtask.data.fipsCodes? && _.isArray subtask.data.fipsCodes
-      fileNames = _.filter fileNames, (name) ->
-        _.any subtask.data.fipsCodes, (code) ->
-          name.endsWith("_#{code}.zip")
-
-      fipsCodes = fileNames.map (name) -> _getFileFips(name)
-
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug fipsCodes
-
-    return fileNames
-
-_getLoadFile = (subtask, processInfo) -> Promise.try () ->
-  now = Date.now()
-
-  if processInfo[QUEUED_FILES].length > 0
-    return {
-      load:
-        fileName: processInfo[QUEUED_FILES][0]
-        startTime: now
-      processInfo
-    }
-  else
-    externalAccounts.getAccountInfo(subtask.task_name)
-    .then (creds) ->
-      parcelsFetch.defineImports({creds})
-    .then (imports) ->
-      _filterImports(subtask, imports, processInfo[LAST_COMPLETED_DATE])
-    .then (filteredImports) ->
-      if filteredImports.length == 0
-        processInfo[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
-        return {
-          load: null
-          processInfo
-        }
-      else
-        processInfo[QUEUED_FILES] = filteredImports
-        nextFile = filteredImports[0]
-        processInfo[LAST_COMPLETED_DATE] = _getFileDate(nextFile)
-        return {
-          load:
-            fileName: nextFile
-            startTime: now
-          processInfo
-        }
 
 loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)

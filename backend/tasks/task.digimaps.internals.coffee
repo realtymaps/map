@@ -9,7 +9,7 @@ moment = require 'moment'
 NUM_ROWS_TO_PAGINATE = 1000
 DELAY_MILLISECONDS = 250
 
-LAST_PROCESS_DATE = 'last process date'
+LAST_COMPLETED_DATE = 'last completed date'
 NO_NEW_DATA_FOUND = 'no new data found'
 QUEUED_FILES = 'queued files'
 DIGIMAPS_PROCESS_INFO = 'digimaps process info'
@@ -82,7 +82,7 @@ getLoadFile = (subtask, processInfo) -> Promise.try () ->
     .then (creds) ->
       parcelsFetch.defineImports({creds})
     .then (imports) ->
-      filterImports(subtask, imports, processInfo[LAST_PROCESS_DATE])
+      filterImports(subtask, imports, processInfo[LAST_COMPLETED_DATE])
     .then (filteredImports) ->
       if filteredImports.length == 0
         processInfo[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
@@ -93,7 +93,7 @@ getLoadFile = (subtask, processInfo) -> Promise.try () ->
       else
         processInfo[QUEUED_FILES] = filteredImports
         nextFile = filteredImports[0]
-        processInfo[LAST_PROCESS_DATE] = getFileDate(nextFile)
+        processInfo[LAST_COMPLETED_DATE] = getFileDate(nextFile)
         return {
           load:
             fileName: nextFile
@@ -108,7 +108,7 @@ module.exports = {
   getLoadFile
   NUM_ROWS_TO_PAGINATE
   DELAY_MILLISECONDS
-  LAST_PROCESS_DATE
+  LAST_COMPLETED_DATE
   NO_NEW_DATA_FOUND
   QUEUED_FILES
   DIGIMAPS_PROCESS_INFO
