@@ -324,6 +324,25 @@ upsertItem = ({dbFn, conflict, entity}) ->
   ).then (result) ->
     result.rows[0]
 
+#http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema
+tableExists = ({dbFn, schema, tableName}) ->
+  tableName ?= dbFn.tableName
+  schema ?= 'public'
+
+  template = """
+  SELECT EXISTS(
+    SELECT *
+    FROM information_schema.tables
+    WHERE
+      table_schema = :schema AND
+      table_name = :tableName
+  );"""
+
+  dbFn.raw(template,{schema, tableName})
+  .then ({rows}) ->
+    [{exists}] = rows
+    exists
+
 module.exports = {
   between
   ageOrDaysFromStartToNow
@@ -349,4 +368,5 @@ module.exports = {
   buildUpsertBindings
   upsert
   upsertItem
+  tableExists
 }

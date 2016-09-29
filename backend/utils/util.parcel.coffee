@@ -4,6 +4,8 @@ logger = require('../config/logger').spawn('util:parcel')
 dbs = require '../config/dbs'
 {DataValidationError} = require '../utils/util.validation'
 transforms = require '../utils/transforms/transform.parcel'
+require '../../common/extensions/lodash'
+errorUtils = require './errors/util.error.partiallyHandledError'
 
 
 _formatParcel = (feature) -> Promise.try ->
@@ -41,6 +43,12 @@ _formatParcel = (feature) -> Promise.try ->
   obj.geometry = feature.geometry
 
   transforms.validateAndTransform(obj)
+  .then (obj) ->
+    fine = logger.spawn('fine')
+    obj = _.cleanObject(obj)
+    logger.debug -> '@@@@ parcel transformed @@@@'
+    fine.debug -> obj
+    obj
 
 
 normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
@@ -82,20 +90,29 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
 
 
 prepRowForRawGeom = (row) ->
-  #NOTE: If we were to simplify our geometries across the board on import
-  # it should be done here , SIMPLIFY_TOL = .000002
-  if row.geometry.type == 'Point'
-    row.geometry_center_raw = dbs.get('normalized')
-      .raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
-    row.geometry_center = row.geometry
-    delete row.geometry
-  else  # 'Polygon'
-    row.geometry_raw = dbs.get('normalized')
-      .raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
-    row.geometry_center_raw = dbs.get('normalized')
-      .raw("st_centroid(ST_Multi(st_geomfromgeojson( ? )))", JSON.stringify(row.geometry))
-    row.geometry_center = dbs.get('normalized')
-      .raw("ST_AsGeoJSON(st_centroid(ST_Multi(st_geomfromgeojson( ? ))))::jsonb", JSON.stringify(row.geometry))
+  prepLogger = logger.spawn('prepRowForRawGeom')
+  try
+    #NOTE: If we were to simplify our geometries across the board on import
+    # it should be done here , SIMPLIFY_TOL = .000002
+    if !row.geometry?
+      prepLogger.debug "@@@@@ WHAT THE HECK? @@@@@"
+      prepLogger.debug -> row
+      return
+    if row.geometry?.type == 'Point'
+      row.geometry_center_raw = dbs.get('normalized')
+        .raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
+      row.geometry_center = row.geometry
+      delete row.geometry
+    else  # 'Polygon'
+      row.geometry_raw = dbs.get('normalized')
+        .raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
+      row.geometry_center_raw = dbs.get('normalized')
+        .raw("st_centroid(ST_Multi(st_geomfromgeojson( ? )))", JSON.stringify(row.geometry))
+      row.geometry_center = dbs.get('normalized')
+        .raw("ST_AsGeoJSON(st_centroid(ST_Multi(st_geomfromgeojson( ? ))))::jsonb", JSON.stringify(row.geometry))
+
+  catch error
+    throw new errorUtils.PartiallyHandledError error, 'util.parcels.prepRowForRawGeom failed'
 
 
 module.exports = {

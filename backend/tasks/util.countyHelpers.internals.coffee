@@ -3,7 +3,6 @@ Promise = require 'bluebird'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:countyHelpers:internals')
 tables = require '../config/tables'
-dataLoadHelpers = require './util.dataLoadHelpers'
 {HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
 moment = require 'moment'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -11,59 +10,78 @@ sqlHelpers = require '../utils/util.sql.helpers'
 
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   q = tables.normalized.tax(subid: subtask.data.normalSubid)
-  .select('*')
-  .where
-    rm_property_id: id
-    data_source_id: data_source_id || subtask.task_name
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('recording_date DESC NULLS LAST')
-  q
-  .then (taxEntries=[]) ->
-    if taxEntries.length == 0
-      return null  # sometimes this might cover up a real error, but there are semi-legitimate cases where this can happen
-    if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0].batch_id == subtask.batch_id
-      logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
-      # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
-      # of the given enqueue source, in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
-      # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
-      # care of it.
+
+  sqlHelpers.tableExists { dbFn: q }
+  .then (exists) ->
+    if !exists
       return null
-    return taxEntries
+
+    q.select('*')
+    .where
+      rm_property_id: id
+      data_source_id: data_source_id || subtask.task_name
+    .whereNull('deleted')
+    .orderBy('rm_property_id')
+    .orderBy('deleted')
+    .orderByRaw('recording_date DESC NULLS LAST')
+    q
+    .then (taxEntries=[]) ->
+      if taxEntries.length == 0
+        return null  # sometimes this might cover up a real error, but there are semi-legitimate cases where this can happen
+      if !forceFinalize && subtask.data.cause != 'tax' && taxEntries[0].batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from tax instead of: #{subtask.data.cause}"
+        # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
+        # of the given enqueue source, in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
+        # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
+        # care of it.
+        return null
+      return taxEntries
 
 
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
-  q= tables.normalized.deed(subid: subtask.data.normalSubid)
-  .select('*')
-  .where
-    rm_property_id: id
-    data_source_id: data_source_id || subtask.task_name
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('close_date DESC NULLS LAST')
-  q
-  .then (deedEntries=[]) ->
-    if !forceFinalize && subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
-      logger.debug "GTFO to allow finalize from deed instead of: #{subtask.data.cause}"
-      # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
+  q = tables.normalized.deed(subid: subtask.data.normalSubid)
+
+  sqlHelpers.tableExists { dbFn: q }
+  .then (exists) ->
+    if !exists
       return null
-    return deedEntries
+
+    q.select('*')
+    .where
+      rm_property_id: id
+      data_source_id: data_source_id || subtask.task_name
+    .whereNull('deleted')
+    .orderBy('rm_property_id')
+    .orderBy('deleted')
+    .orderByRaw('close_date DESC NULLS LAST')
+    q
+    .then (deedEntries=[]) ->
+      if !forceFinalize && subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+        logger.debug "GTFO to allow finalize from deed instead of: #{subtask.data.cause}"
+        # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
+        return null
+      return deedEntries
 
 
 finalizeDataMortgage = ({subtask, id, data_source_id}) ->
+
   q = tables.normalized.mortgage(subid: subtask.data.normalSubid)
-  .select('*')
-  .where
-    rm_property_id: id
-    data_source_id: data_source_id || subtask.task_name
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('close_date DESC NULLS LAST')
-  q.then (mortgageEntries) ->
-    return mortgageEntries
+
+  sqlHelpers.tableExists { dbFn: q }
+  .then (exists) ->
+    if !exists
+      return null
+
+    q.select('*')
+    .where
+      rm_property_id: id
+      data_source_id: data_source_id || subtask.task_name
+    .whereNull('deleted')
+    .orderBy('rm_property_id')
+    .orderBy('deleted')
+    .orderByRaw('close_date DESC NULLS LAST')
+    q.then (mortgageEntries) ->
+      return mortgageEntries
 
 
 _finalizeEntry = ({entries, subtask}) -> Promise.try ->

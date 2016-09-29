@@ -29,6 +29,7 @@ promise = Promise.try ->
     cartodb[argv.method]({
       fipsCode: argv.fipsCode
       tableName: argv.tableName
+      idxName: argv.idxName
       destinationTable: argv.destinationTable || argv.dest
     })
 

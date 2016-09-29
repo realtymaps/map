@@ -41,6 +41,11 @@ cartodbSqlFactory = (destTable = 'parcels') ->
       CREATE INDEX idx_:frmTable:_fips_code_id ON :frmTable: USING btree (fips_code);
       CREATE INDEX idx_:frmTable:_the_geom_fips_code_id ON :frmTable: USING gist (the_geom);
       """
+      drop_indexes: """
+      DROP INDEX idx_:idx_name:_rm_property_id;
+      DROP INDEX idx_:idx_name:_fips_code_id;
+      DROP INDEX idx_:idx_name:_the_geom_fips_code_id;
+      """
 
   _format = ({sql, fipsCode, tableName}) ->
     dbs.get('main').raw(sql, {
@@ -51,13 +56,15 @@ cartodbSqlFactory = (destTable = 'parcels') ->
 
   obj = {}
 
-  for method in ['update', 'insert', 'delete', 'drop', 'indexes']
+  for method in Object.keys(_sql)
     do (method) ->
-      obj[method] = ({fipsCode = '', tableName} = {}) ->
+      obj[method] = ({fipsCode = '', tableName, idxName} = {}) ->
         fipsCode = fipsCode.toString() + ''
-        if method != 'indexes'
+        if method != 'indexes' && method != 'drop_indexes'
           return _format {sql: _sql[method], fipsCode, tableName}
-        _sql[method].replace(/:frmTable:/g, tableName)
+        _sql[method]
+        .replace(/:frmTable:/g, tableName)
+        .replace(/:idx_name:/g, idxName || tableName)
   obj
 
 module.exports = cartodbSqlFactory

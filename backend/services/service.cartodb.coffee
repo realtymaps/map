@@ -111,6 +111,10 @@ indexes = ({tableName, destinationTable}) ->
   cartodbSql = cartodbSqlFact(destinationTable)
   internals.execSql(cartodbSql.indexes({tableName}))
 
+drop_indexes = ({tableName, destinationTable, idxName}) ->
+  cartodbSql = cartodbSqlFact(destinationTable)
+  internals.execSql(cartodbSql.drop_indexes({tableName, idxName}))
+
 
 sql = (sqlStr) ->
   internals.execSql(sqlStr)
@@ -148,6 +152,7 @@ module.exports = {
   toPsqlCSV
   drop
   indexes
+  drop_indexes
   sql
   getByFipsCode
   splitCommands: internals.splitCommands
