@@ -21,7 +21,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsMapIds, rmapsPrincipalService, rmapsProfilesService) ->
+  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsCurrentMapService, rmapsPrincipalService, rmapsProfilesService) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -91,17 +91,13 @@ app.provider 'rmapsPageService', () ->
         params.project_id ?= rmapsProfilesService.currentProfile?.project_id
         if params.project_id?
 
-          # not useful while we do the $window.location page refresh below
-          # ## Clear the current map if any
-          # rmapsMapIds.incrementMainMap()
-
           $stickyState.reset('map')
           rmapsProfilesService.updateCurrentProfileByProjectId params.project_id
           .then ->
             # sledgehammer approach
-            url = "/map?project_id=#{params.project_id}"
-            $window.location.href = url
-            #$state.go 'map', params, { reload: true }
+            # url = "/map?project_id=#{params.project_id}"
+            # $window.location.href = url
+            $state.go 'map', params, { reload: true }
 
         else
           $state.go 'main'

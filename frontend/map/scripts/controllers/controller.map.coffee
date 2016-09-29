@@ -7,7 +7,7 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
   Our Main Map Controller, logic
   is in a specific factory where Map is a GoogleMap
 ###
-map = undefined
+#map = undefined
 
 
 module.exports = app
@@ -28,18 +28,15 @@ app.controller 'rmapsMapCtrl', (
   rmapsLeafletHelpers,
   rmapsMainOptions,
   rmapsMapFactory,
-  rmapsMapIds,
   rmapsParcelEnums,
   rmapsProfilesService
   rmapsProjectsService,
   rmapsPropertiesService,
   rmapsSearchboxService,
   rmapsClientEntryService,
+  rmapsCurrentMapService,
   rmapsBounds
 ) ->
-
-  $scope.mapId = mapId = rmapsMapIds.mainMap()
-
   $log = $log.spawn("map:controller")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
@@ -48,13 +45,13 @@ app.controller 'rmapsMapCtrl', (
     $scope.pageClass = pageClass
   #end inits
 
-  rmapsSearchboxService(mapId)
 
   #
   # Create the Map Factory
   #
-  if !map? or !$scope.map?
-    map = new rmapsMapFactory($scope)
+  map = new rmapsMapFactory($scope)
+  $scope.mapId = mapId = map.mapId
+  rmapsSearchboxService(mapId)
 
   #
   # Utility functions to load a new Project and optional Property from the Map based selection tool

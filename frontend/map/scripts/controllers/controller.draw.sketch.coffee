@@ -8,13 +8,13 @@ app.controller "rmapsDrawSketchCtrl", (
   rmapsEventConstants,
   rmapsDrawnUtilsService
   rmapsMapDrawHandlesFactory,
-  rmapsMapIds
   rmapsDrawCtrlFactory
   rmapsFeatureGroupUtil
+  rmapsCurrentMapService
 ) ->
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
-  mapId = rmapsMapIds.mainMap()
+  mapId = rmapsCurrentMapService.mainMapId()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->

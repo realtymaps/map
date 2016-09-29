@@ -10,11 +10,30 @@ _emptyGeoJsonData =
   features: []
 
 app.service 'rmapsCurrentMapService', () ->
+  # This service keeps track of active map instance and id reference.
+  # A new id and instance are needed each time a new one is created since it takes time for
+  #   a stale reference to $destroy while we're actively using the active instance
+
+  _mainMapBase = 'mainMap'
+  _mainMapIndex = 0
   _currentMainMap = null
+  _getId = () ->
+    return _mainMapBase + _mainMapIndex
+  _incr = () ->
+    _mainMapIndex += 1
+
+
   set: (map) ->
     _currentMainMap = map
   get: () ->
     _currentMainMap
+
+  makeNewMapId: () ->
+    _incr()
+    return _getId()
+
+  mainMapId: () ->
+    return _getId()
 
 ###
   Our Main Map Implementation
@@ -35,7 +54,6 @@ app.factory 'rmapsMapFactory',
     rmapsLeafletObjectFetcherFactory,
     rmapsMainOptions,
     rmapsEventsHandlerService,
-    rmapsMapIds,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
     rmapsRenderingService,
@@ -67,10 +85,13 @@ app.factory 'rmapsMapFactory',
           options: limits.options
           redrawDebounceMilliSeconds: limits.redrawDebounceMilliSeconds
           mapPath: 'map'
-          mapId: rmapsMapIds.mainMap()
+          # need a new mapId instance and reference since it takes time for a former mapId to $destroy,
+          # and this ensures we're always referencing the correct map instance and reference
+          mapId: rmapsCurrentMapService.makeNewMapId()
         }
 
         rmapsCurrentMapService.set(@)
+        @undrawn = true # this flag helps ensure we don't get cached results the first time we `draw()`
         @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
 
@@ -85,24 +106,38 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
-          @setLocation(position)
-
         #
         # Property Button events
         #
-        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
+
+        @scope.$on '$destroy', () =>
+          $log.debug "Map instance #{@mapId} has been $destroyed."
+
+        locationHandler = $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
+          @setLocation(position)
+        @scope.$on '$destroy', locationHandler
+
+        centerOnPropHandler = $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
           @zoomTo result, false
+        @scope.$on '$destroy', centerOnPropHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
+        zoomHandler = $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
           @zoomTo result, doChangeZoom
+        @scope.$on '$destroy', zoomHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
+        boundsHandler = $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
           @fitBounds bounds, options
+        @scope.$on '$destroy', boundsHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
+        pinsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
+        @scope.$on '$destroy', pinsHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
+        favsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
+        @scope.$on '$destroy', favsHandler
+
+        centerHandler = $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
+          @setLocation location
+        @scope.$on '$destroy', centerHandler
 
         #
         # End Property Button Events
@@ -160,9 +195,6 @@ app.factory 'rmapsMapFactory',
 
 
         @singleClickCtrForDouble = 0
-
-        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
-          @setLocation location
 
         @layerFormatter = rmapsLayerFormattersService
 
@@ -272,6 +304,7 @@ app.factory 'rmapsMapFactory',
             cache
           }
 
+
       redraw: (cache = true) ->
         promise = null
         #consider renaming parcels to addresses as that is all they are used for now
@@ -340,7 +373,12 @@ app.factory 'rmapsMapFactory',
         verboseLogger.debug 'encoded hash'
         @scope.refreshState()
         verboseLogger.debug 'refreshState'
-        ret = @redraw()
+
+        if @undrawn # flip flag and redraw with no cache if this map instance is "undrawn" (draw hasn't been called yet)
+          @undrawn = false
+          ret = @redraw(false)
+        else
+          ret = @redraw()
         verboseLogger.debug 'redraw'
         ret
 
@@ -398,9 +436,6 @@ app.factory 'rmapsMapFactory',
         resultCenter.zoom = 20 if @scope.satMap?
 
       pinPropertyEventHandler: (event, eventData) =>
-        # GTFO if the instance of this handler is NOT the active mainMap
-        return if rmapsMapIds.mainMap() != @mapId
-
         result = eventData.property
         if result
           wasPinned = result?.savedDetails?.isPinned
@@ -426,9 +461,6 @@ app.factory 'rmapsMapFactory',
         @redraw(false)
 
       favoritePropertyEventHandler: (event, eventData) =>
-        # GTFO if the instance of this handler is NOT the active mainMap
-        return if rmapsMapIds.mainMap() != @mapId
-
         result = eventData.property
         if result
           wasFavorite = result?.savedDetails?.isFavorite

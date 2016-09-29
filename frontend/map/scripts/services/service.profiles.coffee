@@ -10,12 +10,14 @@ rmapsHttpTempCache
 ) ->
 
   setCurrent: (profile) ->
-    url = backendRoutes.userSession.currentProfile
 
-    rmapsHttpTempCache {
-      url
-      promise: $http.post(url, {currentProfileId: profile.id}, {cache: true})
-    }
+    url = backendRoutes.userSession.currentProfile
+    $http.post(url, {currentProfileId: profile.id}, {cache: false})
+
+    # rmapsHttpTempCache {
+    #   url
+    #   promise: $http.post(url, {currentProfileId: profile.id}, {cache: true})
+    # }
 
 app.service 'rmapsProfilesService', (
   $http
@@ -55,7 +57,7 @@ app.service 'rmapsProfilesService', (
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
       service.currentProfile = profile
-      rmapsPrincipalService.setCurrentProfile profile, opts
+      rmapsPrincipalService.setCurrentProfile profile
 
   # IMPORTANT we need to unset the current profile upon logout
   # otherwise upon login we would try to reuse the existing / dead profile
