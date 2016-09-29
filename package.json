@@ -112,7 +112,6 @@
     "gulp-plumber": "1.0.X",
     "gulp-rename": "^1.2.2",
     "gulp-rework": "1.0.X",
-    "gulp-shell": "git://github.com/nmccready/gulp-shell.git#433319afa4de1e3f044fbfe34bc1f298edf1af5a",
     "gulp-size": "1.2.X",
     "gulp-sourcemaps": "1.6.X",
     "gulp-stylus": "2.X.X",

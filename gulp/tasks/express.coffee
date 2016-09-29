@@ -1,9 +1,9 @@
 gulp = require 'gulp'
-shell = require('gulp-shell')
 log = require('gulp-util').log
 config = require '../../backend/config/config'
 coffeelint = require 'gulp-coffeelint'
 argv = require('yargs').argv
+spawn = require('child_process').spawn
 
 run_express = ({script, ext, watch, delay, verbose, signal} = {}) ->
   script ?= 'backend/server.coffee'
@@ -37,8 +37,7 @@ run_express = ({script, ext, watch, delay, verbose, signal} = {}) ->
 
   log "Running #{cmd}"
 
-  shell.task([cmd], continue:true)
-
+  spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit'})
 
 gulp.task 'lint', () ->
   gulp.src [
@@ -49,4 +48,8 @@ gulp.task 'lint', () ->
   .pipe coffeelint()
   .pipe coffeelint.reporter()
 
-gulp.task 'express', gulp.parallel 'lint', run_express()
+gulp.task 'express', gulp.parallel 'lint', (done) ->
+  run_express().on 'close', (code) ->
+    log('nodemon process exited with code ' + code)
+    done(code)
+  done()
