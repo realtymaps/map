@@ -37,7 +37,7 @@ run_express = ({script, ext, watch, delay, verbose, signal} = {}) ->
 
   log "Running #{cmd}"
 
-  spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit'})
+  spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit', env: process.env})
 
 gulp.task 'lint', () ->
   gulp.src [
@@ -49,7 +49,9 @@ gulp.task 'lint', () ->
   .pipe coffeelint.reporter()
 
 gulp.task 'express', gulp.parallel 'lint', (done) ->
-  run_express().on 'close', (code) ->
+  run_express()
+  .once 'close', (code) ->
     log('nodemon process exited with code ' + code)
     done(code)
+  .once 'error', done
   done()
