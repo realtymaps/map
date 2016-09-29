@@ -212,6 +212,9 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask)
   .then (rows) ->
     Promise.each rows, (row) ->
+      # TODO: remove when we turn on all FIPS codes
+      if row['FIPS Code'] != '12021' && row['FIPS Code'] != '12099'
+        return
 
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh

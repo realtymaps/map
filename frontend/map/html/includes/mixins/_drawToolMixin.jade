@@ -1,13 +1,13 @@
-mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow)
+mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow, tackFn, tackedBool)
   //.desktop-only TODO (wont show)
   //hint if you want only drawings to show sometimes use ng-if (will kill controller)
   .draw-tools.container(ng-show="#{toggleBoolean}")&attributes(attributes)
-    .row
+    .row(ng-controller="#{ctrl}")
       .col.col-md-3.col-sm-3.col-xs-3
         h4 #{h4}
       
       .col.col-md-6.col-sm-6.col-xs-3
-        .tools(ng-controller="#{ctrl}")
+        .tools()
           if directiveNgShow
             div(ng-if="draw.ready")
               div.rmaps-leaflet-draw(
@@ -26,6 +26,9 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
                 events="draw.leafletDrawEvents"
                 enabled="draw.enabled")
           
-      .col.col-md-3.col-sm-3.col-xs-3
-        button.btn.btn-primary.close-btn.pull-right(
-          ng-click="#{toggleFn}") Close
+      .col.col-md-3.col-sm-3.col-xs-3.last-col
+        span.pull-right(ng-click="#{toggleFn}")
+          i.fa.fa-lg.fa-close
+        if tackFn
+          span.pull-right(ng-click="#{tackFn}" ng-class="#{tackedBool} ? 'active': ''")
+            i.fa.fa-lg.fa-thumb-tack

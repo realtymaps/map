@@ -1,0 +1,48 @@
+#!/usr/bin/env coffee
+
+###
+Simple script cartodb import via our service upload by fipsCode
+
+options:
+--fipsCode - single or multiple fipsCodes
+###
+Promise = require 'bluebird'
+argv = require('yargs').argv
+Spinner = require('cli-spinner').Spinner
+cartodb = require '../../backend/services/service.cartodb'
+debug = require('debug')('cartodb:rmaps:parcelToGeo')
+
+makeSpinner = () ->
+  spinner = new Spinner('running.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+  spinner
+
+spin = makeSpinner()
+
+promise = Promise.try ->
+  if argv.method == 'sql'
+    if !argv.sql
+      throw new Error('argv.sql required for sql method!')
+    cartodb.sql(argv.sql)
+  else
+    cartodb[argv.method]({
+      fipsCode: argv.fipsCode
+      tableName: argv.tableName
+      destinationTable: argv.destinationTable || argv.dest
+    })
+
+promise
+.then (result) ->
+  debug(result)
+  debug("@@@@ TOTAL SUCCESS @@@@")
+  spin.stop()
+  process.exit(0)
+.catch  (error) ->
+  spin.stop()
+  debug("@@@@ ERROR @@@@")
+  console.error(error)
+  if(error)
+    debug("@@@@ STACK @@@@")
+    debug(error.stack)
+  process.exit(2)

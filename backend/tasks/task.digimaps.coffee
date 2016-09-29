@@ -1,7 +1,6 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 moment = require 'moment'
-path = require 'path'
 # cartoDbSvc = require '../services/service.cartodb'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
@@ -11,7 +10,6 @@ parcelsFetch = require '../services/service.parcels.fetcher.digimaps'
 parcelHelpers = require './util.parcelHelpers'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger.coffee').spawn('task:digimaps')
-importsLogger = require('../config/logger.coffee').spawn('task:digimaps:imports')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
@@ -20,10 +18,18 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 keystore = require '../services/service.keystore'
 dbs = require '../config/dbs'
+sqlHelpers = require '../utils/util.sql.helpers'
+internals = require './task.digimaps.internals'
 
+{
+  NUM_ROWS_TO_PAGINATE
+  DELAY_MILLISECONDS
+  LAST_PROCESS_DATE
+  NO_NEW_DATA_FOUND
+  QUEUED_FILES
+  DIGIMAPS_PROCESS_INFO
+} = internals
 
-NUM_ROWS_TO_PAGINATE = 1000
-DELAY_MILLISECONDS = 250
 
 LAST_COMPLETED_DATE = 'last completed date'
 NO_NEW_DATA_FOUND = 'no new data found'
@@ -117,7 +123,7 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
   .then (processInfo) ->
-    _getLoadFile(subtask, processInfo)
+    internals.getLoadFile(subtask, processInfo)
   .then (loadInfo) ->
     dbs.transaction (transaction) ->
       keystore.setValuesMap(loadInfo.processInfo, {namespace: DIGIMAPS_PROCESS_INFO, transaction})
@@ -156,7 +162,7 @@ loadRawData = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
   {fileName} = subtask.data
-  fipsCode = _getFileFips(fileName)
+  fipsCode = internals.getFileFips(fileName)
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
 
   subtask.data.rawTableSuffix = fipsCode
@@ -309,13 +315,7 @@ finalizeData = (subtask) ->
 
   Promise.each subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id, delay ? DELAY_MILLISECONDS)
-  # .then ->
-  #   jobQueue.queueSubsequentSubtask {
-  #     subtask,
-  #     laterSubtaskName: 'syncCartoDb'
-  #     manualData: subtask.data
-  #     replace: true
-  #   }
+
 
 recordChangeCounts = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
@@ -341,8 +341,22 @@ cleanup = (subtask) ->
     defaults[QUEUED_FILES] = []
     keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
     .then (processInfo) ->
-      processInfo[QUEUED_FILES].shift()
+      fips_code = internals.getFileFips(processInfo[QUEUED_FILES].shift())
       keystore.setValuesMap(processInfo, namespace: DIGIMAPS_PROCESS_INFO)
+      .then () ->
+        logger.debug "cartodb sync enqueue fips_code: #{fips_code}"
+        sqlHelpers.upsertItem
+          dbFn: tables.cartodb.syncQueue
+          conflict: 'id'
+          entity:
+            batch_id: subtask.batch_id
+            fips_code: fips_code
+        # should we enqueue the cartodb subtask or not?
+        # pro - it gets kicked as soon as it has something
+        # neg - cartodb updates should maybe be on a different schedule
+        # Alternatives:
+        # 1. We could not use a table queue and just manually kick cartodb from here
+        # 2. We could use the keystore like we are doing here to queue up an json array in the keystore
 
 
 ready = () ->

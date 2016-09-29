@@ -3,7 +3,6 @@ DataValidationError = require '../errors/util.error.dataValidation'
 dbs = require '../../config/dbs'
 require '../../../common/extensions/strings'
 tables = require '../../config/tables'
-dbs = require '../../config/dbs'
 memoize = require 'memoizee'
 usStates = require '../../../common/utils/util.usStates'
 

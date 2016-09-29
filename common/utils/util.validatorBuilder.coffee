@@ -155,8 +155,15 @@ _rules =
           @input.half? && @input.full? || @input.total?
 
       acres:
-        alias: 'Acres'
-        type: name: 'float'
+        alias: 'Lot Area'
+        type:
+          name: 'lotArea'
+          hasDecimal: true
+        input: {}
+        valid: () ->
+          @input.acres? || @input.sqft?
+        config:
+          nullZero: true
 
       sqft_finished:
         alias: 'Finished Sq Ft'
@@ -278,8 +285,15 @@ _rules =
           @input.half? && @input.full? || @input.total?
 
       acres:
-        alias: 'Acres'
-        type: name: 'float'
+        alias: 'Lot Area'
+        type:
+          name: 'lotArea'
+          hasDecimal: true
+        input: {}
+        valid: () ->
+          @input.acres? || @input.sqft?
+        config:
+          nullZero: true
 
       sqft_finished:
         alias: 'Finished Sq Ft'
@@ -297,6 +311,14 @@ _rules =
 
       legal_unit_number:
         alias: 'Legal Unit Number'
+
+      assessed_value:
+        alias: 'Assessed Value'
+        type:
+          name: 'currency'
+          hasDecimal: true
+        config:
+          nullZero: true
 
     deed:
       legal_unit_number:

@@ -142,6 +142,7 @@ app.factory 'rmapsMapFactory',
             $scope.$on eventName, (event, cache) =>
               if !_.isBoolean cache
                 cache = false
+              $log.debug "redrawing, got", eventName
               @redraw(cache)
 
 
@@ -273,13 +274,25 @@ app.factory 'rmapsMapFactory',
           }
 
       redraw: (cache = true) ->
+        verboseLogger.debug 'redraw() cache=', cache
         promise = null
+        centerParcel = null
         #consider renaming parcels to addresses as that is all they are used for now
         if @showClientSideParcels()
           verboseLogger.debug 'isAddressParcel'
           promise = rmapsPropertiesService.getParcelBase(@hash, @mapState, cache)
           .then (data) =>
             return unless data?
+
+            # note: multiple calls to redraw may occur, the correct one happens to have cache = true
+            #   this feels like a hack to me, how can it be avoided?
+            if cache
+              for parcel in data.features
+                if parcel.map_center && @showCenter
+                  $log.debug "center set!!!", parcel.rm_property_id
+                  centerParcel = parcel
+                  parcel.isHighlighted = true
+
             #_parcelBase is a naming hack to have parcelBase render before individual filterPolys (allows them to be on top)
             @scope.map.geojson._parcelBase =
               data: data
@@ -310,17 +323,27 @@ app.factory 'rmapsMapFactory',
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
+
+            # note: multiple calls to redraw may occur, this ensures the center parcel is styled correctly
+            if centerParcel && @showCenter
+              $timeout =>
+                $log.debug "center force!!!", centerParcel.rm_property_id
+                lObject = @leafletDataMainMap.get(centerParcel.rm_property_id, '_parcelBase')?.lObject
+                lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(centerParcel))
+                @showCenter = false
+              , 250
+
           @scope.$evalAsync =>
             $log.debug 'map.coffee - redraw calling results reset()'
             @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>
-        verboseLogger.debug 'draw'
+        verboseLogger.debug 'draw()'
         return if !@scope.map.isReady
         verboseLogger.debug 'isReady'
 
-        $log.debug 'map.coffee - redraw calling results reset()'
+        $log.debug 'map.coffee - draw calling results reset()'
         @scope?.formatters?.results?.reset()
 
         #not getting bounds from scope as this is the most up to date and skips timing issues
@@ -341,7 +364,6 @@ app.factory 'rmapsMapFactory',
         @scope.refreshState()
         verboseLogger.debug 'refreshState'
         ret = @redraw()
-        verboseLogger.debug 'redraw'
         ret
 
       getMapStateObj: =>
@@ -437,18 +459,20 @@ app.factory 'rmapsMapFactory',
           lObject?.setIcon(new L.divIcon(result.icon))
 
       setLocation: (position) =>
-        {isMyLocation} = position
+        $log.debug 'setLocation()', position
+        {isMyLocation, coords} = position
 
-        getZoom = () =>
-          position.zoom = position.zoom ? rmapsZoomLevelService.getZoom(@scope) ? 14
+        getZoom = (pos) =>
+          pos.zoom = position.zoom ? rmapsZoomLevelService.getZoom(@scope) ? 14
 
         if position
-          position = position.coords
-          getZoom()
-          positionCenter = NgLeafletCenter position
+          getZoom(coords)
+          positionCenter = NgLeafletCenter coords
 
-          if @scope.map.center.isEqual(positionCenter)
+          if @scope.map.center.isEqual(positionCenter) && @scope.map.center.zoom == position.zoom
             return
+
+          @showCenter = position.showCenter
         else
           position = @scope.previousCenter
 
@@ -456,7 +480,7 @@ app.factory 'rmapsMapFactory',
           @scope.map.markers.currentLocation.myLocation = rmapsLayerFormattersService.setCurrentLocationMarkerOptions(position)
           @redraw()
 
-        getZoom()
+        getZoom(position)
 
         positionCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = positionCenter
