@@ -8,12 +8,11 @@ tables = require '../config/tables'
 dbs = require '../config/dbs'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
-{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 validation = require '../utils/util.validation'
 internals = require './util.parcelHelpers.internals'
-transforms = require '../utils/transforms/transform.parcel'
 
 
 saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->

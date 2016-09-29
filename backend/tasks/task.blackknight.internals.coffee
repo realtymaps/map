@@ -126,13 +126,17 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 
     else if (classified = _isLoad(fileName))
       fips = fileName.slice(0, 5)
-      date = fileName.slice(-15, -7)
-      _.merge fileInfo,
-        fileType: LOAD
-        rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{date}"
-        normalSubid: fips
-        indicateDeletes: (config.action == REFRESH)
-        deletes: dataLoadHelpers.DELETE.INDICATED
+      # TODO: remove when we turn on all FIPS codes
+      if fips != '12021' && fips != '12099'
+        classified = false
+      else
+        date = fileName.slice(-15, -7)
+        _.merge fileInfo,
+          fileType: LOAD
+          rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{date}"
+          normalSubid: fips
+          indicateDeletes: (config.action == REFRESH)
+          deletes: dataLoadHelpers.DELETE.INDICATED
 
     if classified
       # apply to appropriate list

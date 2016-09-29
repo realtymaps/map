@@ -262,7 +262,7 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
     templateStr = """
      INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
       VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
-      ON CONFLICT (#{id.cols.placeholder})
+      ON CONFLICT (#{conflictEntity.cols.placeholder || id.cols.placeholder})
       DO UPDATE SET (#{conflictEntity.cols.placeholder}) = (#{conflictEntity.vals.placeholder})
       RETURNING #{id.cols.placeholder}
     """
@@ -291,6 +291,39 @@ upsert = ({idObj, entityObj, conflictOverrideObj, dbFn, transaction}) ->
   upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
   dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
 
+#https://gist.github.com/plurch/118721c2216f77640232
+#https://github.com/tgriesser/knex/issues/1121
+###
+let dnFn = tables.config.keyStore;
+let conflict = 'login';
+let entity = {
+  login: 'plurch',
+  user_id: 3332519
+};
+
+let resultPromise = upsertItem({dbFn, conflict, entity});
+
+###
+upsertItem = ({dbFn, conflict, entity}) ->
+  knex = dbFn
+  tableName =  dbFn.tableName
+
+  exclusions = Object.keys(entity).filter((c) ->
+    c != conflict
+  ).map((c) ->
+    knex.raw('?? = EXCLUDED.??', [
+      c
+      c
+    ]).toString()
+  ).join(',\n')
+  insertString = knex(tableName).insert(entity).toString()
+  conflictString = knex.raw(' ON CONFLICT (??) DO UPDATE SET ' + exclusions +  " RETURNING #{conflict}; ", conflict).toString()
+  query = (insertString + conflictString).replace(/\?/g, '\\?')
+  knex.raw(query).on('query', (data) ->
+    console.log 'Knex: ' + data.sql
+  ).then (result) ->
+    result.rows[0]
+
 module.exports = {
   between
   ageOrDaysFromStartToNow
@@ -315,4 +348,5 @@ module.exports = {
   buildQuery
   buildUpsertBindings
   upsert
+  upsertItem
 }

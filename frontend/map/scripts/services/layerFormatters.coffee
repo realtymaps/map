@@ -70,12 +70,21 @@ app.service 'rmapsLayerFormattersService', (
 
       colors = if feature?.isMousedOver then hoverColors else normalColors
 
-      color = colors[status] || colors['default']
-      fillColor = colors[savedStatus || status] || colors['default']
+      if feature.isHighlighted
+        $log.debug 'center!!!', feature.rm_property_id
+        color = 'orange'
+        fillColor = 'orange'
+      else
+        if layerName == '_parcelBase'
+          color = _parcelBaseStyle.color
+        else
+          color = colors[status] || colors['default']
+
+        fillColor ?= colors[savedStatus || status] || colors['default']
 
       weight: if layerName == '_parcelBase' then _parcelBaseStyle.weight else 4
       opacity: 1
-      color: if layerName == '_parcelBase' then _parcelBaseStyle.color else color
+      color: color
       fillColor: fillColor
       colorOpacity: 1
       fillOpacity: .75

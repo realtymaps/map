@@ -25,7 +25,7 @@ describe 'service.parcel.fetcher.digimaps', ->
     svc.__set__ '_ftpClientFactory', () => Promise.resolve @mockFtpClient
 
   it 'getZipFileStream', (done) ->
-    @subject.getZipFileStream('/ZIPS/Parcels_123.zip')
+    @subject.getZipFileStream('/ZIPS/Parcels_123.zip', creds:'crap')
     .then (stream) ->
       str = ''
       stream.on 'data', (buf)->

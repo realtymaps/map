@@ -4,8 +4,11 @@ shp2json = require 'shp2jsonx'
 through2 = require 'through2'
 JSONStream = require 'JSONStream'
 PromiseFtp = require 'promise-ftp'
+fs = require 'fs'
 
 logger = require('../config/logger').spawn('digimaps:parcelFetcher')
+finalStreamLogger = logger.spawn('finalStream')
+chunkLogger = logger.spawn('chunk')
 clientClose = require '../utils/util.client.close'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
@@ -100,6 +103,11 @@ defineImports = (opts) -> Promise.try ->
 
 getZipFileStream = (fullPath, {creds, doClose} = {}) ->
   doClose ?= true
+
+  if !creds?
+    logger.debug -> 'No credentials, trying local file system.'
+    return Promise.resolve stream: fs.createReadStream(fullPath)
+
   logger.debug "Attempting to download parcel zip: #{fullPath}"
 
   _ftpClientFactory(creds)
@@ -120,7 +128,7 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
 
       For some reason it will cause an error and blow up node in mid stream and in mid Promise.
     ###
-    finalStreamLogger = logger.spawn('finalStream')
+    finalStreamLogger.debug -> 'stream resolved'
 
     ###
       Error handling / intercepting hell:
@@ -133,11 +141,15 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
       We use through2 (when it first has data) to resolve the jsonStream if we actually have something valid.
       Otherwise we reject.
     ###
-    interceptStream = shp2json(stream, skipRegExes: [/Points/i], alwaysReturnArray: true)
+    # we can't skipRegExes: [/Points/i] as that data has the street address and more info
+    interceptStream = shp2json(stream, alwaysReturnArray: true)
     jsonStream = JSONStream.parse('*.features.*')
 
     firstTime = true
     t2Transform = (chunk, enc, cb) ->
+      chunkLogger.debug -> 'chunk'
+      chunkLogger.debug -> String(chunk)
+
       if firstTime
         firstTime = false
         resolve(jsonStream)
@@ -145,13 +157,13 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
       cb()
 
     t2Stream = through2 t2Transform, (cb) ->
-      client.end()
+      client?.end()
       cb()
 
     interceptStream.once 'error', (error) ->
       # logger.debug "interceptStream @@@@@@@@@@@@@@@@@@@ error"
       # logger.debug "NoShapeFilesError is instance: " + (error instanceof NoShapeFilesError)
-      client.end()
+      client?.end()
       if firstTime
         reject error
       else
