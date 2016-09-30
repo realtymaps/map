@@ -50,7 +50,6 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
 
-
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
   combined.getPermissions(profile)
@@ -74,6 +73,40 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
     query.then (properties) ->
       _.map(properties, 'rm_property_id')
 
+getPropertiesInGeometry = ({queryParams, profile}) ->
+  # Calculate permissions for the current user
+  combined.getPermissions(profile)
+
+  .then (permissions) ->
+    logger.debug permissions
+
+    {geometry, geometry_center, shape_extras} = queryParams
+
+    if !queryParams?.state?.filters?.status?.length
+      return [] # GTFO
+
+    query = combined.getDefaultQuery()
+
+    if geometry
+      query.where(query.raw("where ST_Within(geometry_center_raw, ST_GeomFromGeoJSON(?))", geometry))
+
+    else if geometry_center && shape_extras
+      query.where(
+        query.raw(
+          "where ST_DWithin(geometry_center_raw, ST_GeomFromGeoJSON(?), ?)",
+          geometry_center,
+          shape_extras.radius / distance.METERS_PER_EARTH_RADIUS
+        )
+      )
+
+    else
+      throw new Error('geometry or center is required')
+
+    logger.debug -> query.toString()
+
+    combined.getFilterSummaryAsQuery({queryParams, query, permissions})
+    .then (properties) ->
+      combined.scrubPermissions(properties, permissions)
 
 module.exports = {
   getFilterSummaryAsQuery
