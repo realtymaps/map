@@ -66,7 +66,7 @@ run = (code) ->
   .then (tableNames) ->
     debug("fipsCode: #{code} completed")
     if argv.synchronize?
-      cartodb.syncDequeue({tableNames, fipsCode: code})
+      cartodb.syncDequeue({tableNames, fipsCode: code, skipDrop: argv.skipDrop, skipDelete: argv.skipDelete})
 
   concurrent[code] = promise
   concurrent[code].finally ->
@@ -77,7 +77,7 @@ run = (code) ->
 if argv.syncOnly?
   run = (fipsCode) ->
     tableNames = argv.tableNames.split(",")
-    cartodb.syncDequeue {tableNames, fipsCode}
+    cartodb.syncDequeue {tableNames, fipsCode, skipDrop: argv.skipDrop, skipDelete: argv.skipDelete}
 
 fipsCodesPromise.then (fipsCodes) ->
   debug(fipsCodes)

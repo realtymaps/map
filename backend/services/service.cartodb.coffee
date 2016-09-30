@@ -101,7 +101,7 @@ toPsqlCSV = ({fileName, fips_code, batch_id, raw_entity, select }) -> Promise.tr
 
 
 #merge data to parcels cartodb table
-synchronize = ({fipsCode, tableName, destinationTable}) -> Promise.try () ->
+synchronize = ({fipsCode, tableName, destinationTable, skipDrop, skipDelete}) -> Promise.try () ->
   cartodbSql = cartodbSqlFact(destinationTable)
 
   indexes({tableName, destinationTable})
@@ -110,8 +110,10 @@ synchronize = ({fipsCode, tableName, destinationTable}) -> Promise.try () ->
   .then ->
     internals.execSql(cartodbSql.insert({fipsCode, tableName}))
   .then ->
+    return if skipDelete
     internals.execSql(cartodbSql.delete({fipsCode, tableName}))
   .then ->
+    return if skipDrop
     internals.execSql(cartodbSql.drop({fipsCode, tableName}))
 
 
@@ -137,13 +139,13 @@ getByFipsCode = (opts) -> Promise.try () ->
   internals.fipsCodeQuery(opts)
 
 
-syncDequeue = ({tableNames, fipsCode, batch_id, id}) ->
+syncDequeue = ({tableNames, fipsCode, batch_id, id, skipDrop, skipDelete}) ->
   if !Array.isArray(tableNames)
     tableNames = [tableNames]
 
   Promise.each tableNames, (tableName) ->
     logger.debug("@@@@@@@ synching #{tableName} @@@@@@@")
-    synchronize({fipsCode, tableName})
+    synchronize({fipsCode, tableName, skipDrop, skipDelete})
   .then () ->
     logger.debug "dequeing: id: #{id}, batch_id: #{batch_id}"
     entity = _.extend {}, {fips_code: fipsCode, batch_id, id}
