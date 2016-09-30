@@ -1,9 +1,9 @@
 span.btn-group
   button.btn.btn-transparent.nav-btn(
-    ng-click="Toggles.toggleIsAreaDraw();isOpens.stats = !isOpens.stats; togglePanel('stats')"
+    ng-click="Toggles.toggleIsAreaDraw({stats:true})"
     popover-placement="bottom"
     uib-popover="Get Property Statistics"
     popover-trigger="'mouseenter touchend'"
-    ng-class="Toggles.isSketchMode ? 'on' : ''"
+    ng-class="Toggles.isAreaDraw ? 'on' : ''"
   )
     i.icon.fa.fa-bar-chart

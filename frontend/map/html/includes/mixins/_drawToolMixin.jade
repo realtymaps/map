@@ -5,7 +5,7 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
     .row(ng-controller="#{ctrl}")
       .col.col-md-3.col-sm-3.col-xs-3
         h4 #{h4}
-      
+
       .col.col-md-6.col-sm-6.col-xs-3
         .tools()
           if directiveNgShow
@@ -25,10 +25,12 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
                 options="draw.leafletDrawOptions"
                 events="draw.leafletDrawEvents"
                 enabled="draw.enabled")
-          
+
       .col.col-md-3.col-sm-3.col-xs-3.last-col
         span.pull-right(ng-click="#{toggleFn}")
           i.fa.fa-lg.fa-close
         if tackFn
           span.pull-right(ng-click="#{tackFn}" ng-class="#{tackedBool} ? 'active': ''")
             i.fa.fa-lg.fa-thumb-tack
+
+        button.pull-right(ng-if="Toggles.isStatsDraw" ng-click="saveQuickStats()") Save Areas

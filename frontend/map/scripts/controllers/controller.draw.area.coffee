@@ -50,14 +50,20 @@ rmapsFeatureGroupUtil
       drawnShapesSvc
       drawnItems
 
-      createPromise: (geoJson) ->
+      createPromise: (layer) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
-        $scope.create(geoJson)
-        .then (result) ->
-          $scope.$emit rmapsEventConstants.areas
-          if !$scope.Toggles.isTackedAreasDrawBar
-            $scope.Toggles.isAreaDraw = false
-          result
+        geoJson = layer.toGeoJSON()
+        if $scope.Toggles.isStatsDraw
+          $scope.quickStats(geoJson)
+          $scope.quickStatsShapes.push(layer)
+          return $q.resolve()
+        else
+          $scope.create(geoJson)
+          .then (result) ->
+            $scope.$emit rmapsEventConstants.areas
+            if !$scope.Toggles.isTackedAreasDrawBar
+              $scope.Toggles.isAreaDraw = false
+            result
 
 
       deleteAction: (model) ->
@@ -101,8 +107,10 @@ rmapsFeatureGroupUtil
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->
           control.enableHandle(handle: 'rectangle')
-        return
-      _drawCtrlFactory()
+      else
+        _drawCtrlFactory()
+        for layer in $scope.quickStatsShapes
+          drawnItems.removeLayer(layer)
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)
