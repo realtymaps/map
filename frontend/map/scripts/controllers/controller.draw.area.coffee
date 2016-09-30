@@ -26,7 +26,7 @@ rmapsFeatureGroupUtil
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
-
+    $scope.drawn.items = drawnItems
     featureGroupUtil = rmapsFeatureGroupUtil(drawnItems)
 
     $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
@@ -55,7 +55,7 @@ rmapsFeatureGroupUtil
         geoJson = layer.toGeoJSON()
         if $scope.Toggles.isStatsDraw
           $scope.quickStats(geoJson)
-          $scope.quickStatsShapes.push(layer)
+          $scope.drawn.quickStats = layer
           return $q.resolve()
         else
           $scope.create(geoJson)
@@ -109,8 +109,6 @@ rmapsFeatureGroupUtil
           control.enableHandle(handle: 'rectangle')
       else
         _drawCtrlFactory()
-        for layer in $scope.quickStatsShapes
-          drawnItems.removeLayer(layer)
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)

@@ -30,7 +30,9 @@ rmapsLeafletHelpers) ->
 
   $scope.drawController = null
 
-  $scope.quickStatsShapes = []
+  $scope.drawn =
+    items: null
+    quickStats: null
 
   $scope.centerOn = (model) ->
     #zoom to bounds on shapes
@@ -74,10 +76,7 @@ rmapsLeafletHelpers) ->
     .then ({data}) ->
       $log.debug data
       $scope.areaToShow = id: 0, area_name: 'Quick'
-      updateStatistics(data, 0)
-
-  $scope.saveQuickStats = () ->
-    $log.debug $scope.quickStatsShapes
+      updateStatistics(data, 0, true)
 
   $scope.update = (model) ->
     $scope.createModal(model).then (modalModel) ->
@@ -129,18 +128,17 @@ rmapsLeafletHelpers) ->
   $scope.showStatistics = (model) ->
     $scope.areaToShow = model.properties
     $scope.centerOn(model)
-    updateStatistics($scope.areaToShow.id)
 
     $http.post(backendRoutes.properties.drawnShapes,
       {
-        areaId: area_id
+        areaId: model.id
         state:
           filters: rmapsFilterManagerService.getFilters()
       }
     ).then ({data}) ->
-      updateStatistics(data, area_id)
+      updateStatistics(data, model.id)
 
-  updateStatistics = (data, area_id) ->
+  updateStatistics = (data, area_id, showStatsSave) ->
     dataSet = _.values(data)
 
     stats = d3.nest()
@@ -171,10 +169,22 @@ rmapsLeafletHelpers) ->
     $scope.areaStatistics ?= {}
     $scope.areaStatistics[area_id] = stats
 
+    $scope.showStatsSave = !!showStatsSave
     modalInstance = $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
+
+    modalInstance.result
+    .then () ->
+      $log.debug "saving layer", $scope.drawn.quickStats
+      drawnShapesSvc.create $scope.drawn.quickStats.toGeoJSON()
+      .then (result) ->
+        $log.debug result
+    .catch () ->
+      if $scope.drawn.quickStats
+        $log.debug "deleting layer", $scope.drawn.quickStats
+        $scope.drawn.items.removeLayer($scope.drawn.quickStats)
 
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,
