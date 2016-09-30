@@ -120,18 +120,6 @@ module.exports =
           profile: currentProfile(req)
         )
 
-  inGeometry:
-    method: "post"
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-    ]
-    handle: (req, res, next) ->
-      internals.handleRoute res, next, () ->
-        DrawnShapesFiltSvc.getPropertiesInGeometry(
-          queryParams: req.body
-          profile: currentProfile(req)
-        )
-
   saves:
     middleware:
       auth.requireLogin(redirectOnFail: true)

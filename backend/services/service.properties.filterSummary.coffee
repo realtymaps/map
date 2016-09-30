@@ -17,6 +17,7 @@ module.exports =
 
     validation.validateAndTransform(validBody, filterSummaryImpl.transforms)
     .then (queryParams) ->
+      logger.debug queryParams
 
       # Calculate permissions for the current user
       combined.getPermissions(profile)
