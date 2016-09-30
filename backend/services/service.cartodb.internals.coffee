@@ -124,6 +124,8 @@ fipsCodeQuery = (opts) ->
     # logger.debug opts.nesw
     query = sqlHelpers.whereInBounds(query, 'geometry_raw', opts.nesw)
 
+  logger.debug -> query.toString()
+
   query
 
 ###

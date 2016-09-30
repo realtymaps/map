@@ -30,7 +30,7 @@ cartodbSqlFactory = (destTable = 'parcels') ->
           select :destTable:."rm_property_id"
           from :destTable:
           LEFT JOIN :frmTable: on :destTable:."rm_property_id" = :frmTable:."rm_property_id"
-          where :frmTable:."rm_property_id" isnull and :destTable:."fips_code" = :fipsCode
+          where :frmTable:."rm_property_id" is null and :destTable:."fips_code" = :fipsCode
           );
           """
 
