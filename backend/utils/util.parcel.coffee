@@ -156,12 +156,12 @@ prepRowForRawGeom = (row) ->
       prepLogger.debug -> row
       return
 
-    if row.geometry?.type == 'Point'
+    if row.geometry.type == 'Point'
       row.geometry_center_raw = dbs.get('normalized')
         .raw("st_geomfromgeojson( ? )", JSON.stringify(row.geometry))
       row.geometry_center = row.geometry
       delete row.geometry
-    else if row.geometry?.type == 'Polygon' || row.geometry?.type == 'MultiPolygon'
+    else if row.geometry.type == 'Polygon' || row.geometry.type == 'MultiPolygon'
       row.geometry_raw = dbs.get('normalized')
         .raw("ST_Multi(st_geomfromgeojson( ? ))", JSON.stringify(row.geometry))
       row.geometry_center_raw = dbs.get('normalized')
