@@ -5,6 +5,7 @@ Simple script cartodb import via our service upload by fipsCode
 
 options:
 --fipsCode - single or multiple fipsCodes
+--filename || fileName
 ###
 Promise = require 'bluebird'
 argv = require('yargs').argv
@@ -22,8 +23,18 @@ makeSpinner = () ->
   spinner.start()
   spinner
 
-if argv.filename
-  return cartodb.uploadFile(argv.filename)
+if argv.filename || argv.fileName
+  fileName = argv.filename || argv.fileName
+  spin = makeSpinner()
+  return cartodb.uploadFile(fileName)
+  .then () ->
+    debug 'upload file success'
+    spin.stop()
+    process.exit(0)
+  .catch (error) ->
+    spin.stop()
+    console.error error
+    process.exit(1)
 
 if !argv.fipsCode && !argv.useQueue
   console.error('fipsCode required')

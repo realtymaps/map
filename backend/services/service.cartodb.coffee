@@ -7,6 +7,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 require '../../common/extensions/lodash'
 _ = require 'lodash'
+parcelFetcher = require './service.parcels.fetcher.digimaps'
 
 
 MAX_LINE_COUNT = 150000
@@ -63,22 +64,34 @@ upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) -> Promise.try () ->
   `curl -v "https://realtymaps.carto.com/api/v1/imports/item_queue_id?api_key={YOUR_KEY}"`
 
 ###
-toCSV = ({fileName, fips_code}) -> Promise.try () ->
+toCSV = ({fileName, fips_code, batch_id, rawEntity, select}) -> Promise.try () ->
   fileName ?= fips_code
+  select ?= select = ['feature']
 
   logger.debug -> "fileName: #{fileName}, fips_code: #{fips_code}"
+  logger.debug -> "batch_id: #{batch_id}" if batch_id
+  logger.debug -> "rawEntity: #{JSON.stringify rawEntity}" if rawEntity
 
-  internals.saveFile {
-    stream: internals.fipsCodeQuery({fips_code}).stream()
-    fileName
-  }
+  stream = if !batch_id && !rawEntity
+    internals.fipsCodeQuery({fips_code}).stream()
+  else
+    logger.debug -> 'getting raw'
+    parcelFetcher.getRawParcelJsonStream({fips_code, batch_id, entity: rawEntity, select})
+
+  internals.saveFile {stream, fileName}
 
 ###
 Useful for comparing csv-stringfy to to fix problems.. so LEAVE this
 ###
-toPsqlCSV = ({fileName, fips_code}) -> Promise.try ->
+toPsqlCSV = ({fileName, fips_code, batch_id, raw_entity, select }) -> Promise.try ->
   fileName ?= fips_code
-  subQuery = internals.fipsCodeQuery({fips_code}).toString()
+  select ?= select = ['feature']
+
+  subQuery = if !batch_id && !raw_entity
+    internals.fipsCodeQuery({fips_code}).toString()
+  else
+    parcelFetcher.rawParcelQuery({fips_code, batch_id, entity: raw_entity, select}).toString()
+
   logger.debug -> subQuery
   query = "\"COPY (#{subQuery}) To '#{fileName}.csv' CSV HEADER;\""
 

@@ -95,7 +95,7 @@ loadRawData = (subtask) -> Promise.try () ->
 
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
-    parcelsFetch.getParcelJsonStream(fileName, {creds})
+    parcelsFetch.getParcelJsonStream({fullPath:fileName, creds})
     .then (jsonStream) ->
 
       dataLoadHelpers.manageRawJSONStream({
