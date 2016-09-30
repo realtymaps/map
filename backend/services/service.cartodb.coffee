@@ -101,17 +101,17 @@ toPsqlCSV = ({fileName, fips_code, batch_id, raw_entity, select }) -> Promise.tr
 
 
 #merge data to parcels cartodb table
-synchronize = ({fipsCode, tableName, destinationTable, skipDrop, skipDelete}) -> Promise.try () ->
+synchronize = ({batch_id, fipsCode, tableName, destinationTable, skipDrop, skipDelete, skipIndexes}) -> Promise.try () ->
   cartodbSql = cartodbSqlFact(destinationTable)
 
-  indexes({tableName, destinationTable})
-  .then ->
+  p = if skipIndexes then Promise.resolve() else indexes({tableName, destinationTable})
+  p.then ->
     internals.execSql(cartodbSql.update({fipsCode, tableName}))
   .then ->
     internals.execSql(cartodbSql.insert({fipsCode, tableName}))
   .then ->
     return if skipDelete
-    internals.execSql(cartodbSql.delete({fipsCode, tableName}))
+    internals.execSql(cartodbSql.delete({fipsCode, tableName, batch_id}))
   .then ->
     return if skipDrop
     internals.execSql(cartodbSql.drop({fipsCode, tableName}))
@@ -130,6 +130,10 @@ drop_indexes = ({tableName, destinationTable, idxName}) ->
   cartodbSql = cartodbSqlFact(destinationTable)
   internals.execSql(cartodbSql.drop_indexes({tableName, idxName}))
 
+del = ({tableName, destinationTable, idxName, fipsCode, batch_id}) ->
+  cartodbSql = cartodbSqlFact(destinationTable)
+  internals.execSql(cartodbSql.delete({tableName, idxName, batch_id, fipsCode}))
+
 
 sql = (sqlStr) ->
   internals.execSql(sqlStr)
@@ -139,13 +143,13 @@ getByFipsCode = (opts) -> Promise.try () ->
   internals.fipsCodeQuery(opts)
 
 
-syncDequeue = ({tableNames, fipsCode, batch_id, id, skipDrop, skipDelete}) ->
+syncDequeue = ({tableNames, fipsCode, batch_id, id, skipDrop, skipDelete, skipIndexes}) ->
   if !Array.isArray(tableNames)
     tableNames = [tableNames]
 
   Promise.each tableNames, (tableName) ->
     logger.debug("@@@@@@@ synching #{tableName} @@@@@@@")
-    synchronize({fipsCode, tableName, skipDrop, skipDelete})
+    synchronize({fipsCode, tableName, skipDrop, skipDelete, skipIndexes, batch_id})
   .then () ->
     logger.debug "dequeing: id: #{id}, batch_id: #{batch_id}"
     entity = _.extend {}, {fips_code: fipsCode, batch_id, id}
@@ -166,6 +170,7 @@ module.exports = {
   toCSV
   toPsqlCSV
   drop
+  delete: del
   indexes
   drop_indexes
   sql
