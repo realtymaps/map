@@ -95,7 +95,7 @@ loadRawData = (subtask) -> Promise.try () ->
 
   externalAccounts.getAccountInfo(subtask.task_name)
   .then (creds) ->
-    parcelsFetch.getParcelJsonStream(fileName, {creds})
+    parcelsFetch.getParcelJsonStream({fullPath:fileName, creds})
     .then (jsonStream) ->
 
       dataLoadHelpers.manageRawJSONStream({
@@ -268,6 +268,9 @@ cleanup = (subtask) ->
           entity:
             batch_id: subtask.batch_id
             fips_code: fips_code
+
+        .then () ->
+          jobQueue.queueManualTask('cartodb', 'task.digimaps')
         # should we enqueue the cartodb subtask or not?
         # pro - it gets kicked as soon as it has something
         # neg - cartodb updates should maybe be on a different schedule

@@ -12,6 +12,7 @@ chunkLogger = logger.spawn('chunk')
 clientClose = require '../utils/util.client.close'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
+tables =  require '../config/tables'
 
 DIGIMAPS =
   DIRECTORIES:[{name:'DELIVERIES'}, {name: 'DMP_DELIVERY_', doParseDate:true}, {name:'ZIPS'}]
@@ -119,8 +120,10 @@ getZipFileStream = (fullPath, {creds, doClose} = {}) ->
       {client, stream}
 
 
-getParcelJsonStream = (fullPath, {creds} = {}) ->
-  getZipFileStream(fullPath, {creds, doClose: false})
+getParcelJsonStream = ({fullPath, creds, streamPromise} = {}) ->
+  streamPromise ?= getZipFileStream(fullPath, {creds, doClose: false})
+
+  streamPromise
   .then ({client, stream}) -> new Promise (resolve, reject) ->
     ###
       DO NOT put `Promise.try () ->` here or it will hurt your world.
@@ -172,9 +175,30 @@ getParcelJsonStream = (fullPath, {creds} = {}) ->
 
     interceptStream.pipe(t2Stream).pipe(jsonStream)
 
+rawParcelQuery = ({batch_id, fips_code, entity, select}) ->
+  q = tables.temp(subid: "#{batch_id}_digimaps_parcel_#{fips_code}")
+
+  q.select select if select?
+
+  q.where(entity)
+
+getRawParcelJsonStream = ({batch_id, fips_code, entity, select}) ->
+  q = rawParcelQuery({batch_id, fips_code, entity, select})
+
+  logger.debug -> q.toString()
+
+  q.stream()
+  .pipe through2.obj (chunk, encoding, cb) ->
+    logger.debug -> "chunk type is string: #{_.isString chunk}"
+    logger.debug -> chunk.feature
+    this.push JSON.parse chunk.feature
+    cb()
+
 
 module.exports = {
   getZipFileStream
   getParcelJsonStream
   defineImports
+  rawParcelQuery
+  getRawParcelJsonStream
 }

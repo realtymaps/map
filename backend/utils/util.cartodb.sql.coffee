@@ -24,15 +24,9 @@ cartodbSqlFactory = (destTable = 'parcels') ->
                   rm_property_id = :frmTable:."rm_property_id"
               );
           """
-      'delete':"""
-          DELETE FROM :destTable:
-          where rm_property_id in (
-          select :destTable:."rm_property_id"
-          from :destTable:
-          LEFT JOIN :frmTable: on :destTable:."rm_property_id" = :frmTable:."rm_property_id"
-          where :frmTable:."rm_property_id" isnull and :destTable:."fips_code" = :fipsCode
-          );
-          """
+
+      'delete': """DELETE FROM :destTable: WHERE "batch_id" != :batch_id AND "fips_code" = :fipsCode"""
+
 
       drop:'DROP TABLE :frmTable:;'
 
@@ -41,23 +35,31 @@ cartodbSqlFactory = (destTable = 'parcels') ->
       CREATE INDEX idx_:frmTable:_fips_code_id ON :frmTable: USING btree (fips_code);
       CREATE INDEX idx_:frmTable:_the_geom_fips_code_id ON :frmTable: USING gist (the_geom);
       """
+      drop_indexes: """
+      DROP INDEX idx_:idx_name:_rm_property_id;
+      DROP INDEX idx_:idx_name:_fips_code_id;
+      DROP INDEX idx_:idx_name:_the_geom_fips_code_id;
+      """
 
-  _format = ({sql, fipsCode, tableName}) ->
+  _format = ({sql, fipsCode, tableName, batch_id}) ->
     dbs.get('main').raw(sql, {
       destTable
       frmTable: tableName
       fipsCode
+      batch_id
     }).toString()
 
   obj = {}
 
-  for method in ['update', 'insert', 'delete', 'drop', 'indexes']
+  for method in Object.keys(_sql)
     do (method) ->
-      obj[method] = ({fipsCode = '', tableName} = {}) ->
+      obj[method] = ({fipsCode = '', tableName, idxName, batch_id} = {}) ->
         fipsCode = fipsCode.toString() + ''
-        if method != 'indexes'
-          return _format {sql: _sql[method], fipsCode, tableName}
-        _sql[method].replace(/:frmTable:/g, tableName)
+        if method != 'indexes' && method != 'drop_indexes'
+          return _format {sql: _sql[method], fipsCode, tableName, batch_id}
+        _sql[method]
+        .replace(/:frmTable:/g, tableName)
+        .replace(/:idx_name:/g, idxName || tableName)
   obj
 
 module.exports = cartodbSqlFactory

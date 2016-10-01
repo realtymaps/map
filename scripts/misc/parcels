@@ -19,7 +19,7 @@ debug = debug('script:parcels')
 if argv.debug
   debug argv
 
-parcelFetcher.getParcelJsonStream(argv.fileName)
+parcelFetcher.getParcelJsonStream(fullPath: argv.fileName)
 .then (stream) ->
   s = stream.pipe(JSONStream.stringify()).pipe process.stdout
 

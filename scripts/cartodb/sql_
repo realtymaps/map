@@ -21,7 +21,7 @@ makeSpinner = () ->
 spin = makeSpinner()
 
 promise = Promise.try ->
-  if argv.method == 'sql'
+  p = if argv.method == 'sql'
     if !argv.sql
       throw new Error('argv.sql required for sql method!')
     cartodb.sql(argv.sql)
@@ -29,8 +29,15 @@ promise = Promise.try ->
     cartodb[argv.method]({
       fipsCode: argv.fipsCode
       tableName: argv.tableName
+      idxName: argv.idxName
       destinationTable: argv.destinationTable || argv.dest
+      batch_id: argv.batch_id
     })
+
+  if argv.string
+    return p.toString()
+  p
+
 
 promise
 .then (result) ->
