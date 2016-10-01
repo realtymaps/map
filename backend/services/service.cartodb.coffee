@@ -106,6 +106,8 @@ synchronize = ({batch_id, fipsCode, tableName, destinationTable, skipDrop, skipD
 
   p = if skipIndexes then Promise.resolve() else indexes({tableName, destinationTable})
   p.then ->
+    internals.execSql(cartodbSql.fixTypes({fipsCode, tableName}))
+  .then ->
     internals.execSql(cartodbSql.update({fipsCode, tableName}))
   .then ->
     internals.execSql(cartodbSql.insert({fipsCode, tableName}))
