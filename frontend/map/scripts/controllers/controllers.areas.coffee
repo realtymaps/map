@@ -178,9 +178,15 @@ rmapsLeafletHelpers) ->
     modalInstance.result
     .then () ->
       $log.debug "saving layer", $scope.drawn.quickStats
-      drawnShapesSvc.create $scope.drawn.quickStats.toGeoJSON()
+      model = $scope.drawn.quickStats.toGeoJSON()
+      model.properties.area_name = 'Untitle Area'
+      drawnShapesSvc.create model
       .then (result) ->
         $log.debug result
+        [id] = result.data
+        $scope.drawn.quickStats.model =
+          properties:
+            id: id
     .catch () ->
       if $scope.drawn.quickStats
         $log.debug "deleting layer", $scope.drawn.quickStats

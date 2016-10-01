@@ -32,7 +32,7 @@ app.factory "rmapsMapDrawHandlesFactory", ($q, $log, rmapsDrawnUtilsService, rma
 
         promise.then (result) ->
           if result?.data
-            [id] = data
+            [id] = result.data
             layer.model =
               properties:
                 id: id

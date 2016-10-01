@@ -32,5 +32,3 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
         if tackFn
           span.pull-right(ng-click="#{tackFn}" ng-class="#{tackedBool} ? 'active': ''")
             i.fa.fa-lg.fa-thumb-tack
-
-        button.pull-right(ng-if="Toggles.isStatsDraw" ng-click="saveQuickStats()") Save Areas

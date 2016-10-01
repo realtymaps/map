@@ -38,5 +38,5 @@
         .col-md-4(ng-if="!areaStatistics[areaToShow.id][status].values.acres_avg") -
         .col-md-3(ng-if="areaStatistics[areaToShow.id][status].values.acres_n != areaStatistics[areaToShow.id][status].values.count") ({{areaStatistics[areaToShow.id][status].values.acres_n}} properties)
 .modal-footer(ng-if="showStatsSave")
-  button.pull-right(ng-click="$close()") Save
-  button.pull-right(ng-click="$dismiss()") Discard
+  button.btn.btn-default(ng-click="$dismiss()") Discard
+  button.btn.btn-primary(ng-click="$close()") Save
