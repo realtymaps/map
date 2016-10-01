@@ -7,6 +7,7 @@ countyHelpers = rewire '../../../backend/tasks/util.countyHelpers'
 countyHelpersInternals = rewire '../../../backend/tasks/util.countyHelpers.internals'
 parcelHelpers = rewire '../../../backend/tasks/util.parcelHelpers'
 SqlMock = require '../../specUtils/sqlMock'
+sqlHelpers = require '../../../backend/utils/util.sql.helpers'
 
 
 describe "util.countyHelpers", () ->
@@ -41,7 +42,14 @@ describe "util.countyHelpers", () ->
         deletes:
           property: deletesPropMock.dbFn()
 
+      mockSqlHelpers =
+        tableExists: () ->
+          Promise.resolve(true)
+        safeJsonArray: sqlHelpers.safeJsonArray
+
       countyHelpersInternals.__set__ 'tables', tables
+      countyHelpersInternals.__set__ 'sqlHelpers', mockSqlHelpers
+
       countyHelpers.__set__ 'internals', countyHelpersInternals
       parcelHelpers.__set__ 'tables', tables
       countyHelpers.__set__ 'parcelHelpers', parcelHelpers

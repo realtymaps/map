@@ -3,7 +3,8 @@ _ = require 'lodash'
 externalAccounts = require '../services/service.externalAccounts'
 parcelsFetch = require '../services/service.parcels.fetcher.digimaps'
 logger = require('../config/logger.coffee').spawn('task:digimaps:internals')
-importsLogger = require('../config/logger.coffee').spawn('task:digimaps:internals:imports')
+importsLogger = logger.spawn('imports')
+filteredLogger = logger.spawn('filtered')
 moment = require 'moment'
 
 NUM_ROWS_TO_PAGINATE = 1000
@@ -28,8 +29,8 @@ filterImports = (subtask, imports, refreshThreshold) ->
     date: getFileDate(l)
 
   if refreshThreshold? && !subtask.data.skipRefreshThreshold
-    logger.debug '@@@ refreshThreshold @@@'
-    logger.debug refreshThreshold
+    logger.debug -> '@@@ refreshThreshold @@@'
+    logger.debug -> refreshThreshold
 
     folderObjs = _.filter folderObjs, (o) ->
       o.date > refreshThreshold
@@ -42,8 +43,8 @@ filterImports = (subtask, imports, refreshThreshold) ->
     fileNames.sort()
     fipsCodes = fileNames.map (name) -> getFileFips(name)
 
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug fipsCodes
+    logger.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodes Available from digimaps @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    logger.debug -> fipsCodes
 
     # Filter to specific fipsCodes in an Array
     if subtask.data.fipsCodes? && Array.isArray subtask.data.fipsCodes
@@ -62,8 +63,22 @@ filterImports = (subtask, imports, refreshThreshold) ->
 
       fipsCodes = fileNames.map (name) -> getFileFips(name)
 
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug fipsCodes
+    if subtask.data.fipsCodesRegExp?
+      {fipsCodesRegExp} = subtask.data
+      if !Array.isArray(fipsCodesRegExp)
+        fipsCodesRegExp = [fipsCodesRegExp]
+
+      logger.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodesRegExp  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+      fileNames = _.filter fileNames, (name) ->
+        code = getFileFips(name)
+        _.any fipsCodesRegExp, (regexStr) ->
+          RegExp(regexStr).test(code)
+
+
+      fipsCodes = fileNames.map (name) -> getFileFips(name)
+
+    filteredLogger.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@ filtered fipsCodes  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    filteredLogger.debug -> fipsCodes
 
     return fileNames
 

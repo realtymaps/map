@@ -4,7 +4,9 @@
 Simple script cartodb import via our service upload by fipsCode
 
 options:
---fipsCode - single or multiple fipsCodes
+-- fipsCode - single or multiple fipsCodes
+-- filename || fileName
+-- useQueue , gets fipsCodes off the queue
 ###
 Promise = require 'bluebird'
 argv = require('yargs').argv
@@ -22,8 +24,18 @@ makeSpinner = () ->
   spinner.start()
   spinner
 
-if argv.filename
-  return cartodb.uploadFile(argv.filename)
+if argv.filename || argv.fileName
+  fileName = argv.filename || argv.fileName
+  spin = makeSpinner()
+  return cartodb.uploadFile(fileName)
+  .then () ->
+    debug 'upload file success'
+    spin.stop()
+    process.exit(0)
+  .catch (error) ->
+    spin.stop()
+    console.error error
+    process.exit(1)
 
 if !argv.fipsCode && !argv.useQueue
   console.error('fipsCode required')
@@ -37,9 +49,7 @@ fipsCodesPromise = if !argv.useQueue
   Promise.resolve argv.fipsCode.toString().split(',')
 else
   tables.cartodb.syncQueue()
-  .select('fips_code')
-  .then (results) ->
-    _.pluck results, 'fips_code'
+  .select('fips_code', 'batch_id')
 
 spin = makeSpinner()
 
@@ -55,7 +65,14 @@ run = (code) ->
   .then (tableNames) ->
     debug("fipsCode: #{code} completed")
     if argv.synchronize?
-      cartodb.syncDequeue({tableNames, fipsCode: code})
+      cartodb.syncDequeue {
+        tableNames
+        fipsCode: code
+        skipDrop: argv.skipDrop
+        skipDelete: argv.skipDelete
+        skipIndexes: argv.skipIndexes
+        batch_id: argv.batch_id
+      }
 
   concurrent[code] = promise
   concurrent[code].finally ->
@@ -64,9 +81,19 @@ run = (code) ->
   promise
 
 if argv.syncOnly?
-  run = (fipsCode) ->
-    tableNames = argv.tableNames.split(",")
-    cartodb.syncDequeue {tableNames, fipsCode}
+  run = ({fipsCode, batch_id}) ->
+    if argv.tableNames
+      debug('tableName split')
+      tableNames = argv.tableNames.split(",")
+
+    cartodb.syncDequeue {
+      tableNames
+      fipsCode
+      skipDrop: argv.skipDrop
+      skipDelete: argv.skipDelete
+      skipIndexes: argv.skipIndexes
+      batch_id: batch_id || argv.batch_id
+    }
 
 fipsCodesPromise.then (fipsCodes) ->
   debug(fipsCodes)

@@ -5,6 +5,12 @@ Simple script cartodb import via our service upload by fipsCode
 
 options:
 --fipsCode - single or multiple fipsCodes
+--fileName - file name to save as
+--split -  boolean to split file
+--psql - boolean to use psql to save the csv, otherwise uses node streaming
+--batch_id
+--rawEntity - json query object
+--select - string delimited by commas
 ###
 Promise = require 'bluebird'
 argv = require('yargs').argv
@@ -46,7 +52,9 @@ Promise.each fipsCodes, (fips_code) ->
   else 'toPsqlCSV'
 
   opts = if !argv.split
-    {fileName, fips_code}
+    obj = {fileName, fips_code, batch_id: argv.batch_id, rawEntity: JSON.parse(argv.rawEntity)}
+    obj.select = argv.select.split(',') if argv.select
+    obj
   else
     cartodb.splitCommands {fileName, fips_code, lineCount: cartodb.MAX_LINE_COUNT}
 
