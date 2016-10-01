@@ -7,8 +7,6 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
   Our Main Map Controller, logic
   is in a specific factory where Map is a GoogleMap
 ###
-#map = undefined
-
 
 module.exports = app
 
@@ -34,7 +32,6 @@ app.controller 'rmapsMapCtrl', (
   rmapsPropertiesService,
   rmapsSearchboxService,
   rmapsClientEntryService,
-  rmapsCurrentMapService,
   rmapsBounds
 ) ->
   $log = $log.spawn("map:controller")
