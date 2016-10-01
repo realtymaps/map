@@ -113,7 +113,6 @@ app.factory 'rmapsMapFactory',
           pinsHandler()
           favsHandler()
           centerHandler()
-
           console.log "map instance #{@mapId} has been $destroyed."
           $log.debug "Map instance #{@mapId} has been $destroyed."
 

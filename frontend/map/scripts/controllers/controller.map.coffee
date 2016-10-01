@@ -128,12 +128,6 @@ app.controller 'rmapsMapCtrl', (
     $scope.loadProperty rmapsProfilesService.currentProfile
     checkCenterOnBounds()
 
-  #
-  # Watch for changes to the current profile. This is necessary since the map state is sticky
-  #
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
-    setScopeVariables()
-
   setScopeVariables()
 
 # fix google map views after changing back to map state

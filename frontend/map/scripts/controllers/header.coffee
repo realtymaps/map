@@ -46,7 +46,3 @@ module.exports = app.controller 'rmapsHeaderCtrl', (
   $scope.parentImageUrl = () ->
     if $scope.getProfile()?.parent_auth_user_id && $scope.getProfile().parent_image_id
       backendRoutes.user.image.replace(':id', $scope.getProfile().parent_auth_user_id)
-
-
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (newProfile) ->
-    $scope.profile = newProfile

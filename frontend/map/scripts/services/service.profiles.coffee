@@ -30,7 +30,7 @@ app.service 'rmapsProfilesService', (
   _update = (profile) ->
     $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
-  _current = (profile, opts) ->
+  _current = (profile) ->
     $log.debug 'attempting to set current profile'
     $http.post(backendRoutes.userSession.currentProfile, {currentProfileId: profile.id}, {cache: false})
     .then ({data}) ->
@@ -42,7 +42,7 @@ app.service 'rmapsProfilesService', (
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
       service.currentProfile = profile
-      rmapsPrincipalService.setCurrentProfile profile, opts
+      rmapsPrincipalService.setCurrentProfile profile
 
   # IMPORTANT we need to unset the current profile upon logout
   # otherwise upon login we would try to reuse the existing / dead profile
@@ -53,14 +53,14 @@ app.service 'rmapsProfilesService', (
   _isSettingProfile = false
   _settingCurrentPromise = null
 
-  _setCurrent = (oldProfile, newProfile, opts) ->
+  _setCurrent = (oldProfile, newProfile) ->
     _isSettingProfile = true
 
     _settingCurrentPromise = if oldProfile?
       $log.debug 'updating old profile'
       _update(oldProfile)
       .then () ->
-        _current newProfile, opts
+        _current newProfile
     else
       _current newProfile
 
@@ -123,7 +123,7 @@ app.service 'rmapsProfilesService', (
       Public: This function gets hammered by watchers and or page resolves at boot.
         Therefore we have a few GTFOS
     ###
-    setCurrentProfile: (profile, opts) ->
+    setCurrentProfile: (profile) ->
       # GTFO 1
       if profile == @currentProfile || profile?.id == @currentProfile?.id
         $log.debug "Profile is already set as current profile, returning"
@@ -138,7 +138,7 @@ app.service 'rmapsProfilesService', (
 
       # Save the old and load the new profiles
       $log.debug "calling _setCurrent..."
-      return _setCurrent @currentProfile, profile, opts
+      return _setCurrent @currentProfile, profile
       .then () ->
         if !profile?.map_position?.center?
           # bad things happen if we get this far w/o a map_position.center.  It should currently be accounted for in
