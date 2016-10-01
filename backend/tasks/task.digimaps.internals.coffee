@@ -63,11 +63,15 @@ filterImports = (subtask, imports, refreshThreshold) ->
 
       fipsCodes = fileNames.map (name) -> getFileFips(name)
 
-    if subtask.data.fipsCodesRegExp? && Array.isArray subtask.data.fipsCodesRegExp
+    if subtask.data.fipsCodesRegExp?
+      {fipsCodesRegExp} = subtask.data
+      if !Array.isArray(fipsCodesRegExp)
+        fipsCodesRegExp = [fipsCodesRegExp]
+
       logger.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@ fipsCodesRegExp  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
       fileNames = _.filter fileNames, (name) ->
         code = getFileFips(name)
-        _.any subtask.data.fipsCodesRegExp, (regexStr) ->
+        _.any fipsCodesRegExp, (regexStr) ->
           RegExp(regexStr).test(code)
 
 
