@@ -9,32 +9,6 @@ _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
 
-app.service 'rmapsCurrentMapService', () ->
-  # This service keeps track of active map instance and id reference.
-  # A new id and instance are needed each time a new one is created since it takes time for
-  #   a stale reference to $destroy while we're actively using the active instance
-
-  _mainMapBase = 'mainMap'
-  _mainMapIndex = 0
-  _currentMainMap = null
-  _getId = () ->
-    return _mainMapBase + _mainMapIndex
-  _incr = () ->
-    _mainMapIndex += 1
-
-
-  set: (map) ->
-    _currentMainMap = map
-  get: () ->
-    _currentMainMap
-
-  makeNewMapId: () ->
-    _incr()
-    return _getId()
-
-  mainMapId: () ->
-    return _getId()
-
 ###
   Our Main Map Implementation
 ###
@@ -110,16 +84,9 @@ app.factory 'rmapsMapFactory',
         # Property Button events
         #
 
-        @scope.$on '$destroy', () =>
-          $log.debug "Map instance #{@mapId} has been $destroyed."
-
         locationHandler = $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
           @setLocation(position)
         @scope.$on '$destroy', locationHandler
-
-        centerOnPropHandler = $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
-          @zoomTo result, false
-        @scope.$on '$destroy', centerOnPropHandler
 
         zoomHandler = $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
           @zoomTo result, doChangeZoom
@@ -138,6 +105,18 @@ app.factory 'rmapsMapFactory',
         centerHandler = $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
           @setLocation location
         @scope.$on '$destroy', centerHandler
+
+        @scope.$on '$destroy', () =>
+          locationHandler()
+          zoomHandler()
+          boundsHandler()
+          pinsHandler()
+          favsHandler()
+          centerHandler()
+
+          console.log "map instance #{@mapId} has been $destroyed."
+          $log.debug "Map instance #{@mapId} has been $destroyed."
+
 
         #
         # End Property Button Events

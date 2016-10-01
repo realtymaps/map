@@ -4,20 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'project_id']
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
-app.service 'rmapsCurrentProfilesService', (
-$http
-rmapsHttpTempCache
-) ->
-
-  setCurrent: (profile) ->
-
-    url = backendRoutes.userSession.currentProfile
-    $http.post(url, {currentProfileId: profile.id}, {cache: false})
-
-    # rmapsHttpTempCache {
-    #   url
-    #   promise: $http.post(url, {currentProfileId: profile.id}, {cache: true})
-    # }
 
 app.service 'rmapsProfilesService', (
   $http
@@ -25,7 +11,6 @@ app.service 'rmapsProfilesService', (
   $q
   $timeout
   $rootScope
-  rmapsCurrentProfilesService
   rmapsEventConstants
   rmapsMainOptions
   rmapsCurrentMapService
@@ -47,7 +32,7 @@ app.service 'rmapsProfilesService', (
 
   _current = (profile, opts) ->
     $log.debug 'attempting to set current profile'
-    rmapsCurrentProfilesService.setCurrent profile
+    $http.post(backendRoutes.userSession.currentProfile, {currentProfileId: profile.id}, {cache: false})
     .then ({data}) ->
       $log.debug 'set profile'
       $log.debug profile
@@ -57,7 +42,7 @@ app.service 'rmapsProfilesService', (
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
       service.currentProfile = profile
-      rmapsPrincipalService.setCurrentProfile profile
+      rmapsPrincipalService.setCurrentProfile profile, opts
 
   # IMPORTANT we need to unset the current profile upon logout
   # otherwise upon login we would try to reuse the existing / dead profile

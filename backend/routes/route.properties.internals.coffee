@@ -3,6 +3,7 @@ Promise = require 'bluebird'
 moment = require 'moment'
 
 profileService = require '../services/service.profiles'
+profileError = require '../utils/errors/util.error.profile'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
@@ -50,7 +51,7 @@ handleRoute = (res, next, serviceCall) ->
     res.json(data)
   .catch DataValidationError, (err) ->
     next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch profileService.CurrentProfileError, (err) ->
+  .catch profileError.CurrentProfileError, (err) ->
     next new ExpressResponse({profileIsNeeded: true, alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch (err) ->
     logger.error analyzeValue.getSimpleDetails(err)

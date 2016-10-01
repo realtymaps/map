@@ -4,13 +4,13 @@ logger = require('../config/logger').spawn('service:profiles')
 tables = require '../config/tables'
 db = require('../config/dbs').get('main')
 clsFactory = require '../utils/util.cls'
+profileErr = require '../utils/errors/util.error.profile'
 {singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
 
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
 
-class CurrentProfileError extends Error
 
 create = (newProfile) ->
   Promise.try () ->
@@ -105,10 +105,10 @@ getCurrentSessionProfile = (session) ->
       req = clsFactory().namespace.get 'req'
       session = req.session
   catch error
-    throw new CurrentProfileError(error.message)
+    throw new profileErr.CurrentProfileError(error.message)
 
   if !('current_profile_id' of session) and !session.profiles
-    throw new CurrentProfileError("Error getting current profile: session.current_profile_id=#{session.current_profile_id}, session.profiles.length=#{session.profiles?.length}")
+    throw new profileErr.CurrentProfileError("Error getting current profile: session.current_profile_id=#{session.current_profile_id}, session.profiles.length=#{session.profiles?.length}")
 
   session.profiles[session.current_profile_id]
 
@@ -155,5 +155,4 @@ module.exports = {
   create
   createForProject
   getProfileWhere
-  CurrentProfileError
 }
