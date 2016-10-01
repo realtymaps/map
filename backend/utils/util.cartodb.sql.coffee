@@ -35,10 +35,15 @@ cartodbSqlFactory = (destTable = 'parcels') ->
       CREATE INDEX idx_:frmTable:_fips_code_id ON :frmTable: USING btree (fips_code);
       CREATE INDEX idx_:frmTable:_the_geom_fips_code_id ON :frmTable: USING gist (the_geom);
       """
+
       drop_indexes: """
       DROP INDEX idx_:idx_name:_rm_property_id;
       DROP INDEX idx_:idx_name:_fips_code_id;
       DROP INDEX idx_:idx_name:_the_geom_fips_code_id;
+      """
+
+      fixTypes: """
+      alter table :frmTable: alter column street_address_num type text;
       """
 
   _format = ({sql, fipsCode, tableName, batch_id}) ->
