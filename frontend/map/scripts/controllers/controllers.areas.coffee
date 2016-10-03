@@ -131,12 +131,12 @@ rmapsLeafletHelpers) ->
 
     $http.post(backendRoutes.properties.drawnShapes,
       {
-        areaId: model.id
+        areaId: $scope.areaToShow.id
         state:
           filters: rmapsFilterManagerService.getFilters()
       }
     ).then ({data}) ->
-      updateStatistics(data, model.id)
+      updateStatistics(data, $scope.areaToShow.id)
 
   updateStatistics = (data, area_id, showStatsSave) ->
     dataSet = _.values(data)
