@@ -86,25 +86,19 @@ app.factory 'rmapsMapFactory',
 
         locationHandler = $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
           @setLocation(position)
-        @scope.$on '$destroy', locationHandler
 
         zoomHandler = $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
           @zoomTo result, doChangeZoom
-        @scope.$on '$destroy', zoomHandler
 
         boundsHandler = $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
           @fitBounds bounds, options
-        @scope.$on '$destroy', boundsHandler
 
         pinsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
-        @scope.$on '$destroy', pinsHandler
 
         favsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
-        @scope.$on '$destroy', favsHandler
 
         centerHandler = $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
           @setLocation location
-        @scope.$on '$destroy', centerHandler
 
         @scope.$on '$destroy', () =>
           locationHandler()
