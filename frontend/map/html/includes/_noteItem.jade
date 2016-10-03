@@ -1,5 +1,5 @@
 .row.note-item
-  .col-sm-12.pointer(ng-click="propertyClick(note.rm_property_id)")
+  .col-xs-12.pointer(ng-click="propertyClick(note.rm_property_id)")
     .note-image
       .note-img(ng-if="note.coordinates")
         img.desktop-only(rmaps-cdn-image ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
