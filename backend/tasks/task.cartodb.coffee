@@ -16,7 +16,7 @@ syncPrep = (subtask) ->
   loggerSyncPrep.debug "@@@@@@@@ cartodb:syncPrep @@@@@@@@"
 
   tables.cartodb.syncQueue()
-  .select('id', 'fips_code', 'batch_id')
+  .select('id', 'fips_code', 'batch_id', 'errors')
   .then (rows) ->
     loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
     loggerSyncPrep.debug rows
@@ -58,11 +58,22 @@ sync = (subtask) ->
     })
     .catch (error) ->
       # back out bad import
+      promises = []
       Promise.each tableNames, (tableName) ->
         logger.debug "backing out imports, tableName: #{tableName}"
-        cartodbSvc.drop({fipsCode:fips_code, tableName})
+        promises.push cartodbSvc.drop({fipsCode:fips_code, tableName})
+
+      Promise.all promises
       .then () ->
-        throw error
+        row.errors ?= []
+        row.errors.push error.message
+
+        tables.cartodb.syncQueue()
+        .update(errors: row.errors)
+        .where(id: row.id)
+        .then () ->
+          throw error
+          
   .then () ->
 
     tables.cartodb.syncQueue()
