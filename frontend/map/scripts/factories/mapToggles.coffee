@@ -39,6 +39,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
 
       @isSketchMode = false
       @isAreaDraw = false
+      @isStatsDraw = false
       @showOldToolbar = false
 
       @showAreaTap = false
@@ -89,8 +90,13 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @toggleIsSketchMode = () =>
         @isSketchMode = !@isSketchMode
 
-      @toggleIsAreaDraw = () =>
+      @toggleIsAreaDraw = ({stats} = {}) =>
         @isAreaDraw = !@isAreaDraw
+        if @isAreaDraw && stats
+          @isStatsDraw = true
+          @isTackedAreasDrawBar = true
+        else
+          @isStatsDraw = false
 
       @getHideAnyDraw = () =>
         @isSketchMode or @isAreaDraw

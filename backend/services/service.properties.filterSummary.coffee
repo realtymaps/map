@@ -11,12 +11,13 @@ moment = require 'moment'
 errorHandlingUtils =  require '../utils/errors/util.error.partiallyHandledError'
 
 module.exports =
-  getFilterSummary: ({validBody, profile, limit, filterSummaryImpl}) ->
+  getFilterSummary: ({validBody, profile, limit, filterSummaryImpl, ignoreSaved}) ->
     limit ?= config.backendClustering.resultThreshold
     filterSummaryImpl ?= combined
 
     validation.validateAndTransform(validBody, filterSummaryImpl.transforms)
     .then (queryParams) ->
+      logger.debug queryParams
 
       # Calculate permissions for the current user
       combined.getPermissions(profile)
@@ -28,12 +29,13 @@ module.exports =
         if !queryParams
           return []
 
-        # Include saved id's in query so no need to touch db later
-        queryParams.pins = _.keys(profile?.pins || {}) # `|| {}` defensive just in case no `.pins`
+        if !ignoreSaved
+          # Include saved id's in query so no need to touch db later
+          queryParams.pins = _.keys(profile?.pins || {}) # `|| {}` defensive just in case no `.pins`
 
-        # This helps ensure favorites are accounted for in query for the following edge case requirement:
-        #   When no status layers are selected, show only pins and favorites
-        queryParams.favorites = _.keys(profile?.favorites || {}) # `|| {}` defensive just in case no `.favorites`
+          # This helps ensure favorites are accounted for in query for the following edge case requirement:
+          #   When no status layers are selected, show only pins and favorites
+          queryParams.favorites = _.keys(profile?.favorites || {}) # `|| {}` defensive just in case no `.favorites`
 
 
         cluster = () ->

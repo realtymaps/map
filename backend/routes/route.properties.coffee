@@ -120,6 +120,20 @@ module.exports =
           profile: currentProfile(req)
         )
 
+  inGeometry:
+    method: "post"
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      internals.captureMapFilterState(handleStr: "filterSummary")
+    ]
+    handle: (req, res, next) ->
+      internals.handleRoute res, next, () ->
+        filterSummaryService.getFilterSummary(
+          profile: currentProfile(req)
+          validBody: req.validBody
+          ignoreSaved: true
+        )
+
   saves:
     middleware:
       auth.requireLogin(redirectOnFail: true)

@@ -50,7 +50,6 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   combined.getFilterSummaryAsQuery({queryParams, limit, query, permissions})
 
-
 getPropertyIdsInArea = ({queryParams, profile}) ->
   # Calculate permissions for the current user
   combined.getPermissions(profile)
@@ -73,7 +72,6 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
 
     query.then (properties) ->
       _.map(properties, 'rm_property_id')
-
 
 module.exports = {
   getFilterSummaryAsQuery

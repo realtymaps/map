@@ -26,7 +26,7 @@ rmapsFeatureGroupUtil
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
-
+    $scope.drawn.items = drawnItems
     featureGroupUtil = rmapsFeatureGroupUtil(drawnItems)
 
     $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
@@ -50,14 +50,20 @@ rmapsFeatureGroupUtil
       drawnShapesSvc
       drawnItems
 
-      createPromise: (geoJson) ->
+      createPromise: (layer) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
-        $scope.create(geoJson)
-        .then (result) ->
-          $scope.$emit rmapsEventConstants.areas
-          if !$scope.Toggles.isTackedAreasDrawBar
-            $scope.Toggles.isAreaDraw = false
-          result
+        geoJson = layer.toGeoJSON()
+        if $scope.Toggles.isStatsDraw
+          $scope.quickStats(geoJson)
+          $scope.drawn.quickStats = layer
+          return $q.resolve()
+        else
+          $scope.create(geoJson)
+          .then (result) ->
+            $scope.$emit rmapsEventConstants.areas
+            if !$scope.Toggles.isTackedAreasDrawBar
+              $scope.Toggles.isAreaDraw = false
+            result
 
 
       deleteAction: (model) ->
@@ -101,8 +107,8 @@ rmapsFeatureGroupUtil
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->
           control.enableHandle(handle: 'rectangle')
-        return
-      _drawCtrlFactory()
+      else
+        _drawCtrlFactory()
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)
