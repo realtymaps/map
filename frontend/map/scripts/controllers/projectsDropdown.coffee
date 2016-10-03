@@ -40,8 +40,6 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
   setScopeVariables()
 
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
-    setScopeVariables()
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     setScopeVariables()
 

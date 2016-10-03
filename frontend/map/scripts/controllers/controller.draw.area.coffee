@@ -10,10 +10,10 @@ $rootScope
 rmapsEventConstants
 rmapsDrawnUtilsService
 rmapsMapDrawHandlesFactory
-rmapsMapIds
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
 rmapsFeatureGroupUtil
+rmapsCurrentMapService
 ) ->
   $scope.tacked = false
 
@@ -21,7 +21,7 @@ rmapsFeatureGroupUtil
 
   isReadyPromise = $q.defer()
 
-  mapId = rmapsMapIds.mainMap()
+  mapId = rmapsCurrentMapService.mainMapId()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItemsAreas()
