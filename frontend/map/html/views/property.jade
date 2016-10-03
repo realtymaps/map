@@ -266,133 +266,257 @@ include ../includes/mixins/_noteInputMixin.jade
       .property-modal-buttons
         property-buttons(property="dataSources[0]")
 
-    .property-detail-container(ng-repeat="property in dataSources")
-      .prop-image.prop-image-md
+    uib-tabset
+      uib-tab(index="$index + 1" ng-repeat="property in dataSources track by $index" heading="{{property.tabHeading}}")
+        .property-detail-container
+          .prop-image.prop-image-md
 
-        property-images(property="property" image-height="205" image-width="{{windowWidth}}")
+            property-images(property="property" image-height="205" image-width="{{windowWidth}}")
 
-        .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
-          span(ng-if="property.data_source_type == 'county'") - Tax Record
-          span(ng-if="property.data_source_type == 'mls'") - {{property.mls_formal_name}}
+            .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
 
-      .container
-        .content-block.prop-attrs.border-bottom
-          .pull-right.text-right
-            .prop-price(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
-            .content-label
-              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
+          .container
+            .content-block.prop-attrs.border-bottom
+              .pull-right.text-right
+                .prop-price(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
+                .content-label
+                  .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
 
-          .content-emphasis.content-lg {{property.address.street}} {{property.address.unit}}
-          .content-muted {{property.address.citystate}} {{property.address.zip}}
+              .content-emphasis.content-lg {{property.address.street}} {{property.address.unit}}
+              .content-muted {{property.address.citystate}} {{property.address.zip}}
 
-        .content-block.prop-attrs.border-bottom(ng-show="getMail()")
-            .content-heading Mail Campaigns
+            .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+                .content-heading Mail Campaigns
 
-            .row.content-row.vertical-align(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
-              a.col-xs-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
-              .col-xs-3.content-body
-                span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
-              .col-xs-3.content-body
-                span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
-              .col-xs-3.content-body
-                button.btn.btn-sm.btn-white(mobile-modal modal-template="'MailReview'" modal-title="'Mail Review'" ng-show="mail.lob.thumbnails.length") Preview
-                  i.fa.fa-envelope
-                script(type="text/ng-template" id="MailReview")
-                  .preview-mail-window
-                    .modal-body
-                      img(rmaps-cdn-image ng-src="{{mail.lob.thumbnails[0].medium}}")
+                .row.content-row.vertical-align(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
+                  a.col-xs-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+                  .col-xs-3.content-body
+                    span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+                  .col-xs-3.content-body
+                    span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
+                  .col-xs-3.content-body
+                    button.btn.btn-sm.btn-white(mobile-modal modal-template="'MailReview'" modal-title="'Mail Review'" ng-show="mail.lob.thumbnails.length") Preview
+                      i.fa.fa-envelope
+                    script(type="text/ng-template" id="MailReview")
+                      .preview-mail-window
+                        .modal-body
+                          img(rmaps-cdn-image ng-src="{{mail.lob.thumbnails[0].medium}}")
 
-        .content-block.prop-attrs.border-bottom
-          .content-heading Property Info
+            .content-block.prop-attrs.border-bottom
+              .content-heading Property Info
 
-          .row.content-row
-            .col-xs-4
-              .content-value {{formatters.property.orDash(property.bedrooms)}}
-              .content-label Beds
-            .col-xs-4
-              .content-value {{formatters.property.orDash(property.baths.value)}}
-              .content-label {{property.baths.label}}
-            .col-xs-4
-              .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
-              .content-value(ng-if="!property.sqft_finished") -
-              .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
-                icon.fa.fa-question-circle(tooltip-placement="bottom" uib-tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
-              .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
+              .row.content-row
+                .col-xs-4
+                  .content-value {{formatters.property.orDash(property.bedrooms)}}
+                  .content-label Beds
+                .col-xs-4
+                  .content-value {{formatters.property.orDash(property.baths.value)}}
+                  .content-label {{property.baths.label}}
+                .col-xs-4
+                  .content-value(ng-if="property.sqft_finished") {{property.sqft_finished | number}}
+                  .content-value(ng-if="!property.sqft_finished") -
+                  .content-label(ng-if="property.data_source_type == 'county'") Assessed Sq Ft &nbsp;
+                    icon.fa.fa-question-circle(tooltip-placement="bottom" uib-tooltip="Sq Ft value used for tax purposes and may be different from actual Sq Ft of building")
+                  .content-label(ng-if="property.data_source_type != 'county'") Sq Ft
 
-          .row.content-row
-            .col-xs-4
-              .content-value(ng-if="property.year_built.value") {{property.year_built.value}}
-              .content-value(ng-if="!property.year_built.value") -
-              .content-label(ng-if="property.year_built.label") {{property.year_built.label}}
-              .content-label(ng-if="!property.year_built.label") Year Built
-            .col-xs-4
-              .content-value {{formatters.property.orDash(property.acres)}}
-              .content-label Acres
-            .col-xs-4
-              .content-value(ng-if="property.acres") {{property.acres*43560| number:0}}
-              .content-value(ng-if="!property.acres") -
-              .content-label Lot SqFt
+              .row.content-row
+                .col-xs-4
+                  .content-value(ng-if="property.year_built.value") {{property.year_built.value}}
+                  .content-value(ng-if="!property.year_built.value") -
+                  .content-label(ng-if="property.year_built.label") {{property.year_built.label}}
+                  .content-label(ng-if="!property.year_built.label") Year Built
+                .col-xs-4
+                  .content-value {{formatters.property.orDash(property.acres)}}
+                  .content-label Acres
+                .col-xs-4
+                  .content-value(ng-if="property.acres") {{property.acres*43560| number:0}}
+                  .content-value(ng-if="!property.acres") -
+                  .content-label Lot SqFt
 
-          .row.content-row
-            .col-xs-4
-              .content-value(ng-if="property.property_type") {{property.property_type}}
-              .content-value(ng-if="!property.property_type") -
-              .content-label Property Type
-            .col-xs-4
-              .content-value(ng-if="property.zoning") {{property.zoning}}
-              .content-value(ng-if="!property.zoning") -
-              .content-label Zoning
-            .col-xs-4
-              .content-value(ng-if="property.status_display") {{property.status_display}}
-              .content-label(ng-if="property.status_display") MLS Status
+              .row.content-row
+                .col-xs-4
+                  .content-value(ng-if="property.property_type") {{property.property_type}}
+                  .content-value(ng-if="!property.property_type") -
+                  .content-label Property Type
+                .col-xs-4
+                  .content-value(ng-if="property.zoning") {{property.zoning}}
+                  .content-value(ng-if="!property.zoning") -
+                  .content-label Zoning
+                .col-xs-4
+                  .content-value(ng-if="property.status_display") {{property.status_display}}
+                  .content-label(ng-if="property.status_display") MLS Status
 
-        .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
-          .content-heading Owner Info
-          p
-            .content-label Current Owner
-            .content-lg
-              span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
-              span {{property.owner_name}}
-              span(ng-if="property.owner_name_2")
-                br/
-                | {{property.owner_name_2}}
-          p
-            .content-label Address
-            .content-lg {{property.address.street}} {{property.address.unit}}
-              br/
-              | {{property.address.citystate}} {{property.address.zip}}
+            .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
+              .content-heading Owner Info
+              p
+                .content-label Current Owner
+                .content-lg
+                  span(ng-if="formatters.property.getCurrentOwnersTitle(property)") {{formatters.property.getCurrentOwnersTitle(property)}}:
+                  span {{property.owner_name}}
+                  span(ng-if="property.owner_name_2")
+                    br/
+                    | {{property.owner_name_2}}
+              p
+                .content-label Address
+                .content-lg {{property.address.street}} {{property.address.unit}}
+                  br/
+                  | {{property.address.citystate}} {{property.address.zip}}
 
-        .content-block.border-bottom(ng-if="property.data_source_type == 'mls' || property.days_on_market != null || property.original_price || property.close_date")
-          .content-heading MLS Listing Info
-          .row.content-row
-            .col-xs-6
-              .content-label Listed for
-              .content-value {{formatters.property.humanizeDays(property.days_on_market) }}
-            .col-xs-6
-              .content-label Orginal Asked Price
-              .content-value {{formatters.property.getPrice(property.original_price)}}
-          .row.content-row(ng-if="property.close_date")
-            .col-xs-6
-              .content-label Close Price
-              .content-value {{formatters.property.getPrice(property.price)}}
-            .col-xs-6
-              .content-label Close Date
-              .content-value
-                span {{property.close_date | date : 'MM/dd/yyyy'}}
+            .content-block.border-bottom(ng-if="property.data_source_type == 'mls' || property.days_on_market != null || property.original_price || property.close_date")
+              .content-heading MLS Listing Info
+              .row.content-row
+                .col-xs-6
+                  .content-label Listed for
+                  .content-value {{formatters.property.humanizeDays(property.days_on_market) }}
+                .col-xs-6
+                  .content-label Orginal Asked Price
+                  .content-value {{formatters.property.getPrice(property.original_price)}}
+              .row.content-row(ng-if="property.close_date")
+                .col-xs-6
+                  .content-label Close Price
+                  .content-value {{formatters.property.getPrice(property.price)}}
+                .col-xs-6
+                  .content-label Close Date
+                  .content-value
+                    span {{property.close_date | date : 'MM/dd/yyyy'}}
 
-        .content-block.prop-attrs.border-bottom(ng-if="property.description")
-          .content-heading Description
-          p.content-body {{property.description}}
+            .content-block.prop-attrs.border-bottom(ng-if="property.description")
+              .content-heading Description
+              p.content-body {{property.description}}
 
-        .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
-          .content-heading Broker Reciprocity
-          .content-row
-            .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toUTCString() | date : 'MM/dd/yyyy'}}
-            .row
-              .col-lg-3
-                .mls-icon
-                  img(ng-show="property.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
-              .col-lg-9
-                .mls-disclaimer {{property.disclaimer_text}}
-          .content-row(ng-show="property.disclaimer_logo || property.disclaimer_text")
-            .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.mls_formal_name}}
+            uib-accordion.row.content-block.subscriber-groups(close-others="false")
+              div(uib-accordion-group ng-repeat="group in groups" ng-if="property[group.subscriber][group.name].length" heading="{{getLabel(group, property)}}" is-open="property[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':property[group.subscriber][group.name].isAccordionOpen}")
+                div(ng-class="{'table-striped-single': group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings', 'table-striped-pair': group.name == 'deedHistory' || group.name == 'mortgageHistory' || group.name == 'priorListings'}")
+
+                  .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings'" ng-repeat="field in property[group.subscriber][group.name]")
+                    .col-xs-4.field-label {{field.name}}
+                    .col-xs-8.field-value
+                      div(ng-if="!field.value.lines") {{field.value}}
+                      div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+
+                  .row.content-row.history(ng-if="group.name == 'deedHistory'")
+                    .col-xs-5 Sale Date
+                    .col-xs-5 Price
+                    .col-xs-2
+
+                  .row.content-row.history(ng-if="group.name == 'deedHistory'" ng-show="deed.extra || deed.showExtra" ng-repeat="deed in property[group.subscriber].deedHistoryExtra track by $index")
+                    .col-xs-5(ng-if="deed.extra && deed.sale_date") {{deed.sale_date | date}}
+                    .col-xs-5(ng-if="deed.extra && !deed.sale_date") -
+                    .col-xs-5(ng-if="deed.extra && deed.price != null") {{deed.price | currency:"$":0}}
+                    .col-xs-5(ng-if="deed.extra && deed.price == null") -
+                    .col-xs-2(ng-if="deed.extra")
+                      a(ng-click="deed.extra.showExtra = !deed.extra.showExtra")
+                        span(ng-show="!deed.extra.showExtra") More
+                        span(ng-show="deed.extra.showExtra") Less
+
+                    uib-accordion.col-xs-12(ng-if="!deed.extra" close-others="false")
+                      div(uib-accordion-group heading="General" ng-init="deed.isGeneralAccordionOpen = true" is-open="deed.isGeneralAccordionOpen" ng-class="{'uib-accordion-open':deed.isGeneralAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row
+                            .col-xs-4 Buyer
+                            .col-xs-8
+                              span {{formatters.property.orDash(deed.owner_name)}}
+                              span(ng-if="deed.owner_name_2") &nbsp;&amp; {{deed.owner_name_2}}
+                          .row.content-row
+                            .col-xs-4 Seller
+                            .col-xs-8
+                              span {{formatters.property.orDash(deed.seller_name)}}
+                              span &nbsp;&amp; {{deed.seller_name_2}}
+                          .row.content-row
+                            .col-xs-4 Doc Type
+                            .col-xs-8 {{formatters.property.orDash(deed.document_type)}}
+
+                      div(uib-accordion-group ng-repeat="group in groups" ng-if="deed[group.subscriber][group.name].length" heading="{{getLabel(group, deed)}}" is-open="deed[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':deed[group.subscriber][group.name].isAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
+                            .col-xs-4 {{field.name}}
+                            .col-xs-8
+                              div(ng-if="!field.value.lines") {{field.value}}
+                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+
+                  .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
+                    .col-xs-5 Date
+                    .col-xs-5 Amount
+                    .col-xs-2
+
+                  .row.content-row.history(ng-if="group.name == 'mortgageHistory'" ng-show="mortgage.extra || mortgage.showExtra" ng-repeat="mortgage in property[group.subscriber].mortgageHistoryExtra track by $index")
+                    .col-xs-5(ng-if="mortgage.extra && mortgage.close_date") {{mortgage.close_date | date}}
+                    .col-xs-5(ng-if="mortgage.extra && !mortgage.close_date") -
+                    .col-xs-5(ng-if="mortgage.extra && mortgage.amount != null") {{mortgage.amount | currency:"$":0}}
+                    .col-xs-5(ng-if="mortgage.extra && mortgage.amount == null") -
+                    .col-xs-2(ng-if="mortgage.extra")
+                      a(ng-click="mortgage.extra.showExtra = !mortgage.extra.showExtra")
+                        span(ng-show="!mortgage.extra.showExtra") More
+                        span(ng-show="mortgage.extra.showExtra") Less
+
+                    uib-accordion.col-xs-12(ng-if="!mortgage.extra" close-others="false")
+
+                      div(uib-accordion-group heading="General" ng-init="mortgage.isGeneralAccordionOpen = true" is-open="mortgage.isGeneralAccordionOpen" ng-class="{'uib-accordion-open':mortgage.isGeneralAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row
+                            .col-xs-4 Lender
+                            .col-xs-8 {{formatters.property.orDash(mortgage.lender)}}
+                          .row.content-row
+                            .col-xs-4 Type
+                            .col-xs-8 {{formatters.property.orDash(mortgage.financing_type)}}
+                          .row.content-row
+                            .col-xs-4 Term
+                            .col-xs-8 {{formatters.property.orDash(mortgage.term)}}
+                          .row.content-row
+                            .col-xs-4 Purpose
+                            .col-xs-8 {{formatters.property.orDash(mortgage.loan_type)}}
+
+                      div(uib-accordion-group ng-repeat="group in groups" ng-if="mortgage[group.subscriber][group.name].length" heading="{{getLabel(group, mortgage)}}" is-open="mortgage[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':mortgage[group.subscriber][group.name].isAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row(ng-if="group.name != 'mortgageHistory'" ng-repeat="field in mortgage[group.subscriber][group.name]")
+                            .col-xs-4 {{field.name}}
+                            .col-xs-8
+                              div(ng-if="!field.value.lines") {{field.value}}
+                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+
+                  .row.content-row.history(ng-if="group.name == 'priorListings'")
+                    .col-xs-5(ng-if="!listing.discontinued_date") Close Date
+                    .col-xs-5(ng-if="listing.discontinued_date") Discontinued Date
+                    .col-xs-5 Price
+                    .col-xs-2
+
+                  .row.content-row.history(ng-if="group.name == 'priorListings'" ng-show="listing.extra || listing.showExtra" ng-repeat="listing in property[group.subscriber].priorListingsExtra track by $index")
+                    .col-xs-5(ng-if="listing.extra && !listing.discontinued_date") {{listing.close_date | date}}
+                    .col-xs-5(ng-if="listing.extra && listing.discontinued_date") {{listing.discontinued_date | date}}
+                    .col-xs-5(ng-if="listing.extra") {{listing.price | currency:"$":0}}
+                    .col-xs-2(ng-if="listing.extra")
+                      a(ng-click="listing.extra.showExtra = !listing.extra.showExtra" ng-show="listing.subscriber_groups")
+                        span(ng-show="!listing.extra.showExtra") More
+                        span(ng-show="listing.extra.showExtra") Less
+                    uib-accordion.col-xs-12(ng-if="!listing.extra" close-others="false")
+
+                      uib-accordion.col-xs-12(ng-if="!listing.extra" close-others="false")
+                      div(uib-accordion-group heading="General" ng-init="listing.isGeneralAccordionOpen = true" is-open="listing.isGeneralAccordionOpen" ng-class="{'uib-accordion-open':listing.isGeneralAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row
+                            .col-xs-4 Status
+                            .col-xs-8 {{listing.status}}
+                          .row.content-row
+                            .col-xs-4 Days on Market
+                            .col-xs-8 {{listing.days_on_market}}
+
+                      div(uib-accordion-group ng-repeat="group in groups" ng-if="listing[group.subscriber][group.name].length" heading="{{getLabel(group, listing)}}" is-open="listing[group.subscriber][group.name].isAccordionOpen" ng-class="{'uib-accordion-open':listing[group.subscriber][group.name].isAccordionOpen}")
+                        .table-striped-single
+                          .row.content-row(ng-if="group.name != 'priorListings'" ng-repeat="field in listing[group.subscriber][group.name]")
+                            .col-xs-4 {{field.name}}
+                            .col-xs-8
+                              div(ng-if="!field.value.lines") {{field.value}}
+                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+
+            .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
+              .content-heading Broker Reciprocity
+              .content-row
+                .mls-info Based on information from {{property.mls_formal_name}} as of {{property.up_to_date.toUTCString() | date : 'MM/dd/yyyy'}}
+                .row
+                  .col-lg-3
+                    .mls-icon
+                      img(ng-show="property.disclaimer_logo" rmaps-cdn-image ng-src="/assets/mlsicons/{{property.disclaimer_logo}}")
+                  .col-lg-9
+                    .mls-disclaimer {{property.disclaimer_text}}
+              .content-row(ng-show="property.disclaimer_logo || property.disclaimer_text")
+                .btn.btn-white(ng-click="showDMCA(property)") DMCA for {{property.mls_formal_name}}

@@ -113,8 +113,11 @@ app.controller 'rmapsPropertyCtrl',
         for mls in property.mls || []
           mls.subscriber_groups?.priorListings = mls.prior_entries
 
-        # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
         for source in $scope.dataSources
+          # Tab heading (mobile)
+          source.tabHeading = if source.data_source_type == 'county' then 'Tax Record' else source.mls_formal_name
+
+          # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
           for history in ['deedHistory', 'mortgageHistory', 'priorListings']
             if historyObj = source?.subscriber_groups?[history]
               historyExtra = []
