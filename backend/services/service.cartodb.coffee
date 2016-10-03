@@ -44,7 +44,8 @@ upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) -> Promise.try () ->
       logger.debug -> "is NOT isLessThanMax: split upload"
       internals.splitUpload(cmds)
     .catch errorHandlingUtils.isUnhandled, (error) ->
-      throw new new errorHandlingUtils.PartiallyHandledError error, "uploadFile failed"
+      errorMsg = if _.isString error.message then error.message else JSON.stringify(error.message)
+      throw new new errorHandlingUtils.PartiallyHandledError "uploadFile failed: #{errorMsg}"
 
 ###
   Public: Utility function to export our parcel data of a specific
@@ -149,17 +150,26 @@ syncDequeue = ({tableNames, fipsCode, batch_id, id, skipDrop, skipDelete, skipIn
   if !Array.isArray(tableNames)
     tableNames = [tableNames]
 
+  entity = _.extend {}, {fips_code: fipsCode, batch_id, id}
+  entity = _.cleanObject entity
+
   Promise.each tableNames, (tableName) ->
     logger.debug("@@@@@@@ synching #{tableName} @@@@@@@")
     synchronize({fipsCode, tableName, skipDrop, skipDelete, skipIndexes, batch_id})
   .then () ->
     logger.debug "dequeing: id: #{id}, batch_id: #{batch_id}"
-    entity = _.extend {}, {fips_code: fipsCode, batch_id, id}
-    entity = _.cleanObject entity
 
     tables.cartodb.syncQueue()
     .where(entity)
     .delete()
+  .catch (error) ->
+    tables.cartodb.syncQueue()
+    .where(entity)
+    .then ([result]) ->
+      result.errors ?= []
+      result.errors.push error.message
+      tables.cartodb.syncQueue()
+      .update(result)
 
 
 
