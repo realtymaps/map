@@ -20,7 +20,7 @@ app.controller "rmapsDrawSketchCtrl", (
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
-    rmapsFeatureGroupUtil(drawnItems)
+    new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawSketchCtrl'})
 
     _handles = rmapsMapDrawHandlesFactory {
       mapId
