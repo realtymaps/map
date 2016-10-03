@@ -162,15 +162,6 @@ syncDequeue = ({tableNames, fipsCode, batch_id, id, skipDrop, skipDelete, skipIn
     tables.cartodb.syncQueue()
     .where(entity)
     .delete()
-  .catch (error) ->
-    tables.cartodb.syncQueue()
-    .where(entity)
-    .then ([result]) ->
-      result.errors ?= []
-      result.errors.push error.message
-      tables.cartodb.syncQueue()
-      .update(result)
-
 
 
 module.exports = {
