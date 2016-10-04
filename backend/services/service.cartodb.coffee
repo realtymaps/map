@@ -17,7 +17,7 @@ MAX_LINE_COUNT = 150000
 
   Returns the Promise(Array<tableName:String>)
 ###
-upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) -> Promise.try () ->
+upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) ->
   cmds = internals.splitCommands(fipsCode: fips_code, lineCount:lineMaxCount)
   {wc} = cmds
   # NOTE:
@@ -44,8 +44,19 @@ upload = (fips_code, lineMaxCount = MAX_LINE_COUNT) -> Promise.try () ->
       logger.debug -> "is NOT isLessThanMax: split upload"
       internals.splitUpload(cmds)
     .catch errorHandlingUtils.isUnhandled, (error) ->
-      errorMsg = if _.isString error.message then error.message else JSON.stringify(error.message)
-      throw new new errorHandlingUtils.PartiallyHandledError "uploadFile failed: #{errorMsg}"
+      logger.debug -> "@@@@ error"
+      logger.debug -> error
+
+      errorMsg = JSON.parse error.message
+      #either an object or a code int / string
+      errorMsg = if errorMsg.title?
+        logger.debug -> "errorMsg.title"
+        errorMsg.title
+      else
+        logger.debug -> "code and or string"
+        logger.debug -> errorMsg
+        errorMsg
+      throw new errorHandlingUtils.PartiallyHandledError(error, "uploadFile failed: #{errorMsg}")
 
 ###
   Public: Utility function to export our parcel data of a specific
@@ -70,8 +81,11 @@ toCSV = ({fileName, fips_code, batch_id, rawEntity, select}) -> Promise.try () -
   select ?= select = ['feature']
 
   logger.debug -> "fileName: #{fileName}, fips_code: #{fips_code}"
-  logger.debug -> "batch_id: #{batch_id}" if batch_id
-  logger.debug -> "rawEntity: #{JSON.stringify rawEntity}" if rawEntity
+
+  if batch_id
+    logger.debug -> "batch_id: #{batch_id}"
+  if rawEntity
+    logger.debug -> "rawEntity: #{JSON.stringify rawEntity}"
 
   stream = if !batch_id && !rawEntity
     internals.fipsCodeQuery({fips_code}).stream()
