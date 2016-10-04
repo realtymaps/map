@@ -15,4 +15,4 @@ _.cleanObject = (object, opts = {}) ->
       return _.isUndefined(it)
     else if opts.emptyString
       return it == ""
-    _.isEmpty(it) && it != false && it != 0
+    !it && it != false && it != 0

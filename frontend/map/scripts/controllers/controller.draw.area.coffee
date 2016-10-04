@@ -26,8 +26,9 @@ rmapsCurrentMapService
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
+
     $scope.drawn.items = drawnItems
-    featureGroupUtil = rmapsFeatureGroupUtil(drawnItems)
+    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawAreaCtrl'})
 
     $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
       $log.debug 'list mouseover'
