@@ -45,7 +45,7 @@ cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
       else
         #clean raw table
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} cleaning all non errors"
-        rawTempTable.whereNull('errors').delete()
+        rawTempTable.whereNull('rm_error_msg').delete()
         .then () ->
           #mark as cleaned
           loadEntryQuery
