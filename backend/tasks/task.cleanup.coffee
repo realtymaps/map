@@ -9,9 +9,6 @@ mlsHelpers = require('./util.mlsHelpers')
 _ = require('lodash')
 internals = require './task.cleanup.internals'
 
-# NOTE: This file a default task definition used for MLSs that have no special cases
-NUM_ROWS_TO_PAGINATE = 2500
-
 
 ### eslint-disable ###
 rawTables = (subtask) ->
@@ -90,7 +87,7 @@ deleteInactiveRows = (subtask) ->
 ### eslint-disable ###
 deletePhotosPrep = (subtask) ->
   ### eslint-enable ###
-  numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || NUM_ROWS_TO_PAGINATE
+  numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || internals.NUM_ROWS_TO_PAGINATE
 
   tables.deletes.photos()
   .select('key')

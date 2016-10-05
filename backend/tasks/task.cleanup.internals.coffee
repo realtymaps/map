@@ -20,7 +20,6 @@ _tableNames = (entity) ->
   q
 
 
-
 tableNamesNotCleaned = (days = config.CLEANUP.OLD_TABLE_DAYS) ->
   _tableNames(cleaned: false)
   .whereRaw("rm_inserted_time < now_utc() - '#{days} days'::INTERVAL")
