@@ -40,7 +40,7 @@ cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
       if !exists
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} is already gone deleting loadHistory entry"
         #already dropped or never existed
-        loadEntryQuery.delete()
+        loadEntryQuery.update(dropped:true)
         return
       else
         #clean raw table
