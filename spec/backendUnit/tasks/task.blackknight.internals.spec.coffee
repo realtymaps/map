@@ -154,7 +154,6 @@ describe "task.blackknight.internal", () ->
 
       bkServiceInternals.getProcessInfo(inputSubtask, inputSubtaskStartTime)
       .then (processInfo) ->
-        objectDiff(processInfo, outputProcessInfo)
         expect(processInfo).to.eql outputProcessInfo
         revertAwsListObjects()
         done()
