@@ -172,10 +172,20 @@ _rules =
       days_on_market:
         alias: 'Days on Market'
         required: true
+        type: name: 'integer'
+
+      days_on_market_cumulative:
+        alias: 'Cumulative Days on Market'
+        required: true
+        type: name: 'integer'
+
+      days_on_market_filter:
+        alias: 'Days on Market Filter'
+        required: true
         type: name: 'days_on_market'
-        input: []
+        input: {}
         valid: () ->
-          @input[0] || @input[1]
+          @input.dom? || @input.cdom? || (@input.close_date? && @input.creation_date?)
 
       hide_address:
         alias: 'Hide Address'
