@@ -10,19 +10,24 @@ NUM_ROWS_TO_PAGINATE = 2500
 
 
 _tableNames = (entity) ->
-  tables.jobQueue.dataLoadHistory()
+  q = tables.jobQueue.dataLoadHistory()
   .select('raw_table_name')
-  .where(entity)
   .whereNotNull('raw_table_name')
+
+  if entity
+    q.where(entity)
+
+  q
+
 
 
 tableNamesNotCleaned = (days = config.CLEANUP.OLD_TABLE_DAYS) ->
-  _tableNames(cleaned: false, dropped: false)
+  _tableNames(cleaned: false)
   .whereRaw("rm_inserted_time < now_utc() - '#{days} days'::INTERVAL")
 
 
 tablenamesNotDropped = (years = config.CLEANUP.OLD_TABLE_YEARS) ->
-  _tableNames(dropped: false)
+  _tableNames()
   .whereRaw("rm_inserted_time < now_utc() - '#{years} years'::INTERVAL")
 
 
@@ -40,7 +45,7 @@ cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
       if !exists
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} is already gone deleting loadHistory entry"
         #already dropped or never existed
-        loadEntryQuery.update(dropped:true)
+        loadEntryQuery.delete()
         return
       else
         #clean raw table
@@ -58,7 +63,7 @@ dropRawTables = (loadEntriesQuery = tablenamesNotDropped()) ->
     .then () ->
       tables.jobQueue.dataLoadHistory()
       .where(loadEntry)
-      .update(dropped: true)
+      .delete()
 
 
 module.exports = {
