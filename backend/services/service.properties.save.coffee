@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-routeHelpers = require '../utils/util.route.helpers'
+profileSvc = require '../services/service.profiles'
 errors = require '../utils/errors/util.errors.properties'
 logger = require('../config/logger').spawn('service:properties:save')
 tables = require '../config/tables'
@@ -40,7 +40,7 @@ _updateRaw = ({table, column, toUpdate, rm_property_id, id}) ->
   .update "#{column}": raw
 
 _pin = ({rm_property_id, type, doAdd}) ->
-  profile = routeHelpers.currentProfile()
+  profile = profileSvc.getCurrentSessionProfile()
   logger.debug "#@@@@@@@@@@@@@@@@ type: #{type}@@@@@@@@@@@@@@@@@@@@@"
   #get what is in the db to make sure we are synced
   _pinsPromise profile
@@ -76,7 +76,7 @@ _pin = ({rm_property_id, type, doAdd}) ->
         }
 
 _fave = ({rm_property_id, type, doAdd}) ->
-  profile = routeHelpers.currentProfile()
+  profile = profileSvc.getCurrentSessionProfile()
 
   #get what is in the db to make sure we are synced
   _favoritesPromise profile
@@ -107,7 +107,7 @@ _fave = ({rm_property_id, type, doAdd}) ->
         }
 
 save = ({type, rm_property_id}) ->
-  profile = routeHelpers.currentProfile()
+  profile = profileSvc.getCurrentSessionProfile()
   switch type
     when 'pin'
       logger.debug "pinning #{rm_property_id} for profile id: #{profile.id}"
@@ -127,7 +127,7 @@ save = ({type, rm_property_id}) ->
   # enqueue to user_events_transient
 
 getAll = () ->
-  profile = routeHelpers.currentProfile()
+  profile = profileSvc.getCurrentSessionProfile()
 
   Promise.join _pinsPromise(profile), _favoritesPromise(profile), ([{pins}], [{favorites}]) ->
     { pins, favorites }

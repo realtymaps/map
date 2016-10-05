@@ -8,19 +8,19 @@ app.controller "rmapsDrawSketchCtrl", (
   rmapsEventConstants,
   rmapsDrawnUtilsService
   rmapsMapDrawHandlesFactory,
-  rmapsMapIds
   rmapsDrawCtrlFactory
   rmapsFeatureGroupUtil
+  rmapsCurrentMapService
 ) ->
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
-  mapId = rmapsMapIds.mainMap()
+  mapId = rmapsCurrentMapService.mainMapId()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
-    rmapsFeatureGroupUtil(drawnItems)
+    new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawSketchCtrl'})
 
     _handles = rmapsMapDrawHandlesFactory {
       mapId

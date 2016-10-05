@@ -1,6 +1,5 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-profileUtil = require '../../common/utils/util.profile'
 httpStatus = require '../../common/utils/httpStatus'
 DataValidationError = require './errors/util.error.dataValidation'
 {MissingVarError, UpdateFailedError} = require './errors/util.errors.crud'
@@ -11,20 +10,12 @@ clsFactory = require './util.cls'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-class CurrentProfileError extends Error
 class NotFoundError extends Error
 
 methodExec = (req, methods, next) ->
   if !methods[req.method]
     return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: quiet, status: httpStatus.BAD_REQUEST})
   methods[req.method]()
-
-currentProfile = (req) ->
-  try
-    req ?= clsFactory().namespace.get 'req'
-    profileUtil.currentProfile(req.session)
-  catch error
-    throw new CurrentProfileError(error.message)
 
 mergeHandles = (handles, config) ->
   for key of config
@@ -95,8 +86,6 @@ clsFullUrl = (pathname) ->
 
 module.exports =
   methodExec: methodExec
-  currentProfile: currentProfile
-  CurrentProfileError: CurrentProfileError
   mergeHandles: mergeHandles
   NotFoundError: NotFoundError
   handleQuery: handleQuery

@@ -1,11 +1,11 @@
 Promise = require 'bluebird'
 
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
+finalLogger = logger.spawn('final')
 tables = require '../config/tables'
 mlsHelpers = require './util.mlsHelpers'
 countyHelpers = require './util.countyHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
-
 
 column = 'feature'
 
@@ -42,6 +42,12 @@ finalizeParcelEntry = ({entries, subtask}) ->
 finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   parcel = finalizeParcelEntry({entries: parcels, subtask})
 
+  if !parcel.street_address_num?
+    delete parcel.stree_address_num
+
+  if !parcel.street_unit_num?
+    delete parcel.street_unit_num
+
   tables.finalized.parcel(transaction: transaction)
   .where
     rm_property_id: id
@@ -49,6 +55,7 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
     active: false
   .delete()
   .then () ->
+    finalLogger.debug -> parcel
     tables.finalized.parcel(transaction: transaction)
     .insert(parcel)
   .then () ->
@@ -66,7 +73,7 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
-          logger.debug "mlsHelpers.finalizeData"
+          finalLogger.debug "mlsHelpers.finalizeData"
           mlsHelpers.finalizeData {
             subtask
             id
@@ -76,7 +83,7 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
             delay: 0
           }
         else
-          logger.debug "countyHelpers.finalizeData"
+          finalLogger.debug "countyHelpers.finalizeData"
           #delay is zero since higher up the chain we have already been delayed
           countyHelpers.finalizeData {
             subtask

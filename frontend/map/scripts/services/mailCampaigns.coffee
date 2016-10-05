@@ -17,10 +17,6 @@ app.service 'rmapsMailCampaignService', (
   getPromise = null
   _mail = []
 
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-    $log.debug 'Mail Service profile updated event'
-    service.getProjectMail true
-
   $rootScope.$onRootScope rmapsEventConstants.principal.logout.success, (event, profile) ->
     $log.debug 'Mail Service user logout event'
     service.clear()

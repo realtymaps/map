@@ -7,5 +7,12 @@ _ = require 'lodash'
 
   Returns the cleaned object.
 ###
-_.cleanObject = (object) ->
-  _.omit(object, (it) -> _.isUndefined it )
+_.cleanObject = (object, opts = {}) ->
+  _.omit object, (it) ->
+    if opts.null
+      return _.isNull(it)
+    if opts.undefined
+      return _.isUndefined(it)
+    else if opts.emptyString
+      return it == ""
+    !it && it != false && it != 0

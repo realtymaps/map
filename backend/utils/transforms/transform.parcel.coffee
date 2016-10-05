@@ -28,7 +28,7 @@ prepForRmPropertyId =
 
   street_unit_num:
     input: 'stunitnum'
-    transform: validators.string()
+    transform: validators.string(trim:true)
 
 
 final =

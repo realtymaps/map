@@ -3,9 +3,10 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('service:profiles')
 tables = require '../config/tables'
 db = require('../config/dbs').get('main')
+clsFactory = require '../utils/util.cls'
+profileErr = require '../utils/errors/util.error.profile'
 {singleRow, whereAndWhereIn} = require '../utils/util.sql.helpers'
 {basicColumns, joinColumns} = require '../utils/util.sql.columns'
-{currentProfile} = require '../../common/utils/util.profile'
 
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
@@ -99,7 +100,17 @@ getClientProfiles = (auth_user_id) -> Promise.try () ->
     _.indexBy profiles, 'id'
 
 getCurrentSessionProfile = (session) ->
-  currentProfile(session)
+  try
+    if !session?
+      req = clsFactory().namespace.get 'req'
+      session = req.session
+  catch error
+    throw new profileErr.CurrentProfileError(error.message)
+
+  if !('current_profile_id' of session) and !session.profiles
+    throw new profileErr.CurrentProfileError("Error getting current profile: session.current_profile_id=#{session.current_profile_id}, session.profiles.length=#{session.profiles?.length}")
+
+  session.profiles[session.current_profile_id]
 
 # The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
 update = (profile, auth_user_id) -> Promise.try () ->

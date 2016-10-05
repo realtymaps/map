@@ -3,18 +3,19 @@ _ =  require 'lodash'
 
 app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
-  $log = $log.spawn('rmapsFeatureGroupUtil')
+  ({featureGroup, ownerName}) ->
+    @$log = $log.spawn("rmapsFeatureGroupUtil:#{ownerName}")
+    @$log.debug('initializing')
 
-  (featureGroup) ->
     origFillOpacity = null
     firstSetOpacity = true
 
     featureGroup.on 'mouseout', ({layer} = {}) =>
-      $log.debug 'shape mouseout'
+      @$log.debug 'shape mouseout'
       @onMouseLeave(layer)
 
     featureGroup.on 'mouseover', ({layer} = {}) =>
-      $log.debug 'shape  mouseover'
+      @$log.debug 'shape  mouseover'
       @onMouseOver(layer)
 
     @getLayer = (geojsonModel) ->
@@ -30,6 +31,10 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
     @setDrawItemColor =({entity, fillColor, fillOpacity, firstOpacity}) ->
       drawItem = if entity.setStyle? then entity else @getLayer(entity)
 
+      if!drawItem
+        @$log.debug 'undefined drawItem'
+        return
+
       if firstSetOpacity && firstOpacity
         firstSetOpacity = false
         origFillOpacity = drawItem.options.fillOpacity
@@ -38,7 +43,8 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
         fillColor
         fillOpacity
       }
-      drawItem.setStyle(_.cleanObject options)
+      opt = _.cleanObject(options)
+      drawItem.setStyle(opt)
 
     @onMouseLeave = (entity) ->
       @setDrawItemColor {entity,fillOpacity: origFillOpacity}

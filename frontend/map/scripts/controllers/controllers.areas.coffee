@@ -30,6 +30,10 @@ rmapsLeafletHelpers) ->
 
   $scope.drawController = null
 
+  $scope.drawn =
+    items: null
+    quickStats: null
+
   $scope.centerOn = (model) ->
     #zoom to bounds on shapes
     #handle polygons, circles, and points
@@ -53,7 +57,7 @@ rmapsLeafletHelpers) ->
     modalInstance.result
 
   #create with no modal and default a name
-  $scope.create = (model) ->
+  $scope.create = (model, layer) ->
     model.properties.area_name = "Untitled Area"
     _signalUpdate(drawnShapesSvc.create model)
     .then (id) ->
@@ -62,6 +66,17 @@ rmapsLeafletHelpers) ->
       else
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
       id
+
+  $scope.quickStats = (model) ->
+    $log.debug 'quick stats', model
+    filters = rmapsFilterManagerService.getFilters()
+    geometry = _.extend(model.geometry, model.properties?.shape_extras)
+    body = { state: {filters}, geometry }
+    $http.post(backendRoutes.properties.inGeometry, body, cache: false)
+    .then ({data}) ->
+      $log.debug data
+      $scope.areaToShow = id: 0, area_name: 'Quick'
+      updateStatistics(data, 0, true)
 
   $scope.update = (model) ->
     $scope.createModal(model).then (modalModel) ->
@@ -112,56 +127,70 @@ rmapsLeafletHelpers) ->
 
   $scope.showStatistics = (model) ->
     $scope.areaToShow = model.properties
-
     $scope.centerOn(model)
 
-    updateStatistics($scope.areaToShow.id)
-    .then (stats) ->
-      modalInstance = $uibModal.open
-        animation: true
-        scope: $scope
-        template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
-
-  updateStatistics = (area_id) ->
-    $log.debug "Querying for properties in area #{area_id}"
     $http.post(backendRoutes.properties.drawnShapes,
       {
-        areaId: area_id
+        areaId: $scope.areaToShow.id
         state:
           filters: rmapsFilterManagerService.getFilters()
       }
-    )
-    .then ({data}) ->
-      $log.debug "calculating area #{area_id} stats"
-      dataSet = _.values(data)
+    ).then ({data}) ->
+      updateStatistics(data, $scope.areaToShow.id)
 
-      stats = d3.nest()
-      .key (d) ->
-        d.status
-      .rollup (status) ->
-        valid_price = status.filter (p) -> p.price?
-        valid_sqft = status.filter (p) -> p.sqft_finished?
-        valid_price_sqft = status.filter (p) -> p.price? && p.sqft_finished?
-        valid_dom = status.filter (p) -> p.days_on_market?
-        valid_acres = status.filter (p) -> p.acres?
-        count: status.length
-        price_avg: d3.mean(valid_price, (p) -> p.price)
-        price_n: valid_price.length
-        sqft_avg: d3.mean(valid_sqft, (p) -> p.sqft_finished)
-        sqft_n: valid_sqft.length
-        price_sqft_avg: d3.mean(valid_price_sqft, (p) -> p.price/p.sqft_finished)
-        price_sqft_n: valid_price_sqft.length
-        days_on_market_avg: d3.mean(valid_dom, (p) -> p.days_on_market)
-        days_on_market_n: valid_dom.length
-        acres_avg: d3.mean(valid_acres, (p) -> p.acres)
-        acres_n: valid_acres.length
-      .entries(dataSet)
+  updateStatistics = (data, area_id, showStatsSave) ->
+    dataSet = _.values(data)
 
-      stats = _.indexBy stats, 'key'
-      $log.debug stats
+    stats = d3.nest()
+    .key (d) ->
+      d.status
+    .rollup (status) ->
+      valid_price = status.filter (p) -> p.price?
+      valid_sqft = status.filter (p) -> p.sqft_finished?
+      valid_price_sqft = status.filter (p) -> p.price? && p.sqft_finished?
+      valid_dom = status.filter (p) -> p.days_on_market?
+      valid_acres = status.filter (p) -> p.acres?
+      count: status.length
+      price_avg: d3.mean(valid_price, (p) -> p.price)
+      price_n: valid_price.length
+      sqft_avg: d3.mean(valid_sqft, (p) -> p.sqft_finished)
+      sqft_n: valid_sqft.length
+      price_sqft_avg: d3.mean(valid_price_sqft, (p) -> p.price/p.sqft_finished)
+      price_sqft_n: valid_price_sqft.length
+      days_on_market_avg: d3.mean(valid_dom, (p) -> p.days_on_market)
+      days_on_market_n: valid_dom.length
+      acres_avg: d3.mean(valid_acres, (p) -> p.acres)
+      acres_n: valid_acres.length
+    .entries(dataSet)
 
-      $scope.areaStatistics ?= {}
-      $scope.areaStatistics[area_id] = stats
+    stats = _.indexBy stats, 'key'
+    $log.debug stats
+
+    $scope.areaStatistics ?= {}
+    $scope.areaStatistics[area_id] = stats
+
+    $scope.showStatsSave = !!showStatsSave
+    modalInstance = $uibModal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
+
+    modalInstance.result
+    .then () ->
+      $log.debug "saving layer", $scope.drawn.quickStats
+      model = $scope.drawn.quickStats.toGeoJSON()
+      model.properties.area_name = 'Untitle Area'
+      drawnShapesSvc.create model
+      .then (result) ->
+        $log.debug result
+        [id] = result.data
+        $scope.drawn.quickStats.model =
+          properties:
+            id: id
+    .catch () ->
+      if $scope.drawn.quickStats
+        $log.debug "deleting layer", $scope.drawn.quickStats
+        $scope.drawn.items.removeLayer($scope.drawn.quickStats)
 
 .controller 'rmapsMapAreasCtrl', (
   $rootScope,

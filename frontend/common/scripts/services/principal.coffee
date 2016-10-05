@@ -54,7 +54,6 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   # Set the current profile and send an event to notify that the profile has been updated
   setCurrentProfile = (profile) ->
     _identity.currentProfileId = if profile then profile.id else null
-    notifyProfileUpdated profile if profile
 
   getCurrentProfileId = () ->
     return getCurrentProfile()?.id
@@ -68,9 +67,6 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   getCurrentProfile = () ->
     if isCurrentProfileResolved()
       return _identity.profiles[_identity.currentProfileId]
-
-  notifyProfileUpdated = (profile) ->
-    $rootScope.$emit rmapsEventConstants.principal.profile.updated, profile
 
   ##
   ##

@@ -28,6 +28,11 @@ body = _.extend {}, state,
   favorites: validators.object(isEmptyProtect: true)
   geometry_center: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
+  geometry: validators.object
+    subValidateSeparate:
+      type: validators.string()
+      coordinates: validators.array()
+      radius: validators.float()
 
 save =
   params: validators.object isEmptyProtect: true
@@ -93,7 +98,13 @@ filterSummary =
       validators.geohash
       validators.array(minLength: 2)
     ]
-    required: true
+
+  geometry: validators.object
+    subValidateSeparate:
+      type: validators.string()
+      coordinates: validators.array()
+      radius: validators.float()
+
   returnType: validators.string()
 
 drawnShapes = _.merge {}, filterSummary,

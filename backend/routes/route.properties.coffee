@@ -7,11 +7,11 @@ parcelService = require '../services/service.properties.parcels'
 addressService = require '../services/service.properties.addresses'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
-{currentProfile} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
 internals = require './route.properties.internals'
 ourTransforms = require '../utils/transforms/transforms.properties'
 logger = require('../config/logger').spawn('route.properties')
+profileSvc = require '../services/service.profiles'
 
 module.exports =
 
@@ -32,7 +32,7 @@ module.exports =
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
         filterSummaryService.getFilterSummary(
-          profile: currentProfile(req)
+          profile: profileSvc.getCurrentSessionProfile(req.session)
           validBody: req.validBody
         )
 
@@ -44,7 +44,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
-        parcelService.getBaseParcelData(currentProfile(req), req.validBody)
+        parcelService.getBaseParcelData(profileSvc.getCurrentSessionProfile(req.session), req.validBody)
 
   addresses:
     method: "post"
@@ -54,7 +54,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
-        addressService.get(currentProfile(req), req.validBody)
+        addressService.get(profileSvc.getCurrentSessionProfile(req.session), req.validBody)
 
   detail:
     method: "post"
@@ -66,7 +66,7 @@ module.exports =
       internals.handleRoute res, next, () ->
         detailService.getProperty(
           query: req.validBody
-          profile: currentProfile(req)
+          profile: profileSvc.getCurrentSessionProfile(req.session)
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
@@ -90,7 +90,7 @@ module.exports =
       internals.handleRoute res, next, () ->
         detailService.getProperties(
           query: req.validBody
-          profile: currentProfile(req)
+          profile: profileSvc.getCurrentSessionProfile(req.session)
         )
 
   drawnShapes:
@@ -104,7 +104,7 @@ module.exports =
         internals.appendProjectId(req, req.validBody)
         filterSummaryService.getFilterSummary(
           validBody: req.validBody
-          profile: currentProfile(req)
+          profile: profileSvc.getCurrentSessionProfile(req.session)
           filterSummaryImpl: DrawnShapesFiltSvc
         )
 
@@ -117,7 +117,21 @@ module.exports =
       internals.handleRoute res, next, () ->
         DrawnShapesFiltSvc.getPropertyIdsInArea(
           queryParams: req.body
+          profile: profileSvc.getCurrentSessionProfile(req.session)
+        )
+
+  inGeometry:
+    method: "post"
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      internals.captureMapFilterState(handleStr: "filterSummary")
+    ]
+    handle: (req, res, next) ->
+      internals.handleRoute res, next, () ->
+        filterSummaryService.getFilterSummary(
           profile: currentProfile(req)
+          validBody: req.validBody
+          ignoreSaved: true
         )
 
   saves:

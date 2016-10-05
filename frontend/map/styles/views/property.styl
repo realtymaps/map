@@ -96,7 +96,7 @@ Property Detail Modal
       &:hover
         color $light_blue
 
-    .accordion-open
+    .uib-accordion-open, .panel-open
       > .panel-heading
         > .panel-title:after
           content '▼'
@@ -126,6 +126,8 @@ Property Detail Modal
       font-weight bold
       overflow-x hidden
       text-overflow ellipsis
+    .field-value
+      overflow-wrap break-word
     .row
       min-height 50px
       margin 0
@@ -151,3 +153,19 @@ Property Detail Modal
   .property-detail-modal
     .property-detail-container
       padding-top: 0px;
+
+  .nav-tabs
+    margin-bottom 0px
+
+  .subscriber-groups
+    margin 0px
+    padding 0px
+
+  .subscriber-groups, .accordion-toggle
+    font-size 75%
+
+    .history
+      font-size inherit
+
+    .panel-body
+      padding 0px

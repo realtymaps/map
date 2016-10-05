@@ -37,14 +37,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   # Service Implementation
   #
 
-  # Reset the properties hash when switching profiles
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-    $log.debug 'rmapsEventConstants.principal.profile.updated: re-loading saved properties'
-    _loadProperties(true)
-    .then () ->
-      $rootScope.$emit rmapsEventConstants.update.properties.pin, properties: service.pins
-      $rootScope.$emit rmapsEventConstants.update.properties.favorite, properties: service.favorites
-
   _getState = (mapState = {}, filters) ->
     # $log.debug "mapState: #{JSON.stringify mapState}"
     # $log.debug "filters: #{JSON.stringify filters}"

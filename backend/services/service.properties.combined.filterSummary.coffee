@@ -7,7 +7,8 @@ internals = require './service.properties.combined.filterSummary.internals'
 dbFn = tables.finalized.combined
 combinedTransforms = require('../utils/transforms/transforms.properties.coffee').filterSummary
 {statuses} = require "../enums/filterStatuses"
-
+{distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
+coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
 getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
@@ -79,13 +80,24 @@ scrubPermissions = (data, permissions) ->
         delete row.owner_address
 
 queryFilters = ({query, filters, bounds, queryParams}) ->
+  logger.debug queryParams
   logger.debug () -> "in queryFilters"
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
+
   if filters?.status?.length
 
     query.where ->
       if bounds?
         sqlHelpers.whereInBounds(@, "#{dbFn.tableName}.geometry_raw", bounds)
+
+      if radius = queryParams.geometry?.radius
+        geometry = type: 'Point', coordinates: queryParams.geometry.coordinates
+        @whereRaw(
+          "ST_DWithin(geometry_center_raw, ST_SetSRID(ST_GeomFromGeoJSON(?), #{coordSys.UTM}), ?)",
+          [geometry, radius / distance.METERS_PER_EARTH_RADIUS]
+        )
+      else if queryParams.geometry
+        @whereRaw("ST_Within(geometry_center_raw, ST_SetSRID(ST_GeomFromGeoJSON(?), #{coordSys.UTM}))", [queryParams.geometry])
 
       # handle property status filtering
       # 3 possible status options (see parcelEnums.coffee): 'for sale', 'pending', 'sold'

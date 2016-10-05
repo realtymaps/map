@@ -24,13 +24,19 @@ app.factory "rmapsMapDrawHandlesFactory", ($q, $log, rmapsDrawnUtilsService, rma
 
         if layer.ignoreSave
           return $q.resolve()
-        promise = createPromise or drawnShapesSvc?.create
-        promise(geojson).then ({data}) ->
-          [id] = data
-          layer.model =
-            properties:
-              id: id
-          commonPostDrawActions(layer.model)
+
+        if createPromise
+          promise = createPromise?(layer)
+        else
+          promise = drawnShapesSvc?.create(geojson)
+
+        promise.then (result) ->
+          if result?.data
+            [id] = result.data
+            layer.model =
+              properties:
+                id: id
+            commonPostDrawActions(layer.model)
 
       edited: ({layers}) ->
         eachLayerModel layers, (model) ->

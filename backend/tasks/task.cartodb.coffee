@@ -10,13 +10,14 @@ cartodbSvc = require '../services/service.cartodb'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 dataLoadHelpers = require './util.dataLoadHelpers'
+internals = require './task.cartodb.internals'
 
 
 syncPrep = (subtask) ->
   loggerSyncPrep.debug "@@@@@@@@ cartodb:syncPrep @@@@@@@@"
 
   tables.cartodb.syncQueue()
-  .select('id', 'fips_code', 'batch_id')
+  .select('id', 'fips_code', 'batch_id', 'errors')
   .then (rows) ->
     loggerSyncPrep.debug "@@@@@@@@ enqueueing rows @@@@@@@@"
     loggerSyncPrep.debug rows
@@ -49,22 +50,12 @@ sync = (subtask) ->
 
   cartodbSvc.upload(fips_code)
   .then (tableNames) ->
-
-    cartodbSvc.syncDequeue({
-      fipsCode:fips_code
-      tableNames
-      batch_id: row.batch_id
-      id: row.id
-    })
-    .catch (error) ->
-      # back out bad import
-      Promise.each tableNames, (tableName) ->
-        logger.debug "backing out imports, tableName: #{tableName}"
-        cartodbSvc.drop({fipsCode:fips_code, tableName})
-      .then () ->
-        throw error
+    internals.syncDequeue({tableNames, fips_code, row})
+  .catch (error) ->
+    logger.debug -> "@@@ WTF @@@"
+    logger.debug -> error
+    internals.documentError({row, error})
   .then () ->
-
     tables.cartodb.syncQueue()
     .where(id: row.id)
     .delete()
@@ -72,13 +63,7 @@ sync = (subtask) ->
     loggerSync.debug('All Sync CartoDB Success!!')
   .catch errorHandlingUtils.isUnhandled, (error) ->
     msg = 'failed to sync cartodb: '
-    if typeof(error) == 'string'
-      throw new errorHandlingUtils.PartiallyHandledError(msg + error)
-    else if typeof(error) == 'object'
-      if error.message
-        throw new errorHandlingUtils.PartiallyHandledError(error, msg)
-      else
-        throw new errorHandlingUtils.PartiallyHandledError(msg + JSON.stringify(error))
+    throw new errorHandlingUtils.PartiallyHandledError(error, msg)
   .catch (error) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
