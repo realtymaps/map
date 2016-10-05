@@ -64,6 +64,7 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'location', label: {mls: 'Location & Schools', county: 'Location'}, subscriber: 'shared_groups'}
       {name: 'building', label: 'Building', subscriber: 'shared_groups'}
       {name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'}
+      {name: 'taxes', label: 'Taxes And Assessments', subscriber: 'shared_groups'}
       {name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'}
       {name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'}
       {name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',}
