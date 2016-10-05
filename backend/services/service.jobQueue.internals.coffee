@@ -60,8 +60,6 @@ summary = (subtask) ->
 
 
 withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new Promise (resolve, reject) ->
-  if maxWaitSeconds == undefined
-    maxWaitSeconds = 0
   start = Date.now()
   id = cluster.worker?.id ? 'X'
   dbLockLogger = logger.spawn('dbLock')
@@ -78,7 +76,7 @@ withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new 
           .finally () ->
             dbLockLogger.debug () -> "---- <#{id}> Releasing lock: #{lockId}"
         else
-          if maxWaitSeconds != null
+          if maxWaitSeconds?
             waited = Math.floor((Date.now()-start)/1000)
             if waited >= maxWaitSeconds
               dbLockLogger.debug () -> "---- <#{id}>  Failed to acquire lock after #{waited}s: #{lockId}"
@@ -115,7 +113,7 @@ checkTask = (transaction, batchId, taskName) ->
 getQueuedSubtask = (queueName) ->
   getQueueLockId(queueName)
   .then (queueLockId) ->
-    withDbLock {lockId: queueLockId, maxWaitSeconds: 60}, (transaction) ->
+    withDbLock {lockId: queueLockId}, (transaction) ->
       currentTasksPromise = tables.jobQueue.taskHistory({transaction})
       .select('name')
       .select('status')
