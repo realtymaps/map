@@ -4,6 +4,13 @@ tables = require '../config/tables'
 crudService = require '../utils/crud/util.crud.service.helpers'
 jobQueue = require './service.jobQueue'
 dbs = require '../config/dbs'
+sqlHelpers = require '../utils/util.sql.helpers'
+
+
+_makeEntitySafe = (entity) ->
+  for k,v of entity
+    if _.isArray(v)
+      entity[k] = sqlHelpers.safeJsonArray(v)
 
 
 class TaskService extends crudService.Crud
@@ -47,8 +54,18 @@ class TaskService extends crudService.Crud
 
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
-      throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
+      if !_.every(entity, @idKey)
+        throw new Error 'All objects must already include unique identifiers'
+      for e in entity
+        _makeEntitySafe(e)
+    else
+      _makeEntitySafe(entity)
+
     super(entity, id, doLogQuery)
+
+  update: (id, entity, safe, doLogQuery = false) ->
+    _makeEntitySafe(entity)
+    super(id, entity, safe, doLogQuery)
 
   delete: (id, doLogQuery = false) ->
     super(id, doLogQuery)
