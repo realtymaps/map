@@ -358,6 +358,8 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
     return Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
 
   if processInfo.loadDeleteFiles
+    for fileData in processInfo[DELETE]
+      fileData.fips_code = processInfo.fips
     return jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[DELETE], replace: true})
 
   # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
