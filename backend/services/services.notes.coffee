@@ -55,8 +55,6 @@ class NotesService extends ServiceCrud
         entity.id = id
         entity.text = decodeURIComponent(entity.text)
         entity.rm_inserted_time = rm_inserted_time
-        console.log  "WWTTTTTFFFFFFFFF"
-        console.log entity
         entity
 
       @enqueueEvent {
