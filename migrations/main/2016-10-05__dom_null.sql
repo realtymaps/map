@@ -1,0 +1,1 @@
+ALTER TABLE data_combined ALTER COLUMN days_on_market DROP NOT NULL;
