@@ -32,3 +32,12 @@ SET
 WHERE
   key = 'last process date'
   AND namespace = 'digimaps process info';
+
+
+UPDATE jq_subtask_config
+SET name = 'blackknight_saveCopyDate'
+WHERE name = 'blackknight_saveCopyDates';
+
+UPDATE jq_subtask_config
+SET name = 'blackknight_updateProcessInfo'
+WHERE name = 'blackknight_saveProcessDates';

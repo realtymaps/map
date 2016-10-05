@@ -23,7 +23,7 @@ copyFtpDrop = (subtask) ->
   ftp = new PromiseSftp()
 
   # date for which blackknight files we've processed is tracked in keystore
-  keystore.getValue(internals.LAST_COMPLETED_DATE, namespace: internals.BLACKKNIGHT_COPY_INFO, defaultValues: defaults)
+  keystore.getValue(internals.LAST_COMPLETED_DATE, namespace: internals.BLACKKNIGHT_COPY_INFO, defaultValue: '19700101')
   .then (copyDate) ->
 
     logger.debug () -> "date for file search: #{JSON.stringify(copyDate)}"
@@ -97,7 +97,7 @@ copyFtpDrop = (subtask) ->
             # queue up file copies
             jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'copyFile', manualData: filteredFiles, replace: true, concurrency: 10})
             # save / push new dates
-            jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDates', manualData: {date: folderSet.date}, replace: true})
+            jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveCopyDate', manualData: {date: folderSet.date}, replace: true})
           else
             # record that there isn't anything to see today
             keystore.setValue(internals.NO_NEW_DATA_FOUND, moment.utc().format('YYYYMMDD'), namespace: internals.BLACKKNIGHT_COPY_INFO)
@@ -195,25 +195,30 @@ loadRawData = (subtask) ->
     if subtask.data.fileType == internals.DELETE
       laterSubtaskName = "deleteData"
       numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
+      mergeData.fips_code = subtask.data.fips_code
+      mergeData.rawDeleteBatchId = subtask.batch_id
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
+    .then () ->
+      if subtask.data.action == internals.DELETE
+        keystore.setValue("#{internals.DELETE_ROWS_COUNT}: #{subtask.data.action}, #{subtask.data.dataType}", numRows, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
 
 
-saveProcessDates = (subtask) ->
-  internals.popProcessingDates(subtask.data.dates)
+updateProcessInfo = (subtask) ->
+  internals.updateProcessInfo(subtask.data)
 
 
 deleteData = (subtask) ->
   normalDataTable = tables.normalized[subtask.data.dataType]
-  dataLoadHelpers.getRawRows(subtask)
+  rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.data.rawDeleteBatchId)
+  dataLoadHelpers.getRawRows(subtask, rawSubid)
   .then (rows) ->
     Promise.each rows, (row) ->
-      # TODO: remove when we turn on all FIPS codes
-      if row['FIPS Code'] != '12021' && row['FIPS Code'] != '12099'
+      if row['FIPS Code'] != subtask.data.fips_code
         return
 
       if subtask.data.action == internals.REFRESH
@@ -347,7 +352,7 @@ recordChangeCounts = (subtask) ->
 subtasks = {
   copyFtpDrop
   copyFile
-  saveCopyDates
+  saveCopyDate
   checkProcessQueue
   loadRawData
   deleteData
@@ -356,6 +361,6 @@ subtasks = {
   finalizeDataPrep
   finalizeData
   activateNewData: dataLoadHelpers.activateNewData
-  saveProcessDates
+  updateProcessInfo
 }
 module.exports = new TaskImplementation('blackknight', subtasks, ready)
