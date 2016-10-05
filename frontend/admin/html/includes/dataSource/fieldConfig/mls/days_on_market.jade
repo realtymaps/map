@@ -1,12 +1,11 @@
 .col-md-12.scroll(ng-if="fieldData.current.type.name == 'days_on_market'")
   .row
-    .col-md-5 Cumulative Days on Market (preferred)  /  Days on Market (If unavailable, use next line)
-    .col-md-7
+    .col-md-3 Optional (but highly preferred)
+    .col-md-9
       rmaps-subinput(name="Cumulative Days on Market" field="cdom")
       rmaps-subinput(name="Days on Market" field="dom")
-  .row
-    .col-md-5 Close Date and Creation Date (use if above not available)
-    .col-md-7
       rmaps-subinput(name="Close Date" field="close_date")
-      span.sep AND
+  .row
+    .col-md-3 Required
+    .col-md-9
       rmaps-subinput(name="Creation Date" field="creation_date")
