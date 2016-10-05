@@ -132,6 +132,11 @@ _rules =
 
   mls:
     listing:
+      creation_date:
+        alias: 'Creation Date'
+        required: true
+        type: name: 'datetime'
+
       data_source_uuid:
         alias: 'MLS Number'
         required: true
@@ -171,11 +176,19 @@ _rules =
 
       days_on_market:
         alias: 'Days on Market'
+        type: name: 'integer'
+
+      days_on_market_cumulative:
+        alias: 'Cumulative Days on Market'
+        type: name: 'integer'
+
+      days_on_market_filter:
+        alias: 'Days on Market Filter'
         required: true
         type: name: 'days_on_market'
-        input: []
+        input: {}
         valid: () ->
-          @input[0] || @input[1]
+          @input.creation_date?
 
       hide_address:
         alias: 'Hide Address'
