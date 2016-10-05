@@ -142,8 +142,7 @@ rmapsMapTogglesFactory
   rmapsEventsLinkerService,
   rmapsNotesService,
   rmapsPopupLoaderService,
-  rmapsCurrentMapService,
-  $timeout
+  rmapsCurrentMapService
 ) ->
 
   mapId = rmapsCurrentMapService.mainMapId()
