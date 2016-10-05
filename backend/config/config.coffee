@@ -202,7 +202,7 @@ pools =
     MAIN:
       pool:
         min: 2
-        max: 10
+        max: 20
     RAW_TEMP:
       pool:
         min: 0
