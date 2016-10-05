@@ -53,6 +53,8 @@ copyFtpDrop = (subtask) ->
       # concat the paths from both sources
       Promise.join refreshPromise, updatePromise, (refresh, update) ->
         if refresh.date == update.date
+          if refresh.date == '99999999'
+            return {paths: []}
           return {
             date: refresh.date
             paths: [refresh.tax, refresh.deed, refresh.mortgage, update.tax, update.deed, update.mortgage]
@@ -62,7 +64,7 @@ copyFtpDrop = (subtask) ->
             date: refresh.date
             paths: [refresh.tax, refresh.deed, refresh.mortgage]
           }
-        else if update.date < refresh.date
+        else  # update.date < refresh.date
           return {
             date: update.date
             paths: [update.tax, update.deed, update.mortgage]
@@ -204,7 +206,7 @@ loadRawData = (subtask) ->
 
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
     .then () ->
-      if subtask.data.action == internals.DELETE
+      if subtask.data.listType == internals.DELETE
         keystore.setValue("#{internals.DELETE_ROWS_COUNT}: #{subtask.data.action}, #{subtask.data.dataType}", numRows, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
 
 

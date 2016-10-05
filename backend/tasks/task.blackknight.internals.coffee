@@ -219,7 +219,6 @@ findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
       nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
     if nextFolderSet.date == '99999999'
       logger.debug () -> "found no new folders for #{action}"
-      return null
     return nextFolderSet
 
 
@@ -301,7 +300,7 @@ getProcessInfo = (subtask, subtaskStartTime) ->
               dataType: dataType
               fips_code: processInfo.fips
               rawDeleteBatchId: processInfo.deleteBatchId
-              rawTableSuffix: "#{action.slice(0,1)}_#{processInfo.fips}_#{processInfo.date}"
+              rawTableSuffix: "#{action.slice(0,1)}_DELETES_#{processInfo.date}"
         return processInfo
 
       # from here on, we're handling special logic for when we didn't know what FIPS we were processing ahead of time
