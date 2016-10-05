@@ -185,42 +185,42 @@ module.exports = {
           "dataType": "tax",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "R_12099_20160406"
+          "rawTableSuffix": "R_DELETES_20160406"
         },
         {
           "action": "Refresh",
           "dataType": "deed",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "R_12099_20160406"
+          "rawTableSuffix": "R_DELETES_20160406"
         },
         {
           "action": "Refresh",
           "dataType": "mortgage",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "R_12099_20160406"
+          "rawTableSuffix": "R_DELETES_20160406"
         },
         {
           "action": "Update",
           "dataType": "tax",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "U_12099_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         },
         {
           "action": "Update",
           "dataType": "deed",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "U_12099_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         },
         {
           "action": "Update",
           "dataType": "mortgage",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "U_12099_20160406"
+          "rawTableSuffix": "U_DELETES_20160406"
         }
       ]
     }
