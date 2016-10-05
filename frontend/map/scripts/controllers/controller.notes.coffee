@@ -142,7 +142,8 @@ rmapsMapTogglesFactory
   rmapsEventsLinkerService,
   rmapsNotesService,
   rmapsPopupLoaderService,
-  rmapsCurrentMapService
+  rmapsCurrentMapService,
+  $timeout
 ) ->
 
   mapId = rmapsCurrentMapService.mainMapId()
@@ -222,7 +223,9 @@ rmapsMapTogglesFactory
   $scope.map.getNotes = getNotes
 
   $scope.$watch 'Toggles.showNotes', (newVal) ->
-    $scope.map.layers.overlays.notes.visible = newVal
+    $scope.map.layers.overlays?.notes?.visible = !!newVal
 
+  $scope.$watch 'map.layers.overlays.notes', (newVal) ->
+    $scope.map.layers.overlays?.notes?.visible = !!$scope.Toggles?.showNotes
 
   getNotes()
