@@ -262,7 +262,7 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
     templateStr = """
      INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
       VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
-      ON CONFLICT (#{conflictEntity.cols.placeholder || id.cols.placeholder})
+      ON CONFLICT (#{id.cols.placeholder})
       DO UPDATE SET (#{conflictEntity.cols.placeholder}) = (#{conflictEntity.vals.placeholder})
       RETURNING #{id.cols.placeholder}
     """
