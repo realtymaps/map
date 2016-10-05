@@ -16,15 +16,10 @@ getDefaultQuery = ->
 
 getPermissions = (profile) -> Promise.try ->
   logger.debug () -> "Getting permissions..."
-  # return superuser: true
-
-  logger.debug () -> profile
-
   tables.auth.user()
   .select(['id', 'is_superuser', 'fips_codes', 'mlses_verified'])
   .where(id: profile.auth_user_id)
   .then ([user]) ->
-    logger.debug () -> arguments
     if !user
       logger.debug "no user found."
       return {}
