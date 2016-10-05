@@ -165,6 +165,8 @@ updateProcessInfo = (newProcessInfo) ->
       processInfo[FIPS_QUEUED].splice(index, 1)
     else
       logger.warn "Unable to remove FIPS #{newProcessInfo.fips_code} from [#{processInfo[FIPS_QUEUED]}]"
+
+    # if we removed the last FIPS code, then indicate we need to move on to the next date
     if processInfo[FIPS_QUEUED].length == 0
       processInfo[CURRENT_PROCESS_DATE] = null
       index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
@@ -234,6 +236,8 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       hasFiles: false
       startTime: subtaskStartTime
     logger.debug () -> "seeking next processing set from #{JSON.stringify(oldProcessInfo)}"
+
+    # decide whether we just process the next FIPS, or do the special processing that happens when we move to a new date
     if oldProcessInfo[FIPS_QUEUED].length > 0
       processInfo.date = oldProcessInfo[CURRENT_PROCESS_DATE]
       processInfo.fips = oldProcessInfo[FIPS_QUEUED].sort()[0]
@@ -285,11 +289,13 @@ getProcessInfo = (subtask, subtaskStartTime) ->
         return processInfo
 
       processInfo.hasFiles = true
+      # check if we are processing the next FIPS for a date we already started
       if processInfo.fips?
         processInfo.loadDeleteFiles = false
         processInfo[DELETE] = []
         for action in [REFRESH, UPDATE]
           for dataType in [TAX, DEED, MORTGAGE]
+            # need to force re-processing of the raw delete data so we can delete for the current FIPS
             processInfo[DELETE].push
               action: action
               dataType: dataType
@@ -298,6 +304,8 @@ getProcessInfo = (subtask, subtaskStartTime) ->
               rawTableSuffix: "#{action.slice(0,1)}_#{processInfo.fips}_#{processInfo.date}"
         return processInfo
 
+      # from here on, we're handling special logic for when we didn't know what FIPS we were processing ahead of time
+      # (i.e. we've started on a new date, and so need to load the delete files and queue the available FIPS codes)
       fipsMap = _.extend(table1.fipsMap, table2.fipsMap, table3.fipsMap)
       processInfo.fipsQueue = _.keys(fipsMap).sort()
       processInfo.fips = processInfo.fipsQueue[0]
