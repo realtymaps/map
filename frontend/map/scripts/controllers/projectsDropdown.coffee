@@ -60,33 +60,6 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       else
         $state.go $state.current, $state.current.params, reload: true
 
-  $scope.addProject = (isCopy) ->
-    $scope.newProject =
-      if isCopy
-        copyCurrent: isCopy
-        name: (rmapsProfilesService.currentProfile.name or 'Sandbox') + ' copy'
-        modalTitle: "Save Copy of " + (rmapsProfilesService.currentProfile.name or 'Sandbox')
-        saveButtonLabel: "Save Project"
-      else
-        copyCurrent: isCopy
-        name: 'New Project'
-        modalTitle: "Create a New Blank Project"
-        saveButtonLabel: "Create Project"
-
-    modalInstance = $uibModal.open
-      animation: true
-      scope: $scope
-      template: require('../../html/views/templates/modals/addProjects.jade')()
-
-    $scope.cancelModal = () ->
-      modalInstance.dismiss('cancel')
-
-    $scope.saveProject = () ->
-      modalInstance.dismiss('save')
-      rmapsProjectsService.createProject $scope.newProject
-      .then (identity) ->
-        $scope.selectProject(identity.profiles[identity.currentProfileId])
-
   $scope.checkSubmit = (evt) ->
     if evt.keyCode == 13
       $scope.saveProject()

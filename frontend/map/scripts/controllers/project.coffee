@@ -119,9 +119,7 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.archiveProject = (project, evt) ->
     evt.stopPropagation()
-    rmapsProjectsService.update project.id, archived: !project.archived
-    .then () ->
-      project.archived = !project.archived
+    rmapsProjectsService.archive project
 
   $scope.resetProject = (project) ->
     if confirm 'Clear all filters, saved properties, and notes?'

@@ -14,7 +14,7 @@ _getValuesMap = (namespace, defaultValues, transaction) ->
     for kv in result
       map[kv.key] = kv.value
     if defaultValues?
-      _.defaults(map, defaultValues)
+      _.defaults(map, _.clone(defaultValues))
     map
 
 _getValues = (namespace, transaction) ->
@@ -34,7 +34,7 @@ _getValue = (key, namespace, defaultValue, transaction) ->
     query = query.where(namespace: namespace)
   query.then (result) ->
     if !result?.length
-      defaultValue
+      _.clone(defaultValue)
     else
       result[0].value
 

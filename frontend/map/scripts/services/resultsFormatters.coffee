@@ -18,7 +18,11 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       location = prop.geometry or prop.geometry or prop.geometry_center
       return if !location?.type? || !location?.coordinates?
 
-      pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon.toBounds(location)
+      if location.type == 'Polygon'
+        pointBounds = rmapsGoogleService.GeoJsonTo.Polygon.toBounds(location)
+      else
+        pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon.toBounds(location)
+
       isVisible = map.getBounds().intersects(pointBounds)
       return if !isVisible
       prop

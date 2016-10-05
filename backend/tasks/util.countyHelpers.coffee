@@ -70,7 +70,7 @@ _fetchS3 = (account, source, target, options) ->
 # loads all records from a specified source (e.g. FTP or S3)
 loadRawData = (subtask, options) ->
   rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
-  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   filetype = options.processingType || subtask.data.fileName.substr(subtask.data.fileName.lastIndexOf('.')+1)
 
   target = "/tmp/#{fileBaseName}.#{filetype}"

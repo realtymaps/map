@@ -25,6 +25,11 @@ rmapsHttpTempCache
     update: (id, project) ->
       $http.put backendRoutes.projectSession.root + "/#{id}", project
 
+    archive: (project) ->
+      @update project.id, archived: !project.archived
+      .then () ->
+        project.archived = !project.archived
+
     getProjects: (cache = false) ->
       $http.get backendRoutes.projectSession.root, cache: cache
       .then (response) ->

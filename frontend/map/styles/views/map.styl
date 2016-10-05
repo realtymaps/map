@@ -1,3 +1,99 @@
+@import './map/mapPinned.styl'
+@import './map/mapProjects.styl'
+@import './map/mapProperties.styl'
+@import './map/mapUlDropdown.styl'
+@import './map/mapNotes.styl'
+@import './map/mapAreas.styl'
+@import './map/mapSettings.styl'
+@import './map/mapLayerTools.styl'
+@import './map/mapZoomLocTools.styl'
+@import './map/mapNotesTap.styl'
+@import './map/mapDrawTools.styl'
+
+$fnMakeMapProjects()
+$fnMakeMapUlDropdown()
+$fnMakeMapProperties()
+
+body
+
+#map
+  .map-navigation
+    // override some default bootstrap stuff for all dropdown controls
+    $fnMakeMapNotes()
+    $fnMakeMapAreas()
+    $fnMakeMapSettings()
+    $fnMakeMapPinned()
+
+    .dropdown-menu
+      @extends .fallDown
+
+    .desktop-only
+      margin-left 60px
+
+    .favorites
+    .notes-list
+    .area-list
+    .pinned-list
+      button
+        span
+          font-size 18px
+          line-height 40px
+          vertical-align top
+          position relative
+          top -3px
+
+    button
+      height 50px
+      margin-right 10px
+
+      @media (min-width: s)
+        margin-right 20px
+
+      &.nav-btn
+        width 50px
+        background-position left top
+        background-repeat no-repeat
+        font-size 28px
+        i
+          margin auto
+
+      &.properties-in-shapes.on
+        color: $white
+        background $rm-property-sale-green
+
+    .btn-group
+      margin-right 10px
+      @media (min-width: s)
+        margin-right 20px
+
+      .btn-group
+        margin 0
+        position static
+
+      button
+        margin 0
+
+
+
+  $fnMakeMapLayerTools()
+  $fnMakeMapZoomLocTools()
+  $fnMakeMapDrawTools()
+
+.add-project
+  h3
+    color black
+  .project-options
+    text-align center
+
+@-moz-document url-prefix()
+  .favorites
+  .notes-list
+  .area-list
+  .pinned-list
+    button
+      span
+        top 0px !important
+
 .map
   overflow hidden
 
@@ -264,3 +360,5 @@ img.manual-cluster{
       /* Giving Animation Function */
       $fnMakeAnimation(marker-pulse 2s linear infinite)
       border-image: initial;
+
+@import 'map/mapSettings-mobile.styl'

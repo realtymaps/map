@@ -27,12 +27,10 @@ DELETE =
   NONE: 'none'
 
 
-buildUniqueSubtaskName = (subtask, prefix) ->
-  parts = [subtask.batch_id, subtask.task_name, subtask.data.dataType]
+buildUniqueSubtaskName = (subtask, overrideBatchId) ->
+  parts = [overrideBatchId||subtask.batch_id, subtask.task_name, subtask.data.dataType]
   if subtask.data.rawTableSuffix
     parts.push(subtask.data.rawTableSuffix)
-  if prefix
-    parts.unshift(prefix)
   parts.join('_')
 
 
