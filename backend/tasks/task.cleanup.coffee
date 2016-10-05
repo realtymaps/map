@@ -16,7 +16,7 @@ NUM_ROWS_TO_PAGINATE = 2500
 ### eslint-disable ###
 rawTables = (subtask) ->
   ### eslint-enable ###
-  Promise.all [internals.cleanRawTables(), internals.dropRawTables()]
+  Promise.join(internals.cleanRawTables(), internals.dropRawTables())
 
 
 ### eslint-disable ###
