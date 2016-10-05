@@ -13,7 +13,11 @@ internals = require './task.cleanup.internals'
 ### eslint-disable ###
 rawTables = (subtask) ->
   ### eslint-enable ###
+  logger.debug -> 'Begin cleaning and dropping raw tables'
+
   Promise.join(internals.cleanRawTables(), internals.dropRawTables())
+  .then () ->
+    logger.debug -> 'done cleaning and dropping raw tables'
 
 
 ### eslint-disable ###
@@ -101,7 +105,7 @@ deletePhotosPrep = (subtask) ->
     }
 
 deletePhotos = (subtask) ->
-  logger.debug subtask
+  logger.debug -> subtask
 
   Promise.map subtask.data.values, (key) ->
     mlsHelpers.deleteOldPhoto(subtask, key)
