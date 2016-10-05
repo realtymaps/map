@@ -129,7 +129,7 @@ module.exports =
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
         filterSummaryService.getFilterSummary(
-          profile: currentProfile(req)
+          profile: profileSvc.getCurrentSessionProfile(req.session)
           validBody: req.validBody
           ignoreSaved: true
         )
