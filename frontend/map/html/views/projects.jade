@@ -1,23 +1,24 @@
 #projects
   .desktop-only
     .inner
-      .container
+      .container(ng-controller="rmapsAddProjectController")
         header.row
           .col-md-8
             h1.pageTitle Projects
             p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighbourhoods, and clients.
-          .col-md-4.text-right
+          .col-md-4.text-right.pull.right
             .tools
               input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
               span.divider
-                button.btn.btn-primary(ng-click="addProject()") Create
+              button.btn.btn-primary(ng-click="addProject(false)") Create
+            
+          
+            
         .row
           .col-md-12
             table.table.table-hover
               thead
                 tr
-                  th.select
-                    input(type="checkbox" name="selectAll")
                   th
                     span Title
                   th
@@ -34,10 +35,12 @@
                     span Created
                   th.col-md-1
                     span
+                  th.col-md-1
+                    span
+                  th.col-md-1
+                    span
               tbody
                 tr(ng-repeat="project in projects | filter: searchQuery | orderBy: ['-sandbox', 'name']")
-                  td.select
-                    input(type="checkbox" name="selectGroup_{{$index}}")
                   td(ui-sref="project({id: {{project.id}}})")
                     h4(ng-show="!project.sandbox") {{project.name}}
                     h4(ng-show="project.sandbox") Sandbox
@@ -56,6 +59,12 @@
                     span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                   td.col-md-1
                     button.btn.btn-white(ng-click="loadMap(project); $event.stopPropagation()") View Map
+                  td.col-md-1
+                    button.btn.btn-white.archive-btn(ng-click="archiveProject(project); $event.stopPropagation()" ng-if="!project.archived")
+                      div() Archive
+                      span.icon.icon-save_on_disk
+                  td.col-md-1
+                    button.btn.btn-white(ng-click="deleteProject(project); $event.stopPropagation()") Delete
   .mobile-only
     .projects-list
       .project-list-item.item.item-icon-right.content-block(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")

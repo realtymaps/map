@@ -16,6 +16,9 @@ nav.navigation(role="navigation")
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('mail') }")
       a(ui-sref="mail" rmaps-require-project-editor="disable")
         span mail
+    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('projects') }")
+      a(ui-sref="projects" rmaps-require-project-editor="disable")
+        span projects
     //li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
     //  a(ui-sref="history")
     //    span history

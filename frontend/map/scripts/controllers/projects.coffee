@@ -21,8 +21,7 @@ app.controller 'rmapsProjectsCtrl', (
   $scope.projects = []
   $scope.newProject = {}
 
-  $scope.archiveProject = (project, evt) ->
-    evt.stopPropagation()
+  $scope.archiveProject = (project) ->
     rmapsProjectsService.archive project
 
   $scope.addProject = () ->

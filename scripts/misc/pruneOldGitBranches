@@ -33,7 +33,7 @@ fi
 REMOTE_PREFIXES="origin"
 
 # branch names to exclude from pruning -- always include the current branch
-EXCLUDED_BRANCHES="master HEAD $CURRENT_BRANCH dev/mayday/staging"
+EXCLUDED_BRANCHES="master HEAD $CURRENT_BRANCH"
 
 # remote names to exclude from pruning
 EXCLUDED_REMOTES="prod upstream heroku"
