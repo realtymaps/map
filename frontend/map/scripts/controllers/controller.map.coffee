@@ -128,13 +128,14 @@ app.controller 'rmapsMapCtrl', (
   setScopeVariables()
 
 # fix google map views after changing back to map state
-app.run ($rootScope, $timeout) ->
+app.run ($rootScope, $timeout, rmapsCurrentMapService) ->
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
+    map = rmapsCurrentMapService.get()
     # if we're not entering the map state, or if we're already on the map state, don't do anything
     if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
       return
 
-    return unless map?.scope.controls?.streetView?
+    return unless map?.scope?.controls?.streetView?
     $timeout () ->
       # main map
       map?.scope.control.refresh?()
