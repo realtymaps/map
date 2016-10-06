@@ -3,20 +3,22 @@ _ =  require 'lodash'
 
 app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
-  ({featureGroup, ownerName}) ->
+  ({featureGroup, ownerName, events}) ->
     @$log = $log.spawn("rmapsFeatureGroupUtil:#{ownerName}")
     @$log.debug('initializing')
 
     origFillOpacity = null
     firstSetOpacity = true
 
-    featureGroup.on 'mouseout', ({layer} = {}) =>
-      @$log.debug 'shape mouseout'
-      @onMouseLeave(layer)
+    if events?.mouseout?
+      featureGroup.on 'mouseout', ({layer} = {}) =>
+        @$log.debug 'shape mouseout'
+        @onMouseLeave(layer)
 
-    featureGroup.on 'mouseover', ({layer} = {}) =>
-      @$log.debug 'shape  mouseover'
-      @onMouseOver(layer)
+    if events?.mouseover?
+      featureGroup.on 'mouseover', ({layer} = {}) =>
+        @$log.debug 'shape  mouseover'
+        @onMouseOver(layer)
 
     @getLayer = (geojsonModel) ->
       if !geojsonModel?.properties?.id?
