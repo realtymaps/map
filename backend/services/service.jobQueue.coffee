@@ -70,7 +70,7 @@ queueManualTask = (taskName, initiator) ->
           throw new Error("Task not found: #{taskName}")
 
         taskConfig = result[0]
-        if taskConfig.blocked_by_locks.length
+        if taskConfig.blocked_by_tasks.length
           # need to be sure there isn't another running task that blocks this task
           taskBlockPromise = tables.jobQueue.taskHistory({transaction})
           .select('name')
