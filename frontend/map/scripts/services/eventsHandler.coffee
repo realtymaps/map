@@ -146,7 +146,7 @@ $state) ->
                 modalScope.newMail =
                   property_ids: [model.rm_property_id]
 
-                modalInstance = $uibModal.open
+                $uibModal.open
                   animation: true
                   scope: modalScope
                   template: require('../../html/views/templates/modals/modal-mailHistory.jade')()
@@ -175,6 +175,8 @@ $state) ->
           , limits.clickDelayMilliSeconds - 100
 
       dblclick: (event, lObject, model, modelName, layerName) ->
+        $log.debug -> layerName
+
         events.last.last = 'dblclick'
         {originalEvent} = event
         if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
@@ -200,17 +202,18 @@ $state) ->
     rmapsEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
     rmapsEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
 
+    mapLogger = $log.spawn('map')
     rmapsEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
-        $log.debug -> event
+        mapLogger.debug -> event
 
         popupWasClosed = closeWindow()
 
         if !popupWasClosed && rmapsZoomLevelService.isParcel($scope.map.center.zoom)
           geojson = (new L.Marker(event.latlng)).toGeoJSON()
           getPropertyDetail(geometry_center: geojson.geometry)
-          $log.debug 'Showing property details if a parcel was clicked'
+          mapLogger.debug -> 'Showing property details if a parcel was clicked'
 
           ### Alternate code to show infowindow instead of property details
           rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
@@ -227,7 +230,9 @@ $state) ->
             , limits.clickDelayMilliSeconds - 100
           ###
 
+      ### eslint-disable###
       moveend: (event) ->
+        ### eslint-enable###
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
         closeWindow()
 
