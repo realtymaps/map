@@ -223,13 +223,15 @@ getQueueLockId = memoize.promise(getQueueLockId, primitive: true)
 
 sendLongTaskWarnings = (transaction=null) ->
   # warn about long-running tasks
-  tables.jobQueue.taskHistory(transaction: transaction)
+  tables.jobQueue.taskHistory({transaction})
   .where(current: true)
   .whereNull('finished')
   .whereRaw("started + warn_timeout_minutes * INTERVAL '1 minute' < NOW()")
+  .update(warn_timeout_minutes: dbs.raw('main', 'warn_timeout_minutes + 15'))
+  .returning('*')
   .then (tasks=[]) ->
     for task in tasks
-      logger.warn("Task from #{task.batch_id} has run over #{task.warn_timeout_minutes} minutes: #{task.name}")
+      logger.warn("Task from #{task.batch_id} has run over #{task.warn_timeout_minutes-15} minutes: #{task.name}")
     enqueueNotification
       payload:
         subject: 'task: long run warning'
@@ -419,6 +421,7 @@ executeSubtask = (subtask, prefix) ->
       .catch Promise.TimeoutError, (err) ->
         handleSubtaskError({prefix, subtask, newStatus: 'timeout', hard: false, error: 'timeout'})
     if subtask.warn_timeout_minutes
+      warnTimeout = null
       doNotification = (minutes) ->
         logger.warn("Subtask from #{subtask.batch_id} has run over #{minutes} minutes: #{subtask.name}")
         warnTimeout = setTimeout(doNotification, 10*60*1000, minutes+10)
