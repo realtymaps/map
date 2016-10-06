@@ -20,45 +20,57 @@ _tableNames = (entity) ->
   q
 
 
-tableNamesNotCleaned = (days = config.CLEANUP.OLD_TABLE_DAYS) ->
+tableNamesNotCleaned = (days = config.CLEANUP.RAW_TABLE_CLEAN_DAYS) ->
   _tableNames(cleaned: false)
   .whereRaw("rm_inserted_time < now_utc() - '#{days} days'::INTERVAL")
 
 
-tablenamesNotDropped = (years = config.CLEANUP.OLD_TABLE_YEARS) ->
+tablenamesNotDropped = (days = config.CLEANUP.RAW_TABLE_DROP_DAYS) ->
   _tableNames()
-  .whereRaw("rm_inserted_time < now_utc() - '#{years} years'::INTERVAL")
+  .whereRaw("rm_inserted_time < now_utc() - '#{days} days'::INTERVAL")
 
 
 cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
   rawLogger.debug -> loadEntriesQuery.toString()
 
-  Promise.all loadEntriesQuery.map (loadEntry) ->
+  Promise.each loadEntriesQuery, (loadEntry) ->
     rawLogger.debug -> loadEntry
 
     rawTempTable = tables.temp(subid: loadEntry.raw_table_name)
-    loadEntryQuery = tables.jobQueue.dataLoadHistory().where loadEntry
+    loadEntryQuery = tables.jobQueue.dataLoadHistory().where(loadEntry)
 
     sqlHelpers.tableExists { dbFn: rawTempTable }
     .then (exists) ->
       if !exists
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} is already gone deleting loadHistory entry"
         #already dropped or never existed
-        loadEntryQuery.delete()
-        return
-      else
-        #clean raw table
-        rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} cleaning all non errors"
-        rawTempTable.whereNull('rm_error_msg').delete()
-        .then () ->
-          #mark as cleaned
-          loadEntryQuery
-          .update {cleaned: true}
+        return loadEntryQuery.delete()
+
+      #clean raw table
+      rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} cleaning all non errors"
+      rawTempTable
+      .whereNull('rm_error_msg')
+      .delete()
+      .then () ->
+        #mark as cleaned
+        loadEntryQuery
+        .update {cleaned: true}
+      .then () ->
+        rawTempTable
+        .count('*')
+      .then (count) ->
+        if !count
+          # don't need to keep an empty table around
+          dbs.get('raw_temp')
+          .schema
+          .dropTableIfExists(loadEntry.raw_table_name)
 
 
 dropRawTables = (loadEntriesQuery = tablenamesNotDropped()) ->
-  Promise.all loadEntriesQuery.map (loadEntry) ->
-    dbs.get('raw_temp').schema.dropTableIfExists(loadEntry.raw_table_name)
+  Promise.each loadEntriesQuery, (loadEntry) ->
+    dbs.get('raw_temp')
+    .schema
+    .dropTableIfExists(loadEntry.raw_table_name)
     .then () ->
       tables.jobQueue.dataLoadHistory()
       .where(loadEntry)
