@@ -1,4 +1,3 @@
-
 app = require '../app.coffee'
 color = 'red'
 
@@ -88,6 +87,7 @@ rmapsCurrentMapService
         itemsOptions:
           color: color
           fillColor: color
+          className: 'rmaps-area'
         drawOptions:
           control: (promisedControl) ->
             promisedControl.then (control) ->
@@ -104,6 +104,8 @@ rmapsCurrentMapService
       }
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
+      #can't use $element as .rmaps-area is not a child of of draw control
+      featureGroupUtil?.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->

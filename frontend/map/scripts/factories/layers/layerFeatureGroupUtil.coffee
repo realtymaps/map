@@ -1,3 +1,4 @@
+###globals angular###
 app = require '../../app.coffee'
 _ =  require 'lodash'
 
@@ -53,5 +54,12 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
     @onMouseOver = (entity) ->
       @setDrawItemColor {entity, fillOpacity: .65, firstOpacity: true}
+
+    @onOffPointerEvents = ({isOn, className}) ->
+      ele = document.getElementsByClassName(className)
+      ele = angular.element(ele)
+      if isOn
+        return ele?.css('pointer-events', 'auto')
+      ele?.css('pointer-events', 'none')
 
     @
