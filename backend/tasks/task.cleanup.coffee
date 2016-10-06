@@ -10,19 +10,18 @@ _ = require('lodash')
 internals = require './task.cleanup.internals'
 
 
-### eslint-disable ###
-rawTables = (subtask) ->
-  ### eslint-enable ###
+rawTables = () ->
   logger.debug -> 'Begin cleaning and dropping raw tables'
 
-  Promise.join(internals.cleanRawTables(), internals.dropRawTables())
+  internals.cleanRawTables()
   .then () ->
-    logger.debug -> 'done cleaning and dropping raw tables'
+    logger.debug () -> 'done cleaning raw tables'
+    internals.dropRawTables()
+  .then () ->
+    logger.debug () -> 'done dropping raw tables'
 
 
-### eslint-disable ###
-subtaskErrors = (subtask) ->
-  ### eslint-enable ###
+subtaskErrors = () ->
   tables.jobQueue.subtaskErrorHistory()
   .whereRaw("finished < now_utc() - '#{config.CLEANUP.SUBTASK_ERROR_DAYS} days'::INTERVAL")
   .delete()
@@ -30,9 +29,7 @@ subtaskErrors = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from subtask error history"
 
 
-### eslint-disable ###
-taskHistory = (subtask) ->
-  ### eslint-enable ###
+taskHistory = () ->
   tables.jobQueue.taskHistory()
   .where(current: false)
   .whereRaw("started < now_utc() - '#{config.CLEANUP.TASK_HISTORY_DAYS} days'::INTERVAL")
@@ -41,9 +38,7 @@ taskHistory = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from task history"
 
 
-### eslint-disable ###
-currentSubtasks = (subtask) ->
-  ### eslint-enable ###
+currentSubtasks = () ->
   dbs.transaction (transaction) ->
     tables.jobQueue.taskHistory({transaction})
     .select('name')
@@ -57,9 +52,7 @@ currentSubtasks = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from current subtasks"
 
 
-### eslint-disable ###
-deleteMarkers = (subtask) ->
-  ### eslint-enable ###
+deleteMarkers = () ->
   tables.deletes.combined()
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
   .delete()
@@ -67,9 +60,7 @@ deleteMarkers = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from delete marker table"
 
 
-### eslint-disable ###
-deleteParcels = (subtask) ->
-  ### eslint-enable ###
+deleteParcels = () ->
   tables.deletes.parcel()
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_PARCEL_DAYS} days'::INTERVAL")
   .delete()
@@ -77,9 +68,7 @@ deleteParcels = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from delete parcels table"
 
 
-### eslint-disable ###
-deleteInactiveRows = (subtask) ->
-  ### eslint-enable ###
+deleteInactiveRows = () ->
   tables.finalized.combined()
   .where(active: false)
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
@@ -88,9 +77,7 @@ deleteInactiveRows = (subtask) ->
     logger.debug () -> "Deleted #{count} rows from combined data table"
 
 
-### eslint-disable ###
 deletePhotosPrep = (subtask) ->
-  ### eslint-enable ###
   numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || internals.NUM_ROWS_TO_PAGINATE
 
   tables.deletes.photos()
