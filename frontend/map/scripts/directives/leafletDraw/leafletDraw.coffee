@@ -167,7 +167,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
         _attachEvents()
 
         scope.disable = () ->
-          if _currentHandler?.type == 'edit' || _currentHandler?.type == 'remove'
+          if (_currentHandler?.type == 'edit' || _currentHandler?.type == 'remove') && scope.canSave
             _currentHandler.revertLayers()
           _currentHandler?.disable()
           scope.enabled = false
