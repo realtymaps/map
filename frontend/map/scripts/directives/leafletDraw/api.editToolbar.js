@@ -1,9 +1,7 @@
 var OurToolBar = require('./api.Toolbar.js')
 require('./l.handler.js')
 Object.assign = Object.assign || require('object-assign')
-/*L.Map.mergeOptions({
-	editControl: true
-})*/
+require('./l.editToolbar.delete.js')
 
 module.exports = L.EditToolbar.extend(Object.assign({}, OurToolBar, {
 	initialize: function (options) {

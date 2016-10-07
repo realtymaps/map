@@ -59,7 +59,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
     if !leafletData
       throw new Error 'ui-leaflet is not loaded'
 
-    unless scope.mappromise
+    if !scope.mappromise
       throw new Error 'mappromise required'
 
     scope.mappromise.then (map) ->
@@ -167,6 +167,8 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
         _attachEvents()
 
         scope.disable = () ->
+          if _currentHandler?.type == 'edit' || _currentHandler?.type == 'remove'
+            _currentHandler.revertLayers()
           _currentHandler?.disable()
           scope.enabled = false
           scope.canSave = false
