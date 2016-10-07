@@ -104,7 +104,7 @@ rmapsCurrentMapService
       }
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
-      featureGroupUtil?.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
+      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->
