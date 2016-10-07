@@ -13,17 +13,17 @@ include ../includes/mixins/property/_propertyAttributes.jade
                         h2.title Favorites ({{favoritesList.length}})
                         .row
                             ul.favorites
-                                li(ng-repeat="enity in favoritesList" class="col-md-6")
+                                li(ng-repeat="entity in favoritesList" class="col-md-6")
                                     div.property-card
                                         div.property-img
-                                            img(rmaps-cdn-image src="static/img/{{enity.image}}")
-                                            span.property-status(ng-class="enity.status")
-                                                | {{enity.status}}
+                                            img(rmaps-cdn-image src="static/img/{{entity.image}}")
+                                            span.property-status(ng-class="entity.status")
+                                                | {{entity.status}}
                                         div.property-data
-                                            span.price(ng-class="enity.status")
-                                                | ${{enity.price}}
+                                            span.price(ng-class="entity.status")
+                                                | ${{entity.price}}
 
-                                            +propertyAttributes('entity')
+                                            property-attributes(property="entity")
                                         div.actions
                                             button.details
                                                 span.icon.icon-arrow
@@ -45,9 +45,9 @@ include ../includes/mixins/property/_propertyAttributes.jade
                 .row
                     .col-md-12(ng-controller="rmapsAccordionCtrl")
                         uib-accordion(close-others="oneAtATime")
-                            div(uib-accordion-group ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
+                            div(uib-accordion-group ng-repeat="entity in projectsArray" heading="{{entity.title}}" is-open="status.isItemOpen[$index]")
                                 ul.favorites-list
-                                    li(ng-repeat="id in enity.favorites")
+                                    li(ng-repeat="id in entity.favorites")
                                         div.row
                                             div.col-sm-3.col-xs-5
                                                 div.property-img

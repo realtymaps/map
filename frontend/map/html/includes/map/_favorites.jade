@@ -30,7 +30,7 @@ span(
               +circleNrMixin('{{$index+1}}')
               span.content
                 span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.status}}
-                +propertyAttributes('property')
+                property-attributes(property="property")
             span.actions
               span.action-button(ng-click="formatters.results.clickFavoriteResultFromList(property); $event.stopPropagation()")
                 span.action Remove

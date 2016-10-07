@@ -37,7 +37,7 @@ span.pinned-list.dropdown.btn-group(
               +circleNrMixin('{{$index+1}}')
               span.content
                 span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.status}}
-                +propertyAttributes('property')
+                property-attributes(property="property")
       .dropdown-explanation(ng-show="!mailings.length")
         p You haven't sent any mail yet. Maybe now's the time to start? You can send 1 letter or thousands of letters in just a few clicks.
         p Find your house and send yourself a letter to see how easy it is!

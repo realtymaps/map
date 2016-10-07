@@ -7,10 +7,10 @@ app = require '../../app.coffee'
 #
 
 app.directive 'propertyImages', (
-  $log,
-  $timeout,
-  rmapsPropertyFormatterService,
-  rmapsResultsFormatterService,
+  $log
+  $timeout
+  rmapsPropertyFormatterService
+  rmapsResultsFormatterService
 ) ->
 
   $log = $log.spawn 'propertyImagesDirective'
@@ -23,8 +23,11 @@ app.directive 'propertyImages', (
     imageHeight: '@'
     coverImage: '@'
     panoramaControls: '@'
+    showStatus: '&'
 
   controller: ($scope) ->
+
+    console.log('@@@@@@@@@@@@@@@@@ '+JSON.stringify($scope.statusObject,null,2))
 
     $scope.active = 0
 

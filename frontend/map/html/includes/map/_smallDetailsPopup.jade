@@ -2,7 +2,7 @@ include ../mixins/property/_propertyAttributes.jade
 
 .property-card(ng-controller="rmapsSmallDetailsCtrl" style="width:275px;")
   property-images(property="property" image-width="275")
-  +propertyAttributes('property', 'popup')
+  property-attributes(property="property")
   property-buttons(
     property='property'
     pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'

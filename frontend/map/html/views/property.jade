@@ -15,9 +15,7 @@ include ../includes/mixins/_noteInputMixin.jade
         .col-sm-8(ng-repeat="property in dataSources" ng-if="tab.selected == property.data_source_id")
           .prop-image.prop-image-lg(ng-if="tab.selected == property.data_source_id")
 
-            property-images(property="property" image-width="750" panorama-controls="true")
-
-            .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
+            property-images(property="property" image-width="750" panorama-controls="true" status-object="getStatus(property)")
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6

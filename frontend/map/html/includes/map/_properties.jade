@@ -19,7 +19,7 @@ include ../mixins/property/_propertyAttributes.jade
           li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit")
             .property-card
               property-images(property="property" image-width="275" cover-image="true")
-              +propertyAttributes('property')
+              property-attributes(property="property")
               property-buttons(property='property'
                               pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
                               favorite-click='formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()'
@@ -40,4 +40,4 @@ include ../mixins/property/_propertyAttributes.jade
             uib-popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}"
             ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin
-          +propertyAttributes('property')
+          property-attributes(property="property")

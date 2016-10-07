@@ -41,3 +41,5 @@
     div(uib-slide ng-repeat="photo in property.photos" index="photo.index")
       img.resizable(ng-src="{{photo.url}}" style="margin:auto;" ui-sref="property({id:property.rm_property_id})")
       .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
+
+  .prop-image-status(class="{{formatters.property.getStatusLabelClass(property)}}") {{formatters.property.getStatusLabel(property)}}

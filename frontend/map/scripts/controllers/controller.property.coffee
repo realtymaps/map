@@ -137,13 +137,13 @@ app.controller 'rmapsPropertyCtrl',
           units = soldRange.match(/^\d+ ([a-z])/)[1]
           units = if units == 'm' then 'M' else units
           if moment().subtract(qty, units).isBefore(moment(property.close_date))
-            return label: "Sold within #{soldRange}", class: 'sold'
+            return {label: "Sold within #{soldRange}", class: 'sold', status: property.status}
           else
-            return label: "Not Sold witin #{soldRange}", class: 'notsale'
+            return {label: "Not Sold within #{soldRange}", class: 'notsale', status: property.status}
         catch error
-          return label: "Not Sold", class: 'notsale'
+          return {label: "Not Sold", class: 'notsale', status: property.status}
       else
-        return label: property.status, class: $scope.formatters.property.getForSaleClass(property, false)
+        return {label: property.status, class: $scope.formatters.property.getForSaleClass(property, false), status: property.status}
 
     $scope.showPVA = (rm_property_id) ->
       splits = rm_property_id.split('_')

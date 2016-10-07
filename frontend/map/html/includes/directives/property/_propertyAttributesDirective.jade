@@ -4,6 +4,7 @@
     .prop-detail(ng-if="property.bedrooms") {{property.bedrooms}} beds
     .prop-detail(ng-if="property.baths_total") {{property.baths_total}} bath
     .prop-detail(ng-if="property.finished_sqft") {{property.sqft_finished}} Sq Ft
-    .prop-detail(ng-if="property.year_built") {{formatters.property.getYear(property.year_built)}} built
-  .prop-street {{property.address.street}} {{propert.address.unit}}
-  .prop-location {{property.address.citystate}} {{propert.address.zip}}
+    .prop-detail(ng-if="property.year_built") {{formatters.property.getYear(property.year_built)}} (built)
+  .prop-street {{property.address.street}} {{property.address.unit}}
+  .prop-location {{property.address.citystate}} {{property.address.zip}}
+  .prop-location(ng-if="property.mls_formal_name") {{property.mls_formal_name}}

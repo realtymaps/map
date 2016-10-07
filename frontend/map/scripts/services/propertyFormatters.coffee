@@ -1,9 +1,23 @@
 ###globals _###
 app = require '../app.coffee'
 require '../services/leafletObjectFetcher.coffee'
+moment = require 'moment'
 
-app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants) ->
+app.service 'rmapsPropertyFormatterService',
+  (
+    $rootScope
+    $timeout
+    $filter
+    $log
+    $state
+    $location
+    rmapsParcelEnums
+    rmapsGoogleService
+    rmapsPropertiesService
+    rmapsFormattersService
+    uiGmapGmapUtil
+    rmapsEventConstants
+  ) ->
 
   _forSaleClass = {}
   _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
@@ -40,13 +54,41 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       if !result
         return ''
       if result.savedDetails?.isPinned && showPinned
-        soldClass = _forSaleClass['saved']
-      return soldClass || _forSaleClass[result.status] || _forSaleClass['default']
+        return _forSaleClass['saved']
+      if result.status == 'sold'
+        soldRange = '1 year' # rmapsFiltersFactory.values.soldRange[$rootScope.selectedFilters?.soldRange] || '1 year'
+        try
+          qty = parseInt(soldRange)
+          units = soldRange.match(/^\d+ ([a-z])/)[1]
+          units = if units == 'm' then 'M' else units
+          if moment().subtract(qty, units).isBefore(moment(result.close_date))
+            return _forSaleClass.sold
+          else
+            return _forSaleClass.notsale
+        catch error
+          return _forSaleClass.notsale
+      return _forSaleClass[result.status] || _forSaleClass['default']
 
     getStatusLabelClass: (result, ignorePinned = false) ->
       if !result
         return ''
       return "label-#{@getForSaleClass(result, !ignorePinned)}-property"
+
+    getStatusLabel: (result) ->
+      if result.status == 'sold'
+        soldRange = '1 year' # rmapsFiltersFactory.values.soldRange[$rootScope.selectedFilters?.soldRange] || '1 year'
+        try
+          qty = parseInt(soldRange)
+          units = soldRange.match(/^\d+ ([a-z])/)[1]
+          units = if units == 'm' then 'M' else units
+          if moment().subtract(qty, units).isBefore(moment(result.close_date))
+            return "Sold within #{soldRange}"
+          else
+            return "Not Sold within #{soldRange}"
+        catch error
+          return "Not Sold"
+      else
+        return result.status
 
     showSoldDate: (result) ->
       return result?.status == 'sold' && result?.close_date
