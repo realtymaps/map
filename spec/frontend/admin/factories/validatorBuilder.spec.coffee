@@ -36,7 +36,7 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        field: _buildBaseRule {"output": "rm_property_id"}
        transform: '[validators.rm_property_id({})]'
       ,
-       field: _buildBaseRule {"output": "days_on_market"}
+       field: _buildBaseRule {"output": "days_on_market_filter"}
        transform: '[validators.days_on_market({})]'
       ,
        field: _buildBaseRule {"output": "address"}
@@ -57,5 +57,4 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        field: _buildBaseRule {"output": "parcel_id"}
        transform: '[validators.string({"stripFormatting":true,"trim":true}),validators.nullify({"value":""})]'
     ]
-
     expect(obj.field.getTransformString()).to.equal obj.transform for obj in rules

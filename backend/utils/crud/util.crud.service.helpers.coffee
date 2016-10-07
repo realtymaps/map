@@ -21,6 +21,9 @@ withSafeEntity = (entity, safe, cb, skipSafeError) ->
   if entity? and safe?.length
     throw new Error('safe must be Array type') unless _.isArray safe
     entity = _.pick(entity, safe)
+  _.each entity, (value, key) ->
+    if _.isArray(value)
+      entity[key] = JSON.stringify(value)
   cb(entity or {}, safe)
 
 class Crud extends BaseObject

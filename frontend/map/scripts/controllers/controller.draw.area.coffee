@@ -1,4 +1,3 @@
-
 app = require '../app.coffee'
 color = 'black'
 
@@ -10,10 +9,10 @@ $rootScope
 rmapsEventConstants
 rmapsDrawnUtilsService
 rmapsMapDrawHandlesFactory
-rmapsMapIds
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
 rmapsFeatureGroupUtil
+rmapsCurrentMapService
 ) ->
   $scope.tacked = false
 
@@ -21,13 +20,14 @@ rmapsFeatureGroupUtil
 
   isReadyPromise = $q.defer()
 
-  mapId = rmapsMapIds.mainMap()
+  mapId = rmapsCurrentMapService.mainMapId()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItemsAreas()
   .then (drawnItems) ->
+
     $scope.drawn.items = drawnItems
-    featureGroupUtil = rmapsFeatureGroupUtil(drawnItems)
+    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawAreaCtrl'})
 
     $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
       $log.debug 'list mouseover'
@@ -87,6 +87,7 @@ rmapsFeatureGroupUtil
         itemsOptions:
           color: color
           fillColor: color
+          className: 'rmaps-area'
         drawOptions:
           control: (promisedControl) ->
             promisedControl.then (control) ->
@@ -103,6 +104,7 @@ rmapsFeatureGroupUtil
       }
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
+      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->

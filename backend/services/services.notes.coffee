@@ -5,7 +5,7 @@ dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('service:notes')
 {joinColumns, basicColumns} = require '../utils/util.sql.columns'
 toLeafletMarker = require('../utils/crud/extensions/util.crud.extension.user').route.toLeafletMarker
-routeHelpers = require '../utils/util.route.helpers'
+profileSvc = require '../services/service.profiles'
 
 
 class NotesService extends ServiceCrud
@@ -27,7 +27,7 @@ class NotesService extends ServiceCrud
   enqueueEvent: ({promise, sub_type, type = 'propertySaved', entity, transaction}) ->
     promise
     .then (ret) ->
-      profile = routeHelpers.currentProfile()
+      profile = profileSvc.getCurrentSessionProfile()
       logger.debug "#@@@@@@@@@@@@@@@@ eventsQueue type: #{type}@@@@@@@@@@@@@@@@@@@@@"
       tables.user.eventsQueue({transaction})
       .insert {
@@ -55,8 +55,6 @@ class NotesService extends ServiceCrud
         entity.id = id
         entity.text = decodeURIComponent(entity.text)
         entity.rm_inserted_time = rm_inserted_time
-        console.log  "WWTTTTTFFFFFFFFF"
-        console.log entity
         entity
 
       @enqueueEvent {

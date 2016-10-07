@@ -1,6 +1,3 @@
-###globals _###
-'use strict'
-
 #
 # Create the Angular Module
 #
@@ -18,4 +15,3 @@ if window?.angular?
   #
   require('./util.bounds.coffee')
   require('./util.usStates.coffee')
-

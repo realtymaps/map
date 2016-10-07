@@ -8,19 +8,19 @@ app.controller "rmapsDrawSketchCtrl", (
   rmapsEventConstants,
   rmapsDrawnUtilsService
   rmapsMapDrawHandlesFactory,
-  rmapsMapIds
   rmapsDrawCtrlFactory
   rmapsFeatureGroupUtil
+  rmapsCurrentMapService
 ) ->
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
-  mapId = rmapsMapIds.mainMap()
+  mapId = rmapsCurrentMapService.mainMapId()
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
 
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
-    rmapsFeatureGroupUtil(drawnItems)
+    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawSketchCtrl'})
 
     _handles = rmapsMapDrawHandlesFactory {
       mapId
@@ -40,6 +40,7 @@ app.controller "rmapsDrawSketchCtrl", (
         itemsOptions:
           color: color
           fillColor: color
+          className: 'rmaps-sketch'
         drawOptions:
           draw:
             polyline:
@@ -58,6 +59,7 @@ app.controller "rmapsDrawSketchCtrl", (
           $scope.draw.show = !isOpen
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->
+      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-sketch'})
       if newVal
         return _drawCtrlFactory(_handles)
       _drawCtrlFactory()

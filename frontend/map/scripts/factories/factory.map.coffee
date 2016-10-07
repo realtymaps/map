@@ -9,13 +9,6 @@ _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
 
-app.service 'rmapsCurrentMapService', () ->
-  _currentMainMap = null
-  set: (map) ->
-    _currentMainMap = map
-  get: () ->
-    _currentMainMap
-
 ###
   Our Main Map Implementation
 ###
@@ -35,7 +28,6 @@ app.factory 'rmapsMapFactory',
     rmapsLeafletObjectFetcherFactory,
     rmapsMainOptions,
     rmapsEventsHandlerService,
-    rmapsMapIds,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
     rmapsRenderingService,
@@ -67,10 +59,13 @@ app.factory 'rmapsMapFactory',
           options: limits.options
           redrawDebounceMilliSeconds: limits.redrawDebounceMilliSeconds
           mapPath: 'map'
-          mapId: rmapsMapIds.mainMap()
+          # need a new mapId instance and reference since it takes time for a former mapId to $destroy,
+          # and this ensures we're always referencing the correct map instance and reference
+          mapId: rmapsCurrentMapService.makeNewMapId()
         }
 
         rmapsCurrentMapService.set(@)
+        @undrawn = true # this flag helps ensure we don't get cached results the first time we `draw()`
         @leafletDataMainMap = new rmapsLeafletObjectFetcherFactory(@mapId)
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
 
@@ -85,24 +80,35 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
-          @setLocation(position)
-
         #
         # Property Button events
         #
-        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) =>
-          @zoomTo result, false
 
-        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
+        locationHandler = $rootScope.$onRootScope rmapsEventConstants.map.locationChange, (event, position) =>
+          @setLocation(position)
+
+        zoomHandler = $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) =>
           @zoomTo result, doChangeZoom
 
-        $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
+        boundsHandler = $rootScope.$onRootScope rmapsEventConstants.map.fitBoundsProperty, (event, bounds, options) =>
           @fitBounds bounds, options
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
+        pinsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
+        favsHandler = $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
+
+        centerHandler = $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
+          @setLocation location
+
+        @scope.$on '$destroy', () =>
+          locationHandler()
+          zoomHandler()
+          boundsHandler()
+          pinsHandler()
+          favsHandler()
+          centerHandler()
+          $log.debug "Map instance #{@mapId} has been $destroyed."
+
 
         #
         # End Property Button Events
@@ -161,9 +167,6 @@ app.factory 'rmapsMapFactory',
 
 
         @singleClickCtrForDouble = 0
-
-        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) =>
-          @setLocation location
 
         @layerFormatter = rmapsLayerFormattersService
 
@@ -273,6 +276,7 @@ app.factory 'rmapsMapFactory',
             cache
           }
 
+
       redraw: (cache = true) ->
         verboseLogger.debug 'redraw() cache=', cache
         promise = null
@@ -363,7 +367,14 @@ app.factory 'rmapsMapFactory',
         verboseLogger.debug 'encoded hash'
         @scope.refreshState()
         verboseLogger.debug 'refreshState'
-        ret = @redraw()
+
+        if @undrawn # flip flag and redraw with no cache if this map instance is "undrawn" (draw hasn't been called yet)
+          @undrawn = false
+          ret = @redraw(false)
+        else
+          ret = @redraw()
+
+        verboseLogger.debug 'redraw'
         ret
 
       getMapStateObj: =>
@@ -421,7 +432,6 @@ app.factory 'rmapsMapFactory',
 
       pinPropertyEventHandler: (event, eventData) =>
         result = eventData.property
-
         if result
           wasPinned = result?.savedDetails?.isPinned
 
@@ -443,12 +453,10 @@ app.factory 'rmapsMapFactory',
 
           if wasPinned and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
-
         @redraw(false)
 
       favoritePropertyEventHandler: (event, eventData) =>
         result = eventData.property
-
         if result
           wasFavorite = result?.savedDetails?.isFavorite
           if wasFavorite and !@scope.results[result.rm_property_id]

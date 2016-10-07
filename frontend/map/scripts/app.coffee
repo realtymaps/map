@@ -1,6 +1,7 @@
 ###globals _###
 'use strict'
 
+require 'angular-ui-bootstrap'
 require '../../../common/extensions/index.coffee'
 
 appName = 'rmapsMapApp'
@@ -61,6 +62,5 @@ app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalSer
 
         active
 
-module.exports = app
 
-require('./controllers/mayday_controllers1.coffee')(app)
+module.exports = app

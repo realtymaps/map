@@ -60,8 +60,6 @@ summary = (subtask) ->
 
 
 withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new Promise (resolve, reject) ->
-  if maxWaitSeconds == undefined
-    maxWaitSeconds = 0
   start = Date.now()
   id = cluster.worker?.id ? 'X'
   dbLockLogger = logger.spawn('dbLock')
@@ -78,7 +76,7 @@ withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new 
           .finally () ->
             dbLockLogger.debug () -> "---- <#{id}> Releasing lock: #{lockId}"
         else
-          if maxWaitSeconds != null
+          if maxWaitSeconds?
             waited = Math.floor((Date.now()-start)/1000)
             if waited >= maxWaitSeconds
               dbLockLogger.debug () -> "---- <#{id}>  Failed to acquire lock after #{waited}s: #{lockId}"
@@ -115,7 +113,7 @@ checkTask = (transaction, batchId, taskName) ->
 getQueuedSubtask = (queueName) ->
   getQueueLockId(queueName)
   .then (queueLockId) ->
-    withDbLock {lockId: queueLockId, maxWaitSeconds: 60}, (transaction) ->
+    withDbLock {lockId: queueLockId}, (transaction) ->
       currentTasksPromise = tables.jobQueue.taskHistory({transaction})
       .select('name')
       .select('status')
@@ -225,13 +223,15 @@ getQueueLockId = memoize.promise(getQueueLockId, primitive: true)
 
 sendLongTaskWarnings = (transaction=null) ->
   # warn about long-running tasks
-  tables.jobQueue.taskHistory(transaction: transaction)
+  tables.jobQueue.taskHistory({transaction})
   .where(current: true)
   .whereNull('finished')
   .whereRaw("started + warn_timeout_minutes * INTERVAL '1 minute' < NOW()")
+  .update(warn_timeout_minutes: dbs.raw('main', 'warn_timeout_minutes + 15'))
+  .returning('*')
   .then (tasks=[]) ->
     for task in tasks
-      logger.warn("Task from #{task.batch_id} has run over #{task.warn_timeout_minutes} minutes: #{task.name}")
+      logger.warn("Task from #{task.batch_id} has run over #{task.warn_timeout_minutes-15} minutes: #{task.name}")
     enqueueNotification
       payload:
         subject: 'task: long run warning'
@@ -421,6 +421,7 @@ executeSubtask = (subtask, prefix) ->
       .catch Promise.TimeoutError, (err) ->
         handleSubtaskError({prefix, subtask, newStatus: 'timeout', hard: false, error: 'timeout'})
     if subtask.warn_timeout_minutes
+      warnTimeout = null
       doNotification = (minutes) ->
         logger.warn("Subtask from #{subtask.batch_id} has run over #{minutes} minutes: #{subtask.name}")
         warnTimeout = setTimeout(doNotification, 10*60*1000, minutes+10)

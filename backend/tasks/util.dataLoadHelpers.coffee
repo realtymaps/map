@@ -27,12 +27,10 @@ DELETE =
   NONE: 'none'
 
 
-buildUniqueSubtaskName = (subtask, prefix) ->
-  parts = [subtask.batch_id, subtask.task_name, subtask.data.dataType]
+buildUniqueSubtaskName = (subtask, overrideBatchId) ->
+  parts = [overrideBatchId||subtask.batch_id, subtask.task_name, subtask.data.dataType]
   if subtask.data.rawTableSuffix
     parts.push(subtask.data.rawTableSuffix)
-  if prefix
-    parts.unshift(prefix)
   parts.join('_')
 
 
@@ -307,8 +305,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
-      if row["Assessor’s Parcel Number"]? && (row["Assessor’s Parcel Number"].indexOf('6231520007') != -1 || row["Assessor’s Parcel Number"]?.indexOf('11080160001') != -1)
-        logger.spawn('troubleshoot').debug () -> "@@@@@@@@@@@@@@@@@@@@ #{options.dataSourceType}/#{options.dataSourceId}/#{subtask.data.dataType}: #{JSON.stringify(row,null,2)}"
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id

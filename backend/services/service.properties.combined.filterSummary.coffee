@@ -83,6 +83,7 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
   logger.debug queryParams
   logger.debug () -> "in queryFilters"
   # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
+
   if filters?.status?.length
 
     query.where ->

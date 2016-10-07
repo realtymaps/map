@@ -107,10 +107,6 @@ rmapsHttpTempCache
     clear: () ->
       _notes = {}
 
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-    $log.debug 'Notes Service profile updated event'
-    service.getList true
-
   $rootScope.$onRootScope rmapsEventConstants.principal.logout.success, (event, profile) ->
     $log.debug 'Notes Service user logout event'
     service.clear()

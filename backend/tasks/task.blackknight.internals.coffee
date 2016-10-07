@@ -11,16 +11,22 @@ dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 
 
-NUM_ROWS_TO_PAGINATE = 2500
-BLACKKNIGHT_PROCESS_DATES = 'blackknight process dates'
-BLACKKNIGHT_PROCESS_DATES_FINISHED = 'blackknight process dates finished'
-BLACKKNIGHT_COPY_DATES = 'blackknight copy dates'
+NUM_ROWS_TO_PAGINATE = 1000
+BLACKKNIGHT_PROCESS_INFO = 'blackknight process info'
+BLACKKNIGHT_COPY_INFO = 'blackknight copy info'
 TAX = 'tax'
 DEED = 'deed'
 MORTGAGE = 'mortgage'
 REFRESH = 'Refresh'
 UPDATE = 'Update'
+DATES_QUEUED = 'dates queued'
+FIPS_QUEUED = 'fips queued'
+CURRENT_PROCESS_DATE = 'current process date'
+LAST_COMPLETED_DATE = 'last completed date'
+DATES_COMPLETED = 'dates completed'
 NO_NEW_DATA_FOUND = 'no new data found'
+DELETE_BATCH_ID = 'delete batch_id'
+DELETE_ROWS_COUNT = 'delete rows count'
 DELETE = 'Delete'
 LOAD = 'Load'
 tableIdMap =
@@ -67,7 +73,7 @@ columns[LOAD][UPDATE] = columns[LOAD][REFRESH]
 
 
 #
-# some classifiers for filterS3Contents
+# some classifiers for _filterS3Contents
 #
 _isDelete = (fileName) ->
   if fileName.endsWith('.txt')
@@ -86,24 +92,21 @@ _isLoad = (fileName) ->
 
 
 # Filter s3, classify as data to DELETE or LOAD based on filename
-filterS3Contents = (contents, config) -> Promise.try () ->
+_filterS3Contents = (contents, config) -> Promise.try () ->
   # required params, mostly for going ahead and populating the "fileInfo" objects used later
   if !("action" of config && "tableId" of config && "date" of config && "startTime" of config)
     throw new HardFail("S3 filtering requires config parameters: `action`, `date`, `tableId`, and `startTime`")
 
-  filtered =
+  result =
     "#{REFRESH}": []
     "#{UPDATE}": []
     "#{DELETE}": []
-
-  # this is defensive: this will be null if no dates were available for processing (default) if for some reason we get here
-  if !config.date?
-    return filtered
+    fipsMap: {}
 
   # each Key in Bucket...
+  folderPrefix = "Managed_#{config.action}/#{config.tableId}#{config.date}/"
   for item in contents
-    folderPrefix = "Managed_#{config.action}/#{config.tableId}#{config.date}/"
-    fileName = item.Key.replace(folderPrefix, '')
+    fileName = item.Key.substring(folderPrefix.length)
 
     classified = false
     fileInfo =
@@ -118,303 +121,253 @@ filterS3Contents = (contents, config) -> Promise.try () ->
 
 
     if (classified = _isDelete(fileName))
-      date = fileName.slice(-12, -4)
       _.merge fileInfo,
         fileType: DELETE
         listType: DELETE
-        rawTableSuffix: "#{config.action.slice(0,1)}_DELETES_#{date}"
+        rawTableSuffix: "#{config.action.slice(0,1)}_DELETES_#{config.date}"
 
     else if (classified = _isLoad(fileName))
       fips = fileName.slice(0, 5)
-      # TODO: remove when we turn on all FIPS codes
-      if fips != '12021' && fips != '12099'
-        classified = false
-      else
-        date = fileName.slice(-15, -7)
-        _.merge fileInfo,
-          fileType: LOAD
-          rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{date}"
-          normalSubid: fips
-          indicateDeletes: (config.action == REFRESH)
-          deletes: dataLoadHelpers.DELETE.INDICATED
+      result.fipsMap[fips] = true
+      _.merge fileInfo,
+        fileType: LOAD
+        rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{config.date}"
+        normalSubid: fips
+        indicateDeletes: (config.action == REFRESH)
+        deletes: dataLoadHelpers.DELETE.INDICATED
 
     if classified
       # apply to appropriate list
-      filtered[fileInfo.listType].push fileInfo
-  filtered
+      result[fileInfo.listType].push fileInfo
 
-#
-# timestamp / processing date queue maintenance
-#
-nextProcessingDates = () ->
+  result
+
+
+updateProcessInfo = (newProcessInfo) ->
   defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
+  defaults[DATES_QUEUED] = []
+  defaults[DATES_COMPLETED] = []
+  defaults[FIPS_QUEUED] = []
 
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "seeking next date"
-    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
+  processInfoPromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
+  Promise.join processInfoPromise, (processInfo) ->
+    logger.debug () -> "finished processing #{newProcessInfo.date} / #{newProcessInfo.fips_code}"
+    logger.debug () -> "old processInfo values: #{JSON.stringify(processInfo)}"
 
-    currentDateQueue[REFRESH].sort()
-    currentDateQueue[UPDATE].sort()
-    processDates =
-      "#{REFRESH}": null
-      "#{UPDATE}": null
+    if newProcessInfo.other_values
+      _.extend(processInfo, newProcessInfo.other_values)
 
-    if (refreshItem = currentDateQueue[REFRESH].shift())
-      processDates[REFRESH] = refreshItem
+    processInfo[DATES_QUEUED] = _.uniq(processInfo[DATES_QUEUED]).sort()
 
-    if (updateItem = currentDateQueue[UPDATE].shift())
-      processDates[UPDATE] = updateItem
-
-    processDates
-
-popProcessingDates = (dates) ->
-  defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
-
-  currentQueuePromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  finishedQueuePromise =   keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES_FINISHED, defaultValues: defaults)
-  Promise.join currentQueuePromise, finishedQueuePromise, (currentDateQueue, finishedDateQueue) ->
-    logger.debug () -> "moving #{JSON.stringify(dates)}"
-    logger.debug () -> "from #{JSON.stringify(currentDateQueue)}"
-    logger.debug () -> "to #{JSON.stringify(finishedDateQueue)}"
-    currentDateQueue[REFRESH] = _.uniq(currentDateQueue[REFRESH]).sort()
-    currentDateQueue[UPDATE] = _.uniq(currentDateQueue[UPDATE]).sort()
-
-    processDates =
-      "#{REFRESH}": null
-      "#{UPDATE}": null
-
-    # simply remove the given "dates" if exists, otherwise pull the 0th element (since sorted)
-    if dates?
-      refreshIndex = currentDateQueue[REFRESH].indexOf(dates[REFRESH])
-      updateIndex = currentDateQueue[UPDATE].indexOf(dates[UPDATE])
+    # remove the fips code first
+    index = processInfo[FIPS_QUEUED].indexOf(newProcessInfo.fips_code)
+    if index >= 0
+      processInfo[FIPS_QUEUED].splice(index, 1)
     else
-      refreshIndex = 0
-      updateIndex = 0
+      logger.warn "Unable to remove FIPS #{newProcessInfo.fips_code} from [#{processInfo[FIPS_QUEUED]}]"
 
-    if refreshIndex >= 0 && ([refreshItem] = currentDateQueue[REFRESH].splice(refreshIndex, 1))
-      processDates[REFRESH] = refreshItem
-      if finishedDateQueue[REFRESH].indexOf(refreshItem) == -1
-        finishedDateQueue[REFRESH].push(refreshItem)
+    # if we removed the last FIPS code, then indicate we need to move on to the next date
+    if processInfo[FIPS_QUEUED].length == 0
+      processInfo[CURRENT_PROCESS_DATE] = null
+      index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
+      if index >= 0
+        processInfo[DATES_QUEUED].splice(index, 1)
+      else
+        logger.warn "Unable to remove date #{newProcessInfo.date} from #{processInfo[DATES_QUEUED]}"
+      if processInfo[DATES_COMPLETED].indexOf(newProcessInfo.date) == -1
+        processInfo[DATES_COMPLETED].push(newProcessInfo.date)
+      else
+        logger.warn "Date already marked as completed: #{newProcessInfo.date} in #{processInfo[DATES_COMPLETED]}"
 
-    if updateIndex >= 0 && ([updateItem] = currentDateQueue[UPDATE].splice(updateIndex, 1))
-      processDates[UPDATE] = updateItem
-      if finishedDateQueue[UPDATE].indexOf(updateItem) == -1
-        finishedDateQueue[UPDATE].push(updateItem)
+    keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO})
 
-    dbs.transaction (transaction) ->
-      keystore.setValuesMap(currentDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES, transaction})
-      .then () ->
-        keystore.setValuesMap(finishedDateQueue, {namespace: BLACKKNIGHT_PROCESS_DATES_FINISHED, transaction})
-    .then () ->
-      return processDates
-
-pushProcessingDates = (dates) -> Promise.try () ->
-  defaults = {}
-  defaults[REFRESH] = []
-  defaults[UPDATE] = []
-  keystore.getValuesMap(BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
-  .then (currentDateQueue) ->
-    logger.debug () -> "pushing #{JSON.stringify(dates)}"
-    logger.debug () -> "to #{JSON.stringify(currentDateQueue)}"
+pushProcessingDate = (date) -> Promise.try () ->
+  keystore.getValue(DATES_QUEUED, namespace: BLACKKNIGHT_PROCESS_INFO, defaultValue: [])
+  .then (datesQueued) ->
+    logger.debug () -> "pushing #{JSON.stringify(date)}"
+    logger.debug () -> "to #{JSON.stringify(datesQueued)}"
 
     # avoid adding dupes
-    if _.includes(currentDateQueue[REFRESH], dates[REFRESH])
-      logger.warn("Processed date for `Refresh` has already been queued: #{dates[REFRESH]}.")
+    if _.includes(datesQueued, date)
+      logger.warn("Processed date has already been queued: #{date}.")
     else
-      currentDateQueue[REFRESH].push dates[REFRESH]
-    if _.includes(currentDateQueue[UPDATE], dates[UPDATE])
-      logger.warn("Processed date for `Update` has already been queued: #{dates[UPDATE]}")
-    else
-      currentDateQueue[UPDATE].push dates[UPDATE]
+      datesQueued.push(date)
 
-    keystore.setValuesMap(currentDateQueue, namespace: BLACKKNIGHT_PROCESS_DATES)
+    keystore.setValue(DATES_QUEUED, datesQueued, namespace: BLACKKNIGHT_PROCESS_INFO)
 
 
 #
 # helpers for organizing, classifying, and processing files to process
 #
-findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () ->
+findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
   ftp.list("/Managed_#{action}")
   .then (rootListing) ->
 
+    nextFolderSet = {date: '99999999'}
     for dir in rootListing when dir.type == 'd'
       date = dir.name.slice(-8)
       type = tableIdMap[dir.name.slice(0, -8)]
-      if !processDates[action]? || !type
+      if !type
         logger.warn("Unexpected directory found in blackknight FTP drop: /Managed_#{action}/#{dir.name}")
         continue
-      if processDates[action] >= date
+      if copyDate >= date
         continue
+      logger.info("New blackknight directory found: /Managed_#{action}/#{dir.name}")
 
-      newFolders["#{date}_#{action}"] ?= {date, action}
-      newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
-      logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
-    newFolders
+      if date < nextFolderSet.date
+        nextFolderSet = {date}
+      nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
+    if nextFolderSet.date == '99999999'
+      logger.debug () -> "found no new folders for #{action}"
+    return nextFolderSet
 
 
 # scan and classify (into Load or Delete) file data for processing
 getProcessInfo = (subtask, subtaskStartTime) ->
-  # per date, filter and classify files as `Load` or `Delete`
-  nextProcessingDates()
-  .then (processDates) ->
-    logger.debug () -> "processDates: #{JSON.stringify(processDates)}"
+  defaults = {}
+  defaults[DATES_QUEUED] = []
+  defaults[FIPS_QUEUED] = []
+  defaults[CURRENT_PROCESS_DATE] = null
+  defaults[DELETE_BATCH_ID] = null
+  keystore.getValuesMap(BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
+  .then (oldProcessInfo) ->
     processInfo =
-      dates: processDates
       hasFiles: false
       startTime: subtaskStartTime
-    processInfo[REFRESH] = []
-    processInfo[UPDATE] = []
-    processInfo[DELETE] = []
+    logger.debug () -> "seeking next processing set from #{JSON.stringify(oldProcessInfo)}"
+
+    # decide whether we just process the next FIPS, or do the special processing that happens when we move to a new date
+    if oldProcessInfo[FIPS_QUEUED].length > 0
+      processInfo.date = oldProcessInfo[CURRENT_PROCESS_DATE]
+      processInfo.fips = oldProcessInfo[FIPS_QUEUED].sort()[0]
+      processInfo.deleteBatchId = oldProcessInfo[DELETE_BATCH_ID]
+      logger.debug () -> "processing date/fips: #{processInfo.date}/#{processInfo.fips}"
+    else if oldProcessInfo[DATES_QUEUED].length > 0
+      processInfo.date = oldProcessInfo[DATES_QUEUED].sort()[0]
+      logger.debug () -> "processing new date: #{processInfo.date}"
+    else
+      return processInfo
 
     tableIds = Object.keys(tableIdMap)
     Promise.map tableIds, (tableId) ->
 
       refreshConfig =
         extAcctName: awsService.buckets.BlackknightData
-        Prefix: "Managed_#{REFRESH}/#{tableId}#{processDates.Refresh}"
+        Prefix: "Managed_#{REFRESH}/#{tableId}#{processInfo.date}"
       updateConfig =
         extAcctName: awsService.buckets.BlackknightData
-        Prefix: "Managed_#{UPDATE}/#{tableId}#{processDates.Update}"
+        Prefix: "Managed_#{UPDATE}/#{tableId}#{processInfo.date}"
+      if processInfo.fips
+        refreshConfig.Prefix += "/#{processInfo.fips}"
+        updateConfig.Prefix += "/#{processInfo.fips}"
 
       # pull sets of filtered (and classified as `Load` or `Delete`) keys
       refreshPromise = awsService.listObjects(refreshConfig)
       .then (refreshResponse) ->
-        filterS3Contents(refreshResponse.Contents, {action: REFRESH, tableId, date: processDates.Refresh, startTime: subtaskStartTime})
+        _filterS3Contents(refreshResponse.Contents, {action: REFRESH, tableId, date: processInfo.date, startTime: subtaskStartTime})
 
       updatePromise = awsService.listObjects(updateConfig)
       .then (updateResponse) ->
-        filterS3Contents(updateResponse.Contents, {action: UPDATE, tableId, date: processDates.Update, startTime: subtaskStartTime})
+        _filterS3Contents(updateResponse.Contents, {action: UPDATE, tableId, date: processInfo.date, startTime: subtaskStartTime})
 
       # combine the Update and Refresh lists (both filter processes may yield some `Delete` items)
-      Promise.join(refreshPromise, updatePromise)
-      .then ([refreshInfo, updateInfo]) ->
-        {
-          "#{REFRESH}": refreshInfo[REFRESH]
-          "#{UPDATE}": updateInfo[UPDATE]
-          "#{DELETE}": refreshInfo[DELETE].concat updateInfo[DELETE]
-        }
+      Promise.join refreshPromise, updatePromise, (refreshInfo, updateInfo) ->
+        "#{REFRESH}": refreshInfo[REFRESH]
+        "#{UPDATE}": updateInfo[UPDATE]
+        "#{DELETE}": refreshInfo[DELETE].concat(updateInfo[DELETE])
+        fipsMap: _.extend(refreshInfo.fipsMap, updateInfo.fipsMap)
 
-    # combine lists of all tableIds
+    # combine info from all tableIds
     .then ([table1, table2, table3]) ->
-      list = [table1, table2, table3]
+      # combine lists
+      processInfo[REFRESH] = table1[REFRESH].concat(table2[REFRESH], table3[REFRESH])
+      processInfo[UPDATE] = table1[UPDATE].concat(table2[UPDATE], table3[UPDATE])
+      processInfo[DELETE] = table1[DELETE].concat(table2[DELETE], table3[DELETE])
 
-      # combine lists (union is helpful here for combining lists, not necessarily needing the non-dupe consequence)
-      processInfo[REFRESH] = _.union table1[REFRESH], table2[REFRESH], table3[REFRESH]
-      processInfo[UPDATE] = _.union table1[UPDATE], table2[UPDATE], table3[UPDATE]
-      processInfo[DELETE] = _.union table1[DELETE], table2[DELETE], table3[DELETE]
+      if !processInfo[REFRESH].length && !processInfo[UPDATE].length && !processInfo[DELETE].length
+        return processInfo
 
-      if (processInfo[REFRESH].length + processInfo[UPDATE].length + processInfo[DELETE].length) > 0
-        processInfo.hasFiles = true
+      processInfo.hasFiles = true
+      # check if we are processing the next FIPS for a date we already started
+      if processInfo.fips?
+        processInfo.loadDeleteFiles = false
+        processInfo[DELETE] = []
+        for action in [REFRESH, UPDATE]
+          for dataType in [TAX, DEED, MORTGAGE]
+            # need to force re-processing of the raw delete data so we can delete for the current FIPS
+            processInfo[DELETE].push
+              action: action
+              dataType: dataType
+              fips_code: processInfo.fips
+              rawDeleteBatchId: processInfo.deleteBatchId
+              rawTableSuffix: "#{action.slice(0,1)}_DELETES_#{processInfo.date}"
+        return processInfo
 
-      logger.debug () -> "compiled `processInfo`: #{JSON.stringify(processInfo)}"
-
-      return processInfo
+      # from here on, we're handling special logic for when we didn't know what FIPS we were processing ahead of time
+      # (i.e. we've started on a new date, and so need to load the delete files and queue the available FIPS codes)
+      fipsMap = _.extend(table1.fipsMap, table2.fipsMap, table3.fipsMap)
+      processInfo.fipsQueue = _.keys(fipsMap).sort()
+      processInfo.fips = processInfo.fipsQueue[0]
+      processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'normalSubid', processInfo.fips)
+      processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'normalSubid', processInfo.fips)
+      processInfo.deleteBatchId = subtask.batch_id
+      processInfo.loadDeleteFiles = true
+      processInfo
 
 
 # divvy out the file data (in `processInfo`) we found into procs that process that data (parallelized)
 useProcessInfo = (subtask, processInfo) ->
+  logger.debug () -> "useProcessInfo: #{JSON.stringify(processInfo,null,2)}"
+  newProcessInfo =
+    date: processInfo.date
+    fips_code: processInfo.fips
+  if processInfo.loadDeleteFiles
+    newProcessInfo.other_values =
+      "#{FIPS_QUEUED}": processInfo.fipsQueue
+      "#{DELETE_BATCH_ID}": subtask.batch_id
+      "#{CURRENT_PROCESS_DATE}": processInfo.date
   dbs.transaction 'main', (transaction) ->
-    if processInfo.hasFiles
+    dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'updateProcessInfo', manualData: newProcessInfo, replace: true})
+    if !processInfo.hasFiles
+      return dates
 
-      # initiate processing and loading for each list with concurrency
-      deletes = queuePerFileSubtasks(transaction, subtask, processInfo[DELETE], DELETE)
-      refresh = queuePerFileSubtasks(transaction, subtask, processInfo[REFRESH], REFRESH)
-      update = queuePerFileSubtasks(transaction, subtask, processInfo[UPDATE], UPDATE)
-      activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED, startTime: processInfo.startTime}, replace: true})
-      fileProcessing = Promise.join refresh, update, deletes, activate, (refreshFips, updateFips) ->
-
-        # keep track of fips
-        fipsCodes = _.extend(refreshFips, updateFips)
-        normalizedTablePromises = []
-        for fipsCode of fipsCodes
-          # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(TAX, fipsCode)
-          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(DEED, fipsCode)
-          normalizedTablePromises.push dataLoadHelpers.ensureNormalizedTable(MORTGAGE, fipsCode)
-        Promise.all(normalizedTablePromises)
-    else
-      fileProcessing = Promise.resolve()
-    dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
-    Promise.join fileProcessing, dates, () ->  # empty handler
+    # initiate processing and loading for each list with concurrency
+    deletes = _queuePerFileSubtasks(transaction, subtask, processInfo, DELETE)
+    refresh = _queuePerFileSubtasks(transaction, subtask, processInfo, REFRESH)
+    update = _queuePerFileSubtasks(transaction, subtask, processInfo, UPDATE)
+    activateData =
+      deletes: dataLoadHelpers.DELETE.INDICATED
+      startTime: processInfo.startTime
+      fipsCode: processInfo.fips
+    activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
+    # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+    taxTable = dataLoadHelpers.ensureNormalizedTable(TAX, processInfo.fips)
+    deedTable = dataLoadHelpers.ensureNormalizedTable(DEED, processInfo.fips)
+    mortTable = dataLoadHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
+    Promise.join refresh, update, deletes, activate, dates, taxTable, deedTable, mortTable, () ->  # empty handler
 
 
-# deprecated
-_checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
-  ftp.list(folderInfo.path)
-  .then (folderListing) ->
-    for file in folderListing
-      if file.name.endsWith('.txt')
-        if file.name.startsWith('metadata_')  #ignore `metadata_*_.txt`
-          continue
-        if file.name.indexOf('_Delete_') == -1
-          logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
-          continue
-        if file.size == 0   #ignore empty file
-          continue
-        fileType = DELETE
-      else if !file.name.endsWith('.gz')
-        logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
-        continue
-      else
-        fileType = folderInfo.action
-      fileInfo = _.clone(folderInfo)
-      fileInfo.name = file.name
-      processLists[fileType].push(fileInfo)
-
-
-# deprecated
-checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
-  if i >= drops.length
-    logger.debug "Finished processing all blackknight drops; no files found."
-    # we've iterated over the whole list
-    processInfo.dates[NO_NEW_DATA_FOUND] = moment.utc().format('YYYYMMDD')
-    return processInfo
-  drop = newFolders[drops[i]]
-  if !drop[TAX] || !drop[DEED] || !drop[MORTGAGE]
-    return Promise.reject(new Error("Partial #{drop.action} drop for #{drop.date}: #{Object.keys(drop).join(', ')}"))
-
-  logger.debug "Processing blackknight drops for #{drop.date}"
-  processInfo.dates[drop.action] = drop.date
-  _checkFolder(ftp, drop[TAX], processInfo)
-  .then () ->
-    _checkFolder(ftp, drop[DEED], processInfo)
-  .then () ->
-    _checkFolder(ftp, drop[MORTGAGE], processInfo)
-  .then () ->
-    if processInfo[REFRESH].length + processInfo[UPDATE].length + processInfo[DELETE].length == 0
-      # nothing in this folder, move on to the next thing in the drop
-      return checkDropChain(ftp, processInfo, newFolders, drops, i+1)
-    # we found files!  resolve the results
-    logger.debug "Found blackknight files to process: #{drop.action}/#{drop.date}.  Refresh: #{processInfo[REFRESH].length}, Update: #{processInfo[UPDATE].length}, Delete: #{processInfo[DELETE].length}."
-    processInfo.hasFiles = true
-    processInfo
-
-
-queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () ->
-  if !files?.length
+_queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.try () ->
+  if !processInfo[action]?.length
     return
 
-  fipsCodes = {}
-  if action == DELETE
-    filesForCounts = []
-  else
-    filesForCounts = files
-    for el in files
-      fipsCodes[el.normalSubid] = true
+  if action != DELETE
+    loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[action], replace: true})
+    recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: processInfo[action], replace: true, concurrency: 80})
+    return Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
 
-  # load task
-  loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: files, replace: true})
+  if processInfo.loadDeleteFiles
+    for fileData in processInfo[DELETE]
+      fileData.fips_code = processInfo.fips
+    return jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[DELETE], replace: true})
 
-  # non-delete `changeCounts` takes no data
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: filesForCounts, replace: true, concurrency: 80})
-
-  Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
-    fipsCodes
+  # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
+  # this means we have to look up the number of rows loaded into those tables
+  numRowsToPage = subtask.data?.numRowsToPageDelete || NUM_ROWS_TO_PAGINATE
+  Promise.map processInfo[DELETE], (mergeData) ->
+    keystore.getValue("#{DELETE_ROWS_COUNT}: #{mergeData.action}, #{mergeData.dataType}", namespace: BLACKKNIGHT_PROCESS_INFO)
+    .then (numRows) ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
 
 
 _getColumnsImpl = (fileType, action, dataType) ->
@@ -438,28 +391,29 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 
 module.exports = {
   NUM_ROWS_TO_PAGINATE
-  BLACKKNIGHT_PROCESS_DATES
-  BLACKKNIGHT_PROCESS_DATES_FINISHED
-  BLACKKNIGHT_COPY_DATES
+  BLACKKNIGHT_PROCESS_INFO
+  BLACKKNIGHT_COPY_INFO
   TAX
   DEED
   MORTGAGE
   REFRESH
   UPDATE
+  DATES_QUEUED
+  FIPS_QUEUED
   NO_NEW_DATA_FOUND
+  LAST_COMPLETED_DATE
+  CURRENT_PROCESS_DATE
+  DATES_COMPLETED
   DELETE
   LOAD
+  DELETE_BATCH_ID
+  DELETE_ROWS_COUNT
 
   getColumns
-  tableIdMap
-  checkDropChain
-  queuePerFileSubtasks
-  findNewFolders
+  findNextFolderSet
 
-  filterS3Contents
-  nextProcessingDates
-  popProcessingDates
-  pushProcessingDates
+  updateProcessInfo
+  pushProcessingDate
   getProcessInfo
   useProcessInfo
 }

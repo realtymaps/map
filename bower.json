@@ -13,7 +13,6 @@
     "ui-leaflet": "1.0.2",
     "angular-google-maps": "2.1.5",
     "angular-cache": "~3.2.5",
-    "angular-bootstrap": "2.X",
     "angular-simple-logger": "git://github.com/zacronos/angular-simple-logger.git",
     "angular-state-files": "*",
     "angular-ui-grid": "~3.0.0",

@@ -1,0 +1,1 @@
+ALTER TABLE listing ALTER COLUMN days_on_market DROP NOT NULL;

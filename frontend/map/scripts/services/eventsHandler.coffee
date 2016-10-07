@@ -27,7 +27,8 @@ $state) ->
 
   _hoverQueue = new rmapsHoverQueue()
 
-  $log = $log.spawn("map:rmapsEventsHandlerService")
+  layerLogger = $log.spawn("rmapsEventsHandlerService:layer")
+  mapLogger = $log.spawn("rmapsEventsHandlerService:map")
 
   {limits, events, inject} = internals
 
@@ -53,7 +54,7 @@ $state) ->
         #http://jsfiddle.net/kytqgpjo/2/
 
         if model?.rm_property_id
-          $log.debug model.rm_property_id, model
+          layerLogger.debug model.rm_property_id, model
 
         if lObject?.bringToBack?
           lObject.bringToBack()
@@ -64,24 +65,24 @@ $state) ->
         eventInfo = if event?.originalEvent then eventUtil.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
 
         if originator == thisOriginator and maybeCaller? # indicates recursion, bail
-          # $log.debug '[IGNORED:recursion] ' + eventInfo
+          # layerLogger.debug '[IGNORED:recursion] ' + eventInfo
           return
 
         # Ignore when this is firing from previous marker
         if (events.last.mouseover?.lat? && events.last.mouseover?.lng? && (events.last.mouseover.lat == model.coordinates[1]) && (events.last.mouseover.lng == model.coordinates[0]))
-          # $log.debug '[IGNORED:child] ' + eventInfo
+          # layerLogger.debug '[IGNORED:child] ' + eventInfo
           return
 
         # Ignore these types of markers
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster')
-          # $log.debug '[IGNORED:markertype] ' + eventInfo
+          # layerLogger.debug '[IGNORED:markertype] ' + eventInfo
           return
 
         if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
-          # $log.debug '[IGNORED:child] ' + eventInfo
+          # layerLogger.debug '[IGNORED:child] ' + eventInfo
           return
 
-        $log.debug eventInfo
+        layerLogger.debug eventInfo
 
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
@@ -101,18 +102,18 @@ $state) ->
         eventInfo = if event?.originalEvent then eventUtil.targetInfo(event.originalEvent) else 'mouseout - no originalEvent'
 
         if originator == thisOriginator and maybeCaller? # indicates recursion, bail
-          # $log.debug '[IGNORED:recursion] ' + eventInfo
+          # layerLogger.debug '[IGNORED:recursion] ' + eventInfo
           return
 
         if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
-          # $log.debug '[IGNORED:child] ' + eventInfo
+          # layerLogger.debug '[IGNORED:child] ' + eventInfo
           return
 
         if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster') # Ignore these types of markers
-          # $log.debug '[IGNORED:markertype] ' + eventInfo
+          # layerLogger.debug '[IGNORED:markertype] ' + eventInfo
           return
 
-        $log.debug eventInfo
+        layerLogger.debug eventInfo
 
         # Update model
         model.isMousedOver = false
@@ -127,7 +128,7 @@ $state) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.geojson.click) and type is 'geojson'
 
-        $log.debug eventInfo
+        layerLogger.debug eventInfo
 
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
@@ -146,7 +147,7 @@ $state) ->
                 modalScope.newMail =
                   property_ids: [model.rm_property_id]
 
-                modalInstance = $uibModal.open
+                $uibModal.open
                   animation: true
                   scope: modalScope
                   template: require('../../html/views/templates/modals/modal-mailHistory.jade')()
@@ -175,6 +176,8 @@ $state) ->
           , limits.clickDelayMilliSeconds - 100
 
       dblclick: (event, lObject, model, modelName, layerName) ->
+        layerLogger.debug -> layerName
+
         events.last.last = 'dblclick'
         {originalEvent} = event
         if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
@@ -200,17 +203,18 @@ $state) ->
     rmapsEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
     rmapsEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
 
+
     rmapsEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
-        $log.debug -> event
+        mapLogger.debug -> event
 
         popupWasClosed = closeWindow()
 
-        if !popupWasClosed && rmapsZoomLevelService.isParcel($scope.map.center.zoom)
+        if !popupWasClosed
           geojson = (new L.Marker(event.latlng)).toGeoJSON()
           getPropertyDetail(geometry_center: geojson.geometry)
-          $log.debug 'Showing property details if a parcel was clicked'
+          mapLogger.debug -> 'Showing property details if a parcel was clicked'
 
           ### Alternate code to show infowindow instead of property details
           rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
@@ -227,7 +231,9 @@ $state) ->
             , limits.clickDelayMilliSeconds - 100
           ###
 
+      ### eslint-disable###
       moveend: (event) ->
+        ### eslint-enable###
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
         closeWindow()
 

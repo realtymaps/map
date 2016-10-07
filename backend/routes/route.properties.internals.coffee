@@ -3,10 +3,10 @@ Promise = require 'bluebird'
 moment = require 'moment'
 
 profileService = require '../services/service.profiles'
+profileError = require '../utils/errors/util.error.profile'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
-{currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 ourTransforms = require '../utils/transforms/transforms.properties'
 propSaveSvc = require '../services/service.properties.save'
@@ -15,7 +15,7 @@ tables = require '../config/tables'
 
 
 appendProjectId = (req, obj) ->
-  obj.project_id = currentProfile(req).project_id
+  obj.project_id = profileService.getCurrentSessionProfile(req.session).project_id
   obj
 
 captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransforms.body} = {}) ->
@@ -51,7 +51,7 @@ handleRoute = (res, next, serviceCall) ->
     res.json(data)
   .catch DataValidationError, (err) ->
     next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch CurrentProfileError, (err) ->
+  .catch profileError.CurrentProfileError, (err) ->
     next new ExpressResponse({profileIsNeeded: true, alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch (err) ->
     logger.error analyzeValue.getSimpleDetails(err)

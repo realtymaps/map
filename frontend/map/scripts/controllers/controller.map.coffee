@@ -1,14 +1,11 @@
-###globals _, google###
+###globals _###
 app = require '../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 {LeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 ###
   Our Main Map Controller, logic
   is in a specific factory where Map is a GoogleMap
 ###
-map = undefined
-
 
 module.exports = app
 
@@ -28,7 +25,6 @@ app.controller 'rmapsMapCtrl', (
   rmapsLeafletHelpers,
   rmapsMainOptions,
   rmapsMapFactory,
-  rmapsMapIds,
   rmapsParcelEnums,
   rmapsProfilesService
   rmapsProjectsService,
@@ -37,9 +33,6 @@ app.controller 'rmapsMapCtrl', (
   rmapsClientEntryService,
   rmapsBounds
 ) ->
-
-  $scope.mapId = mapId = rmapsMapIds.mainMap()
-
   $log = $log.spawn("map:controller")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
@@ -48,13 +41,13 @@ app.controller 'rmapsMapCtrl', (
     $scope.pageClass = pageClass
   #end inits
 
-  rmapsSearchboxService(mapId)
 
   #
   # Create the Map Factory
   #
-  if !map? or !$scope.map?
-    map = new rmapsMapFactory($scope)
+  map = new rmapsMapFactory($scope)
+  $scope.mapId = mapId = map.mapId
+  rmapsSearchboxService(mapId)
 
   #
   # Utility functions to load a new Project and optional Property from the Map based selection tool
@@ -131,27 +124,4 @@ app.controller 'rmapsMapCtrl', (
     $scope.loadProperty rmapsProfilesService.currentProfile
     checkCenterOnBounds()
 
-  #
-  # Watch for changes to the current profile. This is necessary since the map state is sticky
-  #
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
-    setScopeVariables()
-
   setScopeVariables()
-
-# fix google map views after changing back to map state
-app.run ($rootScope, $timeout) ->
-  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
-    # if we're not entering the map state, or if we're already on the map state, don't do anything
-    if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
-      return
-
-    return unless map?.scope.controls?.streetView?
-    $timeout () ->
-      # main map
-      map?.scope.control.refresh?()
-      # street view map -- TODO: this doesn't work for street view, not sure why
-      gStrMap = map?.scope.controls.streetView.getGObject?()
-      if gStrMap?
-        google.maps.event.trigger(gStrMap, 'resize')
-    , 500

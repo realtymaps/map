@@ -1,5 +1,6 @@
 'use strict'
 
+require 'angular-ui-bootstrap'
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 require '../../common/scripts/factories/gridController.coffee'

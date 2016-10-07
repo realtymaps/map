@@ -16,7 +16,7 @@ mixin projectsDropdown()
           div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Active Project
           div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Active Projects
           a(href="{{frontendRoutes.projects}}") View All Projects
-        div
+        div(ng-controller="rmapsAddProjectController")
           span.results-btn(
             rmaps-require-subscriber="disable"
             popover-placement="bottom"

@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "JSONStream": "1.1.1",
+    "angular-ui-bootstrap": "git://github.com/realtymaps/bootstrap.git#b1d20583ded5a9f8693edd8ea1a069e6e6c9dcd9",
     "archiver": "0.21.0",
     "async": "^0.9.0",
     "aws-sdk": "^2.2.39",
@@ -48,7 +49,7 @@
     "browserify": "12.X",
     "browserify-istanbul": "git://github.com/realtymaps/browserify-istanbul.git#38bd5faa132bb816db9f5948bc909806a7161875",
     "browserify-ngannotate": "^1.0.1",
-    "cartodb": "git://github.com/realtymaps/cartodb-nodejs.git#d974bb1a8ee70d7f9d581c224cb05dfdc3dcd513",
+    "cartodb": "git://github.com/realtymaps/cartodb-nodejs.git#a86fbbeabc05be722469852ea0b3096566fab01c",
     "case": "1.3.2",
     "chai": "3.X.X",
     "chai-as-promised": "5.3.0",

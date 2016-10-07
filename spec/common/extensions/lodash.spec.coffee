@@ -45,6 +45,33 @@ describe 'lodash extensions', ->
           b:'test'
           c: 0
 
+      it 'float < 1', ->
+        obj =
+          a: ''
+          b: 'test'
+          c: 0.65
+        _.cleanObject(obj).should.eql
+          b:'test'
+          c: 0.65
+
+      it 'negative float', ->
+        obj =
+          a: ''
+          b: 'test'
+          c: -0.65
+        _.cleanObject(obj).should.eql
+          b:'test'
+          c: -0.65
+
+      it 'float > 1', ->
+        obj =
+          a: ''
+          b: 'test'
+          c: 1.65
+        _.cleanObject(obj).should.eql
+          b:'test'
+          c: 1.65
+
     describe 'removals, options.null', ->
       it 'null', ->
         obj =

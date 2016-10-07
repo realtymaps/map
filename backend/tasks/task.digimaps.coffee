@@ -24,18 +24,19 @@ internals = require './task.digimaps.internals'
 {
   NUM_ROWS_TO_PAGINATE
   DELAY_MILLISECONDS
-  LAST_PROCESS_DATE
+  LAST_COMPLETED_DATE
   NO_NEW_DATA_FOUND
   QUEUED_FILES
   DIGIMAPS_PROCESS_INFO
 } = internals
 
 
+
 loadRawDataPrep = (subtask) -> Promise.try () ->
   logger.debug util.inspect(subtask, depth: null)
 
   defaults = {}
-  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[LAST_COMPLETED_DATE] = '19700101'
   defaults[NO_NEW_DATA_FOUND] = '19700101'
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
@@ -253,7 +254,7 @@ cleanup = (subtask) ->
   keystore.setValue('digimapsExclusiveAccess', false, namespace: 'locks')
   .then () ->
     defaults = {}
-    defaults[LAST_PROCESS_DATE] = '19700101'
+    defaults[LAST_COMPLETED_DATE] = '19700101'
     defaults[NO_NEW_DATA_FOUND] = '19700101'
     defaults[QUEUED_FILES] = []
     keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)
@@ -282,7 +283,7 @@ cleanup = (subtask) ->
 ready = () ->
   # do some special logic for efficiency
   defaults = {}
-  defaults[LAST_PROCESS_DATE] = '19700101'
+  defaults[LAST_COMPLETED_DATE] = '19700101'
   defaults[NO_NEW_DATA_FOUND] = '19700101'
   defaults[QUEUED_FILES] = []
   keystore.getValuesMap(DIGIMAPS_PROCESS_INFO, defaultValues: defaults)

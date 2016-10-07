@@ -6,11 +6,9 @@
     Nick McCready -- Senior Developer -- @nmccready
     Justin Stewart
     Jesse Taylor
-    Sean Kennedy -- Developer -- @seriouslysean
 
 # THANKS
     RealtyMaps LLC.
-    Mayday.is
 
 # TECHNOLOGY COLOPHON
 

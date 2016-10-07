@@ -46,8 +46,19 @@ app.service 'rmapsGoogleService', ($http, $log) ->
             bounds.extend latLng
           bounds
 
+      _polygon =
+        toBounds: (geoJson) ->
+          bounds = new L.latLngBounds([])
+          polys = geoJson.coordinates[0]
+          polys.forEach (coord) ->
+            latLng = new L.LatLng(coord[1], coord[0])
+            bounds.extend latLng
+          bounds
+
+
       Point: _point
       MultiPolygon: _multiPolygon
+      Polygon: _polygon
 
     Map:
       isGPoly: (gObject) ->

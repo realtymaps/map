@@ -64,6 +64,7 @@ app.controller 'rmapsPropertyCtrl',
       {name: 'location', label: {mls: 'Location & Schools', county: 'Location'}, subscriber: 'shared_groups'}
       {name: 'building', label: 'Building', subscriber: 'shared_groups'}
       {name: 'restrictions', label: 'Taxes, Fees and Restrictions', subscriber: 'shared_groups'}
+      {name: 'taxes', label: 'Taxes And Assessments', subscriber: 'shared_groups'}
       {name: 'contacts', label: 'Listing Contacts', subscriber: 'subscriber_groups'}
       {name: 'realtor', label: 'Listing Details', subscriber: 'subscriber_groups'}
       {name: 'sale', label: 'Sale Details', subscriber: 'subscriber_groups',}
@@ -113,8 +114,11 @@ app.controller 'rmapsPropertyCtrl',
         for mls in property.mls || []
           mls.subscriber_groups?.priorListings = mls.prior_entries
 
-        # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
         for source in $scope.dataSources
+          # Tab heading (mobile)
+          source.tabHeading = if source.data_source_type == 'county' then 'Tax Record' else source.mls_formal_name
+
+          # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
           for history in ['deedHistory', 'mortgageHistory', 'priorListings']
             if historyObj = source?.subscriber_groups?[history]
               historyExtra = []
