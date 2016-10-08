@@ -27,12 +27,9 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
                 enabled="draw.enabled")
 
       .col.col-md-3.col-sm-3.col-xs-3.last-col
-        span.pull-right(ng-click="#{toggleFn}" style="font-size: 25px;display: inline-flex;height: 100%;align-items: center;")
+        span.pull-right.draw-toolbar-close(ng-click="#{toggleFn}")
           i.icon.icon-close
         if tackFn
-          span.checkbox.pull-right(style="display:inline-flex;align-items:center;height:100%;margin:0 30px 0 0")
+          span.checkbox.pull-right.draw-toolbar-tack
             label
               <input type="checkbox" ng-click="#{tackFn}" {{#{tackedBool}}}> Keep toolbar open
-              <tt>value1 = {{#{tackedBool}}}</tt><br/>  
-          // span.pull-right(ng-click="#{tackFn}" ng-class="#{tackedBool} ? 'active': ''")
-            i.fa.fa-lg.fa-thumb-tack
