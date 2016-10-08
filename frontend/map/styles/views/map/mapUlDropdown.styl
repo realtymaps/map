@@ -16,7 +16,7 @@ $fnMakeMapUlDropdown()
       color $dark_blue
       font-size 14px
       font-weight bold
-      padding 10px 20px
+      padding 10px 30px 10px 20px
       min-height 45px
       display flex
       align-items center
@@ -56,6 +56,20 @@ $fnMakeMapUlDropdown()
         margin 0 5px
       .icon
         margin -3px 5px 0
+
+      .icon-close
+        position absolute
+        cursor pointer
+        right 5px
+        top 5px
+        margin 0
+        font-size 14px
+        color $rm-corner-close
+        font-size 14px
+        background none !important
+        box-shadow none !important
+        &:hover
+          color $rm-corner-close-hover
 
     .inner
       ul

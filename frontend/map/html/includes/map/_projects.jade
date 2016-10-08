@@ -11,6 +11,7 @@ mixin projectsDropdown()
       span.caret
     .dropdown-menu.whiteblock.no-margin
       .fixed-header
+        .icon.icon-close(uib-dropdown-toggle)
         div
           div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Active Project
           div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Active Projects
