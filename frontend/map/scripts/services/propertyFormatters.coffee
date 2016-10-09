@@ -60,3 +60,10 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       else
         label = 'asking:'
       return label
+
+    getDaysOnMarket: (result) ->
+      console.log "result:"
+      console.log result
+      return @humanizeDays(1)
+    getCumulativeDaysOnMarket: (result) ->
+      return @humanizeDays(2)

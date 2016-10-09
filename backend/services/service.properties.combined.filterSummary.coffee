@@ -145,10 +145,44 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
           result.push chunk.replace(/(['-])/g, "[$1 ]?")
         sqlHelpers.allPatternsInAnyColumn(@, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name_2"])
 
+      # if filters.listedDaysMin
+      #   @where("days_on_market_filter", ">=", filters.listedDaysMin)
+      # if filters.listedDaysMax
+      #   @where("days_on_market_filter", "<=", filters.listedDaysMax)
+
+
+      # if filters.listedDaysMin
+      #   @where("""
+      #     (CASE
+      #         WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+      #         THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+      #         ELSE data_combined.days_on_market_filter
+      #     END)
+      #     """, '>=', filters.listedDaysMin)
+      # if filters.listedDaysMax
+      #   @where("""
+      #     (CASE
+      #         WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+      #         THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+      #         ELSE data_combined.days_on_market_filter
+      #     END)
+      #     """, '<=', filters.listedDaysMax)
+
       if filters.listedDaysMin
-        @where("days_on_market", ">=", filters.listedDaysMin)
+        @where("""
+          (CASE
+              WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+              THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+              ELSE data_combined.days_on_market_filter
+          END) >= ?""", filters.listedDaysMin)
       if filters.listedDaysMax
-        @where("days_on_market", "<=", filters.listedDaysMax)
+        @where("""
+          (CASE
+              WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+              THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+              ELSE data_combined.days_on_market_filter
+          END) <= ?""", filters.listedDaysMax)
+
 
       if filters.propertyType
         @where("#{dbFn.tableName}.property_type", filters.propertyType)
@@ -191,7 +225,9 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
 
   queryPermissions(query, permissions)
   query.limit(limit) if limit
-  queryFilters({query, filters, bounds, queryParams})
+  newquery = queryFilters({query, filters, bounds, queryParams})
+  console.log "\n\nquery:\n#{newquery.toString()}"
+  newquery
 
 
 module.exports = {
