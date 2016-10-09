@@ -97,8 +97,8 @@ base =
     SUBTASK_ZOMBIE_SLACK: 1.0  # 1 minute
     HEARTBEAT_MINUTES: 1.0  # 1 minute
   CLEANUP:
-    OLD_TABLE_YEARS: 1
-    OLD_TABLE_DAYS: 7
+    RAW_TABLE_DROP_DAYS: 365
+    RAW_TABLE_CLEAN_DAYS: 7
     SUBTASK_ERROR_DAYS: 30
     TASK_HISTORY_DAYS: 120
     OLD_DELETE_MARKER_DAYS: 3
@@ -157,7 +157,7 @@ environmentConfig =
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
     CLEANUP:
-      OLD_TABLE_DAYS: 1
+      RAW_TABLE_CLEAN_DAYS: 1
       SUBTASK_ERROR_DAYS: 7
       OLD_DELETE_MARKER_DAYS: 1
 
@@ -202,15 +202,15 @@ pools =
     MAIN:
       pool:
         min: 2
-        max: 20
+        max: 10
     RAW_TEMP:
       pool:
         min: 0
-        max: 2
+        max: 10
     NORMALIZED:
       pool:
         min: 0
-        max: 2
+        max: 10
   jobQueueWorker:
     MAIN:
       pool:

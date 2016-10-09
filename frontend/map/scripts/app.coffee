@@ -1,6 +1,7 @@
 ###globals _###
 'use strict'
 
+require 'angular-ui-bootstrap'
 require '../../../common/extensions/index.coffee'
 
 appName = 'rmapsMapApp'

@@ -1,6 +1,5 @@
-
 app = require '../app.coffee'
-color = 'red'
+color = 'black'
 
 app.controller "rmapsDrawAreaCtrl", (
 $scope
@@ -88,6 +87,7 @@ rmapsCurrentMapService
         itemsOptions:
           color: color
           fillColor: color
+          className: 'rmaps-area'
         drawOptions:
           control: (promisedControl) ->
             promisedControl.then (control) ->
@@ -104,6 +104,7 @@ rmapsCurrentMapService
       }
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
+      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
       if newVal
         _drawCtrlFactory(_handles)
         isReadyPromise.promise.then (control) ->

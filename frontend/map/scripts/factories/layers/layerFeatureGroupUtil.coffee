@@ -1,22 +1,25 @@
+###globals angular###
 app = require '../../app.coffee'
 _ =  require 'lodash'
 
 app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
-  ({featureGroup, ownerName}) ->
+  ({featureGroup, ownerName, events}) ->
     @$log = $log.spawn("rmapsFeatureGroupUtil:#{ownerName}")
     @$log.debug('initializing')
 
     origFillOpacity = null
     firstSetOpacity = true
 
-    featureGroup.on 'mouseout', ({layer} = {}) =>
-      @$log.debug 'shape mouseout'
-      @onMouseLeave(layer)
+    if events?.mouseout?
+      featureGroup.on 'mouseout', ({layer} = {}) =>
+        @$log.debug 'shape mouseout'
+        @onMouseLeave(layer)
 
-    featureGroup.on 'mouseover', ({layer} = {}) =>
-      @$log.debug 'shape  mouseover'
-      @onMouseOver(layer)
+    if events?.mouseover?
+      featureGroup.on 'mouseover', ({layer} = {}) =>
+        @$log.debug 'shape  mouseover'
+        @onMouseOver(layer)
 
     @getLayer = (geojsonModel) ->
       if !geojsonModel?.properties?.id?
@@ -51,5 +54,12 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
     @onMouseOver = (entity) ->
       @setDrawItemColor {entity, fillOpacity: .65, firstOpacity: true}
+
+    @onOffPointerEvents = ({isOn, className}) ->
+      ele = document.getElementsByClassName(className)
+      ele = angular.element(ele)
+      if isOn
+        return ele?.css('pointer-events', 'auto')
+      ele?.css('pointer-events', 'none')
 
     @
