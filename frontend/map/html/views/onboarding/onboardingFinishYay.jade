@@ -1,12 +1,7 @@
+include ../../../../common/html/includes/mixins/_spinnerMixin.jade
+
 section.white-page.onboarding.onboarding-finish-yay(ng-cloak)
   .container
     h1 Wow, welcome to the family!
-    p Now have all your rad info! We just need you to keep an eye out for the verification email. Once verified you will have access to the system.
-  
-  .row
-    .col-md-6.col-sm-6.col-xs-12
-      button.btn.btn-primary(ui-sref="main") Home
-    .col-md-6.col-sm-6.col-xs-12
-      button.btn.btn-primary(ui-sref="login") Login
-      
-  fireworks
+    p We are now logging you in.
+    +spinnerMixin()()

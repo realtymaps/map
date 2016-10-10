@@ -26,7 +26,7 @@ submitPaymentPlan = ({plan, token, authUser, trx}) ->
     token: token
     trx: trx
 
-submitEmail = ({authUser, plan, trx}) ->
+submitEmail = ({authUser, plan}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
   emailServices.events.subscriptionSignUp
     authUser: authUser
@@ -50,6 +50,7 @@ handles = wrapHandleRoutes handles:
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
         entity.is_test = !PAYMENT_PLATFORM.LIVE_MODE
+        entity.is_active = true # if we demand email validation again, then remove this line
         createPasswordHash entity.password
         .then (password) ->
           # console.log.magenta "password"
