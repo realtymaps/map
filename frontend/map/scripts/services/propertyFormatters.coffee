@@ -65,7 +65,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
     getDaysForSale: (result) ->
       end = moment(result.close_date or moment().utc())
       start = moment(result.creation_date)
-      days = moment(end.diff(start)).days()
+      days = end.diff(start, 'days')
       return @humanizeDays(days)
 
     getDaysOnMarket: (result) ->
