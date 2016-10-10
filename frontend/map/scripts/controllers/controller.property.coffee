@@ -103,11 +103,8 @@ app.controller 'rmapsPropertyCtrl',
         $scope.selectedResult.notes.push newNote
 
     getPropertyDetail = (propertyId) ->
-      console.log "getPropertyDetail()"
-      console.log "propertyId:\n#{propertyId}"
       rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', true)
       .then (property) ->
-        # console.log "property:\n#{JSON.stringify(property, null, 2)}"
         $scope.selectedResult = property
         $scope.selectedResult.rm_property_id = propertyId
 

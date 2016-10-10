@@ -31,9 +31,7 @@ app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rm
       selectedFilters
 
   _updateFilters = (newFilters, oldFilters) ->
-    console.log "_updateFilters()"
     return if (not newFilters and not oldFilters) or newFilters == oldFilters
-    console.log "newFilters:\n#{JSON.stringify(newFilters,null,2)}"
     rmapsRenderingService.debounce _promiseObject, 'filterDrawPromise', ->
       $rootScope.$broadcast rmapsEventConstants.map.filters.updated, getFilters()
     , rmapsMainOptions.filterDrawDelay
