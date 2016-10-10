@@ -114,16 +114,6 @@ include ../includes/mixins/_noteInputMixin.jade
             .col-sm-12
               .content-heading MLS Listing Info
 
-
-              .row.content-row
-                .col-sm-6(ng-if="property.days_on_market")
-                  .content-label Days on Market:
-                  .content-value {{formatters.property.getDaysOnMarket(property)}}
-                .col-sm-6(ng-if="property.days_on_market_cumulative")
-                  .content-label Cumulative Days on Market:
-                  .content-value {{formatters.property.getCumulativeDaysOnMarket(property)}}
-
-
               .row.content-row
                 .col-sm-6
                   .content-label Creation Date
@@ -140,6 +130,19 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-label Close Date
                   .content-value
                     span {{property.close_date | date : 'MM/dd/yyyy'}}
+
+              .row.content-row
+                .col-sm-12
+                  .content-label Days for Sale:
+                  .content-value {{formatters.property.getDaysForSale(property)}}
+              .row.content-row
+                .col-sm-6(ng-if="property.days_on_market")
+                  .content-label Days on Market:
+                  .content-value {{formatters.property.getDaysOnMarket(property)}}
+                .col-sm-6(ng-if="property.days_on_market_cumulative")
+                  .content-label Cumulative Days on Market:
+                  .content-value {{formatters.property.getCumulativeDaysOnMarket(property)}}
+
 
           .row.content-block.prop-attrs.border-bottom(ng-if="property.description")
             .col-sm-12
