@@ -114,7 +114,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-rework": "1.0.X",
     "gulp-size": "1.2.X",
-    "gulp-sourcemaps": "1.6.X",
+    "gulp-sourcemaps": "git://github.com/realtymaps/gulp-sourcemaps.git#5cb3af412cac805af01794906808b40a4816d1f3",
     "gulp-stylus": "2.X.X",
     "gulp-uglify": "1.X.X",
     "gulp-util": "3.0.X",
