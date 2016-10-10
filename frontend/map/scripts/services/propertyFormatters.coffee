@@ -1,5 +1,6 @@
 ###globals _###
 app = require '../app.coffee'
+moment = require 'moment'
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
@@ -60,3 +61,25 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       else
         label = 'asking:'
       return label
+
+    getDaysForSale: (result) ->
+      end = moment(result.close_date or moment.utc())
+      start = moment(result.creation_date)
+      days = end.diff(start, 'days')
+      return days
+
+    getDaysOnMarket: (result) ->
+      if !result.days_on_market then return null
+      if result.status = 'for sale' || result.status = 'pending'
+
+        compensate = moment.utc().diff(result.up_to_date, 'days')
+        return result.days_on_market + compensate
+      return result.days_on_market
+
+    getCumulativeDaysOnMarket: (result) ->
+      if !result.days_on_market_cumulative then return null
+      if result.status = 'for sale' || result.status = 'pending'
+
+        compensate = moment.utc().diff(result.up_to_date, 'days')
+        return result.days_on_market_cumulative + compensate
+      return result.days_on_market_cumulative
