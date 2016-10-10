@@ -72,7 +72,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       if !result.days_on_market then return null
       if result.status = 'for sale' || result.status = 'pending'
 
-        compensate = moment(moment().utc().diff(result.up_to_date)).days()
+        compensate = moment.utc().diff(result.up_to_date, 'days')
         return @humanizeDays(result.days_on_market + compensate)
       return @humanizeDays(result.days_on_market)
 
@@ -80,6 +80,6 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       if !result.days_on_market_cumulative then return null
       if result.status = 'for sale' || result.status = 'pending'
 
-        compensate = moment(moment().utc().diff(result.up_to_date)).days()
+        compensate = moment.utc().diff(result.up_to_date, 'days')
         return @humanizeDays(result.days_on_market_cumulative + compensate)
       return @humanizeDays(result.days_on_market_cumulative)

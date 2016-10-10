@@ -28,12 +28,12 @@ module.exports = (options = {}) ->
         # with no close date, we fall back on a calc of `now - creation_date`, with the
         #   intention to possibly include more time at the time of filtering in the frontend
         if !values.close_date
-          dom = moment(moment.utc().diff(moment(creation_date))).days()
+          dom = moment.utc().diff(moment(creation_date), 'days')
           return dom
 
         # With close date, we can use `close_date - creation_date`
         else
           datetimeValidation()(param,values.close_date)
           .then (close_date) ->
-            dom = moment(moment(close_date).diff(moment(creation_date))).days()
+            dom = moment(close_date).diff(moment(creation_date), 'days')
             return dom

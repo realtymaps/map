@@ -188,7 +188,7 @@ _rules =
         type: name: 'days_on_market'
         input: {}
         valid: () ->
-          @input.creation_date?
+          @input.creation_date? && @input.close_date?
 
       hide_address:
         alias: 'Hide Address'
