@@ -63,23 +63,23 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return label
 
     getDaysForSale: (result) ->
-      end = moment(result.close_date or moment().utc())
+      end = moment(result.close_date or moment.utc())
       start = moment(result.creation_date)
       days = end.diff(start, 'days')
-      return @humanizeDays(days)
+      return days
 
     getDaysOnMarket: (result) ->
       if !result.days_on_market then return null
       if result.status = 'for sale' || result.status = 'pending'
 
         compensate = moment.utc().diff(result.up_to_date, 'days')
-        return @humanizeDays(result.days_on_market + compensate)
-      return @humanizeDays(result.days_on_market)
+        return result.days_on_market + compensate
+      return result.days_on_market
 
     getCumulativeDaysOnMarket: (result) ->
       if !result.days_on_market_cumulative then return null
       if result.status = 'for sale' || result.status = 'pending'
 
         compensate = moment.utc().diff(result.up_to_date, 'days')
-        return @humanizeDays(result.days_on_market_cumulative + compensate)
-      return @humanizeDays(result.days_on_market_cumulative)
+        return result.days_on_market_cumulative + compensate
+      return result.days_on_market_cumulative

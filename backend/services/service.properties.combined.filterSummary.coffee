@@ -149,14 +149,14 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
         @whereRaw("""
           (CASE
               WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
-              THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+              THEN (data_combined.days_on_market_filter + (NOW()::DATE - data_combined.up_to_date::DATE))
               ELSE data_combined.days_on_market_filter
           END) >= ?""", filters.listedDaysMin)
       if filters.listedDaysMax
         @whereRaw("""
           (CASE
               WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
-              THEN (data_combined.days_on_market_filter + round(EXTRACT(epoch FROM now() - data_combined.up_to_date)/3600/24))
+              THEN (data_combined.days_on_market_filter + (NOW()::DATE - data_combined.up_to_date::DATE))
               ELSE data_combined.days_on_market_filter
           END) <= ?""", filters.listedDaysMax)
 
