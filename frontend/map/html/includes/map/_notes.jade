@@ -18,6 +18,7 @@ span(
     span.icon.icon-note
   .dropdown-menu.whiteblock(ng-cloak)
     .fixed-header
+      .icon.icon-close(uib-dropdown-toggle)
       span
         a(ng-show="notesListLength()" ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{notesListLength()}} Notes
         span(ng-show="!notesListLength()") No Notes

@@ -146,9 +146,20 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
         sqlHelpers.allPatternsInAnyColumn(@, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name_2"])
 
       if filters.listedDaysMin
-        @where("days_on_market", ">=", filters.listedDaysMin)
+        @whereRaw("""
+          (CASE
+              WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+              THEN (data_combined.days_on_market_filter + (NOW()::DATE - data_combined.up_to_date::DATE))
+              ELSE data_combined.days_on_market_filter
+          END) >= ?""", filters.listedDaysMin)
       if filters.listedDaysMax
-        @where("days_on_market", "<=", filters.listedDaysMax)
+        @whereRaw("""
+          (CASE
+              WHEN data_combined.status = 'for sale' or (data_combined.status = 'pending' and data_combined.days_on_market IS NULL and data_combined.days_on_market_cumulative IS NULL)
+              THEN (data_combined.days_on_market_filter + (NOW()::DATE - data_combined.up_to_date::DATE))
+              ELSE data_combined.days_on_market_filter
+          END) <= ?""", filters.listedDaysMax)
+
 
       if filters.propertyType
         @where("#{dbFn.tableName}.property_type", filters.propertyType)

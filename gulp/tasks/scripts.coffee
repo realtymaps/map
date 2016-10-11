@@ -50,7 +50,7 @@ browserifyTask = ({app, watch, doSourceMaps}) ->
     if doSourceMaps
       logger.debug 'doing sourcemaps'
 
-      s2.pipe $.sourcemaps.init loadMaps: true
+      s2.pipe $.sourcemaps.init {loadMaps: true, largeFile: true}
       .pipe $.sourcemaps.write()
 
     s2.pipe gulp.dest paths.destFull.scripts

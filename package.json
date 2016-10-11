@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "JSONStream": "1.1.1",
+    "angular-ui-bootstrap": "git://github.com/realtymaps/bootstrap.git#b1d20583ded5a9f8693edd8ea1a069e6e6c9dcd9",
     "archiver": "0.21.0",
     "async": "^0.9.0",
     "aws-sdk": "^2.2.39",
@@ -113,7 +114,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-rework": "1.0.X",
     "gulp-size": "1.2.X",
-    "gulp-sourcemaps": "1.6.X",
+    "gulp-sourcemaps": "2.X",
     "gulp-stylus": "2.X.X",
     "gulp-uglify": "1.X.X",
     "gulp-util": "3.0.X",
