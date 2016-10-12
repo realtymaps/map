@@ -131,6 +131,22 @@ _rules =
       type: name: 'datetime'
 
   mls:
+    agent:
+      id:
+        alias: 'MLS ID'
+        required: true
+      name:
+        alias: 'Full Name'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last || @input.full
+        type: name: 'name'
+
+      status:
+        alias: 'Status'
+        required: true
+
     listing:
       creation_date:
         alias: 'Creation Date'
@@ -457,6 +473,10 @@ getBaseRules = (dataSourceType, dataListType) ->
   return _(builtBaseRules).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val?.type?.name ? 'string'])).omit((val) -> !val?).value()
 getBaseRules = _.memoize(getBaseRules, (dataSourceType, dataListType) -> "#{dataSourceType}__#{dataListType}")
 
+getAgentRules = () ->
+  p1 = _.cloneDeep(_rules['mls']['agent'])
+  return _(p1).mapValues((val) -> _.defaultsDeep(val, baseTypeRules[val?.type?.name ? 'string'])).omit((val) -> !val?).value()
+
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
   if rule.type?.name == 'string'
@@ -481,7 +501,18 @@ buildBaseRule = (dataSourceType, dataListType) ->
     _buildRule rule, getBaseRules(dataSourceType, dataListType)[rule.output]
     rule
 
-module.exports =
-  getBaseRules: getBaseRules
-  buildDataRule: buildDataRule
-  buildBaseRule: buildBaseRule
+buildAgentRule = () ->
+  (rule) ->
+    console.log "buildAgentRule()"
+    console.log "input rule:\n#{JSON.stringify(rule,null,2)}"
+    _buildRule rule, getAgentRules()[rule.output]
+    console.log "output rule:\n#{JSON.stringify(rule,null,2)}"
+    rule
+
+module.exports = {
+  getBaseRules
+  getAgentRules
+  buildDataRule
+  buildBaseRule
+  buildAgentRule
+}
