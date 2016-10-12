@@ -210,8 +210,10 @@ loadRawData = (subtask) ->
         keystore.setValue("#{internals.DELETE_ROWS_COUNT}: #{subtask.data.action}, #{subtask.data.dataType}", numRows, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
 
 
-updateProcessInfo = (subtask) ->
-  internals.updateProcessInfo(subtask.data)
+cleanup = (subtask) ->
+  keystore.setValue('blackknightExclusiveAccess', false, namespace: 'locks')
+  .then () ->
+    internals.updateProcessInfo(subtask.data)
 
 
 deleteData = (subtask) ->
@@ -306,6 +308,32 @@ finalizeData = (subtask) ->
     countyHelpers.finalizeData({subtask, id})
 
 
+###
+This step is an in-between to protect a following step from being run.
+In this case we are hoping to protect activateData from running while MLSs are doing the same thing.
+
+This is not due to a hard problem with having 2 tasks each running activateData at the same time, but there is a soft
+problem with db performance.
+###
+waitForExclusiveAccess = (subtask) ->
+  keystore.setValue('blackknightExclusiveAccess', true, namespace: 'locks')
+  .then () ->
+    tables.jobQueue.taskHistory()
+    .select('name')
+    .where(current: true)
+    .whereRaw("blocked_by_locks \\? 'blackknightExclusiveAccess'")
+    .whereNull('finished')
+    .then (results=[]) ->
+      if results.length > 0
+        # Throw a SoftFail so this subtask will be retried.  This is safer than trying to poll internally, because a
+        # polling flow can't handle zombies, but a retrying flow can
+        throw new SoftFail("exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}")
+      else
+        logger.info("Exclusive data_combined access obtained")
+        # go ahead and resolve, so the subtask will finish and the task will continue
+        return null
+
+
 ready = () ->
   # do some special logic for efficiency
   processDefaults = {}
@@ -362,7 +390,8 @@ subtasks = {
   recordChangeCounts
   finalizeDataPrep
   finalizeData
+  waitForExclusiveAccess
   activateNewData: dataLoadHelpers.activateNewData
-  updateProcessInfo
+  cleanup
 }
 module.exports = new TaskImplementation('blackknight', subtasks, ready)

@@ -327,7 +327,7 @@ useProcessInfo = (subtask, processInfo) ->
       "#{DELETE_BATCH_ID}": subtask.batch_id
       "#{CURRENT_PROCESS_DATE}": processInfo.date
   dbs.transaction 'main', (transaction) ->
-    dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'updateProcessInfo', manualData: newProcessInfo, replace: true})
+    dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'cleanup', manualData: newProcessInfo, replace: true})
     if !processInfo.hasFiles
       return dates
 
@@ -339,12 +339,13 @@ useProcessInfo = (subtask, processInfo) ->
       deletes: dataLoadHelpers.DELETE.INDICATED
       startTime: processInfo.startTime
       fipsCode: processInfo.fips
+    access = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "waitForExclusiveAccess"})
     activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
     # ensure normalized data tables exist -- need all 3 no matter what types we have data for
     taxTable = dataLoadHelpers.ensureNormalizedTable(TAX, processInfo.fips)
     deedTable = dataLoadHelpers.ensureNormalizedTable(DEED, processInfo.fips)
     mortTable = dataLoadHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
-    Promise.join refresh, update, deletes, activate, dates, taxTable, deedTable, mortTable, () ->  # empty handler
+    Promise.join(refresh, update, deletes, access, activate, dates, taxTable, deedTable, mortTable)
 
 
 _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.try () ->

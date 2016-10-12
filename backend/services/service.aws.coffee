@@ -15,7 +15,7 @@ buckets =
   PDF: 'aws-pdf-downloads'
   PDFUploads: 'aws-pdf-uploads'
   ListingPhotos: 'aws-listing-photos'
-  BlackknightData: if config.ENV == 'production' then 'aws-blackknight-data' else 'test-aws-blackknight-data'
+  BlackknightData: if config.ENV == 'production' then 'aws-blackknight-data' else 'aws-blackknight-data'
 
 
 _debug = (thing, thingName) ->
