@@ -202,6 +202,15 @@ app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
   $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope
 
-app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log) ->
+app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log, $state, $timeout, rmapsLoginFactory) ->
   $log = $log.spawn("map:rmapsOnboardingFinishYayCtrl")
   $scope.view.showSteps = false
+
+  rmapsLoginFactory($scope)
+
+  if !$scope.user.email?
+    return
+
+  $timeout () ->
+    $scope.doLogin($scope.user)
+  , 2000

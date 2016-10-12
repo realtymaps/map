@@ -77,8 +77,7 @@ updatePassword = (user, password, overwrite = true) ->
 verifyValidAccount = (user) ->
   return unless user
   return user if user.is_superuser
-  if !user.email_is_valid
-    throw new userSessionErrors.InValidEmailError("User's email has not been verified.")
+  
   if !user.is_active
     throw new userSessionErrors.InActiveUserError("User is not valid due to inactive account.")
   user
