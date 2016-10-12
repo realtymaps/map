@@ -18,6 +18,7 @@ span.pinned-list.dropdown.btn-group(
 
   .dropdown-menu.whiteblock
     .fixed-header
+      .icon.icon-close(uib-dropdown-toggle)
       span
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties
         span(ng-show="!pinnedTotal") No Pinned Properties

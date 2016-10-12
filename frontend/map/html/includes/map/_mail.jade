@@ -18,6 +18,7 @@ span.pinned-list.dropdown.btn-group(
 
   .dropdown-menu.whiteblock
     .fixed-header
+      .icon.icon-close(uib-dropdown-toggle)
       span
         a(ng-show="mailings.length" ui-sref="mail") {{mailings.length}} Mailings
         span(ng-show="!mailings.length") No Mailings

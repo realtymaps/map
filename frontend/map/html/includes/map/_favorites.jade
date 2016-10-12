@@ -18,6 +18,7 @@ span(
 
   .dropdown-menu.whiteblock
     .fixed-header
+      .icon.icon-close(uib-dropdown-toggle)
       span
         a(ng-show="favoriteTotal" ui-sref="projectFavorites({id: principal.getCurrentProfile().project_id})") {{favoriteTotal}} Favorite Properties
         span(ng-show="!favoriteTotal") No Favorite Properties

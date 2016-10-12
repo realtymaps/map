@@ -19,6 +19,7 @@ span(
       span.icon.icon-area-poly
     .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
       .fixed-header
+        .icon.icon-close(uib-dropdown-toggle)
         span
           a(ng-show="_.keys(areas).length" ui-sref="projectAreas({id: principal.getCurrentProfile().project_id})") {{_.keys(areas).length}} Areas
           span(ng-show="!_.keys(areas).length") No Areas
@@ -36,9 +37,9 @@ span(
                 .title {{model.properties.area_name}}
                 span.rename(ng-click="update(model); $event.stopPropagation()") Rename
               span.actions(rmaps-require-project-editor)
-                span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()")
-                span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()")
-                span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+                span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Area statistics")
+                span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Send mail to area")
+                span.fa.fa-trash-o(ng-click="remove(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Delete area")
         .dropdown-explanation(ng-show="!_.keys(areas).length")
           p You haven't drawn any areas. Draw areas on the map to easily navigate between neighborhoods and to limit your search results.
           p You can also send mail to an area or get statistics about it.

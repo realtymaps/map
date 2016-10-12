@@ -53,7 +53,7 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
       @setDrawItemColor {entity,fillOpacity: origFillOpacity}
 
     @onMouseOver = (entity) ->
-      @setDrawItemColor {entity, fillOpacity: .65, firstOpacity: true}
+      @setDrawItemColor {entity, fillOpacity: .45, firstOpacity: true}
 
     @onOffPointerEvents = ({isOn, className}) ->
       ele = document.getElementsByClassName(className)

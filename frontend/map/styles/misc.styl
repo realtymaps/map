@@ -158,3 +158,43 @@
 // google maps searchbox
 .pac-container
   width 300px !important
+
+// corner close button
+.corner-close
+  font-family 'rlm-icons'
+  position absolute
+  right 5px
+  top 5px
+  color #848484
+  width 18px
+  height 18px
+  text-align center
+  cursor pointer
+  font-size 18px
+  background none !important
+  box-shadow none !important
+  &:after
+    content "\e613"
+    font-size 14px
+    color #8e8e8e
+
+.corner-close-offset-circle
+  font-family 'rlm-icons'
+  position absolute
+  right -6px
+  top -6px
+  color #848484
+  background #fff
+  width 18px
+  height 18px
+  text-align center
+  background #fff
+  -webkit-border-radius 16px
+  -moz-border-radius 16px
+  border-radius 3px
+  box-shadow 0 0 0 2px rgba(0,0,0,0.15)
+  cursor pointer
+  &:after
+    content "\e613"
+    font-size 14px
+    color #8e8e8e

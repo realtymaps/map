@@ -119,19 +119,20 @@
     border-top 1px solid $gray_lighter !important
 
 .preview-mail-window
+  .modal-content, .modal-body
+    overflow hidden
+
   .modal-body
     text-align center
-    overflow scroll
+    height 100%
 
     .waiting
-      width 310px
-      margin auto
+      display flex
+      justify-content center
       margin-top 100px
       p
-        float left
-        font-size: 30px
+        font-size 30px
       img
-        float right
         height 30px
         width 30px
 
@@ -142,7 +143,6 @@
   .modal-content
     background-color #FFFFFF
     height 100%
-    overflow auto
 
   .iframe-preview-letter
     width 622px // 8.5 @ 72 ppi

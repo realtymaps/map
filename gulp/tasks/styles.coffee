@@ -26,7 +26,7 @@ styles = ({app, doSourceMaps, cdn}) ->
     stream = gulp.src sourcePaths
 
     if doSourceMaps
-      stream = stream.pipe $.sourcemaps.init()
+      stream = stream.pipe $.sourcemaps.init(largeFile:true)
 
     stream = stream.pipe lessFilter = $.filter '**/*.less', restore: true
     .pipe $.less()

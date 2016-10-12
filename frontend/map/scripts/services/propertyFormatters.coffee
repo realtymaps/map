@@ -1,7 +1,7 @@
 ###globals _###
 app = require '../app.coffee'
-require '../services/leafletObjectFetcher.coffee'
 moment = require 'moment'
+require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsPropertyFormatterService',
   (
@@ -103,12 +103,31 @@ app.service 'rmapsPropertyFormatterService',
       showSoldDate: (result) ->
         return result?.status == 'sold' && result?.close_date
 
-      sendSnail: (result) ->
-        $rootScope.$emit rmapsEventConstants.snail.initiateSend, result
-
       getPriceLabel: (status) ->
         if (status =='sold'|| status=='not for sale')
           label = ''
         else
           label = 'asking:'
         return label
+
+      getDaysForSale: (result) ->
+        end = moment(result.close_date or moment.utc())
+        start = moment(result.creation_date)
+        days = end.diff(start, 'days')
+        return days
+
+      getDaysOnMarket: (result) ->
+        if !result.days_on_market then return null
+        if result.status = 'for sale' || result.status = 'pending'
+
+          compensate = moment.utc().diff(result.up_to_date, 'days')
+          return result.days_on_market + compensate
+        return result.days_on_market
+
+      getCumulativeDaysOnMarket: (result) ->
+        if !result.days_on_market_cumulative then return null
+        if result.status = 'for sale' || result.status = 'pending'
+
+          compensate = moment.utc().diff(result.up_to_date, 'days')
+          return result.days_on_market_cumulative + compensate
+        return result.days_on_market_cumulative

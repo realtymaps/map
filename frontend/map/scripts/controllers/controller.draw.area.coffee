@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-color = 'red'
+color = '#ffa500'
 
 app.controller "rmapsDrawAreaCtrl", (
 $scope
