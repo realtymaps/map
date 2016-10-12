@@ -55,7 +55,7 @@ app.controller 'rmapsProjectCtrl',
   $scope.propertiesService = rmapsPropertiesService
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
-    property: new rmapsPropertyFormatterService
+    property: rmapsPropertyFormatterService
 
   # Override for property button
   $scope.zoomClick = (result) ->

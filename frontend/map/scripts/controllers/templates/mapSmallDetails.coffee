@@ -7,7 +7,7 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
-    property: new rmapsPropertyFormatterService
+    property: rmapsPropertyFormatterService
 
   $scope.property = _.cloneDeep $scope.model
 
