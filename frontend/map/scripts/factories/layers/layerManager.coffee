@@ -10,7 +10,9 @@ rmapSummaryMutation
   $log = $log.spawn 'rmapsLayerManager'
   flowFact = stampit.compose(rmapParcelMutation, rmapClusterMutation, rmapSummaryMutation)
 
-  ({scope, filters, hash, mapState, data}) ->
+  ({scope, filters, hash, mapState, data, event}) ->
+    $log.debug -> event
+
     flow = flowFact({scope, filters, hash, mapState, data})
 
     flow

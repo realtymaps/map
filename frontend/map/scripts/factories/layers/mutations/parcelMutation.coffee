@@ -18,7 +18,8 @@ rmapsLayerUtil
       .then (data) =>
         return if @isEmptyData()
 
-        $log.debug data
+        $log.debug -> "@@@@ data @@@@"
+        $log.debug -> data
         @scope.map.geojson.filterSummaryPoly =
           data: data
           style: rmapsLayerFormattersService.Parcels.getStyle
@@ -26,13 +27,6 @@ rmapsLayerUtil
     mutateParcel: () ->
       if !@isAnyParcel()
         return $q.resolve()
-
-      overlays = @scope.map.layers.overlays
-      Toggles = @scope.Toggles
-
-      overlays?.parcels?.visible = not @isBeyondCartoDb()
-      Toggles.showAddresses = @isAddressParcel()
-      overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
       data = if @data?.singletons? then @data?.singletons else @data
 

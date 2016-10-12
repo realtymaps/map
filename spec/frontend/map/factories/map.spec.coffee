@@ -66,11 +66,11 @@ describe "rmapsMapFactory factory", ->
 
     describe 'drawFilterSummary', ->
       it 'can run', ->
-        @subject.drawFilterSummary(false)
+        @subject.drawFilterSummary({cache: false})
         return
 
       it 'returns a promise', ->
-        promise = @subject.drawFilterSummary(false)
+        promise = @subject.drawFilterSummary({cache: false})
         promise.should.be.ok
         promise.then.should.be.ok
 
@@ -89,7 +89,7 @@ describe "rmapsMapFactory factory", ->
           @subject.scope.Toggles = new @rmapsMapTogglesFactory()
 
           # showResults: true
-          promise = @subject.drawFilterSummary(true)
+          promise = @subject.drawFilterSummary({cache: true})
           @digestor.digest()
 
           promise.catch ->
