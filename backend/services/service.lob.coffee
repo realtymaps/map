@@ -281,6 +281,8 @@ sendLetter = (letter, apiName) ->
       letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
       letter.to = letter.address_to
       letter.from = letter.address_from
+      letter.double_sided = false # Never print double-sided
+
       letter = _.pick letter, LOB_LETTER_FIELDS
 
       lob[apiName].sendLetter letter
@@ -299,7 +301,7 @@ sendCampaign = (userId, campaignId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options', 'stripe_charge')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options', 'stripe_charge', 'custom_content')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire

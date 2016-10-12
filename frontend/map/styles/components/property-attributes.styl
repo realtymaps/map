@@ -2,6 +2,7 @@
 
 .prop-attrs
   text-align: left;
+  line-height: 1.2;
 
   .prop-price
   &.prop-price
@@ -32,10 +33,25 @@
   .prop-street
     font-weight: 600;
     font-size: 18px;
+    &, &:hover, &:focus
+      color: $black;
 
   .prop-location
     font-size: 14px;
     color $gray
+
+.property-detail-container .prop-attrs .prop-street
+  font-size: 20px;
+
+.property-card .prop-attrs
+  padding: 7px 12px;
+
+.property-attrs-clickable
+  &:hover, &:focus
+    background-color: $light_blue_select;
+    cursor: pointer;
+    display: block;
+
 
 .mobile-view
   .prop-attrs
@@ -56,4 +72,7 @@
     .prop-location
       font-size: 12px;
       font-weight: 200;
+
+  .property-detail-container .prop-attrs .prop-street
+    font-size: 18px;
 

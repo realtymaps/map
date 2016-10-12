@@ -203,6 +203,8 @@ app.service 'rmapsProfilesService', (
 
         # Handle profile filters
         #
+        profile.filters ?= {}
+        
         selectedFilters = _.defaults {}, profile.filters, rmapsFiltersFactory.valueDefaults
         delete selectedFilters.status
         delete selectedFilters.current_project_id

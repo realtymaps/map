@@ -1,9 +1,10 @@
 .property-attributes-wrapper.prop-attrs
-  .prop-price(ng-class="formatters.property.getForSaleClass(property, false)") {{formatters.property.getPrice(property.price)}}
+  .prop-price(ng-class="formatters.property.getStatusClass(property, false)") {{formatters.property.getPrice(property.price)}}
   .prop-details.horizontal
     .prop-detail(ng-if="property.bedrooms") {{property.bedrooms}} beds
     .prop-detail(ng-if="property.baths_total") {{property.baths_total}} bath
     .prop-detail(ng-if="property.finished_sqft") {{property.sqft_finished}} Sq Ft
-    .prop-detail(ng-if="property.year_built") {{formatters.property.getYear(property.year_built)}} built
-  .prop-street {{property.address.street}} {{propert.address.unit}}
-  .prop-location {{property.address.citystate}} {{propert.address.zip}}
+    .prop-detail(ng-if="property.year_built") {{property.year_built.label}}: {{property.year_built.value}}
+  .prop-street {{property.address.street}} {{property.address.unit}}
+  .prop-location {{property.address.citystate}} {{property.address.zip}}
+  .prop-location(ng-if="property.mls_formal_name") {{property.mls_formal_name}}

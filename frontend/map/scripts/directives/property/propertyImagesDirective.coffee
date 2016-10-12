@@ -1,16 +1,10 @@
 app = require '../../app.coffee'
 
-#
-# USAGE:
-#
-#   property-images(property="propertyScopeVar" imageWidth="400" imageHeight="300")
-#
-
 app.directive 'propertyImages', (
-  $log,
-  $timeout,
-  rmapsPropertyFormatterService,
-  rmapsResultsFormatterService,
+  $log
+  $timeout
+  rmapsPropertyFormatterService
+  rmapsResultsFormatterService
 ) ->
 
   $log = $log.spawn 'propertyImagesDirective'
@@ -23,10 +17,12 @@ app.directive 'propertyImages', (
     imageHeight: '@'
     coverImage: '@'
     panoramaControls: '@'
+    showStatusVal: '@showStatus'
 
   controller: ($scope) ->
 
     $scope.active = 0
+    $scope.showStatus = ($scope.showStatusVal?.toLowerCase() == 'true')
 
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope

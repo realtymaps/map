@@ -85,6 +85,22 @@ app.controller 'rmapsProjectsDropdownCtrl', (
         rmapsProfilesService.resetSyncFlags()
         $window.location.reload()
 
+  $scope.resetSandbox = () ->
+    sandbox = _.find $scope.projects, 'sandbox', true
+    return if !sandbox
+    $scope.modalTitle = "Are you sure?"
+    $scope.modalBody = "Sandbox will be cleared (pinned, favorites, notes and filters)"
+    $scope.showCancelButton = true
+    modalInstance = $uibModal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+    modalInstance.result.then ->
+      # Note, the ids can be confusing here: sandbox.id corresponds to the profile-id, and project.project_id is the project-id
+      rmapsProjectsService.delete id: sandbox.project_id
+      .then () ->
+        $scope.selectProject sandbox
+
   $scope.setDefaultName = ({project, defaultName, inverseName, isCopy = false}) ->
     copyName = ($scope.principal.getCurrentProfile().name || defaultName) + ' copy'
 

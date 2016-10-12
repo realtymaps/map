@@ -1,9 +1,20 @@
 span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
   span.desktop-only
+    span.dropdown.btn-group
+      button.btn.btn-transparent(
+        ng-controller="rmapsProjectsDropdownCtrl"
+        ng-click="resetSandbox()"
+        popover-placement="bottom"
+        uib-popover="Start Over"
+        popover-trigger="'mouseenter touchend'"
+      ) Clear Map
+
+span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
+  span.desktop-only
     span.dropdown.btn-group.settings-list(
       ng-controller="rmapsFiltersCtrl"
       ng-class="{open: isOpens.settings}"
-      popover-placement="right"
+      popover-placement="bottom"
       uib-popover="Property Filters"
       popover-enable="!isOpens.settings"
       popover-trigger="'click mouseenter touchend'"
@@ -16,7 +27,6 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         ng-click="isOpens.settings = !isOpens.settings; togglePanel('settings'); toggled()"
       )
         span.icon.icon-settings
-
   script(type="text/ng-template" id="SettingsPopoverDesktop")
     .dropdown-menu.whiteblock.settings-popover(ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
       h4.fixed-header

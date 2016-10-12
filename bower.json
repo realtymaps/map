@@ -43,7 +43,6 @@
     "angular-validation": "git://github.com/nmccready/angular-validation#896297463767fa8b9a52354a74d05afda9a8b142",
     "angularjs-slider": "~2.4.0",
     "angular-numeraljs": "~1.2.0",
-    "gl-matrix": "~2.3.1",
     "ngInfiniteScroll": "git://github.com/realtymaps/ngInfiniteScroll#68e6609cf80930e6ec730c733de34152db95297b",
     "ng-file-upload": "~12.0.1",
     "json-formatter": "~0.5.0"

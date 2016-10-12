@@ -14,7 +14,7 @@ app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rm
 
   getFilters = () ->
     if $rootScope.selectedFilters
-      selectedFilters = _.clone($rootScope.selectedFilters)
+      selectedFilters = _.clone($rootScope.selectedFilters || {})
       _cleanFilters(selectedFilters)
       selectedFilters.status = []
       if (selectedFilters.forSale)
