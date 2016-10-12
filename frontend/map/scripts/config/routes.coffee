@@ -216,10 +216,6 @@ module.exports = app.config (
   buildChildState 'projectAreas', 'projectLayout', projectParam: 'id', page: { title: 'Areas' }, templateUrl: './views/project/projectAreas.jade'
   buildChildState 'projectPins', 'projectLayout', controller: 'rmapsProjectPinsCtrl', projectParam: 'id', page: { title: 'Pinned Properties' }, templateUrl: './views/project/projectPins.jade'
 
-  buildState 'areas'
-  buildState 'notes'
-  buildState 'favorites'
-
   buildState 'mail', profileRequired: false
   buildState 'mailWizard',
     abstract: true

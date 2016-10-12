@@ -31,9 +31,6 @@ module.exports =
   userPaymentHistory: '/userPaymentHistory'
   clientEntry:   'clientEntry/:key'
 
-  areas:          'areas'
-  notes:          'notes'
-  favorites:      'favorites'
   addProjects:    'addProjects'
   onboarding:     'onboarding'
   onboardingPlan: '/plan'

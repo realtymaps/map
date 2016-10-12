@@ -37,6 +37,7 @@ basicColumns = do ->
       'status'
       'days_on_market'
       'up_to_date'
+      'close_date'
       ]
       .map((name)-> tables.finalized.combined.tableName + '.' + name)
       .concat(['photos', 'cdn_photo', 'actual_photo_count'].map((name)-> tables.finalized.photo.tableName + '.' + name))

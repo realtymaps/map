@@ -17,7 +17,7 @@
       i.fa.fa-building-o(ng-if="!unit.cdn_photo")
     .col-xs-9.unit-details
       .header(ng-class="{'flex':!showAllAddresses}" ui-sref="property({id:unit.rm_property_id})", ui-sref-opts="{reload:true}")
-        span.price(ng-class="formatters.property.getForSaleClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
+        span.price(ng-class="formatters.property.getStatusClass(unit, false)") {{formatters.property.getPrice(unit.price)}}
         span.unit-number(ng-show="!showAllAddresses") {{unit.address.unit}}
         div.unit-number(ng-show="showAllAddresses") {{unit.address.street}} {{unit.address.unit}}
       .property-attr

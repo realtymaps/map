@@ -15,9 +15,9 @@ include ../includes/mixins/_leafletMixin.jade
             .project-card.bordered(uib-slide ng-repeat="property in pins"
               index="$index" active="property.activeSlide" actual="property")
               .pin-image.prop-image.zoomable()
-                .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
-                property-images(property="property" image-width="656")
-              .pin-attributes.content-block.zoomable(ui-sref="property({ id: property.rm_property_id })")
+                .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
+                property-images(property="property" image-width="656" show-status="true")
+              .pin-attributes.content-block.property-attrs-clickable(ui-sref="property({ id: property.rm_property_id })")
                 property-attributes(property="property")
 
       .mobile-only
@@ -30,10 +30,10 @@ include ../includes/mixins/_leafletMixin.jade
         )
           .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" active="property.activeSlide" actual="property")
             .pin-image.prop-image.zoomable(ui-sref="property({ id: property.rm_property_id })")
-              .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.status}}
+              .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
               img(ng-if="property.geometry_center.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
               img.pin-sample-image(ng-if="!property.geometry_center.coordinates && loadedProperties" rmaps-cdn-image ng-src="/assets/test_property.jpg" title="{{property.title}}")
-            .pin-attributes.content-block.zoomable(ui-sref="property({ id: property.rm_property_id })")
+            .pin-attributes.content-block.property-attrs-clickable(ui-sref="property({ id: property.rm_property_id })")
               property-attributes(property="property")
 
       .project-instructions(ng-if="!pins.length && loadedProperties")
