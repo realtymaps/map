@@ -1,4 +1,3 @@
-###globals _###
 stampit = require 'stampit'
 app = require '../../../app.coffee'
 

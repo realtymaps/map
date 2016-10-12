@@ -6,7 +6,12 @@ app.factory 'rmapsLayerUtil', () ->
     isEmptyData: () ->
       !@data? or typeof @data == 'string'
 
-app.service 'rmapsLayerUtilService', (rmapsLayerUtil) ->
+app.service 'rmapsLayerUtilService', (
+$log
+rmapsLayerUtil
+rmapsZoomLevelService) ->
+  $log = $log.spawn('rmapsLayerUtilService')
+
   instance = stampit.compose(rmapsLayerUtil)
 
   filterParcelsFromSummary = ({parcels, props}) ->
@@ -18,7 +23,22 @@ app.service 'rmapsLayerUtilService', (rmapsLayerUtil) ->
 
     parcels?.features
 
+  parcelTileVisSwitching = ({scope, event}) ->
+    overlays = scope.map.layers.overlays
+    Toggles = scope.Toggles
+
+    $log.debug -> "@@@@ event @@@@"
+    $log.debug -> event
+
+    if event == 'zoomend'
+      overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+      Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
+      overlays?.parcelsAddresses?.visible = Toggles.showAddresses
+
+    return
+
   {
     filterParcelsFromSummary
+    parcelTileVisSwitching
     isEmptyData: instance.isEmptyData
   }
