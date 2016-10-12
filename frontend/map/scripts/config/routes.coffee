@@ -218,6 +218,7 @@ module.exports = app.config (
 
   buildState 'areas'
   buildState 'notes'
+  # JWI: is the `favorites` route obsolete?  are some of the others above obsolete too?
   buildState 'favorites'
 
   buildState 'mail', profileRequired: false
