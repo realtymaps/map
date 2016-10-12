@@ -15,15 +15,15 @@ include ../includes/mixins/_noteInputMixin.jade
         .col-sm-8(ng-repeat="property in dataSources" ng-if="tab.selected == property.data_source_id")
           .prop-image.prop-image-lg(ng-if="tab.selected == property.data_source_id")
 
-            property-images(property="property" image-width="750" panorama-controls="true" status-object="getStatus(property)")
+            property-images(property="property" image-width="750" panorama-controls="true" show-status="true")
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-6
-              .prop-price.prop-lg(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
-              .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
+              .prop-price.prop-lg(ng-if="property.price" ng-class="formatters.property.getStatusClass(property)") {{formatters.property.getPrice(property.price)}}
+              //.sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
 
-              .content-value {{property.address.street}} {{property.address.unit}}
-              .content-muted {{property.address.citystate}} {{property.address.zip}}
+              .content-value.prop-street {{property.address.street}} {{property.address.unit}}
+              .content-muted.prop-location {{property.address.citystate}} {{property.address.zip}}
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='property')
@@ -267,19 +267,19 @@ include ../includes/mixins/_noteInputMixin.jade
         .property-detail-container
           .prop-image.prop-image-md
 
-            property-images(property="property" image-height="205" image-width="{{windowWidth}}")
+            property-images(property="property" image-height="205" image-width="{{windowWidth}}" show-status="true")
 
-            .prop-image-status(class="label-{{getStatus(property).class}}-property") {{getStatus(property).label}}
+            .prop-image-status(class="formatters.property.getStatusLabelClass(property)") {{formatters.property.getStatusLabel(property)}}
 
           .container
             .content-block.prop-attrs.border-bottom
               .pull-right.text-right
-                .prop-price(ng-if="property.price" ng-class="getStatus(property).class") {{formatters.property.getPrice(property.price)}}
-                .content-label
-                  .sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
+                .prop-price(ng-if="property.price" ng-class="formatters.property.getStatusClass(property)") {{formatters.property.getPrice(property.price)}}
+                //.content-label
+                  //.sold-date.info.title(ng-if="formatters.property.showSoldDate(property)") sold: {{property.close_date | date : 'MM/dd/yyyy'}}
 
-              .content-emphasis.content-lg {{property.address.street}} {{property.address.unit}}
-              .content-muted {{property.address.citystate}} {{property.address.zip}}
+              .content-emphasis.content-lg.prop-street {{property.address.street}} {{property.address.unit}}
+              .content-muted.prop-location {{property.address.citystate}} {{property.address.zip}}
 
             uib-accordion.row.content-block.subscriber-groups.content-heading.notes-title(close-others="false" ng-if="selectedResult.notes && selectedResult.notes.length")
               div(uib-accordion-group heading="Notes ({{selectedResult.notes.length || 0}})")

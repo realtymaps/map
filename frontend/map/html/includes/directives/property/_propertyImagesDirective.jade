@@ -42,4 +42,4 @@
       img.resizable(ng-src="{{photo.url}}" style="margin:auto;" ui-sref="property({id:property.rm_property_id})")
       .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
 
-  .prop-image-status(class="{{formatters.property.getStatusLabelClass(property)}}") {{formatters.property.getStatusLabel(property)}}
+  .prop-image-status(ng-if="showStatus" class="{{formatters.property.getStatusLabelClass(property)}}") {{formatters.property.getStatusLabel(property, imageWidth)}}

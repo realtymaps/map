@@ -1,4 +1,3 @@
-include ../includes/mixins/property/_propertyAttributes.jade
 #favorites.content-section-container(ng-class="{active:isActive('favorites')}")
     .desktop-only
         header
@@ -22,7 +21,6 @@ include ../includes/mixins/property/_propertyAttributes.jade
                                         div.property-data
                                             span.price(ng-class="entity.status")
                                                 | ${{entity.price}}
-
                                             property-attributes(property="entity")
                                         div.actions
                                             button.details
