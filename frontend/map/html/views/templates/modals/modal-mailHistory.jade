@@ -4,4 +4,4 @@
 .modal-body
   property-mail(property="property")
 .modal-footer
-  button.btn.btn-primary(type='button', ui-sref="recipientInfo({property_ids: newMail.property_ids})" ui-sref-opts="{reload: true}") New Mail
+  button.btn.btn-primary(type='button' ng-click="$close()" ui-sref="recipientInfo({property_ids: newMail.property_ids})" ui-sref-opts="{reload: true}") New Mail
