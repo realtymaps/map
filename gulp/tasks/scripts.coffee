@@ -23,19 +23,35 @@ coffeelint.reporter = require('coffeelint-stylish').reporter
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
 
 
-browserifyTask = ({app, watch, doSourceMaps}) ->
+browserifyTask = ({app, watch, prod, doSourceMaps}) ->
+  prod ?= false
   watch ?= false
+  doSourceMaps ?= if prod == true then false else true
+
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  extGlobs = ['js', 'coffee'].map (ext) ->
-    [paths.frontendCommon.root + 'scripts/**/*.' + ext, paths[app].root + 'scripts/**/*.' + ext]
+  inputGlob = ['js', 'coffee'].map (ext) ->
+    [
+      paths.frontendCommon.root + 'scripts/**/*.' + ext
+      '-' + paths.frontendCommon.root + 'scripts/**/*prod.' + ext
+      paths[app].root + 'scripts/**/*.' + ext
+      '-' + paths[app].root + 'scripts/**/*prod.' + ext
+    ]
 
-  inputGlob = extGlobs.reduce (prev, curr) -> prev.concat curr
+  inputGlob = _.flatten inputGlob
+
+  if prod
+    inputGlob = _.filter inputGlob, (glob) ->
+      !glob.match(/\-/g)
+
   outputName = app + '.bundle.js'
   startTime = ''
 
+  logger.debug -> "@@@@ inputGlob @@@@"
+  logger.debug -> inputGlob
+  logger.debug -> "@@@@@@@@@@@@@@@@@@@"
+
   pipeline = (stream) ->
-    doSourceMaps ?= true
 
     s2 = stream
     .on 'error', (err) ->
@@ -176,8 +192,8 @@ browserifyTask = ({app, watch, doSourceMaps}) ->
 gulp.task 'browserify', -> browserifyTask app: 'map'
 gulp.task 'browserifyAdmin', -> browserifyTask app:'admin'
 
-gulp.task 'browserifyProd', -> browserifyTask app: 'map', doSourceMaps: false
-gulp.task 'browserifyAdminProd', -> browserifyTask app:'admin', doSourceMaps: false
+gulp.task 'browserifyProd', -> browserifyTask app: 'map', prod:true
+gulp.task 'browserifyAdminProd', -> browserifyTask app:'admin', prod: true
 
 gulp.task 'browserifyAll', gulp.parallel 'browserify', 'browserifyAdmin'
 gulp.task 'browserifyAllProd', gulp.parallel 'browserifyProd', 'browserifyAdminProd'
