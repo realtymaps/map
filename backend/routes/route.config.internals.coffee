@@ -38,7 +38,6 @@ protectedConfigPromise = () ->
     ret
 
 safeConfig =
-  ANGULAR: config.ANGULAR
   debugLevels: config.LOGGING.ENABLE
   stripe: {}
 
