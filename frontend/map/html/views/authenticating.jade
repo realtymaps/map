@@ -1,6 +1,6 @@
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 section
-  .starter-template.light-message
+  .starter-template
     h2 Authenticating...
     +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
