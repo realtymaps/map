@@ -215,13 +215,11 @@ findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
       logger.info("New blackknight directory found: /Managed_#{action}/#{dir.name}")
 
       if date < nextFolderSet.date
-        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ better date found: '+date)
         nextFolderSet = {date}
       if date == nextFolderSet.date
         nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
     if nextFolderSet.date == '99999999'
       logger.debug () -> "found no new folders for #{action}"
-    console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ nextFolderSet('+action+'): '+JSON.stringify(nextFolderSet,null,2))
     return nextFolderSet
 
 
