@@ -54,9 +54,7 @@ app.controller 'rmapsMlsCtrl',
         db: []
         table: []
         column: []
-    # $scope.dbOptions = []
-    # $scope.tableOptions = []
-    # $scope.columnOptions = []
+
     $scope.allowPasswordReset = false
     $scope.mlsData =
       current: getDefaultBase()
