@@ -30,19 +30,20 @@ browserifyTask = ({app, watch, prod, doSourceMaps}) ->
 
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
+  # https://github.com/isaacs/node-glob
   inputGlob = ['js', 'coffee'].map (ext) ->
     [
       paths.frontendCommon.root + 'scripts/**/*.' + ext
-      '-' + paths.frontendCommon.root + 'scripts/**/*prod.' + ext
+      '!' + paths.frontendCommon.root + 'scripts/**/*prod.' + ext
       paths[app].root + 'scripts/**/*.' + ext
-      '-' + paths[app].root + 'scripts/**/*prod.' + ext
+      '!' + paths[app].root + 'scripts/**/*prod.' + ext
     ]
 
   inputGlob = _.flatten inputGlob
 
   if prod
     inputGlob = _.filter inputGlob, (glob) ->
-      !glob.match(/\-/g)
+      !glob.match(/\!/g)
 
   outputName = app + '.bundle.js'
   startTime = ''
