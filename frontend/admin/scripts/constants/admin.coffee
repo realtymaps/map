@@ -17,6 +17,8 @@ admin =
       dmca_contact_address: null
     propertySchema:
       listing_data: {}
+    agentSchema:
+      agent_data: {}
     otherConfig:
       static_ip: false
       verify_overlap: true
