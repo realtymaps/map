@@ -216,7 +216,8 @@ findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
 
       if date < nextFolderSet.date
         nextFolderSet = {date}
-      nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
+      if date == nextFolderSet.date
+        nextFolderSet[type] = "/Managed_#{action}/#{dir.name}"
     if nextFolderSet.date == '99999999'
       logger.debug () -> "found no new folders for #{action}"
     return nextFolderSet
