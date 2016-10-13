@@ -132,20 +132,24 @@ _rules =
 
   mls:
     agent:
-      id:
-        alias: 'MLS ID'
+      license_number:
+        alias: 'License Number'
         required: true
-      name:
+      full_name:
         alias: 'Full Name'
         required: true
         input: {}
         valid: () ->
           @input.first && @input.last || @input.full
         type: name: 'name'
-
       status:
         alias: 'Status'
         required: true
+      email:
+        alias: 'Email'
+        required: true
+      work_phone:
+        alias: 'Work Phone'
 
     listing:
       creation_date:
