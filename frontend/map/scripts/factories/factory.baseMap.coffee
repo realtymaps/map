@@ -117,20 +117,28 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
           return diff
         false
 
-      _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
+      _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) ->
         _maybeDraw.cancel()
         #_pingPass ans debounce are all things to mimick map "idle" event
-        leafletEvent = leaflet?.leafletEvent or undefined
+        leafletEvent = leaflet?.leafletEvent
+
+        eventType = if !leafletEvent?
+          'idle'
+        else
+          if leafletEvent?.type?
+            $log.debug -> "map event: #{leafletEvent.type}"
+          if leafletEvent.hard == false then 'zoomend' else leafletEvent.type
 
         _maybePingTime = _pingPass()
 
-        if leafletEvent?.type == 'zoomend'
-          self.clearBurdenLayers()
-          $log.debug "zoom: #{@scope.map?.center?.zoom}"
+        # if eventType == 'zoomend'
+        #   self.clearBurdenLayers()
+        #   $log.debug -> "zoom: #{@scope.map?.center?.zoom}"
 
-        $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
-        $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
-        self.draw? 'idle'
+        $log.debug -> "redraw delay (small/false bad): #{_maybePingTime}"
+
+
+        self.draw?(eventType)
       , redrawDebounceMilliSeconds
 
       leafletData.getDirectiveControls(@mapId)

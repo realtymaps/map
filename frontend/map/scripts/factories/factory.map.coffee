@@ -149,7 +149,7 @@ app.factory 'rmapsMapFactory',
               if !_.isBoolean cache
                 cache = false
               $log.debug "redrawing, got", eventName
-              @redraw(cache)
+              @redraw({cache})
 
 
           _firstCenter = true
@@ -252,7 +252,7 @@ app.factory 'rmapsMapFactory',
 
         @scope.map.markers.filterSummary = {}
 
-      drawFilterSummary: (cache) ->
+      drawFilterSummary: ({cache, event}) ->
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManagerService.getFilters()
@@ -274,10 +274,11 @@ app.factory 'rmapsMapFactory',
             @mapState
             data
             cache
+            event
           }
 
 
-      redraw: (cache = true) ->
+      redraw: ({cache = true, event} = {}) ->
         verboseLogger.debug 'redraw() cache=', cache
         promise = null
         centerParcel = null
@@ -309,7 +310,9 @@ app.factory 'rmapsMapFactory',
           rmapsZoomLevelService.dblClickZoom.enable(@scope)
           promise = @clearBurdenLayers()
 
-        $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes(), @scope.map.getMail()]
+        rmapsLayerUtilService.parcelTileVisSwitching({scope:@scope, event})
+
+        $q.all [promise, @drawFilterSummary({cache, event}), @scope.map.getNotes(), @scope.map.getMail()]
         .then () =>
           # handle ui-leaflet / leaflet polygon stacked no click bug
           # https://realtymaps.atlassian.net/browse/MAPD-1295
@@ -370,9 +373,9 @@ app.factory 'rmapsMapFactory',
 
         if @undrawn # flip flag and redraw with no cache if this map instance is "undrawn" (draw hasn't been called yet)
           @undrawn = false
-          ret = @redraw(false)
+          ret = @redraw({cache:false, event})
         else
-          ret = @redraw()
+          ret = @redraw({event})
 
         verboseLogger.debug 'redraw'
         ret
@@ -453,7 +456,7 @@ app.factory 'rmapsMapFactory',
 
           if wasPinned and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
-        @redraw(false)
+        @redraw({cache:false})
 
       favoritePropertyEventHandler: (event, eventData) =>
         result = eventData.property
