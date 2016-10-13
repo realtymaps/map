@@ -204,11 +204,14 @@ $state) ->
     rmapsEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
 
 
-    rmapsEventsLinkerService.hookMap mapCtrl.mapId,
-      click: (event) ->
-        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
-        mapLogger.debug -> event
+    rmapsEventsLinkerService.hookMap mapCtrl.mapId, do ->
+      ### eslint-disable ###
+      doubleClick = (event) ->
+        ### eslint-enable###
+        mapLogger.debug "doubleClick"
 
+      singleClick = (event) ->
+        mapLogger.debug -> event
         popupWasClosed = closeWindow()
 
         if !popupWasClosed
@@ -216,20 +219,38 @@ $state) ->
           getPropertyDetail(geometry_center: geojson.geometry)
           mapLogger.debug -> 'Showing property details if a parcel was clicked'
 
-          ### Alternate code to show infowindow instead of property details
-          rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
-          .then (data) ->
-            model = data.mls?[0] || data.county?[0]
-            return if !model
+        ### Alternate code to show infowindow instead of property details
+        rmapsPropertiesService.getPropertyDetail(null, geometry_center: geojson.geometry, 'filter')
+        .then (data) ->
+          model = data.mls?[0] || data.county?[0]
+          return if !model
 
-            model.coordinates ?= model.geometry_center?.coordinates
-            model.markerType = 'price'
+          model.coordinates ?= model.geometry_center?.coordinates
+          model.markerType = 'price'
 
-            setTimeout ->
-              if events.last.last != 'dblclick'
-                openWindow(model)
-            , limits.clickDelayMilliSeconds - 100
-          ###
+          openWindow(model)
+        ###
+
+      clickCount = 0
+      singleClickTimer = null
+
+      click: (event) ->
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
+        # handle figuring out a doubleClick vs a singleClick
+        # copied from https://gist.github.com/karbassi/639453
+        clickCount++
+
+        if clickCount == 1
+          singleClickTimer = setTimeout ->
+            clickCount = 0
+            singleClick(event)
+          , 400
+        else if clickCount > 1
+          clearTimeout(singleClickTimer)
+          clickCount = 0
+          doubleClick(event)
+
+        return
 
       ### eslint-disable###
       moveend: (event) ->
