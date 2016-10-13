@@ -115,8 +115,10 @@ include ../includes/mixins/_noteInputMixin.jade
               .row.content-row
                 .col-sm-6
                   .content-label Creation Date
-                  .content-value
+                  .content-value(ng-if="!property.creation_date")
                     span {{property.creation_date | date : 'MM/dd/yyyy'}}
+                  .content-value(ng-if="!property.creation_date")
+                    span -
                 .col-sm-6
                   .content-label Orginal Asked Price
                   .content-value {{formatters.property.getPrice(property.original_price)}}
@@ -130,7 +132,7 @@ include ../includes/mixins/_noteInputMixin.jade
                     span {{property.close_date | date : 'MM/dd/yyyy'}}
 
               .row.content-row
-                .col-sm-12
+                .col-sm-12(ng-if="property.creation_date")
                   .content-label Days for Sale:
                   .content-value {{formatters.property.getDaysForSale(property)}}
               .row.content-row

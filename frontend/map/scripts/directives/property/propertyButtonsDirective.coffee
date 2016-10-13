@@ -47,11 +47,11 @@ app.directive 'propertyButtons', (
           $scope.formatters.results = new rmapsResultsFormatterService  scope: $scope
 
         if !$scope.formatters.property
-          $scope.formatters.property = new rmapsPropertyFormatterService()
+          $scope.formatters.property = rmapsPropertyFormatterService
       else
         $scope.formatters = {
           results: new rmapsResultsFormatterService  scope: $scope
-          property: new rmapsPropertyFormatterService()
+          property: rmapsPropertyFormatterService
         }
 
       # Copy the parent project so that it can't be accidently changed by directive code

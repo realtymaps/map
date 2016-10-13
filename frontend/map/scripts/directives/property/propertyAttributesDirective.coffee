@@ -14,6 +14,6 @@ app.directive 'propertyAttributes',
       templateUrl: './includes/directives/property/_propertyAttributesDirective.jade'
       controller: ($scope, $element, $attrs, $transclude) ->
         $scope.formatters = {
-          property: new rmapsPropertyFormatterService()
+          property: rmapsPropertyFormatterService
         }
     }

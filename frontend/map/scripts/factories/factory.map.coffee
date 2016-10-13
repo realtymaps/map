@@ -215,7 +215,7 @@ app.factory 'rmapsMapFactory',
 
           formatters:
             results: new rmapsResultsFormatterService(self)
-            property: new rmapsPropertyFormatterService()
+            property: rmapsPropertyFormatterService
 
           dragZoom: {}
           changeZoom: (increment) ->
