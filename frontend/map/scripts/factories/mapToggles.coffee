@@ -94,7 +94,6 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
         @isAreaDraw = !@isAreaDraw
         if @isAreaDraw && stats
           @isStatsDraw = true
-          @isTackedAreasDrawBar = true
         else
           @isStatsDraw = false
 

@@ -32,4 +32,4 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
         if tackFn
           span.checkbox.pull-right.draw-toolbar-tack
             label
-              <input type="checkbox" ng-click="#{tackFn}" {{#{tackedBool}}}> Keep toolbar open
+              <input type="checkbox" ng-click="#{tackFn}" {{#{!tackedBool}}}> Keep toolbar open
