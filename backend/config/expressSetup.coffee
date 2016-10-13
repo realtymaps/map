@@ -60,7 +60,7 @@ app.use cookieParser config.SESSION.secret
 
 # body parsing middleware - above methodOverride()
 app.use bodyParser.urlencoded(extended: true)
-app.use bodyParser.json()
+app.use bodyParser.json(limit: '5mb')
 app.use multipart()
 app.use methodOverride()
 
