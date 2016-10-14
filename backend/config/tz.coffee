@@ -15,6 +15,6 @@ path = require 'path'
 ###
 
 tz.timezone.loadingScheme = tz.timezone.loadingSchemes.MANUAL_LOAD
-tz.timezone.loadZoneJSONData(path.join(__dirname, './tz/customTzData.json'), true);
+tz.timezone.loadZoneJSONData(path.join(__dirname, './tz/customTzData.json'), true)
 
 module.exports = tz
