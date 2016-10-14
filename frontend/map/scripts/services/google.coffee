@@ -2,7 +2,7 @@ app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsGoogleService', ($http, $log) ->
+app.service 'rmapsGoogleService', ($http, $log, $q) ->
 
   $log = $log.spawn 'rmapsGoogleService'
 
@@ -11,10 +11,42 @@ app.service 'rmapsGoogleService', ($http, $log) ->
   _googleConfigPromise = $http.get(backendRoutes.config.protectedConfig, cache:true)
   .then ({data}) ->
     if data?.google
-      apiKey = "&key=#{data.google}"
+      return apiKey = "&key=#{data.google}"
+
+  _googleApiPromise = _googleConfigPromise.then (key) ->
+    if key
+      $log.debug("Loading Google Maps API")
+    else
+      $log.warn("Loading Google Maps without an API key")
+
+    deferred = $q.defer()
+
+    # This promise should only resolve once, but just in case check for script existence
+    if window.google?.maps
+      $q.resolve(window.google?.maps)
+      return deferred.promise
+
+    if !document.getElementById("rmaps-google-maps")
+      fjs = document.getElementsByTagName("script")[0]
+
+      window.rmapsGoogleMapsReady = (result) ->
+        if window.google?.maps
+          $log.debug 'Google Maps API Loaded', window.google.maps.version
+          deferred.resolve(window.google.maps)
+        else
+          $log.error 'Failed to load Google Maps API'
+          deferred.reject()
+
+      js = document.createElement("script")
+      js.id = "rmaps-google-maps"
+      js.src = "//maps.google.com/maps/api/js?v=3#{apiKey}&libraries=places&callback=rmapsGoogleMapsReady"
+      fjs.parentNode.insertBefore(js, fjs)
+
+    return deferred.promise
 
   service =
     ConfigPromise: _googleConfigPromise
+    ApiPromise: _googleApiPromise
 
     GeoJsonTo: do ->
 

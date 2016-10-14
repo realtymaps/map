@@ -28,22 +28,20 @@ _doStartup = (err) ->
     mkdirp = require 'mkdirp'
     touch = require 'touch'
 
-    require('./config/googleMaps').loadValues()
-    .then () ->
-      # express configuration
-      app = require './config/expressSetup'
+    # express configuration
+    app = require './config/expressSetup'
 
-      try
-        logger.info "Attempting to start backend on port #{config.PORT}"
-        server = app.listen config.PORT, ->
-          logger.info "Backend express server listening on port #{config.PORT} in #{config.ENV} mode"
-          shutdown.onExit(Promise.promisify(server.close, server))
-          mkdirp './nginx', ->
-            touch.sync('./nginx/app-initialized', force: true)
-            logger.info 'App init broadcast'
-      catch e
-        logger.error "backend failed to start with exception: #{e}"
-        throw new Error(e)
+    try
+      logger.info "Attempting to start backend on port #{config.PORT}"
+      server = app.listen config.PORT, ->
+        logger.info "Backend express server listening on port #{config.PORT} in #{config.ENV} mode"
+        shutdown.onExit(Promise.promisify(server.close, server))
+        mkdirp './nginx', ->
+          touch.sync('./nginx/app-initialized', force: true)
+          logger.info 'App init broadcast'
+    catch e
+      logger.error "backend failed to start with exception: #{e}"
+      throw new Error(e)
 
 
 if process.env.NGINX_SOCKET_FILENAME

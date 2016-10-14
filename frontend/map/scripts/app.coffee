@@ -35,7 +35,6 @@ app = window.angular.module appName, [
   'ui-leaflet'
   'ui.bootstrap'
   'ui.router'
-  'uiGmapgoogle-maps'
   'validation'
   'validation.rule'
   'ngFileUpload'
