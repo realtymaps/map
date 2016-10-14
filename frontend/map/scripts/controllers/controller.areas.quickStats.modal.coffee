@@ -38,7 +38,6 @@ rmapsD3Stats) ->
     ).then ({data}) ->
       updateStatistics(data, $scope.areaToShow.id)
 
-
   openModal = () ->
     modalInstance = $uibModal.open
       animation: true

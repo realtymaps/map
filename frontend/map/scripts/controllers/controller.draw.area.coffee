@@ -17,7 +17,8 @@ rmapsCurrentMapService
   $scope.tacked = false
 
   obeyTacked = () ->
-    if !$scope.Toggles.isTackedAreasDrawBar
+    if (!$scope.Toggles.isTacks.area && !$scope.Toggles.isStatsDraw) ||
+    (!$scope.Toggles.isTacks.quickStats && $scope.Toggles.isStatsDraw)
       $scope.Toggles.isAreaDraw = false
 
   $log = $log.spawn("rmapsDrawAreaCtrl")

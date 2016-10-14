@@ -30,7 +30,10 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @showNotes = false
       @showMail = false
       @propertiesInShapes = false
-      @isTackedAreasDrawBar = false
+      @isTacks =
+        area: false
+        quickStats: false
+        sketch: false
 
       if json?
         _.extend @, json
@@ -90,10 +93,14 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @toggleIsSketchMode = () =>
         @isSketchMode = !@isSketchMode
 
+      @getTack = (name) =>
+        @isTacks[name]
+
       @toggleIsAreaDraw = ({stats} = {}) =>
         @isAreaDraw = !@isAreaDraw
         if @isAreaDraw && stats
           @isStatsDraw = true
+          @isTacks.quickStats = true
         else
           @isStatsDraw = false
 
@@ -121,8 +128,9 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @togglePreviousLocation = ->
         _fireLocationChange()
 
-      @toggleTackDrawBar = () ->
-        @isTackedAreasDrawBar = !@isTackedAreasDrawBar
+      @toggleTack = (name) =>
+        $log.debug => "toggling isTacks #{name} old: #{@isTacks[name]} new: #{!@isTacks[name]}"
+        @isTacks[name] = !@isTacks[name]
 
       @setLocation = _fireLocationChange
 

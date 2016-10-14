@@ -119,3 +119,14 @@ rmapsLeafletHelpers) ->
       .then ({data}) ->
         modalInstance.dismiss('done')
         $state.go 'recipientInfo', {property_ids: data}, {reload: true}
+
+
+  $scope.getIsTacked = () ->
+    if $scope.Toggles.isStatsDraw
+      return $scope.Toggles.getTack('quickStats')
+    $scope.Toggles.getTack('area')
+
+  $scope.tack = () ->
+    if $scope.Toggles.isStatsDraw
+      return $scope.Toggles.toggleTack('quickStats')
+    $scope.Toggles.toggleTack('area')
