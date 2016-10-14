@@ -15,7 +15,6 @@ app.service 'rmapsPropertyFormatterService',
     rmapsGoogleService
     rmapsPropertiesService
     rmapsFormattersService
-    uiGmapGmapUtil
     rmapsEventConstants
     rmapsFiltersFactory
   ) ->
