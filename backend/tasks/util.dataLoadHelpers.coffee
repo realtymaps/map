@@ -20,6 +20,7 @@ util = require 'util'
 moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
+tz = require '../config/tz'
 
 DELETE =
   UNTOUCHED: 'untouched'
@@ -744,7 +745,9 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
       return true
 
     now = Date.now()
-    utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
+    # our server uses UTC now, so auto-adjusting no longer works
+    #utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
+    utcOffset = -(new tz.Date('America/New_York')).getTimezoneOffset()/60
 
     target = moment.utc(now).utcOffset(utcOffset).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
