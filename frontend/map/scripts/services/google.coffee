@@ -24,24 +24,23 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
     # This promise should only resolve once, but just in case check for script existence
     if window.google?.maps
       $q.resolve(window.google?.maps)
-      return
-    if document.getElementById("rmaps-google-maps")
-      return
+      return deferred.promise
 
-    fjs = document.getElementsByTagName("script")[0]
+    if !document.getElementById("rmaps-google-maps")
+      fjs = document.getElementsByTagName("script")[0]
 
-    window.rmapsGoogleMapsReady = (result) ->
-      if window.google?.maps
-        $log.debug 'Google Maps API Loaded', window.google.maps.version
-        deferred.resolve(window.google.maps)
-      else
-        $log.error 'Failed to load Google Maps API'
-        deferred.reject()
+      window.rmapsGoogleMapsReady = (result) ->
+        if window.google?.maps
+          $log.debug 'Google Maps API Loaded', window.google.maps.version
+          deferred.resolve(window.google.maps)
+        else
+          $log.error 'Failed to load Google Maps API'
+          deferred.reject()
 
-    js = document.createElement("script")
-    js.id = "rmaps-google-maps"
-    js.src = "//maps.google.com/maps/api/js?v=3#{apiKey}&libraries=places&callback=rmapsGoogleMapsReady"
-    fjs.parentNode.insertBefore(js, fjs)
+      js = document.createElement("script")
+      js.id = "rmaps-google-maps"
+      js.src = "//maps.google.com/maps/api/js?v=3#{apiKey}&libraries=places&callback=rmapsGoogleMapsReady"
+      fjs.parentNode.insertBefore(js, fjs)
 
     return deferred.promise
 
