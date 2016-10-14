@@ -208,6 +208,7 @@
     "swagger-tools": "0.X",
     "through": "^2.3.7",
     "through2": "^2.0.0",
+    "timezone-js": "^0.4.13",
     "touch": "0.0.3",
     "twilio": "2.X",
     "unzip2": "^0.2.5",
