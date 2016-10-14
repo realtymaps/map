@@ -12,7 +12,6 @@ app.constant 'rmapsMainOptions', do () ->
       options:
         logLevel: if isDev then 'debug' else 'error'
         disableDoubleClickZoom: false #does not work well with dblclick properties
-        uiGmapLogLevel: 'error'
         streetViewControl: false
         zoomControl: true
         panControl: false
