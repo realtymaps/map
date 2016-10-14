@@ -54,6 +54,7 @@ getPossiblyReadyTasks = (transaction) ->
     .where(namespace: 'locks')                                                                  # that are locks...
     .whereRaw("#{TC}.blocked_by_locks \\? key")                                                 # which block this task...
     .whereRaw("value::TEXT = 'true'")                                                           # and are currently set
+  .orderBy("#{TH}.started")
 
 summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
