@@ -37,6 +37,9 @@ categories =
       contacts: 'Listing Contacts (realtor only)'
       realtor: 'Listing Details (realtor only)'
       sale: 'Sale Details (realtor only)'
+    agent:
+      base:'Base'
+      unassigned: 'Unassigned'
   county:
     tax:
       base: 'Base'

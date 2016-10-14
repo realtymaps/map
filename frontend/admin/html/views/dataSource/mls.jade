@@ -103,15 +103,15 @@
                     table
                       tr
                         td
-                          label(ng-class="{ 'half-opacity': formItems[1].disabled }").data-label Database:
+                          label(ng-class="{ 'half-opacity': formItems.listing_data[1].disabled }").data-label Database:
                         td
                           select(
                           id="dbselect"
                           type="text"
                           ng-model="mlsData.current.listing_data.db"
-                          ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
-                          ng-change="processAndProceed(1)"
-                          ng-disabled="formItems[1].disabled")
+                          ng-options="value.ResourceID as value.VisibleName for value in schemaOptions.listing_data.db"
+                          ng-change="processAndProceed(1, 'listing_data')"
+                          ng-disabled="formItems.listing_data[1].disabled")
                             option(value="" disabled)
                       tr
                         td
@@ -121,20 +121,55 @@
                           id="tableselect"
                           type="text"
                           ng-model="mlsData.current.listing_data.table"
-                          ng-options="value.ClassName as value.VisibleName for value in tableOptions"
-                          ng-change="processAndProceed(2)"
-                          ng-disabled="formItems[2].disabled")
+                          ng-options="value.ClassName as value.VisibleName for value in schemaOptions.listing_data.table"
+                          ng-change="processAndProceed(2, 'listing_data')"
+                          ng-disabled="formItems.listing_data[2].disabled")
                             option(value="" disabled)
                       tr
                         td
-                          label(ng-class="{ 'half-opacity': formItems[3].disabled }").data-label Update Timestamp Column:
+                          label(ng-class="{ 'half-opacity': formItems.listing_data[3].disabled }").data-label Update Timestamp Column:
                         td
                           select(
                           type="text"
                           ng-model="mlsData.current.listing_data.field"
-                          ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions"
-                          ng-change="mlsData.current.listing_data.field_type = fieldNameMap.columnTypes[mlsData.current.listing_data.field]"
-                          ng-disabled="formItems[3].disabled")
+                          ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.column"
+                          ng-change="mlsData.current.listing_data.field_type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data.field]"
+                          ng-disabled="formItems.listing_data[3].disabled")
+                            option(value="" disabled)
+                .row
+                  .col-md-12
+                    button(ng-click="assignConfigDefault(mlsData.current, 'listing_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
+
+              div(uib-accordion-group is-disabled="!mlsData.current.id")
+                uib-accordion-heading
+                  div
+                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Agent Schema
+                .row
+                  .col-md-12
+                    table
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems.agent_data[1].disabled }").data-label Database:
+                        td
+                          select(
+                          id="dbselect"
+                          type="text"
+                          ng-model="mlsData.current.agent_data.db"
+                          ng-options="value.ResourceID as value.VisibleName for value in schemaOptions.agent_data.db"
+                          ng-change="processAndProceed(1, 'agent_data')"
+                          ng-disabled="formItems.agent_data[1].disabled")
+                            option(value="" disabled)
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
+                        td
+                          select(
+                          id="tableselect"
+                          type="text"
+                          ng-model="mlsData.current.agent_data.table"
+                          ng-options="value.ClassName as value.VisibleName for value in schemaOptions.agent_data.table"
+                          ng-change="processAndProceed(2, 'agent_data')"
+                          ng-disabled="formItems.agent_data[2].disabled")
                             option(value="" disabled)
                 .row
                   .col-md-12
@@ -206,17 +241,32 @@
                     td
                       label.data-label Database:
                     td
-                      span.data-entry {{fieldNameMap.dbNames[mlsData.current.listing_data.db]}}
+                      span.data-entry {{fieldNameMap.listing_data.dbNames[mlsData.current.listing_data.db]}}
                   tr
                     td
                       label.data-label Table:
                     td
-                      span.data-entry {{fieldNameMap.tableNames[mlsData.current.listing_data.table]}}
+                      span.data-entry {{fieldNameMap.listing_data.tableNames[mlsData.current.listing_data.table]}}
                   tr
                     td
                       label.data-label Update Timestamp Column:
                     td
-                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.listing_data.field]}} ({{mlsData.current.listing_data.field_type}})
+                      span.data-entry {{fieldNameMap.listing_data.columnNames[mlsData.current.listing_data.field]}} ({{mlsData.current.listing_data.field_type}})
+            tr
+              td
+                label.data-label Agent Schema
+              td
+                table.table
+                  tr
+                    td
+                      label.data-label Database:
+                    td
+                      span.data-entry {{fieldNameMap.agent_data.dbNames[mlsData.current.agent_data.db]}}
+                  tr
+                    td
+                      label.data-label Table:
+                    td
+                      span.data-entry {{fieldNameMap.agent_data.tableNames[mlsData.current.agent_data.table]}}
             tr
               td
                 label.data-label Objects:
