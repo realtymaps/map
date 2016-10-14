@@ -3,16 +3,6 @@ testScope = 'rmapsFormattersService'
 describe testScope, ->
   beforeEach ->
     angular.mock.module 'rmapsMapApp'
-    angular.mock.module 'uiGmapgoogle-maps.mocks'
-    angular.mock.module 'uiGmapgoogle-maps'
-
-    angular.mock.inject ['GoogleApiMock', (GoogleApiMock) =>
-      @apiMock = new GoogleApiMock()
-      @apiMock.mockAPI()
-      @apiMock.mockLatLng()
-      @apiMock.mockMarker()
-      @apiMock.mockEvent()
-    ]
 
     inject ['$rootScope', testScope,
       ($rootScope, Formatters) =>

@@ -17,7 +17,6 @@ module.exports = (config) ->
       'spec/frontend/**/*spec.coffee': ['browserify']
       'spec/fixtures/*.html': ['html2js']
       'spec/fixtures/*.json': ['html2js']
-      'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
       'frontend/**/scripts/**/*.coffee': ['browserify']
     }
 
@@ -58,7 +57,6 @@ module.exports = (config) ->
       '_public/scripts/vendor.js'
       '_public/styles/vendor.css'
       'frontend/**/scripts/**/*.coffee'
-      'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
       'spec/fixtures/*.html'
       'spec/fixtures/*.json'
       'spec/frontend/bootstrap.spec.coffee'
