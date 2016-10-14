@@ -99,7 +99,6 @@ class ProjectCrud extends ThenableCrud
       sqlHelpers.singleRow(data)
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
-
       toRemove =
         auth_user_id: idObj.auth_user_id
         project_id: profile.project_id
@@ -120,6 +119,7 @@ class ProjectCrud extends ThenableCrud
           # map_position: {} # don't remove position, keep it the same
           map_results: {}
           favorites: {}
+          filters: {}
         promises.push profileSvc.update(_.merge(resetProfile, id: profile.id), idObj.auth_user_id)
 
         resetProject =
