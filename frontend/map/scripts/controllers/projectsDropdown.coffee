@@ -69,8 +69,8 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     rmapsProjectsService.update project.project_id, _.pick project, 'archived'
     $scope.totalProjects = _.filter($scope.projects, (p) -> !p.archived).length
 
-  $scope.resetProject = (project) ->
-    return if !project.sandbox
+  $scope.resetProject = (profile) ->
+    return if !profile.sandbox
     $scope.modalTitle = "Are you sure?"
     $scope.modalBody = "Sandbox will be cleared (pinned, favorites, notes and filters)"
     $scope.showCancelButton = true
@@ -79,27 +79,14 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
     modalInstance.result.then ->
-      # Note, the ids can be confusing here: project.id corresponds to the profile-id, and project.project_id is the project-id
-      rmapsProjectsService.delete id: project.project_id
-      .then () ->
-        rmapsProfilesService.resetSyncFlags()
-        $window.location.reload()
+      rmapsProjectsService.delete id: profile.project_id
+      .then (identity) ->
+        newProfile = _.find identity.profiles, 'id', profile.id
+        $scope.selectProject(newProfile)
 
   $scope.resetSandbox = () ->
-    sandbox = _.find $scope.projects, 'sandbox', true
-    return if !sandbox
-    $scope.modalTitle = "Are you sure?"
-    $scope.modalBody = "Sandbox will be cleared (pinned, favorites, notes and filters)"
-    $scope.showCancelButton = true
-    modalInstance = $uibModal.open
-      animation: true
-      scope: $scope
-      template: require('../../html/views/templates/modals/confirm.jade')()
-    modalInstance.result.then ->
-      # Note, the ids can be confusing here: sandbox.id corresponds to the profile-id, and project.project_id is the project-id
-      rmapsProjectsService.delete id: sandbox.project_id
-      .then () ->
-        $scope.selectProject sandbox
+    sandboxProfile = _.find $scope.projects, 'sandbox', true
+    $scope.resetProject(sandboxProfile)
 
   $scope.setDefaultName = ({project, defaultName, inverseName, isCopy = false}) ->
     copyName = ($scope.principal.getCurrentProfile().name || defaultName) + ' copy'
