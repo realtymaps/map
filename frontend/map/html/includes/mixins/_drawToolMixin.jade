@@ -37,8 +37,10 @@ mixin drawToolMixin(obj)
       .col.col-md-3.col-sm-3.col-xs-3.last-col
         span.pull-right.draw-toolbar-close(ng-click="#{toggleFn}")
           i.icon.icon-close
-        if tackFn
+        if tackedBool
           span.checkbox.pull-right.draw-toolbar-tack
-            label
-              // note not using ng-model as we can not use functions in ng-model
-              <input type="checkbox" ng-click="#{tackFn}" checked="#{tackedBool}" > Keep toolbar open
+            label Keep toolbar open
+            input(
+              type="checkbox"
+              ng-model="#{tackedBool}"
+              ng-model-options="{ getterSetter: true }")
