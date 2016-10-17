@@ -18,6 +18,7 @@ span(
     popover-enable="!isOpens.area")
       span.icon.icon-area-poly
     .dropdown-menu.whiteblock(ng-controller="rmapsAreasModalCtrl")
+      div(ng-controller="rmapsAreasQuickStatsModalCtrl")
       .fixed-header
         .icon.icon-close(uib-dropdown-toggle)
         span
@@ -29,6 +30,7 @@ span(
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
           li(
+            ng-controller="rmapsAreasQuickStatsModalCtrl"
             ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)"
             ng-mouseenter="onMouseOver(model)"
             ng-mouseleave="onMouseLeave(model)")

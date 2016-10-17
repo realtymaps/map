@@ -1,8 +1,12 @@
 include ../mixins/_drawToolMixin.jade
-+drawToolMixin('area', 'Area',
-  'Toggles.isAreaDraw',
-  'Toggles.toggleIsAreaDraw()',
-  'rmapsDrawAreaCtrl',
-  false,
-  'Toggles.toggleTackDrawBar()',
-  'Toggles.isTackedAreasDrawBar')(ng-controller="rmapsAreasModalCtrl")
+div(ng-controller="rmapsAreasModalCtrl")
+  +drawToolMixin({
+    drawToolId: 'area',
+    header: 'Area',
+    toggleBoolean: 'Toggles.isAreaDraw',
+    toggleFn: 'Toggles.toggleIsAreaDraw()',
+    ctrl: 'rmapsDrawAreaCtrl',
+    directiveNgShow: false,
+    tackFn: 'tack()',
+    tackedBool: 'getIsTacked',
+  })(ng-controller="rmapsAreasQuickStatsModalCtrl")

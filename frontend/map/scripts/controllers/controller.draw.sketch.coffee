@@ -28,6 +28,10 @@ app.controller "rmapsDrawSketchCtrl", (
       drawnItems
       commonPostDrawActions: () ->
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
+      # If we ever turn on tacking for sketches
+      # createPromise: () ->
+      #   if !$scope.Toggles.isTacks.sketch
+      #     $scope.Toggles.isSketchMode = false
     }
 
     _drawCtrlFactory = (handles) ->

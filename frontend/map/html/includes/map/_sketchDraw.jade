@@ -1,6 +1,10 @@
 include ../mixins/_drawToolMixin.jade
-+drawToolMixin('sketchDraw', 'Sketch Mode', 
-  'Toggles.isSketchMode', 
-  'Toggles.toggleIsSketchMode()',
-  'rmapsDrawSketchCtrl',
-  'draw.show')
+
++drawToolMixin({
+  drawToolId: 'sketchDraw',
+  header: 'Sketch Mode', 
+  toggleBoolean: 'Toggles.isSketchMode', 
+  toggleFn: 'Toggles.toggleIsSketchMode()',
+  ctrl: 'rmapsDrawSketchCtrl',
+  directiveNgShow: 'draw.show'
+})
