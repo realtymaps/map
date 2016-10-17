@@ -287,13 +287,17 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getRawRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid, criteria) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  .orderBy('rm_raw_id')
+  .offset(subtask.data.offset)
+  .limit(subtask.data.count)
+  if criteria
+    rowsPromise = rowsPromise.where(criteria)
 
-  logger.spawn(subtask.task_name).debug () -> rowsPromise.toString()
+  logger.spawn(subtask.task_name).debug () -> 'getRawRows: '+rowsPromise.toString()
   rowsPromise
 
 # normalizes data from the raw data table into the permanent data table

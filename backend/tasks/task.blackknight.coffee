@@ -199,15 +199,18 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
       mergeData.fips_code = subtask.data.fips_code
       mergeData.rawDeleteBatchId = subtask.batch_id
+      totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(mergeData))
+      .where('FIPS Code': mergeData.fips_code)
+      .count('*')
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
+      totalNumRowsPromise = Promise.resolve(numRows)
 
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
-    .then () ->
-      if subtask.data.listType == internals.DELETE
-        keystore.setValue("#{internals.DELETE_ROWS_COUNT}: #{subtask.data.action}, #{subtask.data.dataType}", numRows, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+    totalNumRowsPromise
+    .then (totalNumRows) ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: totalNumRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
 
 cleanup = (subtask) ->
@@ -219,12 +222,9 @@ cleanup = (subtask) ->
 deleteData = (subtask) ->
   normalDataTable = tables.normalized[subtask.data.dataType]
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.data.rawDeleteBatchId)
-  dataLoadHelpers.getRawRows(subtask, rawSubid)
+  dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
     Promise.each rows, (row) ->
-      if row['FIPS Code'] != subtask.data.fips_code
-        return
-
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])

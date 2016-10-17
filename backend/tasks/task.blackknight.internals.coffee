@@ -26,7 +26,6 @@ LAST_COMPLETED_DATE = 'last completed date'
 DATES_COMPLETED = 'dates completed'
 NO_NEW_DATA_FOUND = 'no new data found'
 DELETE_BATCH_ID = 'delete batch_id'
-DELETE_ROWS_COUNT = 'delete rows count'
 DELETE = 'Delete'
 LOAD = 'Load'
 tableIdMap =
@@ -363,10 +362,12 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
     return jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[DELETE], replace: true})
 
   # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
-  # this means we have to look up the number of rows loaded into those tables
+  # this means we have to count the number of relevant rows in those tables
   numRowsToPage = subtask.data?.numRowsToPageDelete || NUM_ROWS_TO_PAGINATE
   Promise.map processInfo[DELETE], (mergeData) ->
-    keystore.getValue("#{DELETE_ROWS_COUNT}: #{mergeData.action}, #{mergeData.dataType}", namespace: BLACKKNIGHT_PROCESS_INFO)
+    tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(mergeData))
+    .where('FIPS Code': mergeData.fips_code)
+    .count('*')
     .then (numRows) ->
       jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
 
@@ -408,7 +409,6 @@ module.exports = {
   DELETE
   LOAD
   DELETE_BATCH_ID
-  DELETE_ROWS_COUNT
 
   getColumns
   findNextFolderSet
