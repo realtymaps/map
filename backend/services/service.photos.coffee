@@ -92,7 +92,7 @@ getResizedPayload = (opts) -> Promise.try () ->
           _resize(width, height)
       .catch (err) ->
         if err.message == 'You cannot pipe after data has been emitted from the response.'
-          throw new errorUtils.QuietlyHandledError(err, 'no image available')
+          throw new errorUtils.PartiallyHandledError(err, 'no image available')
         else
           throw err
 
