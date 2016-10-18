@@ -266,4 +266,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
       else
         _.extend model.savedDetails, prop.savedDetails
 
+  _loadProperties(true)
+
   return service
