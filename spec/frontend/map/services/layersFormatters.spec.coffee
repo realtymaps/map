@@ -92,7 +92,7 @@ describe "rmapsLayerFormattersService", ->
             model = @testObj = @subject.setMarkerPriceOptions {status: 'sold'}
             expect(model.markerType).to.be.equal 'price'
             expect(model.icon.type).to.be.equal 'div'
-            expect(model.icon.iconSize).to.include.members [60, 30]
+            expect(model.icon.iconSize).to.include.members [1, 1]
             expect(model.icon.html).to.be.equal priceMarkerTemplate(price:'-', priceClasses: "label-sold-property")
 
       describe 'setMarkerManualClusterOptions extends the model', ->
