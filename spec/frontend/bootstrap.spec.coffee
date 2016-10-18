@@ -53,6 +53,9 @@ beforeEach ->
       google: ''
       cartodb: ''
       stripe: ''
+    $httpBackend.when( 'GET', backendRoutes.properties.saves).respond([])
+    $httpBackend.when( 'POST', backendRoutes.properties.details).respond([])
+
 
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
