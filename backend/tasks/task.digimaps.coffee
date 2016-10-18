@@ -201,7 +201,7 @@ Since parcels can modify both mls and county rows in data_combined weird results
 
 The opposite is true of county and mls since they only modify their perspective and exclusive rows.
 ###
-waitForExclusiveAccess = (subtask) ->
+waitForExclusiveAccess = (subtask, prefix) ->
   keystore.setValue('digimapsExclusiveAccess', true, namespace: 'locks')
   .then () ->
     tables.jobQueue.taskHistory()
@@ -211,9 +211,10 @@ waitForExclusiveAccess = (subtask) ->
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
-        # Throw a SoftFail so this subtask will be retried.  This is safer than trying to poll internally, because a
+        # retry this subtas.  This is safer than trying to poll internally, because a
         # polling flow can't handle zombies, but a retrying flow can
-        throw new SoftFail("exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}")
+        msg = "digimaps_waitForExclusiveAccess: exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}"
+        jobQueue.retrySubtask({subtask, prefix, error: msg, quiet: true})
       else
         logger.info("Exclusive data_combined access obtained")
         # go ahead and resolve, so the subtask will finish and the task will continue
