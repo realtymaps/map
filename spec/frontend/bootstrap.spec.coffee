@@ -53,7 +53,7 @@ beforeEach ->
       google: ''
       cartodb: ''
       stripe: ''
-    $httpBackend.when( 'GET', backendRoutes.properties.saves).respond([])
+    $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
     $httpBackend.when( 'POST', backendRoutes.properties.details).respond([])
 
 
