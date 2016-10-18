@@ -200,6 +200,7 @@ loadRawData = (subtask) ->
       mergeData.fips_code = subtask.data.fips_code
       mergeData.rawDeleteBatchId = subtask.batch_id
       fauxSubtask = _.extend({}, subtask, data: mergeData)
+      # get the number of rows pertaining to the current fips code
       totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask))
       .where('FIPS Code': mergeData.fips_code)
       .count('*')
@@ -228,7 +229,6 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
     Promise.each rows, (row) ->
-      console.log '======== '+JSON.stringify(row)
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
