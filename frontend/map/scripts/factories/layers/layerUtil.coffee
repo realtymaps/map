@@ -1,4 +1,4 @@
-###globals _###
+###globals _, L###
 stampit = require 'stampit'
 app = require '../../app.coffee'
 
@@ -14,6 +14,8 @@ rmapsZoomLevelService) ->
   $log = $log.spawn('rmapsLayerUtilService')
 
   instance = stampit.compose(rmapsLayerUtil)
+
+  isFirstTileSwitch = true
 
   getPolygonFactory = (geometry) ->
     if Array.isArray geometry.coordinates[0]
@@ -43,10 +45,14 @@ rmapsZoomLevelService) ->
     $log.debug -> "@@@@ event @@@@"
     $log.debug -> event
 
-    if event == 'zoomend'
-      overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
-      Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
-      overlays?.parcelsAddresses?.visible = Toggles.showAddresses
+    if event == 'zoomend' || isFirstTileSwitch
+      if overlays?
+        isFirstTileSwitch = false
+        overlays.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+        overlays.parcelsAddresses?.visible = Toggles.showAddresses
+
+      if Toggles?
+        Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
 
     return
 
