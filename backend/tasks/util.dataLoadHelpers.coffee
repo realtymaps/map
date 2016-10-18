@@ -124,7 +124,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
     Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, _updateDataLoadHistory)
     .then () ->
-      if !subtask.data.indicateDeletes
+      if !opts.indicateDeletes
         return
 
       tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
@@ -142,14 +142,14 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {tableProp, transaction} = {}) -> Promise.try () ->
+activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
 
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
-    if subtask.data.deletes == DELETE.UNTOUCHED
+    if deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
       activatePromise = tables.finalized[tableProp](transaction: transaction)

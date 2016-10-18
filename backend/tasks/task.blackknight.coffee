@@ -199,9 +199,12 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
       mergeData.fips_code = subtask.data.fips_code
       mergeData.rawDeleteBatchId = subtask.batch_id
-      totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(mergeData))
+      fauxSubtask = _.extend({}, subtask, data: mergeData)
+      totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask))
       .where('FIPS Code': mergeData.fips_code)
       .count('*')
+      .then (count) ->
+        count?[0]?.count || 0
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
@@ -225,6 +228,7 @@ deleteData = (subtask) ->
   dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
     Promise.each rows, (row) ->
+      console.log '======== '+JSON.stringify(row)
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
@@ -235,6 +239,10 @@ deleteData = (subtask) ->
         .update(deleted: subtask.batch_id)
         .catch (err) ->
           throw new SoftFail("Error while deleting for full refresh for fips=#{row['FIPS Code']}, batch_id=#{subtask.batch_id}\n#{err}")
+        .then () ->
+          if subtask.data.dataType == internals.TAX
+            keystore.setValue(internals.DELETED_FIPS, true, {namespace: internals.BLACKKNIGHT_PROCESS_INFO})
+
 
       else if subtask.data.dataType == internals.TAX
         # get validation for parcel_id
@@ -376,7 +384,24 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined'})
+  if subtask.data.dataType != internals.TAX
+    indicatePromise = Promise.resolve(false)
+  else if subtask.data.action != internals.REFRESH
+    indicatePromise = Promise.resolve(true)
+  else
+    indicatePromise = keystore.getValue(internals.DELETED_FIPS, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+    .then (deletedFips) ->
+      return !deletedFips
+  indicatePromise
+  .then (indicateDeletes) ->
+    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes})
+
+
+activateNewData = (subtask) ->
+  keystore.getValue(internals.DELETED_FIPS, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+  .then (deletedFips) ->
+    deletes = if deletedFips then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.INDICATED
+    dataLoadHelpers.activateNewData(subtask, {deletes})
 
 
 subtasks = {
@@ -391,7 +416,7 @@ subtasks = {
   finalizeDataPrep
   finalizeData
   waitForExclusiveAccess
-  activateNewData: dataLoadHelpers.activateNewData
+  activateNewData
   cleanup
 }
 module.exports = new TaskImplementation('blackknight', subtasks, ready)

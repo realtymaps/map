@@ -64,7 +64,6 @@ loadRawDataPrep = (subtask) -> Promise.try () ->
               subtask
               laterSubtaskName: "activateNewData"
               manualData:
-                deletes: dataLoadHelpers.DELETE.INDICATED
                 startTime: loadInfo.load.startTime
               replace: true
               transaction
@@ -141,7 +140,6 @@ loadRawData = (subtask) -> Promise.try () ->
           deletes: dataLoadHelpers.DELETE.UNTOUCHED
           dataType: "parcel"
           rawTableSuffix: fipsCode
-          indicateDeletes: true
           subset:
             fips_code: fipsCode
         replace: true
@@ -238,7 +236,7 @@ finalizeData = (subtask) ->
 recordChangeCounts = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel')
+  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel', indicateDeletes: true)
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask

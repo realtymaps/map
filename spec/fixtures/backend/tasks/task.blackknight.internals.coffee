@@ -44,7 +44,6 @@ module.exports = {
           "dataType": "tax",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         }
       ],
@@ -161,7 +160,6 @@ module.exports = {
           "dataType": "tax",
           "rawTableSuffix": "U_12099_20160406",
           "normalSubid": "12099",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -175,7 +173,6 @@ module.exports = {
           "dataType": "mortgage",
           "rawTableSuffix": "U_12099_20160406",
           "normalSubid": "12099",
-          "indicateDeletes": false,
           "deletes": "indicated"
         }
       ],
@@ -411,7 +408,6 @@ module.exports = {
           "dataType": "tax",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -425,7 +421,6 @@ module.exports = {
           "dataType": "deed",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -439,7 +434,6 @@ module.exports = {
           "dataType": "mortgage",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         }
       ],
@@ -541,7 +535,6 @@ module.exports = {
         "dataType": "tax",
         "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
-        "indicateDeletes": false,
         "deletes": "indicated"
       },
       {
@@ -555,7 +548,6 @@ module.exports = {
         "dataType": "deed",
         "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
-        "indicateDeletes": false,
         "deletes": "indicated"
       },
       {
@@ -569,7 +561,6 @@ module.exports = {
         "dataType": "mortgage",
         "rawTableSuffix": "U_12021_20160406",
         "normalSubid": "12021",
-        "indicateDeletes": false,
         "deletes": "indicated"
       }
     ]
@@ -590,7 +581,6 @@ module.exports = {
           "dataType": "tax",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -604,7 +594,6 @@ module.exports = {
           "dataType": "deed",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -618,7 +607,6 @@ module.exports = {
           "dataType": "mortgage",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         }
       ],
@@ -641,7 +629,6 @@ module.exports = {
           "dataType": "tax",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -655,7 +642,6 @@ module.exports = {
           "dataType": "deed",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         },
         {
@@ -669,7 +655,6 @@ module.exports = {
           "dataType": "mortgage",
           "rawTableSuffix": "U_12021_20160406",
           "normalSubid": "12021",
-          "indicateDeletes": false,
           "deletes": "indicated"
         }
       ],
