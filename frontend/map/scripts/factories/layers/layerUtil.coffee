@@ -14,6 +14,8 @@ rmapsZoomLevelService) ->
 
   instance = stampit.compose(rmapsLayerUtil)
 
+  isFirstTileSwitch = true
+
   filterParcelsFromSummary = ({parcels, props}) ->
     if parcels?.features?.length
       #filter out dupes where we don't need a blank parcel under a property parcel
@@ -30,10 +32,13 @@ rmapsZoomLevelService) ->
     $log.debug -> "@@@@ event @@@@"
     $log.debug -> event
 
-    if event == 'zoomend'
-      overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+    if event == 'zoomend' || isFirstTileSwitch
+      if overlays?
+        isFirstTileSwitch = false
+        overlays.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+        overlays.parcelsAddresses?.visible = Toggles.showAddresses
+        
       Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
-      overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
     return
 
