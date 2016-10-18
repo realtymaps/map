@@ -1,3 +1,4 @@
+###globals _###
 stampit = require 'stampit'
 app = require '../../app.coffee'
 
@@ -14,12 +15,24 @@ rmapsZoomLevelService) ->
 
   instance = stampit.compose(rmapsLayerUtil)
 
+  getPolygonFactory = (geometry) ->
+    if Array.isArray geometry.coordinates[0]
+      return L.multiPolygon
+    L.polygon
+
+  createPolygon = (geometry) ->
+    getPolygonFactory(geometry)(geometry.coordinates)
+
+
   filterParcelsFromSummary = ({parcels, props}) ->
     if parcels?.features?.length
+
       #filter out dupes where we don't need a blank parcel under a property parcel
       parcels.features = parcels.features.filter (f) ->
-        !!!props.features.find (p) ->
-          p.rm_property_id == f.rm_property_id
+        !_.any props.features, (p) ->
+          if p.rm_property_id == f.rm_property_id #only works if parcels and data_combined are synced
+            return true
+          createPolygon(f.geometry).getBounds().contains(p.geometry_center.coordinates)
 
     parcels?.features
 
