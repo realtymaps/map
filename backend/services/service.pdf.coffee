@@ -16,7 +16,7 @@ class PdfUrlMaxAttemptError extends NamedError
 
 createFromCampaign = (campaign, macros) ->
   return new Promise (resolve, reject) ->
-    html = campaign.lob_content
+    html = campaign.preview_content
 
     # replace macros in html content
     for key, value of macros
