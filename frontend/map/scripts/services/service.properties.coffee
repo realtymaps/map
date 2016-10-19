@@ -254,7 +254,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   # Map calls this to update property objects
   service.updateProperty = (model) ->
-    if prop = service.pins[model?.rm_property_id]
+    if !model?.rm_property_id?
+      return
+    if prop = service.pins[model.rm_property_id]
       service.pins[model.rm_property_id] = model
       if !model.savedDetails
         model.savedDetails = prop.savedDetails
@@ -265,5 +267,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
         model.savedDetails = prop.savedDetails
       else
         _.extend model.savedDetails, prop.savedDetails
+
+  _loadProperties(true)
 
   return service

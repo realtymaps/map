@@ -79,7 +79,7 @@ module.config(($httpProvider) ->
     # this way when we re-cache we have update values
     maybeRemoveCacheItem = ({url, config}) ->
       cache = getCache(config)
-      if config?.cache == false
+      if config?.cache == false && cache?
         cache.remove(url)
       return
 
