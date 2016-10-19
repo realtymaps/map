@@ -10,6 +10,7 @@ moment = require 'moment'
 dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 tables = require '../config/tables'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 NUM_ROWS_TO_PAGINATE = 1000
@@ -368,14 +369,19 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
   activated = false
   Promise.map processInfo[DELETE], (mergeData) ->
     fauxSubtask = _.extend({}, subtask, data: mergeData)
-    tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))
-    .where('FIPS Code': mergeData.fips_code)
-    .count('*')
-    .then (count) ->
-      numRows = count?[0]?.count
-      if !numRows
+    dbFn = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))
+    sqlHelpers.tableExists({dbFn})
+    .then (exists) ->
+      if !exists
         return
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
+      dbFn
+      .where('FIPS Code': mergeData.fips_code)
+      .count('*')
+      .then (count) ->
+        numRows = count?[0]?.count
+        if !numRows
+          return
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
 
 
 _getColumnsImpl = (fileType, action, dataType) ->
