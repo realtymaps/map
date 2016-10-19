@@ -11,49 +11,53 @@ memoize = require 'memoizee'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-# NOTE: This file a default task definition used for MLSs that have no special cases
+# NOTE: This file is a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
 
 
+loadRawDataPrep = (subtask) ->
+  now = Date.now()
+  dataLoadHelpers.checkReadyForRefresh(subtask, targetHour: 1)  # target 1am every day
+  .then (dailyMaintenance) ->
+    subtaskQueueData = {dataType: "listing", dailyMaintenance, startTime: now}
+    if dailyMaintenance
+      subtaskQueueData = [subtaskQueueData, {dataType: "agent", startTime: now}]
+    jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'loadRawData', manualData: subtaskQueueData})
+
 loadRawData = (subtask) ->
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
-
   taskLogger = logger.spawn(subtask.task_name)
   if subtask.data?.limit?
     limit = subtask.data?.limit
     taskLogger.debug "limiting raw mls data to #{limit}"
 
-  now = Date.now()
-
-  refreshPromise = dataLoadHelpers.checkReadyForRefresh(subtask, targetHour: 1)  # target 1am every day
-  rawLoadPromise = mlsHelpers.loadUpdates(subtask, dataSourceId: subtask.task_name, limit: limit)
-  Promise.join refreshPromise, rawLoadPromise, (doRefresh, numRawRows) ->
-    taskLogger.debug () -> "rows to normalize: #{numRawRows||0} (refresh: #{doRefresh})"
-    if !doRefresh && !numRawRows
-      return dataLoadHelpers.setLastUpdateTimestamp(subtask, now)
+  mlsHelpers.loadUpdates(subtask, dataSourceId: subtask.task_name, limit: limit)
+  .then (numRawRows) ->
+    taskLogger.debug () -> "rows to normalize: #{numRawRows||0} (refresh: #{subtask.data.dailyMaintenance})"
+    if !subtask.data.dailyMaintenance && !numRawRows
+      return dataLoadHelpers.setLastUpdateTimestamp(subtask, subtask.data.startTime)
       .then () ->
         return 0
 
     recordCountsData =
-      dataType: 'listing'
+      dataType: subtask.data.dataType
     activateData =
-      deletes: dataLoadHelpers.DELETE.INDICATED
-      startTime: now
+      startTime: subtask.data.startTime
 
-    if doRefresh
+    if subtask.data.dailyMaintenance
       # whether or not we have data, we need to do some things when refreshing
       recordCountsData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
-      recordCountsData.indicateDeletes = true
       activateData.setRefreshTimestamp = true
-      markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: now}, replace: true})
+      activateData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
+      markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: subtask.data.startTime}, replace: true})
     else
       recordCountsData.deletes = dataLoadHelpers.DELETE.INDICATED
-      recordCountsData.indicateDeletes = false
       activateData.setRefreshTimestamp = false
+      activateData.deletes = dataLoadHelpers.DELETE.INDICATED
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: subtask.data.startTime}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()
@@ -73,12 +77,17 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
 
+
+recordChangeCounts = (subtask) ->
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false)
+
+
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized.listing()
+  tables.normalized[subtask.data.dataType]()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
@@ -88,21 +97,25 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
-  impl = (id) ->
+  Promise.each subtask.data.values, (id) ->
     mlsHelpers.finalizeData {subtask, id}
-  Promise.map(subtask.data.values, impl)
 
 
 markUpToDate = (subtask) ->
   mlsHelpers.markUpToDate(subtask)
 
+
+activateNewData = (subtask) ->
+  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes})
+
+
 subtasks = {
   loadRawData
   normalizeData
+  recordChangeCounts
   finalizeDataPrep
   finalizeData
-  activateNewData: dataLoadHelpers.activateNewData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  activateNewData
   markUpToDate
 }
 
