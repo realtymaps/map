@@ -312,6 +312,8 @@ app.factory 'rmapsMapFactory',
             @scope.map.geojson._parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
+              # onEachFeature: (feature, layer) ->
+              #   layer.bindPopup(feature.rm_property_id)
 
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
