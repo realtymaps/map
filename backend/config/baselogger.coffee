@@ -2,7 +2,6 @@ winston = require('winston')
 fs = require('fs')
 config = require('./config')
 logPath = config.LOGGING.PATH
-_ = require 'lodash'
 
 if !fs.existsSync(logPath)
   fs.openSync(logPath, 'w')
