@@ -26,6 +26,7 @@ describe 'mailTemplate service', ->
         content: null
         template_type: ''
         lob_content: null
+        preview_content: null
         sender_info: null
         recipients: []
         aws_key: null
