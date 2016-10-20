@@ -132,7 +132,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
       .select('rm_property_id')
       .where(subset)
-      .whereNot(batch_id: subtask.batch_id)
+      .where(deleted: subtask.batch_id)
       .then (results) ->
         logger.spawn(subtask.task_name).debug () -> "markForDeletes: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
