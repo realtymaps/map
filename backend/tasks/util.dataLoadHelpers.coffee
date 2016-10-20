@@ -47,7 +47,8 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-_updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid) ->
+_updateDataLoadHistory = (deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid) ->
+  logger.spawn(subtask.task_name).debug () -> JSON.stringify({deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid})
   tables.jobQueue.dataLoadHistory()
   .where(raw_table_name: tables.temp.buildTableName(subid))
   .update
@@ -133,10 +134,11 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       .where(subset)
       .whereNot(batch_id: subtask.batch_id)
       .then (results) ->
+        logger.spawn(subtask.task_name).debug () -> "markForDeletes: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
-          Promise.map results, (r) ->
+          Promise.each results, (r) ->
             markForDelete r.rm_property_id, subtask.task_name, subtask.batch_id,
               deletesTable: opts.deletesTable
               transaction: mainDbTransaction
