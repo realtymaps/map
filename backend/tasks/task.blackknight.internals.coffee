@@ -356,7 +356,7 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
 
   if action != DELETE
     loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[action], replace: true})
-    recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: processInfo[action], replace: true, concurrency: 80})
+    recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: _.extend(deletes: dataLoadHelpers.DELETE.INDICATED, processInfo[action]), replace: true, concurrency: 80})
     return Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->
 
   if processInfo.loadDeleteFiles
