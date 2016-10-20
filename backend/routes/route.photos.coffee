@@ -61,12 +61,12 @@ handles = wrapHandleRoutes
                 err = new PartiallyHandledError(err, 'uncaught photo stream error (*** add better error handling code to cover this case! ***)')
             next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
           .pipe(res)
-      .catch ExpectedSingleRowError, (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})
       .catch HttpStatusCodeError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, {status: err.statusCode, quiet: err.quiet})
       .catch BadContentTypeError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNSUPPORTED_MEDIA_TYPE, quiet: err.quiet})
+      .catch (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})
 
 
 
