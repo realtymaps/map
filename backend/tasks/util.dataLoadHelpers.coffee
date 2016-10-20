@@ -149,6 +149,9 @@ activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.t
   logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
+  subset =
+    data_source_id: subtask.task_name
+  _.extend(subset, subtask.data.subset)
 
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
@@ -156,7 +159,7 @@ activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.t
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
       activatePromise = tables.finalized[tableProp](transaction: transaction)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .update(active: dbs.get('main').raw('NOT "active"'))
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
