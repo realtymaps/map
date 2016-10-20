@@ -199,15 +199,22 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
       mergeData.fips_code = subtask.data.fips_code
       mergeData.rawDeleteBatchId = subtask.batch_id
+      fauxSubtask = _.extend({}, subtask, data: mergeData)
+      # get the number of rows pertaining to the current fips code
+      totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask))
+      .where('FIPS Code': mergeData.fips_code)
+      .count('*')
+      .then (count) ->
+        count?[0]?.count || 0
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
+      totalNumRowsPromise = Promise.resolve(numRows)
 
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
-    .then () ->
-      if subtask.data.listType == internals.DELETE
-        keystore.setValue("#{internals.DELETE_ROWS_COUNT}: #{subtask.data.action}, #{subtask.data.dataType}", numRows, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+    totalNumRowsPromise
+    .then (totalNumRows) ->
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: totalNumRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
 
 cleanup = (subtask) ->
@@ -219,12 +226,9 @@ cleanup = (subtask) ->
 deleteData = (subtask) ->
   normalDataTable = tables.normalized[subtask.data.dataType]
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.data.rawDeleteBatchId)
-  dataLoadHelpers.getRawRows(subtask, rawSubid)
+  dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
     Promise.each rows, (row) ->
-      if row['FIPS Code'] != subtask.data.fips_code
-        return
-
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
@@ -235,6 +239,10 @@ deleteData = (subtask) ->
         .update(deleted: subtask.batch_id)
         .catch (err) ->
           throw new SoftFail("Error while deleting for full refresh for fips=#{row['FIPS Code']}, batch_id=#{subtask.batch_id}\n#{err}")
+        .then () ->
+          if subtask.data.dataType == internals.TAX
+            keystore.setValue(internals.DELETED_FIPS, true, {namespace: internals.BLACKKNIGHT_PROCESS_INFO})
+
 
       else if subtask.data.dataType == internals.TAX
         # get validation for parcel_id
@@ -315,7 +323,7 @@ In this case we are hoping to protect activateData from running while MLSs are d
 This is not due to a hard problem with having 2 tasks each running activateData at the same time, but there is a soft
 problem with db performance.
 ###
-waitForExclusiveAccess = (subtask) ->
+waitForExclusiveAccess = (subtask, prefix) ->
   keystore.setValue('blackknightExclusiveAccess', true, namespace: 'locks')
   .then () ->
     tables.jobQueue.taskHistory()
@@ -325,9 +333,10 @@ waitForExclusiveAccess = (subtask) ->
     .whereNull('finished')
     .then (results=[]) ->
       if results.length > 0
-        # Throw a SoftFail so this subtask will be retried.  This is safer than trying to poll internally, because a
+        # quietly retry the subtask.  This is safer than trying to poll internally, because a
         # polling flow can't handle zombies, but a retrying flow can
-        throw new SoftFail("exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}")
+        msg = "blackknight_waitForExclusiveAccess: exclusive data_combined access unavailable due to: #{_.pluck(results, 'name').join(', ')}"
+        jobQueue.retrySubtask({subtask, prefix, error: msg, quiet: true})
       else
         logger.info("Exclusive data_combined access obtained")
         # go ahead and resolve, so the subtask will finish and the task will continue
@@ -376,7 +385,24 @@ ready = () ->
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined'})
+  if subtask.data.dataType != internals.TAX
+    indicatePromise = Promise.resolve(false)
+  else if subtask.data.action != internals.REFRESH
+    indicatePromise = Promise.resolve(true)
+  else
+    indicatePromise = keystore.getValue(internals.DELETED_FIPS, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+    .then (deletedFips) ->
+      return !deletedFips
+  indicatePromise
+  .then (indicateDeletes) ->
+    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes})
+
+
+activateNewData = (subtask) ->
+  keystore.getValue(internals.DELETED_FIPS, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
+  .then (deletedFips) ->
+    deletes = if deletedFips then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.INDICATED
+    dataLoadHelpers.activateNewData(subtask, {deletes})
 
 
 subtasks = {
@@ -391,7 +417,7 @@ subtasks = {
   finalizeDataPrep
   finalizeData
   waitForExclusiveAccess
-  activateNewData: dataLoadHelpers.activateNewData
+  activateNewData
   cleanup
 }
 module.exports = new TaskImplementation('blackknight', subtasks, ready)

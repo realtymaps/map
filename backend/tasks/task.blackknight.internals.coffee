@@ -9,6 +9,8 @@ keystore = require '../services/service.keystore'
 moment = require 'moment'
 dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
+tables = require '../config/tables'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 NUM_ROWS_TO_PAGINATE = 1000
@@ -26,7 +28,7 @@ LAST_COMPLETED_DATE = 'last completed date'
 DATES_COMPLETED = 'dates completed'
 NO_NEW_DATA_FOUND = 'no new data found'
 DELETE_BATCH_ID = 'delete batch_id'
-DELETE_ROWS_COUNT = 'delete rows count'
+DELETED_FIPS = 'deleted all fips data'
 DELETE = 'Delete'
 LOAD = 'Load'
 tableIdMap =
@@ -133,8 +135,6 @@ _filterS3Contents = (contents, config) -> Promise.try () ->
         fileType: LOAD
         rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{config.date}"
         normalSubid: fips
-        indicateDeletes: (config.action == REFRESH)
-        deletes: dataLoadHelpers.DELETE.INDICATED
 
     if classified
       # apply to appropriate list
@@ -332,21 +332,22 @@ useProcessInfo = (subtask, processInfo) ->
     if !processInfo.hasFiles
       return dates
 
-    # initiate processing and loading for each list with concurrency
-    deletes = _queuePerFileSubtasks(transaction, subtask, processInfo, DELETE)
-    refresh = _queuePerFileSubtasks(transaction, subtask, processInfo, REFRESH)
-    update = _queuePerFileSubtasks(transaction, subtask, processInfo, UPDATE)
-    activateData =
-      deletes: dataLoadHelpers.DELETE.INDICATED
-      startTime: processInfo.startTime
-      fipsCode: processInfo.fips
-    access = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "waitForExclusiveAccess"})
-    activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
-    # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-    taxTable = dataLoadHelpers.ensureNormalizedTable(TAX, processInfo.fips)
-    deedTable = dataLoadHelpers.ensureNormalizedTable(DEED, processInfo.fips)
-    mortTable = dataLoadHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
-    Promise.join(refresh, update, deletes, access, activate, dates, taxTable, deedTable, mortTable)
+    keystore.setValue(DELETED_FIPS, false, {namespace: BLACKKNIGHT_PROCESS_INFO, transaction})
+    .then () ->
+      # initiate processing and loading for each list with concurrency
+      deletes = _queuePerFileSubtasks(transaction, subtask, processInfo, DELETE)
+      refresh = _queuePerFileSubtasks(transaction, subtask, processInfo, REFRESH)
+      update = _queuePerFileSubtasks(transaction, subtask, processInfo, UPDATE)
+      access = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "waitForExclusiveAccess"})
+      activateData =
+        startTime: processInfo.startTime
+        subset: fips_code: processInfo.fips
+      activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
+      # ensure normalized data tables exist -- need all 3 no matter what types we have data for
+      taxTable = dataLoadHelpers.ensureNormalizedTable(TAX, processInfo.fips)
+      deedTable = dataLoadHelpers.ensureNormalizedTable(DEED, processInfo.fips)
+      mortTable = dataLoadHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
+      Promise.join(refresh, update, deletes, access, activate, dates, taxTable, deedTable, mortTable)
 
 
 _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.try () ->
@@ -364,12 +365,24 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
     return jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: processInfo[DELETE], replace: true})
 
   # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
-  # this means we have to look up the number of rows loaded into those tables
+  # this means we have to count the number of relevant rows in those tables
   numRowsToPage = subtask.data?.numRowsToPageDelete || NUM_ROWS_TO_PAGINATE
+  activated = false
   Promise.map processInfo[DELETE], (mergeData) ->
-    keystore.getValue("#{DELETE_ROWS_COUNT}: #{mergeData.action}, #{mergeData.dataType}", namespace: BLACKKNIGHT_PROCESS_INFO)
-    .then (numRows) ->
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
+    fauxSubtask = _.extend({}, subtask, data: mergeData)
+    dbFn = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))
+    sqlHelpers.tableExists({dbFn})
+    .then (exists) ->
+      if !exists
+        return
+      dbFn
+      .where('FIPS Code': mergeData.fips_code)
+      .count('*')
+      .then (count) ->
+        numRows = count?[0]?.count
+        if !numRows
+          return
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
 
 
 _getColumnsImpl = (fileType, action, dataType) ->
@@ -409,7 +422,7 @@ module.exports = {
   DELETE
   LOAD
   DELETE_BATCH_ID
-  DELETE_ROWS_COUNT
+  DELETED_FIPS
 
   getColumns
   findNextFolderSet

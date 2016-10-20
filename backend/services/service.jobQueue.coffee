@@ -379,4 +379,5 @@ module.exports = {
   getLastTaskStartTime
   cancelAllRunningTasks
   executeSubtask: internals.executeSubtask
+  retrySubtask: internals.retrySubtask
 }

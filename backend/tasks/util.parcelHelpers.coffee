@@ -130,8 +130,9 @@ activateNewData = (subtask) -> Promise.try () ->
     activateParcels = dataLoadHelpers.activateNewData(subtask, {
       tableProp: 'parcel'
       transaction
+      deletes: dataLoadHelpers.DELETE.INDICATED
     })
-    activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction)
+    activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction, deletes: dataLoadHelpers.DELETE.INDICATED)
     Promise.join activateParcels, activateDataCombined, () ->  # no-op
 
 

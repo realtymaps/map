@@ -156,6 +156,23 @@ getQueuedSubtask = (queueName) ->
     return results?[0]
 
 
+retrySubtask = ({subtask, prefix, transaction, error, quiet}) ->
+  dbs.ensureTransaction transaction, (transaction) ->
+    loglevel = if quiet then 'debug' else 'info'
+    retrySubtaskData = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
+    retrySubtaskData.retry_num += 1
+    retrySubtaskData.ignore_until = dbs.get('main').raw("NOW() + ? * '1 minute'::INTERVAL", [subtask.retry_delay_minutes])
+    checkTask(transaction, subtask.batch_id, subtask.task_name)
+    .then (taskData) ->
+      # need to make sure we don't continue to retry subtasks if the task has errored in some way
+      if taskData == undefined
+        logger[loglevel]("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtaskData)}>: #{error}")
+        return
+      logger[loglevel]("#{prefix} Queuing retry subtask ##{retrySubtaskData.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtaskData)}>: #{error}")
+      tables.jobQueue.currentSubtasks({transaction})
+      .insert retrySubtaskData
+
+
 handleSubtaskError = ({prefix, subtask, newStatus, hard, error}) ->
   logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} error caught for subtask #{subtask.name}: #{JSON.stringify({errorType: newStatus, hard, error: error.toString()})}"
   dbs.transaction (transaction) ->
@@ -169,18 +186,7 @@ handleSubtaskError = ({prefix, subtask, newStatus, hard, error}) ->
           error = "max retries exceeded due to: #{error}"
           logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(subtask)}>: #{error}")
         else
-          retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status', 'heartbeat', 'preparing_started')
-          retrySubtask.retry_num += 1
-          retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * '1 minute'::INTERVAL", [subtask.retry_delay_minutes])
-          checkTask(transaction, subtask.batch_id, subtask.task_name)
-          .then (taskData) ->
-            # need to make sure we don't continue to retry subtasks if the task has errored in some way
-            if taskData == undefined
-              logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-              return
-            logger.info("#{prefix} Queuing retry subtask ##{retrySubtask.retry_num} for batchId #{subtask.batch_id}, #{subtask.name}<#{summary(retrySubtask)}>: #{error}")
-            tables.jobQueue.currentSubtasks({transaction})
-            .insert retrySubtask
+          retrySubtask({subtask, prefix, transaction, error, quiet: false})
     .then () ->
       tables.jobQueue.currentSubtasks({transaction})
       .where(id: subtask.id)
@@ -407,7 +413,7 @@ executeSubtask = (subtask, prefix) ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
     logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{summary(subtask)}>(retry: #{subtask.retry_num})"
-    subtaskPromise = taskImpl.executeSubtask(subtask)
+    subtaskPromise = taskImpl.executeSubtask(subtask, prefix)
     .cancellable()
     .then () ->
       logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} finished subtask #{subtask.name}"
@@ -585,4 +591,5 @@ module.exports = {
   buildQueueSubtaskDatas
   buildQueuePaginatedSubtaskDatas
   getSubtaskConfig
+  retrySubtask
 }

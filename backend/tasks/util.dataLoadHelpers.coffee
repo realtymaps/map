@@ -125,7 +125,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
     Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, _updateDataLoadHistory)
     .then () ->
-      if !subtask.data.indicateDeletes
+      if !opts.indicateDeletes
         return
 
       tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
@@ -143,14 +143,14 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {tableProp, transaction} = {}) -> Promise.try () ->
+activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
 
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
-    if subtask.data.deletes == DELETE.UNTOUCHED
+    if deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
       activatePromise = tables.finalized[tableProp](transaction: transaction)
@@ -288,13 +288,17 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getRawRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid, criteria) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  .orderBy('rm_raw_id')
+  .offset(subtask.data.offset)
+  .limit(subtask.data.count)
+  if criteria
+    rowsPromise = rowsPromise.where(criteria)
 
-  logger.spawn(subtask.task_name).debug () -> rowsPromise.toString()
+  logger.spawn(subtask.task_name).debug () -> 'getRawRows: '+rowsPromise.toString()
   rowsPromise
 
 # normalizes data from the raw data table into the permanent data table
