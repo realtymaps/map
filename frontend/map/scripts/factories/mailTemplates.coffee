@@ -22,6 +22,7 @@ app.service 'rmapsMailTemplateFactory', (
     content: null
     template_type: ''
     lob_content: null
+    preview_content: null
     sender_info: null
     recipients: []
     aws_key: null
@@ -39,6 +40,11 @@ app.service 'rmapsMailTemplateFactory', (
       @dirty = true
       @_priceForColorFlag = {true: null, false: null}
       @review = {}
+
+    # I think textAngular adds some html artifacts during html validation, this is designed to clean them out before making our own html from the content
+    _cleanContent: (content) ->
+      return if !content? || !_.isString(content)
+      content.replace('<head></head><body>','').replace('</body>','')
 
     getSenderData: () ->
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
@@ -58,15 +64,24 @@ app.service 'rmapsMailTemplateFactory', (
           phone: identity.user.work_phone
           email: identity.user.email
 
-    createLobHtml: (content = @campaign.content, extraStyles = "") ->
+    createPreviewHtml: (content = @campaign.content, extraStyles = "") ->
+      content = @_cleanContent(content)
       fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
-      classStyles = (require '../../styles/mailTemplates/template-classes.styl').replace(/\n/g,'')
+      classStyles = (require '../../styles/mailTemplates/preview-template-classes.styl').replace(/\n/g,'')
+      "<html><head><title>#{@campaign.name}</title><meta charset='UTF-8'><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<style>#{fragStyles}#{classStyles}#{extraStyles}</style></head><body class='letter-body'>#{content}</body></html>"
+
+    createLobHtml: (content = @campaign.content, extraStyles = "") ->
+      content = @_cleanContent(content)
+      fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
+      classStyles = (require '../../styles/mailTemplates/lob-template-classes.styl').replace(/\n/g,'')
       "<html><head><title>#{@campaign.name}</title><meta charset='UTF-8'><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
       "<style>#{fragStyles}#{classStyles}#{extraStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
     setTemplateType: (type) ->
       @campaign.template_type = type
       @campaign.content = rmapsMailTemplateTypeService.getMailContent(type)
+
       if @getCategory() == 'pdf'
         @campaign.aws_key = type
         @campaign.custom_content = false
@@ -129,6 +144,7 @@ app.service 'rmapsMailTemplateFactory', (
         toSave = _.pick @campaign, _.keys(campaignDefaults)
         toSave.recipients = JSON.stringify toSave.recipients
         toSave.lob_content = @createLobHtml()
+        toSave.preview_content = @createPreviewHtml()
         if !toSave.project_id?
           toSave.project_id = rmapsPrincipalService.getCurrentProfile().project_id
 

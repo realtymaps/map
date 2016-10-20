@@ -1,0 +1,43 @@
+//!!  DONT USE INCHES, this stylesheet is important for PDF rendering
+//!!  use  px @ 96dpi
+
+
+// generic container stylings that are to be made available to all templates for usage of layout and style where needed
+// explicit setting, not using `inherit` in case a parent-level rule is present that the lob version wouldn't have
+reset-font()
+  font-weight normal
+  font-style normal
+  font-family 'Open Sans'
+  font-size 12px
+  font-variant normal
+  font-transform none
+  vertical-align baseline
+  line-height 16px
+
+// to get around pdf-rendering bugs (i.e. https://github.com/ariya/phantomjs/issues/12936)
+$margin = 48px // 0.5in // LOB specifies min. safe printing margin is 0.03125in
+$address_margin = 288px // 3in // area occupied by address when template = true
+$pagewidth = 816px // 8.5in
+
+// page itself, this gets applied to <body> of html, syncs expected width for pages
+.letter-body
+  width $pagewidth
+
+// content container
+.letter-page
+  reset-font()
+  padding $address_margin $margin 0
+  color black
+  text-align left
+  background-color $white
+  font-family 'Open Sans'
+
+  p
+    reset-font()
+    margin 0 0 0px
+
+    &.page-break
+      page-break-before always
+      // If this is changed, the logic that calculates page breaks should be changed in mailDirectives.coffee
+      // Padding is used rather than margin to aid in this calculation.
+      padding-top $margin
