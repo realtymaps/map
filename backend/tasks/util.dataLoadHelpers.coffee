@@ -47,7 +47,7 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-_updateDataLoadHistory = (deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid) ->
+_updateDataLoadHistory = (deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid, subtask) ->
   logger.spawn(subtask.task_name).debug () -> JSON.stringify({deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid})
   tables.jobQueue.dataLoadHistory()
   .where(raw_table_name: tables.temp.buildTableName(subid))
@@ -124,7 +124,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     .count('*')
     ###
 
-    Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, _updateDataLoadHistory)
+    Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, Promise.resolve(subtask), _updateDataLoadHistory)
     .then () ->
       if !opts.indicateDeletes
         return
