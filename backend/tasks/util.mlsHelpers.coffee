@@ -34,7 +34,7 @@ loadUpdates = (subtask, options={}) ->
       dataLoadHistory =
         data_source_id: options.dataSourceId
         data_source_type: 'mls'
-        data_type: 'listing'
+        data_type: subtask.data.dataType
         batch_id: subtask.batch_id
         raw_table_name: rawTableName
       dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, retsStream)
