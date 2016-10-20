@@ -136,7 +136,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
-          Promise.map results, (r) ->
+          Promise.each results, (r) ->
             markForDelete r.rm_property_id, subtask.task_name, subtask.batch_id,
               deletesTable: opts.deletesTable
               transaction: mainDbTransaction
