@@ -16,7 +16,7 @@ head
   link(rel='icon', type='image/png', href='assets/favicons/android-chrome-192x192.png', sizes='192x192')
   link(rel='icon', type='image/png', href='assets/favicons/favicon-96x96.png', sizes='96x96')
   link(rel='icon', type='image/png', href='assets/favicons/favicon-16x16.png', sizes='16x16')
-  link(rel='manifest', href='manifest.json')
+  //- link(rel='manifest', href='manifest.json')
   link(rel='shortcut icon', href='assets/favicons/favicon.ico')
   meta(name='msapplication-TileColor', content='#da532c')
   meta(name='msapplication-TileImage', content='assets/favicons/mstile-144x144.png')
@@ -24,5 +24,6 @@ head
   meta(name='theme-color', content='#ffffff')
   base(href='/')
   block customHead
-  script(src='/scripts/vendor.js')
-  link(rel='stylesheet', href='styles/vendor.css')
+  //- script(src='/scripts/vendor.js')
+  // TODO: remove vendor.css when browserify-css and cssify is figured out
+  //- link(rel='stylesheet', href='styles/vendor.css')

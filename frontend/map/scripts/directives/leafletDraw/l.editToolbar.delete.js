@@ -1,3 +1,6 @@
+L = require('leaflet');
+require('leaflet-draw/dist/leaflet.draw.js');
+
 require('./l.handler.js')
 Object.assign = Object.assign || require('object-assign')
 

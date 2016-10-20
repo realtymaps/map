@@ -1,4 +1,5 @@
-###globals _, L###
+_ = require 'lodash'
+L = require 'leaflet'
 app = require '../app.coffee'
 eventUtil = require '../../../common/scripts/utils/events.coffee'
 

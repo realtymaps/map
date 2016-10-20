@@ -1,4 +1,4 @@
-###global _###
+_ = require 'lodash'
 app = require '../app.coffee'
 module.exports = app
 moment = require 'moment'

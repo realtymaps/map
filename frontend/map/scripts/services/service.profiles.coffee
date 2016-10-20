@@ -1,4 +1,4 @@
-###global _###
+_ = require 'lodash'
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'project_id']

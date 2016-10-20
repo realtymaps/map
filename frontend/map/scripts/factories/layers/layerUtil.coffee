@@ -1,4 +1,5 @@
-###globals _, L###
+_ = require 'lodash'
+L = require 'leaflet'
 stampit = require 'stampit'
 app = require '../../app.coffee'
 

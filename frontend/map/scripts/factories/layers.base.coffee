@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-###globals _###
+_ = require 'lodash'
 # googleStyles = require './styles/style.google.json'
 # googleOptions = _.extend {}, styles: googleStyles
 backendRoutes = require '../../../../common/config/routes.backend.coffee'

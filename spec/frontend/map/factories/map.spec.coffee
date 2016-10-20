@@ -1,4 +1,5 @@
-###globals _, angular, inject, should###
+###globals angular, inject, should###
+_ = require 'lodash'
 {Point} = require('../../../../common/utils/util.geometries.coffee')
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 mockRoutes = require '../fixtures/propertyData.coffee'

@@ -37,10 +37,6 @@ if ! hash karma-cli &> /dev/null || [[ $IS_HEROKU = 1 ]];then
   npm install -g karma-cli
 fi
 
-if ! hash bower &> /dev/null || [[ $IS_HEROKU = 1 ]];then
-  npm install -g bower
-fi
-
 if ! hash node-debug &> /dev/null || [[ $IS_HEROKU = 1 ]];then
   npm install -g node-debug
 fi

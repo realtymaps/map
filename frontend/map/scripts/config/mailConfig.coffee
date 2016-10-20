@@ -1,4 +1,8 @@
+###globals angular###
 app = require '../app.coffee'
+
+rangy = require 'rangy' #rangy is a global in textangular
+require 'rangy/lib/rangy-classapplier.js'
 
 
 app.config ($provide) ->
@@ -8,6 +12,7 @@ app.config ($provide) ->
     $document[0].execCommand('styleWithCSS', false, true)
 
     # $delegate.disableSanitizer = true
+    $delegate.forceTextAngularSanitize = false
     if !rangy.createClassApplier?
       rangy.init()
     fontToolElements = {}
