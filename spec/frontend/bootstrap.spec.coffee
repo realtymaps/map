@@ -1,4 +1,8 @@
-###global angular:true###
+
+require 'angular/angular'
+require 'angular-mocks'
+angular = window.angular
+
 _ = require 'lodash'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 routeConfigInternals = require('../../backend/routes/route.config.internals.coffee')

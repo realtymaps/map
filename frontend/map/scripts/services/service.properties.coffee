@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 utilsGeoJson =  require '../../../../common/utils/util.geomToGeoJson.coffee'
@@ -256,12 +256,12 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   service.updateProperty = (model) ->
     if !model?.rm_property_id?
       return
-    if prop = service.pins[model.rm_property_id]
+    if prop = service.pins?[model.rm_property_id]
       service.pins[model.rm_property_id] = model
       if !model.savedDetails
         model.savedDetails = prop.savedDetails
 
-    if prop = service.favorites[model?.rm_property_id]
+    if prop = service.favorites?[model?.rm_property_id]
       service.favorites[model.rm_property_id] = model
       if !model.savedDetails
         model.savedDetails = prop.savedDetails

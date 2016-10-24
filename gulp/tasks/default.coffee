@@ -14,8 +14,11 @@ require './mocha'
 
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used
 # help = require('gulp-help')(gulp) #BROKEN IN GULP 4
+gulp.task 'mapAssets', gulp.series 'angular', 'otherAssets'
 
-gulp.task 'frontendAssets', gulp.series 'angular', 'angularAdmin', 'otherAssets'
+gulp.task 'adminAssets', gulp.series 'angularAdmin', 'otherAssets'
+
+gulp.task 'frontendAssets', gulp.series 'mapAssets', 'angularAdmin'
 
 gulp.task 'frontendAssetsWatch', gulp.series 'frontendAssets', 'watch_all_front'
 

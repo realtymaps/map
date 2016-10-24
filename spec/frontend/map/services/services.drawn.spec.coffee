@@ -1,4 +1,5 @@
-###globals angular,inject,L###
+###globals angular,inject###
+L = require 'leaflet'
 describe 'services.drawn.coffee', ->
 
   describe "rmapsDrawnProfileFactory", ->

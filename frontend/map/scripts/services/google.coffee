@@ -23,6 +23,8 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
 
     # This promise should only resolve once, but just in case check for script existence
     if window.google?.maps
+      require 'leaflet-plugins/layer/tile/Google.js'
+
       $q.resolve(window.google?.maps)
       return deferred.promise
 

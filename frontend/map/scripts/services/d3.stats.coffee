@@ -1,6 +1,5 @@
-###globals d3###
 app = require '../app.coffee'
-
+d3 = require 'd3'
 
 app.service 'rmapsD3Stats', (rmapsPropertyFormatterService) ->
   create = (dataSet) ->

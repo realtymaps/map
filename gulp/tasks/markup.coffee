@@ -11,11 +11,11 @@ markup = (app) ->
   markupFn = () ->
     _testCb() if _testCb
 
-    gulp.src paths[app].jade
+    gulp.src paths[app].jade.concat './node_modules/angular-busy/angular-busy.html'
 
-    .pipe $.consolidate 'jade',
+    .pipe $.if('*.jade', $.consolidate('jade',
       doctype: 'html'
-      pretty: '  '
+      pretty: '  '))
     .on   'error', conf.errorHandler 'Jade'
 
     .pipe $.minifyHtml
@@ -28,9 +28,13 @@ markup = (app) ->
     .pipe $.angularTemplatecache "#{app}.templates.js",
       module: paths[app].appName
       root: '.'
+      templateHeader: """
+      require('angular/angular');
+      angular.module("<%= module %>"<%= standalone %>).run(["$templateCache", function($templateCache) {
+      """
     .on   'error', conf.errorHandler 'Angular template cache'
 
-    .pipe gulp.dest paths.destFull.scripts
+    .pipe gulp.dest paths.temp
     .pipe $.size
       title: paths.dest.root
       showFiles: true

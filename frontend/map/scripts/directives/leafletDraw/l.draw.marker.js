@@ -1,3 +1,6 @@
+L = require('leaflet');
+require('leaflet-draw/dist/leaflet.draw.js');
+
 module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 
   enable: function () {

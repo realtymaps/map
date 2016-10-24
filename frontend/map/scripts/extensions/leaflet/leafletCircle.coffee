@@ -1,4 +1,4 @@
-###globals L###
+L = require 'leaflet'
 #hidden by Leaflet
 _pointToGeoJSON = L.Circle::toGeoJSON
 ###

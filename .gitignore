@@ -14,7 +14,6 @@ coverage/
 node_modules/
 build/
 npm-debug.log
-bower_components/
 _public
 app/components
 dist/

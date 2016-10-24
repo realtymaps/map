@@ -58,7 +58,7 @@ install dbsync at the current working directory.  It then exports a DBSYNC envir
 dbsync.
 
 ## misc scripts
-* `./scripts/misc/cleanBower [moduleName]` clears the bower cache, removes dependencies, and then runs `bower install`.
+
 If a moduleName is included, it only clears and removes that module.
 * `./scripts/misc/devPreInstall` installs convenient global npm packages
 * `./scripts/misc/pruneOldGitBranches [comparisonBranchName]` deletes all branches, local and remote, that are fully

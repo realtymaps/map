@@ -1,4 +1,6 @@
+L = require('leaflet')
 require('./l.draw.textPrompt.js')
+require('leaflet-draw/dist/leaflet.draw.js');
 
 module.exports = L.Draw.TextLabel = L.Draw.Feature.extend({
   statics: {
