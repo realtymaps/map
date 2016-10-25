@@ -22,6 +22,7 @@ browserifyTask = ({app, watch, prod, doSourceMaps}) ->
       '!' + paths.frontendCommon.root + 'scripts/**/*prod.' + ext
       paths[app].root + 'scripts/**/*.' + ext
       '!' + paths[app].root + 'scripts/**/*prod.' + ext
+      paths.tmp + '*.js'
     ]
 
   inputGlob = _.flatten inputGlob

@@ -39,7 +39,7 @@
     "angular-cache": "3.X",
     "angular-cookies": "1.4.X",
     "angular-credit-cards": "~2.3.5",
-    "angular-google-places-autocomplete": "git://github.com/realtymaps/angular-google-places-autocomplete#642e045d593f5e18d6a0039c4103b5551e1ec7d9",
+    "angular-google-places-autocomplete": "git://github.com/realtymaps/angular-google-places-autocomplete#aa0e5b87669df0810e1d09e83da20953405deb7c",
     "angular-load": "~0.4.0",
     "angular-mocks": "1.4.X",
     "angular-numeraljs": "~1.2.0",
