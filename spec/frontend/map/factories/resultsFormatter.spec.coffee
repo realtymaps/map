@@ -7,13 +7,10 @@ describe "ResultsFormatter", ->
             addressParcel: 18
 
     angular.mock.module 'rmapsMapApp'
-    angular.mock.module "uiGmapgoogle-maps.mocks"
-    angular.mock.module "uiGmapgoogle-maps"
 
-    inject ['$rootScope', 'GoogleApiMock', 'rmapsResultsFormatterService',
-      ($rootScope, GoogleApiMock, ResultsFormatter) =>
+    inject ['$rootScope', 'rmapsResultsFormatterService',
+      ($rootScope, ResultsFormatter) =>
         scope = $rootScope.$new()
-        (new GoogleApiMock).initAll()
         @ctor = ResultsFormatter
         @mapCtrl.scope =_.extend scope, @mapCtrl.scope
         @subject = new ResultsFormatter(@mapCtrl)

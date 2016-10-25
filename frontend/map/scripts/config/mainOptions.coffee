@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
@@ -12,7 +12,6 @@ app.constant 'rmapsMainOptions', do () ->
       options:
         logLevel: if isDev then 'debug' else 'error'
         disableDoubleClickZoom: false #does not work well with dblclick properties
-        uiGmapLogLevel: 'error'
         streetViewControl: false
         zoomControl: true
         panControl: false

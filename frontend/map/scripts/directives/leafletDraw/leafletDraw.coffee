@@ -1,4 +1,6 @@
-###globals L, angular###
+###globals angular###
+
+L = require 'leaflet'
 app = require '../../app.coffee'
 template = require './leafletDraw.jade'
 LeafletDrawApi = require './api.draw.js'

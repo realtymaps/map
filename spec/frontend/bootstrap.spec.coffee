@@ -1,4 +1,8 @@
-###global angular:true###
+
+require 'angular/angular'
+require 'angular-mocks'
+angular = window.angular
+
 _ = require 'lodash'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 routeConfigInternals = require('../../backend/routes/route.config.internals.coffee')
@@ -53,6 +57,9 @@ beforeEach ->
       google: ''
       cartodb: ''
       stripe: ''
+    $httpBackend.when( 'GET', backendRoutes.properties.saves).respond( pins: {}, favorites: {})
+    $httpBackend.when( 'POST', backendRoutes.properties.details).respond([])
+
 
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log

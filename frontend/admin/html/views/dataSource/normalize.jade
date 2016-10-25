@@ -14,12 +14,15 @@
         .btn.btn-primary.reload(ng-click="getMlsList()")
           img(src="../../assets/reload-arrow.png" width="10" height="10")
     .col-md-3
+      .row List Type
+          select(ng-model="mlsData.dataListType" ng-options="value.name for value in dataListTypes" ng-change="selectMls()")
+    .col-md-3
       .row
         .col-md-4
           button(ng-click="dlCSV(csv.getUrl(csv.rowCount))" ng-disabled="!mlsData.current.id").btn.btn-primary.header-button Download CSV
         .col-md-4
           input(type="text" ng-model="csv.rowCount" uib-tooltip="Number of records in CSV" ng-disabled="!mlsData.current.id").form-control.download-csv-input
-    .col-md-3
+    .col-md-2
       .row
         span.dropdown.btn-group(dropdown)
           button.btn.btn-primary.header-button(uib-dropdown-toggle) Global Rules
@@ -29,9 +32,7 @@
               .col-md-8
                 input(type="text" ng-model="mlsData.current.data_rules.nullString" ng-change="updateDataRules()" placeholder="example: ***")
 
-    .col-md-2
-
-  .row.panel(cg-busy="mlsLoading" ng-show="mlsData.current")
+  .row.panel(cg-busy="mlsLoading" ng-show="mlsData.current && mlsData.dataListType")
     .row
       input(ng-model="rootSearchText" placeholder="Search All")
     .row
@@ -60,6 +61,7 @@
       include ../../includes/dataSource/fieldConfig/common/bathrooms.jade
       include ../../includes/dataSource/fieldConfig/common/boolean.jade
       include ../../includes/dataSource/fieldConfig/common/decimal.jade
+      include ../../includes/dataSource/fieldConfig/common/name.jade
 
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       include ../../includes/dataSource/fieldConfig/common/nonBase.jade

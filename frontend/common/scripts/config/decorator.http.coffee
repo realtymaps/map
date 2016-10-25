@@ -1,8 +1,9 @@
 ###globals angular###
 module = require '../module.coffee'
 qs = require 'qs'
+_ = require 'lodash'
 
-###globals angular, _###
+###globals angular###
 module.config(($httpProvider) ->
   $httpProvider.useApplyAsync(true)
 )
@@ -79,7 +80,7 @@ module.config(($httpProvider) ->
     # this way when we re-cache we have update values
     maybeRemoveCacheItem = ({url, config}) ->
       cache = getCache(config)
-      if config?.cache == false
+      if config?.cache == false && cache?
         cache.remove(url)
       return
 

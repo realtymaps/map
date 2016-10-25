@@ -1,6 +1,6 @@
 _delay = 0 #ms
 
-###globals L###
+L = require 'leaflet'
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions =

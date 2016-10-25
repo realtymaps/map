@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 moment = require 'moment'
 require '../services/leafletObjectFetcher.coffee'
@@ -15,7 +15,6 @@ app.service 'rmapsPropertyFormatterService',
     rmapsGoogleService
     rmapsPropertiesService
     rmapsFormattersService
-    uiGmapGmapUtil
     rmapsEventConstants
     rmapsFiltersFactory
   ) ->
@@ -28,11 +27,8 @@ app.service 'rmapsPropertyFormatterService',
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
-    class PropertyFormatter
-
-      constructor: () ->
-        _.extend @, rmapsFormattersService.Common
-        _.extend @, google: rmapsGoogleService
+    svc =
+      google: rmapsGoogleService
 
       isPinnedResult: (result) ->
         rmapsPropertiesService.isPinnedProperty result?.rm_property_id
@@ -131,3 +127,5 @@ app.service 'rmapsPropertyFormatterService',
           compensate = moment.utc().diff(result.up_to_date, 'days')
           return result.days_on_market_cumulative + compensate
         return result.days_on_market_cumulative
+
+    return _.extend(svc, rmapsFormattersService.Common)

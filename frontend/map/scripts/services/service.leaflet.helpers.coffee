@@ -1,4 +1,4 @@
-###globals L###
+L = require 'leaflet'
 app = require '../app.coffee'
 
 app.service 'rmapsLeafletHelpers', () ->

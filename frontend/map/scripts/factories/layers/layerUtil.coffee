@@ -1,3 +1,5 @@
+_ = require 'lodash'
+L = require 'leaflet'
 stampit = require 'stampit'
 app = require '../../app.coffee'
 
@@ -14,12 +16,26 @@ rmapsZoomLevelService) ->
 
   instance = stampit.compose(rmapsLayerUtil)
 
+  isFirstTileSwitch = true
+
+  getPolygonFactory = (geometry) ->
+    if Array.isArray geometry.coordinates[0]
+      return L.multiPolygon
+    L.polygon
+
+  createPolygon = (geometry) ->
+    getPolygonFactory(geometry)(geometry.coordinates)
+
+
   filterParcelsFromSummary = ({parcels, props}) ->
     if parcels?.features?.length
+
       #filter out dupes where we don't need a blank parcel under a property parcel
       parcels.features = parcels.features.filter (f) ->
-        !!!props.features.find (p) ->
-          p.rm_property_id == f.rm_property_id
+        !_.any props.features, (p) ->
+          if p.rm_property_id == f.rm_property_id #only works if parcels and data_combined are synced
+            return true
+          createPolygon(f.geometry).getBounds().contains(p.geometry_center.coordinates)
 
     parcels?.features
 
@@ -30,10 +46,14 @@ rmapsZoomLevelService) ->
     $log.debug -> "@@@@ event @@@@"
     $log.debug -> event
 
-    if event == 'zoomend'
-      overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
-      Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
-      overlays?.parcelsAddresses?.visible = Toggles.showAddresses
+    if event == 'zoomend' || isFirstTileSwitch
+      if overlays?
+        isFirstTileSwitch = false
+        overlays.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+        overlays.parcelsAddresses?.visible = Toggles.showAddresses
+
+      if Toggles?
+        Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel(scope.map.center.zoom, scope)
 
     return
 

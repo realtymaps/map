@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-set -o pipefail
-
-bower cache clean $1
-rm -rf ./bower_components/$1
-
-bower install

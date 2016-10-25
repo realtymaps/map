@@ -75,6 +75,11 @@
           ) Pending
         li
           rmaps-sold-button(filters="selectedFilters" menu="top")
+        li
+          button.btn.btn-reset(
+            ng-click="resetLayers()"
+          )
+            i.fa.fa-undo
 
   script(type="text/ng-template" id="LayersPopoverMobile")
     .list(ng-controller="rmapsLayersMobileCtrl")

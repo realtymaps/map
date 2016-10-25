@@ -1,7 +1,16 @@
 app = require '../app.coffee'
 _ = require 'lodash'
+d3 = require 'd3'
 
-app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $uibModal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
+app.controller 'rmapsPinnedCtrl', (
+$log
+$scope
+$rootScope
+$uibModal
+rmapsEventConstants
+rmapsPrincipalService
+rmapsPropertiesService
+) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')
 
   getPinned = (event, eventData) ->
@@ -94,7 +103,7 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $uibModal, rmapsEve
     $scope.areaToShow = id: 'pinned', area_name: 'Pinned Properties'
     $scope.areaStatistics ?= {}
     $scope.areaStatistics.pinned = stats
-    modalInstance = $uibModal.open
+    $uibModal.open
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()

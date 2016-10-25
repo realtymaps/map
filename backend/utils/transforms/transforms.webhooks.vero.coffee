@@ -4,6 +4,7 @@ commonConfig = require '../../../common/config/commonConfig'
 webhookEvents = require '../../enums/enum.vero.webhook.events'
 veroEvents = require '../../enums/enum.vero.events'
 validation = require '../util.validation'
+Case = require 'case'
 
 #http://help.getvero.com/articles/setting-up-veros-webhooks.html
 
@@ -26,7 +27,7 @@ campaignEvent =
   body: validators.object subValidateSeparate: _.extend {}, common,
     campaign: validators.object()
     event: validators.object subValidateSeparate:
-      name: validators.string(minLength: 2, in: _.values(veroEvents))
+      name: validators.string(minLength: 2, in: _.values(veroEvents).concat(_.values(veroEvents).map (c) -> Case.snake c))
       data: validators.object()
 
 validateAndTransformRequest = (req) ->

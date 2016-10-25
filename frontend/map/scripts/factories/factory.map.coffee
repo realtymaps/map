@@ -1,4 +1,6 @@
-###globals L,_,angular###
+###globals angular###
+_ = require 'lodash'
+L = require 'leaflet'
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 Point = require('../../../../common/utils/util.geometries.coffee').Point
@@ -38,7 +40,8 @@ app.factory 'rmapsMapFactory',
     rmapsZoomLevelStateFactory,
     rmapsOverlays
     rmapsLayerUtilService,
-    rmapsCurrentMapService
+    rmapsCurrentMapService,
+    rmapsFiltersFactory
   ) ->
 
     limits = rmapsMainOptions.map
@@ -215,7 +218,7 @@ app.factory 'rmapsMapFactory',
 
           formatters:
             results: new rmapsResultsFormatterService(self)
-            property: new rmapsPropertyFormatterService()
+            property: rmapsPropertyFormatterService
 
           dragZoom: {}
           changeZoom: (increment) ->
@@ -227,11 +230,20 @@ app.factory 'rmapsMapFactory',
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
           if @scope.map.listingDetail?
             @scope.map.listingDetail.show = false if newVal isnt oldVal
+
+        @scope.resetLayers = () =>
+          @updateToggles(showAddresses: false, showPrices: false)
+          _.extend @scope.selectedFilters, rmapsFiltersFactory.valueDefaults,
+            forSale: false
+            pending: false
+            sold: false
+
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       updateToggles: (map_toggles) =>
+        $log.debug 'updateToggles', map_toggles
         @scope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
       clearBurdenLayers: () =>
@@ -302,6 +314,8 @@ app.factory 'rmapsMapFactory',
             @scope.map.geojson._parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
+              # onEachFeature: (feature, layer) ->
+              #   layer.bindPopup(feature.rm_property_id)
 
             $log.debug "addresses count to draw: #{data?.features?.length}"
 

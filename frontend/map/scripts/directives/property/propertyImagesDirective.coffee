@@ -26,7 +26,7 @@ app.directive 'propertyImages', (
 
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope
-      property: new rmapsPropertyFormatterService()
+      property: rmapsPropertyFormatterService
     }
 
     $scope.panorama =

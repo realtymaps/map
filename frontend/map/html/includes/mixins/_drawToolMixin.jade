@@ -1,10 +1,18 @@
-mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow, tackFn, tackedBool)
+mixin drawToolMixin(obj)
+  - var drawToolId = obj.drawToolId
+  - var header = obj.header
+  - var toggleBoolean = obj.toggleBoolean
+  - var toggleFn = obj.toggleFn
+  - var ctrl = obj.ctrl
+  - var directiveNgShow = obj.directiveNgShow
+  - var tackFn = obj.tackFn
+  - var tackedBool = obj.tackedBool
   //.desktop-only TODO (wont show)
   //hint if you want only drawings to show sometimes use ng-if (will kill controller)
   .draw-tools.container(ng-show="#{toggleBoolean}")&attributes(attributes)
     .row(ng-controller="#{ctrl}")
       .col.col-md-3.col-sm-3.col-xs-3
-        h4 #{h4}
+        h4 #{header}
 
       .col.col-md-6.col-sm-6.col-xs-3
         .tools()
@@ -29,7 +37,10 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgSh
       .col.col-md-3.col-sm-3.col-xs-3.last-col
         span.pull-right.draw-toolbar-close(ng-click="#{toggleFn}")
           i.icon.icon-close
-        if tackFn
+        if tackedBool
           span.checkbox.pull-right.draw-toolbar-tack
-            label
-              <input type="checkbox" ng-click="#{tackFn}" {{#{tackedBool}}}> Keep toolbar open
+            label Keep toolbar open
+            input(
+              type="checkbox"
+              ng-model="#{tackedBool}"
+              ng-model-options="{ getterSetter: true }")

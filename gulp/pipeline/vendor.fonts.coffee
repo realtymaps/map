@@ -1,8 +1,6 @@
-bowerFilesLoader = require('main-bower-files')
+_ = require 'lodash'
 
-bower = bowerFilesLoader
-  filter: /[.](woff|woff2|ttf|eot|otf)$/
-  checkExistence: true
-  # debugging:true
-
-module.exports = _.flatten([bower])
+module.exports = _.flatten [ 'woff', 'woff2', 'ttf', 'eot', 'otf'].map (ext) -> [
+  './node_modules/font-awesome/fonts/*.'
+  './node_modules/angular-ui-grid/*.'
+  ].map (mod) -> mod + ext

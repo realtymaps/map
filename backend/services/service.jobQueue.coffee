@@ -30,6 +30,12 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
     .then (possiblyTasks=[]) ->
       result = []
       Promise.each possiblyTasks, (task) ->
+        # prevent race condition where we start 2 mutually-exclusive tasks at the same time
+        for blockingTaskName in task.blocked_by_tasks
+          if blockingTaskName in result
+            # getPossiblyReadyTasks() orders results in order of prior start timestamp (ascending), which ensures this
+            # logic will at worst round-robin between 2 mutually exclusive tasks; one can't starve another
+            return
         # allow for task-specific logic to say it still isn't ready to run
         TaskImplementation.getTaskCode(task.name)
         .then (taskImpl) ->
@@ -373,4 +379,5 @@ module.exports = {
   getLastTaskStartTime
   cancelAllRunningTasks
   executeSubtask: internals.executeSubtask
+  retrySubtask: internals.retrySubtask
 }

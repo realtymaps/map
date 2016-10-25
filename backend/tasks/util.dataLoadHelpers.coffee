@@ -20,6 +20,7 @@ util = require 'util'
 moment = require 'moment'
 jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
+tz = require '../config/tz'
 
 DELETE =
   UNTOUCHED: 'untouched'
@@ -46,7 +47,8 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-_updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid) ->
+_updateDataLoadHistory = (deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid, subtask) ->
+  logger.spawn(subtask.task_name).debug () -> JSON.stringify({deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid})
   tables.jobQueue.dataLoadHistory()
   .where(raw_table_name: tables.temp.buildTableName(subid))
   .update
@@ -122,38 +124,42 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     .count('*')
     ###
 
-    Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, _updateDataLoadHistory)
+    Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, subid, Promise.resolve(subtask), _updateDataLoadHistory)
     .then () ->
-      if !subtask.data.indicateDeletes
+      if !opts.indicateDeletes
         return
 
       tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
       .select('rm_property_id')
       .where(subset)
-      .whereNot(batch_id: subtask.batch_id)
+      .where(deleted: subtask.batch_id)
       .then (results) ->
+        logger.spawn(subtask.task_name).debug () -> "markForDeletes: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
-          Promise.map results, (r) ->
+          Promise.each results, (r) ->
             markForDelete r.rm_property_id, subtask.task_name, subtask.batch_id,
               deletesTable: opts.deletesTable
               transaction: mainDbTransaction
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask, {tableProp, transaction} = {}) -> Promise.try () ->
+activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
+  subset =
+    data_source_id: subtask.task_name
+  _.extend(subset, subtask.data.subset)
 
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
-    if subtask.data.deletes == DELETE.UNTOUCHED
+    if deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
       activatePromise = tables.finalized[tableProp](transaction: transaction)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .update(active: dbs.get('main').raw('NOT "active"'))
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
@@ -287,13 +293,17 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
 # memoize it to cache js evals, but only for up to ~24 hours at a time
 getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
-getRawRows = (subtask, rawSubid) ->
+getRawRows = (subtask, rawSubid, criteria) ->
   rawSubid ?= buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  .orderBy('rm_raw_id')
+  .offset(subtask.data.offset)
+  .limit(subtask.data.count)
+  if criteria
+    rowsPromise = rowsPromise.where(criteria)
 
-  logger.spawn(subtask.task_name).debug () -> rowsPromise.toString()
+  logger.spawn(subtask.task_name).debug () -> 'getRawRows: '+rowsPromise.toString()
   rowsPromise
 
 # normalizes data from the raw data table into the permanent data table
@@ -744,7 +754,9 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
       return true
 
     now = Date.now()
-    utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
+    # our server uses UTC now, so auto-adjusting no longer works
+    #utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
+    utcOffset = -(new tz.Date('America/New_York')).getTimezoneOffset()/60
 
     target = moment.utc(now).utcOffset(utcOffset).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today

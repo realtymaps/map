@@ -42,14 +42,14 @@ loadRawData = (subtask) ->
     recordCountsData =
       dataType: subtask.data.dataType
     activateData =
-      startTime: subtask.data.startTime
+      startTime: now
 
     if subtask.data.dailyMaintenance
       # whether or not we have data, we need to do some things when refreshing
       recordCountsData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
       activateData.setRefreshTimestamp = true
       activateData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
-      markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: subtask.data.startTime}, replace: true})
+      markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: now}, replace: true})
     else
       recordCountsData.deletes = dataLoadHelpers.DELETE.INDICATED
       activateData.setRefreshTimestamp = false
@@ -57,7 +57,7 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: subtask.data.startTime}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: now}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()

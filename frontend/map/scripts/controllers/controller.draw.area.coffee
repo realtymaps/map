@@ -16,7 +16,12 @@ rmapsCurrentMapService
 ) ->
   $scope.tacked = false
 
-  $log = $log.spawn("map:rmapsDrawAreaCtrl")
+  obeyTacked = () ->
+    if (!$scope.Toggles.isTacks.area && !$scope.Toggles.isStatsDraw) ||
+    (!$scope.Toggles.isTacks.quickStats && $scope.Toggles.isStatsDraw)
+      $scope.Toggles.isAreaDraw = false
+
+  $log = $log.spawn("rmapsDrawAreaCtrl")
 
   isReadyPromise = $q.defer()
 
@@ -53,17 +58,19 @@ rmapsCurrentMapService
       createPromise: (layer) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
         geoJson = layer.toGeoJSON()
-        if $scope.Toggles.isStatsDraw
+        p = if $scope.Toggles.isStatsDraw
           $scope.quickStats(geoJson)
           $scope.drawn.quickStats = layer
-          return $q.resolve()
+          $q.resolve()
         else
           $scope.create(geoJson)
           .then (result) ->
             $scope.$emit rmapsEventConstants.areas
-            if !$scope.Toggles.isTackedAreasDrawBar
-              $scope.Toggles.isAreaDraw = false
             result
+
+        p.then (result) ->
+          obeyTacked()
+          result
 
 
       deleteAction: (model) ->

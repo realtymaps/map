@@ -36,6 +36,7 @@ basicColumns = do ->
       'owner_address'
       'status'
       'days_on_market'
+      'days_on_market_cumulative'
       'up_to_date'
       'close_date'
       ]

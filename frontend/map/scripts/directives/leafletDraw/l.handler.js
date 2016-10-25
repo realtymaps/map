@@ -1,3 +1,6 @@
+L = require('leaflet');
+require('leaflet-draw/dist/leaflet.draw.js');
+
 module.exports = L.Handler = L.Handler.extend({
 	enable: function (e, options) {
 		if (this._enabled) { return; }

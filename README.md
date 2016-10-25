@@ -38,9 +38,8 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
             run our app...  ideally "npm install" should handle everything, which also
             makes Heroku setup simpler**
 
-    - **Application** (make sure you are at the root path of the source code base for map! Where bower.json and package.json are present)
-        - `npm install` (will bower install as well)
-        - You made bower changes and feel like updating that only.. well then run `bower install`
+    - **Application** (Make sure you are at the root path of the source code base for map! Where package.json is present.)
+        - `npm install`
 
         - **Run gulp (for dev)**
 

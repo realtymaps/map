@@ -60,7 +60,7 @@ app.use cookieParser config.SESSION.secret
 
 # body parsing middleware - above methodOverride()
 app.use bodyParser.urlencoded(extended: true)
-app.use bodyParser.json()
+app.use bodyParser.json(limit: '5mb')
 app.use multipart()
 app.use methodOverride()
 
@@ -140,7 +140,6 @@ app.set('trust proxy', config.TRUST_PROXY)
 _.extend app.locals,
   newrelic: newrelic
   paths: paths
-  google: require('./googleMaps').locals
 
 app.set('views', __dirname.replace('/config','/views'))
 app.set('view engine', 'jade')

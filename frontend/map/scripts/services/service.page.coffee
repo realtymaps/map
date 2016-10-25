@@ -1,6 +1,5 @@
-###globals _, angular###
+###globals angular###
 app = require '../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 
 ### eslint-disable ###
 app.run (rmapsPageService) ->

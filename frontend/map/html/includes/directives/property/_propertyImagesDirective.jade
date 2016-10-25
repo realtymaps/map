@@ -2,7 +2,7 @@
   div(ng-if="!imageLoaded && !coverImage")
     img(rmaps-cdn-image ng-src="/assets/progress-big.gif")
 
-  ui-gmap-street-view-panorama.prop-image-panorama(
+  rmaps-street-view-panorama.prop-image-panorama(
     ng-cloak
     ng-if="!property.photos.length"
     ng-show="panoramaOk() && panoramaControls"

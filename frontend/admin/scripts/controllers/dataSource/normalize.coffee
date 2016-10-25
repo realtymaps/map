@@ -22,6 +22,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.mlsData =
     current: null
+    dataListType: null
     dataSourceType:
       id: 'mls'
       name: 'MLS'
@@ -39,6 +40,14 @@ app.controller 'rmapsNormalizeCtrl',
     'False': false
     'Neither': null
 
+  $scope.dataListTypes = [
+    id: 'listing'
+    name: 'Listing'
+  ,
+    id: 'agent'
+    name: 'Agent'
+  ]
+
   $scope.dateFormats = [
     'YYYY-MM-DD'
     'YYYYMMDD'
@@ -51,13 +60,18 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.lookupOptions = rmapsParcelEnums.lookupOptions
 
-  $scope.baseRules = rmapsValidatorBuilderService.getBaseRules('mls', 'listing')
+  $scope.getTargetCategories = (dataSourceType, dataListType) ->
+    $scope.categories = {}
+    $scope.targetCategories = _.map rmapsParcelEnums.categories[dataSourceType][dataListType], (label, list) ->
+      label: label
+      list: list
+      items: $scope.categories[list] = []
 
-  $scope.categories = {}
-  $scope.targetCategories = _.map rmapsParcelEnums.categories['mls']['listing'], (label, list) ->
-    label: label
-    list: list
-    items: $scope.categories[list] = []
+  $scope.getBaseRules = (dataSourceType, dataListType) ->
+    if dataListType == 'agent'
+      $scope.baseRules = rmapsValidatorBuilderService.getAgentRules()
+    else
+      $scope.baseRules = rmapsValidatorBuilderService.getBaseRules(dataSourceType, dataListType)
 
   # CSV Download items
   $scope.csv =
@@ -82,7 +96,10 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    rmapsValidatorBuilderService.buildBaseRule('mls', 'listing') rule
+    if $scope.mlsData.dataListType.id == 'agent'
+      rmapsValidatorBuilderService.buildAgentRule()(rule)
+    else
+      rmapsValidatorBuilderService.buildBaseRule('mls', $scope.mlsData.dataListType.id)(rule)
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -108,7 +125,8 @@ app.controller 'rmapsNormalizeCtrl',
         rule.ordering = index
 
     # Save base rules
-    $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base
+    if 'base' of $scope.categories
+      $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base
 
   # Handles parsing RETS fields for display
   parseFields = (fields) ->
@@ -156,7 +174,9 @@ app.controller 'rmapsNormalizeCtrl',
       setLookups(field._lookups)
     else if field && !field._lookups && field.config.LookupName
       config = $scope.mlsData.current
-      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.config.LookupName
+      schema = $scope.mlsData.dataListType.id + "_data"
+
+      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config[schema].db, field.config.LookupName
       .then (lookups) ->
         setLookups(lookups)
         $scope.$evalAsync()
@@ -256,7 +276,8 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Dropdown selection, reloads the view
   $scope.selectMls = () ->
-    $state.go($state.current, { id: $scope.mlsData.current.id }, { reload: true })
+    if $scope.mlsData.current.id and $scope.mlsData.dataListType
+      $state.go($state.current, { id: $scope.mlsData.current.id, list: $scope.mlsData.dataListType.id }, { reload: true })
 
   # Show rules without metadata first, then unassigned followed by assigned
   $scope.orderValid = (rule) -> !!rule.config.DataType
@@ -289,13 +310,16 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Load saved MLS config and RETS fields
   loadMls = (config) ->
-    normalizeService = new rmapsNormalizeFactory config.id, 'mls', 'listing'
+    $scope.getTargetCategories(config.dataSourceType.id, config.dataListType.id)
+    $scope.getBaseRules(config.dataSourceType.id, config.dataListType.id)
+    normalizeService = new rmapsNormalizeFactory config.current.id, config.dataSourceType.id, config.dataListType.id
     $scope.mlsLoading =
       normalizeService.getRules()
       .then (rules) ->
         parseRules(rules)
       .then () ->
-        rmapsMlsService.getColumnList(config.id, config.listing_data.db, config.listing_data.table)
+        schema = config.dataListType.id + "_data"
+        rmapsMlsService.getColumnList(config.current.id, config.current[schema].db, config.current[schema].table)
       .then (fields) ->
         parseFields(fields)
 
@@ -315,7 +339,8 @@ app.controller 'rmapsNormalizeCtrl',
       $scope.mlsConfigs = configs
       if $state.params.id
         $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
-        loadMls($scope.mlsData.current)
+        $scope.mlsData.dataListType = _.find $scope.dataListTypes, { id: $state.params.list }
+        loadMls($scope.mlsData)
 
   # Load MLS list
   $scope.loadReadyMls()

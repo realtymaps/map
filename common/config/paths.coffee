@@ -31,7 +31,6 @@ getAssetCollection = (name) ->
   }
 
 module.exports =
-  bower: 'bower_components'
   spec: 'spec/**'
   common: 'common/**/'
   backend: 'backend/**/'
@@ -40,6 +39,7 @@ module.exports =
   frontendCommon: getAssetCollection('common')
   map: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)
+  temp: 'tmp/'
 
   lib:
     front:

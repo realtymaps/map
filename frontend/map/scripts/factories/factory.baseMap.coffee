@@ -1,4 +1,6 @@
-###globals angular,L,_###
+###globals angular###
+_ = require 'lodash'
+L = require 'leaflet'
 app = require '../app.coffee'
 _eventThrottler = require '../utils/util.event-throttler.coffee'
 

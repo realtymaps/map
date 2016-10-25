@@ -3,7 +3,6 @@ set -e
 set -o pipefail
 
 rm -rf ./_public
-rm -rf ./bower_components
 rm -rf ./node_modules
 rm -rf ./nginx
 rm -rf /var/tmp/nginx-buildpack*
@@ -11,5 +10,4 @@ rm -rf /var/tmp/nginx-buildpack*
 if [[ "$DO_CACHE_CLEAN" != "" ]]
 then
   npm cache clean
-  bower cache clean
 fi

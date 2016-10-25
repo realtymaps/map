@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
@@ -128,7 +128,7 @@ app.service 'rmapsLayerFormattersService', (
         riseOnHover: true
         icon:
           type: 'div'
-          iconSize: [60, 30]
+          iconSize: [1, 1]
           html: priceMarkerTemplate(
             price:formattedPrice,
             priceClasses: "label-#{markersBSLabel[status]}#{hovered}",
@@ -144,7 +144,7 @@ app.service 'rmapsLayerFormattersService', (
         riseOnHover: true
         icon:
           type: 'div'
-          iconSize: [60, 30]
+          iconSize: [1, 1]
           # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Units (#{models.grouped.name}", priceClasses: "label-saved-property")
           html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
 

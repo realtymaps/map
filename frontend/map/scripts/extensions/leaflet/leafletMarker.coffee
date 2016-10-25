@@ -1,4 +1,4 @@
-###globals L###
+L = require 'leaflet'
 _pointToGeoJSON = L.Marker::toGeoJSON
 
 L.Marker::toGeoJSON = () ->
