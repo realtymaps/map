@@ -56,6 +56,9 @@ require 'leaflet/dist/leaflet.css'
 require 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 require 'leaflet-zoombox/L.Control.ZoomBox.css'
 require 'ng-img-crop-full-extended/compile/unminified/ng-img-crop.css'
+require 'angularjs-slider/dist/rzslider.css'
+require 'angular-google-places-autocomplete/dist/autocomplete.min.css'
+require 'angular-busy/dist/angular-busy.css'
 
 app = window.angular.module 'rmapsMapApp', [
   'rmapsCommonUtils'
