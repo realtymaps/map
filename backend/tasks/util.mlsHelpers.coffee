@@ -352,10 +352,9 @@ markUpToDate = (subtask) ->
       .whereIn('data_source_uuid', ids)
       .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
       .returning('rm_property_id')
-      .then (allTouchedIds) ->
-        if allTouchedIds.length == 0
+      .then (finalizeIds) ->
+        if finalizeIds.length == 0
           return
-        finalizeIds = _.pluck(allTouchedIds, 'rm_property_id')
         jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
