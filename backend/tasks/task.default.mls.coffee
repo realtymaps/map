@@ -52,7 +52,7 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: now}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: now, doDailyMaintenance: doRefresh}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()
@@ -71,6 +71,7 @@ normalizeData = (subtask) ->
     dataSourceId: subtask.task_name
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
+    skipFinalize: subtask.data.doDailyMaintenance
 
 
 recordChangeCounts = (subtask) ->
