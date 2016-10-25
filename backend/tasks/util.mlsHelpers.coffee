@@ -348,22 +348,15 @@ markUpToDate = (subtask) ->
         return
       ids = _.pluck(chunk, uuidField)
       tables.normalized.listing()
-      .select('rm_property_id')
       .where(data_source_id: subtask.task_name)
       .whereIn('data_source_uuid', ids)
-      .whereNotNull('deleted')
-      .then (undeleteIds=[]) ->
-        markPromise = tables.normalized.listing()
-        .where(data_source_id: subtask.task_name)
-        .whereIn('data_source_uuid', ids)
-        .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
-        if undeleteIds.length == 0
-          undeletePromise = Promise.resolve()
-        else
-          undeleteIds = _.pluck(undeleteIds, 'rm_property_id')
-          undeletePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: undeleteIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
-        Promise.join markPromise, undeletePromise, () ->  # no-op
-
+      .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+      .returning('rm_property_id')
+      .then (allTouchedIds) ->
+        if allTouchedIds.length == 0
+          return
+        finalizeIds = _.pluck(allTouchedIds, 'rm_property_id')
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
   .catch retsService.isMaybeTransientRetsError, (error) ->
