@@ -79,14 +79,14 @@ makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
 ###
 # these function works backwards from the validation for `fieldName` (e.g. "data_source_uuid") to determine the LongName and then the
 # SystemName of the UUID field
-# TODO: change this to use the KeyField metadata from RETS
 ###
 
-getMlsField = (mlsId, rmapsFieldName) ->
+getMlsField = (mlsId, rmapsFieldName, dataType) ->
+  schemaInfo = mlsInfo["#{dataType}_data"]
   mlsConfigService.getByIdCached(mlsId)
   .then (mlsInfo) ->
-    columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: mlsInfo.listing_data.db, tableId: mlsInfo.listing_data.table)
-    validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, 'listing', 'base', rmapsFieldName)
+    columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: schemaInfo.db, tableId: schemaInfo.table)
+    validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, dataType, 'base', rmapsFieldName)
     Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->
       for field in columnData
         if field.LongName == validationInfo.validationMap.base[0].input
@@ -95,9 +95,6 @@ getMlsField = (mlsId, rmapsFieldName) ->
       if !mlsFieldName
         throw new Error("can't locate `#{mlsFieldName}` for #{mlsId} (SystemName for #{validationInfo.validationMap.base[0].input})")
       return mlsFieldName
-
-getUuidField = (mlsId) -> # existed prior to `getMlsField` above; keeping it here
-  getMlsField(mlsId, 'data_source_uuid')
 
 
 # cdnPhotoStrPromise = Promise.resolve('')
@@ -214,6 +211,5 @@ module.exports = {
   enqueuePhotoToDelete
   updatePhoto
   makeUpdatePhoto
-  getUuidField
   getMlsField
 }

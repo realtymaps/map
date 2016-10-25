@@ -31,9 +31,9 @@ storePrep = (subtask) ->
         photo_id: row.photo_id
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  lastModPromise = mlsHelpers.getMlsField(mlsName, 'photo_last_mod_time')
-  uuidPromise = mlsHelpers.getMlsField(mlsName, 'data_source_uuid')
-  photoIdPromise = mlsHelpers.getMlsField(mlsName, 'photo_id')
+  lastModPromise = mlsHelpers.getMlsField(mlsName, 'photo_last_mod_time', 'listing')
+  uuidPromise = mlsHelpers.getMlsField(mlsName, 'data_source_uuid', 'listing')
+  photoIdPromise = mlsHelpers.getMlsField(mlsName, 'photo_id', 'listing')
 
   # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
   updatedPhotosPromise = Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->

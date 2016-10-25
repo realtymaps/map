@@ -9,7 +9,8 @@ _ = require 'lodash'
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or
-# if it can't find one and there is an MLS config with the task name as its id, then use the default MLS (or MLS photos) implementation
+# if it can't find one and there is an MLS config with the first part of the task name as its id, then use the default
+# MLS code based on the 2nd part of the task name
 _getTaskCode = (taskName) ->
   if !mlsConfigService
     mlsConfigService = require '../services/service.mls_config'
@@ -17,15 +18,14 @@ _getTaskCode = (taskName) ->
     try
       return Promise.resolve(require("./task.#{taskName}"))
     catch err
-      baseName = taskName.replace('_photos', '')
-      mlsConfigService.getByIdCached(baseName)
+      taskNameParts = taskName.split('_')
+      mlsConfigService.getByIdCached(taskNameParts[0])
       .then (mlsConfig) ->
-        if mlsConfig?
-          if taskName.indexOf('_photos') == -1
-            return require("./task.default.mls")(taskName)
-          else
-            return require("./task.default.photos")(taskName)
-        throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
+        if !mlsConfig?
+          throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
+        try
+          return require("./task.default.mls.#{taskNameParts[1]}")(taskName)
+
 
 class TaskImplementation
 

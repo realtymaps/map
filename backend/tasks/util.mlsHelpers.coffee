@@ -24,7 +24,7 @@ crypto = require 'crypto'
 loadUpdates = (subtask, options={}) ->
   # figure out when we last got updates from this table
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  uuidPromise = internals.getUuidField(subtask.task_name)
+  uuidPromise = internals.getMlsField(subtask.task_name, 'data_source_uuid', 'listing')
   Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
     retsService.getDataStream(subtask.task_name, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
     .catch retsService.isMaybeTransientRetsError, (error) ->
@@ -340,7 +340,7 @@ deleteOldPhoto = (subtask, key) -> Promise.try () ->
 
 
 markUpToDate = (subtask) ->
-  internals.getUuidField(subtask.task_name)
+  internals.getMlsField(subtask.task_name, 'data_source_uuid', 'listing')
   .then (uuidField) ->
     dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
     retsService.getDataChunks subtask.task_name, dataOptions, (chunk) -> Promise.try () ->
@@ -365,8 +365,8 @@ markUpToDate = (subtask) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 
 
-getMlsField = (mlsId, fieldName) ->
-  internals.getMlsField(mlsId, fieldName)
+getMlsField = (mlsId, fieldName, dataType) ->
+  internals.getMlsField(mlsId, fieldName, dataType)
 
 module.exports = {
   loadUpdates
