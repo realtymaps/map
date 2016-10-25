@@ -1,5 +1,5 @@
 externalAccounts = require './service.externalAccounts'
-promisify = require '../config/promisify'
+require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
 logger = require('../config/logger').spawn('service:lob')
@@ -17,17 +17,17 @@ priceService = require('./service.prices')
 paymentSvc = null
 
 LOB_LETTER_FIELDS = [
-   'to'
-   'from'
-   'color'
-   'file'
-   'data'
-   'double_sided'
-   'address_placement'
-   'extra_service'
-   'return_envelope'
-   'perforated_page'
-   'metadata'
+  'to'
+  'from'
+  'color'
+  'file'
+  'data'
+  'double_sided'
+  'address_placement'
+  'extra_service'
+  'return_envelope'
+  'perforated_page'
+  'metadata'
 ]
 
 #
@@ -177,8 +177,8 @@ getMacroData = (campaign, address_to, address_from, address_property = {}) ->
   ret
 
 ################
-# Public methods
-################
+            # Public methods
+            ################
 
 #
 # Retrieves LOB letter object by id
@@ -376,14 +376,16 @@ sendCampaign = (userId, campaignId) ->
                 throw new QuietlyHandledError(err, "Please check that your payment information is up-to-date. Your payment was not processed because")
 
               else if err?.type in [
-                  'StripeConnectionError'
-                  'RateLimitError']
+                'StripeConnectionError'
+                'RateLimitError'
+              ]
                 throw new QuietlyHandledError "Oops, something went wrong. Please try again later."
 
               else if err?.type in [
-                  'StripeAPIError'
-                  'StripeAuthenticationError'
-                  'StripeInvalidRequestError']
+                'StripeAPIError'
+                'StripeAuthenticationError'
+                'StripeInvalidRequestError'
+              ]
                 throw new PartiallyHandledError(err, "Oops, something went wrong. Please contact support.")
 
               else
