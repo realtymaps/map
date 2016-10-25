@@ -38,10 +38,7 @@ do
 done
 
 # remove the shrinkwrap file
-rm -f npm-shrinkwrap.json
+rm -f yarn.lock
 
 # install new versions of removed deps
-npm install "$OPTIONS"
-
-# create new shrinkwrap file
-npm shrinkwrap
+yarn install "$OPTIONS"
