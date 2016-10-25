@@ -39,11 +39,11 @@ browserifyTask = ({app, watch, prod, doSourceMaps}) ->
 gulp.task 'browserify', gulp.series 'markup', -> browserifyTask app: 'map'
 gulp.task 'browserifyAdmin', gulp.series 'markupAdmin', -> browserifyTask app:'admin'
 
-gulp.task 'browserifyProd', gulp.series 'markup', -> browserifyTask app: 'map', prod:true
+gulp.task 'browserifyProd', gulp.series 'markup', -> browserifyTask app: 'map', prod: true
 gulp.task 'browserifyAdminProd', gulp.series 'markupAdmin', -> browserifyTask app:'admin', prod: true
 
-gulp.task 'browserifyAll', gulp.series 'browserify', 'browserifyAdmin'
-gulp.task 'browserifyAllProd', gulp.series 'browserifyProd', 'browserifyAdminProd'
+gulp.task 'browserifyAll', gulp.parallel 'browserify', 'browserifyAdmin'
+gulp.task 'browserifyAllProd', gulp.parallel 'browserifyProd', 'browserifyAdminProd'
 
 ###
 NOTE the watches here are the odd ball of all the gulp watches we have.
@@ -59,5 +59,5 @@ now depends on watch.
 
 Therefore in most conditions a watch should only watch period.
 ###
-gulp.task 'browserifyWatch', -> browserifyTask app: 'map', watch: true
-gulp.task 'browserifyWatchAdmin', -> browserifyTask app: 'admin', watch: true
+gulp.task 'browserifyWatch', gulp.series 'markup', 'markupWatch', -> browserifyTask app: 'map', watch: true
+gulp.task 'browserifyWatchAdmin', gulp.series 'markupAdmin', 'markupWatchAdmin', -> browserifyTask app: 'admin', watch: true
