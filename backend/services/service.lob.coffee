@@ -1,4 +1,5 @@
 externalAccounts = require './service.externalAccounts'
+require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
 logger = require('../config/logger').spawn('service:lob')
