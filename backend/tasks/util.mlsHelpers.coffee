@@ -351,6 +351,7 @@ markUpToDate = (subtask) ->
       .where(data_source_id: subtask.task_name)
       .whereIn('data_source_uuid', ids)
       .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+      .returning('rm_property_id')
       .then (allTouchedIds) ->
         if allTouchedIds.length == 0
           return
