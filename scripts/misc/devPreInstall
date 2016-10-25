@@ -1,20 +1,5 @@
 #!/bin/bash
 
-# first, make sure you have latest npm
-# first, make sure you have latest npm
-
-# if you want pure latest npm then `npm show npm version`
-LATEST_NPM=`npm show npm@3.X version | tail -n 1 | awk '{print $2}'`
-LATEST_NPM=$(echo $LATEST_NPM | sed "s/\'//g")
-CURRENT_NPM=`npm --version`
-
-echo "latest npm: $LATEST_NPM"
-echo "current npm: $CURRENT_NPM"
-if [[ $LATEST_NPM != $CURRENT_NPM ]];then
-  npm install -g npm@3.x
-fi
-
-
 #TODO figure out why this is rejecting git projects
 #if ! hash npm-shrinkwrap &> /dev/null || [[ $IS_HEROKU = 1 ]];then
 #  npm install -g npm-shrinkwrap
