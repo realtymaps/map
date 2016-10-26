@@ -82,45 +82,26 @@ class MlsConfigService extends ServiceCrud
         accountInfo.name = newMls.id
         externalAccounts.insertAccountInfo(accountInfo, {transaction})
       .then () ->
-        # prepare a task for this new MLS
-        tables.jobQueue.taskConfig()
-        .where(name: '<default_mls_config>')
-      .then ([taskConfig]) ->
-        taskConfig.name = newMls.id
-        taskConfig.blocked_by_tasks = JSON.stringify(taskConfig.blocked_by_tasks).replace(/<default_mls_config>/g, newMls.id)
-        taskConfig.blocked_by_locks = sqlHelpers.safeJsonArray(taskConfig.blocked_by_locks)
+        # prepare tasks for this new MLS
         tables.jobQueue.taskConfig({transaction})
-        .insert(taskConfig)
+        .where('name', 'LIKE', '<mlsid>_%')
+      .then (taskTemplates) ->
+        taskTemplatesJson = JSON.stringify(taskTemplates)
+        tasks = JSON.parse(taskTemplatesJson.replace(/<mlsid>/g, newMls.id))
+        for task in tasks
+          task.blocked_by_tasks = sqlHelpers.safeJsonArray(task.blocked_by_tasks)
+          task.blocked_by_locks = sqlHelpers.safeJsonArray(task.blocked_by_locks)
+        tables.jobQueue.taskConfig({transaction})
+        .insert(tasks)
       .then () ->
         # prepare subtasks for this new MLS
-        tables.jobQueue.subtaskConfig()
-        .where(task_name: '<default_mls_config>')
-      .then (subtaskConfigs) ->
-        Promise.each subtaskConfigs, (subtaskConfig) ->
-          subtaskConfig.task_name = newMls.id
-          subtaskConfig.name = subtaskConfig.name.replace('<default_mls_config>', newMls.id)
-          tables.jobQueue.subtaskConfig({transaction})
-          .insert(subtaskConfig)
-      .then () ->
-        # prepare a photos task for this new MLS
-        tables.jobQueue.taskConfig()
-        .where(name: '<default_mls_photos_config>')
-      .then ([taskConfig]) ->
-        taskConfig.name = "#{newMls.id}_photos"
-        taskConfig.blocked_by_tasks = JSON.stringify(taskConfig.blocked_by_tasks).replace(/<default_mls_photos_config>/g, "#{newMls.id}_photos")
-        taskConfig.blocked_by_locks = sqlHelpers.safeJsonArray(taskConfig.blocked_by_locks)
+        tables.jobQueue.subtaskConfig({transaction})
+        .where('task_name', 'LIKE', '<mlsid>_%')
+      .then (subtaskTemplates) ->
+        subtaskTemplatesJson = JSON.stringify(subtaskTemplates)
+        subtasks = JSON.parse(subtaskTemplatesJson.replace(/<mlsid>/g, newMls.id))
         tables.jobQueue.taskConfig({transaction})
-        .insert(taskConfig)
-      .then () ->
-        # prepare subtasks for photos
-        tables.jobQueue.subtaskConfig()
-        .where(task_name: '<default_mls_photos_config>')
-      .then (subtaskConfigs) ->
-        Promise.each subtaskConfigs, (subtaskConfig) ->
-          subtaskConfig.task_name = "#{newMls.id}_photos"
-          subtaskConfig.name = subtaskConfig.name.replace('<default_mls_photos_config>', newMls.id)
-          tables.jobQueue.subtaskConfig({transaction})
-          .insert(subtaskConfig)
+        .insert(subtasks)
 
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
