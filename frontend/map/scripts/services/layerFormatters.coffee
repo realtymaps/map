@@ -183,16 +183,23 @@ app.service 'rmapsLayerFormattersService', (
   setMarkerNotesDataOptions = (data) ->
     setDataOptions(data, MLS.setMarkerNotesOptions)
 
-  setCurrentLocationMarkerOptions = (model) ->
-    return {} unless model
+  setCurrentLocationMarkerOptions = (position) ->
+    return {} unless position
+    # So posiiton used to be position.latitude or longitude, but now it is in the field coords
+    # so we account for both just incase
+    # https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
+    if !position.coords?
+      {latitude, longitude} = position
+    else
+      {latitude, longitude} = position.coords
+
     #important for the clusterer css a div must have child span
-    _.extend model,
-      coordinates: [model.longitude, model.latitude]
-      type: 'Point'
-      markerType: 'currentLocation'
-      icon:
-        type: 'div'
-        html: currentLocationMarkerTemplate()
+    coordinates: [longitude, latitude]
+    type: 'Point'
+    markerType: 'currentLocation'
+    icon:
+      type: 'div'
+      html: currentLocationMarkerTemplate()
 
 
   #public
