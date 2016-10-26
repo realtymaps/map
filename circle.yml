@@ -4,10 +4,16 @@ machine:
 
 # circleci
 dependencies:
+  override:
+    - ./scripts/misc/installPackageManager && yarn install
   pre:
     - sudo apt-get install libpoppler-cpp-dev
   cache_directories:
     - "nginx"
+
+test:
+  override:
+    - yarn test
 
 deployment:
   prod:

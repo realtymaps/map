@@ -58,10 +58,6 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 
 
 ___
-### LOCK DOWN
-`npm install -g npm-shrinkwrap`
-execute
-`npm-shrinkwrap`
 
 ### TODO
 

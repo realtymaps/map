@@ -2,19 +2,9 @@
 set -e
 set -o pipefail
 
+CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-# first, make sure you have latest npm
-
-# if you want pure latest npm then `npm show npm version`
-LATEST_NPM=`npm show npm@2.X version | tail -n 1 | awk '{print $2}'`
-LATEST_NPM=$(echo $LATEST_NPM | sed "s/\'//g")
-CURRENT_NPM=`npm --version`
-
-echo "latest npm: $LATEST_NPM"
-echo "current npm: $CURRENT_NPM"
-if [[ $LATEST_NPM != $CURRENT_NPM ]];then
-  npm install -g npm@2.x
-fi
+"$CURRENT_DIR"/installPackageManager
 
 
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then

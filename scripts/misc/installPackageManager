@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+
+# first, make sure you have latest npm/yarn
+
+# if you want pure latest npm then `npm show npm version`
+PM='yarn'
+PM_VERSION='0.X'
+LATEST_PACKAGE_MANAGER=`npm show $PM@$PM_VERSION version | tail -n 1 | awk '{print $2}'`
+LATEST_PACKAGE_MANAGER=$(echo $LATEST_PACKAGE_MANAGER | sed "s/\'//g")
+CURRENT_PACKAGE_MANAGER=`$PM --version` || CURRENT_PACKAGE_MANAGER=''
+
+echo "latest $PM: $LATEST_PACKAGE_MANAGER"
+echo "current $PM: $CURRENT_PACKAGE_MANAGER"
+if [[ $LATEST_PACKAGE_MANAGER != $CURRENT_PACKAGE_MANAGER ]];then
+  npm install -g $PM@$PM_VERSION
+fi
