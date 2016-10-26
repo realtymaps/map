@@ -5,12 +5,6 @@ keystore = require '../services/service.keystore'
 tables = require '../config/tables'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
 
-_getUser = (attributes) ->
-  tables.auth.user()
-  .where(attributes)
-  .then (user=[]) ->
-    user[0] ? {}
-
 _updateUser = (id, attributes) ->
   tables.auth.user()
   .where(id: id)
@@ -41,7 +35,10 @@ createPasswordHash = (password) ->
 
 verifyPassword = (email, password) ->
   #logger.debug "attempting to verify password for email: #{email}"
-  _getUser(email: email)
+  tables.auth.user()
+  .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
+  .then (user=[]) ->
+    user[0] ? {}
   .then (user) ->
     if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
@@ -77,7 +74,7 @@ updatePassword = (user, password, overwrite = true) ->
 verifyValidAccount = (user) ->
   return unless user
   return user if user.is_superuser
-  
+
   if !user.is_active
     throw new userSessionErrors.InActiveUserError("User is not valid due to inactive account.")
   user
