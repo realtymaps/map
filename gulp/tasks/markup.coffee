@@ -1,6 +1,7 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
+gutil = require 'gulp-util'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 _ = require 'lodash'
@@ -36,7 +37,7 @@ markup = (app) ->
 
     .pipe gulp.dest paths.temp
     .pipe $.size
-      title: paths.dest.root
+      title: paths.temp
       showFiles: true
 
   markupFn.displayName = 'markup'
@@ -47,6 +48,8 @@ markupWatch = (app) ->
   markupFn = _.debounce markup(app), 1000
   # Just for nicer gulp out
   markupFn.displayName = 'markup'
+
+  gutil.log "Watching markup files:", gutil.colors.yellow(paths[app].jade)
 
   watcher = gulp.watch paths[app].jade, conf.chokidarOpts, markupFn
 
