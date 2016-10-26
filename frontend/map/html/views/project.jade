@@ -10,7 +10,9 @@ include ../includes/mixins/_leafletMixin.jade
           ng-if="pins.length"
           active="carousel.activeSlide"
           slide-selector
-          slide-selector-label="getLabel(actual)")
+          slide-selector-label="getLabel(actual)"
+          template-url="./includes/bootstrap/carousel.jade"
+          )
             .project-card.bordered(uib-slide ng-repeat="property in pins"
               index="$index" actual="property")
               .pin-image.prop-image.zoomable()
@@ -25,6 +27,7 @@ include ../includes/mixins/_leafletMixin.jade
           interval="myInterval"
           ng-if="pins.length"
           active="carousel.activeSlide"
+          template-url="./includes/bootstrap/carousel.jade"
         )
           .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" actual="property")
             .pin-image.prop-image.zoomable(ui-sref="property({ id: property.rm_property_id })")
