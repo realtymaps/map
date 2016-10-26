@@ -59,6 +59,8 @@ require 'ng-img-crop-full-extended/compile/unminified/ng-img-crop.css'
 require 'angularjs-slider/dist/rzslider.css'
 require 'angular-google-places-autocomplete/dist/autocomplete.min.css'
 require 'angular-busy/dist/angular-busy.css'
+require 'textangular/dist/textAngular.css'
+require 'angular-toastr/dist/angular-toastr.css'
 
 app = window.angular.module 'rmapsMapApp', [
   'rmapsCommonUtils'
