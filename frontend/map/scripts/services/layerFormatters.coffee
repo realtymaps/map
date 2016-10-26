@@ -188,11 +188,16 @@ app.service 'rmapsLayerFormattersService', (
     # So posiiton used to be position.latitude or longitude, but now it is in the field coords
     # so we account for both just incase
     # https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
+    # if we have a problem here then it is browser related
+    latitude = longitude = null
+
     if !position.coords?
       {latitude, longitude} = position
     else
       {latitude, longitude} = position.coords
 
+    if !latitude? || !longitude?
+      throw new Error("latitude or longitude invalid: latitude: #{latitude}, longitude: #{longitude}")
     #important for the clusterer css a div must have child span
     coordinates: [longitude, latitude]
     type: 'Point'
