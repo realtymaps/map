@@ -8,15 +8,14 @@ include ../includes/mixins/_leafletMixin.jade
           uib-carousel
           interval="myInterval"
           ng-if="pins.length"
-          active="activeSlide"
+          active="carousel.activeSlide"
           slide-selector
-          slide-selector-label="getLabel(actual)"
-          on-carousel-change="onSlideChanged(nextSlide, direction)")
+          slide-selector-label="getLabel(actual)")
             .project-card.bordered(uib-slide ng-repeat="property in pins"
-              index="$index" active="property.activeSlide" actual="property")
+              index="$index" actual="property")
               .pin-image.prop-image.zoomable()
                 .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
-                property-images(property="property" image-width="656" show-status="true")
+                property-images(property="property" cover-image="true" image-width="656" show-status="true")
               .pin-attributes.content-block.property-attrs-clickable(ui-sref="property({ id: property.rm_property_id })")
                 property-attributes(property="property")
 
@@ -25,10 +24,9 @@ include ../includes/mixins/_leafletMixin.jade
           uib-carousel
           interval="myInterval"
           ng-if="pins.length"
-          active="activeSlide"
-          on-carousel-change="onSlideChanged(nextSlide, direction)"
+          active="carousel.activeSlide"
         )
-          .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" active="property.activeSlide" actual="property")
+          .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" actual="property")
             .pin-image.prop-image.zoomable(ui-sref="property({ id: property.rm_property_id })")
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
               img(ng-if="property.geometry_center.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
