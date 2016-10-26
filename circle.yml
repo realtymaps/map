@@ -1,6 +1,9 @@
 machine:
+  pre:
+    - mkdir ~/.yarn-cache
   node:
     version: v4.6.1
+
 
 # circleci
 dependencies:
@@ -10,6 +13,7 @@ dependencies:
     - sudo apt-get install libpoppler-cpp-dev
   cache_directories:
     - "nginx"
+    - ~/.yarn-cache
 
 test:
   override:
