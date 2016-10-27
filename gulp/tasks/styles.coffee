@@ -23,6 +23,8 @@ styles = ({app, doSourceMaps, cdn}) ->
       paths[app].rootStylus
     ]
 
+    logger.debug -> sourcePaths
+
     stream = gulp.src sourcePaths
 
     if doSourceMaps
@@ -71,7 +73,7 @@ styles = ({app, doSourceMaps, cdn}) ->
 stylesWatch = (app) ->
 
   # Always watch map styles, and possibly app-specific styles
-  types = [ 'less', 'styles', 'stylus' ]
+  types = [ 'less', 'styles', 'stylus']
   watchPaths = _.union (_.values _.pick paths.map, types), (_.values _.pick paths[app], types)
 
   # Keeps many files changing at once triggering the task over and over

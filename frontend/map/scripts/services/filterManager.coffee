@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 #TODO This should probably become a controller
 app = require '../app.coffee'
 

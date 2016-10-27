@@ -1,4 +1,6 @@
-###globals L,_,angular###
+###globals angular###
+_ = require 'lodash'
+L = require 'leaflet'
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 Point = require('../../../../common/utils/util.geometries.coffee').Point

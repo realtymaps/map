@@ -1,4 +1,5 @@
-### global L, _###
+_ = require 'lodash'
+L = require 'leaflet'
 app = require '../app.coffee'
 arrowTemplate = require '../../html/includes/map/markers/_arrowMarker.jade'
 circleTemplate = require '../../html/includes/map/markers/_circledMarker.jade'

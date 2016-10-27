@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 moment = require 'moment'
 require '../services/leafletObjectFetcher.coffee'

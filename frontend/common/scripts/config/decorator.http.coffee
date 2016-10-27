@@ -1,8 +1,9 @@
 ###globals angular###
 module = require '../module.coffee'
 qs = require 'qs'
+_ = require 'lodash'
 
-###globals angular, _###
+###globals angular###
 module.config(($httpProvider) ->
   $httpProvider.useApplyAsync(true)
 )

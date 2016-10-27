@@ -160,6 +160,14 @@ activateNewData = (subtask, {tableProp, transaction, deletes} = {}) -> Promise.t
       # full data sync, and if we didn't touch it that means it should be deleted
       activatePromise = tables.finalized[tableProp](transaction: transaction)
       .where(subset)
+      .where () ->
+        # the below is to prevent de-activating rows from the current batch, e.g. if the activate subtask executes but
+        # the dyno goes down before the subtask is marked as complete, so the subtask ends up running a 2nd time.  If
+        # that were to happen, the row would have batch_id = subtask.batch_id and active = true.  That condition should
+        # be prevented by the clauses below
+        @where(batch_id: subtask.batch_id, active: false)
+        @orWhereNot () ->
+          @where(batch_id: subtask.batch_id, active: false)
       .update(active: dbs.get('main').raw('NOT "active"'))
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
@@ -359,7 +367,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
   .then (total) ->
     logger.spawn(subtask.task_name).debug () -> "Finished normalize: #{JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix)} (#{successes.length} successes out of #{total})"
-    if successes.length == 0
+    if successes.length == 0 || options.skipFinalize
       return
     manualData =
       cause: subtask.data.dataType

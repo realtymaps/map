@@ -29,19 +29,30 @@ span(
             span.draw-area-btn Draw New Area
       .inner
         ul(ng-controller="rmapsAreasModalCtrl")
-          li(
+          li.area-list-item(
             ng-controller="rmapsAreasQuickStatsModalCtrl"
             ng-repeat="model in areas | orderBy:'properties.area_name'" ng-click="centerOn(model)"
             ng-mouseenter="onMouseOver(model)"
             ng-mouseleave="onMouseLeave(model)")
-            div
-              span.content
-                .title {{model.properties.area_name}}
-                span.rename(ng-click="update(model); $event.stopPropagation()") Rename
-              span.actions(rmaps-require-project-editor)
-                span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Area statistics")
-                span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Send mail to area")
-                span.fa.fa-trash-o(ng-click="remove(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Delete area")
+            .container-fluid(ng-controller="rmapsAreaItemCtrl")
+              .row
+                span.content.col-md-9.col-sm-9.col-xs-12
+                  div(ng-if="!isRenaming")
+                    .title() {{model.properties.area_name}}
+                    span.rename(ng-click="rename(model); $event.stopPropagation()") Rename
+                  form.title.comfy(ng-if="isRenaming" name="renameAreaForm")
+                    input(
+                      placeholder="Type Area name here."
+                      type="text"
+                      name="title"
+                      ng-model="model.properties.area_name"
+                      validator="optMinlength=2")
+                    button.btn.btn-default(type="reset" ng-click="cancel(model)" validation-reset="renameAreaForm") Cancel
+                    button.btn.btn-primary(type="submit" ng-click="save(model)" validation-submit="renameAreaForm") Save
+                span.actions.col-md-3.col-sm-3.col-xs-12(rmaps-require-project-editor)
+                  span.fa.fa-bar-chart(ng-click="showStatistics(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Area statistics")
+                  span.fa.fa-envelope(ng-click="sendMail(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Send mail to area")
+                  span.fa.fa-trash-o(ng-click="remove(model); $event.stopPropagation()" tooltip-placement="bottom" uib-tooltip="Delete area")
         .dropdown-explanation(ng-show="!_.keys(areas).length")
           p You haven't drawn any areas. Draw areas on the map to easily navigate between neighborhoods and to limit your search results.
           p You can also send mail to an area or get statistics about it.

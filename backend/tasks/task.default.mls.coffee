@@ -4,11 +4,9 @@ jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls')
 mlsHelpers = require './util.mlsHelpers'
-retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
-analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # NOTE: This file is a default task definition used for MLSs that have no special cases
@@ -52,7 +50,10 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: now}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({
+        subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize,
+        laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType,
+        startTime: now, doDailyMaintenance: doRefresh}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()
@@ -71,6 +72,7 @@ normalizeData = (subtask) ->
     dataSourceId: subtask.task_name
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
+    skipFinalize: subtask.data.doDailyMaintenance
 
 
 recordChangeCounts = (subtask) ->

@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point

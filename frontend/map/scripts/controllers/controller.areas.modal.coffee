@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 template = do require '../../html/views/templates/modals/areaModal.jade'
@@ -72,11 +72,6 @@ rmapsLeafletHelpers) ->
     .then (id) ->
       $scope.checkToggleInShapes()
       id
-
-  $scope.update = (model) ->
-    $scope.createModal(model).then (modalModel) ->
-      _.merge(model, modalModel)
-      signalUpdate drawnShapesSvc.update model
 
   $scope.remove = (model, {skipAreas, redraw = false} = {}) ->
     toCancel = removeNotificationQueue.shift()

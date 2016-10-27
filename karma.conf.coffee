@@ -25,7 +25,13 @@ module.exports = (config) ->
       #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
-      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs']
+      transform: [
+        'coffeeify'
+        'jadeify'
+        'stylusify'
+        ["browserify-css", require('./gulp/util/browserify/browserify.css')]
+        'brfs'
+      ]
       # extensions: ['.coffee', '.js']
 
 
@@ -54,8 +60,6 @@ module.exports = (config) ->
     files: [
       'node_modules/phantomjs-polyfill/bind-polyfill.js'
       require.resolve('stripe-debug')#https://github.com/bendrucker/angular-stripe/issues/23
-      '_public/scripts/vendor.js'
-      '_public/styles/vendor.css'
       'frontend/**/scripts/**/*.coffee'
       'spec/fixtures/*.html'
       'spec/fixtures/*.json'

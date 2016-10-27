@@ -2,6 +2,10 @@
 set -e
 set -o pipefail
 
+CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+"$CURRENT_DIR"/installPackageManager
+
 
 if [[ "$IS_HEROKU" != "" || "$CI" != "" ]]; then
   # this is for local dev install needs ONLY!

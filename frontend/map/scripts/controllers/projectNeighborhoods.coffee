@@ -1,4 +1,4 @@
-###globals _###
+_ = require 'lodash'
 app = require '../app.coffee'
 
 app.controller 'rmapsProjectAreasCtrl', (
