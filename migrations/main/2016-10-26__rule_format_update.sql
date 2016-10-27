@@ -20,3 +20,12 @@ where list != 'base' AND output SIMILAR TO '%(Price|price|Amount|amount|Fee|fee|
 update config_data_normalization
 set config = jsonb_set(config::jsonb, '{"outputFormat"}', '"MMMM Do, YYYY"')
 where config::jsonb @> '{"DataType": "DateTime"}'::jsonb AND list != 'base';
+
+-- itemized fields
+update config_data_normalization
+set config = jsonb_set(config::jsonb, '{deliminate}', 'true'::jsonb)
+where data_source_id = 'blackknight' AND (output = 'Total Assessed Value' OR output = 'Market Value: Improvement' OR output = 'Market Value: Land' OR output = 'Total Market Value');
+
+update config_data_normalization
+set config = jsonb_set(config::jsonb, '{addDollarSign}', 'true'::jsonb)
+where data_source_id = 'blackknight' AND (output = 'Total Assessed Value' OR output = 'Market Value: Improvement' OR output = 'Market Value: Land' OR output = 'Total Market Value');
