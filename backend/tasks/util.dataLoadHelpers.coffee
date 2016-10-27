@@ -252,7 +252,6 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
     .orderBy('list')
     .orderBy('ordering')
     .then (validations=[]) ->
-      console.log "validations:\n#{JSON.stringify(validations)}"
       validationMap = {}
       for validationDef in validations
         validationMap[validationDef.list] ?= []
