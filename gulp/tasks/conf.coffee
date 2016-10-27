@@ -10,3 +10,4 @@ exports.errorHandler = (title) ->
 # See https://github.com/paulmillr/chokidar
 exports.chokidarOpts =
   alwaysStat: true
+  read: false
