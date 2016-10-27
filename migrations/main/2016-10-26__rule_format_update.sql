@@ -1,10 +1,10 @@
 -- booleans
 update config_data_normalization
-set config = jsonb_set(config::jsonb, '{"truthyOutput"}', '"yes"')
+set config = jsonb_set(config::jsonb, '{truthyOutput}', '"yes"')
 where list != 'base' AND config::jsonb @> '{"DataType": "Boolean"}'::jsonb;
 
 update config_data_normalization
-set config = jsonb_set(config::jsonb, '{"falsyOutput"}', '"no"')
+set config = jsonb_set(config::jsonb, '{falsyOutput}', '"no"')
 where list != 'base' AND config::jsonb @> '{"DataType": "Boolean"}'::jsonb;
 
 -- currency
@@ -18,7 +18,7 @@ where list != 'base' AND output SIMILAR TO '%(Price|price|Amount|amount|Fee|fee|
 
 -- dates
 update config_data_normalization
-set config = jsonb_set(config::jsonb, '{"outputFormat"}', '"MMMM Do, YYYY"')
+set config = jsonb_set(config::jsonb, '{outputFormat}', '"MMMM Do, YYYY"')
 where config::jsonb @> '{"DataType": "DateTime"}'::jsonb AND list != 'base';
 
 -- itemized fields
