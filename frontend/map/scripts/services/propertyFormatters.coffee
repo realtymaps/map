@@ -33,6 +33,12 @@ app.service 'rmapsPropertyFormatterService',
       isPinnedResult: (result) ->
         rmapsPropertiesService.isPinnedProperty result?.rm_property_id
 
+      activePin: (result) ->
+        if @isPinnedResult(result)
+          $rootScope.mainOptions.naming.save.un
+        else
+          $rootScope.mainOptions.naming.save.present
+
       isFavoriteResult: (result) ->
         rmapsPropertiesService.isFavoriteProperty result?.rm_property_id
 

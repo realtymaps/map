@@ -3,10 +3,36 @@ app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
+naming = do -> # for things we can't make up our minds on for naming context
+  save: do ->
+    alt =
+      past: 'Pinned'
+      present: 'Pin'
+      plural: 'Pins'
+      progressive: 'Pinning'
+      un: 'Unpin'
+    past = 'Saved'
+    progressive = 'Saving'
+    present = 'Save'
+    plural = 'Saves'
+    un = 'Unsave'
+    pluralAlt =
+      plural.toLowerCase() + '/' + alt.plural.toLowerCase()
+    {
+      alt
+      past
+      progressive
+      present
+      plural
+      pluralAlt
+      un
+    }
+
 app.constant 'rmapsMainOptions', do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
   res = _.merge common,
-    map:
+    map: {
+      naming
       clickDelayMilliSeconds: 300
       redrawDebounceMilliSeconds: 1000
       options:
@@ -25,6 +51,7 @@ app.constant 'rmapsMainOptions', do () ->
           space: 2
         json:
           center: _.extend new Point(lat: 26.148111, lon: -81.790809), zoom: 15, where: 'rmapsMainOptions'
+    }
 
     # do logging for local dev only
     doLog: if isDev then true else false

@@ -97,7 +97,12 @@ app = window.angular.module 'rmapsMapApp', [
 
 require '../../../tmp/map.templates.js' #requries rmapsMapsApp to be initialized
 
-app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalService) ->
+app.controller 'rmapsAppCtrl', (
+$scope
+$rootScope
+$location
+rmapsPrincipalService
+rmapsMainOptions) ->
 
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity
@@ -106,6 +111,7 @@ app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalSer
     user.name = user.full_name or user.username
 
     _.extend $rootScope,
+      mainOptions: rmapsMainOptions['map']
       user: user
       profiles: profiles
       isActive: (viewLocation) ->
