@@ -26,8 +26,9 @@ _gulpify = ({stream, times, outputName, doSourceMaps}) ->
   # fileCount = 0
   stream
   .once 'error', (err) ->
-    l.error err
-    l.error err.stack
+    l.error err.toString().slice(0,500)
+    if err.stack
+      l.error err.stack.slice(0,500)
     conf.errorHandler 'Bundler'
   .once 'end', ->
     timestamp = prettyHrtime process.hrtime times.startTime

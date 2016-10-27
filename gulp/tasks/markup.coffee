@@ -1,7 +1,10 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
+<<<<<<< HEAD
 watch = require 'gulp-watch'
+=======
+>>>>>>> master
 gutil = require 'gulp-util'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
@@ -40,7 +43,7 @@ markup = (app) ->
 
     .pipe gulp.dest paths.temp
     .pipe $.size
-      title: paths.dest.root
+      title: paths.temp
       showFiles: true
 
   markupFn.displayName = 'markup'
