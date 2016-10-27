@@ -51,12 +51,12 @@ done
 
 if [[ "$DO_CLEAN" == "true" ]]
 then
-  foreman run npm run clean
+  foreman run yarn run clean
 fi
 
 if [[ "$DO_INSTALL" == "true" ]]
 then
-  foreman run npm install
+  foreman run yarn install
 fi
 
-foreman run npm start
+foreman run yarn start
