@@ -10,9 +10,9 @@ internals = require './browserify.internals'
 module.exports = ({inputGlob, outputName, doSourceMaps, watch}) ->
   times = startTime: ''
 
-  logger.debug -> "@@@@ inputGlob @@@@"
-  logger.debug -> inputGlob
-  logger.debug -> "@@@@@@@@@@@@@@@@@@@"
+  # logger.debug -> "@@@@ inputGlob @@@@"
+  # logger.debug -> inputGlob
+  # logger.debug -> "@@@@@@@@@@@@@@@@@@@"
 
   globby(inputGlob)
   .catch (err) ->
