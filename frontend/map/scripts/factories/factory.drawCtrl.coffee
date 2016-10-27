@@ -10,11 +10,33 @@ leafletData
 leafletDrawEvents
 ) ->
 
+  hookItemsOptions = ({handles, itemsOptions, drawnItems}) ->
+    if !itemsOptions
+      return
+
+    origDrawCreated = handles?["draw:created"]
+
+    drawCreated = ({layer,layerType}) ->
+      #extend new drawItems
+      _.extend layer.options, itemsOptions
+      #call original callback
+      origDrawCreated?({layer,layerType})
+
+    #override
+    if handles
+      handles["draw:created"] = drawCreated
+
+    #extend original drawItems
+    drawnItems.getLayers().forEach (layer) ->
+      _.extend layer.options, itemsOptions
+
   ngLog = $log
 
   ({$scope, mapId, handles, drawnItems, name, itemsOptions, drawOptions}) ->
 
     hasBeenDisabled = false
+
+    hookItemsOptions({handles, itemsOptions, drawnItems})
 
     $scope.$watch 'draw.enabled', (newVal, oldVal) ->
       return if !newVal?
@@ -28,10 +50,6 @@ leafletDrawEvents
         return if !hasBeenDisabled
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
         hasBeenDisabled = false
-
-    if itemsOptions?
-      drawnItems.getLayers().forEach (layer) ->
-        _.extend layer.options, itemsOptions
 
     $scope.draw =
       ready: false
