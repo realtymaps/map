@@ -19,6 +19,18 @@ describe 'utils/validation.validators.boolean()'.ns().ns('Backend'), ->
         expectResolve(subject()(param, testObj.isTrue)).then (value) ->
           value.should.be.equal bool
 
+  describe 'altered output', ->
+    it "should output `yes` & `no` as configured, instead of true & false", () ->
+      [true, false].forEach (bool) ->
+        expectedOutput = if bool then 'yes' else 'no'
+        options =
+          truthyOutput: 'yes'
+          falsyOutput: 'no'
+        expectResolve(subject(options)(param, bool))
+        .then (value) ->
+          console.log "value.should.be.equal expectedOutput:  #{value} #{expectedOutput}"
+          value.should.be.equal expectedOutput
+
   describe 'inverted', ->
 
     describe 'just inverted w falsy and truthy', ->

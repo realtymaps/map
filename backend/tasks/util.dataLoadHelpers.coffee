@@ -319,8 +319,10 @@ normalizeData = (subtask, options) -> Promise.try () ->
   successes = []
   rawSubid = buildUniqueSubtaskName(subtask)
 
-  # get validations
+  # get validations rules (does not do the validating)
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
+
+  # applies `validationInfo` (via `validationPromise`) to `rows`
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       stats =
@@ -328,34 +330,17 @@ normalizeData = (subtask, options) -> Promise.try () ->
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
         up_to_date: new Date(subtask.data.startTime)
+
+      # applies the validation / transform to the row
       validateSingleField = (definitions) ->
         validation.validateAndTransform(row, definitions)
+
       Promise.props(_.mapValues(validationInfo.validationMap, validateSingleField))
       .cancellable()
       .then (normalizedData) ->
+        # builds record, which includes categorizing non-base fields into `shared_groups` and `subscriber_groups`
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
       .then (updateRow) ->
-        # Data in groups does not need to be searchable, so it gets pre-formatted here
-        preformat = (group) ->
-          for field in group
-            if _.isDate field.value
-              field.value = moment(field.value).format 'MMMM Do, YYYY'
-              logger.spawn(subtask.task_name+':preformat').debug "Normalized a date #{field.name} = #{field.value}"
-            else if !isNaN(Number(field.value))
-              lcName = field.name.toLowerCase()
-              if lcName.indexOf('price') != -1 || lcName.indexOf('amount') != -1
-                field.value = "$" + field.value
-                logger.spawn(subtask.task_name+':preformat').debug "Normalized a price #{field.name} = #{field.value}"
-            else if _.isBoolean field.value
-              field.value = if field.value then 'yes' else 'no'
-              logger.spawn(subtask.task_name+':preformat').debug "Normalized a boolean #{field.name} = #{field.value}"
-
-        for groupName, group of updateRow.shared_groups
-          preformat(group)
-
-        for groupName, group of updateRow.subscriber_groups
-          preformat(group)
-
         updateRecord({
           updateRow
           stats
