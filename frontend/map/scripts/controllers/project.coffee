@@ -98,14 +98,14 @@ app.controller 'rmapsProjectCtrl',
   # Listen for property marker event clicks
   dashboardMapAccess.groups.property.registerClickHandler $scope, (event, args, propertyId) ->
     $log.debug 'dashboardMap click', args, propertyId
-    index = _.findIndex $scope.pins, 'rm_property_id', propertyId
+    index = _.findIndex $scope.properties, 'rm_property_id', propertyId
     if index?
       $scope.carousel.activeSlide = index
 
   $scope.$watch 'carousel.activeSlide', (slideIndex) ->
     $log.debug 'carousel.activeSlide', slideIndex
-    if $scope.pins[slideIndex]
-      highlightProperty($scope.pins[slideIndex].rm_property_id)
+    if $scope.properties?[slideIndex]
+      highlightProperty($scope.properties[slideIndex].rm_property_id)
 
   $scope.getLabel = (actual) ->
     if !actual
@@ -215,6 +215,7 @@ app.controller 'rmapsProjectCtrl',
       for detail in data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
+      $scope.properties = _.values(properties)
       $scope.pins = _.values(_.pick(properties, _.keys(project.pins)))
       $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
 
@@ -222,7 +223,7 @@ app.controller 'rmapsProjectCtrl',
       # Add property markers to the dashboard map
       #
       $timeout(() ->
-        dashboardMapAccess.groups.property.addPropertyMarkers($scope.pins)
+        dashboardMapAccess.groups.property.addPropertyMarkers($scope.properties)
         dashboardMapAccess.groups.property.fitToBounds(data)
       , 0)
     .finally () ->
