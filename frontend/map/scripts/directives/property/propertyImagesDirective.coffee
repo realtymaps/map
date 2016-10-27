@@ -72,6 +72,6 @@ app.directive 'propertyImages', (
       imageLoaded()
 
     $scope.property.photos = photos
-    $log.debug $scope.property.photos
+    # $log.debug $scope.property.photos
 
     $scope.$on 'imageLoaded', imageLoaded

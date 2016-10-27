@@ -7,16 +7,17 @@ include ../includes/mixins/_leafletMixin.jade
         .carousel-standard(
           uib-carousel
           interval="myInterval"
-          ng-if="pins.length"
-          active="activeSlide"
+          ng-if="properties.length"
+          active="carousel.activeSlide"
           slide-selector
           slide-selector-label="getLabel(actual)"
-          on-carousel-change="onSlideChanged(nextSlide, direction)")
-            .project-card.bordered(uib-slide ng-repeat="property in pins"
-              index="$index" active="property.activeSlide" actual="property")
+          template-url="./includes/bootstrap/carousel.jade"
+          )
+            .project-card.bordered(uib-slide ng-repeat="property in properties"
+              index="$index" actual="property")
               .pin-image.prop-image.zoomable()
                 .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
-                property-images(property="property" image-width="656" show-status="true")
+                property-images(property="property" cover-image="true" image-width="656" show-status="true")
               .pin-attributes.content-block.property-attrs-clickable(ui-sref="property({ id: property.rm_property_id })")
                 property-attributes(property="property")
 
@@ -24,11 +25,11 @@ include ../includes/mixins/_leafletMixin.jade
         .carousel-standard(
           uib-carousel
           interval="myInterval"
-          ng-if="pins.length"
-          active="activeSlide"
-          on-carousel-change="onSlideChanged(nextSlide, direction)"
+          ng-if="properties.length"
+          active="carousel.activeSlide"
+          template-url="./includes/bootstrap/carousel.jade"
         )
-          .project-card.bordered(uib-slide ng-repeat="property in pins" index="$index" active="property.activeSlide" actual="property")
+          .project-card.bordered(uib-slide ng-repeat="property in properties" index="$index" actual="property")
             .pin-image.prop-image.zoomable(ui-sref="property({ id: property.rm_property_id })")
               .prop-image-status.prop-image-status-md(ng-class="formatters.property.getStatusLabelClass(property,true)") {{formatters.property.getStatusLabel(property)}}
               img(ng-if="property.geometry_center.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 350, 200)}}" title="{{property.title}}")
@@ -36,7 +37,7 @@ include ../includes/mixins/_leafletMixin.jade
             .pin-attributes.content-block.property-attrs-clickable(ui-sref="property({ id: property.rm_property_id })")
               property-attributes(property="property")
 
-      .project-instructions(ng-if="!pins.length && loadedProperties")
+      .project-instructions(ng-if="!properties.length && loadedProperties")
         span You don't have any Pins
         span.icon.icon-pin.project-instruction-icon
         span or Favorites

@@ -73,11 +73,6 @@ rmapsLeafletHelpers) ->
       $scope.checkToggleInShapes()
       id
 
-  $scope.update = (model) ->
-    $scope.createModal(model).then (modalModel) ->
-      _.merge(model, modalModel)
-      signalUpdate drawnShapesSvc.update model
-
   $scope.remove = (model, {skipAreas, redraw = false} = {}) ->
     toCancel = removeNotificationQueue.shift()
     if toCancel?

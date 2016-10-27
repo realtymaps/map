@@ -68,9 +68,9 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         doDeleteLastTime: false
 
       @mapCtrl.scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
-        $log.debug "resultsFormatter - watch filterSummary. New results? #{newVal != oldVal}"
-
         return if newVal == oldVal
+        $log.debug "resultsFormatter - watch filterSummary. New results"
+
         @lastSummaryIndex = 0
         #what is special about this case where we do not use reset??
         @mapCtrl.scope.results = {}
@@ -141,7 +141,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
             properties = [summary]
           _.each properties, (property) =>
             if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, property)
-              $log.debug property
+              # $log.debug property
               @mapCtrl.scope.results[property.rm_property_id] = property
 
       @mapCtrl.scope.resultsLimit = Math.min @mapCtrl.scope.resultsLimit + amountToLoad, @mapCtrl.scope.resultsPotentialLength
