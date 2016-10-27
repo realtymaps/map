@@ -26,6 +26,7 @@ app = require '../../app.coffee'
 # Show slide selector in carousel
 ###eslint-disable###
 app.directive 'slideSelector', ($log) ->
+  $log = $log.spawn 'slideSelector'
   ###eslint-enable###
   return {
     restrict: 'A'
@@ -34,20 +35,24 @@ app.directive 'slideSelector', ($log) ->
     link: ($scope, $elem, $attrs, carouselCtrl) ->
       origSelect = carouselCtrl.select
       ###eslint-disable###
-      carouselCtrl.select = ({slide}, direction) ->
+      carouselCtrl.select = (slidePayload, direction) ->
+        {slide} = slidePayload
         ###eslint-enable###
         if $scope.selectorScope
-          $scope.selectorScope.slideSelectorCurrent = slide
+          $log.debug 'slideSelectorCurrent:', slide?.actual?.rm_property_id
+          $scope.selectorScope.slideSelectorCurrent = slidePayload
 
         return origSelect.apply(this, arguments)
 
     controller: ($scope) ->
       registerSlideSelector: (selectorScope) ->
+        $log.debug 'registerSlideSelector', selectorScope
         $scope.selectorScope = selectorScope
         $scope.selectorScope.selectorLabelFn = $scope.selectorLabelFn
         $scope.selectorScope.carouselParentScope = $scope.$parent
 
       setLabelFunction: (labelFn) ->
+        $log.debug 'setLabelFunction', labelFn
         $scope.selectorLabelFn = labelFn
         if $scope.selectorScope?
           $scope.selectorScope.selectorLabelFn = labelFn
@@ -69,6 +74,7 @@ app.directive 'slideSelectorLabel', ($parse, $log) ->
 # Slide selector add on for UI-Bootstrap Carousel
 ###eslint-disable###
 app.directive 'slideSelectorControl', ($log) ->
+  $log = $log.spawn 'slideSelectorControl'
   ###eslint-enable###
   return {
     restrict: 'EA'
@@ -79,11 +85,14 @@ app.directive 'slideSelectorControl', ($log) ->
         $scope.slideSelectorCurrent = $scope.slides[0]
 
       $scope.$watchCollection 'slides', (newValue) ->
+        $log.debug 'watchCollection slides', newValue
         if newValue?.length > 0
           $scope.slideSelectorCurrent = newValue[0]
 
       $scope.getLabel = (slidePayload) ->
         {slide} = slidePayload
+        if !slide?.actual
+          $log.warn 'slide has no "actual" property', slidePayload
         if $scope.selectorLabelFn
           return $scope.selectorLabelFn($scope.carouselParentScope || $scope, {
             actual: slide.actual
@@ -91,6 +100,7 @@ app.directive 'slideSelectorControl', ($log) ->
 
         idx = ($scope.indexOfSlide(slidePayload) + 1)
         return 'Slide ' + idx
+
     ###eslint-disable###
     link: ($scope, $elem, $attrs, slideSelectorCtrl, carouselCtrl) ->
       ###eslint-enable###
