@@ -18,6 +18,7 @@ reset-font()
 $margin = 36px // 0.5in // LOB specifies min. safe printing margin is 0.03125in
 $address_margin = 216px // 3in // area occupied by address when template = true
 $pagewidth = 612px // 8.5in
+$gray_lightest = #f0f1f3
 
 // page itself, this gets applied to <body> of html, syncs expected width for pages
 .letter-body
@@ -41,3 +42,35 @@ $pagewidth = 612px // 8.5in
       // If this is changed, the logic that calculates page breaks should be changed in mailDirectives.coffee
       // Padding is used rather than margin to aid in this calculation.
       padding-top $margin
+
+
+.return-address-window,
+.recipient-address-window
+  background-color $gray_lightest
+  border-radius 5px
+  position absolute
+
+.return-address-window
+  left 45px
+  top 36px
+  width 260px
+  height 63px
+  z-index 1000
+
+.recipient-address-window
+  left 45px
+  top 108px
+  width 288px
+  height 72px
+  z-index 1000
+
+.return-address-text,
+.recipient-address-text
+  padding 1em
+  text-align left
+
+.address-line
+  text-transform uppercase
+  font-family 'Open Sans'
+  font-size 9px
+  line-height 10px
