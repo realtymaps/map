@@ -1,3 +1,4 @@
+
 .row.heading
   .col-md-2 Field Name (from data source):
   .col-md-4 {{fieldData.current.input}}
@@ -10,6 +11,8 @@
   .col-md-2
     input(type="text" ng-model="fieldData.current.output" ng-change="updateRule()")
   .col-md-8.help Supply a more readable name for this field if necessary
+
+
 .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
   .col-md-2 Remove zero (0) values?
   .col-md-2
@@ -20,11 +23,29 @@
   .col-md-2
     input(type="text" ng-model="fieldData.current.config.nullNumber" rmaps-list-input placeholder="1, 2, 3" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
   .col-md-8.help Any of the specified values found in this field will be removed and won't be visible. Multiple values may be entered separated by commas.
+.row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
+  .col-md-2 Add dollar sign
+  .col-md-2
+    input(type="checkbox" ng-model="fieldData.current.config.addDollarSign" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+  .col-md-8.help Number includes a dollar sign.
+.row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
+  .col-md-2 Add commas
+  .col-md-2
+    input(type="checkbox" ng-model="fieldData.current.config.deliminate" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+  .col-md-8.help Number will be formatted with commas.
+
+.row(ng-if="fieldData.current.type.name == 'integer'")
+  .col-md-2 Implicit Decimal Places
+  .col-md-4
+    input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+
 .row(ng-if="fieldData.current.type.name == 'float'")
   .col-md-2 Round / truncate decimal
   .col-md-2
     input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
   .col-md-8.help Values with decimals will be replaced with round numbers, for example 2.87 becomes 2
+
+
 .row(ng-if="fieldData.current.type.name == 'string'")
   .col-md-2 Remove empty?
   .col-md-2
@@ -46,12 +67,22 @@
   .col-md-2
     input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
   .col-md-8.help Enter the separator to use for splitting values in this field (a comma ',' is typical)
+
+
 .row(ng-if="fieldData.current.type.name == 'boolean'")
   .col-md-2 Remove values
   .col-md-2
     select(ng-model="fieldData.current.config.nullBoolean" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
   .col-md-8.help Remove the selected value
-.row(ng-if="fieldData.current.type.name == 'integer'")
-  .col-md-2 Implicit Decimal Places
-  .col-md-4
-    input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+
+.row(ng-if="fieldData.current.type.name == 'boolean'")
+  .col-md-2 True Output Value
+  .col-md-2
+    input(type="text" ng-model="fieldData.current.config.truthyOutput" placeholder="true, yes, affirmative, etc" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+  .col-md-8.help Output for when value is true
+
+.row(ng-if="fieldData.current.type.name == 'boolean'")
+  .col-md-2 False Output Value
+  .col-md-2
+    input(type="text" ng-model="fieldData.current.config.falsyOutput" placeholder="false, no, negative, etc" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+  .col-md-8.help Output for when value is false

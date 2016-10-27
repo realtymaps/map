@@ -118,6 +118,9 @@ app.controller 'rmapsPropertyCtrl',
           # Tab heading (mobile)
           source.tabHeading = if source.data_source_type == 'county' then 'Tax Record' else source.mls_formal_name
 
+          console.log "\nsource from source.dataSources:"
+          console.log source
+
           # Sets up Deed, Mortage and Listing history arrays with extra data split off (for ng-repeat)
           for history in ['deedHistory', 'mortgageHistory', 'priorListings']
             if historyObj = source?.subscriber_groups?[history]

@@ -1,6 +1,6 @@
 .col-md-12.typeahead.scroll(ng-if="fieldData.current.type.name == 'datetime'")
   .row
-    .col-md-2 Date Format
+    .col-md-2 Source Format
     .col-md-4
       input(
         type="text"
@@ -13,4 +13,22 @@
         typeahead-on-select="updateRule()"
       )
     .col-md-6.help Date formatting, as documented #{''}
+      a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
+
+
+  //- putting the below into `nonBase` made styling difficult for the typeahead dropdown, so putting the nonBase datetime here to help that
+  .row(ng-show="fieldData.current.list != 'base'")
+    .col-md-2 Our Format
+    .col-md-4
+      input(
+        type="text"
+        ng-model="fieldData.current.config.outputFormat"
+        placeholder="MMMM Do, YYYY"
+        ng-disabled="fieldData.current.config.advanced"
+        ng-change="updateRule()"
+        uib-typeahead="format for format in dateFormats | filter:$viewValue"
+        typeahead-min-length=0
+        typeahead-on-select="updateRule()"
+      )
+    .col-md-6.help Date formatting, use "none" for no formatting, or use as documented #{''}
       a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here

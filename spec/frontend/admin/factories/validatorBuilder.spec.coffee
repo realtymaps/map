@@ -26,10 +26,10 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": {"DataType": "DateTime", "format": 'asdf'}}
-       transform: '[validators.datetime({"format":"asdf"})]'
+       transform: '[validators.datetime({"format":"asdf","outputFormat":"MMMM Do, YYYY"})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": {"DataType": "Boolean"}}
-       transform: '[validators.boolean({}),validators.nullify({"value":false})]'
+       transform: '[validators.boolean({"truthyOutput":"yes","falsyOutput":"no"}),validators.nullify({"value":false})]'
 
        # Base rules
       ,

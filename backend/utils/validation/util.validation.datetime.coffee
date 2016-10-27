@@ -33,7 +33,6 @@ module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     if !value? or value == ''
       return null
-
     fixedValue = value
     if fixedValue.substr(monthStart, 2) == '00'
       fixedValue = fixedValue.slice(0, monthStart) + '01' + fixedValue.slice(monthStart+monthLength)
@@ -48,4 +47,8 @@ module.exports = (options = {}) ->
 
     if options.dateOnly
       datetime = datetime.startOf('day')
+
+    if options.outputFormat && options.outputFormat != "none"
+      return datetime.format(options.outputFormat)
+
     return datetime._d  # get the underlying date object
