@@ -83,11 +83,11 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      internals.getDataDump(req.params.mlsId, req.query, next)
+      internals.getDataDump(req.params.mlsId, req.params.dataType, req.query, next)
       .then (csvPayload) ->
         resObj = new ExpressResponse(csvPayload)
         resObj.format = 'csv'
-        resObj.filename = req.params.mlsId.toLowerCase() + '_mlsdata.csv'
+        resObj.filename = "#{req.params.mlsId.toLowerCase()}_#{req.params.dataType}_data.csv"
         next(resObj)
 
   getLookupTypes:

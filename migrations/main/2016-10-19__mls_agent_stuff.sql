@@ -7,19 +7,19 @@ WHERE name = '<default_mls_config>';
 
 UPDATE jq_task_config
 SET
-  name = name||'_listings',
-  blocked_by_tasks = ('["'||name||'_photos","'||name||'_agents"]')::JSONB
+  name = name||'_listing',
+  blocked_by_tasks = ('["'||name||'_photo","'||name||'_agent"]')::JSONB
 WHERE description = 'Refresh mls data';
 
 
 -- change the mls photos task config
 
 UPDATE jq_task_config
-SET name = '<mlsid>_photos'
+SET name = '<mlsid>_photo'
 WHERE name = '<default_mls_photos_config>';
 
 UPDATE jq_task_config
-SET blocked_by_tasks = ('["'||replace(name,'_photos','_listings')||'","'||replace(name,'_photos','_agents')||'"]')::JSONB
+SET blocked_by_tasks = ('["'||replace(name,'_photo','_listing')||'","'||replace(name,'_photo','_agent')||'"]')::JSONB
 WHERE description = 'Load MLS photos';
 
 
@@ -27,14 +27,14 @@ WHERE description = 'Load MLS photos';
 
 UPDATE jq_subtask_config
 SET
-  task_name = '<mlsid>_listings',
-  name = replace(name, '<default_mls_config>', '<mlsid>_listings')
+  task_name = '<mlsid>_listing',
+  name = replace(name, '<default_mls_config>', '<mlsid>_listing')
 WHERE task_name = '<default_mls_config>';
 
 UPDATE jq_subtask_config
 SET
-  task_name = task_name||'_listings',
-  name = replace(name, task_name||'_', task_name||'_listings_')
+  task_name = task_name||'_listing',
+  name = replace(name, task_name||'_', task_name||'_listing_')
 WHERE
   queue_name = 'mls'
   AND task_name NOT LIKE '%_%'
@@ -42,6 +42,22 @@ WHERE
 
 UPDATE jq_subtask_config
 SET
-  task_name = '<mlsid>_photos'
-  name = replace(name, '<default_mls_photos_config>', '<mlsid>_photos')
+  task_name = '<mlsid>_photo'
+  name = replace(name, '<default_mls_photos_config>', '<mlsid>_photo')
 WHERE task_name = '<default_mls_photos_config>';
+
+UPDATE jq_subtask_config
+SET
+  task_name = replace(task_name,'_photos','_photo'),
+  name = replace(name,'_photos_','_photo_')
+WHERE
+  queue_name = 'mls'
+  AND task_name LIKE '%_photos'
+  AND task_name NOT LIKE '<%';
+
+
+UPDATE jq_subtask_config
+SET data = NULL
+WHERE
+  queue_name = 'mls'
+  AND name LIKE '%_loadRawData';

@@ -2,13 +2,15 @@ Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
-logger = require('../config/logger').spawn('task:mls')
+logger = require('../config/logger').spawn('task:mls:listing')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
-analyzeValue = require '../../common/utils/util.analyzeValue'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
+internals = require './task.default.mls.listing.internals'
 
 
 # NOTE: This file is a default task definition used for MLSs that have no special cases
@@ -16,6 +18,7 @@ NUM_ROWS_TO_PAGINATE = 2500
 
 
 loadRawData = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
   now = Date.now()
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
   taskLogger = logger.spawn(subtask.task_name)
@@ -24,7 +27,7 @@ loadRawData = (subtask) ->
     taskLogger.debug "limiting raw mls data to #{limit}"
 
   maintenancePromise = dataLoadHelpers.checkReadyForRefresh(subtask, targetHour: 1)  # target 1am every day
-  dataLoadPromise = mlsHelpers.loadUpdates(subtask, dataSourceId: subtask.task_name, limit: limit)
+  dataLoadPromise = mlsHelpers.loadUpdates(subtask, dataType: 'listing', dataSourceId: mlsId, limit: limit)
   Promise.join maintenancePromise, dataLoadPromise, (dailyMaintenance, numRawRows) ->
     taskLogger.debug () -> "rows to normalize: #{numRawRows||0} (refresh: #{dailyMaintenance})"
     if !dailyMaintenance && !numRawRows
@@ -33,7 +36,7 @@ loadRawData = (subtask) ->
         return 0
 
     recordCountsData =
-      dataType: subtask.data.dataType
+      dataType: 'listing'
     activateData =
       startTime: now
 
@@ -50,7 +53,7 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType, startTime: now, dailyMaintenance}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now, dailyMaintenance}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()
@@ -65,10 +68,11 @@ loadRawData = (subtask) ->
 
 
 normalizeData = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
   dataLoadHelpers.normalizeData subtask,
-    dataSourceId: subtask.task_name
+    dataSourceId: mlsId
     dataSourceType: 'mls'
-    buildRecord: mlsHelpers.buildRecord
+    buildRecord: internals.buildRecord
     skipFinalize: subtask.data.dailyMaintenance
 
 
@@ -79,24 +83,47 @@ recordChangeCounts = (subtask) ->
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized[subtask.data.dataType]()
+  tables.normalized.listing()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
-    data_source_id: subtask.task_name
+    data_source_id: mlsId
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
   Promise.each subtask.data.values, (id) ->
-    mlsHelpers.finalizeData {subtask, id}
+    internals.finalizeData {subtask, id}
 
 
 markUpToDate = (subtask) ->
-  mlsHelpers.markUpToDate(subtask)
+  mlsId = subtask.task_name.split('_')[0]
+  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
+  .then (uuidField) ->
+    dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
+    retsService.getDataChunks mlsId, 'listing', dataOptions, (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
+      ids = _.pluck(chunk, uuidField)
+      tables.normalized.listing()
+      .where(data_source_id: mlsId)
+      .whereIn('data_source_uuid', ids)
+      .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
+      .returning('rm_property_id')
+      .then (finalizeIds) ->
+        if finalizeIds.length == 0
+          return
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
+    .then (count) ->
+      logger.debug () -> "getDataChunks total: #{count}"
+  .catch retsService.isMaybeTransientRetsError, (error) ->
+    throw new SoftFail(error, "Transient RETS error; try again later")
+  .catch errorHandlingUtils.isUnhandled, (error) ->
+    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
 
 
 activateNewData = (subtask) ->
