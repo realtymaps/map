@@ -193,7 +193,7 @@ app.controller 'rmapsSelectTemplateCtrl', (
       content = rmapsMailTemplateTypeService.getMailContent(template.type)
     else
       previewCtrl = 'rmapsMailTemplateIFramePreviewCtrl'
-      content = $scope.wizard.mail.createLobHtml(rmapsMailTemplateTypeService.getMailContent(template.type))
+      content = $scope.wizard.mail.createPreviewHtml(rmapsMailTemplateTypeService.getMailContent(template.type))
 
     modalInstance = $uibModal.open
       template: previewModalTemplate
