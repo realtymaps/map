@@ -1,6 +1,7 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
+watch = require 'gulp-watch'
 gutil = require 'gulp-util'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
@@ -11,6 +12,8 @@ _testCb = null
 markup = (app) ->
   markupFn = () ->
     _testCb() if _testCb
+
+    gutil.log "Building markup:", gutil.colors.bgYellow(paths[app].jade)
 
     gulp.src paths[app].jade.concat './node_modules/angular-busy/angular-busy.html'
 
@@ -49,9 +52,11 @@ markupWatch = (app) ->
   # Just for nicer gulp out
   markupFn.displayName = 'markup'
 
-  gutil.log "Watching markup files:", gutil.colors.yellow(paths[app].jade)
+  watchPaths = paths[app].jade
 
-  watcher = gulp.watch paths[app].jade, conf.chokidarOpts, markupFn
+  gutil.log "Watching markup files:", gutil.colors.bgYellow(watchPaths)
+
+  watcher = watch watchPaths, conf.chokidarOpts, markupFn
 
   # Useful for debugging file watch issues
   # require('../util/bundleLogger').logEvents(watcher)
