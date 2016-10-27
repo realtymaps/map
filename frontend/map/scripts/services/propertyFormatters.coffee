@@ -18,7 +18,7 @@ app.service 'rmapsPropertyFormatterService',
     rmapsEventConstants
     rmapsFiltersFactory
   ) ->
-
+    $log = $log.spawn 'propertyFormatterService'
     _forSaleClass = {}
     _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
     _forSaleClass[rmapsParcelEnums.status.pending] = 'pending'
@@ -48,6 +48,8 @@ app.service 'rmapsPropertyFormatterService',
         return false
 
       getStatusClass: (result, showPinned = true) ->
+        # $log.debug result.rm_property_id, result.data_source_id, result.status, result.close_date, $rootScope.selectedFilters?.closeDateMin,
+        #    $rootScope.selectedFilters?.closeDateMax, $rootScope.selectedFilters?.soldRange
         if !result
           return ''
         if result.savedDetails?.isPinned && showPinned
@@ -70,6 +72,7 @@ app.service 'rmapsPropertyFormatterService',
             minDate = moment($rootScope.selectedFilters?.closeDateMin)
           if $rootScope.selectedFilters?.closeDateMax
             maxDate = moment($rootScope.selectedFilters?.closeDateMax)
+
         if minDate?.isAfter(moment(result.close_date))
           return _forSaleClass[rmapsParcelEnums.status.discontinued]
         if maxDate?.isBefore(moment(result.close_date))
@@ -100,7 +103,7 @@ app.service 'rmapsPropertyFormatterService',
         return result?.status == 'sold' && result?.close_date
 
       getPriceLabel: (status) ->
-        if (status =='sold'|| status=='not for sale')
+        if (status == 'sold'|| status == 'not for sale')
           label = ''
         else
           label = 'asking:'
@@ -114,16 +117,14 @@ app.service 'rmapsPropertyFormatterService',
 
       getDaysOnMarket: (result) ->
         if !result.days_on_market then return null
-        if result.status = 'for sale' || result.status = 'pending'
-
+        if result.status == 'for sale' || result.status == 'pending'
           compensate = moment.utc().diff(result.up_to_date, 'days')
           return result.days_on_market + compensate
         return result.days_on_market
 
       getCumulativeDaysOnMarket: (result) ->
         if !result.days_on_market_cumulative then return null
-        if result.status = 'for sale' || result.status = 'pending'
-
+        if result.status == 'for sale' || result.status == 'pending'
           compensate = moment.utc().diff(result.up_to_date, 'days')
           return result.days_on_market_cumulative + compensate
         return result.days_on_market_cumulative
