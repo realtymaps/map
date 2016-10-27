@@ -7,11 +7,10 @@ logger = (require '../specUtils/logger').spawn('lockFile')
 
 describe 'lock file', () ->
 
-  it 'file should exist', (done) ->
+  it 'file should exist', () ->
     basePath = path.join __dirname, '../../'
     logger.debug basePath
     fsStat("#{basePath}/yarn.lock")
     .then (stats) ->
       logger.debug stats
       expect(stats.isFile()).to.be.truthy
-      done()
