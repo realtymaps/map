@@ -8,7 +8,7 @@ machine:
 # circleci
 dependencies:
   override:
-    - ./scripts/misc/installPackageManager && yarn install
+    - ./scripts/misc/installPackageManager && yarn install --pure-lockfile
   pre:
     - sudo apt-get install libpoppler-cpp-dev
   cache_directories:

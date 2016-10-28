@@ -56,7 +56,7 @@ fi
 
 if [[ "$DO_INSTALL" == "true" ]]
 then
-  foreman run yarn install
+  foreman run yarn install --pure-lockfile
 fi
 
 foreman run yarn start
