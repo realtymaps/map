@@ -1,4 +1,4 @@
-app = require '../app.coffee'
+app = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app.factory 'rmapsLoginService', ($http) ->
