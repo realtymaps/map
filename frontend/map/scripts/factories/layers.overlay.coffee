@@ -2,6 +2,7 @@ app = require '../app.coffee'
 pieUtil = require '../utils/util.piechart.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
+mainOptions = require '../config/mainOptions.coffee'
 
 _overlays =
   currentLocation:
@@ -20,6 +21,16 @@ _overlays =
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true
       iconCreateFunction: pieUtil.pieCreateFunction
+
+  saves:
+    name: "#{mainOptions.map.naming.save.pluralAlt}"
+    type: 'group'
+    visible: true
+
+  favorites:
+    name: "Favorites"
+    type: 'group'
+    visible: true
 
   backendPriceCluster:
     name: 'Price Cluster'

@@ -454,7 +454,8 @@ app.factory 'rmapsMapFactory',
 
           # Handle the leaflet objects
           #update markers immediately
-          lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          lObject = @leafletDataMainMap.get(result.rm_property_id, 'saves')?.lObject ||
+            @leafletDataMainMap.get(result.rm_property_id, 'favorites')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
           #update polygons immediately
@@ -463,7 +464,7 @@ app.factory 'rmapsMapFactory',
           lObject?.setStyle(rmapsLayerFormattersService.Parcels.getStyle(result))
 
           #make sure selectedResult is updated if it exists
-          summary = @scope.map?.markers?.filterSummary
+          summary = @scope.map?.markers?.saves
           if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
             delete @scope.selectedResult.savedDetails
             angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
@@ -479,7 +480,8 @@ app.factory 'rmapsMapFactory',
           if wasFavorite and !@scope.results[result.rm_property_id]
             result.isMousedOver = undefined
 
-          lObject = @leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          lObject = @leafletDataMainMap.get(result.rm_property_id, 'favorites')?.lObject ||
+            @leafletDataMainMap.get(result.rm_property_id, 'saves')?.lObject
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
 
