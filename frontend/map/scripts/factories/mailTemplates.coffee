@@ -68,8 +68,9 @@ app.service 'rmapsMailTemplateFactory', (
       content = @_cleanContent(content)
       fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
       classStyles = (require '../../styles/mailTemplates/preview-template-classes.styl').replace(/\n/g,'')
+      addressWindows = (require '../../html/includes/mail/address_windows.jade')().replace(/\n/g,'')
       "<html><head><title>#{@campaign.name}</title><meta charset='UTF-8'><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
-      "<style>#{fragStyles}#{classStyles}#{extraStyles}</style></head><body class='letter-body'>#{content}</body></html>"
+      "<style>#{fragStyles}#{classStyles}#{extraStyles}</style></head><body class='letter-body'>#{content}#{addressWindows}</body></html>"
 
     createLobHtml: (content = @campaign.content, extraStyles = "") ->
       content = @_cleanContent(content)

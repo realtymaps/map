@@ -1,18 +1,26 @@
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
-_ = require 'lodash'
-logger = require '../../config/logger'
 
 module.exports = (options = {truthy: "true", falsy: "false"}) ->
+
   if Array.isArray(options.truthy)
     truthy = options.truthy
   else if options.truthy?
     truthy = [options.truthy]
+
   if Array.isArray(options.falsy)
     falsy = options.falsy
   else if options.falsy?
     falsy = [options.falsy]
-  truthyReturnValue = if options.invert? then !options.invert else true
+
+  outputValues =
+    true: options.truthyOutput || true
+    false: options.falsyOutput || false
+
+  truthyReturnValue = !options.invert && true
+  truthyOutput = outputValues[truthyReturnValue]
+  falsyOutput = outputValues[!truthyReturnValue]
+
   if 'other' of options
     otherReturnValue = options.other
 
@@ -25,14 +33,16 @@ module.exports = (options = {truthy: "true", falsy: "false"}) ->
 
     if truthy == undefined
       if value
-        return truthyReturnValue
+        return truthyOutput
     else if value in truthy
-      return truthyReturnValue
+      return truthyOutput
+
     if falsy == undefined
       if !value
-        return !truthyReturnValue
+        return falsyOutput
     else if value in falsy
-      return !truthyReturnValue
+      return falsyOutput
+
     if otherReturnValue != undefined
       return otherReturnValue
 

@@ -1,5 +1,6 @@
 _ = require 'lodash'
 gulp = require 'gulp'
+watch = require 'gulp-watch'
 gutil = require 'gulp-util'
 globby = require 'globby'
 $ = require('gulp-load-plugins')()
@@ -21,7 +22,7 @@ coffeelint = require './coffeelint'
 _gulpify = ({stream, times, outputName, doSourceMaps}) ->
   l = logger.spawn('gulpify')
 
-  l.debug -> {times, outputName, doSourceMaps}
+  # l.debug -> {times, outputName, doSourceMaps}
 
   # fileCount = 0
   stream
@@ -32,7 +33,7 @@ _gulpify = ({stream, times, outputName, doSourceMaps}) ->
     conf.errorHandler 'Bundler'
   .once 'end', ->
     timestamp = prettyHrtime process.hrtime times.startTime
-    l.debug 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+    l.debug 'Bundled', gutil.colors.bgCyan(outputName), 'in', gutil.colors.magenta(timestamp)
 
   #http://stackoverflow.com/questions/32571362/browserify-fails-to-create-bundle-with-babelify-transform-typeerror-path-must
   .pipe source outputName
@@ -53,7 +54,7 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}
   stream = bStream.bundle()
 
   _bundle2Gulp = () ->
-    l.debug -> 'Bundling ' + gutil.colors.blue(config.outputName) + ' ' + entries.length + ' files ...'
+    l.debug -> 'Bundling ' + gutil.colors.bgCyan(config.outputName) + ' ' + entries.length + ' files ...'
     _gulpify({stream, times, outputName, doSourceMaps, entries})
 
   if entries?
@@ -103,7 +104,7 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
 
   #look for new files
   #TODO: I don't believe this is working currently
-  gulp.watch inputGlob, conf.chokidarOpts, _.debounce () ->
+  watcher = watch inputGlob, conf.chokidarOpts, _.debounce () ->
     # Re-evaluate input pattern so new files are picked up
     globby(inputGlob)
     .then (newEntries) ->
@@ -116,7 +117,7 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
   , 1000
 
   # Useful for debugging file watch issues
-  # require('../util/bundleLogger').logEvents(watcher)
+  # require('../bundleLogger').logEvents(watcher)
 
   watchify(bStream)
 
@@ -124,7 +125,7 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
     logger.spawn('watchify:update').debug -> 'updated'
     onUpdate()
 
-  gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
+  gutil.log "Watching #{entries.length} files matching", gutil.colors.bgCyan(inputGlob)
 
 module.exports = {
   bundle

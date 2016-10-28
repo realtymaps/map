@@ -49,10 +49,12 @@ app.controller 'rmapsNormalizeCtrl',
   ]
 
   $scope.dateFormats = [
+    'none'
     'YYYY-MM-DD'
     'YYYYMMDD'
     'MMDDYYYY'
     'YYYY-MM-DD[T]HH:mm:ss'
+    'MMMM Do, YYYY'
   ]
 
   $scope.typeOf = (val) ->

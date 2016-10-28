@@ -441,6 +441,8 @@ typeRules =
       label: 'Yes/No'
     config:
       nullBoolean: false
+      truthyOutput: 'yes'
+      falsyOutput: 'no'
     valid: () ->
       if !@lookups
         return true
@@ -469,6 +471,24 @@ baseTypeRules =
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
 
+_classifyRule = (rule) ->
+  lcName = rule.input.toLowerCase()
+
+  if rule.type?.name == 'string' && rule.config.Interpretation == 'Lookup'
+    return 'Lookup'
+
+  if rule.type?.name == 'string' && rule.config.Interpretation == 'LookupMulti'
+    return 'LookupMulti'
+
+  currencyWordRegex = /price|amount|fee|\$/ #['price', 'amount', 'fee', '$']
+  currencyTypes = ['float', 'integer']
+  if rule.type?.name in currencyTypes && (rule.config.Interpretation == 'Currency' || currencyWordRegex.test(lcName))
+    return 'Currency'
+
+  if rule.type?.name == 'datetime' || rule.config.DataType == 'DateTime'
+    return 'DateTime'
+
+
 getBaseRules = (dataSourceType, dataListType) ->
   p1 = _.cloneDeep(_rules[dataSourceType][dataListType])
   p2 = _.cloneDeep(_rules[dataSourceType].common)
@@ -483,12 +503,22 @@ getAgentRules = () ->
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
-  if rule.type?.name == 'string'
-    if rule.config.Interpretation == 'Lookup'
+
+  # We want to support a reasonable formatting for non-base data fields so that they look good, even though there are hundreds of fields to
+  #   configure. Their names and types are generally stochastic, but we can deduce, classify, then configure given certain classification rules.
+  #
+  #   Exceptions can be adjusted in the admin UI after defaults have been applied to the rule.
+  #
+  #   These cannot exist as default type config parameters in the `typeRules` above since base fields use `typeRules` also, and config options that
+  #   change the primitave type (such as from datetime to string) should only occur for nonbase (regular data) fields
+  classified = _classifyRule(rule)
+  switch classified
+    when "Lookup"
       rule.type.label = 'Restricted Text (single value)'
       if rule.data_source_type == 'county'
         rule.config.doLookup ?= true
-    else if rule.config.Interpretation == 'LookupMulti'
+
+    when "LookupMulti"
       rule.type.label = 'Restricted Text (multiple values)'
       rule.type.name = 'array'
       if rule.data_source_type == 'county'
@@ -496,8 +526,17 @@ buildDataRule = (rule) ->
       rule.config.split ?= ','
       rule.config.nullEmptyArray ?= true
       rule.config.nullEmpty = false
+
+    when "Currency"
+      rule.config.deliminate ?= true
+      rule.config.addDollarSign ?= true
+
+    when "DateTime"
+      rule.config.outputFormat ?= 'MMMM Do, YYYY'
+
     else
       rule.type.label = 'User-Entered Text'
+
   rule
 
 buildBaseRule = (dataSourceType, dataListType) ->
@@ -507,10 +546,7 @@ buildBaseRule = (dataSourceType, dataListType) ->
 
 buildAgentRule = () ->
   (rule) ->
-    console.log "buildAgentRule()"
-    console.log "input rule:\n#{JSON.stringify(rule,null,2)}"
     _buildRule rule, getAgentRules()[rule.output]
-    console.log "output rule:\n#{JSON.stringify(rule,null,2)}"
     rule
 
 module.exports = {

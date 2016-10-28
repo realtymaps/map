@@ -13,6 +13,6 @@ gulp.task 'angularProd', gulp.parallel 'stylesProd', 'browserifyProd'
 
 gulp.task 'angularAdminProd', gulp.parallel 'stylesAdminProd', 'browserifyAdminProd'
 
-gulp.task 'angularWatch', gulp.parallel 'stylesWatch', 'browserifyWatch'
+gulp.task 'angularWatch', gulp.parallel 'styles', 'stylesWatch', 'browserifyWatch'
 
-gulp.task 'angularWatchAdmin', gulp.parallel 'stylesWatchAdmin', 'browserifyWatchAdmin'
+gulp.task 'angularWatchAdmin', gulp.parallel 'stylesAdmin', 'stylesWatchAdmin', 'browserifyWatchAdmin'

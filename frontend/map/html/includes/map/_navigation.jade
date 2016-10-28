@@ -2,7 +2,7 @@
   .btn-group.mobile-only
     include ./_settings.jade
   .btn-group.desktop-only(ng-class="{opened: isOpened}")
-    //- Todo: conditionally show pinned or favorites depending on user role
+    //- Todo: conditionally show {{mainOptions.naming.saved}} or favorites depending on user role
     include ./_pinned.jade
     include ./_favorites.jade
     include ./_notes.jade

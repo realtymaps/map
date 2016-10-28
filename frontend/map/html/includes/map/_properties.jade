@@ -36,7 +36,7 @@
             ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()"
             popover-placement="left"
             popover-trigger="'mouseenter touchend'"
-            uib-popover="{{formatters.property.isPinnedResult(property) ? 'Unpin' : 'Pin'}}"
+            uib-popover="{{formatters.property.activePin(property)}}"
             ng-class="{ 'pinned': formatters.property.isPinnedResult(property) }")
             span.icon.icon-pin
           a.property-attrs-clickable(ng-click="formatters.results.showModel(property)")

@@ -25,10 +25,8 @@ done
 # echo OPTIONS "$OPTIONS"
 
 # make sure nothing extraneous exists
-npm prune
-
-# make sure everything else is up-to-date
-npm install "$OPTIONS"
+#???? see https://github.com/yarnpkg/yarn/issues/696
+yarn install
 
 # remove the indicated deps
 for i in "${DEPS[@]}"
@@ -41,4 +39,4 @@ done
 rm -f yarn.lock
 
 # install new versions of removed deps
-yarn install "$OPTIONS"
+yarn add "$OPTIONS"

@@ -2,6 +2,7 @@ require '../../common/extensions/strings'
 logger = (require '../util/logger').spawn('styles')
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
+watch = require 'gulp-watch'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 _ = require 'lodash'
@@ -23,7 +24,7 @@ styles = ({app, doSourceMaps, cdn}) ->
       paths[app].rootStylus
     ]
 
-    logger.debug -> sourcePaths
+    gutil.log "Building styles:", gutil.colors.bgMagenta(sourcePaths)
 
     stream = gulp.src sourcePaths
 
@@ -81,9 +82,9 @@ stylesWatch = (app) ->
   # Just for nicer gulp out
   stylesFn.displayName = 'styles'
 
-  # console.log watchPaths
+  gutil.log "Watching style files:", gutil.colors.bgMagenta(watchPaths)
 
-  watcher = gulp.watch watchPaths, conf.chokidarOpts, stylesFn
+  watcher = watch watchPaths, conf.chokidarOpts, stylesFn
 
   # Useful for debugging file watch issues
   # require('../util/bundleLogger').logEvents(watcher)
