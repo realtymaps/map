@@ -5,7 +5,7 @@
         header.row
           .col-md-8
             h1.pageTitle Projects
-            p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighbourhoods, and clients.
+            p This is summary of all projects you have created to date. Click a project to see {{mainOptions.naming.save.past.toLowerCase()}} properties, notes, neighbourhoods, and clients.
           .col-md-4.text-right.pull.right
             .tools
               input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
@@ -13,7 +13,7 @@
               button.btn.btn-primary(ng-click="addProject(false)") Create
             
           
-            
+
         .row
           .col-md-12
             table.table.table-hover

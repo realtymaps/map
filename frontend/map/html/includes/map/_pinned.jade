@@ -10,7 +10,7 @@ span.pinned-list.dropdown.btn-group(
   button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned.toggle-active(
     uib-dropdown-toggle
     popover-placement="bottom"
-    uib-popover="Pinned Properties"
+    uib-popover="{{mainOptions.naming.save.past}} Properties"
     popover-enable="!isOpens.pinned"
     popover-trigger="'click mouseenter touchend'"
   )
@@ -20,8 +20,8 @@ span.pinned-list.dropdown.btn-group(
     .fixed-header
       .icon.icon-close(uib-dropdown-toggle)
       span
-        a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties
-        span(ng-show="!pinnedTotal") No Pinned Properties
+        a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} {{mainOptions.naming.saved}} Properties
+        span(ng-show="!pinnedTotal") No {{mainOptions.naming.save.past}} Properties
       span
         span.results-btn(ng-click="getStatistics(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-bar-chart
@@ -47,10 +47,10 @@ span.pinned-list.dropdown.btn-group(
                 property-attributes(property="property")
             span.actions
               span.action-button(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")
-                span.action Unpin
+                span.action {{mainOptions.naming.save.un}}
                 span.icon.icon-pin
 
       .dropdown-explanation(ng-show="!pinnedTotal")
-        p You haven't pinned any properties yet. Click the pin to save properties in the project.  Everyone in the project will see the same pins.
-        p Pinning makes things easier to find: they'll show up right here in this list.
+        p You haven't {{mainOptions.naming.save.past.toLowerCase()}} any properties yet. Click the {{mainOptions.naming.save.alt.present.toLowerCase()}} to {{mainOptions.naming.save.present.toLowerCase()}} properties in the project.  Everyone in the project will see the same {{mainOptions.naming.save.pluralAlt}}.
+        p {{mainOptions.naming.save.progressive}} makes things easier to find: they'll show up right here in this list.
         .action Watch a 60 second video

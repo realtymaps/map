@@ -4,9 +4,9 @@
       div(ng-include='"./views/project/_propertyCardInclude.jade"')
 
     .project-instructions(ng-if="!pins.length && loadedProperties")
-      span No properties have been Pinned
+      span No properties have been {{mainOptions.naming.save.past}}
       span.icon.icon-pin.project-instruction-icon
 
-      .project-instruction-details Pins are a way to save properties.  Just click the Pin icon anywhere you see it to add the property to this list.
+      .project-instruction-details Pins are a way to save properties.  Just click the {{mainOptions.naming.save.alt.present}} icon anywhere you see it to add the property to this list.
 
       img.project-instruction-image(rmaps-cdn-image src='/assets/project/pin-instruction.png')

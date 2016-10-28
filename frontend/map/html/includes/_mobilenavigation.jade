@@ -44,7 +44,7 @@ include mixins/_avatarMixin.jade
                     li
                         a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
-                            span.menu-label Pinned Properties
+                            span.menu-label {{mainOptions.naming.save.past}} Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                     li
@@ -92,7 +92,7 @@ include mixins/_avatarMixin.jade
                   li
                       a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                           span.icon.menu-icon.icon-property
-                          span.menu-label Pinned Properties
+                          span.menu-label {{mainOptions.naming.save.past}} Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                   li
