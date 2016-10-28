@@ -1,6 +1,6 @@
 machine:
-  pre:
-    - mkdir ~/.yarn-cache
+  # pre:
+  #   - mkdir ~/.yarn-cache
   node:
     version: v4.6.1
 
@@ -8,16 +8,16 @@ machine:
 # circleci
 dependencies:
   override:
-    - ./scripts/misc/installPackageManager && yarn install --pure-lockfile
+    - ./scripts/misc/installPackageManager && npm install
   pre:
     - sudo apt-get install libpoppler-cpp-dev
   cache_directories:
     - "nginx"
-    - ~/.yarn-cache
+    # - ~/.yarn-cache
 
 test:
   override:
-    - yarn test
+    - npm test
 
 deployment:
   prod:

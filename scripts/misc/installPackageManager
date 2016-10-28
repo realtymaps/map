@@ -6,8 +6,8 @@ set -o pipefail
 # first, make sure you have latest npm/yarn
 
 # if you want pure latest npm then `npm show npm version`
-PM='yarn'
-PM_VERSION='0.X'
+PM='npm'
+PM_VERSION='2.X'
 LATEST_PACKAGE_MANAGER=`npm show $PM@$PM_VERSION version | tail -n 1 | awk '{print $2}'`
 LATEST_PACKAGE_MANAGER=$(echo $LATEST_PACKAGE_MANAGER | sed "s/\'//g")
 CURRENT_PACKAGE_MANAGER=`$PM --version` || CURRENT_PACKAGE_MANAGER=''
