@@ -33,7 +33,7 @@ _gulpify = ({stream, times, outputName, doSourceMaps}) ->
     conf.errorHandler 'Bundler'
   .once 'end', ->
     timestamp = prettyHrtime process.hrtime times.startTime
-    l.debug 'Bundled', gutil.colors.bgCyan(outputName), 'in', gutil.colors.magenta(timestamp)
+    l.debug 'Bundled', gutil.colors.bgCyan.black(outputName), 'in', gutil.colors.magenta.black(timestamp)
 
   #http://stackoverflow.com/questions/32571362/browserify-fails-to-create-bundle-with-babelify-transform-typeerror-path-must
   .pipe source outputName
@@ -54,7 +54,7 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}
   stream = bStream.bundle()
 
   _bundle2Gulp = () ->
-    l.debug -> 'Bundling ' + gutil.colors.bgCyan(config.outputName) + ' ' + entries.length + ' files ...'
+    l.debug -> 'Bundling ' + gutil.colors.bgCyan.black(config.outputName) + ' ' + entries.length + ' files ...'
     _gulpify({stream, times, outputName, doSourceMaps, entries})
 
   if entries?
@@ -125,7 +125,7 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
     logger.spawn('watchify:update').debug -> 'updated'
     onUpdate()
 
-  gutil.log "Watching #{entries.length} files matching", gutil.colors.bgCyan(inputGlob)
+  gutil.log "Watching #{entries.length} files matching", gutil.colors.bgCyan.black(inputGlob)
 
 module.exports = {
   bundle

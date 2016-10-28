@@ -24,7 +24,7 @@ styles = ({app, doSourceMaps, cdn}) ->
       paths[app].rootStylus
     ]
 
-    gutil.log "Building styles:", gutil.colors.bgMagenta(sourcePaths)
+    gutil.log "Building styles:", gutil.colors.bgMagenta.black(sourcePaths)
 
     stream = gulp.src sourcePaths
 
@@ -82,7 +82,7 @@ stylesWatch = (app) ->
   # Just for nicer gulp out
   stylesFn.displayName = 'styles'
 
-  gutil.log "Watching style files:", gutil.colors.bgMagenta(watchPaths)
+  gutil.log "Watching style files:", gutil.colors.bgMagenta.black(watchPaths)
 
   watcher = watch watchPaths, conf.chokidarOpts, stylesFn
 
