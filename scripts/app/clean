@@ -9,5 +9,5 @@ rm -rf /var/tmp/nginx-buildpack*
 
 if [[ "$DO_CACHE_CLEAN" != "" ]]
 then
-  yarn cache clean
+  npm cache clean
 fi

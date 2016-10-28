@@ -10,7 +10,7 @@ describe 'lock file', () ->
   it 'file should exist', () ->
     basePath = path.join __dirname, '../../'
     logger.debug basePath
-    fsStat("#{basePath}/yarn.lock")
+    fsStat("#{basePath}/npm-shrinkwrap.json")
     .then (stats) ->
       logger.debug stats
       expect(stats.isFile()).to.be.truthy
