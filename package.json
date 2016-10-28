@@ -249,7 +249,7 @@
     "traceur": "0.0.X",
     "twilio": "2.X",
     "ui-leaflet": "1.0.2",
-    "ui-router-extras": "0.1.0",
+    "ui-router-extras": "0.1.X",
     "unzip2": "^0.2.5",
     "vero-promise": "1.0.7",
     "verror": "^1.6.0",
