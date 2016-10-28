@@ -75,9 +75,9 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   listingsPromise = tables.normalized.listing()
   .select('*')
   .where
-      rm_property_id: id
-      hide_listing: false
-      data_source_id
+    rm_property_id: id
+    hide_listing: false
+    data_source_id
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('hide_listing')
@@ -118,7 +118,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         tables.normalized.tax(subid: listing.fips_code)
         .select('promoted_values')
         .where
-            rm_property_id: id
+          rm_property_id: id
         .then (results=[]) ->
           if results[0]?.promoted_values
             # promote values into this listing

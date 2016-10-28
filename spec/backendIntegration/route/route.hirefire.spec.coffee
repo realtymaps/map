@@ -9,13 +9,11 @@ require("chai").should()
 # technically this is testing both route.hirefire and service.hirefire, but I left it combined because that ensures we
 # won't get spurious errors messages in the testing logs about not having updated the queue needs in too long
 
-describe "route.hirefire", ->
-  updateQueueNeedspromise = emailConfig = null
-  before ->
-    emailConfig = require "#{basePath}/config/email"
-    @timeout(30000)
-    updateQueueNeedspromise = hirefireService.updateQueueNeeds()
+describe "route.hirefire", () ->
 
+  @timeout(30000)
+  emailConfig = require "#{basePath}/config/email"
+  updateQueueNeedspromise = hirefireService.updateQueueNeeds()
 
   it 'should run the hirefire update with no errors, and the route should send the results calculated previously', () ->
     updateQueueNeedspromise
@@ -24,7 +22,7 @@ describe "route.hirefire", ->
         (result instanceof ExpressResponse).should.be.truthy
         JSON.stringify(result.payload).should.equal(JSON.stringify(needs))
 
-  it 'should have generated an email', ->
+  it 'should have generated an email', () ->
     updateQueueNeedspromise
     .then () ->
       #not always called due to timing (race)?

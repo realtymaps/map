@@ -19,8 +19,10 @@ SET name = '<mlsid>_photo'
 WHERE name = '<default_mls_photos_config>';
 
 UPDATE jq_task_config
-SET blocked_by_tasks = ('["'||replace(name,'_photo','_listing')||'","'||replace(name,'_photo','_agent')||'"]')::JSONB
-WHERE description = 'Load MLS photos';
+SET
+  blocked_by_tasks = ('["'||replace(name,'_photos','_listing')||'","'||replace(name,'_photos','_agent')||'"]')::JSONB,
+  name = replace(name,'_photos','_photo')
+WHERE name LIKE '%\_photos';
 
 
 -- change the subtasks to match
@@ -37,12 +39,12 @@ SET
   name = replace(name, task_name||'_', task_name||'_listing_')
 WHERE
   queue_name = 'mls'
-  AND task_name NOT LIKE '%_%'
+  AND task_name NOT LIKE '%\_%'
   AND task_name NOT LIKE '<%';
 
 UPDATE jq_subtask_config
 SET
-  task_name = '<mlsid>_photo'
+  task_name = '<mlsid>_photo',
   name = replace(name, '<default_mls_photos_config>', '<mlsid>_photo')
 WHERE task_name = '<default_mls_photos_config>';
 
@@ -52,12 +54,14 @@ SET
   name = replace(name,'_photos_','_photo_')
 WHERE
   queue_name = 'mls'
-  AND task_name LIKE '%_photos'
+  AND task_name LIKE '%\_photos'
   AND task_name NOT LIKE '<%';
 
+
+-- remove unneeded data
 
 UPDATE jq_subtask_config
 SET data = NULL
 WHERE
   queue_name = 'mls'
-  AND name LIKE '%_loadRawData';
+  AND name LIKE '%\_loadRawData';
