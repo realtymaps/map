@@ -25,7 +25,7 @@ app.service 'rmapsLayerFormattersService', (
     # between parcels and markers. Where parcels do not have status (always).
     # depends on rmapsProperties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
     filterModel = filterSummary[model.rm_property_id] or model
-    nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isPinned
+    nonBool = filterModel.passedFilters || filterModel?.savedDetails?.isPinned || filterModel?.savedDetails?.isFavorite
     nonBool == true
 
   Parcels = do ->
@@ -60,7 +60,7 @@ app.service 'rmapsLayerFormattersService', (
     getStyle : (feature, layerName) ->
       return {} unless feature
 
-      if feature?.savedDetails?.isPinned
+      if feature?.savedDetails?.isPinned || feature?.savedDetails?.isFavorite
         savedStatus = 'saved'
 
       if feature?.status?
@@ -118,7 +118,7 @@ app.service 'rmapsLayerFormattersService', (
         hovered = ''
         zIndex = 2
 
-      if model.savedDetails?.isPinned
+      if model.savedDetails?.isPinned || model.savedDetails?.isFavorite
         status = 'saved'
       else
         status = model.status
@@ -134,6 +134,8 @@ app.service 'rmapsLayerFormattersService', (
             priceClasses: "label-#{markersBSLabel[status]}#{hovered}",
             hasMail: !!rmapsMailCampaignService.getMail(model.rm_property_id)
             rm_property_id: model.rm_property_id
+            isPinned: model.savedDetails?.isPinned
+            isFavorited: model.savedDetails?.isFavorite
           )
 
     setMarkerPriceGroupOptions: (models) ->

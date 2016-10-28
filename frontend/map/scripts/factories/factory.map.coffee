@@ -483,6 +483,8 @@ app.factory 'rmapsMapFactory',
           rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
           lObject?.setIcon(new L.divIcon(result.icon))
 
+        @redraw({cache:false})
+
       setLocation: (position) =>
         $log.debug 'setLocation()', position
         {isMyLocation, coords} = position

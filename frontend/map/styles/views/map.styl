@@ -211,7 +211,11 @@ img.manual-cluster{
       left -2px
     &:after
       position absolute
-      bottom -14px
+      /*
+       * bottom is the magic that covers the bubble  / rectangles bottom.
+       * To make the triangular part (this after) blend in as one
+      */
+      bottom -13px
       left 0px
       border 7px solid
       content ' '
