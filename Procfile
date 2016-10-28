@@ -1,9 +1,9 @@
-web: yarn start
-mls: yarn run job-queue -- mls
-misc: yarn run job-queue -- misc
-county: yarn run job-queue -- county
-lob: yarn run job-queue -- lob
-stripe: yarn run job-queue -- stripe
-parcel: yarn run job-queue -- parcel
-events: yarn run job-queue -- events
-masterWorker: yarn run master-worker
+web: npm start
+mls: npm run job-queue -- mls
+misc: npm run job-queue -- misc
+county: npm run job-queue -- county
+lob: npm run job-queue -- lob
+stripe: npm run job-queue -- stripe
+parcel: npm run job-queue -- parcel
+events: npm run job-queue -- events
+masterWorker: npm run master-worker
