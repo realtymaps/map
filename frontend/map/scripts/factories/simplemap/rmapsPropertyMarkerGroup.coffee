@@ -43,13 +43,15 @@ app.factory 'rmapsPropertyMarkerGroup', (
 
       _.forEach properties, (property) =>
         if property.geometry_center?.coordinates?
+          if property.icon?.className
+            property.icon?.className = @icon.className + " #{property.icon.className}"
           @markers[property.rm_property_id] = {
             rm_property_id: property.rm_property_id,
             lat: property.geometry_center.coordinates[1],
             lng: property.geometry_center.coordinates[0],
             draggable: false,
             focus: false,
-            icon: angular.copy(@icon)
+            icon: _.extend({}, @icon, property.icon)
           }
 
       return
@@ -91,10 +93,18 @@ app.factory 'rmapsPropertyMarkerGroup', (
     # Set the class of a property marker
     setPropertyClass: (propertyId, className, resetOtherMarkers = false) ->
       if resetOtherMarkers
-        _.forOwn @markers, (marker) =>
+        _.forOwn @markers, (marker) ->
           marker.icon?.className = @icon.className
 
       @markers[propertyId]?.icon.className = className
+
+    # Add a class to a property marker
+    addPropertyClass: (propertyId, className) ->
+      @markers[propertyId]?.icon?.className = "#{@markers[propertyId].icon.className} #{className}"
+
+    # Remove a class of a property marker
+    removePropertyClass: (propertyId, className) ->
+      @markers[propertyId]?.icon?.className = @markers[propertyId].icon.className.replace(className, "")
 
   #
   # Return the class definition, which should be instantiated by the controller using the map

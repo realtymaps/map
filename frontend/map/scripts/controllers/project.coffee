@@ -89,12 +89,6 @@ app.controller 'rmapsProjectCtrl',
 #  dashboardMapAccess.addMarkerGroup(new rmapsPropertyGeoJsonGroup('bounds'))
 #  dashboardMapAccess.addMarkerGroup(new rmapsFilterSummaryGroup('filterSummary'))
 
-  # Highlight markers on the map when selected
-  highlightProperty = (propertyId) ->
-    $log.debug 'highlightProperty', propertyId
-    $timeout () ->
-      dashboardMapAccess.groups.property.setPropertyClass(propertyId, 'project-dashboard-icon-saved', true)
-
   # Listen for property marker event clicks
   dashboardMapAccess.groups.property.registerClickHandler $scope, (event, args, propertyId) ->
     $log.debug 'dashboardMap click', args, propertyId
@@ -102,10 +96,13 @@ app.controller 'rmapsProjectCtrl',
     if index?
       $scope.carousel.activeSlide = index
 
-  $scope.$watch 'carousel.activeSlide', (slideIndex) ->
+  $scope.$watch 'carousel.activeSlide', (slideIndex, oldIndex) ->
     $log.debug 'carousel.activeSlide', slideIndex
     if $scope.properties?[slideIndex]
-      highlightProperty($scope.properties[slideIndex].rm_property_id)
+      $timeout () ->
+        dashboardMapAccess.groups.property.addPropertyClass($scope.properties[slideIndex].rm_property_id, 'selected')
+        if oldIndex?
+          dashboardMapAccess.groups.property.removePropertyClass($scope.properties[oldIndex].rm_property_id, 'selected')
 
   $scope.getLabel = (actual) ->
     if !actual
@@ -216,8 +213,15 @@ app.controller 'rmapsProjectCtrl',
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
       $scope.properties = _.values(properties)
-      $scope.pins = _.values(_.pick(properties, _.keys(project.pins)))
-      $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
+
+      $scope.pins = []
+      for id, pin of project.pins
+        properties[id].icon = className: 'saved'
+        $scope.pins.push(properties[id])
+      $scope.favorites = []
+      for id, favorite of project.favorites
+        properties[id].icon = className: 'favorited'
+        $scope.favorites.push(properties[id])
 
       #
       # Add property markers to the dashboard map
