@@ -32,6 +32,7 @@ module.exports =
     combined: 'data_combined'
     parcel: 'data_parcel'
     photo: 'data_photo'
+    agent: 'data_agent'
   deletes:
     photos: 'deletes_photos'
     combined: 'deletes_combined'

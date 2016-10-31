@@ -26,7 +26,8 @@ done
 
 # make sure nothing extraneous exists
 #???? see https://github.com/yarnpkg/yarn/issues/696
-yarn install
+# yarn install --pure-lockfile
+npm install
 
 # remove the indicated deps
 for i in "${DEPS[@]}"
@@ -36,7 +37,9 @@ do
 done
 
 # remove the shrinkwrap file
-rm -f yarn.lock
+#rm -f yarn.lock
+rm -f npm-shrinkwrap.json
 
 # install new versions of removed deps
-yarn add "$OPTIONS"
+# yarn add "$OPTIONS" #NOTE NOT WORKING
+npm install "$OPTIONS"
