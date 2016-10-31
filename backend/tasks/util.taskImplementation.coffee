@@ -21,10 +21,12 @@ _getTaskCode = (taskName) ->
       taskNameParts = taskName.split('_')
       mlsConfigService.getByIdCached(taskNameParts[0])
       .then (mlsConfig) ->
-        if !mlsConfig?
-          throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
-        try
-          return require("./task.default.mls.#{taskNameParts[1]}")(taskName)
+        if mlsConfig?
+          try
+            return require("./task.default.mls.#{taskNameParts[1]}")(taskName)
+          catch err2
+            err = err2
+        throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
 
 
 class TaskImplementation
