@@ -13,8 +13,6 @@ CREATE TABLE agent (
   deleted TEXT,
   change_history JSON NOT NULL DEFAULT '[]'::JSON,
 
-  active BOOLEAN NOT NULL,
-
   license_number INTEGER NOT NULL,
   agent_status TEXT NOT NULL,
   email TEXT,

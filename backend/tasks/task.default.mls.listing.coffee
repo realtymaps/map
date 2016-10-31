@@ -96,8 +96,9 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
+  data_source_id = subtask.task_name.split('_')[0]
   Promise.each subtask.data.values, (id) ->
-    internals.finalizeData {subtask, id}
+    internals.finalizeData {subtask, id, data_source_id}
 
 
 markUpToDate = (subtask) ->

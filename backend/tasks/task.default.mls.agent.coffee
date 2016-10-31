@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
-logger = require('../config/logger').spawn('task:mls:listing')
+logger = require('../config/logger').spawn('task:mls:agent')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
@@ -26,7 +26,7 @@ loadRawData = (subtask) ->
     limit = subtask.data?.limit
     taskLogger.debug "limiting raw mls data to #{limit}"
 
-  mlsHelpers.loadUpdates(subtask, dataType: 'agent', dataSourceId: mlsId, limit: limit)
+  mlsHelpers.loadUpdates(subtask, dataType: 'agent', dataSourceId: mlsId, limit: limit, fullRefresh: true)
   .then (numRawRows) ->
     taskLogger.debug () -> "rows to normalize: #{numRawRows||0}"
     if !numRawRows
@@ -46,12 +46,11 @@ loadRawData = (subtask) ->
       dataType: 'agent'
       startTime: now
 
-    markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: now}, replace: true})
     normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: normalizeData})
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: recordCountsData, replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
 
-    Promise.join(recordCountsPromise, activatePromise, normalizePromise, markUpToDatePromise, () ->)
+    Promise.join(recordCountsPromise, activatePromise, normalizePromise, () ->)
     .then () ->
       return numRawRows
 
@@ -63,10 +62,12 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: internals.buildRecord
     skipFinalize: false
+    idField: 'data_source_uuid'
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false)
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false, data_source_id: data_source_id)
 
 
 # not used as a task since it is in normalizeData
@@ -84,39 +85,16 @@ finalizeDataPrep = (subtask) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
+
 finalizeData = (subtask) ->
-  Promise.each subtask.data.values, (id) ->
-    internals.finalizeData {subtask, id}
-
-
-markUpToDate = (subtask) ->
-  mlsId = subtask.task_name.split('_')[0]
-  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'agent')
-  .then (uuidField) ->
-    dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
-    retsService.getDataChunks mlsId, 'agent', dataOptions, (chunk) -> Promise.try () ->
-      if !chunk?.length
-        return
-      ids = _.pluck(chunk, uuidField)
-      tables.normalized.agent()
-      .where(data_source_id: mlsId)
-      .whereIn('data_source_uuid', ids)
-      .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
-      .returning('rm_property_id')
-      .then (finalizeIds) ->
-        if finalizeIds.length == 0
-          return
-        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
-    .then (count) ->
-      logger.debug () -> "getDataChunks total: #{count}"
-  .catch retsService.isMaybeTransientRetsError, (error) ->
-    throw new SoftFail(error, "Transient RETS error; try again later")
-  .catch errorHandlingUtils.isUnhandled, (error) ->
-    throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to make RETS data up-to-date')
+  data_source_id = subtask.task_name.split('_')[0]
+  Promise.each subtask.data.values, (data_source_uuid) ->
+    internals.finalizeData {subtask, data_source_uuid, data_source_id}
 
 
 activateNewData = (subtask) ->
-  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes})
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes, tableProp: 'agent', skipIndicatedDeletes: true, data_source_id})
 
 
 subtasks = {
@@ -126,7 +104,6 @@ subtasks = {
   finalizeDataPrep
   finalizeData
   activateNewData
-  markUpToDate
 }
 
 

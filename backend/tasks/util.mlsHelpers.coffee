@@ -12,7 +12,10 @@ retsCacheService = require '../services/service.retsCache'
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options={}) ->
   # figure out when we last got updates from this table
-  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+  if options.fullRefresh
+    updateThresholdPromise = Promise.resolve(0)
+  else
+    updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
   uuidPromise = getMlsField(options.dataSourceId, 'data_source_uuid', options.dataType)
   Promise.join updateThresholdPromise, uuidPromise, (updateThreshold, uuidField) ->
     retsService.getDataStream(options.dataSourceId, options.dataType, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit})
@@ -23,7 +26,7 @@ loadUpdates = (subtask, options={}) ->
       dataLoadHistory =
         data_source_id: options.dataSourceId
         data_source_type: 'mls'
-        data_type: subtask.data.dataType
+        data_type: options.dataType
         batch_id: subtask.batch_id
         raw_table_name: rawTableName
       dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, retsStream)
@@ -39,9 +42,9 @@ loadUpdates = (subtask, options={}) ->
 ###
 
 getMlsField = (mlsId, rmapsFieldName, dataType) ->
-  schemaInfo = mlsInfo["#{dataType}_data"]
   mlsConfigService.getByIdCached(mlsId)
   .then (mlsInfo) ->
+    schemaInfo = mlsInfo["#{dataType}_data"]
     columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: schemaInfo.db, tableId: schemaInfo.table)
     validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, dataType, 'base', rmapsFieldName)
     Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->

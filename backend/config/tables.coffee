@@ -28,6 +28,7 @@ module.exports =
     deed: 'normalized.deed'
     mortgage: 'normalized.mortgage'
     parcel: 'normalized.parcel'
+    agent: 'normalized.agent'
   finalized:
     combined: 'data_combined'
     parcel: 'data_parcel'

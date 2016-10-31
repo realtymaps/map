@@ -65,3 +65,17 @@ SET data = NULL
 WHERE
   queue_name = 'mls'
   AND name LIKE '%\_loadRawData';
+
+
+-- new task and subtasks
+INSERT INTO jq_task_config ("name","description","data","ignore_until","repeat_period_minutes","warn_timeout_minutes","kill_timeout_minutes","active","fail_retry_minutes","blocked_by_tasks","blocked_by_locks")
+VALUES
+  (E'swflmls_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,TRUE,1,E'["swflmls_listing", "swflmls_photo"]',E'[]');
+INSERT INTO jq_subtask_config ("name","task_name","queue_name","data","step_num","retry_max_count","auto_enqueue","active","retry_delay_minutes","kill_timeout_minutes","warn_timeout_minutes")
+VALUES
+  (E'swflmls_agent_loadRawData',E'swflmls_agent',E'mls',NULL,1,10,TRUE,TRUE,1,NULL,10),
+  (E'swflmls_agent_normalizeData',E'swflmls_agent',E'mls',E'null',2,5,FALSE,TRUE,NULL,NULL,10),
+  (E'swflmls_agent_recordChangeCounts',E'swflmls_agent',E'mls',NULL,10003,5,FALSE,TRUE,NULL,NULL,5),
+  (E'swflmls_agent_finalizeDataPrep',E'swflmls_agent',E'mls',E'null',10004,5,FALSE,TRUE,NULL,NULL,5),
+  (E'swflmls_agent_finalizeData',E'swflmls_agent',E'mls',NULL,10005,5,FALSE,TRUE,NULL,NULL,10),
+  (E'swflmls_agent_activateNewData',E'swflmls_agent',E'mls',NULL,10006,5,FALSE,TRUE,NULL,NULL,4);

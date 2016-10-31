@@ -72,12 +72,12 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= subtask.data?.delay || 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.normalized.listing()
+  listingsPromise = tables.normalized.listing({transaction})
   .select('*')
   .where
     rm_property_id: id
     hide_listing: false
-    data_source_id
+    data_source_id: data_source_id
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('hide_listing')
@@ -115,7 +115,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         if !checkPromotedValues
           return
         # need to query the tax table to get values to promote
-        tables.normalized.tax(subid: listing.fips_code)
+        tables.normalized.tax({subid: listing.fips_code, transaction})
         .select('promoted_values')
         .where
           rm_property_id: id
@@ -125,21 +125,21 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             _.extend(listing, results[0].promoted_values)
 
             # save back to the listing table to avoid making checks in the future
-            tables.normalized.listing()
+            tables.normalized.listing({transaction})
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid
             .update(results[0].promoted_values)
       .then () ->
         dbs.ensureTransaction transaction, 'main', (transaction) ->
-          tables.finalized.combined(transaction: transaction)
+          tables.finalized.combined({transaction})
           .where
             rm_property_id: id
             data_source_id
             active: false
           .delete()
           .then () ->
-            tables.finalized.combined(transaction: transaction)
+            tables.finalized.combined({transaction})
             .insert(listing)
 
 
