@@ -25,19 +25,31 @@ header.site-header
 
     .search
       float left
-      padding 4px 0
       margin 8px 0
       border-bottom 1px solid $light_blue
       position relative
       z-index 0
+      background $white
 
       .search-content
         display block
         float left
 
+        .search-clear
+          position relative
+          top 6px
+          right 4px
+          cursor pointer
+          color #969ea8
+          font-size 14px
+          padding-left 6px
+
       .search-type
         float left
-        min-width 85px
+        background $dark_white
+        padding 4px
+        &:hover
+          background $darker_white
         .dropdown
 
           .dropdown-menu
@@ -69,11 +81,7 @@ header.site-header
             border 0 none
             padding 0px 16px 0 0
             background transparent
-            color $white
-
-            &:hover
-            &:focus
-              color $light_blue
+            color $text_gray
 
             span
               display inline-block
@@ -88,7 +96,8 @@ header.site-header
 
       .search-input
         float left
-        width 200px
+        width 250px
+        padding 4px
 
         input
           font-size 13px
@@ -98,7 +107,8 @@ header.site-header
           height 21px
           line-height 12px
           padding 0
-          color $white
+          color $text_gray
+          box-shadow none
           &:hover
           &:focus
           &:active
