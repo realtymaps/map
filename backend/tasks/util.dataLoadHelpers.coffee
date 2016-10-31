@@ -279,7 +279,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
       usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-      diffExcludeKeys = []
+      diffExcludeKeys = ['rm_raw_id']
       if dataSourceType == 'mls'
         for groupName, validationList of validationMap
           for validationDefinition in validationList

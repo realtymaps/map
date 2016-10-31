@@ -9,6 +9,10 @@ statusData =
 statusFilter =
   sold: 'sold'
 
+agent_status =
+  active: 'active'
+  inactive: 'inactive'
+
 propertyType = {
   'Single Family',
   'Condo / Townhome',
@@ -89,4 +93,5 @@ mod.constant 'rmapsParcelEnums', {
   lookupOptions:
     status: _.values(statusData)
     property_type: _.values(propertyType)
+    agent_status: _.values(agent_status)
 }

@@ -142,14 +142,16 @@ _rules =
         valid: () ->
           @input.first && @input.last || @input.full
         type: name: 'name'
-      status:
+      agent_status:
         alias: 'Status'
         required: true
       email:
         alias: 'Email'
-        required: true
       work_phone:
         alias: 'Work Phone'
+      data_source_uuid:
+        alias: 'Unique ID'
+        required: true
 
     listing:
       creation_date:

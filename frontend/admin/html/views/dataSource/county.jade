@@ -18,13 +18,14 @@
 
   .row.panel(cg-busy="countyLoading" ng-show="countyData.current && countyData.dataListType")
     .row
-      input(ng-model="rootSearchText" placeholder="Search All")
+      .col-md-2
+        input(ng-model="rootSearchText" placeholder="Search All")
     .row
       .close-icon(ng-click="showGrid=!showGrid" uib-tooltip="Grid view") ☰
 
       include ../../includes/dataSource/baseFieldsColumn.jade
       .col-md-2.list-container
-        h4 {{countyData.dataSourceType.name}}, {{countyData.dataListType.name}}
+        h4 {{countyData.current.name}} ({{countyData.dataListType.name}})
         include ../../includes/dataSource/dataSourceFieldsColumn.jade
       include ../../includes/dataSource/groupsColumn.jade
       include ../../includes/dataSource/groupContentsColumn.jade

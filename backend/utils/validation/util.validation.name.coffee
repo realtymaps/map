@@ -21,5 +21,7 @@ module.exports = (options = {}) ->
         parts.push(strings.middle.split(/[ ]+/g).join(' ').trim())
       if strings.last
         parts.push(strings.last.split(/[ ]+/g).join(' ').trim())
+      if strings.suffix
+        parts.push(strings.suffix.split(/[ ]+/g).join(' ').trim())
 
       return parts.join(' ')

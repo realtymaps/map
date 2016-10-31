@@ -36,7 +36,7 @@ loadRawData = (subtask) ->
         return 0
 
     recordCountsData =
-      dataType: 'listing'
+      dataType: 'agent'
     activateData =
       startTime: now
 
@@ -53,7 +53,7 @@ loadRawData = (subtask) ->
       markUpToDatePromise = Promise.resolve()
 
     if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing', startTime: now, dailyMaintenance}})
+      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: {dataType: 'agent', startTime: now, dailyMaintenance}})
       recordCountsData.skipRawTable = false
     else
       normalizePromise = Promise.resolve()
@@ -86,7 +86,7 @@ finalizeDataPrep = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized.listing()
+  tables.normalized.agent()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
@@ -102,14 +102,14 @@ finalizeData = (subtask) ->
 
 markUpToDate = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
-  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
+  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'agent')
   .then (uuidField) ->
     dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
     retsService.getDataChunks mlsId, 'agent', dataOptions, (chunk) -> Promise.try () ->
       if !chunk?.length
         return
       ids = _.pluck(chunk, uuidField)
-      tables.normalized.listing()
+      tables.normalized.agent()
       .where(data_source_id: mlsId)
       .whereIn('data_source_uuid', ids)
       .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)

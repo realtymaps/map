@@ -12,14 +12,14 @@
               button.btn.btn-primary.float-right(ng-click="openCreate()") Create MLS
       .row
         .col-md-12
-          div(ng-hide="mlsData.current.id").config-panel
+          div(ng-if="!mlsData.current.id").config-panel.not-allowed
             div.select-pill Select an MLS...
-          div(ng-class="{ 'fourth-opacity': !mlsData.current.id }").main-config-panel
+          div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.current.id }").main-config-panel
             uib-accordion(close-others="false")
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Server Info
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") MLS Server Info
                 table
                   tr
                     td
@@ -43,7 +43,7 @@
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Management
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") MLS Management
                 table
                   tr
                     td
@@ -69,7 +69,7 @@
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Disclaimer
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") MLS Disclaimer
                 table
                   tr
                     td
@@ -97,7 +97,7 @@
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") Property Listings Schema
                 .row
                   .col-md-12
                     table
@@ -115,7 +115,7 @@
                             option(value="" disabled)
                       tr
                         td
-                          label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
+                          label(ng-class="{ 'half-opacity': formItems.listing_data[2].disabled }").data-label Table:
                         td
                           select(
                           id="tableselect"
@@ -143,7 +143,7 @@
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Agent Schema
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") Agent Schema
                 .row
                   .col-md-12
                     table
@@ -161,7 +161,7 @@
                             option(value="" disabled)
                       tr
                         td
-                          label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
+                          label(ng-class="{ 'half-opacity': formItems.agent_data[2].disabled }").data-label Table:
                         td
                           select(
                           id="tableselect"
@@ -171,14 +171,25 @@
                           ng-change="processAndProceed(2, 'agent_data')"
                           ng-disabled="formItems.agent_data[2].disabled")
                             option(value="" disabled)
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems.agent_data[3].disabled }").data-label Update Timestamp Column:
+                        td
+                          select(
+                          type="text"
+                          ng-model="mlsData.current.agent_data.field"
+                          ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.agent_data.column"
+                          ng-change="mlsData.current.agent_data.field_type = fieldNameMap.agent_data.columnTypes[mlsData.current.agent_data.field]"
+                          ng-disabled="formItems.agent_data[3].disabled")
+                            option(value="" disabled)
                 .row
                   .col-md-12
-                    button(ng-click="assignConfigDefault(mlsData.current, 'listing_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
+                    button(ng-click="assignConfigDefault(mlsData.current, 'agent_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
 
               div(uib-accordion-group is-disabled="!mlsData.current.id")
                 uib-accordion-heading
                   div
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Other Configuration
+                    span(ng-class="{ 'half-opacity': !mlsData.current.id }") Other Configuration
                 .row
                   .col-md-12
                     table.max-width
@@ -267,6 +278,11 @@
                       label.data-label Table:
                     td
                       span.data-entry {{fieldNameMap.agent_data.tableNames[mlsData.current.agent_data.table]}}
+                  tr
+                    td
+                      label.data-label Update Timestamp Column:
+                    td
+                      span.data-entry {{fieldNameMap.agent_data.columnNames[mlsData.current.agent_data.field]}} ({{mlsData.current.listing_data.field_type}})
             tr
               td
                 label.data-label Objects:

@@ -96,6 +96,8 @@ app.controller 'rmapsMlsCtrl',
           disabled: true
         ,
           disabled: true
+        ,
+          disabled: true
         ]
 
 
