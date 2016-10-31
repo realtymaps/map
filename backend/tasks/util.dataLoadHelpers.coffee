@@ -22,6 +22,7 @@ jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
 tz = require '../config/tz'
 
+
 DELETE =
   UNTOUCHED: 'untouched'
   INDICATED: 'indicated'
@@ -493,6 +494,11 @@ _diff = (row1, row2) ->
   for fieldName, value1 of row1
     if _.isEqual(value1, row2[fieldName])
       continue
+    type1 = typeof(value1)
+    type2 = typeof(row2[fieldName])
+    if type1 != type2 && (type1 == 'string' || type2 == 'string')
+      if ''+value1 == ''+row2[fieldName]
+        continue
     result[fieldName] = (row2[fieldName] ? null)
 
   # then get fields missing from row1
