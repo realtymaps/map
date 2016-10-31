@@ -24,7 +24,7 @@ CREATE TABLE agent (
 DROP INDEX IF EXISTS agent_license_number_idx;
 CREATE INDEX agent_data_source_id_idx ON agent USING btree (data_source_id);
 CREATE INDEX agent_data_source_id_license_number_idx ON agent USING btree (data_source_id, license_number);
-CREATE INDEX agent_data_source_id_data_source_uuid_idx ON agent USING btree (data_source_id, data_source_uuid) WHERE active IS FALSE;
+CREATE INDEX agent_data_source_id_data_source_uuid_idx ON agent USING btree (data_source_id, data_source_uuid);
 
 CREATE TRIGGER update_modified_time_agent
 BEFORE UPDATE ON agent

@@ -67,7 +67,7 @@ normalizeData = (subtask) ->
 
 recordChangeCounts = (subtask) ->
   data_source_id = subtask.task_name.split('_')[0]
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false, data_source_id: data_source_id)
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id})
 
 
 # not used as a task since it is in normalizeData

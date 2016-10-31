@@ -77,7 +77,8 @@ normalizeData = (subtask) ->
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false)
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id})
 
 
 # not used as a task since it is in normalizeData
@@ -128,7 +129,8 @@ markUpToDate = (subtask) ->
 
 
 activateNewData = (subtask) ->
-  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes})
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes, data_source_id})
 
 
 subtasks = {
