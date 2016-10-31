@@ -1,8 +1,12 @@
 .price-marker(class="#{priceClasses}")
 
-  //- Placeholder for adding interactive icons to price markers
-  //- if hasMail == true
-  //-   .icons
-  //-     i.icon.fa.fa-envelope-o
-
   .price #{price}
+  .icons
+    if isPinned == true
+      i.icon.icon-pin
+
+    if isFavorited == true
+      i.icon.fa.fa-heart
+
+    //- if isMail == true
+    //-   i.icon.fa.fa-envelope
