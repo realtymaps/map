@@ -16,8 +16,7 @@ naming = do -> # for things we can't make up our minds on for naming context
     present = 'Save'
     plural = 'Saves'
     un = 'Unsave'
-    pluralAlt =
-      plural.toLowerCase() + '/' + alt.plural.toLowerCase()
+    pluralAlt = plural + '/' + alt.plural
     {
       alt
       past
@@ -28,7 +27,8 @@ naming = do -> # for things we can't make up our minds on for naming context
       un
     }
 
-app.constant 'rmapsMainOptions', do () ->
+
+mainOptions = do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
   res = _.merge common,
     map: {
@@ -72,3 +72,7 @@ app.constant 'rmapsMainOptions', do () ->
 
 
   res
+
+app.constant 'rmapsMainOptions', mainOptions
+
+module.exports = mainOptions

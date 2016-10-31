@@ -13,7 +13,7 @@ markup = (app) ->
   markupFn = () ->
     _testCb() if _testCb
 
-    gutil.log "Building markup:", gutil.colors.bgYellow(paths[app].jade)
+    gutil.log "Building markup:", gutil.colors.bgYellow.black(paths[app].jade)
 
     gulp.src paths[app].jade.concat './node_modules/angular-busy/angular-busy.html'
 
@@ -54,7 +54,7 @@ markupWatch = (app) ->
 
   watchPaths = paths[app].jade
 
-  gutil.log "Watching markup files:", gutil.colors.bgYellow(watchPaths)
+  gutil.log "Watching markup files:", gutil.colors.bgYellow.black(watchPaths)
 
   watcher = watch watchPaths, conf.chokidarOpts, markupFn
 
