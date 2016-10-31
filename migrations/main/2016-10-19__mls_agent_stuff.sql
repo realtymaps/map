@@ -70,7 +70,7 @@ WHERE
 -- new task and subtasks
 INSERT INTO jq_task_config ("name","description","data","ignore_until","repeat_period_minutes","warn_timeout_minutes","kill_timeout_minutes","active","fail_retry_minutes","blocked_by_tasks","blocked_by_locks")
 VALUES
-  (E'<mlsid>_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,TRUE,1,E'["<mlsid>_listing", "<mlsid>_photo"]',E'[]'),
+  (E'<mlsid>_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,FALSE,1,E'["<mlsid>_listing", "<mlsid>_photo"]',E'[]'),
   (E'swflmls_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,TRUE,1,E'["swflmls_listing", "swflmls_photo"]',E'[]'),
   (E'RAPB_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,TRUE,1,E'["RAPB_listing", "RAPB_photo"]',E'[]');
 INSERT INTO jq_subtask_config ("name","task_name","queue_name","data","step_num","retry_max_count","auto_enqueue","active","retry_delay_minutes","kill_timeout_minutes","warn_timeout_minutes")

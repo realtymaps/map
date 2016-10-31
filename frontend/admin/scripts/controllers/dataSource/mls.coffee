@@ -158,7 +158,7 @@ app.controller 'rmapsMlsCtrl',
           res.then () -> promise('agent_data')
 
       .then () ->
-        rmapsJobsService.getTask($scope.mlsData.current.id)
+        rmapsJobsService.getTask($scope.mlsData.current.id+'_listing')
       .then (task) ->
         $scope.mlsData.task.active = if task.length > 0 and task[0].active? then task[0].active else false
 
@@ -283,8 +283,9 @@ app.controller 'rmapsMlsCtrl',
       $scope.loading = true
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
-      promises.push rmapsJobsService.updateTask($scope.mlsData.current.id, {active: $scope.mlsData.task.active})
-      promises.push rmapsJobsService.updateTask("#{$scope.mlsData.current.id}_photos", {active: $scope.mlsData.task.active})
+      promises.push rmapsJobsService.updateTask("#{$scope.mlsData.current.id}_listing", {active: $scope.mlsData.task.active})
+      promises.push rmapsJobsService.updateTask("#{$scope.mlsData.current.id}_agent", {active: $scope.mlsData.task.active})
+      promises.push rmapsJobsService.updateTask("#{$scope.mlsData.current.id}_photo", {active: $scope.mlsData.task.active})
       promises.push $scope.mlsData.current.save()
 
       if rmapsPrincipalService.hasPermission('change_mlsconfig_serverdata')
