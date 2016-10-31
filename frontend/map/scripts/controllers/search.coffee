@@ -2,13 +2,17 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 _ = require 'lodash'
 
-module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsEventConstants) ->
+module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, $element, rmapsEventConstants) ->
   $log = $log.spawn("map:search")
 
   $scope.openSearchTools = false
   $scope.searchScope = 'Places'
 
   $scope.result = googlePlace: null
+
+  $scope.clearSearch = () ->
+    $element.find('input')[0]?.value = ''
+    $scope.result.googlePlace = null
 
   $rootScope.$onRootScope rmapsEventConstants.map.results, (evt, map) ->
     numResults = _.keys(map.markers.filterSummary).length

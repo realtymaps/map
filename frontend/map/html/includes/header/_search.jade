@@ -36,4 +36,4 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
             placeholder="Enter an address or place"
             ng-change="addressChange()"
             force-selection="true")
-        span.icon-close.search-clear
+        span.icon-close.search-clear(ng-click="clearSearch(); $event.stopPropagation();")
