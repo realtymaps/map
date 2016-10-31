@@ -339,7 +339,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .cancellable()
       .then (normalizedData) ->
         # builds record, which includes categorizing non-base fields into `shared_groups` and `subscriber_groups`
-        options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData)
+        options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData, subtask.data)
       .then (updateRow) ->
         updateRecord({
           updateRow

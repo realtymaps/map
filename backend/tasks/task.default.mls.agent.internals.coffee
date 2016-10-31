@@ -39,32 +39,16 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   mainEntry
 
 
-buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
+buildRecord = (stats, usedKeys, rawData, dataType, normalizedData, subtaskData) -> Promise.try () ->
 # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(base.address)
-    hide_listing: base.hide_listing ? false
-    hide_address: base.hide_address ? false
-    shared_groups:
-      general: normalizedData.general || []
-      details: normalizedData.details || []
-      listing: normalizedData.listing || []
-      building: normalizedData.building || []
-      dimensions: normalizedData.dimensions || []
-      lot: normalizedData.lot || []
-      location: normalizedData.location || []
-      restrictions: normalizedData.restrictions || []
-    subscriber_groups:
-      contacts: normalizedData.contacts || []
-      realtor: normalizedData.realtor || []
-      sale: normalizedData.sale || []
-    hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: null
+    up_to_date: new Date(subtaskData.startTime)
   _.extend base, stats, data
 
 
