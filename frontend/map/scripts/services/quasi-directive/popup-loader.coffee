@@ -94,12 +94,11 @@ app.factory 'rmapsPopupFactory', (
 
     close: () ->
       return if !@canClose
-      if !@popupIsHovered
-        $log.debug 'closing popup'
-        @map?.closePopup()
-        @scope?.$destroy()
-        @scope = null
-        return
+      $log.debug 'closing popup'
+      @map?.closePopup()
+      @scope?.$destroy()
+      @scope = null
+      return
 
 app.service 'rmapsPopupLoaderService',(
   $log,

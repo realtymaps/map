@@ -1,7 +1,13 @@
 app = require '../../app.coffee'
 module.exports = app
 
-app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterService, rmapsPropertyFormatterService) ->
+app.controller 'rmapsSmallDetailsCtrl', (
+  $scope
+  $log
+  rmapsResultsFormatterService
+  rmapsPropertyFormatterService
+  rmapsPopupLoaderService
+) ->
   $log = $log.spawn 'rmapsSmallDetailsCtrl'
   $log.debug $scope.model
 
@@ -16,6 +22,9 @@ app.controller 'rmapsSmallDetailsCtrl', ($scope, $log, rmapsResultsFormatterServ
     # $scope.property.grouped.properties[0].address.street = '123 Main St'
     if _.uniq(_.pluck($scope.property.grouped.properties, 'address.street')).length > 1
       $scope.showAllAddresses = true
+
+  $scope.closeInfo = () ->
+    rmapsPopupLoaderService.close()
 
   $scope.addressComparator = (p) ->
     unit = p.address.unit
