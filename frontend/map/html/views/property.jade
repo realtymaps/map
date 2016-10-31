@@ -91,6 +91,15 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-value(ng-if="property.status_display") {{property.status_display}}
                   .content-label(ng-if="property.status_display") MLS Status
 
+              .row.content-row
+                .col-xs-4
+                  .content-value(ng-if="property.appraised_value") {{property.appraised_value}}
+                  .content-value(ng-if="!property.appraised_value") -
+                  .content-label Assessed Value
+                .col-xs-4
+                .col-xs-4
+
+
           .row.content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
             .col-sm-12
               .content-heading Owner Info
