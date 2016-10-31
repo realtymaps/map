@@ -9,7 +9,7 @@ statusData =
 statusFilter =
   sold: 'sold'
 
-agent_status =
+agentStatus =
   active: 'active'
   inactive: 'inactive'
 
@@ -87,11 +87,12 @@ address =
 mod.constant 'rmapsParcelEnums', {
   status: _.extend({}, statusData, statusFilter)
   statusData
+  agentStatus
   categories
   address
   propertyType
   lookupOptions:
     status: _.values(statusData)
     property_type: _.values(propertyType)
-    agent_status: _.values(agent_status)
+    agent_status: _.values(agentStatus)
 }
