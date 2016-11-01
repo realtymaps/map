@@ -25,7 +25,7 @@ module.exports = (options = {}) ->
       decimalIndex = numvalue.toString().indexOf('.')
       minimumFractionDigits = undefined
       if decimalIndex > 0 # always shows a zero in whole part
-        minimumFractionDigits = t.toString().length - decimalIndex - 1
+        minimumFractionDigits = numvalue.toString().length - decimalIndex - 1
       numvalue = numvalue.toLocaleString('en', minimumFractionDigits: minimumFractionDigits)
 
     if options.addDollarSign && !(_.isString(numvalue) && numvalue.indexOf('$') >= 0)
