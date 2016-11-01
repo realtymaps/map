@@ -6,13 +6,22 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $t
   $log = $log.spawn("map:search")
 
   $scope.openSearchTools = false
-  $scope.searchScope = 'Places'
-
+  $scope.search = scope: 'Places'
+  $scope.setSearchScope = (v) ->
+    $scope.search.scope = v
   $scope.result = googlePlace: null
 
   $scope.clearSearch = () ->
-    $element.find('input')[0]?.value = ''
-    $scope.result.googlePlace = null
+    if $scope.search.scope == 'Places'
+      $log.debug 'clearing places'
+      $element.find('input')[0]?.value = ''
+      $scope.result.googlePlace = null
+    else if $scope.search.scope == 'Owners'
+      $log.debug 'clearing owner'
+      $rootScope.selectedFilters.ownerName = ''
+
+  $scope.$watch 'search.scope', (newVal, oldVal) ->
+    $log.debug oldVal, '->', newVal
 
   $rootScope.$onRootScope rmapsEventConstants.map.results, (evt, map) ->
     numResults = _.keys(map.markers.filterSummary).length
