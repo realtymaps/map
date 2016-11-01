@@ -136,6 +136,7 @@ app.service 'rmapsPropertyFormatterService',
         return result.days_on_market_cumulative
 
       getSqFtPrice: (result) ->
+        return if !result.price || !result.sqft_finished
         numeral(result.price / result.sqft_finished).format('$0,0.00')
 
     return _.extend(svc, rmapsFormattersService.Common)
