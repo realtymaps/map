@@ -75,7 +75,7 @@ basicColumns = do ->
     mls: ['id', 'state', 'full_name', 'mls']
 
     all: ([
-      'rm_inserted_time', 'data_source_id', 'data_source_type', 'appraised_value', 'batch_id', 'up_to_date', 'active', 'change_history', 'prior_entries',
+      'rm_inserted_time', 'data_source_id', 'data_source_type', 'appraised_value', 'batch_id', 'up_to_date', 'change_history', 'prior_entries',
       'rm_property_id', 'fips_code', 'parcel_id', 'address', 'price', 'close_date', 'days_on_market', 'bedrooms', 'acres', 'sqft_finished',
       'status_display', 'owner_name', 'owner_name_2', 'geometry', 'geometry_center', 'geometry_raw', 'shared_groups', 'subscriber_groups', 'hidden_fields',
       'ungrouped_fields', 'discontinued_date', 'rm_raw_id', 'data_source_uuid', 'inserted', 'updated', 'update_source', 'owner_address', 'year_built',

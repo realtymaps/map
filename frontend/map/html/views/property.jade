@@ -97,8 +97,10 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-value(ng-if="!property.appraised_value") -
                   .content-label Assessed Value
                 .col-xs-4
-                .col-xs-4
 
+                .col-xs-4
+                  .content-value {{  formatters.property.orDash( formatters.property.getSqFtPrice(property) )   }}
+                  .content-label {{formatters.property.getSqFtPriceLabel(property.status)}}
 
           .row.content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
             .col-sm-12
@@ -380,6 +382,18 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-value(ng-if="property.status_display") {{property.status_display}}
                   .content-label(ng-if="property.status_display") MLS Status
 
+              .row.content-row
+                .col-xs-4
+                  .content-value(ng-if="property.appraised_value") {{property.appraised_value}}
+                  .content-value(ng-if="!property.appraised_value") -
+                  .content-label Assessed Value
+                .col-xs-4
+
+                .col-xs-4
+                  .content-value {{ formatters.property.orDash( formatters.property.getSqFtPrice(property) ) }}
+                  .content-label {{formatters.property.getSqFtPriceLabel(property.status)}}
+
+
             .content-block.border-bottom(ng-if="property.owner_name || property.owner_name_2")
               .content-heading Owner Info
               p
@@ -413,6 +427,19 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-label Close Date
                   .content-value
                     span {{property.close_date | date : 'MM/dd/yyyy'}}
+
+              .row.content-row
+                .col-xs-12(ng-if="property.creation_date")
+                  .content-label Days for Sale:
+                  .content-value {{formatters.property.getDaysForSale(property)}}
+              .row.content-row
+                .col-xs-6(ng-if="property.days_on_market")
+                  .content-label Days on Market:
+                  .content-value {{formatters.property.getDaysOnMarket(property)}}
+                .col-xs-6(ng-if="property.days_on_market_cumulative")
+                  .content-label Cumulative Days on Market:
+                  .content-value {{formatters.property.getCumulativeDaysOnMarket(property)}}
+
 
             .content-block.prop-attrs.border-bottom(ng-if="property.description")
               .content-heading Description
