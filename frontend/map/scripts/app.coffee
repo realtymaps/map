@@ -101,28 +101,19 @@ app.controller 'rmapsAppCtrl', (
 $scope
 $rootScope
 $location
-rmapsPrincipalService
 rmapsMainOptions) ->
 
-  rmapsPrincipalService.getIdentity().then (identity) ->
-    return unless identity
-    {user, profiles} = identity
-    user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
-    user.name = user.full_name or user.username
+  _.extend $rootScope,
+    mainOptions: rmapsMainOptions['map']
+    isActive: (viewLocation) ->
+      locationPath = $location.path().substr(1)
+      locationView = if locationPath.lastIndexOf('/') > 0 then locationPath.slice(0, locationPath.lastIndexOf('/')) else $location.path().substr(1)
 
-    _.extend $rootScope,
-      mainOptions: rmapsMainOptions['map']
-      user: user
-      profiles: profiles
-      isActive: (viewLocation) ->
-        locationPath = $location.path().substr(1)
-        locationView = if locationPath.lastIndexOf('/') > 0 then locationPath.slice(0, locationPath.lastIndexOf('/')) else $location.path().substr(1)
+      active = viewLocation == locationView
+      if active
+        $rootScope.activeView = viewLocation
 
-        active = viewLocation == locationView
-        if active
-          $rootScope.activeView = viewLocation
-
-        active
+      active
 
 
 module.exports = app

@@ -34,14 +34,12 @@ rmapsLoginService) ->
         if !data?.identity?
           return loginFailed("no identity")
 
-        # setting user to $rootScope since this is where a reference to user is used in other parts of the app
-        $rootScope.user = data.identity.user
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
         rmapsProfilesService.setCurrentProfileByIdentity data.identity
         .then () ->
           cb = () ->
-            rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
+            rmapsMapAuthorizationFactory.goToPostLoginState()
           rmapsLoginHack.checkLoggIn(cb)
           # Currently we can not go directly to login as the session is not synced
           # rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
