@@ -8,31 +8,31 @@ div.search-field(ng-controller="rmapsSearchCtrl" ng-class="{ 'search-open': open
           button.dropdown-toggle(href='#search-type' uib-dropdown-toggle)
             span
               span.type
-                | {{searchScope}}
+                | {{search.scope}}
             span.caret
           ul.dropdown-menu
-            li(ng-click="searchScope = 'Places'")
+            li(ng-click="setSearchScope('Places')")
               span.icon.icon-property
               | Places
-            li(ng-click="searchScope = 'Owners'")
+            li(ng-click="setSearchScope('Owners')")
               span.icon.icon-project
               | Owners
 
-      span(ng-switch="searchScope")
-        span.search-input(ng-switch-when="Owners")
-          input.form-control(
-            uib-tooltip="{{searchTooltip}}"
-            tooltip-placement="bottom"
-            tooltip-popup-delay="500"
-            tooltip-close-popup-delay="500"
-            tooltip-enable="selectedFilters.ownerName.length > 0"
-            tooltip-trigger="'keyup mouseenter focus'"
-            placeholder="Enter a name"
-            ng-model="selectedFilters.ownerName")
-        span.search-input(ng-switch-when="Places")
-          input.form-control(
-            ng-model="result.googlePlace"
-            g-places-autocomplete
-            placeholder="Enter an address or place"
-            ng-change="addressChange()"
-            force-selection="true")
+      span.search-input(ng-show="search.scope == 'Owners'")
+        input.form-control(
+          uib-tooltip="{{searchTooltip}}"
+          tooltip-placement="bottom"
+          tooltip-popup-delay="500"
+          tooltip-close-popup-delay="500"
+          tooltip-enable="selectedFilters.ownerName.length > 0"
+          tooltip-trigger="'keyup mouseenter focus'"
+          placeholder="Enter a name"
+          ng-model="selectedFilters.ownerName")
+      span.search-input(ng-show="search.scope == 'Places'")
+        input.form-control(
+          ng-model="result.googlePlace"
+          rmaps-google-autocomplete
+          placeholder="Enter an address or place"
+          ng-change="addressChange()"
+          force-selection="true")
+      span.icon-close.search-clear(ng-click="clearSearch(); $event.stopPropagation();")
