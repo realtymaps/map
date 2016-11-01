@@ -89,6 +89,7 @@ _expandGroups = (children) ->
 
 # designed for usage as leaflet 'iconCreateFunction'
 create = (cluster, forceType) ->
+  cluster.saves ?= 0
   children = _expandGroups(cluster.getAllChildMarkers())
   data = _formatPieData(children, forceType)
   return new L.DivIcon
@@ -98,6 +99,7 @@ createSaves = (cluster) ->
   create(cluster, 'saves')
 
 createBackend = (cluster, pieClass) ->
+  cluster.saves ?= 0
   data = _formatPieDataBackend(cluster)
   return _serializeXmlNode(_makeSvg(data, cluster.count, pieClass))
 

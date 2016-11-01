@@ -96,8 +96,8 @@ app.service 'rmapsLayerFormattersService', (
     markersBSLabel[rmapsParcelEnums.status.forSale] = 'sale-property'
     markersBSLabel['saved'] = 'saved-property'
 
-    setMarkerOptions: (marker) =>
-      switch marker.type
+    setMarkerOptions: (marker) ->
+      switch marker.markerType
         when 'price' then @setMarkerPriceOptions(marker)
         when 'price-group' then @setMarkerPriceGroupOptions(marker)
         when 'note' then @setMarkerNotesOptions(marker)
@@ -110,13 +110,6 @@ app.service 'rmapsLayerFormattersService', (
         formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
       else
         formattedPrice = '$'+casing.upper numeral(model.price).format('0a'), '.'
-
-      if model.isMousedOver
-        hovered = ' label-hovered'
-        zIndex = 4
-      else
-        hovered = ''
-        zIndex = 2
 
       if model.savedDetails?.isPinned || model.savedDetails?.isFavorite
         status = 'saved'
@@ -131,7 +124,7 @@ app.service 'rmapsLayerFormattersService', (
           iconSize: [1, 1]
           html: priceMarkerTemplate(
             price:formattedPrice,
-            priceClasses: "label-#{markersBSLabel[status]}#{hovered}",
+            priceClasses: "label-#{markersBSLabel[status]}",
             hasMail: !!rmapsMailCampaignService.getMail(model.rm_property_id)
             rm_property_id: model.rm_property_id
             isPinned: model.savedDetails?.isPinned
