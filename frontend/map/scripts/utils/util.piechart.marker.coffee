@@ -1,7 +1,8 @@
 d3 = require 'd3'
 pieStyl = require './styles/util.style.piechart.coffee'
+L = require 'leaflet'
 
-serializeXmlNode = (xmlNode) ->
+_serializeXmlNode = (xmlNode) ->
   if window.XMLSerializer?
     return (new window.XMLSerializer()).serializeToString(xmlNode)
   if xmlNode.xml?
@@ -11,7 +12,7 @@ serializeXmlNode = (xmlNode) ->
 # massage data for better usage in pie arcs
 # there's an opportunity to simplify(reduce) the returned dataset to facilitate
 #  optimization and minimum-arc-size
-formatPieData = (data) ->
+_formatPieData = (data) ->
   d3.nest()
   .key (k) ->
     k.status
@@ -19,15 +20,16 @@ formatPieData = (data) ->
     v.length
   .entries data, d3.map
 
-formatPieDataBackend = (cluster) ->
+_formatPieDataBackend = (cluster) ->
   return [
     {key: 'pending', values: {'length': cluster.pending}}, # feign 'length' attribute of array
     {key: 'for sale', values: {'length': cluster.forsale}},
     {key: 'sold', values: {'length': cluster.sold}},
     {key: 'not for sale', values: {'length': cluster.notforsale}}
+    {key: 'saves', values: {'length': cluster.saves}}
   ]
 
-makeSvg = (data, total, pieClass) ->
+_makeSvg = (data, total, pieClass) ->
   # stage items for processing and creating pie data
   donut = d3.layout.pie()
   arc = d3.svg.arc().outerRadius(pieStyl.radius).innerRadius(pieStyl.innerRadius)
@@ -76,14 +78,7 @@ makeSvg = (data, total, pieClass) ->
     .text(total)
   return svg
 
-# designed for usage as leaflet 'iconCreateFunction'
-pieCreateFunction = (cluster) ->
-  children = expandGroups(cluster.getAllChildMarkers())
-  data = formatPieData(children)
-  return new L.DivIcon
-    html: serializeXmlNode(makeSvg(data, children.length))
-
-expandGroups = (children) ->
+_expandGroups = (children) ->
   result = []
   for child in children
     if child.options.grouped
@@ -92,11 +87,18 @@ expandGroups = (children) ->
       result.push child.options
   result
 
-pieCreateFunctionBackend = (cluster, pieClass) ->
-  data = formatPieDataBackend(cluster)
-  return serializeXmlNode(makeSvg(data, cluster.count, pieClass))
+# designed for usage as leaflet 'iconCreateFunction'
+create = (cluster) ->
+  children = _expandGroups(cluster.getAllChildMarkers())
+  data = _formatPieData(children)
+  return new L.DivIcon
+    html: _serializeXmlNode(_makeSvg(data, children.length))
+
+createBackend = (cluster, pieClass) ->
+  data = _formatPieDataBackend(cluster)
+  return _serializeXmlNode(_makeSvg(data, cluster.count, pieClass))
 
 module.exports = {
-  pieCreateFunction
-  pieCreateFunctionBackend
+  create
+  createBackend
 }

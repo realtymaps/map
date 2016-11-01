@@ -2,7 +2,7 @@ _ = require 'lodash'
 app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
-pieUtil = require '../utils/util.piechart.coffee'
+pieMarkerFactory = require '../utils/util.piechart.marker.coffee'
 priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker.jade'
 noteMarkerTemplate  = require '../../html/includes/map/markers/_noteMarker.jade'
 currentLocationMarkerTemplate = require '../../html/includes/map/markers/_currentLocationMarker.jade'
@@ -96,11 +96,11 @@ app.service 'rmapsLayerFormattersService', (
     markersBSLabel[rmapsParcelEnums.status.forSale] = 'sale-property'
     markersBSLabel['saved'] = 'saved-property'
 
-    setMarkerOptions: (marker) ->
+    setMarkerOptions: (marker) =>
       switch marker.type
-        when 'price' then setMarkerPriceOptions(marker)
-        when 'price-group' then setMarkerPriceGroupOptions(marker)
-        when 'note' then setMarkerNotesOptions(marker)
+        when 'price' then @setMarkerPriceOptions(marker)
+        when 'price-group' then @setMarkerPriceGroupOptions(marker)
+        when 'note' then @setMarkerNotesOptions(marker)
 
     setMarkerPriceOptions: (model) ->
       return {} unless model
@@ -148,7 +148,7 @@ app.service 'rmapsLayerFormattersService', (
           type: 'div'
           iconSize: [1, 1]
           # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Units (#{models.grouped.name}", priceClasses: "label-saved-property")
-          html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
+          html: pieMarkerFactory.createBackend(models.grouped, 'pieClassGrouped')
 
     setMarkerNotesOptions: (model) ->
       _.extend model,
@@ -175,7 +175,7 @@ app.service 'rmapsLayerFormattersService', (
         markerType: 'cluster'
         icon:
           type: 'div'
-          html: pieUtil.pieCreateFunctionBackend(model)
+          html: pieMarkerFactory.createBackend(model)
 
   setDataOptions = (data, optionsFormatter) ->
     _.each data, (model,k) ->
