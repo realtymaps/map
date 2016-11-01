@@ -68,6 +68,7 @@ WHERE
 
 
 -- new task and subtasks
+
 INSERT INTO jq_task_config ("name","description","data","ignore_until","repeat_period_minutes","warn_timeout_minutes","kill_timeout_minutes","active","fail_retry_minutes","blocked_by_tasks","blocked_by_locks")
 VALUES
   (E'<mlsid>_agent',E'Load MLS agents',E'{}',NULL,1440,15,NULL,FALSE,1,E'["<mlsid>_listing", "<mlsid>_photo"]',E'[]'),
@@ -93,3 +94,12 @@ VALUES
   (E'RAPB_agent_finalizeDataPrep',E'RAPB_agent',E'mls',E'null',10004,5,FALSE,TRUE,NULL,NULL,5),
   (E'RAPB_agent_finalizeData',E'RAPB_agent',E'mls',NULL,10005,5,FALSE,TRUE,NULL,NULL,10),
   (E'RAPB_agent_activateNewData',E'RAPB_agent',E'mls',NULL,10006,5,FALSE,TRUE,NULL,NULL,4);
+
+
+-- setting some mls config values
+
+DELETE FROM config_mls WHERE id IN ('swflmls', 'RAPB');
+INSERT INTO config_mls ("id","name","notes","listing_data","static_ip","data_rules","formal_name","disclaimer_text","disclaimer_logo","dmca_contact_name","dmca_contact_address","verify_overlap","agent_data")
+VALUES
+  (E'swflmls',E'Southwest Florida',E'test',E'{"db": "Property", "field": "LastChangeTimestamp", "table": "RES", "photoRes": {"width": "1024", "height": "768"}, "field_type": "DateTime", "largestPhotoObject": "XLargePhoto"}',TRUE,E'{"nullString":""}',E'Sunshine MLS (SWFLMLS)',NULL,NULL,NULL,NULL,TRUE,E'{"db": "Agent", "field": "MatrixModifiedDT", "table": "AGENT", "field_type": "DateTime"}'),
+  (E'RAPB',E'Realtors Association of the Palm Beaches',E'',E'{"db": "Property", "field": "LIST_87", "table": "A", "field_type": "DateTime"}',FALSE,E'{}',NULL,NULL,NULL,NULL,NULL,TRUE,E'{"db": "ActiveAgent", "field": "", "table": "Agent", "field_type": ""}');

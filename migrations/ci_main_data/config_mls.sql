@@ -1,3 +1,0 @@
-INSERT INTO "public"."config_mls"("id","name","notes","listing_data","static_ip","data_rules","formal_name","disclaimer_text","disclaimer_logo","dmca_contact_name","dmca_contact_address","verify_overlap","agent_data")
-VALUES
-  (E'swflmls',E'Southwest Florida',E'test',E'{"db": "Property", "field": "LastChangeTimestamp", "table": "RES", "photoRes": {"width": "1024", "height": "768"}, "field_type": "DateTime", "largestPhotoObject": "XLargePhoto"}',TRUE,E'{"nullString":""}',E'Sunshine MLS (SWFLMLS)',NULL,NULL,NULL,NULL,TRUE,E'{"db": "Agent", "field": "MatrixModifiedDT", "table": "AGENT", "field_type": "DateTime"}');
