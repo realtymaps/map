@@ -24,13 +24,29 @@ _overlays =
 
   saves:
     name: "#{mainOptions.map.naming.save.pluralAlt}"
-    type: 'group'
+    type: 'markercluster'
     visible: true
+    layerOptions:
+      disableClusteringAtZoom: commonConfig.map.options.zoomThresh.price + 1
+      maxClusterRadius: 60
+      chunkedLoading: true
+      showCoverageOnHover: false
+      removeOutsideVisibleBounds: true
+      iconCreateFunction: pieMarkerFactory.createSaves
+
 
   favorites:
     name: "Favorites"
-    type: 'group'
+    type: 'markercluster'
     visible: true
+    layerOptions:
+      disableClusteringAtZoom: commonConfig.map.options.zoomThresh.price + 1
+      maxClusterRadius: 60
+      chunkedLoading: true
+      showCoverageOnHover: false
+      removeOutsideVisibleBounds: true
+      iconCreateFunction: pieMarkerFactory.createSaves
+
 
   backendPriceCluster:
     name: 'Price Cluster'

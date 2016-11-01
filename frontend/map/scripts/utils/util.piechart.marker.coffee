@@ -12,10 +12,10 @@ _serializeXmlNode = (xmlNode) ->
 # massage data for better usage in pie arcs
 # there's an opportunity to simplify(reduce) the returned dataset to facilitate
 #  optimization and minimum-arc-size
-_formatPieData = (data) ->
+_formatPieData = (data, forceType) ->
   d3.nest()
   .key (k) ->
-    k.status
+    forceType || k.status
   .sortValues (v) ->
     v.length
   .entries data, d3.map
@@ -88,11 +88,14 @@ _expandGroups = (children) ->
   result
 
 # designed for usage as leaflet 'iconCreateFunction'
-create = (cluster) ->
+create = (cluster, forceType) ->
   children = _expandGroups(cluster.getAllChildMarkers())
-  data = _formatPieData(children)
+  data = _formatPieData(children, forceType)
   return new L.DivIcon
     html: _serializeXmlNode(_makeSvg(data, children.length))
+
+createSaves = (cluster) ->
+  create(cluster, 'saves')
 
 createBackend = (cluster, pieClass) ->
   data = _formatPieDataBackend(cluster)
@@ -100,5 +103,6 @@ createBackend = (cluster, pieClass) ->
 
 module.exports = {
   create
+  createSaves
   createBackend
 }
