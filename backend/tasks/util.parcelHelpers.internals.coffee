@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
 finalLogger = logger.spawn('final')
 tables = require '../config/tables'
-mlsHelpers = require './util.mlsHelpers'
+mlsListingInternals = require './task.default.mls.listing.internals'
 countyHelpers = require './util.countyHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 
@@ -73,8 +73,8 @@ finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
-          finalLogger.debug "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData {
+          finalLogger.debug "mlsListingInternals.finalizeData"
+          mlsListingInternals.finalizeData {
             subtask
             id
             data_source_id: r.data_source_id

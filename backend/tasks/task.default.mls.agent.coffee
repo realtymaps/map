@@ -2,11 +2,15 @@ Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
-logger = require('../config/logger').spawn('task:mls')
+logger = require('../config/logger').spawn('task:mls:agent')
 mlsHelpers = require './util.mlsHelpers'
+retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
+internals = require './task.default.mls.agent.internals'
 
 
 # NOTE: This file is a default task definition used for MLSs that have no special cases
@@ -14,97 +18,83 @@ NUM_ROWS_TO_PAGINATE = 2500
 
 
 loadRawData = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
+  now = Date.now()
   numRowsToPageNormalize = subtask.data?.numRowsToPageNormalize || NUM_ROWS_TO_PAGINATE
-
   taskLogger = logger.spawn(subtask.task_name)
   if subtask.data?.limit?
     limit = subtask.data?.limit
     taskLogger.debug "limiting raw mls data to #{limit}"
 
-  now = Date.now()
-
-  refreshPromise = dataLoadHelpers.checkReadyForRefresh(subtask, targetHour: 1)  # target 1am every day
-  rawLoadPromise = mlsHelpers.loadUpdates(subtask, dataSourceId: subtask.task_name, limit: limit)
-  Promise.join refreshPromise, rawLoadPromise, (doRefresh, numRawRows) ->
-    taskLogger.debug () -> "rows to normalize: #{numRawRows||0} (refresh: #{doRefresh})"
-    if !doRefresh && !numRawRows
+  mlsHelpers.loadUpdates(subtask, dataType: 'agent', dataSourceId: mlsId, limit: limit, fullRefresh: true)
+  .then (numRawRows) ->
+    taskLogger.debug () -> "rows to normalize: #{numRawRows||0}"
+    if !numRawRows
       return dataLoadHelpers.setLastUpdateTimestamp(subtask, now)
       .then () ->
         return 0
 
     recordCountsData =
-      dataType: 'listing'
+      dataType: 'agent'
+      deletes: dataLoadHelpers.DELETE.UNTOUCHED
+      skipRawTable: false
     activateData =
       startTime: now
+      setRefreshTimestamp: true
+      deletes: dataLoadHelpers.DELETE.UNTOUCHED
+    normalizeData =
+      dataType: 'agent'
+      startTime: now
 
-    if doRefresh
-      # whether or not we have data, we need to do some things when refreshing
-      recordCountsData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
-      activateData.setRefreshTimestamp = true
-      activateData.deletes = dataLoadHelpers.DELETE.UNTOUCHED
-      markUpToDatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "markUpToDate", manualData: {startTime: now}, replace: true})
-    else
-      recordCountsData.deletes = dataLoadHelpers.DELETE.INDICATED
-      activateData.setRefreshTimestamp = false
-      activateData.deletes = dataLoadHelpers.DELETE.INDICATED
-      markUpToDatePromise = Promise.resolve()
-
-    if numRawRows
-      normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({
-        subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize,
-        laterSubtaskName: "normalizeData", mergeData: {dataType: subtask.data.dataType,
-        startTime: now, doDailyMaintenance: doRefresh}})
-      recordCountsData.skipRawTable = false
-    else
-      normalizePromise = Promise.resolve()
-      recordCountsData.skipRawTable = true
-
+    normalizePromise = jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRawRows, maxPage: numRowsToPageNormalize, laterSubtaskName: "normalizeData", mergeData: normalizeData})
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: recordCountsData, replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
 
-    Promise.join(recordCountsPromise, activatePromise, normalizePromise, markUpToDatePromise, () ->)
+    Promise.join(recordCountsPromise, activatePromise, normalizePromise, () ->)
     .then () ->
       return numRawRows
 
 
 normalizeData = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
   dataLoadHelpers.normalizeData subtask,
-    dataSourceId: subtask.task_name
+    dataSourceId: mlsId
     dataSourceType: 'mls'
-    buildRecord: mlsHelpers.buildRecord
-    skipFinalize: subtask.data.doDailyMaintenance
+    buildRecord: internals.buildRecord
+    skipFinalize: false
+    idField: 'data_source_uuid'
 
 
 recordChangeCounts = (subtask) ->
-  dataLoadHelpers.recordChangeCounts(subtask, indicateDeletes: false)
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id})
 
 
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
+  mlsId = subtask.task_name.split('_')[0]
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized.listing()
+  tables.normalized.agent()
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
-    data_source_id: subtask.task_name
+    data_source_id: mlsId
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})
 
+
 finalizeData = (subtask) ->
-  impl = (id) ->
-    mlsHelpers.finalizeData {subtask, id}
-  Promise.map(subtask.data.values, impl)
-
-
-markUpToDate = (subtask) ->
-  mlsHelpers.markUpToDate(subtask)
+  data_source_id = subtask.task_name.split('_')[0]
+  Promise.each subtask.data.values, (data_source_uuid) ->
+    internals.finalizeData {subtask, data_source_uuid, data_source_id}
 
 
 activateNewData = (subtask) ->
-  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes})
+  data_source_id = subtask.task_name.split('_')[0]
+  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes, tableProp: 'agent', skipIndicatedDeletes: true, data_source_id})
 
 
 subtasks = {
@@ -114,7 +104,6 @@ subtasks = {
   finalizeDataPrep
   finalizeData
   activateNewData
-  markUpToDate
 }
 
 

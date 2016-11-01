@@ -5,8 +5,8 @@
       .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all values anyway?
 
 
-.col-md-12.scroll
-  .col-md-5.row.lookup(ng-repeat="lookup in fieldData.current.lookups")
+.row.col-md-12.scroll
+  .row.col-md-5.lookup(ng-repeat="lookup in fieldData.current.lookups")
     .col-md-8 {{lookup.LongValue}}
     .col-md-4
       select(
@@ -34,4 +34,3 @@
     .col-md-2
       input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
     .col-md-8.help Enter the separator to use for splitting values in this field (a comma ',' is typical)
- 
