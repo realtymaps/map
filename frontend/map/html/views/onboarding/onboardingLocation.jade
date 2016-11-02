@@ -9,55 +9,107 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
         form.form-horizontal(role='form' name='userForm')
           .form-payment
             .row
-              .col-md-8.col-sm-8.col-xs-11
+              .col-md-8.col-sm-8.col-xs-11(ng-if="supportedStates")
                 .form-group
-                  .label State:
-                  .col-md-8.col-sm-8.col-xs-11
-                    select.form-control(ng-model="user.us_state_code" validator="required" name="userStateCode")
-                      option(
-                        ng-repeat="entity in us_states"
-                        ng-selected="{{entity.code == user.us_state}}"
-                        value="{{entity.code}}") {{entity.code}} - {{entity.name}} {{entity.full_name}}
+                  .label Show Supported States:
+                  .col-lg-12
+                    input(type="checkbox" ng-model="supportedStates.show" ng-change="supportedStates.change()")
             .row
-              .col-md-8.col-sm-8.col-xs-11(ng-if="supportedMlsCodes")
+              .col-md-8.col-sm-8.col-xs-11
+                .form-group(ng-if="!supportedStates.show")
+                  .label All States (with defined MlSes):
+                  .col-md-8.col-sm-8.col-xs-11
+                    select.form-control(
+                      ng-model="user.us_state_code"
+                      validator="required"
+                      name="userStateCode"
+                      ng-options="entity.code as stateView(entity) for entity in us_states_possible")
+                .form-group(ng-if="supportedStates.show")
+                  .label Supported States:
+                  .col-md-8.col-sm-8.col-xs-11
+                    select.form-control(
+                      ng-model="user.us_state_code"
+                      validator="required"
+                      name="userStateCode"
+                      ng-options="entity.code as stateView(entity) for entity in us_states_supported")
+
+            .row
+              .col-md-8.col-sm-8.col-xs-11(ng-if="supportedMlsCodes && supportedStates.show")
                 .form-group
                   .label Show Supported MLS:
                   .col-lg-12
                     input(type="checkbox" ng-model="supportedMLS.show" ng-change="supportedMLS.change()")
             .row
-              .col-md-8.col-sm-8.col-xs-11(ng-if="!supportedMLS.show && supportedMlsCodes")
+              .col-md-8.col-sm-8.col-xs-11
                 .form-group
                   .label All MLS:
                   .col-md-8.col-sm-8.col-xs-11
-                    select.form-control(ng-model="user.mls_code" validator="required" name="userMlsCode")
-                      option(
-                        ng-repeat="entity in mlsCodes"
-                        ng-selected="{{entity.mls == user.mls_code}}"
-                        value="{{entity.mls}}") {{entity.display_mls}} - {{entity.full_name}}
+                    // all mls codes
+                    input.form-control(
+                      ng-if="!supportedMLS.show && supportedMlsCodes || !supportedStates.show"
+                      ng-model="user.mls_code"
+                      validator="required"
+                      name="userMlsCode"
+                      type="text"
+                      placeholder="Search MLSes"
+                      aria-autocomplete="none"
+                      typeahead-input-formatter="mlsInputFormatter($model)"
+                      uib-typeahead="entity.mls as mlsView(entity) for entity in mlsCodes | filter:$viewValue | limitTo:14")
+                    // our supported mls codes
+                    input.form-control(
+                      ng-if="supportedMLS.show && supportedMlsCodes && supportedStates.show"
+                      ng-model="user.mls_code"
+                      validator="required"
+                      name="userMlsCode"
+                      type="text"
+                      placeholder="Search MLSes"
+                      typeahead-input-formatter="mlsInputFormatter($model)"
+                      aria-autocomplete="none"
+                      uib-typeahead="entity.mls as mlsView(entity) for entity in supportedMlsCodes | filter:$viewValue | limitTo:14")
 
-              .col-md-8.col-sm-8.col-xs-11(ng-if="supportedMLS.show && supportedMlsCodes")
-                .form-group
-                  .label Supported MLS:
-                  .col-md-8.col-sm-8.col-xs-11
-                    select.form-control(ng-model="user.mls_code" validator="required" name="userMlsCode")
-                      option(
-                        ng-repeat="entity in supportedMlsCodes"
-                        ng-selected="{{entity.mls == user.mls_code}}"
-                        value="{{entity.mls}}") {{entity.display_mls}} - {{entity.full_name}}
+
+                  //- .col-md-4.col-sm-4.col-xs-5
+                  //-   select.form-control(
+                  //-     ng-model="user.mls_code"
+                  //-     validator="required"
+                  //-     name="userMlsCode"
+                  //-     ng-options="entity as mlsView(entity) for entity in supportedMlsCodes"
+                  //-   )
 
             .row(ng-show="user.mls_code")
               .col-md-8.col-sm-8.col-xs-11
                 .form-group
                   .label Your MLS ID:
                   .col-md-8.col-sm-8.col-xs-11
-                    input.form-control(name="mls_id" ng-model="user.mls_id" type='text' validator="required,minlength=2")
+                    input.form-control(
+                      name="mls_id"
+                      ng-model="user.mls_id"
+                      type='text'
+                      validator="required,minlength=2,checkValidMlsAgent=user")
+
+            .row(ng-show="user.mls_code" ng-if="!view.supportedCode")
+              .col-md-6.col-sm-6.col-xs-9
+                span()
+                  p Your selected MLS is not supported your request for the mls will be forwarded. We will notify you on it's availabilty.
+                  br
+                  p Sign up will no longer continue and your information will not be saved upon clicking "done".
+
 
             .row(ng-show="user.mls_code && user.mls_id")
               .col-md-6.col-sm-6.col-xs-12
                 .form-group
                   .col-md-3
-                    input.btn.btn-primary(ng-value='doneButton.getText()' ng-attr-title='doneButton.getTitle()'
-                    type='button' ng-click="user.submit()" validation-submit="userForm")
+                    input.btn.btn-primary(
+                      ng-if="view.supportedCode"
+                      ng-value='doneButton.getText()'
+                      ng-attr-title='doneButton.getTitle()'
+                      type='button' ng-click="user.submit()"
+                      validation-submit="userForm")
+                    input.btn.btn-primary(
+                      ng-if="!view.supportedCode"
+                      value="Done / Abort"
+                      type='button' ng-click="user.unsupportedSubmit()"
+                      validation-submit="userForm")
 
     div(ng-if="user.plan.name === 'standard'")
       h2 Select your state and county
@@ -90,4 +142,3 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                 .form-group
                   .col-md-3
                     input.btn.btn-primary(value='Done' type='button' ng-click="user.submit()" validation-submit="userForm")
-

@@ -2,26 +2,20 @@ retsCache = require '../services/service.retsCache'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('routes:mls')
 mlsService = require '../services/service.mls'
-{validators, validateAndTransformRequest} = require '../utils/util.validation'
+mlsAgentService = require '../services/service.mls.agent'
+{validateAndTransformRequest, validateAndTransform} = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 {handleRoute} =  require '../utils/util.route.helpers'
 internals = require './route.mls.internals'
-
-lookupMlsTransforms =
-  params: validators.object isEmptyProtect: true
-  query: validators.object isEmptyProtect: true
-  body: validators.object subValidateSeparate:
-    state: validators.string(minLength:2, maxLength:2)
-    full_name: validators.string(minLength:2)
-    mls: validators.string(minLength:2)
-    id: validators.integer()
+transforms = require '../utils/transforms/transforms.mls'
+httpStatus = require '../../common/utils/httpStatus'
 
 module.exports =
   root:
     method: 'post'
     handle: (req, res, next) ->
       handleRoute req, res, next, ->
-        validateAndTransformRequest req, lookupMlsTransforms
+        validateAndTransformRequest req, transforms.lookup
         .then (validReq) ->
           logger.debug validReq
           mlsService.getAll(validReq.body)
@@ -30,10 +24,42 @@ module.exports =
     method: 'post'
     handle: (req, res, next) ->
       handleRoute req, res, next, ->
-        validateAndTransformRequest req, lookupMlsTransforms
+        validateAndTransformRequest req, transforms.lookup
         .then (validReq) ->
           logger.debug validReq
           mlsService.getAllSupported(validReq.body)
+
+  supportedStates:
+    method: 'get'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        mlsService.supported.getAllStates()
+
+  activeAgent:
+    method: 'post'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        logger.debug -> "req.body: #{JSON.stringify req.body}"
+        validateAndTransform req, transforms.lookupAgent
+        .then (validReq) ->
+          logger.debug -> "@@@@ validReq @@@@"
+          logger.debug -> validReq
+          mlsAgentService.getBy(validReq.body)
+          .then (results) ->
+            found = !!results.length
+            if found
+              return found
+
+            next new ExpressResponse(alert: {msg: "mls agent not found or active"}, {status: httpStatus.NOT_FOUND, quiet: true})
+
+
+
+
+  supportedPossibleStates:
+    method: 'get'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        mlsService.supported.getPossibleStates()
 
   getDatabaseList:
     method: 'get'
