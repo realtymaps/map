@@ -751,7 +751,6 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
     return true
 
 
-
 checkTableExists = (db, tableName) ->
   dbs.get(db)
   .select(1)
