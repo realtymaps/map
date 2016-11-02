@@ -109,10 +109,7 @@ fipsCodeQuery = (opts) ->
     throw new Error('opts.fips_code required!')
 
   query = sqlHelpers.select(tables.finalized.parcel(), 'cartodb_parcel', false)
-  .where {
-    fips_code: opts.fips_code
-    active: true
-  }
+  .where(fips_code: opts.fips_code)
   .whereNotNull 'rm_property_id'
   .orderBy 'rm_property_id'
 

@@ -69,15 +69,6 @@ deleteParcels = () ->
     logger.debug () -> "Deleted #{count} rows from delete parcels table"
 
 
-deleteInactiveRows = () ->
-  tables.finalized.combined()
-  .where(active: false)
-  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
-  .delete()
-  .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from combined data table"
-
-
 deletePhotosPrep = (subtask) ->
   numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || internals.NUM_ROWS_TO_PAGINATE
 
@@ -120,7 +111,6 @@ module.exports = new TaskImplementation 'cleanup', {
   currentSubtasks
   deleteMarkers
   deleteParcels
-  deleteInactiveRows
   deletePhotosPrep
   deletePhotos
 }

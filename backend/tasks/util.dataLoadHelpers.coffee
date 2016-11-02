@@ -147,7 +147,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
               transaction: mainDbTransaction
 
 
-# this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
+# this function deletes extraneous rows
 activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDeletes, data_source_id} = {}) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug subtask
 
@@ -158,64 +158,34 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
 
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
-    if deletes == DELETE.UNTOUCHED
-      # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
-      # full data sync, and if we didn't touch it that means it should be deleted
-      activatePromise = tables.finalized[tableProp](transaction: transaction)
-      .where(subset)
-      .where () ->
-        # the below is to prevent de-activating rows from the current batch, e.g. if the activate subtask executes but
-        # the dyno goes down before the subtask is marked as complete, so the subtask ends up running a 2nd time.  If
-        # that were to happen, the row would have batch_id = subtask.batch_id and active = true.  That condition should
-        # be prevented by the clauses below
-        @where(batch_id: subtask.batch_id, active: false)
-        @orWhereNot () ->
-          @where(batch_id: subtask.batch_id, active: false)
-      .update(active: dbs.get('main').raw('NOT "active"'))
-    else
-      # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
-      # rm_property_id that has been updated in this batch
-      activatePromise = tables.finalized[tableProp](transaction: transaction, as: 'updater')
-      .whereExists () ->
-        tables.finalized[tableProp](transaction: this)
-        .select(1)
-        .where
-          data_source_id: dbs.get('main').raw("updater.data_source_id")
-          rm_property_id: dbs.get('main').raw("updater.rm_property_id")
-          update_source: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
-          active: false
-      .update(active: dbs.get('main').raw('NOT "active"'))
-
-    activatePromise
-    .then () ->
-      # delete inactive rows
-      tables.finalized[tableProp](transaction: transaction)
-      .where
-        data_source_id: data_source_id || subtask.task_name
-        active: false
-      .delete()
-    .then () ->
-      if skipIndicatedDeletes
-        return
-      # delete rows marked explicitly for deletion
-      tables.finalized[tableProp](transaction: transaction, as: 'deleter')
-      .where(data_source_id: data_source_id || subtask.task_name)
-      .whereExists () ->
-        tables.deletes[tableProp](transaction: this)
-        .select(1)
-        .where
-          data_source_id: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
-          rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
-      .delete()
-      .then () ->
-        # clean up after itself in the deletes table
-        tables.deletes[tableProp](transaction: transaction)
-        .where
-          data_source_id: data_source_id || subtask.task_name
-          batch_id: subtask.batch_id
+    Promise.try () ->
+      if deletes == DELETE.UNTOUCHED
+        # in this mode, we delete all rows on this subset that don't have the current batch_id, because we assume this is
+        # a full data sync, and if we didn't touch it that means it should be deleted
+        tables.finalized[tableProp](transaction: transaction)
+        .where(subset)
+        .whereNot(batch_id: subtask.batch_id)
         .delete()
+      else
+        # in this mode, we're doing an incremental update, so every row has been handled individually, either with an
+        # upsert, or with an indicated delete below
+        tables.finalized[tableProp](transaction: transaction, as: 'deleter')
+        .where(data_source_id: data_source_id || subtask.task_name)
+        .whereExists () ->
+          tables.deletes[tableProp](transaction: this)
+          .select(1)
+          .where
+            data_source_id: data_source_id || subtask.task_name
+            batch_id: subtask.batch_id
+            rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
+        .delete()
+        .then () ->
+          # clean up after itself in the deletes table
+          tables.deletes[tableProp](transaction: transaction)
+          .where
+            data_source_id: data_source_id || subtask.task_name
+            batch_id: subtask.batch_id
+          .delete()
     .then () ->
       setLastUpdateTimestamp(subtask)
     .then () ->

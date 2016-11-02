@@ -29,7 +29,6 @@ diffBooleanKeys = [
 
 finalizeParcelEntry = ({entries, subtask}) ->
   entry = entries.shift()
-  entry.active = false
   delete entry.deleted
   delete entry.rm_inserted_time
   delete entry.rm_modified_time
@@ -52,7 +51,6 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   .where
     rm_property_id: id
     data_source_id: subtask.task_name
-    active: false
   .delete()
   .then () ->
     finalLogger.debug -> parcel
@@ -64,9 +62,7 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
 
 finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
   tables.finalized.combined(transaction: transaction)
-  .where
-    rm_property_id: id
-    active: true
+  .where(rm_property_id: id)
   .then (rows) ->
     promises = for r in rows
       do (r) ->

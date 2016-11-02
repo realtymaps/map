@@ -26,7 +26,6 @@ getBaseParcelQueryByBounds = (bounds, limit, center) ->
   sqlHelpers.whereInBounds(query, 'geometry_raw', bounds)
   if center?
     query.select(query.raw("st_contains(geometry_raw, st_setsrid(st_makepoint(?,?), #{coordSys.UTM})) as map_center", [center.lng, center.lat]))
-  query.where(active: true)
   query.limit(limit) if limit?
 
 _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try () ->

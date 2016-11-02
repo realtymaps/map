@@ -18,7 +18,6 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   delete entries[index].hidden_fields
   delete entries[index].ungrouped_fields
 
-  mainEntry.active = false
   delete mainEntry.deleted
   delete mainEntry.hide_address
   delete mainEntry.hide_listing
@@ -135,8 +134,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
           tables.finalized.combined({transaction})
           .where
             rm_property_id: id
-            data_source_id
-            active: false
+            data_source_id: data_source_id
           .delete()
           .then () ->
             tables.finalized.combined({transaction})
