@@ -18,12 +18,12 @@ _makeClusterQuery = (roundTo, scale) ->
     dbs.get('main').raw("count(case when status='sold' then 1 end) as sold"),
     dbs.get('main').raw("count(case when status='for sale' then 1 end) as forsale"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
-    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
-    .whereNotNull('geometry_raw')
-    .whereNotNull('address')
-    .groupByRaw(_roundCoordCol(roundTo,scale))
-    .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
-    .where(active: true)
+    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat")
+  )
+  .whereNotNull('geometry_raw')
+  .whereNotNull('address')
+  .groupByRaw(_roundCoordCol(roundTo,scale))
+  .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
 
 
 _getRoundingDigit = (zoom) ->

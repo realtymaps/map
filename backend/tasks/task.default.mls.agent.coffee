@@ -41,7 +41,6 @@ loadRawData = (subtask) ->
     activateData =
       startTime: now
       setRefreshTimestamp: true
-      deletes: dataLoadHelpers.DELETE.UNTOUCHED
     normalizeData =
       dataType: 'agent'
       startTime: now
@@ -94,7 +93,7 @@ finalizeData = (subtask) ->
 
 activateNewData = (subtask) ->
   data_source_id = subtask.task_name.split('_')[0]
-  dataLoadHelpers.activateNewData(subtask, {deletes: subtask.data.deletes, tableProp: 'agent', skipIndicatedDeletes: true, data_source_id})
+  dataLoadHelpers.activateNewData(subtask, {deletes: dataLoadHelpers.DELETE.UNTOUCHED, tableProp: 'agent', skipIndicatedDeletes: true, data_source_id})
 
 
 subtasks = {

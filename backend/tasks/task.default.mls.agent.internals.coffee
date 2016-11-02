@@ -8,7 +8,6 @@ logger = require('../config/logger').spawn('task:mls:agent')
 
 
 _finalizeEntry = ({entry, subtask}) -> Promise.try ->
-  entry.active = false
   delete entry.deleted
   delete entry.rm_inserted_time
   delete entry.rm_modified_time
@@ -54,7 +53,6 @@ finalizeData = ({subtask, data_source_uuid, data_source_id, transaction, delay})
           .where {
             data_source_uuid
             data_source_id
-            active: false
           }
           .delete()
           .then () ->

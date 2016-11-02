@@ -165,7 +165,7 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
 getParcelsPromise = ({rm_property_id, transaction}) ->
   tables.finalized.parcel(transaction: transaction)
   .select('geometry_raw', 'geometry', 'geometry_center', 'geometry_center_raw')
-  .where({rm_property_id, active: true})
+  .where({rm_property_id})
 
 
 module.exports = {
