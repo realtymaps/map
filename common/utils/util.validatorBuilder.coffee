@@ -414,6 +414,18 @@ typeRules =
       label: 'Number (integer)'
     config:
       nullZero: true
+  Tiny:
+    type:
+      name: 'integer'
+      label: 'Number (integer)'
+    config:
+      nullZero: true
+  Small:
+    type:
+      name: 'integer'
+      label: 'Number (integer)'
+    config:
+      nullZero: true
   Decimal:
     type:
       name: 'float'
@@ -437,6 +449,14 @@ typeRules =
     type:
       name: 'datetime'
       label: 'Date and Time'
+  Date:
+    type:
+      name: 'datetime'
+      label: 'Date'
+  Time:
+    type:
+      name: 'datetime'
+      label: 'Time'
   Boolean:
     type:
       name: 'boolean'

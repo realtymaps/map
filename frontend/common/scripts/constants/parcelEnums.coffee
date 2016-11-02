@@ -24,6 +24,17 @@ propertyType = {
   'Recreational / Seasonal'
 }
 
+datetimeFormats = [
+  'none'
+  'YYYY-MM-DD'
+  'YYYYMMDD'
+  'MMDDYYYY'
+  'YYYY-MM-DD[T]HH:mm:ss'
+  'MMMM Do, YYYY'
+  'HH:mm:ss'
+]
+
+
 categories =
   mls:
     listing:
@@ -91,6 +102,7 @@ mod.constant 'rmapsParcelEnums', {
   categories
   address
   propertyType
+  datetimeFormats
   lookupOptions:
     status: _.values(statusData)
     property_type: _.values(propertyType)
