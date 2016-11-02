@@ -8,6 +8,7 @@ tmp/
 #OSX
 .DS_Store
 *.out
+*.lock
 
 *.xml
 coverage/
