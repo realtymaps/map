@@ -41,6 +41,7 @@ app.controller 'rmapsMapCtrl', (
     $scope.pageClass = pageClass
   #end inits
 
+
   #
   # Create the Map Factory
   #

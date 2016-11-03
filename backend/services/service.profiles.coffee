@@ -134,6 +134,7 @@ _hasProfileStateChanged = (profile, partialState) ->
 
 updateCurrent = (session, partialState = {}) ->
   sessionProfile = getCurrentSessionProfile(session)
+
   saveSessionPromise = if _hasProfileStateChanged(sessionProfile, partialState)
     _.extend(sessionProfile, partialState)
     session.saveAsync() #save immediately to prevent problems from overlapping AJAX calls

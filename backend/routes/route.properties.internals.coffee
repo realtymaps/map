@@ -29,6 +29,7 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
     validateAndTransformRequest req.body, transforms
     .then (body) ->
       # logger.debug () -> "validBody: #{util.inspect body, depth: null}"
+
       {state} = body
       if state? and saveState
         appendProjectId(req, state)

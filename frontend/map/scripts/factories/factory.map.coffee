@@ -514,7 +514,6 @@ app.factory 'rmapsMapFactory',
 
         positionCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = positionCenter
-        rmapsProfilesService.updateLocalMapPosition(position)
         @scope.$evalAsync()
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
