@@ -2,13 +2,16 @@
 should()
 # sinon = require 'sinon'
 Promise = require 'bluebird'
-logger = require('../../specUtils/logger').spawn('util.mlsHelpers.internals')
+logger = require('../../specUtils/logger').spawn('task.default.mls.photo.internals')
 rewire = require 'rewire'
-subject = rewire "../../../backend/tasks/util.mlsHelpers.internals"
+subject = rewire "../../../backend/tasks/task.default.mls.photo.internals"
 SqlMock = require '../../specUtils/sqlMock.coffee'
-mlsPhotoUtil = require '../../../backend/utils/util.mls.photos'
 
-describe 'util.mlsHelpers.internals', ->
+
+describe 'task.default.mls.photo.internals', ->
+
+  makeUpdatePhoto = subject.__get__('_makeUpdatePhoto')
+  getCdnPhotoShard = subject.__get__('_getCdnPhotoShard')
 
   # See SqlMock.coffee for explanation of blockToString
   photo = new SqlMock('finalized', 'photo', blockToString: true)
@@ -31,7 +34,7 @@ describe 'util.mlsHelpers.internals', ->
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      query = subject.makeUpdatePhoto {
+      query = makeUpdatePhoto {
         row
         cdnPhotoStr
         jsonObjStr
@@ -61,7 +64,7 @@ describe 'util.mlsHelpers.internals', ->
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      queryString = subject.makeUpdatePhoto {
+      queryString = makeUpdatePhoto {
         row
         jsonObjStr
         imageId
@@ -81,7 +84,7 @@ describe 'util.mlsHelpers.internals', ->
       imageId = 'imageId'
       photo_id = 'photo_id'
 
-      cdnPhotoStrPromise = mlsPhotoUtil.getCdnPhotoShard {
+      cdnPhotoStrPromise = getCdnPhotoShard {
         newFileName: 'crap.jpg'
         row
         shardsPromise: Promise.resolve
@@ -96,7 +99,7 @@ describe 'util.mlsHelpers.internals', ->
       cdnPhotoStrPromise
       .then (cdnPhotoStr) ->
 
-        queryString = subject.makeUpdatePhoto {
+        queryString = makeUpdatePhoto {
           row
           jsonObjStr
           imageId

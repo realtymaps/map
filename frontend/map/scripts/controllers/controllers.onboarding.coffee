@@ -13,11 +13,44 @@ rmapsOnboardingOrderSelectorService,
 rmapsPlansService,
 rmapsOnboardingService,
 rmapsUsStates
+rmapsMlsService
 ) ->
 
   $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
 
   $scope.us_states = rmapsUsStates.all
+
+  _toStateObj = (obj) ->
+    rmapsUsStates.getByCode(obj.state)
+
+  rmapsMlsService.getSupportedPossibleStates()
+  .then (data) ->
+    $scope.us_states_possible = data.map _toStateObj
+
+  rmapsMlsService.getSupportedStates()
+  .then (data) ->
+    $scope.us_states_supported = data.map _toStateObj
+
+  _formatMLS = (code, fullName) ->
+    if !fullName
+      return code.toUpperCase()
+    "#{code.toUpperCase()} - #{fullName}"
+
+  # lastMlsFullName = null #hack cause ui-bootstrap-typeahead sucks
+  $scope.mlsView = (entity) ->
+    if !entity
+      return
+    _formatMLS(entity.mls, entity.full_name)
+
+  # for uib-typeahead-input-formatter since the typeahead can not figure out
+  # the difference between ng-model value and label/view
+  $scope.mlsInputFormatter = (mlsCode) ->
+    if !mlsCode
+      return
+    _formatMLS(mlsCode)
+
+  $scope.stateView = (entity) ->
+    "#{entity.code} - #{entity.name}"
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -61,6 +94,11 @@ rmapsUsStates
         promise.then () ->
           if $scope.view.hasNextStep
             return $scope.view.goToNextStep()
+
+      unsupportedSubmit: () ->
+        $q.resolve() #replace with submittal of mls request
+        .then () ->
+          $state.go 'main'
 
     view:
       showSteps: $state.current.showSteps
@@ -162,6 +200,11 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     change: () ->
       delete $scope.user.mls_code
 
+  $scope.supportedStates =
+    show: true
+    change: () ->
+      delete $scope.user.us_state_code
+
   $scope.doneButton =
     getText:  () ->
       if !$scope.supportedMLS.show
@@ -194,6 +237,10 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     rmapsMlsService.getAllSupported state: usStateCode
     .then (mlses) ->
       $scope.supportedMlsCodes = mlses
+
+  $scope.$watch 'user.mls_code', (mlsToMatch) ->
+    $scope.view.supportedCode = _.any $scope.supportedMlsCodes, (mls) ->
+      mlsToMatch == mls.mls
 
 
   $log.debug $scope

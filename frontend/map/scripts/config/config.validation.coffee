@@ -52,6 +52,8 @@ app.config(($provide, $validationProvider) ->
       config =
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isUnique, email: value, config)
+    checkValidMlsAgent: (value, scope, element, attrs, param) ->
+      $http.post(backendRoutes.mls.activeAgent, scope[param], {alerts: false})
 
 
 
@@ -68,6 +70,8 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid Email'
     checkUniqueEmail:
       error: 'Email must be unique'
+    checkValidMlsAgent:
+      error: 'MLS ID not found or active.'
     number:
       error: 'Invalid Number'
     optNumber:

@@ -142,14 +142,16 @@ _rules =
         valid: () ->
           @input.first && @input.last || @input.full
         type: name: 'name'
-      status:
+      agent_status:
         alias: 'Status'
         required: true
       email:
         alias: 'Email'
-        required: true
       work_phone:
         alias: 'Work Phone'
+      data_source_uuid:
+        alias: 'Unique ID'
+        required: true
 
     listing:
       creation_date:
@@ -345,8 +347,8 @@ _rules =
       legal_unit_number:
         alias: 'Legal Unit Number'
 
-      assessed_value:
-        alias: 'Assessed Value'
+      appraised_value:
+        alias: 'Appraised Value'
         type:
           name: 'currency'
           hasDecimal: true
@@ -412,6 +414,18 @@ typeRules =
       label: 'Number (integer)'
     config:
       nullZero: true
+  Tiny:
+    type:
+      name: 'integer'
+      label: 'Number (integer)'
+    config:
+      nullZero: true
+  Small:
+    type:
+      name: 'integer'
+      label: 'Number (integer)'
+    config:
+      nullZero: true
   Decimal:
     type:
       name: 'float'
@@ -435,6 +449,14 @@ typeRules =
     type:
       name: 'datetime'
       label: 'Date and Time'
+  Date:
+    type:
+      name: 'datetime'
+      label: 'Date'
+  Time:
+    type:
+      name: 'datetime'
+      label: 'Time'
   Boolean:
     type:
       name: 'boolean'

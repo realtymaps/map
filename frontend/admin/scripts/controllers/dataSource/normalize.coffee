@@ -48,19 +48,11 @@ app.controller 'rmapsNormalizeCtrl',
     name: 'Agent'
   ]
 
-  $scope.dateFormats = [
-    'none'
-    'YYYY-MM-DD'
-    'YYYYMMDD'
-    'MMDDYYYY'
-    'YYYY-MM-DD[T]HH:mm:ss'
-    'MMMM Do, YYYY'
-  ]
-
   $scope.typeOf = (val) ->
     return typeof val
 
   $scope.lookupOptions = rmapsParcelEnums.lookupOptions
+  $scope.datetimeFormats = rmapsParcelEnums.datetimeFormats
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
@@ -79,7 +71,7 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.csv =
     rowCount: 1000
     getUrl: (rows) ->
-      rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, rows)
+      rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, $scope.mlsData.dataListType.id, rows)
 
   $scope.dlCSV = (url) ->
     $window.open url, '_self'

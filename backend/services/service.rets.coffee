@@ -94,18 +94,19 @@ getLookupTypes = (mlsId, databaseName, lookupId) ->
       response.results[0].metadata
 
 
-getDataStream = (mlsId, opts={}) ->
+getDataStream = (mlsId, dataType, opts={}) ->
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
-    if !mlsInfo.listing_data.field
+    schemaInfo = mlsInfo["#{dataType}_data"]
+    if !schemaInfo.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     offsetPromise = Promise.try () ->
       logger.debug () -> "determining RETS time zone offset for #{mlsId}"
-      if mlsInfo.listing_data.field_type != 'Date'
+      if schemaInfo.field_type != 'Date'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
         return parseInt(systemData.TimeZoneOffset) || 0
-    Promise.join offsetPromise, getColumnList(mlsId, mlsInfo.listing_data.db, mlsInfo.listing_data.table), (utcOffset, columnData) ->
+    Promise.join offsetPromise, getColumnList(mlsId, schemaInfo.db, schemaInfo.table), (utcOffset, columnData) ->
       fieldMappings = {}
       for field in columnData
         fieldMappings[field.SystemName] = field.LongName
@@ -115,7 +116,7 @@ getDataStream = (mlsId, opts={}) ->
       currentPayload = null
       found = null
       counter = 0
-      searchQuery = internals.buildSearchQuery(mlsInfo.listing_data, utcOffset, opts)
+      searchQuery = internals.buildSearchQuery(schemaInfo, utcOffset, opts)
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)
@@ -145,7 +146,7 @@ getDataStream = (mlsId, opts={}) ->
           resolved = false
           internals.getRetsClient mlsId, (retsClientIteration) ->
             new Promise (resolve2, reject2) ->
-              retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions, true)
+              retsStream = retsClientIteration.search.stream.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions, true)
               retsStream.pipe(resultStream, end: false)
               retsStream.on 'end', resolve2
               resolved = true
@@ -242,22 +243,23 @@ getDataStream = (mlsId, opts={}) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
 
 
-getDataChunks = (mlsId, opts, handler) ->
+getDataChunks = (mlsId, dataType, opts, handler) ->
   if typeof(handler) == 'undefined'
     # syntactic sugar to allow a default opts value, but leave the handler at the end of the param list
     handler = opts
     opts = {}
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
+    # override mls schemaInfo with optional `schemaInfo` if provided
+    if !_.isEmpty(opts?.schemaInfo)
+      schemaInfo = opts.schemaInfo
+    else
+      schemaInfo = mlsInfo["#{dataType}_data"]
 
-    # override mls listing_data fields with optional `listing_data` if provided
-    if !_.isEmpty(opts?.listing_data)
-      _.merge(mlsInfo.listing_data, opts.listing_data)
-
-    if !mlsInfo.listing_data.field
+    if !schemaInfo.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
       logger.debug () -> "determining RETS time zone offset for #{mlsId}"
-      if mlsInfo.listing_data.field_type != 'Date'
+      if schemaInfo.field_type != 'Date'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -266,7 +268,7 @@ getDataChunks = (mlsId, opts, handler) ->
       total = 0
       overlap = 0
       lastId = null
-      searchQuery = internals.buildSearchQuery(mlsInfo.listing_data, utcOffset, opts)
+      searchQuery = internals.buildSearchQuery(schemaInfo, utcOffset, opts)
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)
@@ -280,7 +282,7 @@ getDataChunks = (mlsId, opts, handler) ->
       searchIteration = () ->
         logger.debug () -> "getting data chunk for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
         internals.getRetsClient mlsId, (retsClientIteration) ->
-          retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, searchQuery, searchOptions)
+          retsClientIteration.search.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions)
           .then (response) ->
             if lastId?
               found = null

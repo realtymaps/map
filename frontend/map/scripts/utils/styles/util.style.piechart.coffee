@@ -20,14 +20,15 @@ pathClassFunc = (d) ->
 pathTitleFunc = (d) ->
   d.data.key.replace(/\ /g,'-')
 
-module.exports =
-  radius: radius
-  innerRadius: innerRadius
-  strokewidth: strokewidth
-  arcOffset: arcOffset
-  width: width
-  height: height
-  textyOffset: textyOffset
-  valueFunc: valueFunc
-  pathClassFunc: pathClassFunc
-  pathTitleFunc: pathTitleFunc
+module.exports ={
+  radius
+  innerRadius
+  strokewidth
+  arcOffset
+  width
+  height
+  textyOffset
+  valueFunc
+  pathClassFunc
+  pathTitleFunc
+}

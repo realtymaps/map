@@ -11,7 +11,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   q = tables.normalized.tax(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null
@@ -41,7 +41,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   q = tables.normalized.deed(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null
@@ -67,7 +67,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
 
   q = tables.normalized.mortgage(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null
@@ -91,7 +91,6 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   delete entries[0].hidden_fields
   delete entries[0].ungrouped_fields
 
-  mainEntry.active = false
   delete mainEntry.deleted
   delete mainEntry.rm_inserted_time
   delete mainEntry.rm_modified_time
@@ -175,7 +174,6 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
   .where
     rm_property_id: id
     data_source_id: data_source_id || subtask.task_name
-    active: false
   .delete()
   .then () ->
     tables.finalized.combined(transaction: transaction)

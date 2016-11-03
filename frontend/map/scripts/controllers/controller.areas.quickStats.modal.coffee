@@ -48,7 +48,7 @@ rmapsD3Stats) ->
     .then () ->
       $log.debug "saving layer", $scope.drawn.quickStats
       model = $scope.drawn.quickStats.toGeoJSON()
-      model.properties.area_name = 'Untitle Area'
+      model.properties.area_name = 'Untitled Area'
       $scope.signalUpdate $scope.drawnShapesSvc.create model
         .then (result) ->
           $log.debug result
@@ -69,7 +69,6 @@ rmapsD3Stats) ->
     dataSet = _.values(data)
 
     stats = rmapsD3Stats.create(dataSet)
-    stats = _.indexBy stats, 'key'
     $log.debug stats
 
     $scope.areaStatistics ?= {}

@@ -28,6 +28,7 @@ module.exports =
     deed: 'normalized.deed'
     mortgage: 'normalized.mortgage'
     parcel: 'normalized.parcel'
+    agent: 'normalized.agent'
   finalized:
     combined: 'data_combined'
     parcel: 'data_parcel'
@@ -118,6 +119,7 @@ _setup = (baseObject) ->
           ret = client.from(fullTableName)
         ret.raw = db.raw.bind(db)
         ret.tableName = fullTableName
+        ret.dbName = dbName
         ret
       transaction = (opts, handler) ->
         if handler == undefined

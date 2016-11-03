@@ -47,19 +47,11 @@ app.controller 'rmapsCountyCtrl',
     name: 'Mortgage'
   ]
 
-  $scope.dateFormats = [
-    'none'
-    'YYYY-MM-DD'
-    'YYYYMMDD'
-    'MMDDYYYY'
-    'YYYY-MM-DD[T]HH:mm:ss'
-    'MMMM Do, YYYY'
-  ]
-
   $scope.typeOf = (val) ->
     return typeof val
 
   $scope.lookupOptions = rmapsParcelEnums.lookupOptions
+  $scope.datetimeFormats = rmapsParcelEnums.datetimeFormats
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}

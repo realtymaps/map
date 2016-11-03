@@ -11,6 +11,7 @@ dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
+countyHelpers = require './util.countyHelpers'
 
 
 NUM_ROWS_TO_PAGINATE = 1000
@@ -345,9 +346,9 @@ useProcessInfo = (subtask, processInfo) ->
         subset: fips_code: processInfo.fips
       activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
       # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-      taxTable = dataLoadHelpers.ensureNormalizedTable(TAX, processInfo.fips)
-      deedTable = dataLoadHelpers.ensureNormalizedTable(DEED, processInfo.fips)
-      mortTable = dataLoadHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
+      taxTable = countyHelpers.ensureNormalizedTable(TAX, processInfo.fips)
+      deedTable = countyHelpers.ensureNormalizedTable(DEED, processInfo.fips)
+      mortTable = countyHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
       Promise.join(refresh, update, deletes, access, activate, dates, taxTable, deedTable, mortTable)
 
 
@@ -372,7 +373,7 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
   Promise.map processInfo[DELETE], (mergeData) ->
     fauxSubtask = _.extend({}, subtask, data: mergeData)
     dbFn = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))
-    sqlHelpers.tableExists({dbFn})
+    sqlHelpers.checkTableExists(dbFn)
     .then (exists) ->
       if !exists
         return

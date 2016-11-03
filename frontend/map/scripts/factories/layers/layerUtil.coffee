@@ -49,7 +49,7 @@ rmapsZoomLevelService) ->
     if event == 'zoomend' || isFirstTileSwitch
       if overlays?
         isFirstTileSwitch = false
-        overlays.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
+        overlays.parcels?.visible = rmapsZoomLevelService.isParcel(scope.map.center.zoom, scope)  && !rmapsZoomLevelService.isBeyondCartoDb(scope.map.center.zoom)
         overlays.parcelsAddresses?.visible = Toggles.showAddresses
 
       if Toggles?

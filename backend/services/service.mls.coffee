@@ -8,6 +8,18 @@ supported =
   getAll: () ->
     config.mls().select('id').where('id', '!=', 'temp')
 
+  getAllStates: () ->
+    config.mls()
+    .distinct('state')
+    .join lookup.mls.tableName, () ->
+      @on lookup.mls.tableName + '.mls', 'ilike', config.mls.tableName + ".id"
+    .where(config.mls.tableName + ".id", '!=', 'temp')
+
+  getPossibleStates: () ->
+    lookup.mls()
+    .distinct('state')
+    .orderBy('state')
+
 toFipsCounties =
   getAllMlsCodes: (queryObj) ->
     queryObj = _.mapKeys clone(queryObj), (val, key) ->
@@ -38,21 +50,24 @@ toFipsCounties =
     logger.debug q.toString()
     q
 
+
+getAll = (queryObj) ->
+  query = lookup.mls().select(basicColumns.mls)
+  if queryObj?
+    query.where queryObj
+  query
+
+getAllSupported = (queryObj) ->
+  query = lookup.mls().select(basicColumns.mls.map (name) -> lookup.mls.tableName + '.' + name)
+  .join config.mls.tableName, lookup.mls.tableName + '.mls', config.mls.tableName + '.id'
+
+  if queryObj?
+    query.where queryObj
+  query
+
 module.exports = {
-  getAll: (queryObj) ->
-    query = lookup.mls().select(basicColumns.mls)
-    if queryObj?
-      query.where queryObj
-    query
-
-  getAllSupported: (queryObj) ->
-    query = lookup.mls().select(basicColumns.mls.map (name) -> lookup.mls.tableName + '.' + name)
-    .join config.mls.tableName, lookup.mls.tableName + '.mls', config.mls.tableName + '.id'
-
-    if queryObj?
-      query.where queryObj
-    query
-
+  getAll
+  getAllSupported
   toFipsCounties
   supported
 }

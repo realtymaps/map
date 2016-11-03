@@ -12,7 +12,6 @@ coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
 getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
-  .where(active: true)
 
 getPermissions = (profile) -> Promise.try ->
   logger.debug () -> "Getting permissions..."

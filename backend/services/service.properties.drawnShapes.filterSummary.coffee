@@ -61,7 +61,6 @@ getPropertyIdsInArea = ({queryParams, profile}) ->
       throw new Error('areaId is required')
 
     query = getDefaultQuery(tables.finalized.combined().distinct("rm_property_id"))
-    .where(active: true)
     .where("#{drawnShapesName}.id", queryParams.areaId)
 
     # If there are filters set, we can use the standard combined query logic, otherwise it will return empty
