@@ -11,7 +11,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
   q = tables.normalized.tax(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null
@@ -41,7 +41,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
   q = tables.normalized.deed(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null
@@ -67,7 +67,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
 
   q = tables.normalized.mortgage(subid: subtask.data.normalSubid)
 
-  sqlHelpers.tableExists { dbFn: q }
+  sqlHelpers.checkTableExists(q)
   .then (exists) ->
     if !exists
       return null

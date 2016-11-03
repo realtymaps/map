@@ -12,11 +12,13 @@ zlib = require 'zlib'
 utilStreams = require '../utils/util.streams'
 logger = require('../config/logger').spawn('task:countyHelpers')
 tables = require '../config/tables'
+dbs = require '../config/dbs'
 dataLoadHelpers = require './util.dataLoadHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 internals = require './util.countyHelpers.internals'
 parcelHelpers = null  # required later to avoid circular dependency
 awsService = require '../services/service.aws'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 
 # using FTP `account`, send files from `source` (ftp) to `target` (local) given certain `options`
@@ -210,7 +212,82 @@ finalizeData = ({subtask, id, data_source_id, transaction, finalizedParcel, forc
         }
 
 
-module.exports =
-  loadRawData: loadRawData
-  buildRecord: buildRecord
-  finalizeData: finalizeData
+ensureNormalizedTable = (dataType, subid) ->
+  tableQuery = tables.normalized[dataType]({subid})
+  tableName = tableQuery.tableName
+  sqlHelpers.checkTableExists(tableQuery)
+  .then (tableAlreadyExists) ->
+    if tableAlreadyExists
+      return
+    createTable = dbs.get('normalized').schema.createTable tableName, (table) ->
+      table.timestamp('rm_inserted_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
+      table.timestamp('rm_modified_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
+      table.text('data_source_id').notNullable()
+      table.text('batch_id').notNullable().index()
+      table.text('deleted')
+      table.timestamp('up_to_date', true).notNullable()
+      table.json('change_history').defaultTo('[]').notNullable()
+      table.text('data_source_uuid').notNullable()
+      table.text('rm_property_id').notNullable()
+      table.integer('fips_code').notNullable()
+      table.text('parcel_id').notNullable()
+      table.json('address')
+      table.timestamp('recording_date', true)
+      table.text('owner_name')
+      table.text('owner_name_2')
+      table.integer('rm_raw_id').notNullable()
+      table.text('inserted').notNullable()
+      table.text('updated')
+      table.json('shared_groups').notNullable()
+      table.json('subscriber_groups').notNullable()
+      table.json('hidden_fields').notNullable()
+      table.json('ungrouped_fields')
+      table.json('owner_address')
+      if dataType == 'tax'
+        table.decimal('price', 13, 2)
+        table.decimal('appraised_value', 13, 2)
+        table.integer('bedrooms')
+        table.json('baths')
+        table.decimal('acres', 11, 3)
+        table.integer('sqft_finished')
+        table.json('year_built')
+        table.json('promoted_values')
+        table.text('zoning')
+        table.text('property_type')
+        table.text('legal_unit_number')
+      else if dataType == 'deed'
+        table.decimal('price', 13, 2)
+        table.timestamp('close_date', true)
+        table.text('property_type')
+        table.text('legal_unit_number')
+        table.text('seller_name')
+        table.text('seller_name_2')
+        table.text('document_type')
+      else if dataType == 'mortgage'
+        table.decimal('amount', 13, 2)
+        table.timestamp('close_date', true)
+        table.text('lender')
+        table.text('term')
+        table.text('financing_type')
+        table.text('loan_type')
+    .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
+    .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, deleted)")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
+    if dataType == 'tax'
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, recording_date DESC NULLS LAST)")
+      .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
+      .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
+    else
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
+      .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, data_source_uuid)")
+
+
+module.exports = {
+  loadRawData
+  buildRecord
+  finalizeData
+  ensureNormalizedTable
+}

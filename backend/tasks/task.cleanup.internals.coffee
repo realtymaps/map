@@ -39,7 +39,7 @@ cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
     rawTempTable = tables.temp(subid: loadEntry.raw_table_name)
     loadEntryQuery = tables.jobQueue.dataLoadHistory().where(loadEntry)
 
-    sqlHelpers.tableExists { dbFn: rawTempTable }
+    sqlHelpers.checkTableExists(rawTempTable)
     .then (exists) ->
       if !exists
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} is already gone deleting loadHistory entry"

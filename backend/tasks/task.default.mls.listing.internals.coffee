@@ -109,7 +109,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         if listing.owner_name? || listing.owner_name_2? || listing.zoning
           # keep previously-promoted values
           return false
-        dataLoadHelpers.checkTableExists('normalized', tables.normalized.tax.buildTableName(listing.fips_code))
+        sqlHelpers.checkTableExists(tables.normalized.tax(subid: listing.fips_code))
       .then (checkPromotedValues) ->
         if !checkPromotedValues
           return
