@@ -8,7 +8,7 @@ app.service 'rmapsD3Stats', (rmapsPropertyFormatterService) ->
       d.status
     .rollup (status) ->
       valid_price = status.filter (p) -> p.price >= 1000
-      valid_sqft = status.filter (p) -> p.sqft_finished > = 100
+      valid_sqft = status.filter (p) -> p.sqft_finished >= 100
       valid_price_sqft = status.filter (p) -> p.price >= 1000 && p.sqft_finished >= 100
       valid_dom = status.filter (p) -> p.days_on_market?
       valid_cdom = status.filter (p) -> p.days_on_market_cumulative?
