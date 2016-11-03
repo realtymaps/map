@@ -61,6 +61,9 @@ describe "route.onboarding", ->
     onboardingRoute.__set__ 'wrapHandleRoutes', ({handles}) ->
       handles
     onboardingRoute.__set__ 'emailServices', {}
+    onboardingRoute.__set__ 'mlsAgentService',
+      exists: () ->
+        Promise.resolve(true)
     onboardingRoute.__set__ 'paymentServices', {}
     onboardingRoute.__set__ 'transaction', @transaction
     onboardingRoute.__set__ 'createPasswordHash', @createPasswordHashStub
