@@ -10,6 +10,7 @@ app.controller 'rmapsPropertyCtrl',
     $log
     $http
     $uibModal
+    $state
     rmapsPropertiesService
     rmapsFormattersService
     rmapsResultsFormatterService
@@ -95,6 +96,9 @@ app.controller 'rmapsPropertyCtrl',
         resolve: model: -> mls
 
     $scope.newNotes = {}
+
+    $scope.closePropertyModal = () ->
+      $state.go 'map'
 
     $scope.createNote = (property) ->
       project = {project_id: $rootScope.principal.getCurrentProjectId()}

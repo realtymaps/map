@@ -3,14 +3,21 @@ include ../includes/mixins/_noteInputMixin.jade
 .property-detail-modal
 
   .desktop-only
+    .page-modal-close.close-property
+      a(ng-click="closePropertyModal()")
+        i.icon.icon-close
+
     .property-detail-container.container
-      .row
+      .row.nav-fixed
         .col-sm-2
           ul.nav
             li(ng-repeat="mls in selectedResult.mls")
               a(ng-click="tab.selected = '{{mls.data_source_id}}'" ng-class="{active: tab.selected == mls.data_source_id}") {{mls.mls_formal_name}} Property Detail
             li(ng-repeat="county in selectedResult.county")
               a(ng-click="tab.selected = '{{county.data_source_id}}'" ng-class="{active: tab.selected == county.data_source_id}") Tax Detail
+
+      .row
+        .col-sm-2
 
         .col-sm-8(ng-repeat="property in dataSources" ng-if="tab.selected == property.data_source_id")
           .prop-image.prop-image-lg(ng-if="tab.selected == property.data_source_id")

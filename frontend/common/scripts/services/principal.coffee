@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 mod = require '../module.coffee'
 
-mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants) ->
+mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventConstants) ->
   #
   # Private Service Variables
   #
@@ -24,6 +24,13 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
     # Send an event to notify that the user is now authenticated
     if _authenticated
       $rootScope.$emit rmapsEventConstants.principal.login.success, identity
+
+  updateIdentity = (identity) ->
+    # defensively require _identity to exist before updating (i.e. it needs to be set via setIdentity so that certain flags/events are utilized)
+    if _identity?
+      _identity = identity
+    else
+      $log.warn "Initial identity is not set yet, use `setIdentity` instead."
 
   unsetIdentity = () ->
     _identity = null
@@ -119,6 +126,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   ##
 
   setIdentity: setIdentity
+  updateIdentity: updateIdentity
   unsetIdentity: unsetIdentity
   getIdentity: getIdentity
 

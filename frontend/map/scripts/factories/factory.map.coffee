@@ -41,7 +41,8 @@ app.factory 'rmapsMapFactory',
     rmapsOverlays
     rmapsLayerUtilService,
     rmapsCurrentMapService,
-    rmapsFiltersFactory
+    rmapsFiltersFactory,
+    rmapsProfilesService
   ) ->
 
     limits = rmapsMainOptions.map
@@ -513,6 +514,7 @@ app.factory 'rmapsMapFactory',
 
         positionCenter.docWhere = 'rmapsMapFactory.zoomTo'
         @scope.map.center = positionCenter
+        rmapsProfilesService.updateLocalMapPosition(position)
         @scope.$evalAsync()
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
