@@ -167,7 +167,10 @@ module.exports =
   mls:
     apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
     root: apiBaseMls
+    activeAgent: "#{apiBaseMls}/agent"
     supported: "#{apiBaseMls}/supported"
+    supportedStates: "#{apiBaseMls}/supported/states"
+    supportedPossibleStates: "#{apiBaseMls}/supported/possible/states"
     getDatabaseList: "#{apiBaseMls}/:mlsId/databases"
     getTableList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
     getColumnList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"

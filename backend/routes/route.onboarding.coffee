@@ -17,6 +17,7 @@ _ = require 'lodash'
 {transaction} = require '../config/dbs'
 {createPasswordHash} =  require '../services/service.userSession'
 {getPlanId} = require '../services/service.plans'
+mlsAgentService = require '../services/service.mls.agent'
 
 submitPaymentPlan = ({plan, token, authUser, trx}) ->
   logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -77,7 +78,7 @@ handles = wrapHandleRoutes handles:
             expectSingleRow(authUser)
           .then (authUser) ->
             logger.debug {fips_code, mls_code, mls_id, plan}, true
-            if !fips_code and !(mls_code and mls_id)
+            if !fips_code && !(mls_code && mls_id)
               throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
 
             promises = []
@@ -85,9 +86,13 @@ handles = wrapHandleRoutes handles:
               promises.push(tables.auth.m2m_user_locations(transaction: trx)
               .insert(auth_user_id: authUser.id, fips_code: fips_code))
 
-            if mls_id and mls_code and plan == 'pro'
-              promises.push(tables.auth.m2m_user_mls(transaction: trx)
-              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id)
+            if mls_id? && mls_code? && plan == 'pro'
+              promises.push(
+                mlsAgentService.exists(data_source_id: mls_code, license_number: mls_id)
+                .then (is_verified) ->
+                  tables.auth.m2m_user_mls(transaction: trx)
+                  .insert({auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id, is_verified})
+              )
 
             Promise.all promises
             .then () -> authUser
