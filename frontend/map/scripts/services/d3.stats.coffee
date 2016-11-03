@@ -7,12 +7,12 @@ app.service 'rmapsD3Stats', (rmapsPropertyFormatterService) ->
     .key (d) ->
       d.status
     .rollup (status) ->
-      valid_price = status.filter (p) -> p.price?
-      valid_sqft = status.filter (p) -> p.sqft_finished?
-      valid_price_sqft = status.filter (p) -> p.price? && p.sqft_finished?
+      valid_price = status.filter (p) -> p.price >= 1000
+      valid_sqft = status.filter (p) -> p.sqft_finished > = 100
+      valid_price_sqft = status.filter (p) -> p.price >= 1000 && p.sqft_finished >= 100
       valid_dom = status.filter (p) -> p.days_on_market?
       valid_cdom = status.filter (p) -> p.days_on_market_cumulative?
-      valid_acres = status.filter (p) -> p.acres?
+      valid_acres = status.filter (p) -> p.acres > 0.01
 
       count: status.length
       price_avg: d3.mean(valid_price, (p) -> p.price)
@@ -30,7 +30,7 @@ app.service 'rmapsD3Stats', (rmapsPropertyFormatterService) ->
       acres_avg: d3.mean(valid_acres, (p) -> p.acres)
       acres_n: valid_acres.length
 
-    .entries(dataSet)
+    .map(dataSet)
 
   {
     create
