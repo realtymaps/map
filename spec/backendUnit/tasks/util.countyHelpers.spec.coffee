@@ -43,7 +43,7 @@ describe "util.countyHelpers", () ->
           property: deletesPropMock.dbFn()
 
       mockSqlHelpers =
-        tableExists: () ->
+        checkTableExists: () ->
           Promise.resolve(true)
         safeJsonArray: sqlHelpers.safeJsonArray
 

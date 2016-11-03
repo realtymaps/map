@@ -119,6 +119,7 @@ _setup = (baseObject) ->
           ret = client.from(fullTableName)
         ret.raw = db.raw.bind(db)
         ret.tableName = fullTableName
+        ret.dbName = dbName
         ret
       transaction = (opts, handler) ->
         if handler == undefined

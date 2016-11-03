@@ -347,8 +347,8 @@ _rules =
       legal_unit_number:
         alias: 'Legal Unit Number'
 
-      assessed_value:
-        alias: 'Assessed Value'
+      appraised_value:
+        alias: 'Appraised Value'
         type:
           name: 'currency'
           hasDecimal: true
