@@ -44,9 +44,8 @@ module.exports =
         .then (validReq) ->
           logger.debug -> "@@@@ validReq @@@@"
           logger.debug -> validReq
-          mlsAgentService.getBy(validReq.body)
-          .then (results) ->
-            found = !!results.length
+          mlsAgentService.exists(validReq.body)
+          .then (found) ->
             if found
               return found
 
