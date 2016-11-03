@@ -134,29 +134,6 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
 
-
-_makeUpdatePhoto = ({row, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction, table}) ->
-  doReturnStr ?= false
-
-  finePhotologger.debug jsonObjStr
-
-  updatedInfo =
-    photos: table().raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
-  if cdnPhotoStr
-    updatedInfo.cdn_photo = cdnPhotoStr
-
-  query = table({transaction})
-  .where(row)
-  .update(updatedInfo)
-
-  logger.debug query.toString()
-
-  if doReturnStr
-    logger.debug query.toString()
-    return query.toString()
-  query
-
-
 _makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
 
   _getCdnPhotoShard({
