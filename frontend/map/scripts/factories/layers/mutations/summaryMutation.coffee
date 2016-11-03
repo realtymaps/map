@@ -20,6 +20,14 @@ rmapsZoomLevelStateFactory
         type: obj.type
     obj
 
+  _filterSaves = (model) ->
+    model.savedDetails?.isPinned == true || model.savedDetails?.isFavorite == true
+
+  _filterStatus = (properties, status) ->
+    ret = _.filter(properties, 'status', status)
+    _.remove(ret, _filterSaves)
+    ret
+
   # build / format condo / appartment data
   _group = ({filterSummary, groups}) ->
     for key, group of groups
@@ -27,9 +35,10 @@ rmapsZoomLevelStateFactory
         group.grouped = properties: _.values(group)
         group.grouped.name = key
         group.grouped.count = group.grouped.properties.length + 'U'
-        group.grouped.forsale = _.filter(group.grouped.properties, 'status', 'for sale').length
-        group.grouped.pending = _.filter(group.grouped.properties, 'status', 'pending').length
-        group.grouped.sold = _.filter(group.grouped.properties, 'status', 'sold').length
+        group.grouped.forsale = _filterStatus(group.grouped.properties, 'for sale').length
+        group.grouped.pending = _filterStatus(group.grouped.properties, 'pending').length
+        group.grouped.sold = _filterStatus(group.grouped.properties, 'sold').length
+        group.grouped.saves = _.filter(group.grouped.properties, _filterSaves).length
         group.grouped.notforsale = 0
 
         MLS.setMarkerPriceGroupOptions(group)

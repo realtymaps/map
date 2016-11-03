@@ -1,6 +1,7 @@
 _ = require 'lodash'
 app = require '../app.coffee'
 moment = require 'moment'
+numeral = require 'numeral'
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsPropertyFormatterService',
@@ -108,12 +109,11 @@ app.service 'rmapsPropertyFormatterService',
       showSoldDate: (result) ->
         return result?.status == 'sold' && result?.close_date
 
-      getPriceLabel: (status) ->
-        if (status == 'sold'|| status == 'not for sale')
-          label = ''
+      getSqFtPriceLabel: (status) ->
+        if (status == 'sold' || status == 'not for sale')
+          return 'Sold Price/SqFt'
         else
-          label = 'asking:'
-        return label
+          return 'Asking Price/SqFt'
 
       getDaysForSale: (result) ->
         end = moment(result.close_date or moment.utc())
@@ -134,5 +134,9 @@ app.service 'rmapsPropertyFormatterService',
           compensate = moment.utc().diff(result.up_to_date, 'days')
           return result.days_on_market_cumulative + compensate
         return result.days_on_market_cumulative
+
+      getSqFtPrice: (result) ->
+        return if !result.price || !result.sqft_finished
+        numeral(result.price / result.sqft_finished).format('$0,0.00')
 
     return _.extend(svc, rmapsFormattersService.Common)

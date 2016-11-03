@@ -8,7 +8,9 @@ _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
   "round(ST_#{xy}(geometry_center_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
-
+  #NOTE: currently it is very inefficient to join saved properties (pins / faves)
+  # as they are de-normalized
+  # if we normalize then we can easily add them to here for manual clusters
   tables.finalized.combined().select(
     dbs.get('main').raw('count(*)'),
     dbs.get('main').raw("count(case when status='not for sale' then 1 end) as notforsale"),
@@ -16,12 +18,12 @@ _makeClusterQuery = (roundTo, scale) ->
     dbs.get('main').raw("count(case when status='sold' then 1 end) as sold"),
     dbs.get('main').raw("count(case when status='for sale' then 1 end) as forsale"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
-    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
-    .whereNotNull('geometry_raw')
-    .whereNotNull('address')
-    .groupByRaw(_roundCoordCol(roundTo,scale))
-    .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
-    .where(active: true)
+    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat")
+  )
+  .whereNotNull('geometry_raw')
+  .whereNotNull('address')
+  .groupByRaw(_roundCoordCol(roundTo,scale))
+  .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
 
 
 _getRoundingDigit = (zoom) ->

@@ -7,30 +7,27 @@
   font-family: sans-serif
   color: black
 
+$newCategory(c_color)
+  fill: c_color
+  stroke: #000
+  background: c_color
+  border-color: #000
+
 /* pie arc categories */
 .category-pending
-  fill: $rm_pending
-  stroke: #000
-  background: $rm_pending
-  border-color: #000
+  $newCategory($rm_pending)
 
 .category-for-sale
-  fill: $rm_forsale
-  stroke: #000
-  background: $rm_forsale
-  border-color: #000
+  $newCategory($rm_forsale)
 
 .category-not-for-sale
-  fill: $rm_notforsale
-  stroke: #000
-  background: $rm_notforsale
-  border-color: #000
+  $newCategory($rm_notforsale)
 
 .category-sold
-  fill: $rm_sold
-  stroke: #000
-  background: $rm_sold
-  border-color: #000
+  $newCategory($rm_sold)
+
+.category-saves
+  $newCategory($rm_saved)
 
 .pieClassGrouped
   position absolute

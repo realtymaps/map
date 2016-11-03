@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 logger = require('../config/logger').spawn('task:digimaps:parcelHelpers:internals')
 finalLogger = logger.spawn('final')
 tables = require '../config/tables'
-mlsHelpers = require './util.mlsHelpers'
+mlsListingInternals = require './task.default.mls.listing.internals'
 countyHelpers = require './util.countyHelpers'
 sqlHelpers = require '../utils/util.sql.helpers'
 
@@ -29,7 +29,6 @@ diffBooleanKeys = [
 
 finalizeParcelEntry = ({entries, subtask}) ->
   entry = entries.shift()
-  entry.active = false
   delete entry.deleted
   delete entry.rm_inserted_time
   delete entry.rm_modified_time
@@ -52,7 +51,6 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
   .where
     rm_property_id: id
     data_source_id: subtask.task_name
-    active: false
   .delete()
   .then () ->
     finalLogger.debug -> parcel
@@ -64,17 +62,15 @@ finalizeNewParcel = ({parcels, id, subtask, transaction}) ->
 
 finalizeUpdateListing = ({id, subtask, transaction, finalizedParcel}) ->
   tables.finalized.combined(transaction: transaction)
-  .where
-    rm_property_id: id
-    active: true
+  .where(rm_property_id: id)
   .then (rows) ->
     promises = for r in rows
       do (r) ->
         #figure out data_source_id and type
         #execute finalize for that specific MLS (subtask)
         if r.data_source_type == 'mls'
-          finalLogger.debug "mlsHelpers.finalizeData"
-          mlsHelpers.finalizeData {
+          finalLogger.debug "mlsListingInternals.finalizeData"
+          mlsListingInternals.finalizeData {
             subtask
             id
             data_source_id: r.data_source_id

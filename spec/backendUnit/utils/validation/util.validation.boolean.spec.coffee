@@ -28,7 +28,6 @@ describe 'utils/validation.validators.boolean()'.ns().ns('Backend'), ->
           falsyOutput: 'no'
         expectResolve(subject(options)(param, bool))
         .then (value) ->
-          console.log "value.should.be.equal expectedOutput:  #{value} #{expectedOutput}"
           value.should.be.equal expectedOutput
 
   describe 'inverted', ->

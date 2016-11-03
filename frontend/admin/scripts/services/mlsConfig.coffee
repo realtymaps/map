@@ -48,9 +48,9 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   getLookupTypes = (configId, databaseId, lookupId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').one(databaseId).all('lookups').one(lookupId).all('types').getList()
 
-  getDataDumpUrl = (configId, limit) ->
+  getDataDumpUrl = (configId, dataType, limit) ->
     # bypass XHR / $http file-dl drama, and Restangular req/res complication.
-    backendRoutes.mls.getDataDump.replace(':mlsId', configId) + "?limit=#{limit}"
+    backendRoutes.mls.getDataDump.replace(':mlsId', configId).replace(':dataType', dataType) + "?limit=#{limit}"
 
   {
     getConfigs

@@ -196,24 +196,26 @@ mobile-header
   $mapIconSize = 35px;
 
   .project-dashboard-icon
-    font-size: $mapIconSize;
-    color: $rm_notforsale;
+    font-size: $mapIconSize
+    color: $rm_notforsale
 
-  .project-dashboard-icon-sold
-    font-size: $mapIconSize;
-    color: $rm_sold
+    &.sold
+      color: $rm_sold
 
-  .project-dashboard-icon-forsale
-    font-size: $mapIconSize;
-    color: $rm_forsale
+    &.forsale
+      color: $rm_forsale
 
-  .project-dashboard-icon-pending
-    font-size: $mapIconSize;
-    color: $rm_pending
+    &.pending
+      color: $rm_pending
 
-  .project-dashboard-icon-saved
-    font-size: $mapIconSize;
-    color: $rm_saved
+    &.saved
+      color: $rm_saved
+
+    &.favorited
+      color: $rm_favorite
+
+    &.selected
+      color: black
 
   //
   // Project Content

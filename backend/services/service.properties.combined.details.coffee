@@ -28,8 +28,6 @@ _propertyQuery = ({queryParams, profile, limit}) ->
 
     # Remainder of query is grouped so we get SELECT .. WHERE (permissions) AND (filters)
     query.where ->
-      @where(active: true)
-
       if queryParams.rm_property_id?
         sqlHelpers.whereIn(@, 'rm_property_id', queryParams.rm_property_id)
       else if queryParams.geometry_center?
@@ -40,7 +38,6 @@ _propertyQuery = ({queryParams, profile, limit}) ->
     query.then (data = []) ->
       # Prune subscriber groups and owner info where appropriate
       scrubPermissions(data, permissions)
-
       return data
 
 _queryNotes = ({rm_property_id, project_id}) ->

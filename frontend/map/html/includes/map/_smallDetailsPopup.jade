@@ -1,6 +1,6 @@
 .property-card(ng-controller="rmapsSmallDetailsCtrl" style="width:275px; margin-right: -1px;")
   property-images(property="property" image-width="275")
-  .corner-close
+  .corner-close(ng-click="closeInfo()")
   a.property-attrs-clickable(ng-click="formatters.results.showModel(property)")
     property-attributes(property="property")
   property-buttons(

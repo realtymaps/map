@@ -195,7 +195,7 @@ img.manual-cluster{
     color $rmMainDarkBlue
     box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
     //offset for centering pin on property
-    bottom 45px
+    bottom 20px
     min-width 60px
     border 2px solid $rm-marker-border
     border-radius 2px
@@ -237,7 +237,7 @@ img.manual-cluster{
       padding 0 2px
       border-radius 2px
       text-align center
-      font-size 18px
+      font-size 14px
       color $black_60
 
       .icon
@@ -253,6 +253,11 @@ img.manual-cluster{
         border-color $rm_forsale_darker transparent transparent $rm_forsale_darker !important
       &:after
         border-color $rm_forsale transparent transparent $rm_forsale !important
+      &:hover
+        background-color $rm_forsale_darker !important
+        &:after
+          border-color $rm_forsale_darker transparent transparent $rm_forsale_darker !important
+
     &.label-pending-property
       background-color $rm_pending
       border-color $rm_pending_darker
@@ -260,6 +265,10 @@ img.manual-cluster{
         border-color $rm_pending_darker transparent transparent $rm_pending_darker !important
       &:after
         border-color $rm_pending transparent transparent $rm_pending !important
+      &:hover
+        background-color $rm_pending_hover !important
+        &:after
+          border-color $rm_pending_hover transparent transparent $rm_pending_hover !important
     &.label-sold-property
       background-color $rm_sold
       border-color $rm_sold_darker
@@ -267,6 +276,10 @@ img.manual-cluster{
         border-color $rm_sold_darker transparent transparent $rm_sold_darker !important
       &:after
         border-color $rm_sold transparent transparent $rm_sold !important
+      &:hover
+        background-color $rm_sold_hover !important
+        &:after
+          border-color $rm_sold_hover transparent transparent $rm_sold_hover !important
     &.label-notsale-property
       background-color $rm_notforsale
       border-color $rm_notforsale_darker
@@ -274,6 +287,11 @@ img.manual-cluster{
         border-color $rm_notforsale_darker transparent transparent $rm_notforsale_darker !important
       &:after
         border-color $rm_notforsale transparent transparent $rm_notforsale !important
+      &:hover
+        background-color $rm_notforsale_hover !important
+        &:after
+          border-color $rm_notforsale_hover transparent transparent $rm_notforsale_hover !important
+
     &.label-saved-property
       background-color $rm_saved
       border-color $rm_saved_darker
@@ -281,6 +299,10 @@ img.manual-cluster{
         border-color $rm_saved_darker transparent transparent $rm_saved_darker !important
       &:after
         border-color $rm_saved transparent transparent $rm_saved !important
+      &:hover
+        background-color $rm_saved_darker !important
+        &:after
+          border-color $rm_saved_darker transparent transparent $rm_saved_darker !important
 
 //
 // MAP MARKERS

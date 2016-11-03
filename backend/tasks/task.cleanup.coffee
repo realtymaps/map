@@ -7,6 +7,7 @@ TaskImplementation = require('./util.taskImplementation')
 jobQueue = require('../services/service.jobQueue')
 mlsHelpers = require('./util.mlsHelpers')
 _ = require('lodash')
+awsService = require '../services/service.aws'
 internals = require './task.cleanup.internals'
 
 
@@ -68,15 +69,6 @@ deleteParcels = () ->
     logger.debug () -> "Deleted #{count} rows from delete parcels table"
 
 
-deleteInactiveRows = () ->
-  tables.finalized.combined()
-  .where(active: false)
-  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
-  .delete()
-  .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from combined data table"
-
-
 deletePhotosPrep = (subtask) ->
   numRowsToPageDeletePhotos = subtask.data?.numRowsToPageDeletePhotos || internals.NUM_ROWS_TO_PAGINATE
 
@@ -94,8 +86,22 @@ deletePhotosPrep = (subtask) ->
 deletePhotos = (subtask) ->
   logger.debug -> subtask
 
-  Promise.map subtask.data.values, (key) ->
-    mlsHelpers.deleteOldPhoto(subtask, key)
+  Promise.map subtask.data.values, (key) -> Promise.try () ->
+    logger.spawn(subtask.name).debug () -> "deleting: photo with key: #{key}"
+
+    awsService.deleteObject
+      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
+      Key: key
+    .then () ->
+      logger.spawn(subtask.name).debug () -> 'successful deletion of aws photo ' + key
+
+      tables.deletes.photos()
+      .where {key}
+      .del()
+      .catch (error) ->
+        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+    .catch (error) ->
+      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
 
 module.exports = new TaskImplementation 'cleanup', {
@@ -105,7 +111,6 @@ module.exports = new TaskImplementation 'cleanup', {
   currentSubtasks
   deleteMarkers
   deleteParcels
-  deleteInactiveRows
   deletePhotosPrep
   deletePhotos
 }
