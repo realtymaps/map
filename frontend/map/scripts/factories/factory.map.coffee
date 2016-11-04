@@ -158,9 +158,13 @@ app.factory 'rmapsMapFactory',
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
+
             if newVal == oldVal
               @scope.Toggles.hasPreviousLocation = false
               return
+
+            # keep our local profile up-to-date with position
+            rmapsProfilesService.currentProfile.map_position.center = newVal
 
             if _firstCenter
               _firstCenter = false

@@ -151,7 +151,6 @@ app.service 'rmapsProfilesService', (
             rmapsPrincipalService.getIdentity()
             .then (identity) ->
               identity.profiles[@currentProfile.id] = @currentProfile
-              rmapsPrincipalService.updateIdentity(identity)
 
       #
       # ---------- End previous profile update
