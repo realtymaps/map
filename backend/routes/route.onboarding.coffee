@@ -18,6 +18,7 @@ _ = require 'lodash'
 {createPasswordHash} =  require '../services/service.userSession'
 {getPlanId} = require '../services/service.plans'
 mlsAgentService = require '../services/service.mls.agent'
+errors = require '../utils/errors/util.errors.onboarding'
 
 submitPaymentPlan = ({plan, token, authUser, trx}) ->
   logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -90,6 +91,8 @@ handles = wrapHandleRoutes handles:
               promises.push(
                 mlsAgentService.exists(data_source_id: mls_code, license_number: mls_id)
                 .then (is_verified) ->
+                  if !is_verified
+                    throw new errors.MlsAgentNotVierified("Agent not verified for mls_id: #{mls_id}, mls_code: #{mls_code} for email: #{authUser.email}")
                   tables.auth.m2m_user_mls(transaction: trx)
                   .insert({auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id, is_verified})
               )
