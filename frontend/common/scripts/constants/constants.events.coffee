@@ -37,7 +37,7 @@ mod.constant 'rmapsEventConstants',
         success: 1
       profile:
         updated: 1
-        add: 1
+        addremove: 1
     alert:
       spawn: 1
       hide: 1

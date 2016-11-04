@@ -17,7 +17,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   #
 
   setIdentity = (identity) ->
-    _identity = identity
+    $rootScope.identity = _identity = identity
     _authenticated = !!identity
     _resolved = true
 

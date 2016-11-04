@@ -13,8 +13,8 @@ mixin projectsDropdown()
       .fixed-header
         .icon.icon-close(uib-dropdown-toggle)
         div
-          div.header-item(ng-show="totalProjects == 1") {{totalProjects}} Active Project
-          div.header-item(ng-show="totalProjects != 1") {{totalProjects}} Active Projects
+          div.header-item(ng-show="getProjects().length == 1") {{getProjects().length}} Active Project
+          div.header-item(ng-show="getProjects().length != 1") {{getProjects().length}} Active Projects
           a(href="{{frontendRoutes.projects}}") View All Projects
         div(ng-controller="rmapsAddProjectController")
           span.results-btn(
@@ -33,7 +33,7 @@ mixin projectsDropdown()
               span Save As
       .inner
         ul
-          li(ng-repeat="project in projects | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)" ng-if="!project.archived")
+          li(ng-repeat="project in getProjects() | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)")
             a
               span.enity
                 span.icon.icon-project
@@ -41,11 +41,11 @@ mixin projectsDropdown()
                   h3(ng-show="project.sandbox") Sandbox
                   h3(ng-show="!project.sandbox") {{project.name}}
                   .row.subtitle
-                    span.col-md-5 {{project.totalProperties}}
-                      span(ng-show="project.totalProperties == 1") &#32;Property
-                      span(ng-show="project.totalProperties != 1") &#32;Properties
+                    span.col-md-5 {{(project.pins | keys).length}}
+                      span(ng-show="(project.pins | keys).length == 1") &#32;Property
+                      span(ng-show="(project.pins | keys).length != 1") &#32;Properties
                       span(ng-show="project.archived == true") &#32;(archived)
-                    span.col-md-4.text-right &#32;{{project.modified.format('ddd MMM Do ha')}}
+                    span.col-md-4.text-right &#32;{{getModified(project).format('ddd MMM Do ha')}}
                   .row.subtitle(ng-if="project.parent_name")
                     span.col-md-2 Owner:
                     span.col-md-10.parent-name &#32;{{project.parent_name}}

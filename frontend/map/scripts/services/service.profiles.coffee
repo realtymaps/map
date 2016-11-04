@@ -67,6 +67,7 @@ app.service 'rmapsProfilesService', (
     _settingCurrentPromise.then () ->
       _isSettingProfile = false
       _settingCurrentPromise = null
+      $rootScope.$emit rmapsEventConstants.principal.profile.updated, service.currentProfile
 
     return _settingCurrentPromise
 

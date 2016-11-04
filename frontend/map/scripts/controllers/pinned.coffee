@@ -17,6 +17,7 @@ rmapsPropertiesService
     pinned = eventData.properties if eventData
 
     $scope.pinnedProperties = pinned or rmapsPropertiesService.pins
+    $log.debug $scope.pinnedProperties
     $scope.pinnedTotal = _.keys($scope.pinnedProperties).length
 
   getFavorites = (event, eventData) ->
