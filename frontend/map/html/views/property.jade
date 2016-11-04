@@ -175,8 +175,8 @@ include ../includes/mixins/_noteInputMixin.jade
                 .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings'" ng-repeat="field in property[group.subscriber][group.name]")
                   .col-sm-4.field-label {{field.name}}
                   .col-sm-8
-                    div(ng-if="!field.value.lines") {{field.value}}
-                    div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                    div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                    div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'deedHistory'")
                   .col-sm-2 Sale Date
@@ -208,8 +208,8 @@ include ../includes/mixins/_noteInputMixin.jade
                         .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
                           .col-sm-8
-                            div(ng-if="!field.value.lines") {{field.value}}
-                            div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                            div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
                   .col-sm-2 Date
@@ -239,8 +239,8 @@ include ../includes/mixins/_noteInputMixin.jade
                         .row.content-row(ng-if="group.name != 'mortgageHistory'" ng-repeat="field in mortgage[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
                           .col-sm-8
-                            div(ng-if="!field.value.lines") {{field.value}}
-                            div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                            div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'priorListings'")
                   .col-sm-2(ng-if="!listing.discontinued_date") Close Date
@@ -266,8 +266,8 @@ include ../includes/mixins/_noteInputMixin.jade
                         .row.content-row(ng-if="group.name != 'priorListings'" ng-repeat="field in listing[group.subscriber][group.name]")
                           .col-sm-4 {{field.name}}
                           .col-sm-8
-                            div(ng-if="!field.value.lines") {{field.value}}
-                            div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                            div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
           .row.content-block.mls-disclaimer.border-top
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")
@@ -452,8 +452,8 @@ include ../includes/mixins/_noteInputMixin.jade
                   .row.content-row(ng-if="group.name != 'deedHistory' && group.name != 'mortgageHistory' && group.name != 'priorListings'" ng-repeat="field in property[group.subscriber][group.name]")
                     .col-xs-4.field-label {{field.name}}
                     .col-xs-8.field-value
-                      div(ng-if="!field.value.lines") {{field.value}}
-                      div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                      div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                      div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                   .row.content-row.history(ng-if="group.name == 'deedHistory'")
                     .col-xs-5 Sale Date
@@ -492,8 +492,8 @@ include ../includes/mixins/_noteInputMixin.jade
                           .row.content-row(ng-if="group.name != 'deedHistory'" ng-repeat="field in deed[group.subscriber][group.name]")
                             .col-xs-4 {{field.name}}
                             .col-xs-8
-                              div(ng-if="!field.value.lines") {{field.value}}
-                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                              div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                              div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                   .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
                     .col-xs-5 Date
@@ -532,8 +532,8 @@ include ../includes/mixins/_noteInputMixin.jade
                           .row.content-row(ng-if="group.name != 'mortgageHistory'" ng-repeat="field in mortgage[group.subscriber][group.name]")
                             .col-xs-4 {{field.name}}
                             .col-xs-8
-                              div(ng-if="!field.value.lines") {{field.value}}
-                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                              div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                              div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
                   .row.content-row.history(ng-if="group.name == 'priorListings'")
                     .col-xs-5(ng-if="!listing.discontinued_date") Close Date
@@ -566,8 +566,8 @@ include ../includes/mixins/_noteInputMixin.jade
                           .row.content-row(ng-if="group.name != 'priorListings'" ng-repeat="field in listing[group.subscriber][group.name]")
                             .col-xs-4 {{field.name}}
                             .col-xs-8
-                              div(ng-if="!field.value.lines") {{field.value}}
-                              div(ng-if="field.value.lines" ng-repeat="line in field.value.lines") {{line}}
+                              div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
+                              div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
 
             .content-block.mls-disclaimer(ng-show="property.disclaimer_logo || property.disclaimer_text")
               .content-heading Broker Reciprocity
