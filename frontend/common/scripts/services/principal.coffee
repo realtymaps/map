@@ -25,13 +25,6 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventCon
     if _authenticated
       $rootScope.$emit rmapsEventConstants.principal.login.success, identity
 
-  updateIdentity = (identity) ->
-    # defensively require _identity to exist before updating (i.e. it needs to be set via setIdentity so that certain flags/events are utilized)
-    if _identity?
-      _identity = identity
-    else
-      $log.warn "Initial identity is not set yet, use `setIdentity` instead."
-
   unsetIdentity = () ->
     _identity = null
     _authenticated = false
