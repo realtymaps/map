@@ -97,9 +97,6 @@ app.controller 'rmapsPropertyCtrl',
 
     $scope.newNotes = {}
 
-    $scope.closePropertyModal = () ->
-      $state.go 'map'
-
     $scope.createNote = (property) ->
       project = {project_id: $rootScope.principal.getCurrentProjectId()}
       rmapsNotesService.createNote {property, project, $scope}
