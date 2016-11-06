@@ -7,7 +7,6 @@ app.factory 'rmapsMapAuthorizationFactory', (
   $rootScope,
   $state,
   $stateParams,
-  $timeout,
   rmapsPrincipalService,
   rmapsPriorStateService,
   rmapsUrlHelpersService,
@@ -52,18 +51,15 @@ app.factory 'rmapsMapAuthorizationFactory', (
       $state.go 'login'
 
     # After a successful login, either go to the prior state or the map
-    goToPostLoginState: ({clear}) ->
+    goToPostLoginState: () ->
       prior = rmapsPriorStateService.getPrior()
 
-      if prior && !clear
-        $state.go prior.state, prior.params
+      if prior
+        $state.go prior.state, prior.params, reload: true
 
         # Clear the prior state
         rmapsPriorStateService.clearPrior()
         return
-
-      if clear
-        rmapsPriorStateService.clearPrior()
 
       $state.go 'map', {id: rmapsProfilesService.currentProfile?.project_id}, {reload: true}
 
