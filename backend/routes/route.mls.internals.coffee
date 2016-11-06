@@ -5,9 +5,20 @@ retsService = require '../services/service.rets'
 mlsConfigService = require '../services/service.mls_config'
 _ = require 'lodash'
 photoUtil = require '../utils/util.mls.photos'
-through2 = require 'through2'
+through = require 'through2'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 httpStatus = require '../../common/utils/httpStatus'
+
+
+_hasNoStar = (photoIds) ->
+  JSON.stringify(photoIds).indexOf('*') == -1
+
+_isSingleImage = (photoIds) ->
+  if _.isString(photoIds)
+    return true
+  if _.keys(photoIds).length == 1 and _hasNoStar(photoIds)
+    return true
+  false
 
 
 _handleGenericImage = ({setContentTypeFn, getStreamFn, next, res}) ->
@@ -48,7 +59,7 @@ _handleRetsObjectResponse = (res, next, photoIds, mlsId, object) ->
 
   logger.debug opts.object.headerInfo, true
 
-  if photoUtil.isSingleImage(opts.photoIds)
+  if _isSingleImage(opts.photoIds)
     return _handleImage(opts)
   _handleImages(opts)
 
@@ -113,19 +124,19 @@ getQueryPhoto = ({req, res, next, photoType}) ->
 # this  gets some data from a RETS server based on a query, and returns it as an array of row objects plus and array of
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a
 # sample of e.g. 1000 rows of data to look at when figuring out how to configure a new MLS
-getDataDump = (mlsId, query, next) ->
+getDataDump = (mlsId, dataType, query, next) ->
   validations =
     limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
   validation.validateAndTransformRequest(query, validations)
   .then (result) ->
-    retsService.getDataStream(mlsId, searchOptions: {limit: result.limit})
+    retsService.getDataStream(mlsId, dataType, searchOptions: {limit: result.limit})
   .then (retsStream) ->
     columns = null
     # consider just streaming the file as building up data takes up a considerable amount of memory
     data = []
     new Promise (resolve, reject) ->
       delimiter = null
-      csvStreamer = through2.obj (event, encoding, callback) ->
+      csvStreamer = through.obj (event, encoding, callback) ->
         switch event.type
           when 'data'
             data.push(event.payload[1..-1].split(delimiter))

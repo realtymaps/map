@@ -8,7 +8,7 @@
         placeholder="YYYY-MM-DD[T]HH:mm:ss"
         ng-disabled="fieldData.current.config.advanced"
         ng-change="updateRule()"
-        uib-typeahead="format for format in dateFormats | filter:$viewValue"
+        uib-typeahead="format for format in datetimeFormats | filter:$viewValue"
         typeahead-min-length=0
         typeahead-on-select="updateRule()"
       )
@@ -26,7 +26,7 @@
         placeholder="MMMM Do, YYYY"
         ng-disabled="fieldData.current.config.advanced"
         ng-change="updateRule()"
-        uib-typeahead="format for format in dateFormats | filter:$viewValue"
+        uib-typeahead="format for format in datetimeFormats | filter:$viewValue"
         typeahead-min-length=0
         typeahead-on-select="updateRule()"
       )

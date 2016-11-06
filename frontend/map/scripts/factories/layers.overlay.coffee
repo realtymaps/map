@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-pieUtil = require '../utils/util.piechart.coffee'
+pieMarkerFactory = require '../utils/util.piechart.marker.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 mainOptions = require '../config/mainOptions.coffee'
@@ -20,17 +20,33 @@ _overlays =
       chunkedLoading: true
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true
-      iconCreateFunction: pieUtil.pieCreateFunction
+      iconCreateFunction: pieMarkerFactory.create
 
   saves:
     name: "#{mainOptions.map.naming.save.pluralAlt}"
-    type: 'group'
+    type: 'markercluster'
     visible: true
+    layerOptions:
+      disableClusteringAtZoom: commonConfig.map.options.zoomThresh.price + 1
+      maxClusterRadius: 60
+      chunkedLoading: true
+      showCoverageOnHover: false
+      removeOutsideVisibleBounds: true
+      iconCreateFunction: pieMarkerFactory.createSaves
+
 
   favorites:
     name: "Favorites"
-    type: 'group'
+    type: 'markercluster'
     visible: true
+    layerOptions:
+      disableClusteringAtZoom: commonConfig.map.options.zoomThresh.price + 1
+      maxClusterRadius: 60
+      chunkedLoading: true
+      showCoverageOnHover: false
+      removeOutsideVisibleBounds: true
+      iconCreateFunction: pieMarkerFactory.createSaves
+
 
   backendPriceCluster:
     name: 'Price Cluster'

@@ -2,7 +2,7 @@ _ = require 'lodash'
 app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
-pieUtil = require '../utils/util.piechart.coffee'
+pieMarkerFactory = require '../utils/util.piechart.marker.coffee'
 priceMarkerTemplate = require '../../html/includes/map/markers/_priceMarker.jade'
 noteMarkerTemplate  = require '../../html/includes/map/markers/_noteMarker.jade'
 currentLocationMarkerTemplate = require '../../html/includes/map/markers/_currentLocationMarker.jade'
@@ -97,10 +97,10 @@ app.service 'rmapsLayerFormattersService', (
     markersBSLabel['saved'] = 'saved-property'
 
     setMarkerOptions: (marker) ->
-      switch marker.type
-        when 'price' then setMarkerPriceOptions(marker)
-        when 'price-group' then setMarkerPriceGroupOptions(marker)
-        when 'note' then setMarkerNotesOptions(marker)
+      switch marker.markerType
+        when 'price' then @setMarkerPriceOptions(marker)
+        when 'price-group' then @setMarkerPriceGroupOptions(marker)
+        when 'note' then @setMarkerNotesOptions(marker)
 
     setMarkerPriceOptions: (model) ->
       return {} unless model
@@ -110,13 +110,6 @@ app.service 'rmapsLayerFormattersService', (
         formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
       else
         formattedPrice = '$'+casing.upper numeral(model.price).format('0a'), '.'
-
-      if model.isMousedOver
-        hovered = ' label-hovered'
-        zIndex = 4
-      else
-        hovered = ''
-        zIndex = 2
 
       if model.savedDetails?.isPinned || model.savedDetails?.isFavorite
         status = 'saved'
@@ -131,7 +124,7 @@ app.service 'rmapsLayerFormattersService', (
           iconSize: [1, 1]
           html: priceMarkerTemplate(
             price:formattedPrice,
-            priceClasses: "label-#{markersBSLabel[status]}#{hovered}",
+            priceClasses: "label-#{markersBSLabel[status]}",
             hasMail: !!rmapsMailCampaignService.getMail(model.rm_property_id)
             rm_property_id: model.rm_property_id
             isPinned: model.savedDetails?.isPinned
@@ -148,7 +141,7 @@ app.service 'rmapsLayerFormattersService', (
           type: 'div'
           iconSize: [1, 1]
           # html: priceMarkerTemplate(price: "#{models.grouped.properties.length} Units (#{models.grouped.name}", priceClasses: "label-saved-property")
-          html: pieUtil.pieCreateFunctionBackend(models.grouped, 'pieClassGrouped')
+          html: pieMarkerFactory.createBackend(models.grouped, 'pieClassGrouped')
 
     setMarkerNotesOptions: (model) ->
       _.extend model,
@@ -175,7 +168,7 @@ app.service 'rmapsLayerFormattersService', (
         markerType: 'cluster'
         icon:
           type: 'div'
-          html: pieUtil.pieCreateFunctionBackend(model)
+          html: pieMarkerFactory.createBackend(model)
 
   setDataOptions = (data, optionsFormatter) ->
     _.each data, (model,k) ->

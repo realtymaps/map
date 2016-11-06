@@ -324,24 +324,18 @@ upsertItem = ({dbFn, conflict, entity}) ->
   ).then (result) ->
     result.rows[0]
 
-#http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema
-tableExists = ({dbFn, schema, tableName}) ->
-  tableName ?= dbFn.tableName
-  schema ?= 'public'
+# http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema
+# Note that querying pg_class is faster than querying information_schema.tables
+checkTableExists = (dbFn) ->
+  dbs.get(dbFn.dbName)
+  .select(1)
+  .from('pg_catalog.pg_class')
+  .where
+    relname: dbFn.tableName
+    relkind: 'r'
+  .then (check=[]) ->
+    return check.length > 0
 
-  template = """
-  SELECT EXISTS(
-    SELECT *
-    FROM information_schema.tables
-    WHERE
-      table_schema = :schema AND
-      table_name = :tableName
-  );"""
-
-  dbFn.raw(template,{schema, tableName})
-  .then ({rows}) ->
-    [{exists}] = rows
-    exists
 
 module.exports = {
   between
@@ -368,5 +362,5 @@ module.exports = {
   buildUpsertBindings
   upsert
   upsertItem
-  tableExists
+  checkTableExists
 }

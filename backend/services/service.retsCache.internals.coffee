@@ -34,6 +34,7 @@ cacheCanonicalData = (opts) ->
   {callName, mlsId, otherIds, cacheSpecs, forceRefresh} = opts
   now = Date.now()  # save the timestamp of when we started the request
   logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): attempting to acquire canonical data"
+  queries = []
   retsService[callName](mlsId, otherIds...)
   .then (list) ->
     if !list?.length
@@ -41,14 +42,17 @@ cacheCanonicalData = (opts) ->
       throw new UnhandledNamedError('RetsDataError', "No canonical data returned for #{mlsId}/#{callName}/#{otherIds.join('/')}")
     logger.debug () -> "cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): canonical data acquired, caching"
     cacheSpecs.dbFn.transaction (query, transaction) ->
-      query
+      q = query
       .where(cacheSpecs.datasetCriteria)
       .delete()
-      .then () ->
+      queries.push(q.toString())
+      q.then () ->
         Promise.map list, (row) ->
           entity = _.extend(row, cacheSpecs.datasetCriteria, cacheSpecs.extraEntityFields)
-          cacheSpecs.dbFn(transaction: transaction)
+          qq = cacheSpecs.dbFn(transaction: transaction)
           .insert(entity)
+          queries.push(qq.toString())
+          qq
         .all()
     .then () ->
       keystore.setValue("#{mlsId}/#{callName}/#{otherIds.join('/')}", now, namespace: RETS_REFRESHES)
@@ -65,6 +69,7 @@ cacheCanonicalData = (opts) ->
       return null
   .catch (err) ->
     logger.error "Couldn't refresh data cache for #{mlsId}/#{callName}/#{otherIds.join('/')}"
+    logger.error "@@@@@@@@@@@@@@@@@@@@@@ cacheCanonicalData(#{mlsId}/#{callName}/#{otherIds.join('/')}): queries:\n     #{queries.join('\n     ')}"
     throw err
 
 

@@ -2,13 +2,34 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 _ = require 'lodash'
 
-module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsEventConstants) ->
+module.exports = app.controller 'rmapsSearchCtrl', (
+  $scope,
+  $log,
+  $rootScope,
+  $timeout,
+  $element,
+  rmapsEventConstants,
+  rmapsPropertiesService ) ->
+
   $log = $log.spawn("map:search")
 
   $scope.openSearchTools = false
-  $scope.searchScope = 'Places'
-
+  $scope.search = scope: 'Places'
+  $scope.setSearchScope = (v) ->
+    $scope.search.scope = v
   $scope.result = googlePlace: null
+
+  $scope.clearSearch = () ->
+    if $scope.search.scope == 'Places'
+      $log.debug 'clearing places'
+      $element.find('input')[0]?.value = ''
+      $scope.result.googlePlace = null
+    else if $scope.search.scope == 'Owners'
+      $log.debug 'clearing owner'
+      $rootScope.selectedFilters.ownerName = ''
+
+  $scope.$watch 'search.scope', (newVal, oldVal) ->
+    $log.debug oldVal, '->', newVal
 
   $rootScope.$onRootScope rmapsEventConstants.map.results, (evt, map) ->
     numResults = _.keys(map.markers.filterSummary).length
@@ -54,6 +75,23 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $t
           city: (_.find place.address_components, (c) -> c.types.indexOf('locality') != -1)?.short_name ? ""
           state: (_.find place.address_components, (c) -> c.types.indexOf('administrative_area_level_1') != -1)?.short_name ? ""
           zip: (_.find place.address_components, (c) -> c.types.indexOf("postal_code") != -1)?.short_name ? ""
+
+      # Automatically pin the property, but only if it was a specific address and not e.g. a city
+      if place_type.indexOf("address") != -1
+        rmapsPropertiesService.getPropertyDetail(
+          null
+          ,geometry_center:
+            type: 'Point'
+            coordinates: [
+              place.geometry.location.lng()
+              place.geometry.location.lat()
+            ]
+          ,'filter'
+        )
+        .then ({mls, county}) ->
+          if p = (mls?[0] || county?[0])
+            if !rmapsPropertiesService.pins[p.rm_property_id]
+              rmapsPropertiesService.pinUnpinProperty p
 
     else if _.isString place and !_.isString oldPlace
       # Clear address filter

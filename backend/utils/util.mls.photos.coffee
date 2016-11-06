@@ -1,29 +1,9 @@
-_ = require 'lodash'
 Archiver = require 'archiver'
 through = require 'through2'
-keystore = require '../services/service.keystore'
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 logger = require('../config/logger').spawn('mlsPhotos')
-shardLogger = logger.spawn('shard')
-crypto = require("crypto")
-Promise = require 'bluebird'
 photoErrors = require '../utils/errors/util.errors.photos'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
-md5 = (data) ->
-  crypto.createHash('md5')
-  .update(data)
-  .digest('hex')
-
-_hasNoStar = (photoIds) ->
-  JSON.stringify(photoIds).indexOf('*') == -1
-
-isSingleImage = (photoIds) ->
-  if _.isString(photoIds)
-    return true
-  if _.keys(photoIds).length == 1 and _hasNoStar(photoIds)
-    return true
-  false
 
 ###
   using through2 to return a stream now which eventually has data pushed to it
@@ -58,6 +38,7 @@ imageStream = (object) ->
     .pipe(retStream)
 
   retStream
+
 
 imagesHandle = (object, cb, doThrowNoEvents = false) ->
   everSentData = false
@@ -137,40 +118,8 @@ imagesStream = (object, archive = Archiver('zip')) ->
   archive
 
 
-hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
-  if allowNull && !uploadDate1? && !uploadDate2?
-    return true
-
-  uploadDate1? && uploadDate2? &&
-    (new Date(uploadDate1)).getTime() == (new Date(uploadDate2)).getTime()
-
-
-getCdnPhotoShard = (opts) -> Promise.try () ->
-  {newFileName, row, shardsPromise} = onMissingArgsFail
-    args: opts
-    required: ['newFileName', 'row']
-
-  # logger.debug shardsPromise
-  shardsPromise ?= keystore.cache.getValuesMap('cdn_shards')
-
-  shardsPromise
-  .then (cdnShards) ->
-    cdnShards = _.mapValues cdnShards
-    mod = md5(newFileName).charCodeAt(0) % 2
-
-    shard = _.find cdnShards, (s) ->
-      parseInt(s.id) == mod
-
-    if !shard?.url?
-      throw new Error('Shard must have a url')
-
-    "#{shard.url}/api/photos/resize?data_source_id=#{row.data_source_id}&data_source_uuid=#{row.data_source_uuid}"
-
 module.exports = {
-  isSingleImage
   imagesHandle
   imagesStream
   imageStream
-  hasSameUploadDate
-  getCdnPhotoShard
 }

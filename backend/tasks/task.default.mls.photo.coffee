@@ -2,26 +2,32 @@ Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
-logger = require('../config/logger').spawn('task:photos')
+logger = require('../config/logger').spawn('task:mls:photo')
+finePhotologger = logger.spawn('fine')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+mlsConfigService = require '../services/service.mls_config'
+dbs = require '../config/dbs'
+mlsPhotoUtil = require '../utils/util.mls.photos'
+internals = require './task.default.mls.photo.internals'
 
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 250
 MAX_PAGES = 0
 
+
 storePrep = (subtask) ->
   idsObj = {}
-  logger.debug "storePrep for #{subtask.task_name}"
+  logger.debug () -> "storePrep for #{subtask.task_name}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
-  mlsName = subtask.task_name.replace('_photos', '')
-  logger.debug "mlsName is #{mlsName}"
+  mlsId = subtask.task_name.split('_')[0]
+  logger.debug () -> "mlsId is #{mlsId}"
 
   retryPhotosPromise = tables.deletes.retry_photos()
-  .where(data_source_id: mlsName)
+  .where(data_source_id: mlsId)
   .whereNot(batch_id: subtask.batch_id)
   .then (rows) ->
     logger.debug () -> "Found #{rows.length} retries"
@@ -31,9 +37,9 @@ storePrep = (subtask) ->
         photo_id: row.photo_id
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  lastModPromise = mlsHelpers.getMlsField(mlsName, 'photo_last_mod_time')
-  uuidPromise = mlsHelpers.getMlsField(mlsName, 'data_source_uuid')
-  photoIdPromise = mlsHelpers.getMlsField(mlsName, 'photo_id')
+  lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing')
+  uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
+  photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing')
 
   # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
   updatedPhotosPromise = Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
@@ -52,11 +58,11 @@ storePrep = (subtask) ->
           data_source_uuid: row[uuidField]
           photo_id: row[photoIdField]
 
-    logger.debug "Getting data chunks for #{mlsName}"
-    return retsService.getDataChunks(mlsName, dataOptions, handleChunk)
+    logger.debug () -> "Getting data chunks for #{mlsId}"
+    return retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
 
   Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
-    logger.debug "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
+    logger.debug () -> "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
     jobQueue.queueSubsequentPaginatedSubtask({
       subtask
       totalOrList: _.values(idsObj)
@@ -70,9 +76,9 @@ storePrep = (subtask) ->
 
 store = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
-  taskLogger.debug "Page #{subtask.data.i}/#{subtask.data.of} Offset: #{subtask.data.offset} Count: #{subtask.data.count}"
+  taskLogger.debug () -> "Page #{subtask.data.i}/#{subtask.data.of} Offset: #{subtask.data.offset} Count: #{subtask.data.count}"
   if !subtask?.data?.values.length
-    taskLogger.debug "No photos to store for #{subtask.task_name}"
+    taskLogger.debug () -> "No photos to store for #{subtask.task_name}"
     return
 
   totalSuccess = 0
@@ -80,17 +86,17 @@ store = (subtask) -> Promise.try () ->
   totalErrors = 0
 
   Promise.each subtask.data.values, (idObj) ->
-    # taskLogger.debug "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
-    mlsHelpers.storePhotos(subtask, idObj)
+    # taskLogger.debug () -> "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
+    internals.storePhotos(subtask, idObj)
     .then ({successCtr, skipsCtr, errorsCtr}) ->
       totalSuccess += successCtr
       totalSkips += skipsCtr
       totalErrors += errorsCtr
-      # taskLogger.debug "Finished property #{idObj.data_source_uuid}"
+      # taskLogger.debug () -> "Finished property #{idObj.data_source_uuid}"
   .then () ->
-    taskLogger.debug "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
+    taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
   .catch (err) ->
-    taskLogger.debug "#{analyzeValue.getSimpleDetails(err)}"
+    taskLogger.debug () -> "#{analyzeValue.getSimpleDetails(err)}"
     throw err
 
 clearRetries = (subtask) ->

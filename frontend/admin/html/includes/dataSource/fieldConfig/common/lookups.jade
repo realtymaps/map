@@ -1,5 +1,5 @@
-.col-md-12.scroll(ng-if="fieldData.current.config.doLookup" ng-repeat="lookup in fieldData.current.lookups")
-  .col-md-5.row.lookup
+.row.col-md-12.scroll(ng-if="fieldData.current.config.doLookup" ng-repeat="lookup in fieldData.current.lookups")
+  .row.col-md-5.lookup
     .col-md-8 {{lookup.LongValue}}
     .col-md-4
       select(
