@@ -17,7 +17,6 @@ app = require '../../app.coffee'
 app.directive 'propertyButtons', (
   $log
   $rootScope,
-  $state,
   rmapsEventConstants,
   rmapsProfilesService,
   rmapsPropertiesService,

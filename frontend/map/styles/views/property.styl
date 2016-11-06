@@ -6,6 +6,8 @@
 Property Detail Modal
 *****************/
 
+$desktopPadding = 25px;
+
 .dmca-modal
   .content-label
     font-size: 12px
@@ -21,8 +23,16 @@ Property Detail Modal
 .property-detail-modal
   width: 100%
 
+  .nav-fixed
+    padding-top: $desktopPadding*2
+    width: inherit
+    position: fixed
+
+  .close-property
+    float right
+
   .property-detail-container
-    padding-top: 25px;
+    padding-top: $desktopPadding
 
     .notes
       @extend .note-item
