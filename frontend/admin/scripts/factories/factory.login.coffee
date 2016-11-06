@@ -38,7 +38,12 @@ rmapsLoginService) ->
           return loginFailed("no identity")
 
         # setting user to $rootScope since this is where a reference to user is used in other parts of the app
-        $rootScope.user = data.identity.user
+        user = data.identity.user
+        user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
+        user.name = user.full_name or user.username
+        $rootScope.user = user
+        $rootScope.profiles = data.identity.profiles
+
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
         doNextRedirect($state, $location.search().next, adminRoutes.mls.replace('/',''))
