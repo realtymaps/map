@@ -20,15 +20,15 @@ span.pinned-list.dropdown.btn-group(
     .fixed-header
       .icon.icon-close(uib-dropdown-toggle)
       span
-        a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} {{mainOptions.naming.saved}} Properties
-        span(ng-show="!pinnedTotal") No {{mainOptions.naming.save.past}} Properties
+        a(ng-show="(identity.currentProfile.pins | _keys).length" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{(identity.currentProfile.pins | _keys).length}} {{mainOptions.naming.saved}} Properties
+        span(ng-show="!(identity.currentProfile.pins | _keys).length") No {{mainOptions.naming.save.past}} Properties
       span
         span.results-btn(ng-click="getStatistics(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-bar-chart
-        span.results-btn(ng-click="pinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
+        span.results-btn(ng-click="pinResults('Pin'); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-plus-circle
           span.action Results
-        span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
+        span.results-btn(ng-click="pinResults('Unpin'); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle
           span.action Results
         span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left"
@@ -39,7 +39,7 @@ span.pinned-list.dropdown.btn-group(
           i.fa.fa-envelope
     .inner
       ul
-        li(ng-repeat="property in pinnedProperties")
+        li(ng-repeat="property in identity.currentProfile.pins")
           a.property-attrs-clickable(ng-click="formatters.results.showModel(property)")
             span.enity
               span.content
@@ -50,7 +50,7 @@ span.pinned-list.dropdown.btn-group(
                 span.action {{mainOptions.naming.save.un}}
                 span.icon.icon-pin
 
-      .dropdown-explanation(ng-show="!pinnedTotal")
+      .dropdown-explanation(ng-show="!(identity.currentProfile.pins | _keys).length")
         p You haven't {{mainOptions.naming.save.past.toLowerCase()}} any properties yet. Click the {{mainOptions.naming.save.alt.present.toLowerCase()}} to {{mainOptions.naming.save.present.toLowerCase()}} properties in the project.  Everyone in the project will see the same {{mainOptions.naming.save.pluralAlt.toLowerCase()}}.
         p {{mainOptions.naming.save.progressive}} makes things easier to find: they'll show up right here in this list.
         .action Watch a 60 second video

@@ -33,7 +33,7 @@ mixin projectsDropdown()
               span Save As
       .inner
         ul
-          li(ng-repeat="project in getProjects() | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)")
+          li(ng-repeat="project in identity.profiles | _values | filter:{archived:'!true'} | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)")
             a
               span.enity
                 span.icon.icon-project
@@ -41,9 +41,9 @@ mixin projectsDropdown()
                   h3(ng-show="project.sandbox") Sandbox
                   h3(ng-show="!project.sandbox") {{project.name}}
                   .row.subtitle
-                    span.col-md-5 {{(project.pins | keys).length}}
-                      span(ng-show="(project.pins | keys).length == 1") &#32;Property
-                      span(ng-show="(project.pins | keys).length != 1") &#32;Properties
+                    span.col-md-5 {{(project.pins | _keys).length}}
+                      span(ng-show="(project.pins | _keys).length == 1") &#32;Property
+                      span(ng-show="(project.pins | _keys).length != 1") &#32;Properties
                       span(ng-show="project.archived == true") &#32;(archived)
                     span.col-md-4.text-right &#32;{{getModified(project).format('ddd MMM Do ha')}}
                   .row.subtitle(ng-if="project.parent_name")

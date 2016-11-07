@@ -14,14 +14,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   #
   service = {}
 
-  #
-  # Pins and Favorites cache
-  #
-
-  #HASH to properties by rm_property_id
-  #we may want to save details beyond just saving there fore it will be a hash pointing to an object
-  service.pins = {}
-  service.favorites = {}
 
   #
   # API throttling
@@ -104,7 +96,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     promise
     .catch (error) -> #our state is messed up force refresh
       $log.error "Pin/unPin failed with error: #{analyzeValue(error)}. Forcing refresh!"
-      _loadProperties(true)
+      _loadProperties(model)
 
   _favoriteForMap = (model, save = true) ->
     if save
@@ -130,7 +122,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     promise
     .catch (error) -> #our state is messed up force refresh
       $log.error "Favorite/unFavorite failed with error: #{analyzeValue(error)}. Forcing refresh!"
-      _loadProperties(true)
+      _loadProperties(model)
 
   _setFlags = (model) ->
     return if !model or !model.rm_property_id
@@ -140,27 +132,19 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     model.savedDetails.isPinned = !!service.pins[rm_property_id]
     model.savedDetails.isFavorite = !!service.favorites[rm_property_id]
 
-  _loadProperties = (force) ->
-    service.getSaves()
-    .then (response) ->
-      $log.debug "saves: #{JSON.stringify response}"
-      if (!Object.keys(service.pins).length && !Object.keys(service.favorites).length) || force
-        $log.debug 'refreshing saves'
-        #fresh initial load
-        service.pins = response.pins
-        service.favorites = response.favorites
-        propertyIds = _.keys(service.pins).concat _.keys(service.favorites)
+  _loadProperties = (model) ->
+    $log.debug 'Loading property', model.rm_property_id
+    service.getProperties [model.rm_property_id], 'filter'
+    .then ({data}) ->
+      for detail in data
+        if model = service.pins[detail.rm_property_id]
+          _.extend model, detail
+          _pinForMap model
+        if model = service.favorites?[detail.rm_property_id]
+          _.extend model, detail
+          _favoriteForMap model
 
-        service.getProperties propertyIds, 'filter'
-        .then ({data}) ->
-
-          for detail in data
-            if model = service.pins[detail.rm_property_id]
-              _.extend model, detail
-              _pinForMap model
-            if model = service.favorites?[detail.rm_property_id]
-              _.extend model, detail
-              _favoriteForMap model
+      $log.debug 'Loaded property', model.rm_property_id
 
   _processPropertyPins = (models) ->
     $rootScope.$emit rmapsEventConstants.update.properties.pin,
@@ -268,6 +252,22 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
       else
         _.extend model.savedDetails, prop.savedDetails
 
-  _loadProperties(true)
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, currentProfile) ->
+    service.pins = currentProfile.pins
+    service.favorites = currentProfile.favorites
+    propertyIds = _.keys(service.pins).concat _.keys(service.favorites)
+    if propertyIds.length
+      $log.debug 'Loading', propertyIds.length, 'properties from new profile'
+      service.getProperties propertyIds, 'filter'
+      .then ({data}) ->
+        for detail in data
+          if model = service.pins[detail.rm_property_id]
+            _.extend model, detail
+            _pinForMap model
+          if model = service.favorites[detail.rm_property_id]
+            _.extend model, detail
+            _favoriteForMap model
+
+        $log.debug 'Loaded', propertyIds.length, 'properties from new profile'
 
   return service

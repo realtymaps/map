@@ -3,7 +3,8 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 mod = require '../module.coffee'
 
-mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants) ->
+mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventConstants) ->
+  $log = $log.spawn 'principalService'
   #
   # Private Service Variables
   #
@@ -12,11 +13,14 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   _resolved = false
   _isStaff = null
 
+  _identityPromise = null
   #
   # Private Service Methods
   #
 
   setIdentity = (identity) ->
+    if identity != $rootScope.identity
+      $log.debug 'Setting new identity on rootScope', identity
     $rootScope.identity = _identity = identity
     _authenticated = !!identity
     _resolved = true
@@ -39,21 +43,27 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
       return $q.resolve _identity
 
     # otherwise, create a promise, retrieve the identity data from the server, update the identity object, and then resolve.
-    defer = $q.defer()
+    if !_identityPromise
+      defer = $q.defer()
 
-    $http.get(backendRoutes.userSession.identity)
-    .success (data) ->
-      setIdentity data.identity
-      defer.resolve data.identity
-    .error (err) ->
-      unsetIdentity()
-      defer.reject null
+      $http.get(backendRoutes.userSession.identity)
+      .success (data) ->
+        setIdentity data.identity
+        _identityPromise = null
+        defer.resolve data.identity
+      .error (err) ->
+        unsetIdentity()
+        defer.reject null
 
-    return defer.promise
+      _identityPromise = defer.promise
+
+    return _identityPromise
 
   # Set the current profile and send an event to notify that the profile has been updated
   setCurrentProfile = (profile) ->
+    $log.debug 'Setting new currentProfile on identity', profile
     _identity.currentProfileId = if profile then profile.id else null
+    _identity.currentProfile = if profile then _identity.profiles[profile.id] else null
 
   getCurrentProfileId = () ->
     return getCurrentProfile()?.id

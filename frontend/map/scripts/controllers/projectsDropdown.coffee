@@ -24,9 +24,6 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   $scope.isSandbox = (project) ->
     !project.sandbox
 
-  $scope.getProjects = ->
-    _.filter(_.values($scope.identity?.profiles), (p) -> !p.archived)
-
   $scope.getModified = (project) -> moment(project.rm_modified_time)
 
   $scope.selectProject = (project) ->
@@ -70,7 +67,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
         $scope.selectProject(newProfile)
 
   $scope.resetSandbox = () ->
-    sandboxProfile = _.find $scope.projects, 'sandbox', true
+    sandboxProfile = _.find $rootScope.identity.profiles, 'sandbox', true
     $scope.resetProject(sandboxProfile)
 
   $scope.setDefaultName = ({project, defaultName, inverseName, isCopy = false}) ->
