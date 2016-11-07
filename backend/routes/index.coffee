@@ -9,6 +9,7 @@ status = require '../../common/utils/httpStatus'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 {InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.userSession'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -44,7 +45,8 @@ module.exports = (app) ->
           body = ""
           if !_.isEmpty(req.body)
             body = " \n BODY: "+JSON.stringify(req.body,null,2)
-          throw new PartiallyHandledError(error, "****************** add better error handling code to cover this case! ******************\nuncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}\n****************** add better error handling code to cover this case! ******************\n")
+          logger.error("****************** add better error handling code to cover this error! ******************\nuncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}\n#{analyzeValue.getSimpleMessage(error)}\n****************** add better error handling code to cover this error! ******************\n")
+          throw new PartiallyHandledError(error, "uncaught route handler error")
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
