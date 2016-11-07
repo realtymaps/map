@@ -100,14 +100,9 @@ $scope
 $rootScope
 $location
 rmapsMainOptions
-rmapsPrincipalService
-rmapsMapTogglesFactory) ->
+rmapsPrincipalService) ->
 
   $log = $log.spawn('rmapsAppCtrl')
-
-  $rootScope.updateToggles = (map_toggles = {}) ->
-    $log.debug 'updateToggles', map_toggles
-    $rootScope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity

@@ -179,7 +179,7 @@ app.service 'rmapsProfilesService', (
         profile.map_position = center: rmapsMainOptions.map.options.json.center
         profile.map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
-      $log.debug "Set current profile to: #{profile.id}"
+      $log.debug -> "Set current profile to: #{profile.id}"
 
       # Center and zoom the map for the new profile
       map_position = center: NgLeafletCenter profile.map_position.center
@@ -222,7 +222,7 @@ app.service 'rmapsProfilesService', (
       delete selectedFilters.status
       delete selectedFilters.current_project_id
 
-      $log.debug selectedFilters
+      $log.debug -> selectedFilters
 
       statusList = profile.filters?.status || []
       for key,status of rmapsParcelEnums.status
@@ -237,13 +237,14 @@ app.service 'rmapsProfilesService', (
       if selectedFilters.closeDateMax
         selectedFilters.closeDateMax = new Date(selectedFilters.closeDateMax)
 
+      $log.debug -> "loadProfile selectedFilters"
       $rootScope.selectedFilters = selectedFilters
 
       #
       # Set the Filter toggles based on the current profile
       #
 
-      $log.debug "Profile change, updating current map Toggles"
+      $log.debug -> "Profile change, updating current map Toggles"
       $rootScope.updateToggles profile.map_toggles
 
       return profile

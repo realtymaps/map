@@ -25,7 +25,6 @@ describe "rmapsMapFactory factory", ->
 
     inject ($rootScope, rmapsMapFactory, rmapsMainOptions, $httpBackend, digestor, rmapsMapTogglesFactory) =>
       # Store variables for tests
-      $rootScope.updateToggles = () ->
       @$rootScope = $rootScope
       @rmapsMapTogglesFactory = rmapsMapTogglesFactory
       @digestor = digestor
