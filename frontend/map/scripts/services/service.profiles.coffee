@@ -166,11 +166,18 @@ app.service 'rmapsProfilesService', (
       # Get reference to the current main map
       currentMap = rmapsCurrentMapService.get()
 
-      if !profile?.map_position?.center?
-        # bad things happen if we get this far w/o a map_position.center.  It should currently be accounted for in
-        # backend when creating new profiles/projects
-        $log.warn "Current profile has no map position!"
-        return
+      ###
+      TODO: This center value missing usually comes from a new account
+
+      Therefore the center should default to their MLS / Location of interest that
+      they signed up for. This should be set in route.onboarding.
+
+      NOTE: For now we hard code it to rmapsMainOptions.map.options.json.center (NAPLES)
+      fix missed center
+      ###
+      if !map_position?.center?.lng || !map_position?.center?.lat
+        profile.map_position = center: rmapsMainOptions.map.options.json.center
+        profile.map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
       $log.debug "Set current profile to: #{profile.id}"
 
@@ -181,11 +188,6 @@ app.service 'rmapsProfilesService', (
       #
       # Center and zoom map to profile
       #
-
-      #fix messed center
-      if !map_position?.center?.lng || !map_position?.center?.lat
-        map_position = rmapsMainOptions.map.options.json.center
-        map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
       if currentMap?.scope?.map?
         ### eslint-disable###
