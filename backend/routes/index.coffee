@@ -42,15 +42,15 @@ module.exports = (app) ->
           logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          body = ""
-          if !_.isEmpty(req.body)
-            body = " \n BODY: "+JSON.stringify(req.body,null,2)
           msg = [
             "****************** add better error handling code to cover this error! ******************"
-            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}"
+            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}"
+            # body contents will be inserted here
             "#{analyzeValue.getSimpleMessage(error)}"
             "****************** add better error handling code to cover this error! ******************"
           ]
+          if !_.isEmpty(req.body)
+            msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
           logger.error(msg.join('\n'))
           throw new PartiallyHandledError(error, "uncaught route handler error")
         .catch (error) ->
