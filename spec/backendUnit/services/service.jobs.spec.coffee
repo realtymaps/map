@@ -156,7 +156,7 @@ describe 'service.jobs.spec.coffee', ->
       @dbs_main.leftJoinSpy.calledOnce.should.be.true
       expect(@dbs_main.leftJoinSpy.args[0][0]).to.deep.equal @property_combined
 
-      @dbs_main.rawSpy.callCount.should.equal 15 # dbs_main calls all the 'raw'
+      @dbs_main.rawSpy.callCount.should.equal 13 # dbs_main calls all the 'raw'
 
       done()
 
