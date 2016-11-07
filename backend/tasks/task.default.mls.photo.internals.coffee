@@ -99,7 +99,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
     logger.spawn(subtask.task_name).debug 'GTFO: _updatePhoto'
     return
 
-  {newFileName, imageId, row, objectData, transaction, table, upsert} = onMissingArgsFail
+  {newFileName, imageId, row, objectData, transaction, table} = onMissingArgsFail
     args: opts
     required: ['newFileName', 'imageId', 'row', 'table']
 
@@ -121,51 +121,18 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
       obj.objectData = objectData
 
     Promise.try ->
-      if upsert
-        _makeUpsertPhoto {
-          row
-          obj
-          imageId
-          transaction
-          table
-          newFileName
-        }
-      else
-        _makeUpdatePhoto {
-          row
-          jsonObjStr: JSON.stringify(obj)
-          imageId
-          transaction
-          table
-        }
-
+      _makeUpsertPhoto {
+        row
+        obj
+        imageId
+        transaction
+        table
+        newFileName
+      }
     .catch (error) ->
       logger.spawn(subtask.task_name).error analyzeValue.getSimpleDetails(error)
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
-
-
-_makeUpdatePhoto = ({row, cdnPhotoStr, jsonObjStr, imageId, doReturnStr, transaction, table}) ->
-  doReturnStr ?= false
-
-  finePhotologger.debug jsonObjStr
-
-  updatedInfo =
-    photos: table().raw("jsonb_set(photos, '{#{imageId}}', ?, true)", jsonObjStr)
-  if cdnPhotoStr
-    updatedInfo.cdn_photo = cdnPhotoStr
-
-  query = table({transaction})
-  .where(row)
-  .update(updatedInfo)
-
-  logger.debug query.toString()
-
-  if doReturnStr
-    logger.debug query.toString()
-    return query.toString()
-  query
-
 
 _makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
 
@@ -303,7 +270,6 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
               row: photoRow
               transaction
               table: tables.finalized.photo
-              upsert: true
             })
             .then () ->
               if row?

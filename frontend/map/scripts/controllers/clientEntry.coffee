@@ -7,7 +7,6 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
   $scope,
   $log,
   $state,
-  #$http,
   rmapsClientEntryService,
   rmapsEventConstants,
   rmapsPrincipalService,
@@ -40,8 +39,7 @@ module.exports = app.controller 'rmapsClientEntryCtrl', (
           if mobileView
             $state.go('project', {id: $scope.project.id}, {reload: true})
           else
-            #$state.go('map', {id: $scope.project.id}, {reload: true})
-            rmapsMapAuthorizationFactory.goToPostLoginState(clear: true)
+            rmapsMapAuthorizationFactory.goToPostLoginState()
 
         rmapsLoginHack.checkLoggIn(cb)
 

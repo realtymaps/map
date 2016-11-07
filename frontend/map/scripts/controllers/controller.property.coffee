@@ -10,6 +10,7 @@ app.controller 'rmapsPropertyCtrl',
     $log
     $http
     $uibModal
+    $state
     rmapsPropertiesService
     rmapsFormattersService
     rmapsResultsFormatterService

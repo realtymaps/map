@@ -14,13 +14,13 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
     rules = [
       # RETS rules
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Int"}
-       transform: '[validators.integer({}),validators.nullify({"value":0})]'
+       transform: '[validators.nullify({"value":0}),validators.integer({})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Decimal"}
-       transform: '[validators.float({}),validators.nullify({"value":0})]'
+       transform: '[validators.nullify({"value":0}),validators.float({})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Long"}
-       transform: '[validators.float({}),validators.nullify({"value":0})]'
+       transform: '[validators.nullify({"value":0}),validators.float({})]'
       ,
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Character"}
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""})]'
@@ -52,7 +52,7 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.string({"trim":true}),validators.nullify({"value":""}),validators.map({"unmapped":"pass","map":{"Active":"for sale","Pending":"pending"}})]'
       ,
        field: _buildBaseRule {"output": "acres"}
-       transform: '[validators.lotArea({}),validators.nullify({"value":0})]'
+       transform: '[validators.nullify({"value":0}),validators.lotArea({})]'
       ,
        field: _buildBaseRule {"output": "parcel_id"}
        transform: '[validators.string({"stripFormatting":true,"trim":true}),validators.nullify({"value":""})]'

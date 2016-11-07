@@ -247,10 +247,10 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
         properties: service.favorites
 
   service.isPinnedProperty = (propertyId) ->
-    !!service.pins[propertyId]
+    !!service.pins?[propertyId]
 
   service.isFavoriteProperty = (propertyId) ->
-    !!service.favorites[propertyId]
+    !!service.favorites?[propertyId]
 
   # Map calls this to update property objects
   service.updateProperty = (model) ->
