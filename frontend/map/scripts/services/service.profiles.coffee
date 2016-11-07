@@ -149,7 +149,7 @@ app.service 'rmapsProfilesService', (
           if opts.updateIdentity
             # keep identity objects up-to-date since certain methods still pull profiles/projects from there
             rmapsPrincipalService.getIdentity()
-            .then (identity) ->
+            .then (identity) =>
               identity.profiles[@currentProfile.id] = @currentProfile
 
       #
