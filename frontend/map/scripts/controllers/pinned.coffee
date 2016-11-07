@@ -8,7 +8,6 @@ $scope
 $rootScope
 $uibModal
 rmapsEventConstants
-rmapsPrincipalService
 rmapsPropertiesService
 ) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')

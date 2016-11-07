@@ -20,7 +20,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsCurrentMapService, rmapsPrincipalService, rmapsProfilesService) ->
+  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsCurrentMapService, rmapsProfilesService) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
