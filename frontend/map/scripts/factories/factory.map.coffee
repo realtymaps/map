@@ -126,12 +126,19 @@ app.factory 'rmapsMapFactory',
           # here, getLayers returns empty array, so had to re-get them inside watch below...
           $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
             leafletData.getLayers(@mapId).then (allLayers) ->
-              layersForToggle =
-                true: allLayers.baselayers.mapbox_street_gybrid
-                false: allLayers.baselayers.mapbox_street
+              sat = allLayers.baselayers.mapbox_street_gybrid
+              map = allLayers.baselayers.mapbox_street
 
-              leafletMap.removeLayer(layersForToggle[!newVal])
-              leafletMap.addLayer(layersForToggle[newVal])
+              if sat? && map?
+                layersForToggle =
+                  true: sat
+                  false: map
+
+                leafletMap.removeLayer(layersForToggle[!newVal])
+                leafletMap.addLayer(layersForToggle[newVal])
+                if $scope.map.layers?.overlays?.parcels?.visible
+                  # bring parcels to front if exists since the tiles render over them
+                  allLayers.overlays.parcels.bringToFront()
 
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
