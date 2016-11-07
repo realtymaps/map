@@ -33,7 +33,7 @@ wrappedCLS = (req, res, promisFnToWrap) ->
 
 module.exports = (app) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
+    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
@@ -41,7 +41,10 @@ module.exports = (app) ->
           logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          throw new PartiallyHandledError(error, 'uncaught route handler error (*** add better error handling code to cover this case! ***)')
+          body = ""
+          if !_.isEmpty(req.body)
+            body = " \n BODY: "+JSON.stringify(req.body,null,2)
+          throw new PartiallyHandledError(error, "****************** add better error handling code to cover this case! ******************\nuncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}\n****************** add better error handling code to cover this case! ******************\n")
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
