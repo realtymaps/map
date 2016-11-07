@@ -44,12 +44,6 @@ app.controller 'rmapsJobsHealthCtrl',
       field: 'unvalidated'
       displayName: 'Unvalidated'
     ,
-      field: 'active_count'
-      displayName: 'Active Rows'
-    ,
-      field: 'inactive_count'
-      displayName: 'Inactive Rows'
-    ,
       field: 'null_geometry'
       displayName: 'No Geom'
     ,
