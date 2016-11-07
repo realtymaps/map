@@ -1,4 +1,5 @@
 $fnMakeMapZoomLocTools()
+  .xtra-layer-tools
   .zoom-tools
   .location-tools
     margin 20px 20px 0 0
@@ -8,11 +9,22 @@ $fnMakeMapZoomLocTools()
       width 40px
       height 40px
       font-size 18px
+      text-align center
       &.zoom-in
         border-radius 3px 3px 0 0
         border-bottom 1px solid $black_10
       &.zoom-out
         border-radius 0 0 3px 3px
+      &.satellite-toggle
+        position relative
+        padding 0
+        margin-bottom 5px
+        top -7
+        .layer-label
+          color $black
+          text-align center
+          font-size 9px
+          margin auto
       &.zoom-previous
       &.zoom-locate
         margin-bottom 5px
