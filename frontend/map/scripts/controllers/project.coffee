@@ -23,7 +23,6 @@ app.controller 'rmapsProjectCtrl',
 
   rmapsNotesService,
   rmapsPageService,
-  rmapsPrincipalService,
   rmapsProfilesService,
   rmapsProjectsService,
   rmapsPropertiesService,
