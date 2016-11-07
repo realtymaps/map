@@ -87,7 +87,7 @@ getFullDetails = (err, opts={}) ->
   inspect = getSimpleDetails(err, inspectOpts)
   cause = err.jse_cause
   depth = 0
-  while cause? && depth < maxErrorHistory
+  while cause? && (!maxErrorHistory? || depth < maxErrorHistory)
     inspect += '\n----- Caused by previous error: -----'
     inspect += getSimpleDetails(cause, inspectOpts)
     depth++
