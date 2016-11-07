@@ -45,7 +45,13 @@ module.exports = (app) ->
           body = ""
           if !_.isEmpty(req.body)
             body = " \n BODY: "+JSON.stringify(req.body,null,2)
-          logger.error("****************** add better error handling code to cover this error! ******************\nuncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}\n#{analyzeValue.getSimpleMessage(error)}\n****************** add better error handling code to cover this error! ******************")
+          msg = [
+            "****************** add better error handling code to cover this error! ******************"
+            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}#{body}"
+            "#{analyzeValue.getSimpleMessage(error)}"
+            "****************** add better error handling code to cover this error! ******************"
+          ]
+          logger.error(msg.join('\n'))
           throw new PartiallyHandledError(error, "uncaught route handler error")
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
