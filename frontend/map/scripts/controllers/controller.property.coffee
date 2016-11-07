@@ -41,7 +41,7 @@ app.controller 'rmapsPropertyCtrl',
 
     $scope.tab = selected: ''
 
-    $scope.isArray: (val) ->
+    $scope.isArray = (val) ->
       _.isArray(val)
 
     $scope.formatters =

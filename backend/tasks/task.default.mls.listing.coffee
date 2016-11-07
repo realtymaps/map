@@ -107,9 +107,11 @@ markUpToDate = (subtask) ->
   mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
   .then (uuidField) ->
     dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
+    chunkNum = 0
     retsService.getDataChunks mlsId, 'listing', dataOptions, (chunk) -> Promise.try () ->
       if !chunk?.length
         return
+      chunkNum++
       ids = _.pluck(chunk, uuidField)
       tables.normalized.listing()
       .where(data_source_id: mlsId)
@@ -119,7 +121,7 @@ markUpToDate = (subtask) ->
       .then (finalizeIds) ->
         if finalizeIds.length == 0
           return
-        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData"})
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData", mergeData: {chunk: chunkNum}})
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
   .catch retsService.isMaybeTransientRetsError, (error) ->
