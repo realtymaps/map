@@ -14,7 +14,7 @@ rmapsD3Stats
 ) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')
 
-  $scope.pinResults = ($event, action = 'Pin') ->
+  $scope.pinResults = (action = 'Pin') ->
     toPin = $scope.formatters.results.getResultsArray()
 
     return unless toPin?.length
@@ -38,7 +38,7 @@ rmapsD3Stats
 
   $scope.getStatistics = () ->
     $log.debug "calculating pinned stats"
-    dataSet = _.values($scope.pinnedProperties)
+    dataSet = _.values($rootScope.identity.currentProfile.pins)
 
     stats = rmapsD3Stats.create(dataSet)
 
