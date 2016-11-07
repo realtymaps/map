@@ -68,6 +68,8 @@ getSimpleDetails = (err, opts={}) ->
   delete inspectOpts.showUndefined
   showNull = inspectOpts.showNull ? true
   delete inspectOpts.showNull
+  maxStackTraces = inspectOpts.maxStackTraces ? null
+  delete inspectOpts.maxStackTraces
 
   if !err?.hasOwnProperty?
     return JSON.stringify(err)
@@ -76,7 +78,12 @@ getSimpleDetails = (err, opts={}) ->
     inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
   if !showNull
     inspect = inspect.replace(/,?\n +\w+: null/g, '')
-  return inspect + '\n' + (err.stack || "#{err}")
+  cause = err
+  depth = 0
+  while cause? && depth < maxStackTraces
+    inspect += '\n' + (cause.stack || "#{cause}")
+    depth++
+    cause = cause.jse_cause
 
 
 getSimpleMessage = (err, opts={}) ->
