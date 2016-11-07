@@ -95,11 +95,19 @@ app = window.angular.module 'rmapsMapApp', [
 require '../../../tmp/map.templates.js' #requries rmapsMapsApp to be initialized
 
 app.controller 'rmapsAppCtrl', (
+$log
 $scope
 $rootScope
 $location
 rmapsMainOptions
-rmapsPrincipalService) ->
+rmapsPrincipalService
+rmapsMapTogglesFactory) ->
+
+  $log = $log.spawn('rmapsAppCtrl')
+
+  $rootScope.updateToggles = (map_toggles = {}) ->
+    $log.debug 'updateToggles', map_toggles
+    $rootScope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity

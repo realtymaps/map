@@ -216,7 +216,7 @@ app.service 'rmapsProfilesService', (
       #
       profile.filters ?= {}
 
-      selectedFilters = _.defaults {}, profile.filters, rmapsFiltersFactory.valueDefaults
+      selectedFilters = _.defaults({}, profile.filters, rmapsFiltersFactory.valueDefaults) || {}
       delete selectedFilters.status
       delete selectedFilters.current_project_id
 
@@ -241,12 +241,8 @@ app.service 'rmapsProfilesService', (
       # Set the Filter toggles based on the current profile
       #
 
-      if currentMap?
-        $log.debug "Profile change, updating current map Toggles"
-        currentMap.updateToggles profile.map_toggles
-      else
-        $log.debug "Initial profile set, create Map Toggles Factory"
-        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(profile.map_toggles)
+      $log.debug "Profile change, updating current map Toggles"
+      $rootScope.updateToggles profile.map_toggles
 
       return profile
 
