@@ -22,7 +22,7 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                     select.form-control(
                       ng-model="user.us_state_code"
                       validator="required"
-                      name="userStateCode"
+                      name="us_state_code"
                       ng-options="entity.code as stateView(entity) for entity in us_states_possible")
                 .form-group(ng-if="supportedStates.show")
                   .label Supported States:
@@ -30,7 +30,7 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                     select.form-control(
                       ng-model="user.us_state_code"
                       validator="required"
-                      name="userStateCode"
+                      name="us_state_code"
                       ng-options="entity.code as stateView(entity) for entity in us_states_supported")
 
             .row
@@ -49,10 +49,9 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                       ng-if="!supportedMLS.show && supportedMlsCodes || !supportedStates.show"
                       ng-model="user.mls_code"
                       validator="required"
-                      name="userMlsCode"
+                      name="mls_code"
                       type="text"
                       placeholder="Search MLSes"
-                      aria-autocomplete="none"
                       typeahead-input-formatter="mlsInputFormatter($model)"
                       uib-typeahead="entity.mls as mlsView(entity) for entity in mlsCodes | filter:$viewValue | limitTo:14")
                     // our supported mls codes
@@ -60,21 +59,12 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                       ng-if="supportedMLS.show && supportedMlsCodes && supportedStates.show"
                       ng-model="user.mls_code"
                       validator="required"
-                      name="userMlsCode"
+                      name="mls_code"
                       type="text"
                       placeholder="Search MLSes"
                       typeahead-input-formatter="mlsInputFormatter($model)"
-                      aria-autocomplete="none"
                       uib-typeahead="entity.mls as mlsView(entity) for entity in supportedMlsCodes | filter:$viewValue | limitTo:14")
 
-
-                  //- .col-md-4.col-sm-4.col-xs-5
-                  //-   select.form-control(
-                  //-     ng-model="user.mls_code"
-                  //-     validator="required"
-                  //-     name="userMlsCode"
-                  //-     ng-options="entity as mlsView(entity) for entity in supportedMlsCodes"
-                  //-   )
 
             .row(ng-show="user.mls_code")
               .col-md-8.col-sm-8.col-xs-11

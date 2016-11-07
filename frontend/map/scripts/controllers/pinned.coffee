@@ -8,7 +8,6 @@ $scope
 $rootScope
 $uibModal
 rmapsEventConstants
-rmapsPrincipalService
 rmapsPropertiesService
 rmapsD3Stats
 ) ->

@@ -98,8 +98,8 @@ app.controller 'rmapsAppCtrl', (
 $scope
 $rootScope
 $location
-rmapsPrincipalService
-rmapsMainOptions) ->
+rmapsMainOptions
+rmapsPrincipalService) ->
 
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity

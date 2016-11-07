@@ -9,7 +9,6 @@ app.controller 'rmapsProjectsCtrl', (
   $state,
   $log,
   $uibModal,
-  rmapsPrincipalService,
   rmapsProfilesService,
   rmapsProjectsService,
   rmapsEventConstants

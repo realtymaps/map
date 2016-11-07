@@ -10,7 +10,6 @@ $location,
 $http,
 $state,
 rmapsEventConstants,
-rmapsPrincipalService,
 rmapsMainOptions,
 $log,
 rmapsUsStates

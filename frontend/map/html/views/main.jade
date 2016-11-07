@@ -7,7 +7,4 @@ block content
       include ../views/home.jade
 
   .modal-container(ng-show="rmapsPageService.isModal()")
-    .page-modal-close.desktop-only
-      a(ng-click="rmapsPageService.back()")
-        i.icon.icon-close
     .page-modal(ui-view="main-modal" class="{{pageClass}}")

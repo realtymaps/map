@@ -93,16 +93,7 @@ app.service 'rmapsProfilesService', (
       .then (identity) =>
         if identity
           profile = _.find(identity.profiles, project_id: project_id)
-          return @setCurrentProfile profile
-
-    # similar to setCurrentProfileByProjectId and changes the current profile, but suppresses the profile.updated emit
-    updateCurrentProfileByProjectId: (project_id) ->
-      project_id = Number(project_id) if _.isString project_id
-      rmapsPrincipalService.getIdentity()
-      .then (identity) =>
-        if identity
-          profile = _.find(identity.profiles, project_id: project_id)
-          return @setCurrentProfile profile, noEmit: true
+          return @setCurrentProfile profile, updateIdentity: false
 
     setCurrentProfileByProfileId: (profile_id) ->
       profile_id = Number(profile_id) if _.isString profile_id
@@ -117,7 +108,7 @@ app.service 'rmapsProfilesService', (
         return @setCurrentProfileByProfileId identity.currentProfileId
       else
         # open most recently modified
-        return @setCurrentProfile _.sortByOrder(_.values(identity.profiles), 'rm_modified_time','desc')[0]
+        return @setCurrentProfile(_.sortByOrder(_.values(identity.profiles), 'rm_modified_time','desc')[0], updateIdentity: false)
 
 
 
@@ -126,7 +117,7 @@ app.service 'rmapsProfilesService', (
       Public: This function gets hammered by watchers and or page resolves at boot.
         Therefore we have a few GTFOS
     ###
-    setCurrentProfile: (profile) ->
+    setCurrentProfile: (profile, opts={updateIdentity: true}) ->
       # GTFO 1
       if profile == @currentProfile
         $log.debug "Profile is already set as current profile, returning"
@@ -158,6 +149,12 @@ app.service 'rmapsProfilesService', (
         $log.debug "rmapsCurrentMap: #{currentMap}"
         if currentMap
           @currentProfile.map_position = center: NgLeafletCenter(_.pick currentMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
+          if opts.updateIdentity
+            # keep identity objects up-to-date since certain methods still pull profiles/projects from there
+            rmapsPrincipalService.getIdentity()
+            .then (identity) ->
+              identity.profiles[@currentProfile.id] = @currentProfile
+
       #
       # ---------- End previous profile update
       #
@@ -183,6 +180,7 @@ app.service 'rmapsProfilesService', (
       # Center and zoom the map for the new profile
       map_position = center: NgLeafletCenter profile.map_position.center
       map_position.center.docWhere = 'rmapsProfilesService:profile.map_position.center'
+
       #
       # Center and zoom map to profile
       #

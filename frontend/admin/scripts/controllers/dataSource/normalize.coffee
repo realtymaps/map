@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
-adminRoutes = require '../../../../../common/config/routes.admin.coffee'
+
 require '../../services/mlsConfig.coffee'
 require '../../services/normalize.coffee'
 require '../../directives/listinput.coffee'
@@ -14,7 +14,18 @@ require '../../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsEventConstants, rmapsParcelEnums, rmapsPrincipalService, rmapsAdminConstants) ->
+(
+$window
+$scope
+$rootScope
+$state
+$log
+rmapsMlsService
+rmapsNormalizeFactory
+rmapsValidatorBuilderService
+rmapsEventConstants
+rmapsParcelEnums
+rmapsAdminConstants) ->
 
   $scope.$state = $state
 

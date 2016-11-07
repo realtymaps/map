@@ -4,7 +4,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 utilsGeoJson =  require '../../../../common/utils/util.geomToGeoJson.coffee'
 analyzeValue = require  '../../../../common/utils/util.analyzeValue.coffee'
 
-app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFactory, rmapsPrincipalService,
+app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFactory,
   rmapsEventConstants, rmapsPromiseThrottlerFactory, $log) ->
 
   $log = $log.spawn("map:rmapsPropertiesService")
@@ -231,10 +231,10 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
         properties: service.favorites
 
   service.isPinnedProperty = (propertyId) ->
-    !!service.pins[propertyId]
+    !!service.pins?[propertyId]
 
   service.isFavoriteProperty = (propertyId) ->
-    !!service.favorites[propertyId]
+    !!service.favorites?[propertyId]
 
   # Map calls this to update property objects
   service.updateProperty = (model) ->
