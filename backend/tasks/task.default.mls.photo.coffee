@@ -14,6 +14,7 @@ mlsConfigService = require '../services/service.mls_config'
 dbs = require '../config/dbs'
 mlsPhotoUtil = require '../utils/util.mls.photos'
 internals = require './task.default.mls.photo.internals'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 250
 MAX_PAGES = 0
@@ -37,9 +38,12 @@ storePrep = (subtask) ->
         photo_id: row.photo_id
 
   updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing')
-  uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
-  photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing')
+  lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_last_mod_time field for #{mlsId}")
+  uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing').catch (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving data_source_uuid field for #{mlsId}")
+  photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing').catch (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
   # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
   updatedPhotosPromise = Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
@@ -59,7 +63,13 @@ storePrep = (subtask) ->
           photo_id: row[photoIdField]
 
     logger.debug () -> "Getting data chunks for #{mlsId}"
-    return retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+    .catch (error) ->
+      rootError = errorHandlingUtils.getRootCause(error)
+      if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
+        return # No results from RETS, let the task finish normally
+      else
+        throw new errorHandlingUtils.PartiallyHandledError(error, "Error getting list of updated records from RETS")
 
   Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
     logger.debug () -> "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
