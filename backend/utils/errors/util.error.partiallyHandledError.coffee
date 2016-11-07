@@ -23,7 +23,7 @@ class PartiallyHandledError extends VError
       @logReference()
 
   logReference: () ->
-    logger.error analyzeValue.getSimpleDetails(@)
+    logger.error analyzeValue.getFullDetails(@)
 
 class QuietlyHandledError extends PartiallyHandledError
   constructor: (args...) ->
