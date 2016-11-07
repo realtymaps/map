@@ -76,7 +76,7 @@ getSimpleDetails = (err, opts={}) ->
     inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
   if !showNull
     inspect = inspect.replace(/,?\n +\w+: null/g, '')
-  inspect + '\n' + (err.stack || "#{err}")
+  return inspect + '\n' + (err.stack || "#{err}")
 
 
 getFullDetails = (err, opts={}) ->
