@@ -41,7 +41,7 @@ swagger = require 'swagger-tools'
 
 if config.FORCE_HTTPS
   app.use (req, res, next) ->
-    if req.secure
+    if !req.secure
       res.redirect("https://#{req.hostname}#{req.originalUrl}")
     else
       next()
