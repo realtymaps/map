@@ -9,6 +9,7 @@ $stateParams
 rmapsProfilesService
 currentIdentity
 ) ->
+  "ngInject"
   $log = $log.spawn 'rmapsRouteProfileResolve'
   # Does the state or location define a project id?
   if $state.toState?.projectParam? and $state.toParams?[$state.toState.projectParam]?

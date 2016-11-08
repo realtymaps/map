@@ -20,8 +20,11 @@ gulp.task 'minify-css', ->
 gulp.task 'minify-js', ->
   gulp.src paths.destFull.scripts + '/*.js'
   .pipe $.uglify
-    mangle: false
+    mangle: true
+    output:
+      beautify: false # true for whitespace/indentation
   .on   'error', conf.errorHandler 'Uglify JS'
+
   .pipe gulp.dest paths.destFull.scripts
   .pipe $.size
     title: paths.dest.root

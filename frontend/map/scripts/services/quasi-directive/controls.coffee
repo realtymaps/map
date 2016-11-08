@@ -46,7 +46,9 @@ directiveControls = [
 for control in directiveControls
   do (control) ->
     control.dName = control.name[0].toUpperCase() + control.name.slice(1) + 'Control'
-    app.directive "rmaps#{control.dName}", ($log) -> control.directive($log.spawn("map:controls:#{control.dName}"))
+    app.directive "rmaps#{control.dName}", ($log) ->
+      "ngInject"
+      control.directive($log.spawn("map:controls:#{control.dName}"))
 
 # Leaflet usage:
 #    rmapsControlsService.{Some}Control position: 'botomleft', scope: mapScope
