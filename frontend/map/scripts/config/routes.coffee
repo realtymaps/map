@@ -57,6 +57,7 @@ module.exports = app.config (
   appendTemplateProvider = (name, state) ->
     if !state.template && !state.templateProvider && !state.templateUrl
       state.templateProvider = ($templateCache) ->
+        "ngInject"
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 
@@ -193,6 +194,7 @@ module.exports = app.config (
     mobile: { modal: true },
     resolve:
       currentProject: ($stateParams, rmapsProjectsService) ->
+        "ngInject"
         return rmapsProjectsService.getProject $stateParams.id
 
   # Project dashboard

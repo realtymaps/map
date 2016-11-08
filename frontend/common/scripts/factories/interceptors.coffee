@@ -8,6 +8,7 @@ defaultInterceptorList = ['rmapsLoadingIconInterceptorFactory', 'rmapsAlertInter
 
 interceptors =
   rmapsRedirectInterceptorFactory: ($location, $rootScope, $injector, $log, rmapsUrlHelpersService) ->
+    "ngInject"
     $log = $log.spawn "rmapsRedirectInterceptorFactory"
     routes = rmapsUrlHelpersService.getRoutes()
 
@@ -26,6 +27,7 @@ interceptors =
       response
 
   rmapsAlertInterceptorFactory: ($rootScope, $q, rmapsEventConstants) ->
+    "ngInject"
     defineNull = (value) ->
       return if typeof value == 'undefined' then null else value
     handle = (response, error=false) ->
@@ -57,6 +59,7 @@ interceptors =
       $q.reject(request)
 
   rmapsLoadingIconInterceptorFactory: ($q, rmapsSpinnerService) ->
+    "ngInject"
     request: (request) ->
       rmapsSpinnerService.incrementLoadingCount(request.url)
       request
