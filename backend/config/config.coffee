@@ -54,12 +54,12 @@ base =
       connection: process.env.TEST_DATABASE_URL
       pool: pingTimeout: 20*60*1000
       acquireConnectionTimeout: 90000
-  TRUST_PROXY: 1
+  TRUST_PROXY: false  # true for prod, overriden below
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
     cookie:
       maxAge: null
-      secure: true
+      secure: false  # true for prod, overriden below
     name: 'connect.sid'
     resave: false
     saveUninitialized: true
@@ -71,7 +71,7 @@ base =
     cookie:
       httpOnly: true
       signed: true
-      secure: true
+      secure: false  # true for prod, overriden below
   USE_ERROR_HANDLER: false
   MEM_WATCH:
     IS_ON: toBool(process.env.MEM_WATCH_IS_ON, defaultValue: false)
@@ -134,18 +134,12 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
+    FORCE_HTTPS: false
     DBS:
       MAIN:
         debug: false # set to true for verbose logging
       RAW_TEMP:
         debug: false # set to true for verbose logging
-    TRUST_PROXY: false
-    SESSION:
-      cookie:
-        secure: false
-    SESSION_SECURITY:
-      cookie:
-        secure: false
     LOGGING:
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
@@ -165,30 +159,32 @@ environmentConfig =
       IS_ON: true
 
   staging:
-    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
-    TRUST_PROXY: false
+    FORCE_HTTPS: true
+    TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: in our case, Heroku -> nginx -> express
     SESSION:
       cookie:
-        secure: false
+        secure: true
+      proxy: true
     SESSION_SECURITY:
       cookie:
-        secure: false
+        secure: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
+    FORCE_HTTPS: true
     MEM_WATCH:
       IS_ON: true
-    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
-    TRUST_PROXY: false
+    TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: in our case, Heroku -> nginx -> express
     SESSION:
       cookie:
-        secure: false
+        secure: true
+      proxy: true
     SESSION_SECURITY:
       cookie:
-        secure: false
+        secure: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       APP_NAME: 'realtymaps-map'
