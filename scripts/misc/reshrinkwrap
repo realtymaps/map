@@ -43,3 +43,5 @@ rm -f npm-shrinkwrap.json
 # install new versions of removed deps
 # yarn add "$OPTIONS" #NOTE NOT WORKING
 npm install "$OPTIONS"
+
+npm shrinkwrap

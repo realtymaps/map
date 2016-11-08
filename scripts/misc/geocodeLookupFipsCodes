@@ -1,0 +1,74 @@
+#!/usr/bin/env coffee
+
+###
+Simple script cartodb import via our service upload by fipsCode
+
+options:
+-- doRaw
+  -- fips_code
+  -- code
+  -- county
+  -- state
+-- doNormalize
+-- doFinalize
+
+Lastly any subtask field
+-- batch_id
+###
+argv = require('yargs').argv
+# rewire = require('rewire')
+Spinner = require('cli-spinner').Spinner
+logger = require('../../backend/config/logger').spawn('scripts:geocode:lookup:fipsCodes')
+_ = require 'lodash'
+Promise =  require 'bluebird'
+fipsLocService = require '../../backend/tasks/task.geocode_fipsCodes.internals'
+
+
+logger.debug -> fipsLocService
+
+makeSpinner = () ->
+  spinner = new Spinner('running.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+  spinner
+
+
+logger.debug -> argv
+
+spin = makeSpinner()
+
+promises = []
+
+if argv.doRaw
+  promises.push {
+    fn: fipsLocService.loadRawData
+    safe: ['batch_id', 'fips_code', 'code', 'state', 'county']
+  }
+
+if argv.doNormalize
+  promises.push {
+    fn: fipsLocService.normalize
+    safe: ['batch_id']
+  }
+
+if argv.doFinalize
+  promises.push {
+    fn: fipsLocService.finalize
+    safe: ['batch_id']
+  }
+
+Promise.each promises, (payload)  ->
+  payload.fn(_.pick(argv, payload.safe))
+.then () ->
+  logger.debug ->("@@@@ TOTAL SUCCESS @@@@")
+.finally ->
+  spin.stop()
+.then ->
+  process.exit(0)
+.catch  (error) ->
+  logger.debug ->("@@@@ ERROR @@@@")
+  console.error(error)
+  if(error)
+    logger.debug ->("@@@@ STACK @@@@")
+    logger.debug ->(error.stack)
+  process.exit(2)

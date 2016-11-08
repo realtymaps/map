@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+L = require 'leaflet'
 
 app.service 'rmapsGoogleService', ($http, $log, $q) ->
 
