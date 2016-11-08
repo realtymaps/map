@@ -51,10 +51,6 @@ app.factory 'rmapsMapFactory',
     verboseLogger = $log.spawn("map:factory:verbose")
     $log = normal
 
-    _initToggles = ($scope, toggles) ->
-      return unless toggles?
-      $scope.Toggles = toggles
-
     class Map extends rmapsBaseMapFactory
 
       constructor: ($scope) ->
@@ -79,7 +75,7 @@ app.factory 'rmapsMapFactory',
           _.merge $scope.map, layers: {overlays}
 
 
-        _initToggles $scope, limits.toggles
+        $scope.updateToggles(limits.toggles)
 
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
@@ -254,7 +250,7 @@ app.factory 'rmapsMapFactory',
             @scope.map.listingDetail.show = false if newVal isnt oldVal
 
         @scope.resetLayers = () =>
-          @updateToggles(showAddresses: false, showPrices: false)
+          @scope.updateToggles(showAddresses: false, showPrices: false)
           _.extend @scope.selectedFilters, rmapsFiltersFactory.valueDefaults,
             forSale: false
             pending: false
@@ -264,9 +260,6 @@ app.factory 'rmapsMapFactory',
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
-      updateToggles: (map_toggles) =>
-        $log.debug 'updateToggles', map_toggles
-        @scope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
       clearBurdenLayers: () =>
         d = $q.defer()

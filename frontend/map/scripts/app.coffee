@@ -95,11 +95,14 @@ app = window.angular.module 'rmapsMapApp', [
 require '../../../tmp/map.templates.js' #requries rmapsMapsApp to be initialized
 
 app.controller 'rmapsAppCtrl', (
+$log
 $scope
 $rootScope
 $location
 rmapsMainOptions
 rmapsPrincipalService) ->
+
+  $log = $log.spawn('rmapsAppCtrl')
 
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity
