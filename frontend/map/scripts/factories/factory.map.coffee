@@ -121,7 +121,25 @@ app.factory 'rmapsMapFactory',
         #
         # This promise is resolved when Leaflet has finished setting up the Map
         #
-        leafletData.getMap(@mapId).then () =>
+        leafletData.getMap(@mapId).then (leafletMap) =>
+
+          # here, getLayers returns empty array, so had to re-get them inside watch below...
+          $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
+            leafletData.getLayers(@mapId).then (allLayers) ->
+              sat = allLayers.baselayers.mapbox_street_gybrid
+              map = allLayers.baselayers.mapbox_street
+
+              if sat? && map?
+                layersForToggle =
+                  true: sat
+                  false: map
+
+                leafletMap.removeLayer(layersForToggle[!newVal])
+                leafletMap.addLayer(layersForToggle[newVal])
+                if $scope.map.layers?.overlays?.parcels?.visible
+                  # bring parcels to front if exists since the tiles render over them
+                  allLayers.overlays.parcels.bringToFront()
+
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
@@ -172,7 +190,6 @@ app.factory 'rmapsMapFactory',
 
             @scope.previousCenter = oldVal
             @scope.Toggles.hasPreviousLocation = true
-
 
         @singleClickCtrForDouble = 0
 
