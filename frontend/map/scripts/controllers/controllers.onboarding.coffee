@@ -249,15 +249,36 @@ app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
   $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope
 
-app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log, $state, $timeout, rmapsLoginFactory) ->
+app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $q, $log, $state, $timeout, rmapsLoginFactory) ->
   $log = $log.spawn("map:rmapsOnboardingFinishYayCtrl")
   $scope.view.showSteps = false
 
   rmapsLoginFactory($scope)
 
   if !$scope.user.email?
+    $log.error('user email missing can not auto login.')
     return
 
-  $timeout () ->
-    $scope.doLogin($scope.user)
-  , 2000
+  if !$scope.user.password?
+    $log.error('user password missing can not auto login.')
+    return
+
+  attempts = 0
+
+  #TODO: This is a temporary hack around login issues where there is some strangeness where login fails
+  #
+  # related errors:
+  #  - account NOT_FOUND:
+  #       Possible race where the account creation from the final submit (create account)
+  #       is not really finished on the backend
+  #  - password undefined - (contoller loses context of $scope.user this is expected if the page is refreshed/changed)
+  doLogin = ->
+    attempts++
+    $q.delay(2000)
+    .then () ->
+      $scope.doLogin($scope.user)
+
+  doLogin()
+  .catch () ->
+    if attempts < 2
+      doLogin()

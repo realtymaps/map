@@ -32,6 +32,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
     if !state.template
       state.templateProvider = ($templateCache) ->
+        "ngInject"
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 

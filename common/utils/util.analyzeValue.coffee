@@ -79,6 +79,22 @@ getSimpleDetails = (err, opts={}) ->
   return inspect + '\n' + (err.stack || "#{err}")
 
 
+getFullDetails = (err, opts={}) ->
+  inspectOpts = _.clone(opts)
+  maxErrorHistory = inspectOpts.maxErrorHistory ? null
+  delete inspectOpts.maxErrorHistory
+
+  inspect = getSimpleDetails(err, inspectOpts)
+  cause = err.jse_cause
+  depth = 0
+  while cause? && (!maxErrorHistory? || depth < maxErrorHistory)
+    inspect += '\n---------- Caused by previous error: ----------\n'
+    inspect += getSimpleDetails(cause, inspectOpts)
+    depth++
+    cause = cause.jse_cause
+  return inspect
+
+
 getSimpleMessage = (err, opts={}) ->
   inspectOpts = _.clone(opts)
   showUndefined = inspectOpts.showUndefined ? false
@@ -106,3 +122,4 @@ module.exports.INDENT = "    "
 module.exports.getSimpleDetails = getSimpleDetails
 module.exports.getSimpleMessage = getSimpleMessage
 module.exports.isKnexError = isKnexError
+module.exports.getFullDetails = getFullDetails

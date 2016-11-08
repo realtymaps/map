@@ -9,6 +9,7 @@ status = require '../../common/utils/httpStatus'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 {InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.userSession'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -33,7 +34,7 @@ wrappedCLS = (req, res, promisFnToWrap) ->
 
 module.exports = (app) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
+    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
@@ -41,7 +42,17 @@ module.exports = (app) ->
           logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          throw new PartiallyHandledError(error, 'uncaught route handler error (*** add better error handling code to cover this case! ***)')
+          msg = [
+            "****************** add better error handling code to cover this error! ******************"
+            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}"
+            # body contents will be inserted here
+            "#{analyzeValue.getSimpleMessage(error)}"
+            "****************** add better error handling code to cover this error! ******************"
+          ]
+          if !_.isEmpty(req.body)
+            msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
+          logger.error(msg.join('\n'))
+          throw new PartiallyHandledError(error, "uncaught route handler error")
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST

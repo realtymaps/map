@@ -41,6 +41,8 @@ app.service 'rmapsProfilesService', (
       if data.identity?.profiles?[profile.id]
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
+      if service.currentProfile != profile
+        $log.debug 'Setting new currentProfile', profile
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
 
@@ -67,6 +69,7 @@ app.service 'rmapsProfilesService', (
     _settingCurrentPromise.then () ->
       _isSettingProfile = false
       _settingCurrentPromise = null
+      $rootScope.$emit rmapsEventConstants.principal.profile.updated, service.currentProfile
 
     return _settingCurrentPromise
 
@@ -97,8 +100,8 @@ app.service 'rmapsProfilesService', (
       rmapsPrincipalService.getIdentity()
       .then (identity) =>
         if identity
-          profile = (_.find(identity.profiles, id: profile_id))
-          return @setCurrentProfile profile, updateIdentity: false
+          profile = identity.profiles[profile_id]
+          return @setCurrentProfile profile
 
     setCurrentProfileByIdentity: (identity) ->
       if identity.currentProfileId?
@@ -149,7 +152,7 @@ app.service 'rmapsProfilesService', (
           if opts.updateIdentity
             # keep identity objects up-to-date since certain methods still pull profiles/projects from there
             rmapsPrincipalService.getIdentity()
-            .then (identity) ->
+            .then (identity) =>
               identity.profiles[@currentProfile.id] = @currentProfile
 
       #
@@ -166,13 +169,20 @@ app.service 'rmapsProfilesService', (
       # Get reference to the current main map
       currentMap = rmapsCurrentMapService.get()
 
-      if !profile?.map_position?.center?
-        # bad things happen if we get this far w/o a map_position.center.  It should currently be accounted for in
-        # backend when creating new profiles/projects
-        $log.warn "Current profile has no map position!"
-        return
+      ###
+      TODO: This center value missing usually comes from a new account
 
-      $log.debug "Set current profile to: #{profile.id}"
+      Therefore the center should default to their MLS / Location of interest that
+      they signed up for. This should be set in route.onboarding.
+
+      NOTE: For now we hard code it to rmapsMainOptions.map.options.json.center (NAPLES)
+      fix missed center
+      ###
+      if !map_position?.center?.lng || !map_position?.center?.lat
+        profile.map_position = center: rmapsMainOptions.map.options.json.center
+        profile.map_position.center.docWhere = 'rmapsProfilesService:invalid'
+
+      $log.debug -> "Set current profile to: #{profile.id}"
 
       # Center and zoom the map for the new profile
       map_position = center: NgLeafletCenter profile.map_position.center
@@ -181,11 +191,6 @@ app.service 'rmapsProfilesService', (
       #
       # Center and zoom map to profile
       #
-
-      #fix messed center
-      if !map_position?.center?.lng || !map_position?.center?.lat
-        map_position = rmapsMainOptions.map.options.json.center
-        map_position.center.docWhere = 'rmapsProfilesService:invalid'
 
       if currentMap?.scope?.map?
         ### eslint-disable###
@@ -216,11 +221,11 @@ app.service 'rmapsProfilesService', (
       #
       profile.filters ?= {}
 
-      selectedFilters = _.defaults {}, profile.filters, rmapsFiltersFactory.valueDefaults
+      selectedFilters = _.defaults({}, profile.filters, rmapsFiltersFactory.valueDefaults) || {}
       delete selectedFilters.status
       delete selectedFilters.current_project_id
 
-      $log.debug selectedFilters
+      $log.debug -> selectedFilters
 
       statusList = profile.filters?.status || []
       for key,status of rmapsParcelEnums.status
@@ -235,18 +240,15 @@ app.service 'rmapsProfilesService', (
       if selectedFilters.closeDateMax
         selectedFilters.closeDateMax = new Date(selectedFilters.closeDateMax)
 
+      $log.debug -> "loadProfile selectedFilters"
       $rootScope.selectedFilters = selectedFilters
 
       #
       # Set the Filter toggles based on the current profile
       #
 
-      if currentMap?
-        $log.debug "Profile change, updating current map Toggles"
-        currentMap.updateToggles profile.map_toggles
-      else
-        $log.debug "Initial profile set, create Map Toggles Factory"
-        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(profile.map_toggles)
+      $log.debug -> "Profile change, updating current map Toggles"
+      $rootScope.updateToggles profile.map_toggles
 
       return profile
 

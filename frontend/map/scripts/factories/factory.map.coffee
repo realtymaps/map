@@ -51,10 +51,6 @@ app.factory 'rmapsMapFactory',
     verboseLogger = $log.spawn("map:factory:verbose")
     $log = normal
 
-    _initToggles = ($scope, toggles) ->
-      return unless toggles?
-      $scope.Toggles = toggles
-
     class Map extends rmapsBaseMapFactory
 
       constructor: ($scope) ->
@@ -79,7 +75,7 @@ app.factory 'rmapsMapFactory',
           _.merge $scope.map, layers: {overlays}
 
 
-        _initToggles $scope, limits.toggles
+        $scope.updateToggles(limits.toggles)
 
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
@@ -121,7 +117,25 @@ app.factory 'rmapsMapFactory',
         #
         # This promise is resolved when Leaflet has finished setting up the Map
         #
-        leafletData.getMap(@mapId).then () =>
+        leafletData.getMap(@mapId).then (leafletMap) =>
+
+          # here, getLayers returns empty array, so had to re-get them inside watch below...
+          $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
+            leafletData.getLayers(@mapId).then (allLayers) ->
+              sat = allLayers.baselayers.mapbox_street_gybrid
+              map = allLayers.baselayers.mapbox_street
+
+              if sat? && map?
+                layersForToggle =
+                  true: sat
+                  false: map
+
+                leafletMap.removeLayer(layersForToggle[!newVal])
+                leafletMap.addLayer(layersForToggle[newVal])
+                if $scope.map.layers?.overlays?.parcels?.visible
+                  # bring parcels to front if exists since the tiles render over them
+                  allLayers.overlays.parcels.bringToFront()
+
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
@@ -172,7 +186,6 @@ app.factory 'rmapsMapFactory',
 
             @scope.previousCenter = oldVal
             @scope.Toggles.hasPreviousLocation = true
-
 
         @singleClickCtrForDouble = 0
 
@@ -237,7 +250,7 @@ app.factory 'rmapsMapFactory',
             @scope.map.listingDetail.show = false if newVal isnt oldVal
 
         @scope.resetLayers = () =>
-          @updateToggles(showAddresses: false, showPrices: false)
+          @scope.updateToggles(showAddresses: false, showPrices: false)
           _.extend @scope.selectedFilters, rmapsFiltersFactory.valueDefaults,
             forSale: false
             pending: false
@@ -247,9 +260,6 @@ app.factory 'rmapsMapFactory',
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
-      updateToggles: (map_toggles) =>
-        $log.debug 'updateToggles', map_toggles
-        @scope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
 
       clearBurdenLayers: () =>
         d = $q.defer()

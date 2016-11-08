@@ -242,7 +242,7 @@ getProcessInfo = (subtask, subtaskStartTime) ->
     # decide whether we just process the next FIPS, or do the special processing that happens when we move to a new date
     if oldProcessInfo[FIPS_QUEUED].length > 0
       processInfo.date = oldProcessInfo[CURRENT_PROCESS_DATE]
-      processInfo.fips = oldProcessInfo[FIPS_QUEUED].sort()[0]
+      processInfo.fips = oldProcessInfo[FIPS_QUEUED][0]
       processInfo.deleteBatchId = oldProcessInfo[DELETE_BATCH_ID]
       logger.debug () -> "processing date/fips: #{processInfo.date}/#{processInfo.fips}"
     else if oldProcessInfo[DATES_QUEUED].length > 0

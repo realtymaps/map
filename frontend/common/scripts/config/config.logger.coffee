@@ -2,7 +2,7 @@ mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 mod.config ($provide, nemSimpleLoggerProvider) ->
-  $provide.decorator nemSimpleLoggerProvider.decorator...
+  $provide.decorator('$log', ['$delegate', nemSimpleLoggerProvider.decorator[1]]) # todo: fix angular-simple-logger annotation
 .run ($http, $log) ->
   $http.get(backendRoutes.config.safeConfig, cache: true).then ({data}) ->
     data = data.debugLevels

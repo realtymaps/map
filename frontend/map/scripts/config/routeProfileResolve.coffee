@@ -9,6 +9,7 @@ $stateParams
 rmapsProfilesService
 currentIdentity
 ) ->
+  "ngInject"
   $log = $log.spawn 'rmapsRouteProfileResolve'
   # Does the state or location define a project id?
   if $state.toState?.projectParam? and $state.toParams?[$state.toState.projectParam]?
@@ -32,3 +33,22 @@ currentIdentity
       # Default to the session profile or the first profile for the identity
       $log.debug "Loading profile based on identity.currentProfileId #{currentIdentity.currentProfileId}"
       return rmapsProfilesService.setCurrentProfileByIdentity currentIdentity
+
+app.factory 'rmapsRouteProfileResolveFactory', (
+$location
+$log
+$state
+$stateParams
+rmapsProfilesService
+rmapsRouteProfileResolve
+rmapsPrincipalService
+) ->
+  () ->
+    rmapsPrincipalService
+    .getIdentity().then (identity) ->
+      rmapsRouteProfileResolve($location
+      $log
+      $state
+      $stateParams
+      rmapsProfilesService
+      identity)
