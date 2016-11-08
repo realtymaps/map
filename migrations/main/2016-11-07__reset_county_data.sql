@@ -19,7 +19,10 @@ WHERE
   namespace = 'blackknight process info' AND
   key IN (
     'fips queued',
-    'dates completed',
-    'current process date',
-    'delete batch_id'
+    'dates completed'
   );
+
+DELETE FROM config_keystore
+WHERE
+  namespace = 'blackknight process info' AND
+  key IN ('current process date', 'delete batch_id');

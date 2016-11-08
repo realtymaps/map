@@ -24,6 +24,7 @@ app.factory 'rmapsMapTogglesFactory', ($log, $rootScope, rmapsEventConstants) ->
       @showSearch = false
       @isFetchingLocation = false
       @hasPreviousLocation = false
+      @useSatellite = false
 
       @showAddresses = true
       @showPrices = true

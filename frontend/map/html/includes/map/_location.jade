@@ -1,13 +1,26 @@
-.location-tools
-  button.btn.btn-transparent.zoom-previous(
-    ng-if="Toggles.hasPreviousLocation"
-    ng-touch="Toggles.toggleLocation(); $event.stopPropagation()"
-    ng-click="Toggles.togglePreviousLocation(); $event.stopPropagation()"
+.xtra-layer-tools
+  button.btn.btn-transparent.satellite-toggle.radar(
+    ng-if="Toggles.useSatellite"
+    ng-touch="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
+    ng-click="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
     popover-placement="right"
-    uib-popover="Previous Location"
+    uib-popover="Satellite Toggle"
     popover-trigger="'click mouseenter touchend'"
     uib-popover-popup-close-delay="1")
-    span.icon.icon-undo2
+    div.fa.fa-globe
+    div.layer-label Aerial
+  button.btn.btn-transparent.satellite-toggle.mapa(
+    ng-if="!Toggles.useSatellite"
+    ng-touch="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
+    ng-click="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
+    popover-placement="right"
+    uib-popover="Satellite Toggle"
+    popover-trigger="'click mouseenter touchend'"
+    uib-popover-popup-close-delay="1")
+    div.fa.fa-map
+    div.layer-label Map
+
+.location-tools
   button.btn.btn-transparent.zoom-locate(
     ng-touch="Toggles.toggleLocation(); $event.stopPropagation()"
     ng-click="Toggles.toggleLocation(); $event.stopPropagation()"

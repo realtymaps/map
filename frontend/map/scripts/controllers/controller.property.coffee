@@ -42,6 +42,9 @@ app.controller 'rmapsPropertyCtrl',
 
     $scope.tab = selected: ''
 
+    $scope.isArray = (val) ->
+      _.isArray(val)
+
     $scope.formatters =
       results: new rmapsResultsFormatterService scope: $scope
       property: rmapsPropertyFormatterService
