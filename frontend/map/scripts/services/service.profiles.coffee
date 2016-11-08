@@ -41,6 +41,8 @@ app.service 'rmapsProfilesService', (
       if data.identity?.profiles?[profile.id]
         profile.rm_modified_time = data.identity.profiles[profile.id].rm_modified_time
 
+      if service.currentProfile != profile
+        $log.debug 'Setting new currentProfile', profile
       service.currentProfile = profile
       rmapsPrincipalService.setCurrentProfile profile
 
@@ -67,6 +69,7 @@ app.service 'rmapsProfilesService', (
     _settingCurrentPromise.then () ->
       _isSettingProfile = false
       _settingCurrentPromise = null
+      $rootScope.$emit rmapsEventConstants.principal.profile.updated, service.currentProfile
 
     return _settingCurrentPromise
 
@@ -97,8 +100,8 @@ app.service 'rmapsProfilesService', (
       rmapsPrincipalService.getIdentity()
       .then (identity) =>
         if identity
-          profile = (_.find(identity.profiles, id: profile_id))
-          return @setCurrentProfile profile, updateIdentity: false
+          profile = identity.profiles[profile_id]
+          return @setCurrentProfile profile
 
     setCurrentProfileByIdentity: (identity) ->
       if identity.currentProfileId?
