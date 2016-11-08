@@ -265,6 +265,13 @@ app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $q, $log, $state, $timeo
 
   attempts = 0
 
+  #TODO: This is a temporary hack around login issues where there is some strangeness where login fails
+  #
+  # related errors:
+  #  - account NOT_FOUND:
+  #       Possible race where the account creation from the final submit (create account)
+  #       is not really finished on the backend
+  #  - password undefined - (contoller loses context of $scope.user this is expected if the page is refreshed/changed)
   doLogin = ->
     attempts++
     $q.delay(2000)
