@@ -49,7 +49,7 @@ styles = ({app, doSourceMaps, cdn}) ->
       # We only want use CDN urls for these filetypes, and only for paths like "/assets/blah.jpg" NOT "//example.com/blah.jpg"
       if cdn && url.match(/[.](jpg|jpeg|gif|png|svg|ico)([?].*)?(#.*)?$/i) and url.indexOf('/') == 0 && url[1] != '/'
         shard = (url.charCodeAt(url.lastIndexOf('/') + 1) || 0) % 2 # randomization
-        r_url = "//prodpull#{shard+1}.realtymapsterllc.netdna-cdn.com#{url}"
+        r_url = "//prodpull#{shard+1}-realtymapsterllc.netdna-ssl.com#{url}"
         logger.debug "rework_url #{url} -> #{r_url}"
         r_url
       else
