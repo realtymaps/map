@@ -119,6 +119,21 @@ app.factory 'rmapsMapFactory',
         #
         leafletData.getMap(@mapId).then (leafletMap) =>
 
+          keepOverlaysFresh = () =>
+            if !$scope.map.layers?.overlays
+              return
+            leafletData.getLayers(@mapId).then (allLayers) ->
+              for overlayName in Object.keys($scope.map.layers?.overlays)
+                if $scope.map.layers?.overlays?[overlayName]?.visible
+                  # bring parcels to front if exists since the tiles render over them
+                  allLayers.overlays[overlayName].bringToFront?()
+              return
+
+          # nem - tried #watchCollection with no success, best perm fix is in ui-leaflet
+          $scope.$watch "map.layers.overlays", () ->
+            keepOverlaysFresh() # this fixes parcels and parcelAddresses from dissapearing / sent to back
+          , true
+
           # here, getLayers returns empty array, so had to re-get them inside watch below...
           $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
             leafletData.getLayers(@mapId).then (allLayers) ->
@@ -132,9 +147,7 @@ app.factory 'rmapsMapFactory',
 
                 leafletMap.removeLayer(layersForToggle[!newVal])
                 leafletMap.addLayer(layersForToggle[newVal])
-                if $scope.map.layers?.overlays?.parcels?.visible
-                  # bring parcels to front if exists since the tiles render over them
-                  allLayers.overlays.parcels.bringToFront()
+                keepOverlaysFresh()
 
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
