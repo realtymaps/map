@@ -139,7 +139,7 @@ getDataDump = (mlsId, dataType, query, next) ->
       csvStreamer = through.obj (event, encoding, callback) ->
         switch event.type
           when 'data'
-            data.push(event.payload[1..-1].split(delimiter))
+            data.push(event.payload[0..-1].split(delimiter))
           when 'delimiter'
             delimiter = event.payload
           when 'columns'
