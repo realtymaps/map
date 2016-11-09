@@ -5,16 +5,14 @@ set -o pipefail
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 STAGING_PREFIX="$1"
-CERT_WORKING_DIR="$2"
+CERT_WORKING_DIR="/tmp/cert-tmp-$$"
 
-if [[ "$STAGING_PREFIX" == '' || "$CERT_WORKING_DIR" == '' ]]; then
-  echo 'usage: stagingSslSetup <staging-prefix> <working-dir>'
+if [[ "$STAGING_PREFIX" == '' ]]; then
+  echo 'usage: stagingSslSetup <staging-prefix>'
   exit 1
 fi
 
 set -x
-
-cd "$CERT_WORKING_DIR"
 
 set +e
 brew update
@@ -22,9 +20,8 @@ brew install openssl
 brew upgrade openssl
 set -e
 
-touch index.txt
-printf "%08d\n" `od -An -N3 -D < /dev/urandom` > serial
-echo 1000 > crlnumber
+mkdir -p "$CERT_WORKING_DIR"
+cd "$CERT_WORKING_DIR"
 
 cat << zzzDELIMITERzzz > ./openssl.cnf
 # This definition stops the following lines choking if HOME isn't
@@ -52,8 +49,8 @@ database	= ./index.txt	# database index file.
 new_certs_dir	= .		# default place for new certs.
 
 certificate	= ./ia.crt 	# The CA certificate
-serial		= ./serial 		# The current serial number
-crlnumber	= ./crlnumber	# the current crl number
+serial		= ./serial.txt 		# The current serial number
+crlnumber	= ./crlnumber.txt	# the current crl number
 crl		= ./crl.pem 		    # The current CRL
 private_key	= ./ia.key   # The private key
 RANDFILE	= ./.rand	# private random number file
@@ -65,17 +62,9 @@ x509_extensions	= usr_cert		# The extentions to add to the cert
 name_opt 	= ca_default		# Subject Name options
 cert_opt 	= ca_default		# Certificate field options
 
-# Extension copying option: use with caution.
-# copy_extensions = copy
-
-# Extensions to add to a CRL. Note: Netscape communicator chokes on V2 CRLs
-# so this is commented out by default to leave a V1 CRL.
-# crlnumber must also be commented out to leave a V1 CRL.
-# crl_extensions	= crl_ext
-
 default_days	= 365			# how long to certify for
 default_crl_days= 30			# how long before next CRL
-default_md	= sha1			# which md to use.
+default_md	= sha256			# which md to use.
 preserve	= no			# keep passed DN ordering
 
 # A few difference way of specifying how similar the request should look
@@ -110,16 +99,7 @@ default_bits		= 1024
 default_keyfile 	= privkey.pem
 distinguished_name	= req_distinguished_name
 attributes		= req_attributes
-x509_extensions	= v3_ca	# The extentions to add to the self signed cert
-
-# This sets a mask for permitted string types. There are several options.
-# default: PrintableString, T61String, BMPString.
-# pkix	 : PrintableString, BMPString.
-# utf8only: only UTF8Strings.
-# nombstr : PrintableString, T61String (no BMPStrings or UTF8Strings).
-# MASK:XXXX a literal mask value.
-# WARNING: current versions of Netscape crash on BMPStrings or UTF8Strings
-# so use this option with caution!
+x509_extensions	= v3_ca	 # The extentions to add to the self signed cert
 string_mask = nombstr
 
 [ req_distinguished_name ]
@@ -138,7 +118,6 @@ localityName_default			= Naples
 0.organizationName_default	= RealtyMapster, LLC
 
 organizationalUnitName		= Organizational Unit Name
-#organizationalUnitName_default	=
 
 commonName			= Domain Name
 commonName_default    = ${STAGING_PREFIX}.staging.realtymaps.com
@@ -147,50 +126,19 @@ commonName_max			= 64
 emailAddress			= Email Address
 emailAddress_max		= 64
 
-# SET-ex3			= SET extension number 3
 
 [ req_attributes ]
 challengePassword		= A challenge password
 challengePassword_min		= 4
 challengePassword_max		= 20
-
 unstructuredName		= An optional company name
 
-[ usr_cert ]
-
-# These extensions are added when 'ca' signs a request.
-
-# This goes against PKIX guidelines but some CAs do it and some software
-# requires this to avoid interpreting an end user certificate as a CA.
-
-basicConstraints=CA:FALSE
-
-
-# This will be displayed in Netscape's comment listbox.
-nsComment			= "OpenSSL Generated Certificate"
-
-# PKIX recommendations harmless if included in all certificates.
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid,issuer
-
-
 [ v3_req ]
-
-# Extensions to add to a certificate request
-
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 
 [ v3_ca ]
-
-
-# Extensions for a typical CA
-
-
-# PKIX recommendation.
-
 subjectKeyIdentifier=hash
-
 authorityKeyIdentifier=keyid:always,issuer:always
 
 # This is what PKIX recommends but some broken software chokes on critical
@@ -199,37 +147,11 @@ authorityKeyIdentifier=keyid:always,issuer:always
 # So we do this instead.
 basicConstraints = CA:true
 
-[ crl_ext ]
-
-# CRL extensions.
-# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
-
-# issuerAltName=issuer:copy
-authorityKeyIdentifier=keyid:always,issuer:always
-
-[ proxy_cert_ext ]
-# These extensions should be added when creating a proxy certificate
-
-# This goes against PKIX guidelines but some CAs do it and some software
-# requires this to avoid interpreting an end user certificate as a CA.
-
-basicConstraints=CA:FALSE
-
-# This will be displayed in Netscape's comment listbox.
-nsComment			= "OpenSSL Generated Certificate"
-
-# PKIX recommendations harmless if included in all certificates.
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid,issuer:always
-
-# This really needs to be in place for it to be a proxy certificate.
-proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
 zzzDELIMITERzzz
 
-
 openssl genrsa -out "staging-${STAGING_PREFIX}.key" 2048
-openssl req -new -key "staging-${STAGING_PREFIX}.key" -out "staging-${STAGING_PREFIX}.csr" -config ./openssl.cnf -batch
-openssl ca -days 1825 -in staging-joe.csr -out staging-joe.crt -config ./openssl.cnf -batch
+openssl req -new -sha256 -key "staging-${STAGING_PREFIX}.key" -out "staging-${STAGING_PREFIX}.csr" -config ./openssl.cnf -batch
+openssl x509 -req -sha256 -days 1825 -in "staging-${STAGING_PREFIX}.csr" -signkey "staging-${STAGING_PREFIX}.key" -out "staging-${STAGING_PREFIX}.crt"
 
 cd $SCRIPT_DIR/..
 heroku domains:add --app=${STAGING_PREFIX}-realtymaps-map "${STAGING_PREFIX}.staging.realtymaps.com"
