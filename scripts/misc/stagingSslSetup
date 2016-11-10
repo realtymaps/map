@@ -21,7 +21,7 @@ brew upgrade openssl
 set -e
 
 mkdir -p "$CERT_WORKING_DIR"
-cd "$CERT_WORKING_DIR"
+pushd "$CERT_WORKING_DIR"
 
 cat << zzzDELIMITERzzz > ./openssl.cnf
 # This definition stops the following lines choking if HOME isn't
@@ -157,3 +157,6 @@ cd $SCRIPT_DIR/..
 heroku domains:add --app=${STAGING_PREFIX}-realtymaps-map "${STAGING_PREFIX}.staging.realtymaps.com"
 heroku domains:wait --app=${STAGING_PREFIX}-realtymaps-map "${STAGING_PREFIX}.staging.realtymaps.com"
 heroku certs:add --app=${STAGING_PREFIX}-realtymaps-map "${CERT_WORKING_DIR}/staging-${STAGING_PREFIX}.crt" "${CERT_WORKING_DIR}/staging-${STAGING_PREFIX}.key"
+
+popd
+rm -rf "$CERT_WORKING_DIR"
