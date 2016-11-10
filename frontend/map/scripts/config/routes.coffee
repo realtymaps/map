@@ -154,6 +154,7 @@ module.exports = app.config (
       controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
       url: '/pro/' + (rmapsOnboardingProOrderServiceProvider.getId(boardingName) + 1)
       templateProvider: ($templateCache) ->
+        "ngInject"
         $templateCache.get "./views/onboarding/#{boardingName}.jade"
       loginRequired: false
       permissionsRequired: false
