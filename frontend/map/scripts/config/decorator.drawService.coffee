@@ -3,6 +3,7 @@ app = require '../app.coffee'
 
 
 app.run ($templateCache) ->
+  "ngInject"
   $templateCache.put 'drawMarker.tpl.html', require('../../html/views/templates/drawMarker.jade')()
 
 app.config ($provide) ->
