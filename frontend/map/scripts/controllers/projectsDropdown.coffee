@@ -63,7 +63,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
     modalInstance.result.then ->
       rmapsProjectsService.delete id: profile.project_id
       .then (identity) ->
-        newProfile = _.find identity.profiles, 'id', profile.id
+        newProfile = identity.profiles[profile.id]
         $scope.selectProject(newProfile)
 
   $scope.resetSandbox = () ->

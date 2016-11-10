@@ -62,8 +62,15 @@ rmapsHttpTempCache
 
     delete: (project) ->
       $http.delete backendRoutes.projectSession.root + "/#{project.id}"
-      .then (response) ->
-        rmapsPrincipalService.setIdentity response.data.identity
-        $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
+      .then ({data}) ->
+        rmapsPrincipalService.getIdentity()
+        .then (identity) ->
+          # Sync up profiles - either delete the project in memory or overwrite with fresh sandbox
+          if !data.identity.profiles[project.id]
+            delete identity.profiles[project.id]
+          else if project.sandbox
+            identity.profiles[project.id] = data.identity.profiles[project.id]
 
-        return response.data.identity
+          $rootScope.$emit rmapsEventConstants.principal.profile.addremove, identity
+
+          return identity
