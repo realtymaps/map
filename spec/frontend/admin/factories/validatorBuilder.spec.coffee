@@ -55,6 +55,6 @@ describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
        transform: '[validators.nullify({"value":0}),validators.lotArea({})]'
       ,
        field: _buildBaseRule {"output": "parcel_id"}
-       transform: '[validators.string({"stripFormatting":true,"trim":true}),validators.nullify({"value":""})]'
+       transform: '[validators.string({"trim":true}),validators.nullify({"value":""})]'
     ]
     expect(obj.field.getTransformString()).to.equal obj.transform for obj in rules
