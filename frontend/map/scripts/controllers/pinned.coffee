@@ -23,6 +23,7 @@ rmapsD3Stats
     else
       $scope.modalTitle = "#{action} #{toPin.length} Properties?"
 
+    $scope.showCancelButton = true
     modalInstance = $uibModal.open
       animation: true
       scope: $scope
