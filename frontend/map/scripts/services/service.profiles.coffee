@@ -170,7 +170,7 @@ app.service 'rmapsProfilesService', (
         $log.warn "Current profile has no map position!"
         return
 
-      $log.debug "Set current profile to: #{profile.id}"
+      $log.debug "Loading profile #{profile.id}"
 
       # Center and zoom the map for the new profile
       map_position = center: NgLeafletCenter profile.map_position.center
@@ -247,6 +247,18 @@ app.service 'rmapsProfilesService', (
         rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(profile.map_toggles)
 
       return profile
+
+    addProfile: (newProfile) ->
+      rmapsPrincipalService.getIdentity().then (identity) ->
+        $log.debug 'adding', newProfile
+        $rootScope.identity.profiles[newProfile.id] = newProfile
+        $rootScope.$emit rmapsEventConstants.principal.profile.addremove, identity
+
+    removeProfile: (oldProfile) ->
+      rmapsPrincipalService.getIdentity().then (identity) ->
+        $log.debug 'deleting', oldProfile
+        delete $rootScope.identity.profiles[oldProfile.id]
+        $rootScope.$emit rmapsEventConstants.principal.profile.addremove, identity
 
   #
   # Listen for login event to ensure that a current profile is set

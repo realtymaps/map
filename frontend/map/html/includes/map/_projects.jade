@@ -33,7 +33,7 @@ mixin projectsDropdown()
               span Save As
       .inner
         ul
-          li(ng-repeat="project in identity.profiles | _values | filter:{archived:'!true'} | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project)")
+          li(ng-repeat="project in identity.profiles | _values | filter:{archived:'!true'} | orderBy:[isSandbox, '-rm_modified_time']" ng-click="selectProject(project.project_id)")
             a
               span.enity
                 span.icon.icon-project

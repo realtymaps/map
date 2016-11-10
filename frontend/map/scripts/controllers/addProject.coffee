@@ -34,5 +34,5 @@ rmapsProjectsService) ->
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
-      .then (identity) ->
-        $scope.selectProject(identity.profiles[identity.currentProfileId])
+      .then (profile) ->
+        $scope.selectProject(profile.project_id)
