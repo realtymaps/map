@@ -13,11 +13,12 @@ if process.env.NGINX_SSL_TERMINATION?.toLowerCase() == 'on'
       proxy_set_header  X-Client-DN      $ssl_client_s_dn;
       proxy_set_header  X-SSL-Subject    $ssl_client_s_dn;
       proxy_set_header  X-SSL-Issuer     $ssl_client_i_dn;
+      proxy_set_header  X-Forwarded-Port $server_port;
       proxy_set_header  X-Forwarded-Proto https;"""
   SSL_LISTEN_CONFIG = 'ssl'
 else
   SSL_CONFIG_BLOCK = ''
-  SSL_LOCATION_BLOCK = 'proxy_set_header  X-Forwarded-Proto http;'
+  SSL_LOCATION_BLOCK = ''
   SSL_LISTEN_CONFIG = ''
 
 
@@ -71,7 +72,6 @@ http {
     location @node {
       error_page 502 = @delayed_retry;
       #{SSL_LOCATION_BLOCK}
-      proxy_set_header  X-Forwarded-Port $server_port;
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header  Host $http_host;
       proxy_redirect  off;
@@ -85,7 +85,6 @@ http {
       error_page 502 = @delayed_retry;
       delay #{process.env.NGINX_STARTUP_RETRY_TIME}s;
       #{SSL_LOCATION_BLOCK}
-      proxy_set_header  X-Forwarded-Port $server_port;
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header  Host $http_host;
       proxy_redirect  off;
