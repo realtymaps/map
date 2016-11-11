@@ -60,7 +60,7 @@ http {
 
   server {
     listen #{process.env.PORT || 8085} #{SSL_LISTEN_CONFIG};
-    server_name localhost.realtymaps.com;
+    server_name _;
     keepalive_timeout 5;
 
     root "#{process.env.STATIC_ROOT}";

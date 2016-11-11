@@ -59,7 +59,8 @@ base =
     secret: 'thisistheREALTYMAPSsecretforthesession'
     cookie:
       maxAge: null
-      secure: false  # true for prod, overriden below
+      secure: true
+    proxy: true
     name: 'connect.sid'
     resave: false
     saveUninitialized: true
@@ -71,7 +72,10 @@ base =
     cookie:
       httpOnly: true
       signed: true
-      secure: false  # true for prod, overriden below
+      secure: true
+    proxy: true
+  TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: Heroku -> nginx -> express (except dev)
+  FORCE_HTTPS: true
   USE_ERROR_HANDLER: false
   MEM_WATCH:
     IS_ON: toBool(process.env.MEM_WATCH_IS_ON, defaultValue: false)
@@ -134,16 +138,7 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
-    FORCE_HTTPS: true
-    TRUST_PROXY: 1  # indicates there 1 trusted hop after SSL termination: nginx -> express
-    SESSION:
-      cookie:
-        secure: true
-      proxy: true
-    SESSION_SECURITY:
-      cookie:
-        secure: true
-      proxy: true
+    TRUST_PROXY: 1  # indicates there is 1 trusted hop after SSL termination: nginx -> express
     DBS:
       MAIN:
         debug: false # set to true for verbose logging
@@ -168,34 +163,14 @@ environmentConfig =
       IS_ON: true
 
   staging:
-    FORCE_HTTPS: true
-    TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: in our case, Heroku -> nginx -> express
-    SESSION:
-      cookie:
-        secure: true
-      proxy: true
-    SESSION_SECURITY:
-      cookie:
-        secure: true
-      proxy: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
-    FORCE_HTTPS: true
     MEM_WATCH:
       IS_ON: true
-    TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: in our case, Heroku -> nginx -> express
-    SESSION:
-      cookie:
-        secure: true
-      proxy: true
-    SESSION_SECURITY:
-      cookie:
-        secure: true
-      proxy: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       APP_NAME: 'realtymaps-map'

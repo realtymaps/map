@@ -38,7 +38,7 @@ else
       git pull
     fi
     export STATIC_ROOT="$APP_DIR/_public"
-    export KERNEL_BITS=64
+    export KERNEL_BITS=64  # this is necessary to compile ssl support into nginx on OSX
     ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
