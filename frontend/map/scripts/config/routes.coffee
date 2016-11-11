@@ -57,6 +57,7 @@ module.exports = app.config (
   appendTemplateProvider = (name, state) ->
     if !state.template && !state.templateProvider && !state.templateUrl
       state.templateProvider = ($templateCache) ->
+        "ngInject"
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 
@@ -153,6 +154,7 @@ module.exports = app.config (
       controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
       url: '/pro/' + (rmapsOnboardingProOrderServiceProvider.getId(boardingName) + 1)
       templateProvider: ($templateCache) ->
+        "ngInject"
         $templateCache.get "./views/onboarding/#{boardingName}.jade"
       loginRequired: false
       permissionsRequired: false
@@ -193,6 +195,7 @@ module.exports = app.config (
     mobile: { modal: true },
     resolve:
       currentProject: ($stateParams, rmapsProjectsService) ->
+        "ngInject"
         return rmapsProjectsService.getProject $stateParams.id
 
   # Project dashboard

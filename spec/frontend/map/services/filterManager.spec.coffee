@@ -1,17 +1,19 @@
 ###globals angular,inject###
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
+_ = require 'lodash'
 
 describe "rmapsFilterManagerService", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend) =>
+    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend, rmapsRouteProfileResolveFactory) =>
       @$rootScope = $rootScope
       @rmapsEventConstants =  rmapsEventConstants
       @subject = rmapsFilterManagerService
       @digestor = digestor
+      @rmapsRouteProfileResolveFactory = rmapsRouteProfileResolveFactory
 
       identity = {
         currentProfileId: 1,
@@ -42,14 +44,18 @@ describe "rmapsFilterManagerService", ->
 
         spyCb = sinon.spy @$rootScope, '$emit'
         @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) ->
-          expect(filters).to.eql status: [ 'for sale' ]
-          done()
+          # console.log "$ON TEST"
+          if filters.status.length #NOTE first time is from rmapsProfileService.loadProfile
+            expect(filters).to.eql status: [ 'for sale' ]
+            done()
 
+        @digestor.digest()
+        # console.log "digest 1"
+        # console.log "filterManager spec set selectedFilters"
         @$rootScope.selectedFilters =
           forSale: true
-
         @digestor.digest()
-        @digestor.digest()
+        console.log "digest 2"
 
         spyCb.called.should.be.ok
 

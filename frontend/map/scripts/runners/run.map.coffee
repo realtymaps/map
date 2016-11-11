@@ -3,7 +3,20 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 
 # fix google map views after changing back to map state
-app.run ($rootScope, $timeout, rmapsCurrentMapService) ->
+app.run (
+$log
+$rootScope
+$timeout
+rmapsCurrentMapService
+rmapsMainOptions
+rmapsMapTogglesFactory) ->
+
+  $log = $log.spawn('map:runner:run.map')
+
+  $rootScope.updateToggles = (map_toggles = {}) ->
+    $log.debug 'updateToggles', map_toggles
+    $rootScope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
+
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     map = rmapsCurrentMapService.get()
     # if we're not entering the map state, or if we're already on the map state, don't do anything

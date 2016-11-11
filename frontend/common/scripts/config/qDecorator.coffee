@@ -16,10 +16,17 @@ mod.config ($provide) ->
 
     if !$delegate.resolve
       $delegate.resolve = $delegate.when
-      
+
     if !$delegate.reject
       $delegate.reject = (reason) ->
         _promise @, (d) ->
           d.reject(reason)
+
+    if !$delegate.delay
+      $delegate.delay = (millSec, toResolve) ->
+        _promise @, (d) ->
+          setTimeout () ->
+            d.resolve(toResolve)
+          , millSec
 
     $delegate

@@ -2,7 +2,7 @@ app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
 loginTemplate = require '../../../common/html/login.jade'
-
+_ =  require 'lodash'
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
@@ -32,6 +32,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
     if !state.template
       state.templateProvider = ($templateCache) ->
+        "ngInject"
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 

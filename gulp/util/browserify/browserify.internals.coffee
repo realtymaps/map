@@ -95,6 +95,14 @@ createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
     .transform('stylusify')
     .transform('brfs')
 
+    # Todo: uglifyify + uglify can be used for additional optimization https://github.com/hughsk/uglifyify
+    # .transform({
+    #   global: true
+    #   ignore: [ ]
+    #   output: {beautify: false}
+    #   mangle: true
+    # }, 'uglifyify')
+
 
 handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSourceMaps}) ->
   onUpdate = _.debounce( () ->

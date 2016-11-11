@@ -99,8 +99,6 @@ _rules =
     parcel_id:
       alias: 'Parcel ID'
       required: true
-      config:
-        stripFormatting: true
 
     price:
       alias: 'Price'

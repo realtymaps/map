@@ -25,4 +25,7 @@ WHERE
 DELETE FROM config_keystore
 WHERE
   namespace = 'blackknight process info' AND
-  key IN ('current process date', 'delete batch_id');
+  key IN (
+    'current process date',
+    'delete batch_id'
+  );
