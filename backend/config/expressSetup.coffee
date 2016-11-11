@@ -43,8 +43,10 @@ swagger = require 'swagger-tools'
 if config.FORCE_HTTPS
   app.use (req, res, next) ->
     if req.query?.inspect
-      console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+util.inspect(req, depth: 1))
+      console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+analyzeValue.getSimpleMessage(_.omit(req, ['_readableState', 'socket', 'connection', 'client', 'res', 'app']), showFunctions: false))
     if !req.secure
+      if config.ENV == 'development'
+        return next()
       res.redirect("https://#{req.headers.host||req.hostname}#{req.originalUrl}")
     else
       next()

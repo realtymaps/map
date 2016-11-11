@@ -68,14 +68,19 @@ getSimpleDetails = (err, opts={}) ->
   delete inspectOpts.showUndefined
   showNull = inspectOpts.showNull ? true
   delete inspectOpts.showNull
+  showFunctions = inspectOpts.showFunctions ? true
+  delete inspectOpts.showFunctions
+  inspectOpts.depth ?= null
 
   if !err?.hasOwnProperty?
     return JSON.stringify(err)
-  inspect = util.inspect(err, depth: null)
+  inspect = util.inspect(err, inspectOpts)
   if !showUndefined
-    inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
+    inspect = inspect.replace(/,?\n? +\w+: undefined/g, '')
   if !showNull
-    inspect = inspect.replace(/,?\n +\w+: null/g, '')
+    inspect = inspect.replace(/,?\n? +\w+: null/g, '')
+  if !showFunctions
+    inspect = inspect.replace(/,?\n? +\w+: \[Function[^\]]*\]/g, '')
   return inspect + '\n' + (err.stack || "#{err}")
 
 
@@ -101,17 +106,22 @@ getSimpleMessage = (err, opts={}) ->
   delete inspectOpts.showUndefined
   showNull = inspectOpts.showNull ? true
   delete inspectOpts.showNull
+  showFunctions = inspectOpts.showFunctions ? true
+  delete inspectOpts.showFunctions
+  inspectOpts.depth ?= null
 
   if !err?
     return JSON.stringify(err)
   if err.message
     return err.message
   if err.toString() == '[object Object]'
-    inspect = util.inspect(err, depth: null)
+    inspect = util.inspect(err, inspectOpts)
     if !showUndefined
-      inspect = inspect.replace(/,?\n +\w+: undefined/g, '')
+      inspect = inspect.replace(/,?\n? +\w+: undefined/g, '')
     if !showNull
-      inspect = inspect.replace(/,?\n +\w+: null/g, '')
+      inspect = inspect.replace(/,?\n? +\w+: null/g, '')
+    if !showFunctions
+      inspect = inspect.replace(/,?\n? +\w+: \[Function[^\]]*\]/g, '')
     return inspect
   else
     return err.toString()
