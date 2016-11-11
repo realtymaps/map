@@ -16,6 +16,7 @@ logger = require('../../util/logger').spawn('browserify')
 shutdown = require '../../../backend/config/shutdown'
 paths = require '../../../common/config/paths'
 coffeelint = require './coffeelint'
+verifyNgInject = require '../tansform.ng-strict-di'
 
 #for reference see http://gulpjs.org/recipes/fast-browserify-builds-with-watchify.html
 
@@ -87,6 +88,8 @@ createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
     #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
     #  this is not needed if the transforms are in the package.json . If in JSON the transforms are ran post
     #  coffeelint.
+    #matches: /\/map\/scripts\/config\/routes\.coffee/) to test specific file only, or check against our source only
+    .transform(verifyNgInject, skips: [/\/tmp\/map\.templates\.js/, /\/tmp\/admin\.templates\.js/])
     .transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
     .transform('browserify-ngannotate', { "ext": ".coffee" })
     .transform('jadeify')
