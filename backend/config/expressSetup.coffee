@@ -34,7 +34,6 @@ connectFlash = require 'connect-flash'
 promisify = require './promisify'
 sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
-util = require 'util'
 
 app = express()
 

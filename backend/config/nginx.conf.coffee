@@ -70,10 +70,10 @@ http {
     # this proxies the request to our node server
     location @node {
       error_page 502 = @delayed_retry;
-      proxy_set_header  Host $http_host;
       #{SSL_LOCATION_BLOCK}
       proxy_set_header  X-Forwarded-Port $server_port;
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
       proxy_redirect  off;
       proxy_pass  http://app_server;
     }
@@ -84,10 +84,10 @@ http {
     location @delayed_retry {
       error_page 502 = @delayed_retry;
       delay #{process.env.NGINX_STARTUP_RETRY_TIME}s;
-      proxy_set_header  Host $http_host;
       #{SSL_LOCATION_BLOCK}
       proxy_set_header  X-Forwarded-Port $server_port;
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
       proxy_redirect  off;
       proxy_pass  http://app_server;
     }

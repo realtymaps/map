@@ -54,7 +54,8 @@ base =
       connection: process.env.TEST_DATABASE_URL
       pool: pingTimeout: 20*60*1000
       acquireConnectionTimeout: 90000
-  TRUST_PROXY: false  # true for prod, overriden below
+  TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: Heroku -> nginx -> express (except dev)
+  FORCE_HTTPS: true
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
     cookie:
@@ -74,8 +75,6 @@ base =
       signed: true
       secure: true
     proxy: true
-  TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: Heroku -> nginx -> express (except dev)
-  FORCE_HTTPS: true
   USE_ERROR_HANDLER: false
   MEM_WATCH:
     IS_ON: toBool(process.env.MEM_WATCH_IS_ON, defaultValue: false)
