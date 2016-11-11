@@ -9,6 +9,7 @@ if process.env.NGINX_SSL_TERMINATION?.toLowerCase() == 'on'
     ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
     ssl_prefer_server_ciphers   on;"""
   SSL_LOCATION_BLOCK = """
+      error_page 400 = @force_ssl;
       proxy_set_header  X-Client-Verify  SUCCESS;
       proxy_set_header  X-Client-DN      $ssl_client_s_dn;
       proxy_set_header  X-SSL-Subject    $ssl_client_s_dn;
@@ -67,6 +68,10 @@ http {
     root "#{process.env.STATIC_ROOT}";
 
     #{SSL_CONFIG_BLOCK}
+
+    location @force_ssl {
+      return 301 https://$host$request_uri;
+    }
 
     # this proxies the request to our node server
     location @node {
