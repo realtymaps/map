@@ -2,7 +2,6 @@
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject} = require('../../../specUtils/promiseUtils')
 
-console.log "datetime spec"
 
 describe 'datetime validator', ->
   param = 'fake'

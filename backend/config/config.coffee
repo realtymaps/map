@@ -134,7 +134,16 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
-    FORCE_HTTPS: false
+    FORCE_HTTPS: true
+    TRUST_PROXY: 1  # indicates there 1 trusted hop after SSL termination: nginx -> express
+    SESSION:
+      cookie:
+        secure: true
+      proxy: true
+    SESSION_SECURITY:
+      cookie:
+        secure: true
+      proxy: true
     DBS:
       MAIN:
         debug: false # set to true for verbose logging
@@ -168,6 +177,7 @@ environmentConfig =
     SESSION_SECURITY:
       cookie:
         secure: true
+      proxy: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
@@ -185,6 +195,7 @@ environmentConfig =
     SESSION_SECURITY:
       cookie:
         secure: true
+      proxy: true
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       APP_NAME: 'realtymaps-map'

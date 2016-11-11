@@ -34,6 +34,7 @@ connectFlash = require 'connect-flash'
 promisify = require './promisify'
 sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
+util = require 'util'
 
 app = express()
 
@@ -41,8 +42,10 @@ swagger = require 'swagger-tools'
 
 if config.FORCE_HTTPS
   app.use (req, res, next) ->
+    if req.query?.inspect
+      console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+util.inspect(req, depth: 1))
     if !req.secure
-      res.redirect("https://#{req.hostname}#{req.originalUrl}")
+      res.redirect("https://#{req.headers.host||req.hostname}#{req.originalUrl}")
     else
       next()
 

@@ -1,4 +1,25 @@
 
+if process.env.NGINX_SSL_TERMINATION?.toLowerCase() == 'on'
+  SSL_CONFIG_BLOCK = """
+    ssl                  on;
+    ssl_certificate      ../../certs/localhost.crt;
+    ssl_certificate_key  ../../certs/localhost.key;
+    ssl_session_timeout  5m;
+    ssl_protocols  SSLv2 SSLv3 TLSv1;
+    ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+    ssl_prefer_server_ciphers   on;"""
+  SSL_LOCATION_BLOCK = """
+      proxy_set_header  X-Client-Verify  SUCCESS;
+      proxy_set_header  X-Client-DN      $ssl_client_s_dn;
+      proxy_set_header  X-SSL-Subject    $ssl_client_s_dn;
+      proxy_set_header  X-SSL-Issuer     $ssl_client_i_dn;"""
+  SSL_LISTEN_CONFIG = 'ssl'
+else
+  SSL_CONFIG_BLOCK = ''
+  SSL_LOCATION_BLOCK = ''
+  SSL_LISTEN_CONFIG = ''
+
+
 process.stdout.write """
 daemon off;
 worker_processes #{process.env.NGINX_WORKERS || 4};
@@ -37,15 +58,18 @@ http {
   }
 
   server {
-    listen #{process.env.PORT || 8085};
-    server_name _;
+    listen #{process.env.PORT || 8085} #{SSL_LISTEN_CONFIG};
+    server_name localhost.realtymaps.com;
     keepalive_timeout 5;
 
     root "#{process.env.STATIC_ROOT}";
 
+    #{SSL_CONFIG_BLOCK}
+
     # this proxies the request to our node server
     location @node {
       error_page 502 = @delayed_retry;
+      #{SSL_LOCATION_BLOCK}
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header  Host $http_host;
       proxy_redirect  off;
@@ -58,6 +82,7 @@ http {
     location @delayed_retry {
       error_page 502 = @delayed_retry;
       delay #{process.env.NGINX_STARTUP_RETRY_TIME}s;
+      #{SSL_LOCATION_BLOCK}
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header  Host $http_host;
       proxy_redirect  off;
