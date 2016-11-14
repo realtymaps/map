@@ -7,6 +7,7 @@ $http
 $log
 $rootScope
 rmapsPrincipalService
+rmapsProfilesService
 rmapsEventConstants
 rmapsHttpTempCache
 ) ->
@@ -54,16 +55,17 @@ rmapsHttpTempCache
 
     createProject: (project) ->
       $http.post backendRoutes.userSession.newProject, project
-      .then (response) ->
-        rmapsPrincipalService.setIdentity response.data.identity
-        $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
+      .then ({data}) ->
+        rmapsProfilesService.addProfile(data.identity.profiles[data.identity.currentProfileId])
+        return data.identity.profiles[data.identity.currentProfileId]
 
-        return response.data.identity
-
-    delete: (project) ->
-      $http.delete backendRoutes.projectSession.root + "/#{project.id}"
-      .then (response) ->
-        rmapsPrincipalService.setIdentity response.data.identity
-        $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
-
-        return response.data.identity
+    deleteProject: (project_id) ->
+      $http.delete backendRoutes.projectSession.root + "/#{project_id}"
+      .then ({data}) ->
+        profile = _.find data.identity.profiles, 'project_id', project_id
+        if profile # sandbox reset
+          rmapsProfilesService.addProfile(profile)
+        else
+          profile = _.find $rootScope.identity.profiles, 'project_id', project_id
+          rmapsProfilesService.removeProfile(id: profile.id)
+        return data.identity.profiles[data.identity.currentProfileId]

@@ -339,10 +339,10 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
     .catch (err) ->
-      logger.debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getSimpleDetails(err)}")
+      logger.debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getFullDetails(err)}")
       throw err
   .catch (err) ->
-    logger.debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getSimpleDetails(err)}")
+    logger.debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getFullDetails(err)}")
     throw err
 
 

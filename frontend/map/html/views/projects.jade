@@ -11,8 +11,8 @@
               input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
               span.divider
               button.btn.btn-primary(ng-click="addProject(false)") Create
-            
-          
+
+
 
         .row
           .col-md-12
@@ -24,7 +24,7 @@
                   th
                     span Pins
                   th
-                    span Neighbourhoods
+                    span Areas
                   th
                     span Favorites
                   th
@@ -46,11 +46,11 @@
                     h4(ng-show="project.sandbox") Sandbox
                     a.details(title="View details") View Details
                   td
-                    a(ui-sref="projectPins({id: {{project.id}}})") {{_.keys(project.properties_selected).length}}
+                    a(ui-sref="projectPins({id: {{project.id}}})") {{(project.pins | _keys).length}}
                   td
-                    a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}}
+                    a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.drawnShapes.length}}
                   td
-                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{_.keys(project.favorites).length}}
+                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{(project.favorites | _keys).length}}
                   td
                     a(ui-sref="projectNotes({id: {{project.id}}})") {{project.notes.length}}
                   td
@@ -98,7 +98,7 @@
               .widget-background
                 span.icon.icon-pin
               a(ui-sref="projectPins({ id: project.id})")
-                .widget-count {{_.keys(project.properties_selected).length || 0}}
+                .widget-count {{(project.pins | _keys).length || 0}}
                 .widget-title Pins
 
           .project-widget.widget-favorite
@@ -106,7 +106,7 @@
               .widget-background
                 i.icon.fa.fa-heart
               a(ui-sref="projectFavorites({ id: project.id})")
-                .widget-count {{_.keys(project.favorites).length || 0}}
+                .widget-count {{(project.favorites | _keys).length || 0}}
                 .widget-title Favorites
 
           .project-widget.widget-area

@@ -43,7 +43,7 @@ module.exports = (vero) ->
     createOrUpdate payload
 
     .catch (err) ->
-      throw new veroErrors[errorName](opts, analyzeValue.getSimpleDetails(err))
+      throw new veroErrors[errorName](opts, analyzeValue.getFullDetails(err))
 
 
 

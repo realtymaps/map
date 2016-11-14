@@ -62,7 +62,7 @@ handleRoute = (req, res, next, toExec, isDirect) ->
     next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
   .catch (err) ->
     if !err.quiet
-      logger.error analyzeValue.getSimpleDetails(err)
+      logger.error analyzeValue.getFullDetails(err)
     next(err)
 
 wrapHandleRoutes = ({handles, isDirect}) ->

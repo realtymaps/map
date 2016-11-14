@@ -19,9 +19,24 @@ module.exports = (options = {}) ->
     if options.maxLength? and value.length > options.maxLength
       return Promise.reject new DataValidationError("string longer than maximum length: #{options.maxLength}", param, value)
     if options.regex?
-      regex = new RegExp(options.regex)
-      if !regex.test(value)
-        return Promise.reject new DataValidationError("string does not match regex: #{regex}", param, value)
+
+      testedRegex = null
+
+      testRegex = (regex) ->
+        regex = new RegExp(regex)
+        if !regex.test(value)
+          return Promise.reject new DataValidationError("string does not match regex: #{regex}", param, value)
+
+      if Array.isArray(options.regex)
+        for r in options.regex
+          if (testedRegex = testRegex(r))?
+            break
+      else
+        testedRegex = testRegex(options.regex)
+
+      if testedRegex?
+        return testedRegex
+
     if options.in?
       if !_.includes options.in, value
         return Promise.reject new DataValidationError("string is not in: [#{options.in.join(',')}]", param, value)

@@ -130,7 +130,7 @@ _updatePhoto = (subtask, opts) -> Promise.try () ->
         newFileName
       }
     .catch (error) ->
-      logger.spawn(subtask.task_name).error analyzeValue.getSimpleDetails(error)
+      logger.spawn(subtask.task_name).error analyzeValue.getFullDetails(error)
       logger.spawn(subtask.task_name).debug 'Handling error by enqueuing photo to be deleted.'
       _enqueuePhotoToDelete(obj.key, subtask.batch_id, {transaction})
 
@@ -241,7 +241,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
             finePhotologger.debug () -> "imagesHandle:\n#{payload}"
 
             if err
-              finePhotologger.debug () -> "imagesHandle error:\n#{analyzeValue.getSimpleDetails(err)}"
+              finePhotologger.debug () -> "imagesHandle error:\n#{analyzeValue.getFullDetails(err)}"
               return reject(err)
             if isEnd
               finePhotologger.debug () -> "imagesHandle End!"
@@ -289,12 +289,12 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
               .then (result) ->
                 finePhotologger.debug result
             .catch (error) ->
-              errorDetails ?= analyzeValue.getSimpleDetails(error)
+              errorDetails ?= analyzeValue.getFullDetails(error)
               taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
               errorsCtr++
             promises.push(uploadPromise)
           catch err
-            taskLogger.debug analyzeValue.getSimpleDetails(err)
+            taskLogger.debug analyzeValue.getFullDetails(err)
             throw err
   .catch errorHandlingUtils.isUnhandled, (error) ->
     rootError = errorHandlingUtils.getRootCause(error)
@@ -304,7 +304,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
       return
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsId}/#{data_source_uuid}")
   .catch (error) ->
-    errorDetails ?= analyzeValue.getSimpleDetails(error)
+    errorDetails ?= analyzeValue.getFullDetails(error)
     needsRetry = true
     taskLogger.debug () -> "overall error: #{errorDetails}"
   .then () ->

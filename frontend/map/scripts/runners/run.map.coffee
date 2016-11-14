@@ -1,9 +1,17 @@
 ###globals google###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+{defer} = require '../../../../common/utils/util.promise.coffee'
+
+
+rootScopeDefer = defer()
+
 
 # fix google map views after changing back to map state
 app.run (
+$http
+$q
 $log
 $rootScope
 $timeout
@@ -32,3 +40,24 @@ rmapsMapTogglesFactory) ->
       if gStrMap?
         google.maps.event.trigger(gStrMap, 'resize')
     , 500
+
+  $rootScope.safeConfigPromise = $http.getData(backendRoutes.config.safeConfig)
+
+  $rootScope.safeConfigPromise.then (data) ->
+    $rootScope.safeConfig = data
+
+  $rootScope.stripePromise = $rootScope.safeConfigPromise
+  .then (data) ->
+    if !data?.stripe?
+      msg = "stripe setting undefined"
+      $log.error msg
+      return $q.reject(new Error(msg))
+
+    data.stripe
+
+  rootScopeDefer.resolve($rootScope)
+
+
+module.exports = {
+  rootScopePromise: rootScopeDefer.promise
+}

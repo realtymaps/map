@@ -55,6 +55,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           flattenRows: false
           diffExcludeKeys: internals.diffExcludeKeys
           diffBooleanKeys: internals.diffBooleanKeys
+          idField: 'rm_property_id'
         }
         .then (rm_property_id) ->
           successes.push(rm_property_id)
@@ -65,7 +66,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       #  .update(rm_valid: true, rm_error_msg: null)
       .catch analyzeValue.isKnexError, (err) ->
         jsonData = util.inspect(row, depth: 1)
-        logger.warn "knex error while writing normalized parcel record: #{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}"
+        logger.warn "knex error while writing normalized parcel record: #{analyzeValue.getFullDetails(err)}\nData: #{jsonData}"
         throw new HardFail(err.message)
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)

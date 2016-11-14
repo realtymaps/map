@@ -14,8 +14,8 @@ describe 'task.default.mls.photo.internals', ->
 
   subject.__set__ 'keystore', cache:
     getValuesMap: -> Promise.try ->
-      prodpull1: {"id":"0", "cdn_id": "499053", "url": "prodpull1.realtymapsterllc.netdna-cdn.com"}
-      prodpull2: {"id":"1", "cdn_id": "499059", "url": "prodpull2.realtymapsterllc.netdna-cdn.com"}
+      prodpull1: {"id":"0", "cdn_id": "499053", "url": "prodpull1-realtymapsterllc.netdna-ssl.com"}
+      prodpull2: {"id":"1", "cdn_id": "499059", "url": "prodpull2-realtymapsterllc.netdna-ssl.com"}
 
   # See SqlMock.coffee for explanation of blockToString
   photo = new SqlMock('finalized', 'photo', blockToString: true)
@@ -40,5 +40,5 @@ describe 'task.default.mls.photo.internals', ->
         newFileName
       })
       .then (url) ->
-        url.should.equal 'prodpull2.realtymapsterllc.netdna-cdn.com/api/photos/resize?data_source_id=id&data_source_uuid=uuid'
+        url.should.equal 'prodpull2-realtymapsterllc.netdna-ssl.com/api/photos/resize?data_source_id=id&data_source_uuid=uuid'
         done()

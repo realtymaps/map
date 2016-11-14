@@ -10,7 +10,7 @@ info = (req, res, next) ->
   .then (needs) ->
     result = new ExpressResponse(needs)
   .catch (err) ->
-    logger.error "unexpected error during hirefire info check: #{analyzeValue.getSimpleDetails(err)}"
+    logger.error "unexpected error during hirefire info check: #{analyzeValue.getFullDetails(err)}"
     result = err
   .finally () ->
     next(result)

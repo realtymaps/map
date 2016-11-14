@@ -24,7 +24,7 @@ exit = (opts={}) ->
     dbs = require('./dbs')
     dbs.shutdown(quiet: !opts.error)
   .catch (err) ->
-    logger.error "Caught error during shutdown: #{analyzeValue.getSimpleDetails(err)}"
+    logger.error "Caught error during shutdown: #{analyzeValue.getFullDetails(err)}"
   .finally () ->
     logger.debug "... exiting now"
     process.exit(if opts.error then 1 else 0)
@@ -44,7 +44,7 @@ setup = (isParentProcess=false) ->
 
   process.on 'uncaughtException', (err) ->
     logger.error('Something very bad happened!!!  (uncaught exception)')
-    logger.error(analyzeValue.getSimpleDetails(err))
+    logger.error(analyzeValue.getFullDetails(err))
     exit(error: true)
 
   process.on 'unhandledRejection', (err, promise) ->
@@ -52,7 +52,7 @@ setup = (isParentProcess=false) ->
     logger.debug () -> "unhandled rejection detected (total is now #{unhandledRejections.length}): #{err.message}"
     rejectionExit = () ->
       logger.error('Something very bad happened!!!  (unhandled rejection)')
-      logger.error(analyzeValue.getSimpleDetails(err))
+      logger.error(analyzeValue.getFullDetails(err))
       exit(error: true)
     setTimeout((() -> if unhandledRejections.indexOf(promise) != -1 then rejectionExit()), 5000)
 

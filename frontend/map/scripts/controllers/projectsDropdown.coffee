@@ -26,20 +26,20 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
   $scope.getModified = (project) -> moment(project.rm_modified_time)
 
-  $scope.selectProject = (project) ->
-    $log.debug 'selectProject: ', project
+  $scope.selectProject = (project_id) ->
+    $log.debug 'selectProject: ', project_id
 
     $scope.projectDropdown.isOpen = false
 
-    if !project
+    if !project_id
       return
     # if we're currently on the map state, use the rmapsPage.goToMap() function
     if $state.current.name == 'map'
-      rmapsPageService.goToMap({project_id: project.project_id})
+      rmapsPageService.goToMap({project_id})
     else
       # Reset the project and reload the current state
       if $state.current.projectParam?
-        $state.go $state.current, "#{$state.current.projectParam}": project.project_id, reload: true
+        $state.go $state.current, "#{$state.current.projectParam}": project_id, reload: true
       else
         $state.go $state.current, $state.current.params, reload: true
 
@@ -61,10 +61,9 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
     modalInstance.result.then ->
-      rmapsProjectsService.delete id: profile.project_id
-      .then (identity) ->
-        newProfile = _.find identity.profiles, 'id', profile.id
-        $scope.selectProject(newProfile)
+      rmapsProjectsService.deleteProject profile.project_id
+      .then () ->
+        $scope.selectProject(profile.project_id)
 
   $scope.resetSandbox = () ->
     sandboxProfile = _.find $rootScope.identity.profiles, 'sandbox', true

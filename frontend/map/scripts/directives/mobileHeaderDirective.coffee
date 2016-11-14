@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-_ = require 'lodash'
 
 #
 # Set of Directives to define a common header that will allow buttons to be placed by a view or modal located
@@ -154,4 +153,3 @@ app.directive 'mobileHeaderTargetLeft', ($log) ->
 
 app.directive 'mobileHeaderTargetCenter', ($log) ->
   createMobileHeaderTargetDirective($log, 'center')
-

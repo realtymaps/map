@@ -1,0 +1,162 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+STAGING_PREFIX="$1"
+CERT_WORKING_DIR="/tmp/cert-tmp-$$"
+
+if [[ "$STAGING_PREFIX" == '' ]]; then
+  echo 'usage: stagingSslSetup <staging-prefix>'
+  exit 1
+fi
+
+set -x
+
+set +e
+brew update
+brew install openssl
+brew upgrade openssl
+set -e
+
+mkdir -p "$CERT_WORKING_DIR"
+pushd "$CERT_WORKING_DIR"
+
+cat << zzzDELIMITERzzz > ./openssl.cnf
+# This definition stops the following lines choking if HOME isn't
+# defined.
+HOME			= .
+RANDFILE		= ./.rnd
+
+# Extra OBJECT IDENTIFIER info:
+#oid_file		= $ENV::HOME/.oid
+oid_section		= new_oids
+
+[ new_oids ]
+
+####################################################################
+[ ca ]
+default_ca	= CA_default		# The default ca section
+
+####################################################################
+[ CA_default ]
+
+dir		= .		# Where everything is kept
+certs		= .		# Where the issued certs are kept
+crl_dir		= .		# Where the issued crl are kept
+database	= ./index.txt	# database index file.
+new_certs_dir	= .		# default place for new certs.
+
+certificate	= ./ia.crt 	# The CA certificate
+serial		= ./serial.txt 		# The current serial number
+crlnumber	= ./crlnumber.txt	# the current crl number
+crl		= ./crl.pem 		    # The current CRL
+private_key	= ./ia.key   # The private key
+RANDFILE	= ./.rand	# private random number file
+
+x509_extensions	= usr_cert		# The extentions to add to the cert
+
+# Comment out the following two lines for the "traditional"
+# (and highly broken) format.
+name_opt 	= ca_default		# Subject Name options
+cert_opt 	= ca_default		# Certificate field options
+
+default_days	= 365			# how long to certify for
+default_crl_days= 30			# how long before next CRL
+default_md	= sha256			# which md to use.
+preserve	= no			# keep passed DN ordering
+
+# A few difference way of specifying how similar the request should look
+# For type CA, the listed attributes must be the same, and the optional
+# and supplied fields are just that :-)
+policy		= policy_match
+
+# For the CA policy
+[ policy_match ]
+countryName		= match
+stateOrProvinceName	= match
+organizationName	= match
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+# For the 'anything' policy
+# At this point in time, you must list all acceptable 'object'
+# types.
+[ policy_anything ]
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+####################################################################
+[ req ]
+default_bits		= 1024
+default_keyfile 	= privkey.pem
+distinguished_name	= req_distinguished_name
+attributes		= req_attributes
+x509_extensions	= v3_ca	 # The extentions to add to the self signed cert
+string_mask = nombstr
+
+[ req_distinguished_name ]
+countryName			= Country Name
+countryName_default		= US
+countryName_min			= 2
+countryName_max			= 2
+
+stateOrProvinceName		= State Name
+stateOrProvinceName_default	= Florida
+
+localityName			= Locality Name
+localityName_default			= Naples
+
+0.organizationName		= Organization Name
+0.organizationName_default	= RealtyMapster, LLC
+
+organizationalUnitName		= Organizational Unit Name
+
+commonName			= Domain Name
+commonName_default    = ${STAGING_PREFIX}.staging.realtymaps.com
+commonName_max			= 64
+
+emailAddress			= Email Address
+emailAddress_max		= 64
+
+
+[ req_attributes ]
+challengePassword		= A challenge password
+challengePassword_min		= 4
+challengePassword_max		= 20
+unstructuredName		= An optional company name
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+[ v3_ca ]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+
+# This is what PKIX recommends but some broken software chokes on critical
+# extensions.
+#basicConstraints = critical,CA:true
+# So we do this instead.
+basicConstraints = CA:true
+
+zzzDELIMITERzzz
+
+openssl genrsa -out "staging-${STAGING_PREFIX}.key" 2048
+openssl req -new -sha256 -key "staging-${STAGING_PREFIX}.key" -out "staging-${STAGING_PREFIX}.csr" -config ./openssl.cnf -batch
+openssl x509 -req -sha256 -days 1825 -in "staging-${STAGING_PREFIX}.csr" -signkey "staging-${STAGING_PREFIX}.key" -out "staging-${STAGING_PREFIX}.crt"
+
+cd $SCRIPT_DIR/..
+heroku domains:add --app=${STAGING_PREFIX}-realtymaps-map "${STAGING_PREFIX}.staging.realtymaps.com"
+heroku domains:wait --app=${STAGING_PREFIX}-realtymaps-map "${STAGING_PREFIX}.staging.realtymaps.com"
+heroku certs:add --app=${STAGING_PREFIX}-realtymaps-map "${CERT_WORKING_DIR}/staging-${STAGING_PREFIX}.crt" "${CERT_WORKING_DIR}/staging-${STAGING_PREFIX}.key"
+
+popd
+rm -rf "$CERT_WORKING_DIR"

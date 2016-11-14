@@ -122,7 +122,7 @@ sendNotifications = (subtask) ->
           throw err
 
     .catch (err) ->
-      details = analyzeValue.getSimpleDetails(err)
+      details = analyzeValue.getFullDetails(err)
       logger.error "notification error: #{details}"
 
       tables.user.notificationQueue()

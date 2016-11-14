@@ -49,7 +49,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       # logger.debug "error event received"
       cb(new photoErrors.ObjectsStreamError(error))
     catch err
-      logger.debug analyzeValue.getSimpleDetails(err)
+      logger.debug analyzeValue.getFullDetails(err)
       throw err
 
   object.objectStream.on 'data', (event) ->
@@ -58,7 +58,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       # logger.debug "data event received"
 
       if event?.error?
-        logger.debug "data event has an error #{analyzeValue.getSimpleDetails(event.error)}"
+        logger.debug "data event has an error #{analyzeValue.getFullDetails(event.error)}"
         cb(event.error)
         return
 
@@ -81,7 +81,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       imageId++
       cb(null, payload)
     catch err
-      logger.debug analyzeValue.getSimpleDetails(err)
+      logger.debug analyzeValue.getFullDetails(err)
       throw err
 
   object.objectStream.once 'end', () ->
@@ -93,7 +93,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       # logger.debug "end event received -- no NoPhotoObjectsError"
       cb(null, null, true)
     catch err
-      logger.debug analyzeValue.getSimpleDetails(err)
+      logger.debug analyzeValue.getFullDetails(err)
       throw err
 
 

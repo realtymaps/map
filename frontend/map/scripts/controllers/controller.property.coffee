@@ -136,7 +136,7 @@ app.controller 'rmapsPropertyCtrl',
     $scope.showPVA = (property) ->
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (property.fips_code % 2)+1
-      pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{property.fips_code}"
+      pvaUrl = "//prodpull#{cdnNum}-realtymapsterllc.netdna-ssl.com/api/properties/pva/#{property.fips_code}"
       $http.get(pvaUrl)
       .then ({data}) ->
         url = data.url.replace("{{_APN_}}", property.parcel_id)
