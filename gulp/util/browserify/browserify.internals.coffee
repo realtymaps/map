@@ -16,6 +16,7 @@ logger = require('../../util/logger').spawn('browserify')
 shutdown = require '../../../backend/config/shutdown'
 paths = require '../../../common/config/paths'
 coffeelint = require './coffeelint'
+verifyNgInject = require '../tansform.ng-strict-di'
 
 #for reference see http://gulpjs.org/recipes/fast-browserify-builds-with-watchify.html
 
@@ -77,31 +78,35 @@ createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
     cssOpts.debug = false
     cssOpts.minify = true
 
-  browserify config
-    .transform(coffeelint({lintIgnore, watch}))
-    .on 'error', (error) ->
-      logger.error error.stack
-      logger.error error
-      shutdown.exit(error: true)
+  b = browserify config
+  .transform(coffeelint({lintIgnore, watch}))
+  .on 'error', (error) ->
+    logger.error error.stack
+    logger.error error
+    shutdown.exit(error: true)
 
-    #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
-    #  this is not needed if the transforms are in the package.json . If in JSON the transforms are ran post
-    #  coffeelint.
-    .transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
-    .transform('browserify-ngannotate', { "ext": ".coffee" })
-    .transform('jadeify')
-    # note gulp is currently doing most styles
-    .transform('browserify-css', cssOpts)
-    .transform('stylusify')
-    .transform('brfs')
+  #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
+  #  this is not needed if the transforms are in the package.json . If in JSON the transforms are ran post
+  #  coffeelint.
+  #matches: /\/map\/scripts\/config\/routes\.coffee/) to test specific file only, or check against our source only
+  if doSourceMaps
+    b.transform(verifyNgInject, skips: [/\/tmp\/map\.templates\.js/, /\/tmp\/admin\.templates\.js/])
 
-    # Todo: uglifyify + uglify can be used for additional optimization https://github.com/hughsk/uglifyify
-    # .transform({
-    #   global: true
-    #   ignore: [ ]
-    #   output: {beautify: false}
-    #   mangle: true
-    # }, 'uglifyify')
+  b.transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
+  .transform('browserify-ngannotate', { "ext": ".coffee" })
+  .transform('jadeify')
+  # note gulp is currently doing most styles
+  .transform('browserify-css', cssOpts)
+  .transform('stylusify')
+  .transform('brfs')
+
+  # Todo: uglifyify + uglify can be used for additional optimization https://github.com/hughsk/uglifyify
+  # .transform({
+  #   global: true
+  #   ignore: [ ]
+  #   output: {beautify: false}
+  #   mangle: true
+  # }, 'uglifyify')
 
 
 handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSourceMaps}) ->
