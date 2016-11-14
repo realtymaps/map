@@ -61,7 +61,7 @@ app.controller 'rmapsProjectsDropdownCtrl', (
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
     modalInstance.result.then ->
-      rmapsProjectsService.delete profile
+      rmapsProjectsService.deleteProject profile.project_id
       .then () ->
         $scope.selectProject(profile.project_id)
 
