@@ -39,11 +39,9 @@ app.controller 'rmapsProjectsCtrl', (
       currentProfileId = null
 
       rmapsProjectsService.createProject $scope.newProject
-      .then (identity) ->
-        currentProfileId = identity.currentProfileId
-        return $scope.loadProjects()
-      .then () ->
-        rmapsProfilesService.setCurrentProfileByProfileId currentProfileId
+      .then (currentProfile) ->
+        $scope.loadProjects()
+        rmapsProfilesService.setCurrentProfileByProfileId(currentProfile.id)
 
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
@@ -52,6 +50,7 @@ app.controller 'rmapsProjectsCtrl', (
     if project.sandbox
       $scope.modalTitle = "Do you really want to clear your Sandbox?"
     else
+      $log.debug project
       $scope.modalTitle = "Do you really want to delete \"#{project.name}\"?"
 
     $scope.modalBody = "All notes, drawings, pins and favorites will be discarded"
@@ -67,11 +66,10 @@ app.controller 'rmapsProjectsCtrl', (
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
 
-      rmapsProjectsService.delete project
-      .then (currentProfileId) ->
-        currentProfileId = identity.currentProfileId
-        return $scope.loadProjects
-        rmapsProfilesService.setCurrentProfile currentProfileId
+      rmapsProjectsService.deleteProject project.id
+      .then (currentProfile) ->
+        $scope.loadProjects()
+        rmapsProfilesService.setCurrentProfileByProfileId(currentProfile.id)
 
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()

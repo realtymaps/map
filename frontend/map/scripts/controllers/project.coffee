@@ -126,7 +126,7 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.resetProject = (project) ->
     if confirm 'Clear all filters, saved properties, and notes?'
-      rmapsProjectsService.delete id: project.id
+      rmapsProjectsService.delete project.id
 
   $scope.removeClient = (client) ->
     clientsService.remove client
