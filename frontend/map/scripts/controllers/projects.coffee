@@ -66,12 +66,14 @@ app.controller 'rmapsProjectsCtrl', (
 
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
+      currentProfileId = null
 
       rmapsProjectsService.delete project
-      .then (currentProfileId) ->
+      .then (identity) ->
         currentProfileId = identity.currentProfileId
         return $scope.loadProjects
-        rmapsProfilesService.setCurrentProfile currentProfileId
+      .then () ->
+        rmapsProfilesService.setCurrentProfileByProfileId currentProfileId
 
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()
