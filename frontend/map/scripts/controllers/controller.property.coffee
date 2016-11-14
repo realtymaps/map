@@ -139,7 +139,7 @@ app.controller 'rmapsPropertyCtrl',
       apn = splits[1]
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
       cdnNum = (fips % 2)+1
-      pvaUrl = "//prodpull#{cdnNum}.realtymapsterllc.netdna-cdn.com/api/properties/pva/#{fips}"
+      pvaUrl = "//prodpull#{cdnNum}-realtymapsterllc.netdna-ssl.com/api/properties/pva/#{fips}"
       $http.get(pvaUrl)
       .then ({data}) ->
         url = data.url.replace("{{_APN_}}", apn)

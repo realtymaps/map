@@ -39,6 +39,13 @@ app = express()
 
 swagger = require 'swagger-tools'
 
+if config.FORCE_HTTPS
+  app.use (req, res, next) ->
+    if !req.secure
+      res.redirect("https://#{req.headers.host||req.hostname}#{req.originalUrl}")
+    else
+      next()
+
 # security headers
 app.use helmet.xframe()
 app.use helmet.xssFilter()

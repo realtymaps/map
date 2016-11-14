@@ -54,12 +54,14 @@ base =
       connection: process.env.TEST_DATABASE_URL
       pool: pingTimeout: 20*60*1000
       acquireConnectionTimeout: 90000
-  TRUST_PROXY: 1
+  TRUST_PROXY: 2  # indicates there are 2 trusted hops after SSL termination: Heroku -> nginx -> express (except dev)
+  FORCE_HTTPS: true
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
     cookie:
       maxAge: null
       secure: true
+    proxy: true
     name: 'connect.sid'
     resave: false
     saveUninitialized: true
@@ -72,6 +74,7 @@ base =
       httpOnly: true
       signed: true
       secure: true
+    proxy: true
   USE_ERROR_HANDLER: false
   MEM_WATCH:
     IS_ON: toBool(process.env.MEM_WATCH_IS_ON, defaultValue: false)
@@ -134,18 +137,12 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
+    TRUST_PROXY: 1  # indicates there is 1 trusted hop after SSL termination: nginx -> express
     DBS:
       MAIN:
         debug: false # set to true for verbose logging
       RAW_TEMP:
         debug: false # set to true for verbose logging
-    TRUST_PROXY: false
-    SESSION:
-      cookie:
-        secure: false
-    SESSION_SECURITY:
-      cookie:
-        secure: false
     LOGGING:
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
@@ -165,14 +162,6 @@ environmentConfig =
       IS_ON: true
 
   staging:
-    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
-    TRUST_PROXY: false
-    SESSION:
-      cookie:
-        secure: false
-    SESSION_SECURITY:
-      cookie:
-        secure: false
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
@@ -181,14 +170,6 @@ environmentConfig =
   production:
     MEM_WATCH:
       IS_ON: true
-    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
-    TRUST_PROXY: false
-    SESSION:
-      cookie:
-        secure: false
-    SESSION_SECURITY:
-      cookie:
-        secure: false
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       APP_NAME: 'realtymaps-map'
