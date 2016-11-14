@@ -28,9 +28,6 @@ span.pinned-list.dropdown.btn-group(
         span.results-btn(ng-click="pinResults('Pin'); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-plus-circle
           span.action Results
-        span.results-btn(ng-click="pinResults('Unpin'); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
-          span.fa.fa-minus-circle
-          span.action Results
         span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="bottom-left"
           popover-trigger="'click mouseenter'"
           uib-popover="New Mailing"
