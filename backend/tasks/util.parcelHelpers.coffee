@@ -55,6 +55,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
           flattenRows: false
           diffExcludeKeys: internals.diffExcludeKeys
           diffBooleanKeys: internals.diffBooleanKeys
+          idField: 'rm_property_id'
         }
         .then (rm_property_id) ->
           successes.push(rm_property_id)
