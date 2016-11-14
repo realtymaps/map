@@ -54,7 +54,7 @@ handleRoute = (res, next, serviceCall) ->
   .catch profileError.CurrentProfileError, (err) ->
     next new ExpressResponse({profileIsNeeded: true, alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
   .catch (err) ->
-    logger.error analyzeValue.getSimpleDetails(err)
+    logger.error analyzeValue.getFullDetails(err)
     next(err)
 
 save = ({req, res, next, type}) ->

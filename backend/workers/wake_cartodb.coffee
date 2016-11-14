@@ -25,7 +25,7 @@ wakeCartodb = () ->
     .then () ->
       logger.debug 'All Wake Success!!'
     .catch (err) ->
-      logger.error "Unexpected error performing cartoDb wake: #{analyzeValue.getSimpleDetails(err)}"
+      logger.error "Unexpected error performing cartoDb wake: #{analyzeValue.getFullDetails(err)}"
 
 
 module.exports = {

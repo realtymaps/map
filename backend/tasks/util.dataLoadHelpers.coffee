@@ -331,7 +331,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
           jsonData = util.inspect(updateRow, depth: null)
           tables.temp(subid: rawSubid)
           .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getSimpleDetails(err)}\nData: #{jsonData}")
+          .update(rm_valid: false, rm_error_msg: "#{analyzeValue.getFullDetails(err)}\nData: #{jsonData}")
       .catch validation.DataValidationError, (err) ->
         tables.temp(subid: rawSubid)
         .where(rm_raw_id: row.rm_raw_id)

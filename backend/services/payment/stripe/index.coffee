@@ -13,4 +13,4 @@ module.exports = Promise.try () ->
     stripe: bootstrapped
   .catch (err) ->
     logger.error 'backend stripe is bootsraped failed'
-    logger.error analyzeValue.getSimpleDetails(err)
+    logger.error analyzeValue.getFullDetails(err)

@@ -67,5 +67,5 @@ Promise.try () ->
   if err.exitWithError?
     shutdown.exit(error: err.exitWithError)
   else
-    logger.error(analyzeValue.getSimpleDetails(err))
+    logger.error(analyzeValue.getFullDetails(err))
     shutdown.exit(error: true)

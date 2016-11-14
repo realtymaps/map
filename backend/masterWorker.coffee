@@ -79,5 +79,5 @@ if require.main == module  # run directly, not require()d
     .then () ->
       shutdown.exit()
     .catch (err) ->
-      logger.error "Unexpected error running #{process.env.WORKER_KEY} worker: #{analyzeValue.getSimpleDetails(err)}"
+      logger.error "Unexpected error running #{process.env.WORKER_KEY} worker: #{analyzeValue.getFullDetails(err)}"
       shutdown.exit(error: true)

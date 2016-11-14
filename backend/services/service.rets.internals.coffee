@@ -46,7 +46,7 @@ getRetsClient = (mlsId, handler) ->
   Promise.join externalAccounts.getAccountInfo(mlsId), mlsConfigService.getByIdCached(mlsId), (creds, serverInfo) ->
     {creds, serverInfo}
   .catch (err) ->
-    logger.error analyzeValue.getSimpleDetails(err)
+    logger.error analyzeValue.getFullDetails(err)
     throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
   .then ({creds, serverInfo}) ->
     if !creds || !serverInfo

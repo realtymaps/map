@@ -30,7 +30,7 @@ getSessionUser = (req) -> Promise.try () ->
   .then (user=[]) ->
     user?[0] ? false
   .catch (err) ->
-    logger.warn analyzeValue.getSimpleDetails err
+    logger.warn analyzeValue.getFullDetails err
     return false
 
 # everything we need to do for a logout gets encapsulated here
