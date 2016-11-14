@@ -106,7 +106,7 @@ store = (subtask) -> Promise.try () ->
   .then () ->
     taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
   .catch (err) ->
-    taskLogger.debug () -> "#{analyzeValue.getSimpleDetails(err)}"
+    taskLogger.debug () -> "#{analyzeValue.getFullDetails(err)}"
     throw err
 
 clearRetries = (subtask) ->

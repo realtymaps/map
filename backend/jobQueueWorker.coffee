@@ -40,5 +40,5 @@ tables.jobQueue.queueConfig()
         shutdown.exit()
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"
-  logger.error "#{analyzeValue.getSimpleDetails(err)}"
+  logger.error "#{analyzeValue.getFullDetails(err)}"
   shutdown.exit(error: true)

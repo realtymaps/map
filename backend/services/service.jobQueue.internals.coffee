@@ -205,7 +205,7 @@ handleSubtaskError = ({prefix, subtask, newStatus, hard, error}) ->
       else
         errorSubtask = updatedSubtask[0]
       errorSubtask.error = "#{error}"
-      details = analyzeValue.getSimpleDetails(error)
+      details = analyzeValue.getFullDetails(error)
       if details != errorSubtask.error
         errorSubtask.stack = details
       tables.jobQueue.subtaskErrorHistory({transaction})
@@ -393,7 +393,7 @@ executeSubtask = (subtask, prefix) ->
     .catch Promise.CancellationError, (err) ->
       logger.spawn("task:#{subtask.task_name}").debug () -> "heartbeat cancelled"
     .catch (err) ->
-      logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getSimpleDetails(err)}"
+      logger.spawn("task:#{subtask.task_name}").error () -> "heartbeat error: #{analyzeValue.getFullDetails(err)}"
       throw err
   heartbeatPromise = heartbeat()
   getSubtaskConfig(subtask.name, subtask.task_name)
@@ -450,7 +450,7 @@ executeSubtask = (subtask, prefix) ->
   .catch errorHandlingUtils.PartiallyHandledError, (err) ->
     handleSubtaskError({prefix, subtask, newStatus: 'infrastructure fail', hard: true, error: err})
   .catch errorHandlingUtils.isUnhandled, (err) ->
-    logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
+    logger.error("Unexpected error caught during job execution: #{analyzeValue.getFullDetails(err)}")
     handleSubtaskError({prefix, subtask, newStatus: 'infrastructure fail', hard: true, error: err})
   .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
     logger.error("#{prefix} Error caught while handling errors; major db problem likely!  subtask: #{subtask.name}")

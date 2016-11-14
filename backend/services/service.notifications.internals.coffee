@@ -98,7 +98,7 @@ sendSms = (row, options) -> Promise.try () ->
   .catch errorHelpers.isUnhandled, (err) ->
     throw new SmsError(row.id, err, 'Twilio Error. ')
   .catch (err) ->
-    details = analyzeValue.getSimpleDetails(err)
+    details = analyzeValue.getFullDetails(err)
     logger.error "notification error: #{details}"
 
     tables.user.notificationQueue()
