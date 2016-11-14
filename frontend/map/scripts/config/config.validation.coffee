@@ -26,8 +26,10 @@ app.config(($provide, $validationProvider) ->
   {validation} = rmapsMainOptions
 
   expression =
+    email: validation.email
     password: validation.password
     phone: validation.phone
+    realtymapsEmail: validation.realtymapsEmail
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
       #optional URL
@@ -68,6 +70,8 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid Url'
     email:
       error: 'Invalid Email'
+    realtymapsEmail:
+      error: "Email must be of the '@realtymaps.com' domain"
     checkUniqueEmail:
       error: 'Email must be unique'
     checkValidMlsAgent:

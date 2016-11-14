@@ -4,7 +4,7 @@ require('chai').should()
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
-
+commonOptions =  require '../../../../common/config/commonConfig'
 
 describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
   param = 'fake'
@@ -43,13 +43,36 @@ describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
       expectResolve(validators.string(minLength: 4, maxLength: 6)(param, 'abcdef'))
     ]
 
-  promiseIt 'should obey regex test', () ->
-    [
-      expectReject(validators.string(regex: /^abc$/)(param, 'abcd'), DataValidationError)
-      expectReject(validators.string(regex: '^abc$')(param, 'abcd'), DataValidationError)
-      expectResolve(validators.string(regex: /^aBc/i)(param, 'abcd'))
-      expectResolve(validators.string(regex: '^abc')(param, 'abcd'))
-    ]
+  describe 'should obey regex test', () ->
+    promiseIt 'single regex', () ->
+      [
+        expectReject(validators.string(regex: /^abc$/)(param, 'abcd'), DataValidationError)
+        expectReject(validators.string(regex: '^abc$')(param, 'abcd'), DataValidationError)
+        expectResolve(validators.string(regex: /^aBc/i)(param, 'abcd'))
+        expectResolve(validators.string(regex: '^abc')(param, 'abcd'))
+      ]
+
+    promiseIt 'multiple regex', () ->
+      [
+        expectReject(validators.string(regex: [/abcd/,/^abc$/])(param, 'abcd'), DataValidationError)
+        expectReject(validators.string(regex: ['^abc$'])(param, 'abcd'), DataValidationError)
+        expectResolve(validators.string(regex: [/^aBc/i])(param, 'abcd'))
+        expectResolve(validators.string(regex: ['^abc', /abcd/ ])(param, 'abcd'))
+      ]
+
+    it 'has valid email', () ->
+      expectResolve(validators.string(regex: [
+        commonOptions.regexes.email
+        commonOptions.regexes.realtymapsEmail
+      ])(param, 'nem+1@realtymaps.com'))
+
+    it 'has valid in-email', () ->
+      expectReject(validators.string(regex: [
+        commonOptions.regexes.email
+        commonOptions.regexes.realtymapsEmail
+      ])(param, 'nem+1@gmail.com'))
+
+
 
   promiseIt 'should transform the string via find/replace when configured', () ->
     [

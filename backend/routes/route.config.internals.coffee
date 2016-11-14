@@ -40,6 +40,7 @@ protectedConfigPromise = () ->
 safeConfig =
   debugLevels: config.LOGGING.ENABLE
   stripe: {}
+  EMAIL_VERIFY: config.EMAIL_VERIFY
 
 # if safe config becomes more complicated we may want to make this memoizee function
 # NOTE: NEVER send over the whole config object as many field values should not be exposed

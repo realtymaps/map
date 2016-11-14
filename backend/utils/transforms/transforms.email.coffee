@@ -3,12 +3,19 @@ tables = require '../../config/tables'
 {validators} = require '../util.validation'
 clsFactory = require '../util.cls'
 logger = require('../../config/logger').spawn("transforms:emails")
+config = require '../../config/config'
 
-email = (id, tableFn = tables.auth.user) ->
+email = (id, {tableFn, regex}) ->
+  tableFn ?= tables.auth.user
+  regex ?= [VALIDATION.email]
+
+  if config.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN
+    regex.push(VALIDATION.real)
+
   id ?= clsFactory().getCurrentUserId()
 
   transform: [
-    validators.string(regex: VALIDATION.email)
+    validators.string({regex})
     validators.unique {
       tableFn
       id

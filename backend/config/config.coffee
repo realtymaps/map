@@ -107,6 +107,7 @@ base =
     CURRENT_SUBTASKS_DAYS: 1
   EMAIL_VERIFY:
     HASH_MIN_LENGTH: 20
+    RESTRICT_TO_OUR_DOMAIN: true
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
     LIVE_MODE: toBool(process.env.PAYMENT_IS_LIVE, defaultValue: false)
@@ -154,6 +155,9 @@ environmentConfig =
       RAW_TABLE_CLEAN_DAYS: 1
       SUBTASK_ERROR_DAYS: 7
       OLD_DELETE_MARKER_DAYS: 1
+
+    EMAIL_VERIFY:
+      RESTRICT_TO_OUR_DOMAIN: false
 
   test: # test inherits from development below
     LOGGING:
