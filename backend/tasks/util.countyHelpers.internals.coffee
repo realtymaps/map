@@ -170,13 +170,13 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     {promotedValues,tax}
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
-  tables.finalized.combined(transaction: transaction)
+  tables.finalized.combined({transaction})
   .where
     rm_property_id: id
     data_source_id: data_source_id || subtask.task_name
   .delete()
   .then () ->
-    tables.finalized.combined(transaction: transaction)
+    tables.finalized.combined({transaction})
     .insert(tax)
 
 finalizeJoin = ({subtask, id, data_source_id, transaction, taxEntries, deedEntries, mortgageEntries, parcelEntries}) ->
@@ -189,7 +189,7 @@ finalizeJoin = ({subtask, id, data_source_id, transaction, taxEntries, deedEntri
     Promise.try () ->
       if !_.isEqual(promotedValues, tax.promoted_values)
         # need to save back promoted values to the normal table
-        tables.normalized.tax(subid: subtask.data.normalSubid)
+        tables.normalized.tax(subid: subtask.data.normalSubid)  # no transaction -- normalized db
         .where
           data_source_id: data_source_id || subtask.task_name
           data_source_uuid: tax.data_source_uuid
@@ -201,7 +201,7 @@ finalizeJoin = ({subtask, id, data_source_id, transaction, taxEntries, deedEntri
 
       # we must use an existing transaction if there is one
       dbs.ensureTransaction transaction, 'main', (transaction) ->
-        _updateDataCombined {subtask, id, data_source_id, transaction: transaction, tax}
+        _updateDataCombined {subtask, id, data_source_id, transaction, tax}
 
 
 module.exports = {

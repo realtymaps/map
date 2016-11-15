@@ -71,7 +71,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= subtask.data?.delay || 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.normalized.listing({transaction})
+  listingsPromise = tables.normalized.listing()  # no transaction -- normalized db
   .select('*')
   .where
     rm_property_id: id
@@ -114,7 +114,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         if !checkPromotedValues
           return
         # need to query the tax table to get values to promote
-        tables.normalized.tax({subid: listing.fips_code, transaction})
+        tables.normalized.tax({subid: listing.fips_code})  # no transaction -- normalized db
         .select('promoted_values')
         .where
           rm_property_id: id
@@ -124,7 +124,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             _.extend(listing, results[0].promoted_values)
 
             # save back to the listing table to avoid making checks in the future
-            tables.normalized.listing({transaction})
+            tables.normalized.listing()  # no transaction -- normalized db
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid

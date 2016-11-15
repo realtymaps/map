@@ -522,9 +522,7 @@ rollback = ({err, tableName, promiseQuery}) ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
     .delete()
-  .catch () ->
-    throw err
-  .then () ->
+  .finally () ->
     throw err
 
 
