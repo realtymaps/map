@@ -15,7 +15,9 @@ localityObjectsStream = (fipsCodeStream) ->
   .then (geocode) ->
 
     setLocality = (row, encoding, cb) ->
-      address = "#{row.county}, #{row.state}"
+      # Making sure to add the word County in the address search as it produces better results
+      # as it limits the confusion between towns and counties.
+      address = "#{row.county.replace(/county/ig,'')} County, #{row.state}"
 
       fipsCode = row.code
       logger.debug -> "Attempting to geocode fipsCode: #{fipsCode}, address: #{address}"
