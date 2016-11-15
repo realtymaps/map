@@ -67,7 +67,7 @@ getAllSupported = (queryObj) ->
 
 getCollectiveCenter = (mlses) ->
   #st_collect aggregates all points
-  #then we get the center of those cia st_centroid
+  #then we get the center of those via st_centroid
   rawSelect = lookup.fipsCodes.raw('st_asgeojson(st_centroid(st_collect(??)))::json as geo_json', 'geometry_center_raw')
 
   questionMarks = (mlses.map () -> '?').join(',')
