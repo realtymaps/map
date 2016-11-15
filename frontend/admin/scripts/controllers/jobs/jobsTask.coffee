@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 
-app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
+app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory, uiGridConstants) ->
   $scope.getData = rmapsJobsService.getTasks
 
   $scope.runTask = rmapsJobsService.runTask
@@ -18,6 +18,8 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         width: 120
         enableCellEdit: false
         pinnedLeft: true
+        sort:
+          direction: uiGridConstants.ASC
       ,
         field: 'description'
         displayName: 'Description'
