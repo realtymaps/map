@@ -1,4 +1,4 @@
-form.add-project
+form.add-project(name="clientForm" ng-submit="saveClient(clientForm)")
   .modal-header
     h3.modal-title(ng-show="clientCopy.id") Edit Client
     h3.modal-title(ng-show="!clientCopy.id") Add Client
@@ -48,4 +48,4 @@ form.add-project
               input.form-control(name="zip" ng-model="clientCopy.zip")
   .modal-footer
     button.btn.btn-default(ng-click="cancelModal()") Cancel
-    button.btn.btn-primary(type="submit" ng-click="saveClient()") Save
+    button.btn.btn-primary(type="submit") Save

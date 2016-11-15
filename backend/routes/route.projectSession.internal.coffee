@@ -17,6 +17,7 @@ Promise = require 'bluebird'
 # End temporary
 projectSvc = new ProjectSvcClass(tables.user.project).init(false)
 safeUser = sqlHelpers.columns.user
+errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 
 class ClientsCrud extends RouteCrud
@@ -81,6 +82,8 @@ class ClientsCrud extends RouteCrud
         verify_host: req.headers.host
 
     projectSvc.addClient clientEntryValue
+    .catch errorUtils.isUnhandled, (err) ->
+      throw new errorUtils.PartiallyHandledError(err, "Error adding new client with email #{req.body.email}")
 
   ###
     Update user contact info - but only if the request came from the parent user
