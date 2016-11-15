@@ -19,7 +19,7 @@ app.service 'rmapsSearchboxService', ($log, leafletData) ->
           bottom = bounds._southWest.lat+delta
 
           # procure url;  openstreetmap query parameter urls: http://wiki.openstreetmap.org/wiki/Nominatim
-          url = "http://nominatim.openstreetmap.org/search?format=json&q={s}&viewbox=#{left},#{top},#{right},#{bottom}&bounded=1"
+          url = "//nominatim.openstreetmap.org/search?format=json&q={s}&viewbox=#{left},#{top},#{right},#{bottom}&bounded=1"
 
       # marker reference
       searchMarker = new L.Icon

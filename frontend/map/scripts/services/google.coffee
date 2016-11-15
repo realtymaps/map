@@ -134,7 +134,7 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
           $log.warn 'size parameter required for streetview'
           return
 
-        "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
+        "//maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
           "&location=#{lonLat[1]},#{lonLat[0]}" +
           "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}#{apiKey}"
 
@@ -155,7 +155,7 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
           $log.warn 'size parameter required for streetview'
           return
 
-        "http://maps.googleapis.com/maps/api/staticmap?center=#{coords[1]},#{coords[0]}" +
+        "//maps.googleapis.com/maps/api/staticmap?center=#{coords[1]},#{coords[0]}" +
           "&zoom=#{zoom}&size=#{width}x#{height}&maptype=satellite&format=png#{apiKey}"
 
   return service
