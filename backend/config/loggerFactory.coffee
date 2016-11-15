@@ -148,5 +148,9 @@ class Logger
     suffix = if subNamespace != '' && !subNamespace.endsWith(':') then ':' else ''
     debug.enabled(@namespace+subNamespace+suffix)
 
+  debugQuery: (thing) ->
+    @debug -> thing.toString()
+    thing
+
 module.exports = (base) ->
   _getLogger(base, '')

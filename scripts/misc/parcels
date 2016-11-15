@@ -7,17 +7,14 @@ options:
 --fileName - task file name
 --debug - logs arguments
 ###
-Promise = require 'bluebird'
 argv = require('yargs').argv
 parcelFetcher = require '../../backend/services/service.parcels.fetcher.digimaps'
-debug = require 'debug'
+logger = require('../../backend/config/logger')('scripts:misc:parcels')
 JSONStream = require 'JSONStream'
-
-debug = debug('script:parcels')
 
 
 if argv.debug
-  debug argv
+  logger.debug -> argv
 
 parcelFetcher.getParcelJsonStream(fullPath: argv.fileName)
 .then (stream) ->

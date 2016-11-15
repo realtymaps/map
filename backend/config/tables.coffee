@@ -29,6 +29,7 @@ module.exports =
     mortgage: 'normalized.mortgage'
     parcel: 'normalized.parcel'
     agent: 'normalized.agent'
+    fipscodeLocality: 'normalized.fipscode_locality'
   finalized:
     combined: 'data_combined'
     parcel: 'data_parcel'
