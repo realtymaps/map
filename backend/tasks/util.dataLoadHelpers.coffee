@@ -512,8 +512,6 @@ _endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
     return count
 
 _rollback = ({err, tableName, promiseQuery}) ->
-  logger.error("problem streaming to #{tableName}: #{err}")
-
   promiseQuery('ROLLBACK TRANSACTION')
   .then () ->
     tables.jobQueue.dataLoadHistory()
@@ -628,7 +626,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
     .catch (err) ->
       logger.error("problem streaming to #{tableName}: #{err}")
       logger.error analyzeValue.getFullDetails(err)
-      rollback({err, tableName, promiseQuery})
+      _rollback({err, tableName, promiseQuery})
     .then (count) ->
       _endRawTable({startedTransaction, count, tableName, promiseQuery})
 
