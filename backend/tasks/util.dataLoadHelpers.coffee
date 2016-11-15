@@ -22,7 +22,6 @@ jobQueue = require '../services/service.jobQueue'
 mlsConfigService = require '../services/service.mls_config'
 tz = require '../config/tz'
 
-
 DELETE =
   UNTOUCHED: 'untouched'
   INDICATED: 'indicated'
@@ -512,10 +511,8 @@ _endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
   else
     return count
 
-rollback = ({err, tableName, promiseQuery}) ->
+_rollback = ({err, tableName, promiseQuery}) ->
   logger.error("problem streaming to #{tableName}: #{err}")
-  logger.error 'stack'
-  logger.error err.stack
 
   promiseQuery('ROLLBACK TRANSACTION')
   .then () ->
@@ -629,6 +626,8 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
           resolve(donePayload||0)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
+      logger.error("problem streaming to #{tableName}: #{err}")
+      logger.error analyzeValue.getFullDetails(err)
       rollback({err, tableName, promiseQuery})
     .then (count) ->
       _endRawTable({startedTransaction, count, tableName, promiseQuery})
@@ -701,7 +700,6 @@ module.exports = {
   manageRawDataStream
   manageRawJSONStream
   DELETE
-  rollback
   updateRecord
   getLastUpdateTimestamp
   setLastUpdateTimestamp
