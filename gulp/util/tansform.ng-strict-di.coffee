@@ -73,7 +73,8 @@ transform = (filename, {matches, skips} = {}) ->
 
     #TODO: Do more than check just $templateCache without ngInject
     #line with possible problem and then the next line with or without a following \n
-    regex = /(.*)?\((.*)?\$templateCache(.*\))?.*\n.*(\n)?/g
+    #(?!\.) is to make sure $templateCache does not have a following period like $templateCache.put
+    regex = /(.*)?\((.*)?\$templateCache(?!\.)(.*\))?.*\n.*(\n)?/g
 
     matches = contents.match(regex)
 
@@ -92,6 +93,12 @@ transform = (filename, {matches, skips} = {}) ->
         break
 
     if badContents?
+      # console.log("matches")
+      # console.log(matches)
+      # console.log("toCheck")
+      # console.log(toCheck)
+      # console.log("!isAngularInjection(toCheck)")
+      # console.log(!isAngularInjection(toCheck))
       err =  new MissingNgInitError({basename:filename, contents}, badContents)
       return cb(err.message)
 
