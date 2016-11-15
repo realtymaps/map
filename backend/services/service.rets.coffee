@@ -226,12 +226,12 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   .then () ->
                     callback()
                 else
-                  finish()
+                  finish(this)
                   callback()
             when 'error'
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
                 # code for 0 results, not really an error (DMQL is a clunky language)
-                finish()
+                finish(this)
               else
                 finish(this, event.payload)
               callback()
