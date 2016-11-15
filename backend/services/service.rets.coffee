@@ -102,8 +102,8 @@ getDataStream = (mlsId, dataType, opts={}) ->
     if !schemaInfo.field
       throw new errorHandlingUtils.PartiallyHandledError("Cannot query without a timestamp field to filter (check MLS config field 'Update Timestamp Column' for #{mlsId}/#{dataType})")
     offsetPromise = Promise.try () ->
-      # determine time zone offset
-      if schemaInfo.field_type != 'Date'
+      # determine time zone offset so we can use the correct date if server doesn't support a full DateTime
+      if schemaInfo.field_type == 'DateTime'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -128,7 +128,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
           searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
         else
           searchOptions.limit = opts.subLimit
-      logger.spawn(mlsId).debug () -> "getDataStream prepped for #{mlsId}/#{dataType}: #{searchQuery} (searchOptions: #{JSON.stringify(searchOptions)})"
+      logger.spawn(mlsId).debug () -> "getDataStream prepped for #{mlsId}/#{dataType}: #{searchQuery} / searchOptions: #{JSON.stringify(searchOptions)}, utcOffset: #{utcOffset}, fieldMappings: #{JSON.stringify(fieldMappings,null,2)}"
 
       columns = null
       uuidColumn = null
@@ -161,10 +161,13 @@ getDataStream = (mlsId, dataType, opts={}) ->
             if !resolved
               resolved = true
               reject(error)
+      resultStreamLogger = logger.spawn(mlsId).spawn('resultStream')
       resultStream = through2.obj (event, encoding, callback) ->
         try
           if done
+            resultStreamLogger.debug () -> "*****  |  already done, skipping: #{event.type}: #{JSON.stringify(event.payload)}"
             return
+          resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
           switch event.type
             when 'delimiter'
               if !delimiter
@@ -182,6 +185,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                     uuidColumn = i
                   if fieldMappings[column]?
                     columnList[i] = fieldMappings[column]
+                resultStreamLogger.debug () -> "       |  columnList: #{JSON.stringify(columnList, null, 2)}"
                 if opts.uuidField && !uuidColumn?
                   finish(this, new Error('failed to locate specificed UUID column'))
                 @push(type: 'columns', payload: columnList)
@@ -195,6 +199,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   currentPayload = event.payload
                 @push(event)
               else
+                resultStreamLogger.debug () -> "       |  skipping (overlap)"
                 if lastId == event.payload.split(delimiter)[uuidColumn]
                   found = counter
                 else
@@ -215,6 +220,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   if !overlap
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
+                  resultStreamLogger.debug () -> "       |  maxRowsExceeded, triggering next iteration"
                   searchOptions.offset = total-overlap
                   if fullLimit
                     searchOptions.limit = fullLimit - searchOptions.offset
@@ -230,18 +236,22 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   callback()
             when 'error'
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
+                resultStreamLogger.debug () -> "       |  ignoring, not a real error"
                 # code for 0 results, not really an error (DMQL is a clunky language)
                 finish(this)
               else
                 finish(this, event.payload)
               callback()
             else
+              resultStreamLogger.debug () -> "       |  event type not handled"
               callback()
         catch error
+          resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
       streamIteration()
       .then () ->
+        logger.spawn(mlsId).debug () -> "getDataStream handing off resultStream for #{mlsId}/#{dataType}"
         resultStream
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
