@@ -1,10 +1,6 @@
 Promise = require 'bluebird'
 logger = require '../config/logger'
-geohashHelper = require '../utils/validation/util.validation.geohash'
 validation = require '../utils/util.validation'
-{select, tableName, whereInBounds} = require './../utils/util.sql.helpers.coffee'
-indexBy = require '../../common/utils/util.indexByWLength'
-_ = require 'lodash'
 {getBaseParcelQueryByBounds} = require './service.properties.parcels'
 
 
@@ -25,7 +21,7 @@ module.exports =
   get: (state, filters) -> Promise.try () ->
     validation.validateAndTransform(filters, transforms)
     .then (filters) ->
-      return getBaseParcelQueryByBounds(filters.bounds, 500)
+      return getBaseParcelQueryByBounds({bounds: filters.bounds, limit: 500})
     .then (data) ->
       obj = {}
       #hack for unique markerid on address markers (NEED TO FIX IN LEAFLET Marker Directive)
