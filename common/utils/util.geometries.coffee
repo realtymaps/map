@@ -28,6 +28,14 @@ class Point
   isEqual: (other) ->
     other.lat == @lat && other.lon == @lon
 
+  toJSON: () ->
+    {
+      @lat
+      @lon
+      @latitiude
+      @longitude
+    }
+
 class LeafletPoint extends Point
   constructor: (lat, lon) ->
     super(lat, lon)
@@ -47,19 +55,29 @@ class LeafletCenter extends LeafletPoint
   setZoom: (zoom) ->
     @zoom = Number zoom
 
-_ngLeafletCenter = (pointWZoom) ->
+  toJSON: () ->
+    json = super()
+    json.zoom = @zoom
+    json
+
+class GeoJsonCenter extends LeafletCenter
+  constructor: (geojson, zoom) ->
+    super(geojson.coordinates[1],geojson.coordinates[0], zoom)
+
+NgLeafletCenter = (pointWZoom) ->
   new LeafletCenter(pointWZoom, null, pointWZoom.zoom)
 
 #
 # Export for Require statements
 #
-module.exports =
-  LeafletPoint: LeafletPoint
-  BackendPoint: BackendPoint
-  Point: Point
-  LeafletCenter: LeafletCenter
-
-  NgLeafletCenter: _ngLeafletCenter
+module.exports = {
+  LeafletPoint
+  BackendPoint
+  Point
+  LeafletCenter
+  GeoJsonCenter
+  NgLeafletCenter
+}
 
 #
 # Expose as an Angular Service on the Common Utils module
