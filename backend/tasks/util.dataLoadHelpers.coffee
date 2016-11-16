@@ -590,7 +590,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
               debugCount++
-              if debugCount%10 == 0
+              if debugCount%1000 == 0
                 verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               callback()
             when 'delimiter'
