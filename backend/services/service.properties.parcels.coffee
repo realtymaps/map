@@ -3,10 +3,8 @@ logger = require('../config/logger').spawn('map:parcels')
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 sqlColumns = require './../utils/util.sql.columns.coffee'
-indexBy = require '../../common/utils/util.indexByWLength'
-_ = require 'lodash'
 tables = require '../config/tables'
-coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+
 
 transforms =
   bounds:
@@ -20,24 +18,24 @@ transforms =
     map_position:
       center: validation.validators.object()
 
-getBaseParcelQueryByBounds = (bounds, limit, center) ->
+getBaseParcelQueryByBounds = ({bounds, limit}) ->
   parcel = tables.finalized.parcel()
   query = parcel.select(parcel.raw("distinct on (geometry_center) #{sqlColumns.basicColumns.parcel}"))
   sqlHelpers.whereInBounds(query, 'geometry_raw', bounds)
-  if center?
-    query.select(query.raw("st_contains(geometry_raw, st_setsrid(st_makepoint(?,?), #{coordSys.UTM})) as map_center", [center.lng, center.lat]))
+  # if center?
+  #   query.select(query.raw("st_contains(geometry_raw, st_setsrid(st_makepoint(?,?), #{coordSys.UTM})) as map_center", [center.lng, center.lat]))
   query.limit(limit) if limit?
 
-_getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try () ->
+_getBaseParcelDataUnwrapped = ({filters, doStream, limit}) -> Promise.try () ->
   validation.validateAndTransform(filters, transforms)
   .then (filters) ->
-    query = getBaseParcelQueryByBounds(filters.bounds, limit, filters.state?.map_position?.center)
+    query = getBaseParcelQueryByBounds({bounds: filters.bounds, limit})
     return query.stream() if doStream
     query
 
 # pseudo-new implementation
 getBaseParcelData = (state, filters) ->
-  _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
+  _getBaseParcelDataUnwrapped({filters, limit: 500})
   .then (data) ->
     type: 'FeatureCollection'
     features: data

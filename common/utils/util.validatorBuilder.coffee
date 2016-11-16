@@ -31,6 +31,9 @@ ruleDefaults =
       'doLookup'
       'mapping'
       'truthiness'
+
+      'deliminate'
+      'addDollarSign'
     ])
     if @config.truthiness && Object.keys(@config.truthiness).length > 0
       options.truthy = []
@@ -42,6 +45,13 @@ ruleDefaults =
           options.falsy.push(value)
     options
 
+  # this groups up options that would cast new types, such as integer to string
+  getCastOptions: () ->
+    _.pick(@config, [
+      'deliminate'
+      'addDollarSign'
+    ])
+
   getTransform: (globalOpts = {}) ->
     transformArr = []
 
@@ -52,15 +62,15 @@ ruleDefaults =
       transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', lookup: {lookupName: @config.LookupName, proxyName: @input, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
       transformArr.push name: 'nullify', options: value: ''  # same as @config.nullEmpty, but before primary transform
+
+    # Primary transform
+    transformArr.push name: @type?.name, options: @getOptions() # note: this forces correct cast-typing for incoming string values
+
+    # Transforms that should occur after type-specific logic since previous steps change incoming strings to integers, floats, etc, as needed
     if @config.nullZero
       transformArr.push name: 'nullify', options: value: 0
     if @config.nullNumber
       transformArr.push name: 'nullify', options: values: _.map @config.nullNumber, Number
-
-    # Primary transform
-    transformArr.push name: @type?.name, options: @getOptions()
-
-    # Transforms that should occur after type-specific logic
     if @config.nullEmpty
       transformArr.push name: 'nullify', options: value: ''
     if @config.nullBoolean?
@@ -71,6 +81,11 @@ ruleDefaults =
       map = _.pick(@config.mapping, (val) -> val)  # filter out empty strings and other falsy mappings
       if Object.keys(map).length > 0
         transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', map: map}
+
+    # Transforms that should occur last, since they can change type (i.e. integer to string with dollar sign)
+    typeCastingOptions = @getCastOptions()
+    if !_.isEmpty typeCastingOptions
+      transformArr.push name: @type?.name, options: typeCastingOptions
 
     transformArr
 

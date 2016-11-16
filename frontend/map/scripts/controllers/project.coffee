@@ -141,7 +141,7 @@ app.controller 'rmapsProjectCtrl',
     $scope.cancelModal = () ->
       modalInstance.dismiss('cancel')
 
-    $scope.saveClient = () ->
+    $scope.saveClient = (form) ->
       modalInstance.dismiss('save')
       method = if $scope.clientCopy.id? then 'update' else 'create'
       $scope.clientCopy = _.merge $scope.clientCopy, project_name: $scope.project.name

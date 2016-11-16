@@ -8,13 +8,16 @@ through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+util = require 'util'
+
 
 getSystemData = (mlsId) ->
+  logger.spawn(mlsId).debug () -> "getting system data for #{mlsId}"
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getSystem()
 
 getDatabaseList = (mlsId, opts={}) ->
-  logger.debug () -> "getting database list for #{mlsId}"
+  logger.spawn(mlsId).debug () -> "getting database list for #{mlsId}"
   restrictFields = opts.restrictFields ? ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getResources()
@@ -28,7 +31,7 @@ getDatabaseList = (mlsId, opts={}) ->
         _.pick(r, restrictFields)
 
 getObjectList = (mlsId, opts={}) ->
-  logger.debug () -> "getting object list for #{mlsId}"
+  logger.spawn(mlsId).debug () -> "getting object list for #{mlsId}"
   restrictFields = opts.restrictFields ? ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getObject('0')
@@ -42,7 +45,7 @@ getObjectList = (mlsId, opts={}) ->
         _.pick(r, restrictFields)
 
 getTableList = (mlsId, databaseName, opts={}) ->
-  logger.debug () -> "getting table list for #{mlsId}/#{databaseName}"
+  logger.spawn(mlsId).debug () -> "getting table list for #{mlsId}/#{databaseName}"
   restrictFields = opts.restrictFields ? ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getClass(databaseName)
@@ -56,7 +59,7 @@ getTableList = (mlsId, databaseName, opts={}) ->
         _.pick(r, restrictFields)
 
 getColumnList = (mlsId, databaseName, tableName, opts={}) ->
-  logger.debug () -> "getting column list for #{mlsId}/#{databaseName}/#{tableName}"
+  logger.spawn(mlsId).debug () -> "getting column list for #{mlsId}/#{databaseName}/#{tableName}"
   restrictFields = opts.restrictFields ? ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
@@ -85,7 +88,7 @@ getColumnList = (mlsId, databaseName, tableName, opts={}) ->
         _.pick(r, restrictFields)
 
 getLookupTypes = (mlsId, databaseName, lookupId) ->
-  logger.debug () -> "getting lookup for #{mlsId}/#{databaseName}/#{lookupId}"
+  logger.spawn(mlsId).debug () -> "getting lookup for #{mlsId}/#{databaseName}/#{lookupId}"
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch errorHandlingUtils.isUnhandled, (error) ->
@@ -95,13 +98,14 @@ getLookupTypes = (mlsId, databaseName, lookupId) ->
 
 
 getDataStream = (mlsId, dataType, opts={}) ->
+  logger.spawn(mlsId).debug () -> "getting data stream for #{mlsId}/#{dataType}: #{JSON.stringify(opts)}"
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     schemaInfo = mlsInfo["#{dataType}_data"]
     if !schemaInfo.field
-      throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
+      throw new errorHandlingUtils.PartiallyHandledError("Cannot query without a timestamp field to filter (check MLS config field 'Update Timestamp Column' for #{mlsId}/#{dataType})")
     offsetPromise = Promise.try () ->
-      logger.debug () -> "determining RETS time zone offset for #{mlsId}"
-      if schemaInfo.field_type != 'Date'
+      # determine time zone offset so we can use the correct date if server doesn't support a full DateTime
+      if schemaInfo.field_type == 'DateTime'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -116,6 +120,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
       currentPayload = null
       found = null
       counter = 0
+      debugCount = 0
       searchQuery = internals.buildSearchQuery(schemaInfo, utcOffset, opts)
       searchOptions =
         count: 0
@@ -126,6 +131,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
           searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
         else
           searchOptions.limit = opts.subLimit
+      logger.spawn(mlsId).debug () -> "getDataStream prepped for #{mlsId}/#{dataType}: #{searchQuery} / searchOptions: #{JSON.stringify(searchOptions)}, utcOffset: #{utcOffset}, fieldMappings: #{JSON.stringify(fieldMappings,null,2)}"
 
       columns = null
       uuidColumn = null
@@ -133,13 +139,16 @@ getDataStream = (mlsId, dataType, opts={}) ->
       done = false
       retsStream = null
       finish = (that, error) ->
+        logger.spawn(mlsId).debug () -> "getDataStream finished for #{mlsId}/#{dataType}, error: #{analyzeValue.getFullDetails(error)}"
         retsStream.unpipe(resultStream)
         done = true
         if error
           that.push(type: 'error', payload: error)
+        else
+          that.push(type: 'done', payload: total)
         resultStream.end()
       streamIteration = () ->
-        logger.debug () -> "getting streamed data for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
+        logger.spawn(mlsId).debug () -> "getDataStream iteration for #{mlsId}/#{dataType}: #{searchQuery} (limit: #{searchOptions.limit}, offset: #{searchOptions.offset}, overlap: #{overlap})"
         found = null
         counter = 0
         new Promise (resolve, reject) ->
@@ -155,33 +164,13 @@ getDataStream = (mlsId, dataType, opts={}) ->
             if !resolved
               resolved = true
               reject(error)
+      resultStreamLogger = logger.spawn(mlsId).spawn('resultStream')
       resultStream = through2.obj (event, encoding, callback) ->
         try
           if done
+            resultStreamLogger.debug () -> "*****  |  already done, skipping: #{event.type}: #{JSON.stringify(event.payload)}"
             return
           switch event.type
-            when 'delimiter'
-              if !delimiter
-                delimiter = event.payload
-                @push(event)
-              else if event.payload != delimiter
-                finish(this, new Error('rets delimiter changed during iteration'))
-              callback()
-            when 'columns'
-              if !columns
-                columns = event.payload
-                columnList = event.payload.split(delimiter)[1..-2]
-                for column,i in columnList
-                  if opts.uuidField && column == opts.uuidField
-                    uuidColumn = i
-                  if fieldMappings[column]?
-                    columnList[i] = fieldMappings[column]
-                if opts.uuidField && !uuidColumn?
-                  finish(this, new Error('failed to locate specificed UUID column'))
-                @push(type: 'columns', payload: columnList)
-              else if event.payload != columns
-                finish(this, new Error('rets columns changed during iteration'))
-              callback()
             when 'data'
               event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
               if !lastId || found
@@ -193,8 +182,39 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   found = counter
                 else
                   counter++
+              debugCount++
+              if debugCount%1000 == 0
+                resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              callback()
+            when 'delimiter'
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              if !delimiter
+                delimiter = event.payload
+                @push(event)
+              else if event.payload != delimiter
+                finish(this, new Error('rets delimiter changed during iteration'))
+              callback()
+            when 'columns'
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              if !columns
+                columns = event.payload
+                columnList = event.payload.split(delimiter)[1..-2]
+                for column,i in columnList
+                  if opts.uuidField && column == opts.uuidField
+                    uuidColumn = i
+                  if fieldMappings[column]?
+                    columnList[i] = fieldMappings[column]
+                resultStreamLogger.debug () -> "       |  columnList: #{JSON.stringify(columnList, null, 2)}"
+                if opts.uuidField && !uuidColumn?
+                  finish(this, new Error('failed to locate specificed UUID column'))
+                @push(type: 'columns', payload: columnList)
+              else if event.payload != columns
+                finish(this, new Error('rets columns changed during iteration'))
               callback()
             when 'done'
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              debugCount = 0
               if lastId && !found
                 finish(this, new SoftFail('failed to locate RETS overlap record'))
                 callback()
@@ -209,6 +229,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   if !overlap
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
+                  resultStreamLogger.debug () -> "       |  maxRowsExceeded, triggering next iteration"
                   searchOptions.offset = total-overlap
                   if fullLimit
                     searchOptions.limit = fullLimit - searchOptions.offset
@@ -220,24 +241,30 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   .then () ->
                     callback()
                 else
-                  @push(type: 'done', payload: total)
-                  resultStream.end()
+                  finish(this)
                   callback()
             when 'error'
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
+                resultStreamLogger.debug () -> "       |  ignoring, not a real error"
                 # code for 0 results, not really an error (DMQL is a clunky language)
-                @push(type: 'done', payload: total)
-                resultStream.end()
+                finish(this)
               else
                 finish(this, event.payload)
               callback()
             else
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              resultStreamLogger.debug () -> "       |  event type not handled"
               callback()
         catch error
+          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+          resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
       streamIteration()
       .then () ->
+        logger.spawn(mlsId).debug () -> "getDataStream handing off resultStream for #{mlsId}/#{dataType}"
         resultStream
   .catch errorHandlingUtils.isUnhandled, (error) ->
     throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to query RETS system')
@@ -258,7 +285,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     if !schemaInfo.field
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
-      logger.debug () -> "determining RETS time zone offset for #{mlsId}"
+      logger.spawn(mlsId).debug () -> "determining RETS time zone offset for #{mlsId}"
       if schemaInfo.field_type != 'Date'
         return 0
       getSystemData(mlsId)
@@ -280,7 +307,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
           searchOptions.limit = opts.subLimit
 
       searchIteration = () ->
-        logger.debug () -> "getting data chunk for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
+        logger.spawn(mlsId).debug () -> "getting data chunk for #{mlsId}: #{searchQuery} (offset: #{searchOptions.offset})"
         internals.getRetsClient mlsId, (retsClientIteration) ->
           retsClientIteration.search.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions)
           .then (response) ->
@@ -339,10 +366,10 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
     .catch (err) ->
-      logger.debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getFullDetails(err)}")
+      logger.spawn(mlsId).debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getFullDetails(err)}")
       throw err
   .catch (err) ->
-    logger.debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getFullDetails(err)}")
+    logger.spawn(mlsId).debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getFullDetails(err)}")
     throw err
 
 

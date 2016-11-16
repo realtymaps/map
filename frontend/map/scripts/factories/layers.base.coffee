@@ -10,7 +10,7 @@ _mapboxKey = ''
 
 _mapBoxClassic = (name, id) ->
   name: 'Mapbox ' + name
-  url: 'http://api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?access_token={apikey}'
+  url: '//api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?access_token={apikey}'
   type: 'xyz'
   layerOptions:
     apikey: _mapboxKey
@@ -19,7 +19,7 @@ _mapBoxClassic = (name, id) ->
 
 _mapBoxStyle = (name, id) ->
   name: 'Mapbox ' + name
-  url: 'http://api.mapbox.com/styles/v1/mapbox/{mapid}/tiles/256/{z}/{x}/{y}?access_token={apikey}'
+  url: '//api.mapbox.com/styles/v1/mapbox/{mapid}/tiles/256/{z}/{x}/{y}?access_token={apikey}'
   type: 'xyz'
   layerOptions:
     apikey: _mapboxKey
@@ -37,7 +37,7 @@ _googleFactory = (name, type, options) ->
   ret
 
 _baseLayers =
-  # googleRoadmap: _googleFactory 'Streets', 'ROADMAP', mapOptions: googleOptions
+  googleRoadmap: _googleFactory 'Streets', 'ROADMAP' #, mapOptions: googleOptions
   googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
 
 app.factory 'rmapsUtilLayersBase', ($http, $rootScope, $log, rmapsEventConstants) ->

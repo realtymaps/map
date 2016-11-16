@@ -9,10 +9,10 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         popover-trigger="'mouseenter touchend'"
       ) Clear Map
 
-span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
+span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw() || !identity.currentProfile")
   span.desktop-only
     span.dropdown.btn-group.settings-list(
-      ng-controller="rmapsFiltersCtrl"
+
       ng-class="{open: isOpens.settings}"
       popover-placement="bottom"
       uib-popover="Property Filters"
@@ -28,7 +28,7 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
       )
         span.icon.icon-settings
   script(type="text/ng-template" id="SettingsPopoverDesktop")
-    .dropdown-menu.whiteblock.settings-popover(ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
+    .dropdown-menu.whiteblock.settings-popover(ng-controller="rmapsFiltersCtrl" ng-click="$event.stopPropagation()" ng-class="{'showAdvanced': showAdvanced}")
       h4.fixed-header
         .icon.icon-close(ng-click="isOpens.settings = !isOpens.settings; togglePanel('settings'); toggled()")
         span Property Filters
