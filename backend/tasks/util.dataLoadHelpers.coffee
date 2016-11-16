@@ -525,7 +525,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
     doPerValEscape = (val) ->
       utilStreams.pgStreamEscape(val, delimiter)
 
-    endStreamChunk = (count) ->
+    endStreamChunk = ({linesCount}) ->
       verboseLogger.debug () -> 'CHUNK  |  committing stream chunk'
       dbStreamer.unpipe(dbStream)
       dbStream?.write('\\.\n')
@@ -537,9 +537,9 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       .then () ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
-        .update(raw_rows: count + parseInt(opts.initialCount ? 0))
+        .update(raw_rows: linesCount + parseInt(opts.initialCount ? 0))
 
-    startStreamChunk = (createTable) ->
+    startStreamChunk = ({createTable}) ->
       verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
       promiseQuery('BEGIN TRANSACTION')
       .then () ->
@@ -584,9 +584,9 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               Promise.try () ->
                 if opts.maxChunkSize? && linesCount%opts.maxChunkSize == 0
-                  endStreamChunk(linesCount)
+                  endStreamChunk({linesCount})
                   .then () ->
-                    startStreamChunk(false)
+                    startStreamChunk(createTable: false)
               .then () ->
                 callback()
             when 'delimiter'
@@ -603,7 +603,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 idObj: {raw_table_name: dataLoadHistory.raw_table_name}
                 entityObj: dataLoadHistory
               .then () ->
-                startStreamChunk(!opts.initialCount?)
+                startStreamChunk(createTable: !opts.initialCount?)
               .then () ->
                 callback()
             when 'error'
@@ -623,7 +623,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        endStreamChunk(linesCount)
+        endStreamChunk({linesCount})
         .then () ->
           promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
         .then () ->
