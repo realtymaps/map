@@ -125,6 +125,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)
+      baseOffset = opts.searchOptions.offset ? 0
       fullLimit = opts.searchOptions.limit
       if opts.subLimit
         if searchOptions.limit
@@ -212,8 +213,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 finish(this, new Error('rets columns changed during iteration'))
               callback()
             when 'done'
-              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
-              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)} / {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
               debugCount = 0
               if lastId && !found
                 finish(this, new SoftFail('failed to locate RETS overlap record'))
@@ -230,9 +230,9 @@ getDataStream = (mlsId, dataType, opts={}) ->
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
                   resultStreamLogger.debug () -> "       |  maxRowsExceeded, triggering next iteration"
-                  searchOptions.offset = total-overlap
+                  searchOptions.offset = baseOffset+total-overlap
                   if fullLimit
-                    searchOptions.limit = fullLimit - searchOptions.offset
+                    searchOptions.limit = fullLimit - (searchOptions.offset - baseOffset)
                     if opts.subLimit
                       searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
                   streamIteration()
@@ -299,6 +299,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)
+      baseOffset = opts.searchOptions.offset ? 0
       fullLimit = opts.searchOptions.limit
       if opts.subLimit
         if searchOptions.limit
@@ -331,9 +332,9 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
             total += results.length
             if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
-              searchOptions.offset = total-overlap
+              searchOptions.offset = baseOffset+total-overlap
               if fullLimit
-                searchOptions.limit = fullLimit - searchOptions.offset
+                searchOptions.limit = fullLimit - (searchOptions.offset - baseOffset)
                 if opts.subLimit
                   searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
               handlerPromise = Promise.try () ->

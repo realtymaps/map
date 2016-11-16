@@ -81,7 +81,6 @@ loadRawData = (subtask = {}) ->
   .then (jsonStream) ->
 
     dataLoadHelpers.manageRawJSONStream({
-      tableName: rawTableName
       dataLoadHistory
       jsonStream
       column: 'json'
