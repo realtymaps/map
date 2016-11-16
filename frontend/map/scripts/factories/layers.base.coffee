@@ -37,7 +37,7 @@ _googleFactory = (name, type, options) ->
   ret
 
 _baseLayers =
-  # googleRoadmap: _googleFactory 'Streets', 'ROADMAP', mapOptions: googleOptions
+  googleRoadmap: _googleFactory 'Streets', 'ROADMAP' #, mapOptions: googleOptions
   googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
 
 app.factory 'rmapsUtilLayersBase', ($http, $rootScope, $log, rmapsEventConstants) ->
