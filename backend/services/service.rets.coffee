@@ -118,6 +118,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
       currentPayload = null
       found = null
       counter = 0
+      debugCount = 0
       searchQuery = internals.buildSearchQuery(schemaInfo, utcOffset, opts)
       searchOptions =
         count: 0
@@ -167,9 +168,9 @@ getDataStream = (mlsId, dataType, opts={}) ->
           if done
             resultStreamLogger.debug () -> "*****  |  already done, skipping: #{event.type}: #{JSON.stringify(event.payload)}"
             return
-          resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
           switch event.type
             when 'delimiter'
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !delimiter
                 delimiter = event.payload
                 @push(event)
@@ -177,6 +178,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 finish(this, new Error('rets delimiter changed during iteration'))
               callback()
             when 'columns'
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !columns
                 columns = event.payload
                 columnList = event.payload.split(delimiter)[1..-2]
@@ -193,6 +195,10 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 finish(this, new Error('rets columns changed during iteration'))
               callback()
             when 'data'
+              if resultStreamLogger.isEnabled()
+                debugCount++
+                if debugCount%1000 == 0
+                  resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
               event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
               if !lastId || found
                 if opts.uuidField
@@ -206,6 +212,9 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   counter++
               callback()
             when 'done'
+              resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              debugCount = 0
               if lastId && !found
                 finish(this, new SoftFail('failed to locate RETS overlap record'))
                 callback()
@@ -235,6 +244,8 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   finish(this)
                   callback()
             when 'error'
+              resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
                 resultStreamLogger.debug () -> "       |  ignoring, not a real error"
                 # code for 0 results, not really an error (DMQL is a clunky language)
@@ -243,9 +254,11 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 finish(this, event.payload)
               callback()
             else
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               resultStreamLogger.debug () -> "       |  event type not handled"
               callback()
         catch error
+          resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
           resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
