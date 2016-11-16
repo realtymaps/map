@@ -69,6 +69,8 @@ queryPermissions = (query, permissions = {}) ->
       @whereRaw("FALSE")
 
 scrubPermissions = (data, permissions) ->
+  logger.debug -> permissions
+
   if !permissions.superuser
     for row in data
       if (row.data_source_type == 'county' && permissions.fips.indexOf(row.fips_code) == -1) ||

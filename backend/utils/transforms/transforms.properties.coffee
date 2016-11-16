@@ -3,6 +3,7 @@ _ = require 'lodash'
 internals = require './transforms.properties.internals'
 {propertyTypes} = require "../../enums/filterPropertyType"
 {statuses} = require "../../enums/filterStatuses"
+propertyUtils =  require '../util.properties'
 
 state =
   state: [
@@ -33,6 +34,8 @@ body = _.extend {}, state,
       type: validators.string()
       coordinates: validators.array()
       radius: validators.float()
+  trump:
+    transform: validators.string(in:propertyUtils.DATA_SOURCE_TYPES)
 
 save =
   params: validators.object isEmptyProtect: true
@@ -45,6 +48,8 @@ detail =
     rm_property_id:
       transform: validators.array()
       required: true
+    trump:
+      transform: validators.string(in:propertyUtils.DATA_SOURCE_TYPES)
   property:
     rm_property_id_or_geometry_center:
       input: ["rm_property_id", "geometry_center"]
@@ -62,6 +67,8 @@ detail =
       required: true
 
     no_alert: validators.boolean(truthy: true, falsy: false)
+    trump:
+      transform: validators.string(in:propertyUtils.DATA_SOURCE_TYPES)
 
 filterSummary =
   state: validators.object
