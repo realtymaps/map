@@ -560,6 +560,8 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
 
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
+  parts = tableName.split('_')
+  verboseLogger = logger.spawn(parts[1]).spawn(parts[2])
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     new Promise (resolve, reject) ->
@@ -569,6 +571,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       donePayload = null
       dbStreamer = null
       hadError = false
+      debugCount = 0
       onError = (err) ->
         reject(err)
         dbStreamer.unpipe(dbStream)
@@ -586,11 +589,16 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               else  # escape the whole row at once
                 this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
+              debugCount++
+              if debugCount%10 == 0
+                verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               callback()
             when 'delimiter'
+              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               delimiter = event.payload
               callback()
             when 'columns'
+              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
@@ -604,16 +612,25 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 dbStreamer.pipe(dbStream)
                 callback()
             when 'done'
+              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              debugCount = 0
               donePayload = event.payload
               callback()
             when 'error'
+              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
                 # make sure it is a true error, not just no records returned
                 onError(event.payload)
               callback()
             else
+              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
+          verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+          verboseLogger.debug () -> "*****  |  error in catch block!!!"
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->

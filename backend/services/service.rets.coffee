@@ -8,6 +8,8 @@ through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+util = require 'util'
+
 
 getSystemData = (mlsId) ->
   logger.spawn(mlsId).debug () -> "getting system data for #{mlsId}"
@@ -169,6 +171,21 @@ getDataStream = (mlsId, dataType, opts={}) ->
             resultStreamLogger.debug () -> "*****  |  already done, skipping: #{event.type}: #{JSON.stringify(event.payload)}"
             return
           switch event.type
+            when 'data'
+              event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
+              if !lastId || found
+                if opts.uuidField
+                  currentPayload = event.payload
+                @push(event)
+              else
+                if lastId == event.payload.split(delimiter)[uuidColumn]
+                  found = counter
+                else
+                  counter++
+              debugCount++
+              if debugCount%10 == 0
+                resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              callback()
             when 'delimiter'
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !delimiter
@@ -194,25 +211,8 @@ getDataStream = (mlsId, dataType, opts={}) ->
               else if event.payload != columns
                 finish(this, new Error('rets columns changed during iteration'))
               callback()
-            when 'data'
-              if resultStreamLogger.isEnabled()
-                debugCount++
-                if debugCount%1000 == 0
-                  resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
-              event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
-              if !lastId || found
-                if opts.uuidField
-                  currentPayload = event.payload
-                @push(event)
-              else
-                resultStreamLogger.debug () -> "       |  skipping (overlap)"
-                if lastId == event.payload.split(delimiter)[uuidColumn]
-                  found = counter
-                else
-                  counter++
-              callback()
             when 'done'
-              resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               debugCount = 0
               if lastId && !found
@@ -244,7 +244,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   finish(this)
                   callback()
             when 'error'
-              resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
                 resultStreamLogger.debug () -> "       |  ignoring, not a real error"
@@ -258,7 +258,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
               resultStreamLogger.debug () -> "       |  event type not handled"
               callback()
         catch error
-          resultStreamLogger.debug () -> "EVENT  |  data: #{debugCount}"
+          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
           resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
