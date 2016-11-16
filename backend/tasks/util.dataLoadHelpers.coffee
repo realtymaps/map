@@ -575,8 +575,8 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       onError = (err) ->
         reject(err)
         dbStreamer.unpipe(dbStream)
-        dbStream.write('\\.\n')
-        dbStream.end()
+        dbStream?.write('\\.\n')
+        dbStream?.end()
         hadError = true
       doPerValEscape = (val) ->
         utilStreams.pgStreamEscape(val, delimiter)
