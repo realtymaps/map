@@ -525,7 +525,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
     doPerValEscape = (val) ->
       utilStreams.pgStreamEscape(val, delimiter)
 
-    endStreamChunk = ({linesCount}) ->
+    commitStreamChunk = ({linesCount}) ->
       verboseLogger.debug () -> 'CHUNK  |  committing stream chunk'
       dbStreamer.unpipe(dbStream)
       dbStream?.write('\\.\n')
@@ -584,7 +584,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               Promise.try () ->
                 if opts.maxChunkSize? && linesCount%opts.maxChunkSize == 0
-                  endStreamChunk({linesCount})
+                  commitStreamChunk({linesCount})
                   .then () ->
                     startStreamChunk(createTable: false)
               .then () ->
@@ -623,7 +623,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        endStreamChunk({linesCount})
+        commitStreamChunk({linesCount})
         .then () ->
           promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
         .then () ->
