@@ -29,6 +29,7 @@ app.factory 'rmapsPriorStateService', ($log) ->
 
     # Reset the prior state after a successful login
     clearPrior: () ->
+      $log.debug "clearing prior state"
       prior = null
 
   return service
