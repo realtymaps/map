@@ -19,6 +19,7 @@ require 'leaflet-search/dist/leaflet-search.src.js'
 require 'leaflet.markercluster'#has css
 require 'leaflet-zoombox/L.Control.ZoomBox.min.js'#has css
 require 'ui-leaflet'
+require 'leaflet-plugins/layer/tile/Google.js'
 
 require 'angularjs-slider' #rzModule
 require 'angular-stripe'
