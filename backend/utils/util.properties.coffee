@@ -6,27 +6,22 @@ DATA_SOURCE_TYPES = [
   'county'
 ]
 
-isTrump = ({row, existing, trump, isBoth}) ->
+isTrump = ({row, existing, trump}) ->
   trump ?= DATA_SOURCE_TYPES[0]
-  isBoth ?= true
-  ret = row.data_source_type == trump && (existing.data_source_type == trump)
-  if isBoth
-    return ret
-  !ret
+  if !existing  # we don't have an old row
+    return true
+  if row.data_source_type != trump  # we have an old row, but the new row isn't preferred
+    return false
+  if existing.data_source_type != trump  # the old row isn't preferred and the new row is
+    return  true
 
-existingIsNotPreferred = ({row, existing, trump}) ->
-  isTrump({row, existing, trump, isBoth: false})
-
-isOutdatedPreferred = ({row, existing, trump}) ->
-  isTrump({row, existing, trump}) && moment(existing.up_to_date).isBefore(row.up_to_date)
+  return moment(existing.up_to_date).isBefore(row.up_to_date)
 
 eachTrump = ({collection, trump}, cb) ->
   result = {}
   Promise.each collection, (row) ->
     existing = result[row.rm_property_id]
-    if(!existing ||
-    existingIsNotPreferred({row, existing, trump}) ||
-    isOutdatedPreferred({row, existing, trump}))
+    if isTrump({row, existing, trump})
       cb({result, row})
   .then () ->
     result
@@ -49,8 +44,6 @@ toTrumpHash = ({data, trump}) ->
 module.exports = {
   DATA_SOURCE_TYPES
   isTrump
-  existingIsNotPreferred
-  isOutdatedPreferred
   eachTrump
   toTrumpHash
 }
