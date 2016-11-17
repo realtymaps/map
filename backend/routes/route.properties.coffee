@@ -1,4 +1,5 @@
 Promise = require 'bluebird'
+_ = require 'lodash'
 
 detailService = require '../services/service.properties.combined.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
@@ -65,7 +66,7 @@ module.exports =
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
         detailService.getProperty(
-          query: req.validBody
+          query: _.omit(req.validBody, 'trump')
           profile: profileSvc.getCurrentSessionProfile(req.session)
         )
         .then (property) -> Promise.try () ->
@@ -89,8 +90,9 @@ module.exports =
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
         detailService.getProperties(
-          query: req.validBody
+          query: _.omit(req.validBody, 'trump')
           profile: profileSvc.getCurrentSessionProfile(req.session)
+          trump: req.validBody.trump
         )
 
   drawnShapes:

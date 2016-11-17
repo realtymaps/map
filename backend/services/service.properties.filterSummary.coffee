@@ -1,14 +1,14 @@
 config = require '../../common/config/commonConfig'
 combined = require './service.properties.combined.filterSummary'
-Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:filterSummary')
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 validation = require '../utils/util.validation'
 mlsConfigSvc = require './service.mls_config'
 geohash = require 'geohash64'
-moment = require 'moment'
-errorHandlingUtils =  require '../utils/errors/util.error.partiallyHandledError'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+propertiesUtil = require  '../utils/util.properties'
+
 
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl, ignoreSaved}) ->
@@ -64,37 +64,31 @@ module.exports =
 
             combined.scrubPermissions(properties, permissions)
 
-            resultsByPropertyId = {}
             propertyIdsByCenterPoint = {}
             resultGroups = {}
-            Promise.each properties, (property) ->
-              existing = resultsByPropertyId[property.rm_property_id]
-              # MLS always replaces Tax data. The most up-to-date MLS record takes precedence.
-              if !existing || (property.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
-                  (property.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
-                    moment(existing.up_to_date).isBefore(property.up_to_date))
+            propertiesUtil.eachTrump {collection: properties, trump: 'mls'}, ({result, row}) ->
+              property = row
+              if queryParams.returnType
+                encodedCenter = geohash.encode([property.geometry_center?.coordinates])
 
-                if queryParams.returnType
-                  encodedCenter = geohash.encode([property.geometry_center?.coordinates])
+                if encodedCenter
+                  # This is a map because we only want each property once
+                  propertyIdsByCenterPoint[encodedCenter] ?= {}
+                  propertyIdsByCenterPoint[encodedCenter][property.rm_property_id] = 1
 
-                  if encodedCenter
-                    # This is a map because we only want each property once
-                    propertyIdsByCenterPoint[encodedCenter] ?= {}
-                    propertyIdsByCenterPoint[encodedCenter][property.rm_property_id] = 1
+              result[property.rm_property_id] = toLeafletMarker property
 
-                resultsByPropertyId[property.rm_property_id] = toLeafletMarker property
+              # Ensure saved details are part of the saved props
+              for type in ['pins', 'favorites']
+                if profile[type]?[property.rm_property_id]?
+                  property.savedDetails = _.extend property.savedDetails || {},
+                    profile[type][property.rm_property_id]
 
-                # Ensure saved details are part of the saved props
-                for type in ['pins', 'favorites']
-                  if profile[type]?[property.rm_property_id]?
-                    property.savedDetails = _.extend property.savedDetails || {},
-                      profile[type][property.rm_property_id]
-
-                if property.data_source_type == 'mls' and property.data_source_id?
-                  mlsConfigSvc.getByIdCached(property.data_source_id)
-                  .then (mlsConfig) ->
-                    property.mls_formal_name = mlsConfig?.formal_name
-            .then () ->
+              if property.data_source_type == 'mls' and property.data_source_id?
+                mlsConfigSvc.getByIdCached(property.data_source_id)
+                .then (mlsConfig) ->
+                  property.mls_formal_name = mlsConfig?.formal_name
+            .then (resultsByPropertyId) ->
               resultGroupsCtr = 0
               result = if queryParams.returnType
                 for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
