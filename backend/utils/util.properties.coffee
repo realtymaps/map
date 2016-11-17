@@ -20,6 +20,17 @@ existingIsNotPreferred = ({row, existing, trump}) ->
 isOutdatedPreferred = ({row, existing, trump}) ->
   isTrump({row, existing, trump}) && moment(existing.up_to_date).isBefore(row.up_to_date)
 
+eachTrump = ({collection, trump}, cb) ->
+  result = {}
+  Promise.each collection, (row) ->
+    existing = result[row.rm_property_id]
+    if(!existing ||
+    existingIsNotPreferred({row, existing, trump}) ||
+    isOutdatedPreferred({row, existing, trump}))
+      cb({result, row})
+  .then () ->
+    result
+
 ### TRUMPING Data rows
 MLS (default trump) rows trump all other rows if you have perms to them
 
@@ -31,20 +42,15 @@ than a country or tax record. Therefore there needs to be a switch to allow
 details preference of mls vs county.
 ###
 toTrumpHash = ({data, trump}) ->
-  result = {}
-  Promise.each data, (row) ->
-    existing = result[row.rm_property_id]
-    if(!existing ||
-    existingIsNotPreferred({row, existing, trump}) ||
-    isOutdatedPreferred({row, existing, trump}))
-      result[row.rm_property_id] = row
-  .then () ->
-    result
+  eachTrump {collection: data, trump}, ({result, row}) ->
+    result[row.rm_property_id] = row
+
 
 module.exports = {
   DATA_SOURCE_TYPES
   isTrump
   existingIsNotPreferred
   isOutdatedPreferred
+  eachTrump
   toTrumpHash
 }
