@@ -14,7 +14,7 @@ _mapDrawEvents = ['resize','moveend', 'zoomend']
 
 module.exports = app.factory 'rmapsBaseMapFactory', (
   $http
-  nemSimpleLogger
+  $log
   $timeout
   leafletData
   rmapsNgLeafletHelpersService
@@ -22,11 +22,11 @@ module.exports = app.factory 'rmapsBaseMapFactory', (
   rmapsNgLeafletEventGateService
 ) ->
 
-  $log = nemSimpleLogger.spawn("map:baseFactory")
+  $log = $log.spawn("map:baseFactory")
 
   class
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
-
+      $log.debug 'initScopeSettings', arguments
       settings =
         options: options
 

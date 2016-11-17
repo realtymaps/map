@@ -134,7 +134,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
 
   _loadProperties = (model) ->
     $log.debug 'Loading property', model.rm_property_id
-    service.getProperties [model.rm_property_id], 'filter'
+    service.getProperties({ids:[model.rm_property_id], columns:'filter'})
     .then ({data}) ->
       for detail in data
         if model = service.pins[detail.rm_property_id]
@@ -204,8 +204,11 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
   service.updateMapState = (mapState) ->
     $http.post backendRoutes.properties.mapState, state: _getState(mapState)
 
-  service.getProperties = (ids, columns) ->
-    $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
+  service.getProperties = ({ids, columns, trump}) ->
+    data = {rm_property_id: ids, columns}
+    if trump
+      data.trump = trump
+    $http.post(backendRoutes.properties.details, data)
 
   service.getSaves = () ->
     $http.getData backendRoutes.properties.saves, cache: false
@@ -258,7 +261,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFacto
     propertyIds = _.keys(service.pins).concat _.keys(service.favorites)
     if propertyIds.length
       $log.debug 'Loading', propertyIds.length, 'properties from new profile'
-      service.getProperties propertyIds, 'filter'
+      service.getProperties({ids: propertyIds, columns: 'filter'})
       .then ({data}) ->
         for detail in data
           if model = service.pins[detail.rm_property_id]

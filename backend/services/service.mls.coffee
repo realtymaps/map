@@ -65,9 +65,30 @@ getAllSupported = (queryObj) ->
     query.where queryObj
   query
 
+getCollectiveCenter = (mlses) ->
+  #st_collect aggregates all points
+  #then we get the center of those via st_centroid
+  rawSelect = lookup.fipsCodes.raw('st_asgeojson(st_centroid(st_collect(??)))::json as geo_json', 'geometry_center_raw')
+
+  questionMarks = (mlses.map () -> '?').join(',')
+
+  whereRaw = lookup.fipsCodes.raw("?? ilike ANY(ARRAY[#{questionMarks}])", [
+    lookup.mls_m2m_fips_code_county.tableName + ".mls"
+  ].concat(mlses))
+
+  logger.debugQuery(
+    lookup.fipsCodes()
+    .select(rawSelect)
+    .join(lookup.mls_m2m_fips_code_county.tableName,
+      lookup.mls_m2m_fips_code_county.tableName + '.fips_code',
+      lookup.fipsCodes.tableName + '.code')
+    .where(whereRaw)
+  )
+
 module.exports = {
   getAll
   getAllSupported
+  getCollectiveCenter
   toFipsCounties
   supported
 }

@@ -4,12 +4,10 @@ lobService = require './service.lob'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 _ = require 'lodash'
-moment = require 'moment'
 db = dbs.get('main')
 propertySvc = require './service.properties.combined.details'
-logger = require('../config/logger').spawn('route:mail_campaigns')
-LobErrors = require '../utils/errors/util.errors.lob'
-Promise = require 'bluebird'
+logger = require('../config/logger').spawn('service:mail_campaigns')
+
 
 class MailService extends ServiceCrud
   getAll: (entity = {}) ->
@@ -37,7 +35,7 @@ class MailService extends ServiceCrud
       this.on("#{tables.mail.campaign.tableName}.aws_key", "#{tables.mail.pdfUpload.tableName}.aws_key")
     )
 
-    super(entity, query: query)
+    super(entity, query: logger.debugQuery(query))
 
 
   # any details for a mail review shall be delivered upon this service call

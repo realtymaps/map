@@ -62,7 +62,7 @@ basicColumns = do ->
       'email_validation_hash', 'email_is_valid']
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
-    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'can_edit',
+    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'favorites', 'map_toggles', 'can_edit',
       'map_position', 'map_results', 'rm_modified_time']
 
     drawnShapes: _commonProjectCols.concat ['geometry_center', 'geometry_raw', 'shape_extras',
@@ -90,10 +90,6 @@ basicColumns = do ->
     id: ['rm_property_id', 'data_source_type'] # `data_source_type` needed for finding "mls" or "county" category
 
   ret
-
-
-safeFromQuery =
-  profile: _.without basicColumns.profile, 'id', 'auth_user_id', 'parent_auth_user_id'
 
 joinColumns = do ->
   permission: [
@@ -182,7 +178,6 @@ joinColumnNames = do ->
 
 module.exports = {
   basicColumns
-  safeFromQuery
   joinColumns
   joinColumnNames
   ageOrDaysFromStartToNow

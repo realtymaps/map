@@ -2,7 +2,16 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $location, $q, rmapsMailTemplateFactory, rmapsMailCampaignService) ->
+app.controller 'rmapsMailWizardCtrl', (
+$rootScope
+$scope
+$log
+$state
+$location
+$q
+rmapsMailTemplateFactory
+rmapsMailCampaignService) ->
+
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [

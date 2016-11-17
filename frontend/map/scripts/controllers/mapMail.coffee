@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 module.exports = app
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
+
 
 app.controller 'rmapsMailModalCtrl', ($scope, $state, $uibModal, $log, rmapsPropertiesService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:rmapsMailModalCtrl'

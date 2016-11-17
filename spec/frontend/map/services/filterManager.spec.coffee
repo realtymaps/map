@@ -8,12 +8,11 @@ describe "rmapsFilterManagerService", ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend, rmapsRouteProfileResolveFactory) =>
+    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend) =>
       @$rootScope = $rootScope
       @rmapsEventConstants =  rmapsEventConstants
       @subject = rmapsFilterManagerService
       @digestor = digestor
-      @rmapsRouteProfileResolveFactory = rmapsRouteProfileResolveFactory
 
       identity = {
         currentProfileId: 1,

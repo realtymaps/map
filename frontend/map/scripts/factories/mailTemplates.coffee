@@ -43,11 +43,13 @@ app.service 'rmapsMailTemplateFactory', (
 
     # I think textAngular adds some html artifacts during html validation, this is designed to clean them out before making our own html from the content
     _cleanContent: (content) ->
-      return if !content? || !_.isString(content)
+      if !content? || !_.isString(content)
+        return
       content.replace('<head></head><body>','').replace('</body>','')
 
     getSenderData: () ->
-      return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
+      if !_.isEmpty @campaign.sender_info
+        return $q.when @campaign.sender_info
       rmapsPrincipalService.getIdentity()
       .then (identity) =>
         state = rmapsUsStates.getById(identity.user.us_state_id)

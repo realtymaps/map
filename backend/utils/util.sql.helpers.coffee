@@ -2,10 +2,11 @@ _ = require 'lodash'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
-logger = require('../config/logger').spawn('backend:utils:sql.helpers')
+logger = require('../config/logger').spawn('utils:sql.helpers')
 dbs = require("../config/dbs")
 clone = require 'clone'
 ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
+require '../../common/extensions/strings'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -117,13 +118,22 @@ orWhereNotIn = (query, column, values) ->
 # iterate through entity object, and append either a `where` or `whereIn` clause based
 # on whether that field value is an array
 # Note: entity is a map of columns->values
-whereAndWhereIn = (query, entity) ->
+whereAndWhereIn = (query, entity, isOr = false) ->
+  maybeAppendOr = (clause) ->
+    if isOr
+      'or' + clause.toInitCaps(false)
+    else
+      clause
+
   for column, value of entity
     if Array.isArray(value)
-      query = whereIn(query, column, value)
+      query = module.exports[maybeAppendOr("whereIn")](query, column, value)
     else
-      query = query.where(column, value)
+      query = query[maybeAppendOr('where')](column, value)
   query
+
+orWhereAndWhereIn = (query, entity) -> whereAndWhereIn(query, entity, true)
+
 
 between = (query, column, min, max) ->
   if min and max
@@ -350,6 +360,7 @@ module.exports = {
   whereNotIn
   orWhereNotIn
   whereAndWhereIn
+  orWhereAndWhereIn
   whereInBounds
   getClauseString
   safeJsonArray
