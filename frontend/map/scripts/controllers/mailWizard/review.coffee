@@ -1,5 +1,4 @@
 app = require '../../app.coffee'
-_ = require 'lodash'
 previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app

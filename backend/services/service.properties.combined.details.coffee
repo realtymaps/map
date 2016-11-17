@@ -10,11 +10,12 @@ mlsConfigSvc = require './service.mls_config'
 Promise = require 'bluebird'
 moment = require 'moment'
 transforms = require('../utils/transforms/transforms.properties').detail
+propertyUtils =  require '../utils/util.properties'
 
 _propertyQuery = ({queryParams, profile, limit}) ->
   getPermissions(profile)
   .then (permissions) ->
-    logger.debug permissions
+    logger.debug -> permissions
 
     query = sqlHelpers.select(tables.finalized.combined(), queryParams.columns)
     .leftOuterJoin("#{tables.config.mls.tableName}",
@@ -33,7 +34,7 @@ _propertyQuery = ({queryParams, profile, limit}) ->
       else if queryParams.geometry_center?
         sqlHelpers.whereIntersects(@, queryParams.geometry_center, 'geometry_raw')
 
-    logger.debug query.toString()
+    logger.debug -> query.toString()
 
     query.then (data = []) ->
       # Prune subscriber groups and owner info where appropriate
@@ -101,25 +102,16 @@ getProperty = ({query, profile}) ->
       _.map(result)[0]
 
 # Retrieve a set of properties by rm_property_id (filter data only)
-getProperties = ({query, profile}) ->
+getProperties = ({query, profile, trump}) ->
+  logger.debug -> {query, trump}
   validation.validateAndTransform query, transforms.properties
   .then (queryParams) ->
     queryParams.columns = 'filter'
     _propertyQuery({queryParams, profile})
-
   .then (data) ->
-    result = {}
-
-    Promise.map data, (row) ->
-      existing = result[row.rm_property_id]
-      if !existing || (row.data_source_type == 'mls' && existing.data_source_type != 'mls') ||
-          (row.data_source_type == 'mls' && existing.data_source_type != 'mls' &&
-            moment(existing.up_to_date).isBefore(row.up_to_date))
-
-        result[row.rm_property_id] = row
-
-    .then () ->
-      _.map(result)
+    propertyUtils.toTrumpHash({data, trump})
+  .then (result) ->
+    _.map(result)
 
 module.exports = {
   getProperty

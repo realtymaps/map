@@ -31,13 +31,13 @@ app.factory 'rmapsMapAuthorizationFactory', (
   doPermsCheck = (toState, toParams) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
-      # $log.debug 'redirected to login'
+      $log.debug 'redirected to login'
       rmapsPriorStateService.setPrior toState, toParams
       return routes.login
 
     if not rmapsPrincipalService.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
-      # $log.debug 'redirected to accessDenied'
+      $log.debug 'redirected to accessDenied'
       return routes.accessDenied
 
   #
@@ -47,7 +47,9 @@ app.factory 'rmapsMapAuthorizationFactory', (
   service =
     # Force the app to navigate to the login screen but retain the current state and params for a redirect
     forceLoginRedirect: () ->
-      rmapsPriorStateService.setPrior $state.current, $stateParams
+      # when redirecting to login, if our attempted state is NOT `login`, set it as prior so that we know to redirect later
+      if $state.current.name != 'login'
+        rmapsPriorStateService.setPrior $state.current, $stateParams
       $state.go 'login'
 
     # After a successful login, either go to the prior state or the map

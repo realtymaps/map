@@ -54,6 +54,7 @@ _updateProfileWhere = (profile, where) ->
   q = tables.user.profile()
   .update(safeUpdate)
   .where(where)
+  logger.debug () -> q.toString()
   q
 
 # general purpose getAll endpoint for profile model (no project fields)
