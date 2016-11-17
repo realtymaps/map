@@ -5,7 +5,7 @@ logger = require('../config/logger').spawn('service:filterSummary:combined:inter
 dbs = require '../config/dbs'
 
 _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
-  "round(ST_#{xy}(geometry_center_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
+  "round(ST_#{xy}(#{tables.finalized.combined.tableName}.geometry_center_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
   #NOTE: currently it is very inefficient to join saved properties (pins / faves)
@@ -20,8 +20,8 @@ _makeClusterQuery = (roundTo, scale) ->
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
     dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat")
   )
-  .whereNotNull('geometry_raw')
-  .whereNotNull('address')
+  .whereNotNull("#{tables.finalized.combined.tableName}.geometry_raw")
+  .whereNotNull("#{tables.finalized.combined.tableName}.address")
   .groupByRaw(_roundCoordCol(roundTo,scale))
   .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))
 
