@@ -28,6 +28,7 @@ setSecurityCookie = (req, res, token, rememberMe) ->
     options = config.SESSION_SECURITY.cookie
   # cookie has 3 parts: userid, sessionid, and the token (before hashing)
   res.cookie config.SESSION_SECURITY.name, "#{req.user.id}.#{req.sessionID}.#{token}", options
+  _.merge req.session.cookie, options
 
 
 # this is for when new logins occur, or when we want to create a session based on rememberMe
@@ -51,6 +52,8 @@ createNewSeries = (req, res, rememberMe) ->
         token: tokenHash
   .then () ->
     setSecurityCookie(req, res, token, req.body.remember_me)
+  .then () ->
+    req.session.saveAsync()
 
 
 # figures out how many logins the user should have, and culls away enough to
@@ -119,8 +122,6 @@ sessionLoginProcess = (req, res, user, opts={}) ->
     req.user = user
     req.session.subscription = subscription_status
     userUtils.cacheUserValues(req)
-  .then () ->
-    req.session.saveAsync() # this appears to return early
   .then () ->
     ensureSessionCount(req)
   .then () ->
