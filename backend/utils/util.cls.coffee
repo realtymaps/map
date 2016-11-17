@@ -1,4 +1,4 @@
-{getNamespace} = require 'continuation-local-storage'
+getNamespace = require('continuation-local-storage').getNamespace
 {NAMESPACE} = require '../config/config'
 
 module.exports = (namespace = getNamespace(NAMESPACE)) ->
