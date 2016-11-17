@@ -228,6 +228,8 @@ getDataStream = (mlsId, dataType, opts={}) ->
                     lastId = currentPayload.split(delimiter)[uuidColumn]
                   if !overlap
                     overlap = Math.max(10, Math.floor(event.payload.rowsReceived*0.001))  # 0.1% of the allowed result size, min 10
+                    if !mlsInfo.verify_overlap
+                      overlap *= 2  # if we aren't verifying, use a bigger overlap for safety
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
                   resultStreamLogger.debug () -> "       |  maxRowsExceeded, triggering next iteration"
                   searchOptions.offset = baseOffset+total-overlap
@@ -330,6 +332,8 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 lastId = results[results.length-1][opts.uuidField]
               if !overlap
                 overlap = Math.max(10, Math.floor(results.length*0.001))  # 0.1% of the allowed result size, min 10
+                if !mlsInfo.verify_overlap
+                  overlap *= 2  # if we aren't verifying, use a bigger overlap for safety
             total += results.length
             if response.maxRowsExceeded && (!fullLimit || total < fullLimit)
               searchOptions.offset = baseOffset+total-overlap

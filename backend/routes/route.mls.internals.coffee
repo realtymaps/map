@@ -8,6 +8,7 @@ photoUtil = require '../utils/util.mls.photos'
 through = require 'through2'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 httpStatus = require '../../common/utils/httpStatus'
+mlsHelpers = require '../tasks/util.mlsHelpers'
 
 
 _hasNoStar = (photoIds) ->
@@ -124,7 +125,7 @@ getQueryPhoto = ({req, res, next, photoType}) ->
 # this  gets some data from a RETS server based on a query, and returns it as an array of row objects plus and array of
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a
 # sample of e.g. 1000 rows of data to look at when figuring out how to configure a new MLS
-getDataDump = (mlsId, dataType, query, next) ->
+getDataDump = (mlsId, dataType, query) ->
   validations =
     limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
   validation.validateAndTransformRequest(query, validations)
@@ -161,9 +162,49 @@ getDataDump = (mlsId, dataType, query, next) ->
         header: true
 
 
+TEST_SIZE = 20
+BASE_OFFSET = 5
+OVERLAP_SIZE = 10
+testOverlapSettings = (mlsId) ->
+  results = null
+  resultsMap = null
+  results2 = null
+  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
+  .then (uuidField) ->
+    processFirstResults = (data) ->
+      results = data
+      resultsMap = _.indexBy(data, uuidField)
+    retsService.getDataChunks(mlsId, 'listing', searchOptions: {limit: TEST_SIZE, offset: BASE_OFFSET}, processFirstResults)
+    .then () ->
+      if results?.length != TEST_SIZE
+        return {error: "got #{results?.length} initial results, expected #{TEST_SIZE}"}
+      if Object.keys(resultsMap).length != TEST_SIZE
+        return {error: "got #{Object.keys(resultsMap).length} unique IDs, expected #{TEST_SIZE}; is MLS Listing ID configured properly?"}
+      processSecondResults = (data2) ->
+        results2 = data2
+      retsService.getDataChunks(mlsId, 'listing', searchOptions: {limit: TEST_SIZE, offset: BASE_OFFSET+TEST_SIZE-OVERLAP_SIZE}, processSecondResults)
+      .then () ->
+        if results2?.length != TEST_SIZE
+          return {error: "got #{results2?.length} secondary results, expected #{TEST_SIZE}"}
+        overlapCount = 0
+        for row in results2
+          if resultsMap[row[uuidField]]
+            overlapCount++
+        inOrder = true
+        for i in [0...overlapCount]
+          if results2[i][uuidField] != results[i+TEST_SIZE-overlapCount][uuidField]
+            inOrder = false
+            break
+        return {
+          expected: OVERLAP_SIZE
+          actual: overlapCount
+          inOrder
+        }
+
 
 module.exports = {
   getQueryPhoto
   getParamPhoto
   getDataDump
+  testOverlapSettings
 }

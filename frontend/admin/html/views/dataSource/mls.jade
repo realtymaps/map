@@ -200,6 +200,18 @@
                           input(type="{{ui.otherConfig[field].type}}" ng-model="mlsData.current[field]").form-control.input-lg
                         td.pad-left
                           button(ng-click="assignConfigDefault(mlsData.current, field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
+                      tr
+                        td
+                          label.data-label Force Overlap Ordering:
+                        td.pad-left
+                          | (feature not available yet)
+                        td.pad-left
+                          button(disabled="disabled").btn.btn-success Assign to Default: false
+                      tr
+                        td
+                          button(ng-click="testOverlapSettings(mlsData.current)").btn.btn-info Suggest Overlap Settings
+                          br
+                          | (configure normalization for MLS Listing ID first)
 
 
 

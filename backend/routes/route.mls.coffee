@@ -62,7 +62,10 @@ module.exports =
 
   getDatabaseList:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       retsCache.getDatabaseList(req.params)
       .then (list) ->
@@ -70,7 +73,10 @@ module.exports =
 
   getObjectList:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       retsCache.getObjectList(req.params)
       .then (list) ->
@@ -78,7 +84,10 @@ module.exports =
 
   getTableList:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       retsCache.getTableList(req.params)
       .then (list) ->
@@ -86,19 +95,28 @@ module.exports =
 
   getPhotos:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       internals.getQueryPhoto({req, res, next})
 
   getParamsPhotos:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       internals.getParamPhoto({req, res, next})
 
   getColumnList:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       retsCache.getColumnList(req.params)
       .then (list) ->
@@ -106,9 +124,12 @@ module.exports =
 
   getDataDump:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
-      internals.getDataDump(req.params.mlsId, req.params.dataType, req.query, next)
+      internals.getDataDump(req.params.mlsId, req.params.dataType, req.query)
       .then (csvPayload) ->
         resObj = new ExpressResponse(csvPayload)
         resObj.format = 'csv'
@@ -117,8 +138,22 @@ module.exports =
 
   getLookupTypes:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
     handle: (req, res, next) ->
       retsCache.getLookupTypes(req.params)
       .then (list) ->
         next new ExpressResponse(list)
+
+  testOverlapSettings:
+    method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
+    handle: (req, res, next) ->
+      internals.testOverlapSettings(req.params.mlsId)
+      .then (result) ->
+        next new ExpressResponse(result)

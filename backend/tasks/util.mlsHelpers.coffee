@@ -28,7 +28,9 @@ loadUpdates = (subtask, options={}) ->
     .then (result) ->
       return result[0].count
   Promise.join updateThresholdPromise, uuidPromise, offsetPromise, (updateThreshold, uuidField, offset) ->
-    retsService.getDataStream(options.dataSourceId, options.dataType, minDate: updateThreshold, uuidField: uuidField, searchOptions: {limit: options.limit, subLimit: options.subLimit, offset})
+    # don't just try to pick back up exactly where we left off -- add some overlap
+    searchOptions = {limit: options.limit, subLimit: options.subLimit, offset: offset-Math.max(10, Math.floor(offset*0.01))}
+    retsService.getDataStream(options.dataSourceId, options.dataType, minDate: updateThreshold, uuidField: uuidField, searchOptions: searchOptions)
     .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .then (retsStream) ->
@@ -58,12 +60,15 @@ getMlsField = (mlsId, rmapsFieldName, dataType) ->
     columnDataPromise = retsCacheService.getColumnList(mlsId: mlsId, databaseId: schemaInfo.db, tableId: schemaInfo.table)
     validationInfoPromise = dataLoadHelpers.getValidationInfo('mls', mlsId, dataType, 'base', rmapsFieldName)
     Promise.join columnDataPromise, validationInfoPromise, (columnData, validationInfo) ->
+      uuidLongName = validationInfo.validationMap.base?[0]?.input
+      if !uuidLongName
+        throw new Error("can't locate normalization config for `#{mlsFieldName}` for #{mlsId}")
       for field in columnData
-        if field.LongName == validationInfo.validationMap.base[0].input
+        if field.LongName == uuidLongName
           mlsFieldName = field.SystemName
           break
       if !mlsFieldName
-        throw new Error("can't locate `#{mlsFieldName}` for #{mlsId} (SystemName for #{validationInfo.validationMap.base[0].input})")
+        throw new Error("can't locate SystemName for field with LongName `#{uuidLongName}`, which is configured as `#{mlsFieldName}` for #{mlsId}")
       return mlsFieldName
 
 
