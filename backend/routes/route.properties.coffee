@@ -68,7 +68,6 @@ module.exports =
         detailService.getProperty(
           query: _.omit(req.validBody, 'trump')
           profile: profileSvc.getCurrentSessionProfile(req.session)
-          trump: req.validBody.trump
         )
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property

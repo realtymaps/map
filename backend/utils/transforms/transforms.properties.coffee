@@ -67,8 +67,6 @@ detail =
       required: true
 
     no_alert: validators.boolean(truthy: true, falsy: false)
-    trump:
-      transform: validators.string(in:propertyUtils.DATA_SOURCE_TYPES)
 
 filterSummary =
   state: validators.object
