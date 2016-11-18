@@ -95,21 +95,36 @@ describe "route.onboarding", ->
     describe "submitPaymentPlan", ->
 
       it 'on reject error transaction catches', ->
-        onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          Promise.reject('PLANNED')
+        onboardingRoute.__set__ 'internals',
+          submitPaymentPlan: () ->
+            logger.debug "PAYMENT CALLED"
+            Promise.reject('PLANNED')
+
+          submitEmail: () ->
+            logger.debug "EMAIL CALLED"
+            Promise.resolve()
+
+          setNewUserMapPosition: () ->
+            logger.debug "setNewUserMapPosition CALLED"
+            Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)
         .then =>
           @transactionCatchStub.called.should.be.true
 
       it 'on resolve transaction resolves', ->
-        onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          logger.debug "PAYMENT CALLED"
-          Promise.resolve(authUser:{}, customer:{})
+        onboardingRoute.__set__ 'internals',
+          submitPaymentPlan: () ->
+            logger.debug "PAYMENT CALLED"
+            Promise.resolve(authUser:{}, customer:{})
 
-        onboardingRoute.__set__ 'submitEmail', () ->
-          logger.debug "EMAIL CALLED"
-          Promise.resolve()
+          submitEmail: () ->
+            logger.debug "EMAIL CALLED"
+            Promise.resolve()
+
+          setNewUserMapPosition: () ->
+            logger.debug "setNewUserMapPosition CALLED"
+            Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)
         .then =>
@@ -118,14 +133,18 @@ describe "route.onboarding", ->
     describe "submitEmail", ->
 
       it 'on reject error transaction catches', ->
+        onboardingRoute.__set__ 'internals',
+          submitPaymentPlan: () ->
+            logger.debug "PAYMENT CALLED"
+            Promise.resolve(authUser:{}, customer:{})
 
-        onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          logger.debug "PAYMENT CALLED"
-          Promise.resolve(authUser:{}, customer:{})
+          submitEmail: () ->
+            logger.debug "EMAIL CALLED"
+            Promise.reject()
 
-        onboardingRoute.__set__ 'submitEmail', () ->
-          logger.debug "EMAIL CALLED"
-          Promise.reject()
+          setNewUserMapPosition: () ->
+            logger.debug "setNewUserMapPosition CALLED"
+            Promise.resolve()
 
 
         subject.createUser(@mockReq, @res, @next)
@@ -133,14 +152,18 @@ describe "route.onboarding", ->
           @transactionCatchStub.called.should.be.true
 
       it 'on resolve transaction resolves', ->
-        onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          logger.debug "PAYMENT CALLED"
-          Promise.resolve(authUser:{}, customer:{})
+        onboardingRoute.__set__ 'internals',
+          submitPaymentPlan: () ->
+            logger.debug "PAYMENT CALLED"
+            Promise.resolve(authUser:{}, customer:{})
 
-        onboardingRoute.__set__ 'submitEmail', () ->
-          logger.debug "EMAIL CALLED"
-          Promise.resolve()
+          submitEmail: () ->
+            logger.debug "EMAIL CALLED"
+            Promise.resolve()
 
+          setNewUserMapPosition: () ->
+            logger.debug "setNewUserMapPosition CALLED"
+            Promise.resolve()
         subject.createUser(@mockReq, @res, @next)
         .then =>
           @transactionThenStub.called.should.be.true

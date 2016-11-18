@@ -19,26 +19,8 @@ _ = require 'lodash'
 {getPlanId} = require '../services/service.plans'
 mlsAgentService = require '../services/service.mls.agent'
 errors = require '../utils/errors/util.errors.onboarding'
+internals = require './route.onboarding.internals'
 
-submitPaymentPlan = ({plan, token, authUser, trx}) ->
-  logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  paymentServices.customers.create
-    authUser: authUser
-    plan: plan
-    token: token
-    trx: trx
-
-submitEmail = ({authUser, plan}) ->
-  logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  emailServices.events.subscriptionSignUp
-    authUser: authUser
-    plan: plan
-  .catch (error) ->
-    logger.info "SignUp Failed, reverting Payment Customer"
-    paymentServices.customers.handleCreationError
-      error: error
-      authUser:authUser
-    throw error #rethrow error so transaction is reverted
 
 handles = wrapHandleRoutes handles:
   createUser: (req) ->
@@ -98,12 +80,14 @@ handles = wrapHandleRoutes handles:
               )
 
             Promise.all promises
+            .then () ->
+              internals.setNewUserMapPosition({authUser, transaction: trx})
             .then () -> authUser
 
           .then (authUser) ->
-            submitPaymentPlan {plan, token, authUser, trx}
+            internals.submitPaymentPlan {plan, token, authUser, trx}
           .then ({authUser, customer}) ->
-            submitEmail {authUser, plan, customer}
+            internals.submitEmail {authUser, plan, customer}
 
 module.exports = mergeHandles handles,
   createUser: method: "post"

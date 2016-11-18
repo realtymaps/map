@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
+app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '$rootScope', (Restangular, $http, rmapsEventConstants, $rootScope) ->
 
   mlsAPI = backendRoutes.mls.apiBaseMls
   mlsConfigAPI = backendRoutes.mls_config.apiBase
@@ -52,6 +52,31 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     # bypass XHR / $http file-dl drama, and Restangular req/res complication.
     backendRoutes.mls.getDataDump.replace(':mlsId', configId).replace(':dataType', dataType) + "?limit=#{limit}"
 
+  testOverlapSettings = (configId) ->
+    $http.getData(backendRoutes.mls.testOverlapSettings.replace(':mlsId', configId))
+    .then (data) ->
+      if !data || data.error
+        $rootScope.$emit rmapsEventConstants.alert.spawn,
+          type: 'rm-danger'
+          id: "overlap-test-#{configId}"
+          msg: "Bad test results: #{data.error}"
+        return
+      verify = if data.inOrder then 'checked' else 'unchecked'
+      force = if data.actual <= 2 then 'checked' else 'unchecked'
+      $rootScope.$emit rmapsEventConstants.alert.spawn,
+        type: 'rm-info'
+        id: "overlap-test-#{configId}"
+        msg: [
+          "Test results:"
+          " * Expected overlap: #{data.expected}"
+          " * Actual overlap: #{data.actual}"
+          " * In order: #{data.inOrder}"
+          ""
+          "Suggestions:"
+          "<b> * Verify Data Overlap</b>: <i>#{verify}</i>"
+          "<b> * Force Overlap Ordering</b>: <i>#{force}</i>"
+        ].join('<br/>')
+
   {
     getConfigs
     postConfig
@@ -65,6 +90,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     getLookupTypes
     getDataDumpUrl
     getObjectList
+    testOverlapSettings
   }
 
 ]

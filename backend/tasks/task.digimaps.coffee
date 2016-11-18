@@ -99,7 +99,6 @@ loadRawData = (subtask) -> Promise.try () ->
     .then (jsonStream) ->
 
       dataLoadHelpers.manageRawJSONStream({
-        tableName: rawTableName
         dataLoadHistory
         jsonStream
         column: parcelHelpers.column
@@ -262,13 +261,10 @@ cleanup = (subtask) ->
       keystore.setValuesMap(processInfo, namespace: DIGIMAPS_PROCESS_INFO)
       .then () ->
         logger.debug "cartodb sync enqueue fips_code: #{fips_code}"
-        sqlHelpers.upsertItem
-          dbFn: tables.cartodb.syncQueue
-          conflict: 'id'
-          entity:
-            batch_id: subtask.batch_id
-            fips_code: fips_code
-
+        tables.cartodb.syncQueue()
+        .insert
+          batch_id: subtask.batch_id
+          fips_code: fips_code
         .then () ->
           jobQueue.queueManualTask('cartodb', 'task.digimaps')
         # should we enqueue the cartodb subtask or not?

@@ -68,6 +68,8 @@ isMaybeTransientRetsError = (error) ->
     return true
   if cause instanceof rets.RetsServerError && httpStatus.isMaybeTransientError(cause.httpStatus)
     return true
+  if cause instanceof rets.RetsProcessingError && (''+cause.sourceError) == 'Unexpected end of xml stream.'
+    return true
   return false
 
 

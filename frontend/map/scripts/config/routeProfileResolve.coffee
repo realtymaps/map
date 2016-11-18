@@ -34,21 +34,3 @@ currentIdentity
       $log.debug "Loading profile based on identity.currentProfileId #{currentIdentity.currentProfileId}"
       return rmapsProfilesService.setCurrentProfileByIdentity currentIdentity
 
-app.factory 'rmapsRouteProfileResolveFactory', (
-$location
-$log
-$state
-$stateParams
-rmapsProfilesService
-rmapsRouteProfileResolve
-rmapsPrincipalService
-) ->
-  () ->
-    rmapsPrincipalService
-    .getIdentity().then (identity) ->
-      rmapsRouteProfileResolve($location
-      $log
-      $state
-      $stateParams
-      rmapsProfilesService
-      identity)

@@ -1,4 +1,5 @@
 app = require '../../app.coffee'
+_ = require 'lodash'
 
 module.exports = app
 
@@ -30,7 +31,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $uibModal, $scope, $log, $
       $state.go 'mail'
 
     else
-      rmapsPropertiesService.getProperties $scope.property_ids, 'filter'
+      rmapsPropertiesService.getProperties({ids:$scope.property_ids, columns:'filter', trump:'county'})
       .then ({data}) ->
 
         hash = (a) ->

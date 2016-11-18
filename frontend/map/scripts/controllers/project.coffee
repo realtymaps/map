@@ -141,7 +141,7 @@ app.controller 'rmapsProjectCtrl',
     $scope.cancelModal = () ->
       modalInstance.dismiss('cancel')
 
-    $scope.saveClient = () ->
+    $scope.saveClient = (form) ->
       modalInstance.dismiss('save')
       method = if $scope.clientCopy.id? then 'update' else 'create'
       $scope.clientCopy = _.merge $scope.clientCopy, project_name: $scope.project.name
@@ -206,7 +206,7 @@ app.controller 'rmapsProjectCtrl',
     rmapsPageService.setDynamicTitle(project.name)
 
   loadProperties = (toLoad) ->
-    rmapsPropertiesService.getProperties _.keys(toLoad), 'filter'
+    rmapsPropertiesService.getProperties({ids:_.keys(toLoad), columns:'filter'})
     .then ({data}) ->
       for detail in data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]

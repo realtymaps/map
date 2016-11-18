@@ -40,6 +40,11 @@ class FipsCodesCrud extends RouteCrud
 module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
   root:
     method: 'post'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_company','change_company','delete_company']}, logoutOnFail:true)
+    ]
+  # needs to be open for onboarding
   getAllMlsCodes:
     method: 'post'
   getAllSupportedMlsCodes:

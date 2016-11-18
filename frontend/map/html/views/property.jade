@@ -100,7 +100,7 @@ include ../includes/mixins/_noteInputMixin.jade
 
               .row.content-row
                 .col-xs-4
-                  .content-value(ng-if="property.appraised_value") {{property.appraised_value}}
+                  .content-value(ng-if="property.appraised_value") {{formatters.property.getPrice(property.appraised_value)}}
                   .content-value(ng-if="!property.appraised_value") -
                   .content-label Assessed Value
                 .col-xs-4
@@ -169,11 +169,11 @@ include ../includes/mixins/_noteInputMixin.jade
 
           .row.content-block.border-bottom(ng-if="property.data_source_type=='county'")
             .col-sm-12
-              .content-heading PVA Info
+              .content-heading County Appraiser Info
               .row.content-row
                 .col-sm-12
                   .content-label
-                    a(ng-click="showPVA(property)") View PVA Website (opens new window) &nbsp;
+                    a(ng-click="showPVA(property)") View County Website (opens new window) &nbsp;
                       icon.fa.fa-external-link
 
           uib-accordion.row.content-block.subscriber-groups(close-others="false")
@@ -183,7 +183,7 @@ include ../includes/mixins/_noteInputMixin.jade
                   .col-sm-4.field-label {{field.name}}
                   .col-sm-8
                     div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
-                    div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
+                    div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value) track by $index") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'deedHistory'")
                   .col-sm-2 Sale Date
@@ -216,7 +216,7 @@ include ../includes/mixins/_noteInputMixin.jade
                           .col-sm-4 {{field.name}}
                           .col-sm-8
                             div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
-                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value) track by $index") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'mortgageHistory'")
                   .col-sm-2 Date
@@ -247,7 +247,7 @@ include ../includes/mixins/_noteInputMixin.jade
                           .col-sm-4 {{field.name}}
                           .col-sm-8
                             div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
-                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value) track by $index") {{line}}
 
                 .row.content-row.history(ng-if="group.name == 'priorListings'")
                   .col-sm-2(ng-if="!listing.discontinued_date") Close Date
@@ -274,7 +274,7 @@ include ../includes/mixins/_noteInputMixin.jade
                           .col-sm-4 {{field.name}}
                           .col-sm-8
                             div(ng-if="!isArray(field.value.lines || field.value)") {{field.value}}
-                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value)") {{line}}
+                            div(ng-if="isArray(field.value.lines || field.value)" ng-repeat="line in (field.value.lines || field.value) track by $index") {{line}}
 
           .row.content-block.mls-disclaimer.border-top
             .col-sm-6(ng-show="property.disclaimer_logo || property.disclaimer_text")

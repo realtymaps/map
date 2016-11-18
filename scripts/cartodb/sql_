@@ -10,7 +10,7 @@ Promise = require 'bluebird'
 argv = require('yargs').argv
 Spinner = require('cli-spinner').Spinner
 cartodb = require '../../backend/services/service.cartodb'
-debug = require('debug')('cartodb:rmaps:parcelToGeo')
+logger = require('../../backend/config/logger')('scripts:cartodb:sql_')
 
 makeSpinner = () ->
   spinner = new Spinner('running.. %s')
@@ -41,15 +41,15 @@ promise = Promise.try ->
 
 promise
 .then (result) ->
-  debug(result)
-  debug("@@@@ TOTAL SUCCESS @@@@")
+  logger.debug -> result
+  logger.debug -> "@@@@ TOTAL SUCCESS @@@@"
   spin.stop()
   process.exit(0)
 .catch  (error) ->
   spin.stop()
-  debug("@@@@ ERROR @@@@")
+  logger.debug -> "@@@@ ERROR @@@@"
   console.error(error)
   if(error)
-    debug("@@@@ STACK @@@@")
-    debug(error.stack)
+    logger.debug -> "@@@@ STACK @@@@"
+    logger.debug -> error.stack
   process.exit(2)

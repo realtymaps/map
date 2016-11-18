@@ -11,6 +11,7 @@ rmapsProfilesService
 rmapsEventConstants
 rmapsHttpTempCache
 ) ->
+  $log = $log.spawn 'rmapsProjectsService'
 
   _mockData = (project) ->
 

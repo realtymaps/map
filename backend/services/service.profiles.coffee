@@ -54,6 +54,7 @@ _updateProfileWhere = (profile, where) ->
   q = tables.user.profile()
   .update(safeUpdate)
   .where(where)
+  logger.debug () -> q.toString()
   q
 
 # general purpose getAll endpoint for profile model (no project fields)
@@ -103,6 +104,10 @@ getCurrentSessionProfile = (session) ->
   try
     if !session?
       req = clsFactory().namespace.get 'req'
+      if !req? || !('session' of req)
+        rmapsNamespace = process.namespaces.rmaps
+        logger.error "Unable to fetch `req` from namespace object: #{rmapsNamespace}"
+        throw new profileErr.CurrentProfileError("Unable to acquire `req` from rmaps namespace.")
       session = req.session
   catch error
     throw new profileErr.CurrentProfileError(error.message)
@@ -110,7 +115,12 @@ getCurrentSessionProfile = (session) ->
   if !('current_profile_id' of session) and !session.profiles
     throw new profileErr.CurrentProfileError("Error getting current profile: session.current_profile_id=#{session.current_profile_id}, session.profiles.length=#{session.profiles?.length}")
 
-  session.profiles[session.current_profile_id]
+  profile = session.profiles[session.current_profile_id]
+  if !profile?
+    logger.error "session: #{JSON.stringify(_.omit(session,['profiles']))}"
+    logger.error "session profile ids: #{JSON.stringify(Object.keys(session.profiles))}"
+    throw new profileErr.CurrentProfileError("Error while acquiring current profile.")
+  profile
 
 # The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
 update = (profile, auth_user_id) -> Promise.try () ->

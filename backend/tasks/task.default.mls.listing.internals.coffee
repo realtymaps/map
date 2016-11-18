@@ -71,7 +71,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= subtask.data?.delay || 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.normalized.listing({transaction})
+  listingsPromise = tables.normalized.listing()  # no transaction -- normalized db
   .select('*')
   .where
     rm_property_id: id
@@ -105,16 +105,19 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         listing.geometry_center_raw = parcel.geometry_center_raw
       Promise.delay(delay)  #throttle for heroku's sake
       .then () ->
-        # do owner name and zoning promotion logic
-        if listing.owner_name? || listing.owner_name_2? || listing.zoning
-          # keep previously-promoted values
+        # do county data promotion logic
+        if listing.status == 'discontinued' || listing.status == 'sold'
+          # if this listing has ended, then any promoted values we got would be out of date, so don't bother
+          return false
+        if listing.owner_name? || listing.owner_name_2? || listing.zoning || listing.appraised_value
+          # if we have any previously-promoted values, don't bother looking for new ones
           return false
         sqlHelpers.checkTableExists(tables.normalized.tax(subid: listing.fips_code))
       .then (checkPromotedValues) ->
         if !checkPromotedValues
           return
         # need to query the tax table to get values to promote
-        tables.normalized.tax({subid: listing.fips_code, transaction})
+        tables.normalized.tax({subid: listing.fips_code})  # no transaction -- normalized db
         .select('promoted_values')
         .where
           rm_property_id: id
@@ -124,7 +127,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             _.extend(listing, results[0].promoted_values)
 
             # save back to the listing table to avoid making checks in the future
-            tables.normalized.listing({transaction})
+            tables.normalized.listing()  # no transaction -- normalized db
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid

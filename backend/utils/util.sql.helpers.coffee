@@ -2,10 +2,11 @@ _ = require 'lodash'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
-logger = require('../config/logger').spawn('backend:utils:sql.helpers')
+logger = require('../config/logger').spawn('utils:sql.helpers')
 dbs = require("../config/dbs")
 clone = require 'clone'
 ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
+require '../../common/extensions/strings'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -117,13 +118,22 @@ orWhereNotIn = (query, column, values) ->
 # iterate through entity object, and append either a `where` or `whereIn` clause based
 # on whether that field value is an array
 # Note: entity is a map of columns->values
-whereAndWhereIn = (query, entity) ->
+whereAndWhereIn = (query, entity, isOr = false) ->
+  maybeAppendOr = (clause) ->
+    if isOr
+      'or' + clause.toInitCaps(false)
+    else
+      clause
+
   for column, value of entity
     if Array.isArray(value)
-      query = whereIn(query, column, value)
+      query = module.exports[maybeAppendOr("whereIn")](query, column, value)
     else
-      query = query.where(column, value)
+      query = query[maybeAppendOr('where')](column, value)
   query
+
+orWhereAndWhereIn = (query, entity) -> whereAndWhereIn(query, entity, true)
+
 
 between = (query, column, min, max) ->
   if min and max
@@ -255,7 +265,7 @@ buildRawBindings = (obj, opts={}) ->
 buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
   id = buildRawBindings(idObj, defaultNulls: true)
   entity = buildRawBindings(_.omit(entityObj, Object.keys(idObj)))
-  conflictEntity = buildRawBindings(_.omit(_.extend(entityObj, conflictOverrideObj), Object.keys(idObj)))
+  conflictEntity = buildRawBindings(_.extend(_.omit(entityObj, Object.keys(idObj)), conflictOverrideObj))
 
   # postgresql templates for raw query (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
   if conflictEntity.cols.placeholder
@@ -287,42 +297,22 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
   bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, conflictEntity.cols.bindings, conflictEntity.vals.bindings, id.cols.bindings)
 
 
-upsert = ({idObj, entityObj, conflictOverrideObj, dbFn, transaction}) ->
+###
+  params:
+    dbFn: a db function as used elsewhere in our app, specifying the table on which to upsert
+    idObj: an object with key/value pairs that uniquely identify the row to be updated/inserted (the keys of this
+        object are used to create the conflict clause of the upsert)
+    entityObj: an object with key/value pairs that specify the column values to be updated/inserted (this can contain
+        the same key/value pairs as idObj plus the update pairs, or just the update pairs themselves)
+    conflictOverrideObj: an object with override key/value pairs that should be used for update when insert isn't
+        possible; note knex.raw() clauses are allowed as values here, and giving a value of `undefined` will exclude
+        that column from being set on update
+    transaction: the transaction to use for the upsert
+###
+upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction}) ->
   upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
-  dbFn(transaction: transaction).raw(upsertBindings.sql, upsertBindings.bindings)
+  dbFn({transaction}).raw(upsertBindings.sql, upsertBindings.bindings)
 
-#https://gist.github.com/plurch/118721c2216f77640232
-#https://github.com/tgriesser/knex/issues/1121
-###
-let dnFn = tables.config.keyStore;
-let conflict = 'login';
-let entity = {
-  login: 'plurch',
-  user_id: 3332519
-};
-
-let resultPromise = upsertItem({dbFn, conflict, entity});
-
-###
-upsertItem = ({dbFn, conflict, entity}) ->
-  knex = dbFn
-  tableName =  dbFn.tableName
-
-  exclusions = Object.keys(entity).filter((c) ->
-    c != conflict
-  ).map((c) ->
-    knex.raw('?? = EXCLUDED.??', [
-      c
-      c
-    ]).toString()
-  ).join(',\n')
-  insertString = knex(tableName).insert(entity).toString()
-  conflictString = knex.raw(' ON CONFLICT (??) DO UPDATE SET ' + exclusions +  " RETURNING #{conflict}; ", conflict).toString()
-  query = (insertString + conflictString).replace(/\?/g, '\\?')
-  knex.raw(query).on('query', (data) ->
-    console.log 'Knex: ' + data.sql
-  ).then (result) ->
-    result.rows[0]
 
 # http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema
 # Note that querying pg_class is faster than querying information_schema.tables
@@ -350,6 +340,7 @@ module.exports = {
   whereNotIn
   orWhereNotIn
   whereAndWhereIn
+  orWhereAndWhereIn
   whereInBounds
   getClauseString
   safeJsonArray
@@ -361,6 +352,5 @@ module.exports = {
   buildQuery
   buildUpsertBindings
   upsert
-  upsertItem
   checkTableExists
 }

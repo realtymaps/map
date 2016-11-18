@@ -17,7 +17,7 @@ argv = require('yargs').argv
 # rewire = require('rewire')
 Spinner = require('cli-spinner').Spinner
 cartodb = require '../../backend/services/service.cartodb'
-debug = require('debug')('cartodb:rmaps:parcelToGeo')
+logger = require('../../backend/config/logger')('scripts:cartodb:parcelToGeo')
 # console.log(cartodb)
 
 makeSpinner = () ->
@@ -31,8 +31,8 @@ if !argv.fipsCode
   console.error('fipsCode required')
   process.exit(1)
 
-debug argv.fipsCode
-debug typeof(argv.fipsCode)
+logger.debug -> argv.fipsCode
+logger.debug -> typeof(argv.fipsCode)
 
 fipsCodes = argv.fipsCode.toString().split(',')
 
@@ -60,17 +60,16 @@ Promise.each fipsCodes, (fips_code) ->
 
   cartodb[method](opts)
   .then (result) ->
-    debug("fipsCode: #{fips_code} completed")
-    debug(result)
+    logger.debug -> "fipsCode: #{fips_code} completed"
+    logger.debug -> result
 .then () ->
-  debug("@@@@ TOTAL SUCCESS @@@@")
+  logger.debug -> "@@@@ TOTAL SUCCESS @@@@"
   process.exit(0)
 .finally ->
   spin.stop()
 .catch  (error) ->
-  debug("@@@@ ERROR @@@@")
-  console.error(error)
+  logger.debug -> "@@@@ ERROR @@@@"
   if(error)
-    debug("@@@@ STACK @@@@")
-    debug(error.stack)
+    logger.debug -> "@@@@ STACK @@@@"
+    logger.debug -> error.stack
   process.exit(2)
