@@ -37,10 +37,14 @@ getDefaultQuery = (query = combined.getDefaultQuery()) ->
     """
 
 getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
-  query ?= getDefaultQuery()
+  # If a query was passed in, it is a cluster query. The drawn shapes table still needs to be joined
+  if query
+    getDefaultQuery(query)
+  else
+    query = getDefaultQuery()
+    query.select(query.raw("#{drawnShapesName}.id as area_id"))
 
-  query.select(query.raw("#{drawnShapesName}.id as area_id"))
-  .where("#{drawnShapesName}.project_id", queryParams.project_id)
+  query.where("#{drawnShapesName}.project_id", queryParams.project_id)
 
   if queryParams.isArea
     query.whereNotNull("#{drawnShapesName}.area_name", queryParams.project_id)
