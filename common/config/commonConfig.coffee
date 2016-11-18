@@ -35,9 +35,9 @@ validation =
     IN: /^\d{6}$/
 
   password: ///
-    ^.*(?!.*?(.)\1{2,})     #doesn't repeat a char more than twice
-    (?=.{8,})               #min 8 chars
-    (?=.*[$@$!%*#?&])       #one special char
+    # ^.*(?!.*?(.)\1{2,})     #doesn't repeat a char more than twice
+    (?=.{10,})               #min 10 chars
+    # (?=.*[$@$!%*#?&])       #one special char
     (?=.*\d)                #one number
     (?=.*[a-z])             #one lowercase
     (?=.*[A-Z]).*$///       #one uppercase
