@@ -137,7 +137,7 @@ app.factory 'rmapsMapFactory',
           # here, getLayers returns empty array, so had to re-get them inside watch below...
           $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
             leafletData.getLayers(@mapId).then (allLayers) ->
-              sat = allLayers.baselayers.mapbox_street_gybrid
+              sat = allLayers.baselayers.googleHybrid
               map = allLayers.baselayers.mapbox_street
 
               if sat? && map?
