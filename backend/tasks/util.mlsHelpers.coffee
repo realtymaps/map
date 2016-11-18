@@ -26,10 +26,12 @@ loadUpdates = (subtask, options={}) ->
       return undefined
     rawTable.count('*')
     .then (result) ->
-      return result[0].count
+      return parseInt(result[0].count)
   Promise.join updateThresholdPromise, uuidPromise, offsetPromise, (updateThreshold, uuidField, offset) ->
     # don't just try to pick back up exactly where we left off -- add some overlap
-    searchOptions = {limit: options.limit, subLimit: options.subLimit, offset: offset-Math.max(10, Math.floor(offset*0.01))}
+    if offset?
+      overlappedOffset = offset-Math.max(10, Math.floor(offset*0.01))
+    searchOptions = {limit: options.limit, subLimit: options.subLimit, offset: overlappedOffset}
     retsService.getDataStream(options.dataSourceId, options.dataType, minDate: updateThreshold, uuidField: uuidField, searchOptions: searchOptions)
     .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")

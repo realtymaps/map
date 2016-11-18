@@ -226,7 +226,12 @@ cleanup = (subtask) ->
 deleteData = (subtask) ->
   normalDataTable = tables.normalized[subtask.data.dataType]
   rawSubid = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.data.rawDeleteBatchId)
-  dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
+  Promise.try () ->
+    if subtask.data.action == internals.REFRESH && subtask.data.dataType == internals.TAX
+      # we need to spoof a refresh for each fips in a tax refresh, because we're not keeping historical tax records
+      return [{'FIPS Code': subtask.data.fips_code}]
+    else
+      return dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
     Promise.each rows, (row) ->
       if subtask.data.action == internals.REFRESH
