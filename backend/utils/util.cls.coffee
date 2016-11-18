@@ -1,7 +1,7 @@
-getNamespace = require('continuation-local-storage').getNamespace
+cls = require 'continuation-local-storage'
 {NAMESPACE} = require '../config/config'
 
-module.exports = (namespace = getNamespace(NAMESPACE)) ->
+module.exports = (namespace = cls.getNamespace(NAMESPACE)) ->
 
   getCurrentUserId = () ->
     req = namespace.get('req')
