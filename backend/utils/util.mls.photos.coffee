@@ -29,7 +29,7 @@ imageStream = (object) ->
     if event.error
       return error = event.error
 
-    logger.debug event.headerInfo
+    logger.debug -> event.headerInfo
     everSentData = true
 
     event.dataStream
@@ -97,16 +97,17 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       throw err
 
 
-# TODO: the below code will choke and die on errors -- you can't throw from within event handlers (or the imagesHandle cb)
-# TODO: https://realtymaps.atlassian.net/browse/MAPD-1182
 imagesStream = (object, archive = Archiver('zip')) ->
 
-  archive.once 'error', (err)  ->
-    throw new photoErrors.ArchiveError err
+  retStream = through()
 
+  archive.once 'error', (err)  ->
+    retStream.emit('error', new photoErrors.ArchiveError(err))
+
+  #pump images through the archive
   imagesHandle object, (err, payload, isEnd) ->
     if err
-      throw err
+      return retStream.emit('error', err)
 
     if isEnd
       archive.finalize()
@@ -115,7 +116,7 @@ imagesStream = (object, archive = Archiver('zip')) ->
 
     archive.append(payload.data, name: payload.name)
 
-  archive
+  archive.pipe(retStream)
 
 
 module.exports = {

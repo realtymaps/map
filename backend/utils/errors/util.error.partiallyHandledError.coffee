@@ -2,6 +2,8 @@ VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
 analyzeValue = require '../../../common/utils/util.analyzeValue'
+{RetsError} = require 'rets-client'
+
 
 # If the first argument passed is an Error object, a uuid reference will be logged along with the stack trace
 #   The uuid reference will also be appended to the message so the user will hopefully see it
@@ -52,6 +54,11 @@ isCausedBy = (errorType, _err) ->
   else
     return check
 
+isRets = (err) ->
+  if !err?
+    return false
+
+  err instanceof RetsError
 
 getRootCause = (err) ->
   cause = err
@@ -67,4 +74,5 @@ module.exports = {
   isCausedBy
   getRootCause
   isKnexUndefined
+  isRets
 }

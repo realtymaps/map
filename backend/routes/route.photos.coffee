@@ -7,9 +7,19 @@ ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 {HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
 config = require '../config/config'
-ExpectedSingleRowError =  require '../utils/errors/util.error.expectedSingleRow'
 {PartiallyHandledError, isUnhandled, QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
+
+### NOTE:
+
+This route is the main route used for photos to get a cached photo from our system!
+Therefore a CDN caches images from here as well.
+
+This comments main intent is to distinguish the photo routes in route.mls.coffee.
+The routes for photos in route.mls.coffee are purley staff oriented non-cached photos
+talking directly to a specific mls system. Therefore, they are purley for debugging and setting
+up an MLS system for its photos.
+###
 
 _getContentType = (payload) ->
   #Note: could save off content type in photos and duplicate lots of info
