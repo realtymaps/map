@@ -1,5 +1,5 @@
 .xtra-layer-tools
-  button.btn.btn-transparent.satellite-toggle.radar(
+  button.btn.btn-transparent.satellite-toggle(
     ng-if="Toggles.useSatellite"
     ng-touch="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
     ng-click="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
@@ -9,7 +9,7 @@
     uib-popover-popup-close-delay="1")
     div.fa.fa-globe
     div.layer-label Aerial
-  button.btn.btn-transparent.satellite-toggle.mapa(
+  button.btn.btn-transparent.satellite-toggle(
     ng-if="!Toggles.useSatellite"
     ng-touch="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
     ng-click="Toggles.useSatellite = !Toggles.useSatellite; $event.stopPropagation()"
