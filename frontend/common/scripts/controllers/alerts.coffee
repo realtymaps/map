@@ -26,12 +26,12 @@
 # To preemptively hide an event, use:
 #   $rootScope.$emit Events.alert.prevent, {id: alertId, quietMillis: quietTime}
 # -------
-# Allowed rmapsProperties of an emitted alert:
+# Allowed properties of an emitted alert:
 #   msg (required): the main body of the alert.  This can be HTML, but should consist only of inline or inline-block
 #     type formatting since it is all contained in a span.
 #   type: a string that determines the colors used for the alert; defaults to "rm-danger". There are 4 intended values,
 #     but this is not enforced; any string passed in this field will be prepended with "alert-" and applied as a class.
-#     Styling for the 4 values below is in alerts.styl.  Default (pale) bootstrap versions of the below are vailable by
+#     Styling for the 4 values below is in alerts.styl.  Default (pale) bootstrap versions of the below are available by
 #     removing the "rm-" prefix
 #       - "rm-danger": vivid red
 #       - "rm-warning": vivid yellow-orange

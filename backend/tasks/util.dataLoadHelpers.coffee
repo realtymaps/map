@@ -474,60 +474,13 @@ _diff = (row1, row2) ->
   _.extend result, _.omit(row2, Object.keys(row1))
 
 
-_createRawTable = ({promiseQuery, columns, tableName, dataLoadHistory}) ->
-  if !_.isArray columns
-    columns = [columns]
-
-  promiseQuery('BEGIN TRANSACTION')
-  .then () ->
-    promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName).toString())
-  .then () ->
-    tables.jobQueue.dataLoadHistory()
-    .where(raw_table_name: tableName)
-    .delete()
-  .then () ->
-    tables.jobQueue.dataLoadHistory()
-    .insert(dataLoadHistory)
-  .then () ->
-    createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
-      table.increments('rm_raw_id').notNullable()
-      table.boolean('rm_valid')
-      table.text('rm_error_msg')
-      for fieldName in columns
-        table.text(fieldName)
-    promiseQuery(createRawTable.toString())
-
-_endRawTable = ({startedTransaction, count, tableName, promiseQuery}) ->
-  if startedTransaction
-    promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_valid)")
-    .then () ->
-      promiseQuery('COMMIT TRANSACTION')
-    .then () ->
-      tables.jobQueue.dataLoadHistory()
-      .where(raw_table_name: tableName)
-      .update(raw_rows: count)
-    .then () ->
-      return count
-  else
-    return count
-
-_rollback = ({err, tableName, promiseQuery}) ->
-  promiseQuery('ROLLBACK TRANSACTION')
-  .then () ->
-    tables.jobQueue.dataLoadHistory()
-    .where(raw_table_name: tableName)
-    .delete()
-  .finally () ->
-    throw err
-
-
-manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Promise.try ->
+manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
   #one column to dump the whole json blob to
   isFinished = false
   count = 0
 
   objectStreamTransform = (json, encoding, callback) ->
-    # logger.spawn(tableName).debug json
+    # logger.spawn(dataLoadHistory.raw_table_name).debug json
     if isFinished
       return
     count++
@@ -541,7 +494,7 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
     if isFinished
       return
     isFinished = true
-    logger.spawn(tableName).debug () -> "FINISHED: #{tableName}"
+    logger.spawn(dataLoadHistory.raw_table_name).debug () -> "FINISHED: #{dataLoadHistory.raw_table_name}"
     objectStreamer.push(type: 'done', payload: count)
     callback()
 
@@ -556,30 +509,67 @@ manageRawJSONStream = ({tableName, dataLoadHistory, jsonStream, column}) -> Prom
 
   jsonStream.pipe(objectStreamer)
 
-  manageRawDataStream(tableName, dataLoadHistory, objectStreamer)
+  manageRawDataStream(dataLoadHistory, objectStreamer)
 
 
-manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
-  parts = tableName.split('_')
+manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
+  parts = dataLoadHistory.raw_table_name.split('_')
   verboseLogger = logger.spawn(parts[1]).spawn(parts[2])
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
+    dbStreamer = null
+    dbStream = null
+    columns = null
+    delimiter = null
+
+    doPerValEscape = (val) ->
+      utilStreams.pgStreamEscape(val, delimiter)
+
+    commitStreamChunk = ({linesCount}) ->
+      verboseLogger.debug () -> 'CHUNK  |  committing stream chunk'
+      dbStreamer.unpipe(dbStream)
+      dbStream?.write('\\.\n')
+      dbStream?.end()
+      dbStream = null
+      promiseQuery('COMMIT TRANSACTION')
+      .then () ->
+        startedTransaction = false
+      .then () ->
+        tables.jobQueue.dataLoadHistory()
+        .where(raw_table_name: dataLoadHistory.raw_table_name)
+        .update(raw_rows: linesCount + parseInt(opts.initialCount ? 0))
+
+    startStreamChunk = ({createTable}) ->
+      verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
+      promiseQuery('BEGIN TRANSACTION')
+      .then () ->
+        startedTransaction = true
+      .then () ->
+        if createTable
+          createRawTable = dbs.get('raw_temp').schema.createTable dataLoadHistory.raw_table_name, (table) ->
+            table.increments('rm_raw_id').notNullable()
+            table.boolean('rm_valid')
+            table.text('rm_error_msg')
+            for fieldName in columns
+              table.text(fieldName)
+          promiseQuery(createRawTable.toString())
+          .then () ->
+            logger.debug () -> "created raw table: #{dataLoadHistory.raw_table_name}"
+      .then () ->
+        copyStart = "COPY \"#{dataLoadHistory.raw_table_name}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+        dbStream = streamQuery(copyStream.from(copyStart))
+        dbStreamer.pipe(dbStream)
+
     new Promise (resolve, reject) ->
       # stream the results into a COPY FROM query
-      delimiter = null
-      dbStream = null
-      donePayload = null
-      dbStreamer = null
       hadError = false
-      debugCount = 0
+      linesCount = 0
       onError = (err) ->
         reject(err)
         dbStreamer.unpipe(dbStream)
         dbStream?.write('\\.\n')
         dbStream?.end()
         hadError = true
-      doPerValEscape = (val) ->
-        utilStreams.pgStreamEscape(val, delimiter)
       dbStreamTransform = (event, encoding, callback) ->
         try
           switch event.type
@@ -589,10 +579,16 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               else  # escape the whole row at once
                 this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
-              debugCount++
-              if debugCount%1000 == 0
-                verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              callback()
+              linesCount++
+              if linesCount%1000 == 0
+                verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              Promise.try () ->
+                if opts.maxChunkSize? && linesCount%opts.maxChunkSize == 0
+                  commitStreamChunk({linesCount})
+                  .then () ->
+                    startStreamChunk(createTable: false)
+              .then () ->
+                callback()
             when 'delimiter'
               verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               delimiter = event.payload
@@ -602,50 +598,47 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
-              _createRawTable({promiseQuery, columns, tableName, dataLoadHistory})
+              sqlHelpers.upsert
+                dbFn: tables.jobQueue.dataLoadHistory
+                idObj: {raw_table_name: dataLoadHistory.raw_table_name}
+                entityObj: dataLoadHistory
               .then () ->
-                logger.debug () -> "created raw table #{tableName}"
-                startedTransaction = true
+                startStreamChunk(createTable: !opts.initialCount?)
               .then () ->
-                copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
-                dbStream = streamQuery(copyStream.from(copyStart))
-                dbStreamer.pipe(dbStream)
                 callback()
-            when 'done'
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
-              debugCount = 0
-              donePayload = event.payload
-              callback()
             when 'error'
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
                 # make sure it is a true error, not just no records returned
                 onError(event.payload)
               callback()
             else
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
-          verboseLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
+          verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
           verboseLogger.debug () -> "*****  |  error in catch block!!!"
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        if startedTransaction
-          this.push('\\.\n')
-        callback()
-        if !hadError
-          resolve(donePayload||0)
+        commitStreamChunk({linesCount})
+        .then () ->
+          promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
+        .then () ->
+          callback()
+          if !hadError
+            resolve(linesCount+ parseInt(opts.initialCount ? 0))
       objectStream.pipe(dbStreamer)
     .catch (err) ->
-      logger.error("problem streaming to #{tableName}: #{err}")
+      logger.error("problem streaming to #{dataLoadHistory.raw_table_name}: #{err}")
       logger.error analyzeValue.getFullDetails(err)
-      _rollback({err, tableName, promiseQuery})
-    .then (count) ->
-      _endRawTable({startedTransaction, count, tableName, promiseQuery})
+      Promise.try () ->
+        if startedTransaction
+          promiseQuery('ROLLBACK TRANSACTION')
+      .then () ->
+        throw err
 
 
 getLastUpdateTimestamp = (subtask) ->

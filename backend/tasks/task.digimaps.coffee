@@ -99,7 +99,6 @@ loadRawData = (subtask) -> Promise.try () ->
     .then (jsonStream) ->
 
       dataLoadHelpers.manageRawJSONStream({
-        tableName: rawTableName
         dataLoadHistory
         jsonStream
         column: parcelHelpers.column

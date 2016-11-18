@@ -173,7 +173,7 @@ _rules =
         type: name: 'datetime'
 
       data_source_uuid:
-        alias: 'MLS Number'
+        alias: 'MLS Listing ID'
         required: true
 
       photo_id:

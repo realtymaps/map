@@ -132,6 +132,9 @@ app.controller 'rmapsMlsCtrl',
         else if value is ''
           obj[key] = null
 
+    $scope.testOverlapSettings = (obj) ->
+      rmapsMlsService.testOverlapSettings(obj.id)
+
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
       $scope.loading = true
