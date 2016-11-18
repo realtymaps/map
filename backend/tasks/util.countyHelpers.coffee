@@ -251,7 +251,6 @@ ensureNormalizedTable = (dataType, subid) ->
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
         table.json('year_built')
-        table.json('promoted_values')
         table.text('zoning')
         table.text('property_type')
         table.text('legal_unit_number')

@@ -106,11 +106,8 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       Promise.delay(delay)  #throttle for heroku's sake
       .then () ->
         # do county data promotion logic
-        if listing.status == 'discontinued' || listing.status == 'sold'
-          # if this listing has ended, then any promoted values we got would be out of date, so don't bother
-          return false
-        if listing.owner_name? || listing.owner_name_2? || listing.zoning || listing.appraised_value
-          # if we have any previously-promoted values, don't bother looking for new ones
+        if listing.zoning
+          # if we have zoning info already, don't bother promoting
           return false
         sqlHelpers.checkTableExists(tables.normalized.tax(subid: listing.fips_code))
       .then (checkPromotedValues) ->
@@ -118,20 +115,20 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
           return
         # need to query the tax table to get values to promote
         tables.normalized.tax({subid: listing.fips_code})  # no transaction -- normalized db
-        .select('promoted_values')
+        .select('zoning')
         .where
           rm_property_id: id
         .then (results=[]) ->
-          if results[0]?.promoted_values
+          if results[0]?.zoning
             # promote values into this listing
-            _.extend(listing, results[0].promoted_values)
+            _.extend(listing, results[0])
 
             # save back to the listing table to avoid making checks in the future
             tables.normalized.listing()  # no transaction -- normalized db
             .where
               data_source_id: listing.data_source_id
               data_source_uuid: listing.data_source_uuid
-            .update(results[0].promoted_values)
+            .update(results[0])
       .then () ->
         dbs.ensureTransaction transaction, 'main', (transaction) ->
           tables.finalized.combined({transaction})
