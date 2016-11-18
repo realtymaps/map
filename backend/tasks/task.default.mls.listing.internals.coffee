@@ -105,9 +105,12 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         listing.geometry_center_raw = parcel.geometry_center_raw
       Promise.delay(delay)  #throttle for heroku's sake
       .then () ->
-        # do owner name and zoning promotion logic
-        if listing.owner_name? || listing.owner_name_2? || listing.zoning
-          # keep previously-promoted values
+        # do county data promotion logic
+        if listing.status == 'discontinued' || listing.status == 'sold'
+          # if this listing has ended, then any promoted values we got would be out of date, so don't bother
+          return false
+        if listing.owner_name? || listing.owner_name_2? || listing.zoning || listing.appraised_value
+          # if we have any previously-promoted values, don't bother looking for new ones
           return false
         sqlHelpers.checkTableExists(tables.normalized.tax(subid: listing.fips_code))
       .then (checkPromotedValues) ->
