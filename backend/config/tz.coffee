@@ -16,5 +16,6 @@ path = require 'path'
 
 tz.timezone.loadingScheme = tz.timezone.loadingSchemes.MANUAL_LOAD
 tz.timezone.loadZoneJSONData(path.join(__dirname, './tz/customTzData.json'), true)
+tz.MOMENT_UTC_OFFSET = -(new tz.Date('America/New_York')).getTimezoneOffset()/60
 
 module.exports = tz
