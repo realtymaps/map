@@ -537,7 +537,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       .then () ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
-        .update(raw_rows: linesCount + opts.initialCount ? 0)
+        .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
     startStreamChunk = ({createTable}) ->
       verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
@@ -629,7 +629,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .then () ->
           callback()
           if !hadError
-            resolve(linesCount+ opts.initialCount ? 0)
+            resolve(linesCount+ (opts.initialCount ? 0))
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{dataLoadHistory.raw_table_name}: #{err}")
