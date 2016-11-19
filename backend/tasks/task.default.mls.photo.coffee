@@ -64,7 +64,9 @@ storePrep = (subtask) ->
 
     logger.debug () -> "Getting data chunks for #{mlsId}"
     retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
-    .catch (error) ->
+    .catch retsService.isMaybeTransientRetsError, (error) ->
+      throw new SoftFail(error, "Transient RETS error; try again later")
+    .catch errorHandlingUtils.isUnhandled, (error) ->
       rootError = errorHandlingUtils.getRootCause(error)
       if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
         return # No results from RETS, let the task finish normally
@@ -105,7 +107,9 @@ store = (subtask) -> Promise.try () ->
       # taskLogger.debug () -> "Finished property #{idObj.data_source_uuid}"
   .then () ->
     taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
-  .catch (err) ->
+  .catch retsService.isMaybeTransientRetsError, (error) ->
+    throw new SoftFail(error, "Transient RETS error; try again later")
+  .catch errorHandlingUtils.isUnhandled, (err) ->
     taskLogger.debug () -> "#{analyzeValue.getFullDetails(err)}"
     throw err
 
