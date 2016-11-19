@@ -370,10 +370,10 @@ getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
 
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
-    .catch (err) ->
+    .catch errorHandlingUtils.isUnhandled, (err) ->
       logger.spawn(mlsId).debug("error from service.rets#retsClient.objects.stream.getObjects: #{analyzeValue.getFullDetails(err)}")
       throw err
-  .catch (err) ->
+  .catch errorHandlingUtils.isUnhandled, (err) ->
     logger.spawn(mlsId).debug("error from service.rets#internals.getRetsClient: #{analyzeValue.getFullDetails(err)}")
     throw err
 
