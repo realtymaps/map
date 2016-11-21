@@ -52,6 +52,7 @@ app.factory 'rmapsMapFactory',
     $log = normal
 
     class Map extends rmapsBaseMapFactory
+
       constructor: ($scope) ->
         super {
           scope: $scope
