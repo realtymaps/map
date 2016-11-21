@@ -20,7 +20,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $stickyState, $log, rmapsCurrentMapService, rmapsProfilesService) ->
+  $get: ($rootScope, $window, $state, $previousState, $stickyState, $log, rmapsCurrentMapService, rmapsProfilesService) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -90,12 +90,12 @@ app.provider 'rmapsPageService', () ->
         params.project_id ?= rmapsProfilesService.currentProfile?.project_id
         if params.project_id?
 
+          if($previousState.get()?.state?.name == 'map')
+            return $previousState.go()
+
           $stickyState.reset('map')
           rmapsProfilesService.setCurrentProfileByProjectId params.project_id
           .then ->
-            # sledgehammer approach
-            # url = "/map?project_id=#{params.project_id}"
-            # $window.location.href = url
             $state.go 'map', params, { reload: true }
 
         else
