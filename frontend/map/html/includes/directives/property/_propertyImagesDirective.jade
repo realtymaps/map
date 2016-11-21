@@ -22,7 +22,8 @@
   img(
     ng-cloak
     ng-if="!property.photos.length && !panoramaOk()"
-    ng-src="{{formatters.property.google.Satellite.getUrl(property, imageWidth, imageHeight)}}")
+    ng-src="{{formatters.property.google.Satellite.getUrl(property, imageWidth, imageHeight)}}"
+    ui-sref="property({id:property.rm_property_id})")
 
   img(
     ng-cloak
