@@ -665,11 +665,7 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
       return true
 
     now = Date.now()
-    # our server uses UTC now, so auto-adjusting no longer works
-    #utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
-    utcOffset = -(new tz.Date('America/New_York')).getTimezoneOffset()/60
-
-    target = moment.utc(now).utcOffset(utcOffset).startOf('day')
+    target = moment.utc(now).utcOffset(tz.MOMENT_UTC_OFFSET).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
 

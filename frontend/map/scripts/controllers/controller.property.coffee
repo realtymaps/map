@@ -133,16 +133,13 @@ app.controller 'rmapsPropertyCtrl',
 
         $scope.tab.selected = (property.mls?[0] || property.county?[0])?.data_source_id || 'raw'
 
-    $scope.showPVA = (rm_property_id) ->
-      splits = rm_property_id.split('_')
-      fips = splits[0]
-      apn = splits[1]
+    $scope.showPVA = (property) ->
       # this should probably be changed to somehow be based on our actual CDN config, but it works for now
-      cdnNum = (fips % 2)+1
-      pvaUrl = "//prodpull#{cdnNum}-realtymapsterllc.netdna-ssl.com/api/properties/pva/#{fips}"
+      cdnNum = (property.fips_code % 2)+1
+      pvaUrl = "//prodpull#{cdnNum}-realtymapsterllc.netdna-ssl.com/api/properties/pva/#{property.fips_code}"
       $http.get(pvaUrl)
       .then ({data}) ->
-        url = data.url.replace("{{_APN_}}", apn)
+        url = data.url.replace("{{_APN_}}", property.parcel_id)
         if data.options?.post
           pvaForm = document.createElement("form")
           windowName = window.name+(new Date().getTime())
@@ -154,7 +151,7 @@ app.controller 'rmapsPropertyCtrl',
             newInput = document.createElement("input")
             newInput.type = "hidden"
             newInput.name = name
-            newInput.value = value.replace("{{_APN_}}", apn)
+            newInput.value = value.replace("{{_APN_}}", property.parcel_id)
             pvaForm.appendChild(newInput)
 
           document.body.appendChild(pvaForm)

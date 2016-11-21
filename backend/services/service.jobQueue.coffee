@@ -15,6 +15,8 @@ dbs = require '../config/dbs'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 internals = require './service.jobQueue.internals'
 errorUtils = require '../utils/errors/util.error.partiallyHandledError'
+moment = require 'moment'
+tz = require '../config/tz'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -66,7 +68,8 @@ queueManualTask = (taskName, initiator) ->
       name: taskName
     .then (task) ->
       if task?.length && !task[0].finished
-        throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}")
+        started = moment.utc(task[0].started).utcOffset(tz.MOMENT_UTC_OFFSET).format('ddd, MMM DD, YYYY [at] hh:mma')
+        throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{started} by #{task[0].initiator}")
     .then () ->
       tables.jobQueue.taskConfig({transaction})
       .select()
