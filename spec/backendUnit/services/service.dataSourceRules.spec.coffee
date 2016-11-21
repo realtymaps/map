@@ -359,7 +359,7 @@ describe 'service.dataSourceRules.coffee', ->
       svc.__with__('dbs', SqlMock.dbs)(
         =>
 
-          expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax' and "list" = 'general' and "ordering" = '0'"""
+          expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax' and "list" = 'general' and "ordering" = 0"""
 
           svc.deleteRule(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @query.ordering).then (queryResults) =>
             @rulesTableSqlMock.toString().should.equal expectedQuery

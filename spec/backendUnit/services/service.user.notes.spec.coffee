@@ -22,7 +22,7 @@ describe 'service.user.notes', ->
 
       it 'getById', ->
         @instance.getById(1).toString()
-        .should.equal """select * from "#{@instance.dbFn.tableName}" where "id" = '1'"""
+        .should.equal """select * from "#{@instance.dbFn.tableName}" where "id" = 1"""
 
       #TODO Should this be flagged to fix?
       #this shows that count is returning more than most expected.. but it is not really being used.
@@ -34,19 +34,19 @@ describe 'service.user.notes', ->
       describe 'update', ->
         it 'no safe', ->
           @instance.update(1, {test:'test'}).toString()
-          .should.equal """update "#{@instance.dbFn.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+          .should.equal """update "#{@instance.dbFn.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
         it 'safe', ->
           @instance.update(1, {test:'test', crap: 2}, ['test']).toString()
-          .should.equal """update "#{@instance.dbFn.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+          .should.equal """update "#{@instance.dbFn.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
       describe 'create', ->
         it 'default', ->
           @instance.create({id:1, test:'test'}).toString()
-          .should.equal """insert into "#{@instance.dbFn.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim()
+          .should.equal """insert into "#{@instance.dbFn.tableName}" ("id", "test") values (1, 'test') returning "id" """.trim()
         it 'id', ->
           @instance.create({id:1, test:'test'}, 2).toString()
-          .should.equal """insert into "#{@instance.dbFn.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim()
+          .should.equal """insert into "#{@instance.dbFn.tableName}" ("id", "test") values (2, 'test') returning "id" """.trim()
 
       describe 'upsert', ->
         describe 'record exists', ->
@@ -93,4 +93,4 @@ describe 'service.user.notes', ->
 
       it 'delete', ->
         @instance.delete(1).toString()
-        .should.equal """delete from "#{@instance.dbFn.tableName}" where "id" = '1'"""
+        .should.equal """delete from "#{@instance.dbFn.tableName}" where "id" = 1"""
