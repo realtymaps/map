@@ -3,16 +3,12 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls:photo')
-finePhotologger = logger.spawn('fine')
 mlsHelpers = require './util.mlsHelpers'
 retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-mlsConfigService = require '../services/service.mls_config'
-dbs = require '../config/dbs'
-mlsPhotoUtil = require '../utils/util.mls.photos'
 internals = require './task.default.mls.photo.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 

@@ -1,5 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
+
 
 app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '$rootScope', (Restangular, $http, rmapsEventConstants, $rootScope) ->
 

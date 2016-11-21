@@ -1,6 +1,7 @@
 require("chai").should()
 errorHandlingUtils = require '../../../../backend/utils/errors/util.error.partiallyHandledError'
 
+
 describe 'util.error.partiallyHandledError', ->
   it 'exists', ->
     errorHandlingUtils.should.be.ok

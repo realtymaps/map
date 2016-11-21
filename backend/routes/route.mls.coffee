@@ -93,6 +93,15 @@ module.exports =
       .then (list) ->
         next new ExpressResponse(list)
 
+  ###
+  BEGIN PHOTOS
+  NOTE:
+  This comment's main intent is to distinguish the photo routes in route.mls.coffee.
+  The routes for photos in route.mls.coffee are purley staff oriented non-cached photos
+  talking directly to a specific mls system. Therefore, they are purley for debugging and setting
+  up an MLS system for its photos.
+  ###
+
   getPhotos:
     method: 'get'
     middleware: [
@@ -110,7 +119,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       internals.getParamPhoto({req, res, next})
-
+  # END PHOTOS
   getColumnList:
     method: 'get'
     middleware: [

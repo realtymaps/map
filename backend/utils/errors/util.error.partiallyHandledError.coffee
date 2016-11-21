@@ -3,6 +3,7 @@ uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
 analyzeValue = require '../../../common/utils/util.analyzeValue'
 
+
 # If the first argument passed is an Error object, a uuid reference will be logged along with the stack trace
 #   The uuid reference will also be appended to the message so the user will hopefully see it
 class PartiallyHandledError extends VError
