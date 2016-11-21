@@ -4,9 +4,10 @@ validation = require './util.validation'
 retsService = require '../services/service.rets'
 _ = require 'lodash'
 photoUtil = require './util.mls.photos'
-{PartiallyHandledError, isUnhandled, isRets} = require './errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 httpStatus = require '../../common/utils/httpStatus'
 photoErrors = require './errors/util.errors.photos'
+RetsError =  require 'rets-client'
 
 
 hasNoStar = (photoIds) ->
@@ -84,11 +85,9 @@ getPhoto = ({entity, res, next, photoType}) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.BAD_REQUEST, quiet: error.quiet})
   .catch photoErrors.isNotFound, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.NOT_FOUND, quiet: error.quiet})
-  .catch photoErrors.ArchiveError, (error) ->
+  .catch photoErrors.PhotoError, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
-  .catch photoErrors.ObjectsStreamError, (error) ->
-    next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
-  .catch isRets, (error) ->
+  .catch RetsError, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.NOT_FOUND, quiet: error.quiet})
   .catch (error) ->
     if isUnhandled(error)
