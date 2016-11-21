@@ -53,7 +53,7 @@
     "angular-touch": "1.4.X",
     "angular-ui-bootstrap": "git://github.com/realtymaps/bootstrap.git#b1d20583ded5a9f8693edd8ea1a069e6e6c9dcd9",
     "angular-ui-grid": "~3.0.0",
-    "angular-ui-router": "~0.2.10",
+    "angular-ui-router": "0.3.X",
     "angular-validation": "git://github.com/nmccready/angular-validation#eebca9b071bbb468699aa83f64da14538ae09c6d",
     "angularjs-slider": "~2.4.0",
     "archiver": "0.21.0",

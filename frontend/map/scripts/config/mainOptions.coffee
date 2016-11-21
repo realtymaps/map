@@ -1,7 +1,7 @@
 _ = require 'lodash'
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
-Point = require('../../../../common/utils/util.geometries.coffee').Point
+{LeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 naming = do -> # for things we can't make up our minds on for naming context
   save: do ->
@@ -50,7 +50,7 @@ mainOptions = do () ->
             mouseout: 200
           space: 2
         json:
-          center: _.extend new Point(lat: 26.148111, lon: -81.790809), zoom: 15, where: 'rmapsMainOptions'
+          center: _.extend(new LeafletCenter(26.148111, -81.790809, 15), where: 'rmapsMainOptions')
     }
 
     # do logging for local dev only
