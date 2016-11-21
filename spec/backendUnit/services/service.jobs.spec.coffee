@@ -30,7 +30,7 @@ describe 'service.jobs.spec.coffee', ->
       svc.__set__('tables', @tables)
 
     it 'should query history, defaults', (done) =>
-      svc.taskHistory.getAll()
+      svc.jobStatGetters.taskHistory()
       @jobQueue_taskHistory.selectSpy.callCount.should.equal 0
       @jobQueue_taskHistory.whereRawSpy.calledOnce.should.be.true
       expect(@jobQueue_taskHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - started <= interval '30 days'" # the default
@@ -49,7 +49,7 @@ describe 'service.jobs.spec.coffee', ->
       svc.__set__('tables', @tables)
 
     it 'should query history errors', (done) =>
-      svc.subtaskErrorHistory.getAll()
+      svc.jobStatGetters.subtaskErrorHistory()
       @jobQueue_subtaskErrorHistory.whereRawSpy.callCount.should.equal 1
       done()
 
@@ -116,7 +116,7 @@ describe 'service.jobs.spec.coffee', ->
 
     it 'should query history with defaults', (done) ->
       # sophisticated query containing subqueries, a cross-table join, and several 'raw' calls
-      svc.health.getAll()
+      svc.jobStatGetters.health()
 
       # subquery #1
       @jobQueue_dataLoadHistory.selectSpy.calledOnce.should.be.true
@@ -163,7 +163,7 @@ describe 'service.jobs.spec.coffee', ->
 
     it 'should query history with correct query values', (done) ->
       timerangeTest = '1 day'
-      svc.health.getAll timerange: timerangeTest
+      svc.jobStatGetters.health(timerange: timerangeTest)
       expect(@jobQueue_dataLoadHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - rm_inserted_time <= interval '#{timerangeTest}'"
 
       @jobQueue_dataLoadHistory.whereSpy.calledOnce.should.be.true

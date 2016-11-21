@@ -23,8 +23,18 @@ app.service 'rmapsJobsService', (Restangular) ->
   getSubtaskErrorHistory = (filters = {}) ->
     Restangular.all(jobsAPI).all('subtaskerrorhistory').getList(filters)
 
+  getSummary = () ->
+    Restangular.all(jobsAPI).all('summary').getList()
+
   getHealth = (timerange) ->
     Restangular.all(jobsAPI).all('health').getList(timerange: timerange)
+
+  runTask = (task) ->
+    task.post('run')
+
+  cancelTask = (task) ->
+    task.post('cancel')
+
 
   getQueue = (filters) ->
     if filters?.search?
@@ -32,17 +42,17 @@ app.service 'rmapsJobsService', (Restangular) ->
       delete filters.search
     Restangular.all(jobsAPI).all('queues').getList(filters)
 
-  getTasks = (filters) ->
-    if filters?.search?
-      filters.name = filters.search
-      delete filters.search
-    Restangular.all(jobsAPI).all('tasks').getList(filters)
-
   getTask = (name) ->
     Restangular.all(jobsAPI).all('tasks').one(name).get()
 
   updateTask = (name, task) ->
     Restangular.all(jobsAPI).all('tasks').one(name).customPUT(task)
+
+  getTasks = (filters) ->
+    if filters?.search?
+      filters.name = filters.search
+      delete filters.search
+    Restangular.all(jobsAPI).all('tasks').getList(filters)
 
   getSubtask = (filters) ->
     if filters?.search?
@@ -51,14 +61,6 @@ app.service 'rmapsJobsService', (Restangular) ->
       delete filters.search
     Restangular.all(jobsAPI).all('subtasks').getList(filters)
 
-  getSummary = () ->
-    Restangular.all(jobsAPI).all('summary').getList()
-
-  runTask = (task) ->
-    task.post('run')
-
-  cancelTask = (task) ->
-    task.post('cancel')
 
   service =
     #getCurrent: getCurrent
