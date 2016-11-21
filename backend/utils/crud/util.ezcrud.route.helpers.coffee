@@ -28,6 +28,7 @@ class RouteCrud
     @initializeTransforms 'byId', options
 
     @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
+    # @logger.debug () -> "Crud route instance made with handles: #{util.inspect(Object.keys(@svc), false, 0)}"
 
 
   initializeTransforms: (transformType, options, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>

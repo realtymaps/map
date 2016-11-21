@@ -17,7 +17,11 @@ methodExec = (req, methods, next) ->
     return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: quiet, status: httpStatus.BAD_REQUEST})
   methods[req.method]()
 
-mergeHandles = (handles, config) ->
+mergeHandles = (handles, config, options) ->
+  loggerNS = if options?.debugNS then logger.spawn(options.debugNS) else logger
+
+  loggerNS.debug -> "mergeHandles, keys:\n#{JSON.stringify(Object.keys(handles))}"
+  loggerNS.debug -> "mergeHandles, config:\n#{JSON.stringify(config)}"
   for key of config
     _.extend config[key],
       handle: unless config[key].handle? then handles[key] else handles[config[key].handle]

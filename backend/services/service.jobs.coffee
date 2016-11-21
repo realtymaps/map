@@ -1,33 +1,36 @@
+util = require 'util'
 _ = require 'lodash'
 logger = require('../config/logger').spawn('service:jobs')
 tables = require '../config/tables'
-crudService = require '../utils/crud/util.crud.service.helpers'
+ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobQueue = require './service.jobQueue'
 dbs = require '../config/dbs'
 
-
-class TaskService extends crudService.Crud
-  getAll: (query = {}, doLogQuery = false) ->
+#
+# crud for queue/task/subtask, with added flavor to search substrings among multiple fields
+#
+class TaskService extends ServiceCrud
+  getAll: (entity = {}) ->
     substrFields = {}
 
-    # test for expected values (mapping of field names -> substring would be in query)
-    if query?.name?
-      if query.name
-        substrFields.name = query.name
-      delete query.name
+    # test for expected values (mapping of field names -> substring would be in entity)
+    if entity?.name?
+      if entity.name
+        substrFields.name = entity.name
+      delete entity.name
 
-    if query?.task_name?
-      if query.task_name
-        substrFields.task_name = query.task_name
-      delete query.task_name
+    if entity?.task_name?
+      if entity.task_name
+        substrFields.task_name = entity.task_name
+      delete entity.task_name
 
     if not _.isEmpty substrFields
-      # extend our dbFn to account for specialized "where" query on the base dbFn
+      # extend our dbFn to account for specialized "where" entity on the base dbFn
       old_dbFn = @dbFn
       transaction = @dbFn()
       tableName = @dbFn.tableName
 
-      # build query for searching given substrings on given fields of @dbFn table
+      # build entity for searching given substrings on given fields of @dbFn table
       @dbFn = () =>
         ret = transaction
         fields = Object.keys substrFields
@@ -39,39 +42,85 @@ class TaskService extends crudService.Crud
         ret = ret.whereRaw(whereRawStr)
         ret.raw = transaction.raw
 
-        # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
+        # when this extended dbFn executes, it spits out the extended entity but resets itself to the original base listed here
         @dbFn = old_dbFn
         ret
       @dbFn.tableName = tableName
-    super(query, doLogQuery)
+    super(entity)
 
-  create: (entity, id, doLogQuery = false) ->
+  create: (entity, id) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
-    super(entity, id, doLogQuery)
+    super(entity, id)
 
-  delete: (id, doLogQuery = false) ->
-    super(id, doLogQuery)
+  delete: (id) ->
+    super(id)
     .then () =>
       if @dbFn.tableName == 'jq_task_config'
         tables.jobQueue.subtaskConfig().where('task_name', id).delete()
 
 
-# provide a contrived "query" that meets requirements for our Crud object
-# the structure below facilitates a "where" adaptor to suit this subquery structure
-healthDbFn = () ->
-  _queryFn = (query = {}) ->
+#
+# helpers to query task reporting tables
+#
+jobStatGetters =
+  taskHistory: (entity = {}) ->
+    dbquery = tables.jobQueue.taskHistory()
+
+    _interval = '30 days'
+    if entity.timerange?
+      if entity.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
+        _interval = if entity.timerange == 'all' then '120 days' else entity.timerange # account for some sort of upper bound
+      delete entity.timerange
+
+    whereInterval = "now_utc() - started <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
+
+    if entity.list?
+      if entity.list == 'true'
+        dbquery = dbquery
+        .select(dbs.get('main').raw('DISTINCT ON (name) name'), 'current')
+        .groupBy('name', 'current')
+        .orderBy('name')
+        .orderBy('current', 'DESC')
+      delete entity.list
+
+    dbquery.where(entity)
+
+  subtaskErrorHistory: (entity = {}) ->
+    console.log "subtaskErrorHistory, entity: #{JSON.stringify(entity)}"
+    dbquery = tables.jobQueue.subtaskErrorHistory()
+
+    _interval = '30 days'
+    if entity.timerange?
+      if entity.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
+        _interval = if entity.timerange == 'all' then '120 days' else entity.timerange # account for some sort of upper bound
+      delete entity.timerange
+
+    whereInterval = "now_utc() - enqueued <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
+
+    if entity.task_name == 'All'
+      delete entity.task_name
+
+    dbquery.where(entity)
+
+  summary: (entity = {}) ->
+    dbquery = tables.jobQueue.summary()
+    dbquery.where(entity)
+
+  health: (entity = {}) ->
     _interval = '30 days'
     # validate time range to 30 days if not specified
-    if query.timerange?
-      if query.timerange in ['1 hour', '1 day', '7 days', '30 days']
-        _interval = query.timerange
-      delete query.timerange
+    if entity.timerange?
+      if entity.timerange in ['1 hour', '1 day', '7 days', '30 days']
+        _interval = entity.timerange
+      delete entity.timerange
     whereInterval = "now_utc() - rm_inserted_time <= interval '#{_interval}'"
 
     # segregate query parameters for each of the subqueries, if applicable
-    _query1 = query # _.pluck query, [<foo-items>]
-    _query2 = {} # _.pluck query, [<bar-items>]
+    _where1 = entity # _.pluck query, [<foo-items>]
+    _where2 = {} # _.pluck query, [<bar-items>]
 
     # query
     db = dbs.get('main')
@@ -90,7 +139,7 @@ healthDbFn = () ->
       )
       .groupByRaw('load_id')
       .whereRaw(whereInterval) # account for time range in this subquery
-      .where(_query1)
+      .where(_where1)
       .as('s1')
     )
     .leftJoin(
@@ -101,76 +150,14 @@ healthDbFn = () ->
         db.raw('SUM(CASE WHEN ungrouped_fields IS NOT NULL THEN 1 ELSE 0 END) AS ungrouped_fields')
       )
       .groupByRaw('combined_id')
-      .where(_query2)
+      .where(_where2)
       .as('s2'),
     's1.load_id': 's2.combined_id'
     )
 
-  # "where" adaptor call for the above
-  _queryFn.where = (query = {}) ->
-    return _queryFn(query)
-
-  return _queryFn
-
-historyDbFn = () ->
-  _queryFn = (query = {}) ->
-    dbquery = tables.jobQueue.taskHistory()
-
-    _interval = '30 days'
-    if query.timerange?
-      if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
-        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
-      delete query.timerange
-
-    whereInterval = "now_utc() - started <= interval '#{_interval}'"
-    dbquery = dbquery.whereRaw(whereInterval)
-
-    if query.list?
-      if query.list == 'true'
-        dbquery = dbquery
-        .select(dbs.get('main').raw('DISTINCT ON (name) name'), 'current')
-        .groupBy('name', 'current')
-        .orderBy('name')
-        .orderBy('current', 'DESC')
-      delete query.list
-
-    dbquery.where(query)
-
-  # "where" adaptor call for the above
-  _queryFn.where = (query = {}) ->
-    return _queryFn(query)
-
-  return _queryFn
-
-errorHistoryDbFn = () ->
-  _queryFn = (query = {}) ->
-    dbquery = tables.jobQueue.subtaskErrorHistory()
-
-    _interval = '30 days'
-    if query.timerange?
-      if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
-        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
-      delete query.timerange
-
-    whereInterval = "now_utc() - enqueued <= interval '#{_interval}'"
-    dbquery = dbquery.whereRaw(whereInterval)
-
-    if query.task_name == 'All'
-      delete query.task_name
-
-    dbquery.where(query)
-
-  # "where" adaptor call for the above
-  _queryFn.where = (query = {}) ->
-    return _queryFn(query)
-
-  return _queryFn
 
 module.exports =
-  taskHistory: new crudService.Crud(historyDbFn, 'name')
-  subtaskErrorHistory: new crudService.Crud(errorHistoryDbFn, 'id')
-  queues: new TaskService(tables.jobQueue.queueConfig, 'name')
-  tasks: new TaskService(tables.jobQueue.taskConfig, 'name')
-  subtasks: new TaskService(tables.jobQueue.subtaskConfig, 'name')
-  summary: new crudService.Crud(tables.jobQueue.summary)
-  health: crudService.crud(healthDbFn)
+  jobStatGetters: jobStatGetters
+  queues: new TaskService(tables.jobQueue.queueConfig, {idKeys: 'name', debugNS: "queuesSvc"})
+  tasks: new TaskService(tables.jobQueue.taskConfig, {idKeys: 'name', debugNS: "tasksSvc"})
+  subtasks: new TaskService(tables.jobQueue.subtaskConfig, {idKeys: 'name', debugNS: "subtasksSvc"})
