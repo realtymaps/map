@@ -50,7 +50,7 @@ describe 'util.crud.service.helpers', ->
       describe 'getById', ->
         it 'Number', ->
           @instance.getById(1).toString()
-          .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = '1'"""
+          .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = 1"""
 
         it 'String', ->
           @instance.getById('1').toString()
@@ -58,7 +58,7 @@ describe 'util.crud.service.helpers', ->
 
         it 'Object', ->
           @instance.getById(crapId:1,prop2:'prop2').toString()
-          .should.equal """select * from "#{tables.auth.user.tableName}" where "crapId" = '1' and "prop2" = 'prop2'"""
+          .should.equal """select * from "#{tables.auth.user.tableName}" where "crapId" = 1 and "prop2" = 'prop2'"""
 
         it 'anything else throws', ->
           (=> @instance.getById([]).toString()).should.throw("val:  typeof object must be an object, or Number but not an Array!")
@@ -70,19 +70,19 @@ describe 'util.crud.service.helpers', ->
       describe 'update', ->
         it 'no safe', ->
           @instance.update(1, {test:'test'}).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
         it 'safe', ->
           @instance.update(1, {test:'test', crap: 2}, ['test']).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
       describe 'create', ->
         it 'default', ->
           @instance.create({id:1, test:'test'}).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim()
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values (1, 'test') returning "id" """.trim()
         it 'id', ->
           @instance.create({id:1, test:'test'}, 2).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim()
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values (2, 'test') returning "id" """.trim()
 
       describe 'upsert', ->
         describe 'record exists', ->
@@ -129,7 +129,7 @@ describe 'util.crud.service.helpers', ->
 
       it 'delete', ->
         @instance.delete(1).toString()
-        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = '1'"""
+        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = 1"""
 
     describe 'overrides', ->
       before ->
@@ -144,28 +144,28 @@ describe 'util.crud.service.helpers', ->
 
       it 'getById', ->
         @instance.getById(1).toString()
-        .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = '1'""".replace(/id/g, @instance.idKey)
+        .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = 1""".replace(/id/g, @instance.idKey)
 
       describe 'update', ->
         it 'no safe', ->
           @instance.update(1, {test:'test'}).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim().replace(/id/g, @instance.idKey)
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim().replace(/id/g, @instance.idKey)
 
         it 'safe', ->
           @instance.update(1, {test:'test', crap: 2}, ['test']).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim().replace(/id/g, @instance.idKey)
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim().replace(/id/g, @instance.idKey)
 
       describe 'create', ->
         it 'default', ->
           @instance.create({project_id:1, test:'test'}).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values (1, 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
         it 'id', ->
           @instance.create({test:'test'}, 2).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values (2, 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
 
       it 'delete', ->
         @instance.delete(1).toString()
-        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = '1'""".replace(/id/g, @instance.idKey)
+        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = 1""".replace(/id/g, @instance.idKey)
 
 
     describe 'HasManyCrud', ->
@@ -186,7 +186,7 @@ describe 'util.crud.service.helpers', ->
           select "#{tables.auth.m2m_user_permission.tableName}"."id" as "id", "user_id", "permission_id",
            "content_type_id", "name", "codename" from "#{tables.auth.m2m_user_permission.tableName}"
            inner join "#{tables.auth.permission.tableName}" on "#{tables.auth.permission.tableName}"."id" = "permission_id"
-           where "user_id" = '1'""".replace(/\n/g, '')
+           where "user_id" = 1""".replace(/\n/g, '')
 
         it 'getById', ->
           @instance.getById(1).toString()
@@ -194,29 +194,29 @@ describe 'util.crud.service.helpers', ->
           select "#{tables.auth.m2m_user_permission.tableName}"."id" as "id", "user_id", "permission_id",
            "content_type_id", "name", "codename" from "#{tables.auth.m2m_user_permission.tableName}"
            inner join "#{tables.auth.permission.tableName}" on "#{tables.auth.permission.tableName}"."id" = "permission_id"
-           where "#{tables.auth.m2m_user_permission.tableName}"."id" = '1'""".replace(/\n/g, '')
+           where "#{tables.auth.m2m_user_permission.tableName}"."id" = 1""".replace(/\n/g, '')
 
         describe 'update', ->
           it 'no safe', ->
             @instance.update(1, test:'test').toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
           it 'safe', ->
             @instance.update(1, {test:'test', crap:2}, ['test']).toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
+            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
 
 
         describe 'create', ->
           it 'default', ->
             @instance.create({id:1, test:'test'}).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim()
+            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values (1, 'test') returning "id" """.trim()
           it 'id', ->
             @instance.create({id:1, test:'test'}, 2).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim()
+            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values (2, 'test') returning "id" """.trim()
 
         it 'delete', ->
           @instance.delete(1).toString()
-          .should.equal """delete from "#{tables.auth.m2m_user_permission.tableName}" where "id" = '1'"""
+          .should.equal """delete from "#{tables.auth.m2m_user_permission.tableName}" where "id" = 1"""
 
         describe 'clone', ->
           it 'exists', ->
