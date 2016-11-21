@@ -183,7 +183,9 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw() || !identity.cur
                 ng-repeat="c in [true, false]"
                 ng-model="selectedFilters.hasImages"
                 uib-btn-radio="{{c == true}}"
-                uncheckable) {{c}}
+                uncheckable)
+                  span(ng-if="c") on
+                  span(ng-if="!c") off
 
   .mobile-only
     button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
