@@ -382,6 +382,9 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
       .count('*')
       .then (count) ->
         numRows = count?[0]?.count
+        if mergeData.dataType == TAX && mergeData.action == REFRESH
+          # we need to spoof a refresh for each fips in a tax refresh, because we're not keeping historical tax records
+          numRows = 1
         if !numRows
           return
         jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})

@@ -133,20 +133,26 @@ app.factory 'rmapsMapFactory',
             keepOverlaysFresh() # this fixes parcels and parcelAddresses from dissapearing / sent to back
           , true
 
-          # here, getLayers returns empty array, so had to re-get them inside watch below...
+
+          # Unfortunately this watch tends to fire before leaflet layers are setup so keep trying until ready
           $scope.$watch 'Toggles.useSatellite', (newVal, oldVal) =>
-            leafletData.getLayers(@mapId).then (allLayers) ->
-              sat = allLayers.baselayers.mapbox_street_gybrid
-              map = allLayers.baselayers.mapbox_street
+            $log.debug 'Aerial tiles toggle', newVal
+            toggleLayers = =>
+              leafletData.getLayers(@mapId).then (allLayers) ->
+                sat = allLayers.baselayers.googleHybrid
+                map = allLayers.baselayers.mapbox_street
+                if sat? && map?
+                  layersForToggle =
+                    true: sat
+                    false: map
 
-              if sat? && map?
-                layersForToggle =
-                  true: sat
-                  false: map
+                  leafletMap.removeLayer(layersForToggle[!newVal])
+                  leafletMap.addLayer(layersForToggle[newVal])
+                  keepOverlaysFresh()
+                else
+                  $timeout toggleLayers, 100
 
-                leafletMap.removeLayer(layersForToggle[!newVal])
-                leafletMap.addLayer(layersForToggle[newVal])
-                keepOverlaysFresh()
+            toggleLayers()
 
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->

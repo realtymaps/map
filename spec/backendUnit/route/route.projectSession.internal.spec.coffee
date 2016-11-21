@@ -176,7 +176,7 @@ describe 'route.projectSession', ->
       @subject.rootGET(@mockRequest,mockRes,(->))
       .then (projects) =>
         @subject.svc.getAllStub.sqls.should.be.ok
-        @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
+        @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = 1 and "auth_user_id" = 2"""
         logger.debug.green @subject.svc.getAllStub.args[0], true
         @subject.svc.getAllStub.args[0][0].should.be.eql
           id:1

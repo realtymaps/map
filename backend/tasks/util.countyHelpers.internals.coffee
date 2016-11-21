@@ -157,17 +157,11 @@ _promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subt
     tax.close_date = tax.close_date || tax.recording_date
     delete tax.recording_date
     delete tax.legal_unit_number
-    # save the values we will promote to MLS for easier access
-    promotedValues =
-      owner_name: tax.owner_name
-      owner_name_2: tax.owner_name_2
-      zoning: tax.zoning
-      appraised_value: tax.appraised_value
 
     tax.subscriber_groups.mortgageHistory = mortgageEntries
     tax.subscriber_groups.deedHistory = deedEntries
 
-    {promotedValues,tax}
+    tax
 
 _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
   tables.finalized.combined({transaction})
@@ -184,24 +178,11 @@ finalizeJoin = ({subtask, id, data_source_id, transaction, taxEntries, deedEntri
   # TODO: simultaneous closings, how do we properly sort to account for that?
   # TODO: answer: by buyer/seller names, but we'll get to that later
   _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
-  .then ({promotedValues,tax}) ->
+  .then (tax) ->
 
-    Promise.try () ->
-      if !_.isEqual(promotedValues, tax.promoted_values)
-        # need to save back promoted values to the normal table
-        tables.normalized.tax(subid: subtask.data.normalSubid)  # no transaction -- normalized db
-        .where
-          data_source_id: data_source_id || subtask.task_name
-          data_source_uuid: tax.data_source_uuid
-        .update(promoted_values: promotedValues)
-      else
-        Promise.resolve()
-    .then () ->
-      delete tax.promoted_values
-
-      # we must use an existing transaction if there is one
-      dbs.ensureTransaction transaction, 'main', (transaction) ->
-        _updateDataCombined {subtask, id, data_source_id, transaction, tax}
+    # we must use an existing transaction if there is one
+    dbs.ensureTransaction transaction, 'main', (transaction) ->
+      _updateDataCombined {subtask, id, data_source_id, transaction, tax}
 
 
 module.exports = {

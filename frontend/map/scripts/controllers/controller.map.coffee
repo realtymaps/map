@@ -35,6 +35,9 @@ app.controller 'rmapsMapCtrl', (
 ) ->
   $log = $log.spawn("map:controller")
 
+  $scope.$on '$destroy', ->
+    $log.debug -> "mapId: #{$scope.mapId} destroyed"
+
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
   $scope.init = (pageClass) ->

@@ -1,10 +1,9 @@
 .welcome(class="{{pageClass}}" ng-show="getIsReady()" ng-cloak ng-class="welcomeClass")
   section
     .hero-container.center-on-page
-      a.main(ui-sref="map",title="Show me the map!")
+      a.main(href="#" ng-click="page.goToMap()" title="Show me the map!")
         .hero-container
           img(rmaps-cdn-image ng-src="/assets/logo.png")
         .hero-text
           | Search &nbsp;| &nbsp; Map &nbsp;| &nbsp; Share &nbsp;| &nbsp; Communicate
       button.btn.btn-primary.btn-lg.pull-right(ng-if="!user.name" ng-click="goToState('onboardingPlan')") Sign up
-

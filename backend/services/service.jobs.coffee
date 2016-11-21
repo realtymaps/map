@@ -88,7 +88,6 @@ jobStatGetters =
     dbquery.where(entity)
 
   subtaskErrorHistory: (entity = {}) ->
-    console.log "subtaskErrorHistory, entity: #{JSON.stringify(entity)}"
     dbquery = tables.jobQueue.subtaskErrorHistory()
 
     _interval = '30 days'

@@ -4,7 +4,7 @@ include ../includes/mixins/_noteInputMixin.jade
 
   .desktop-only
     .page-modal-close.close-property
-      a(ui-sref="map")
+      a(href="#" ng-click="page.goToMap()")
         i.icon.icon-close
 
     .property-detail-container.container
@@ -99,7 +99,8 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-label(ng-if="property.status_display") MLS Status
 
               .row.content-row
-                .col-xs-4
+                .col-xs-4(ng-if="property.data_source_type == 'mls'")
+                .col-xs-4(ng-if="property.data_source_type == 'county'")
                   .content-value(ng-if="property.appraised_value") {{formatters.property.getPrice(property.appraised_value)}}
                   .content-value(ng-if="!property.appraised_value") -
                   .content-label Assessed Value
@@ -173,7 +174,7 @@ include ../includes/mixins/_noteInputMixin.jade
               .row.content-row
                 .col-sm-12
                   .content-label
-                    a(ng-click="showPVA(property.rm_property_id)") View County Website (opens new window) &nbsp;
+                    a(ng-click="showPVA(property)") View County Website (opens new window) &nbsp;
                       icon.fa.fa-external-link
 
           uib-accordion.row.content-block.subscriber-groups(close-others="false")
@@ -390,7 +391,8 @@ include ../includes/mixins/_noteInputMixin.jade
                   .content-label(ng-if="property.status_display") MLS Status
 
               .row.content-row
-                .col-xs-4
+                .col-xs-4(ng-if="property.data_source_type == 'mls'")
+                .col-xs-4(ng-if="property.data_source_type == 'county'")
                   .content-value(ng-if="property.appraised_value") {{property.appraised_value}}
                   .content-value(ng-if="!property.appraised_value") -
                   .content-label Assessed Value

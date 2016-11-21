@@ -7,6 +7,7 @@ app.factory 'rmapsMapContext', (
   $log
   rmapsGeometries
   rmapsUtilLayersBase
+  rmapsMainOptions
 ) ->
   $log = $log.spawn('RmapsMapContext')
 
@@ -26,7 +27,7 @@ app.factory 'rmapsMapContext', (
     defaults: null
 
     bounds: null
-    center: new rmapsGeometries.LeafletCenter(26.148111, -81.790809, 15)
+    center: rmapsMainOptions.map.options.json.center
     controls: null
     events: {}
     geojson: null

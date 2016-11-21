@@ -537,7 +537,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       .then () ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
-        .update(raw_rows: linesCount + parseInt(opts.initialCount ? 0))
+        .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
     startStreamChunk = ({createTable}) ->
       verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
@@ -629,7 +629,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .then () ->
           callback()
           if !hadError
-            resolve(linesCount+ parseInt(opts.initialCount ? 0))
+            resolve(linesCount+ (opts.initialCount ? 0))
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{dataLoadHistory.raw_table_name}: #{err}")
@@ -665,11 +665,7 @@ checkReadyForRefresh = (subtask, {targetHour, targetMinute, targetDay, runIfNeve
       return true
 
     now = Date.now()
-    # our server uses UTC now, so auto-adjusting no longer works
-    #utcOffset = -(new Date()).getTimezoneOffset()/60  # this was in minutes in the wrong direction, we need hours in the right direction
-    utcOffset = -(new tz.Date('America/New_York')).getTimezoneOffset()/60
-
-    target = moment.utc(now).utcOffset(utcOffset).startOf('day')
+    target = moment.utc(now).utcOffset(tz.MOMENT_UTC_OFFSET).startOf('day')
     if target.diff(refreshTimestamp) <= 0  # was today
       return false
 

@@ -5,9 +5,7 @@ module.exports = app
 app.factory 'rmapsMapAccess', (
   $log
   $rootScope
-
   leafletData
-
   rmapsBounds
   rmapsEventConstants
   rmapsGeometries

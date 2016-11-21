@@ -34,6 +34,7 @@ class JobStatGetters extends RouteCrud
     .then () ->
       next new ExpressResponse alert: msg: "Canceled #{req.params.name}"
 
+
 getterConfig =
   taskHistory:
     methods: ['get']
