@@ -21,8 +21,6 @@ rmapsMapTogglesFactory) ->
 
   $log = $log.spawn('map:runner:run.map')
 
-  $rootScope.mainOptions = rmapsMainOptions
-
   $rootScope.updateToggles = (map_toggles = {}) ->
     $log.debug 'updateToggles', map_toggles
     $rootScope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)

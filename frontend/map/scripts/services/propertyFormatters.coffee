@@ -18,6 +18,7 @@ app.service 'rmapsPropertyFormatterService',
     rmapsFormattersService
     rmapsEventConstants
     rmapsFiltersFactory
+    rmapsMainOptions
   ) ->
     $log = $log.spawn 'propertyFormatterService'
     _forSaleClass = {}
@@ -36,9 +37,9 @@ app.service 'rmapsPropertyFormatterService',
 
       activePin: (result) ->
         if @isPinnedResult(result)
-          $rootScope.mainOptions.naming.save.un
+          rmapsMainOptions.map.naming.save.un
         else
-          $rootScope.mainOptions.naming.save.present
+          rmapsMainOptions.map.naming.save.present
 
       isFavoriteResult: (result) ->
         rmapsPropertiesService.isFavoriteProperty result?.rm_property_id
