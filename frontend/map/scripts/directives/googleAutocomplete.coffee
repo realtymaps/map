@@ -29,7 +29,7 @@ app.directive 'rmapsGoogleAutocomplete', ($parse, $compile, $timeout, $document,
       keymap.up
       keymap.down
     ]
-    rmapsGoogleService.ApiPromise.then ->
+    rmapsGoogleService.getAPI().then (gmaps) ->
       autocompleteService = new (google.maps.places.AutocompleteService)
       placesService = new (google.maps.places.PlacesService)(element[0])
 

@@ -56,7 +56,7 @@ app.directive 'rmapsStreetViewPanorama', (rmapsGoogleService, $log, rmapsGoogleE
     imagestatus: '='
 
   link: (scope, element, attrs) ->
-    rmapsGoogleService.ApiPromise.then (gmaps) ->
+    rmapsGoogleService.getAPI().then (gmaps) ->
 
       pano = undefined
       sv = undefined
