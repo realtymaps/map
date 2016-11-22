@@ -22,6 +22,7 @@ require 'restangular'#requires lodash globally
 
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
+require '../../../common/utils/angularModule.coffee'
 require '../../common/scripts/factories/gridController.coffee'
 
 require 'angular-busy/angular-busy.css'
