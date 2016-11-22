@@ -5,5 +5,5 @@ app.config (stripeProvider) ->
   mainRun.rootScopePromise
   .then ($rootScope) ->
     $rootScope.stripePromise
-  .then (stripeKeys) ->
-    stripeProvider.setPublishableKey stripeKeys.public_test_api_key
+  .then (stripeKey) ->
+    stripeProvider.setPublishableKey stripeKey
