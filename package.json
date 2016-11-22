@@ -131,7 +131,6 @@
     "gulp-load-plugins": "^0.10.0",
     "gulp-minify-css": "0.3.X",
     "gulp-minify-html": "1.X",
-    "gulp-mocha": "2.1.X",
     "gulp-ng-annotate": "^1.1.0",
     "gulp-order": "^1.1.1",
     "gulp-plumber": "1.0.X",
