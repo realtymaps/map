@@ -49,10 +49,13 @@ safeConfigPromise = () ->
 
   stripePromise = externalAccounts.getAccountInfo 'stripe'
   .then ({other}) ->
-    _.pick other, ['public_live_api_key', 'public_test_api_key']
+    if config.PAYMENT_PLATFORM.LIVE_MODE
+      if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
+        throw new Error("Refusing to use stripe live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
+        safeConfig.stripe = other.public_live_api_key # ONLY public key should be set here!
+    else
+      safeConfig.stripe = other.public_test_api_key # ONLY public key should be set here!
 
-  Promise.join stripePromise, (stripe) ->
-    safeConfig.stripe = stripe
     safeConfig
 
 module.exports = {
