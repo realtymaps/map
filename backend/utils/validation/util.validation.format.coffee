@@ -11,10 +11,7 @@ DataValidationError = require '../errors/util.error.dataValidation'
 #   Append a `$` to a value to denote currency
 #
 module.exports = (options = {}) ->
-  console.log "options: #{JSON.stringify(options)}"
   (param, value) -> Promise.try () ->
-    console.log "param: #{JSON.stringify(param)}"
-    console.log "value: #{JSON.stringify(value)}"
 
     if !value? or value == ''
       return null
