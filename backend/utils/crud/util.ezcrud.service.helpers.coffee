@@ -67,7 +67,6 @@ class ServiceCrud extends BaseObject
     query.then (result) ->
       result
     .catch isUnhandled, (error) =>
-      @logger.debug () -> error
       throw new ServiceCrudError(error, "Error evaluating query: #{query}")
 
   getAll: (entity = {}, options = {}) ->
@@ -76,9 +75,8 @@ class ServiceCrud extends BaseObject
     @_wrapQuery(sqlHelpers.buildQuery(knex: query, entity: entity), options)
 
   create: (entity, options = {}) ->
-    #TODO should there be options to handle where / orWhereIn for inserts w/o the need to override?
     @logger.debug () -> "create() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapQuery((options.query ? @dbFn()).insert(entity), options)
+    @_wrapQuery((options.query ? @dbFn()).insert(sqlHelpers.safeJsonEntity(entity)), options)
 
   # implies restrictions and forces on id matches
   getById: (entity, options = {}) ->
@@ -98,7 +96,7 @@ class ServiceCrud extends BaseObject
     entity = _.omit entity, @idKeys
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    @_wrapQuery (options.query ? @dbFn()).where(ids).update(entity), options
+    @_wrapQuery (options.query ? @dbFn()).where(ids).update(sqlHelpers.safeJsonEntity(entity)), options
 
   upsert: (entity, options = {}) ->
     @logger.debug () -> "upsert() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -106,7 +104,7 @@ class ServiceCrud extends BaseObject
     entity = _.omit entity, @idKeys
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: entity, tableName: @dbFn.tableName
+    upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: sqlHelpers.safeJsonEntity(entity), tableName: @dbFn.tableName
     @_wrapQuery((options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (entity, options = {}) ->

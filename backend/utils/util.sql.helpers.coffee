@@ -205,6 +205,16 @@ safeJsonArray = (arr) ->
     return arr
   JSON.stringify(arr)
 
+safeJsonEntity = (entity) ->
+  # this function is minor a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
+  # JSON array when serializing to SQL, plus to ensure we get a db-NULL instead of a JSON null
+  if typeof(entity) != 'object'
+    return entity
+  result = _.mapValues entity, (val) ->
+    if _.isArray(val)
+      return JSON.stringify(val)
+    return val
+
 sqlizeColName = (fullName) ->
   fullName.split('.').map (name) ->
     '"' + name + '"'
@@ -344,6 +354,7 @@ module.exports = {
   whereInBounds
   getClauseString
   safeJsonArray
+  safeJsonEntity
   isUnique
   columns
   whereIntersects
