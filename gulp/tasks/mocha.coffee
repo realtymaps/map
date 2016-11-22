@@ -6,7 +6,7 @@ require './unitPrep'
 {spawn} = require('child_process')
 
 
-runMocha = ({files, reporter = 'dot'}, done) ->
+runMocha = ({files, reporter = 'dot'}) ->
   spawn('mocha', [
     "--reporter"
     reporter
@@ -17,33 +17,30 @@ runMocha = ({files, reporter = 'dot'}, done) ->
     "--full-trace"
     if Array.isArray(files) then files.join(' ') else files
   ], stdio: 'inherit')
-  .once 'close', done
-  .once 'finish', done
-  .once 'error', done
 
-gulp.task 'backendUnitSpec', (done) ->
-  runMocha files:['spec/backendUnit/**/*spec*'], done
+gulp.task 'backendUnitSpec', ->
+  runMocha files:['spec/backendUnit/**/*spec*']
 
-gulp.task 'backendUnitDebugSpec', (done) ->
-  runMocha {files:['spec/backendUnit/**/*spec*'], reporter:'spec'}, done
+gulp.task 'backendUnitDebugSpec', () ->
+  runMocha {files:['spec/backendUnit/**/*spec*'], reporter:'spec'}
 
-gulp.task 'backendIntegrationSpec', (done) ->
-  runMocha files: 'spec/backendIntegration/**/*spec*', done
+gulp.task 'backendIntegrationSpec', () ->
+  runMocha files: 'spec/backendIntegration/**/*spec*'
 
-gulp.task 'backendIntegrationDebugSpec', (done) ->
-  runMocha {files:'spec/backendIntegration/**/*spec*', reporter:'spec'}, done
+gulp.task 'backendIntegrationDebugSpec', () ->
+  runMocha {files:'spec/backendIntegration/**/*spec*', reporter:'spec'}
 
 gulp.task 'backendSpec', gulp.series('unitTestPrep', 'backendUnitSpec', 'unitTestTeardown', 'backendIntegrationSpec')
 gulp.task 'backendDebugSpec', gulp.series('unitTestPrep', 'backendUnitDebugSpec', 'unitTestTeardown', 'backendIntegrationDebugSpec')
 
-gulp.task 'commonSpec', (done) ->
-  runMocha files:'spec/common/**/*spec*', done
+gulp.task 'commonSpec', () ->
+  runMocha files:'spec/common/**/*spec*'
 
-gulp.task 'gulpSpec', (done) ->
-  runMocha  files: 'spec/gulp/**/*spec*', done
+gulp.task 'gulpSpec', () ->
+  runMocha files: 'spec/gulp/**/*spec*'
 
-gulp.task 'gulpDebugSpec', (done) ->
-  runMocha {files: "spec/gulp/**/*spec*", reporter:'spec'}, done
+gulp.task 'gulpDebugSpec', () ->
+  runMocha {files: "spec/gulp/**/*spec*", reporter:'spec'}
 
 gulp.task 'coverFiles', ->
   gulp.src [paths.common, paths.backend].map (f) -> f + '*.coffee'
@@ -51,8 +48,8 @@ gulp.task 'coverFiles', ->
   .pipe istanbul()
   .pipe istanbul.hookRequire()
 
-gulp.task 'backendCoverage', gulp.series 'coverFiles', (done) ->
-  runMocha files:['spec/backend/**/*spec*', 'spec/common/**/*spec*'], done
+gulp.task 'backendCoverage', gulp.series 'coverFiles', () ->
+  runMocha(files:['spec/backend/**/*spec*', 'spec/common/**/*spec*'])
   .pipe istanbul.writeReports
     dir: './_public/coverage/application/backend'
     reporters: [ 'html', 'cobertura', 'json', 'text', 'text-summary' ]
