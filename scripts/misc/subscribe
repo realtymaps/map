@@ -51,6 +51,13 @@ var successIds = [];
 
 var stripe = null;
 
+var testSourceCC = {
+  object: "card",
+  number: "4242424242424242",
+  exp_month: 01,
+  exp_year: 25,
+  cvc: 123
+}
 
 // customers only need to have one active subscription
 // This defensively returns first active one incase multiple
@@ -117,7 +124,7 @@ getSuperusers = function() {
 
 // creates a customer for the user, and applies a subscription
 createCustomerId = function(user_id) {
-  return stripe.customers.create({source: {}, plan: plan})
+  return stripe.customers.create({source: testSourceCC, plan: plan})
   .then( function(response){
     var subscriptions = response.subscriptions.data;
     var subscription = null;
