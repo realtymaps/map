@@ -29,8 +29,10 @@ gulp.task 'protractor',  gulp.series 'webdriver:update', (done) ->
     .once('close', done)
     .once('error', done)
 
-    # this would be way less complicated protractor sent the correct exit codes when it finished
-    # otherwise the child never finishes
+    # This would be way less complicated if protractor sent the correct exit codes when it finished/failed.
+    # Right now the chiilds never exit or error out and the stream to gulp hangs.
+    #
+    # To get around that we sniff stdout and look for completion and errors manually.
     pChild.stdout.on 'data', (data) ->
       process.stdout.write(data)
       data = String(data)
