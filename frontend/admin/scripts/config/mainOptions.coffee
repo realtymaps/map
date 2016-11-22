@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
-Point = require('../../../../common/utils/util.geometries.coffee').Point
+_ = require 'lodash'
 
 
 app.constant 'rmapsMainOptions', do () ->
