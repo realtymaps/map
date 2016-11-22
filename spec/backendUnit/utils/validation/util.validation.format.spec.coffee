@@ -8,7 +8,7 @@ Promise = require 'bluebird'
 describe 'utils/validation.validators.format()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  promiseIt 'should calculate implicit decimal places and add commas for Numbers', () ->
+  promiseIt 'should add commas for Numbers', () ->
     [
       expectResolve(validators.format(deliminate: true)(param, 10000.01)).then (value) ->
         value.should.equal("10,000.01")
