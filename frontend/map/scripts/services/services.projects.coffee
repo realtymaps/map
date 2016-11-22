@@ -57,7 +57,7 @@ rmapsHttpTempCache
     createProject: (project) ->
       $http.post backendRoutes.userSession.newProject, project
       .then ({data}) ->
-        rmapsProfilesService.addProfile(data.identity.profiles[data.identity.currentProfileId])
+        rmapsProfilesService.updateProfiles(data.identity.profiles)
         return data.identity.profiles[data.identity.currentProfileId]
 
     deleteProject: (project_id) ->
