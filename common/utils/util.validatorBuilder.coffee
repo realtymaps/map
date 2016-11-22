@@ -515,7 +515,7 @@ _classifyRule = (rule) ->
   if rule.type?.name == 'string' && rule.config.Interpretation == 'LookupMulti'
     return 'LookupMulti'
 
-  currencyWordRegex = /price|amount|fee|\$/ #['price', 'amount', 'fee', '$']
+  currencyWordRegex = /\bprice\b|\bamount\b|\bfee\b|\$/ #['price', 'amount', 'fee', '$']
   currencyTypes = ['float', 'integer']
   if rule.type?.name in currencyTypes && (rule.config.Interpretation == 'Currency' || currencyWordRegex.test(lcName))
     return 'Currency'
