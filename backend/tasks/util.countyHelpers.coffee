@@ -180,6 +180,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   commonData =
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
+    deleted: null
   _.extend base, stats, data, commonData
 
 
