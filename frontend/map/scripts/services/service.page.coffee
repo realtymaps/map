@@ -87,14 +87,17 @@ app.provider 'rmapsPageService', () ->
           @goToMap()
 
       goToMap: (params = {}) ->
-        params.project_id ?= rmapsProfilesService.currentProfile?.project_id
-        if params.project_id?
+        project_id = params.project_id || rmapsProfilesService.currentProfile?.project_id
 
-          if($previousState.get()?.state?.name == 'map')
+        if project_id?
+
+          # Do not bother reloading the map if returning from e.g. property details modal
+          if ($previousState.get()?.state?.name == 'map') && !params.project_id
+            $log.debug 'returning to the map'
             return $previousState.go()
 
           $stickyState.reset('map')
-          rmapsProfilesService.setCurrentProfileByProjectId params.project_id
+          rmapsProfilesService.setCurrentProfileByProjectId project_id
           .then ->
             $state.go 'map', params, { reload: true }
 
