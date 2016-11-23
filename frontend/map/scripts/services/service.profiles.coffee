@@ -253,6 +253,10 @@ app.service 'rmapsProfilesService', (
         $rootScope.identity.profiles[newProfile.id] = newProfile
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, identity
 
+    # updates the authoritative identity object w/ a set of profiles (such as that gotten via a response directly from an API call)
+    updateProfiles: (profiles) ->
+      _.merge $rootScope.identity.profiles, profiles
+
     removeProfile: (oldProfile) ->
       rmapsPrincipalService.getIdentity().then (identity) ->
         $log.debug 'deleting', oldProfile
