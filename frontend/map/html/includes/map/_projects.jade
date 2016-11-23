@@ -16,8 +16,12 @@ mixin projectsDropdown()
           div.header-item(ng-show="getProjects().length == 1") {{getProjects().length}} Active Project
           div.header-item(ng-show="getProjects().length != 1") {{getProjects().length}} Active Projects
           a(href="{{frontendRoutes.projects}}") View All Projects
-        div(ng-controller="rmapsAddProjectController")
+
+        // Note: the 'not-allowed' forces `New Blank Project` to be `cursor:not-allowed`, but `Save As` button will continue to have `cursor:pointer`
+        // This was necessary for us to leverage the `pointer-events:none` rule on `New Blank Project` that removes event handlers from element
+        div(ng-controller="rmapsAddProjectController" ng-class="{'not-allowed': identity.currentProfile.sandbox}")
           span.results-btn(
+            ng-class="{'disabledNoEvents': identity.currentProfile.sandbox}"
             rmaps-require-subscriber="disable"
             popover-placement="bottom"
             popover-trigger="'click mouseenter touchend'"

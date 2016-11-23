@@ -44,6 +44,12 @@ $fnMakeMapUlDropdown()
         background-color $white
         &.disabled
           $fnDisabled()
+
+        &.disabledNoEvents
+          pointer-events none
+          opacity 0.3
+
+
         .icon
           font-size 18px
         &:hover
