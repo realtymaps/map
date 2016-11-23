@@ -32,6 +32,7 @@ ruleDefaults =
       'mapping'
       'truthiness'
 
+      # `format` validator options
       'deliminate'
       'addDollarSign'
     ])
@@ -46,7 +47,7 @@ ruleDefaults =
     options
 
   # this groups up options that would cast new types, such as integer to string
-  getCastOptions: () ->
+  getFormatOptions: () ->
     _.pick(@config, [
       'deliminate'
       'addDollarSign'
@@ -83,9 +84,9 @@ ruleDefaults =
         transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', map: map}
 
     # Transforms that should occur last, since they can change type (i.e. integer to string with dollar sign)
-    typeCastingOptions = @getCastOptions()
-    if !_.isEmpty typeCastingOptions
-      transformArr.push name: @type?.name, options: typeCastingOptions
+    formatOptions = @getFormatOptions()
+    if !_.isEmpty formatOptions
+      transformArr.push name: 'format', options: formatOptions
 
     transformArr
 
