@@ -321,6 +321,7 @@ setFinishedTimestamps = (transaction=null) ->
 _updateTaskCountsImpl = (transaction, taskCriteria) ->
   tables.jobQueue.currentSubtasks({transaction})
   .select(dbs.raw('main', "COUNT(*) AS subtasks_created"))
+  .select(dbs.raw('main', "COUNT(finished IS NULL AND status != 'preparing' AND status != 'running' OR NULL) AS subtasks_queued"))
   .select(dbs.raw('main', "COUNT(status = 'preparing' OR NULL) AS subtasks_preparing"))
   .select(dbs.raw('main', "COUNT(status = 'running' OR NULL) AS subtasks_running"))
   .select(dbs.raw('main', "COUNT(status = 'soft fail' OR NULL) AS subtasks_soft_failed"))
