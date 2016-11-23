@@ -255,7 +255,7 @@ app.service 'rmapsProfilesService', (
 
     # updates the authoritative identity object w/ a set of profiles (such as that gotten via a response directly from an API call)
     updateProfiles: (profiles) ->
-      $rootScope.identity.profiles = profiles
+      _.merge $rootScope.identity.profiles, profiles
 
     removeProfile: (oldProfile) ->
       rmapsPrincipalService.getIdentity().then (identity) ->
