@@ -190,8 +190,8 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
       # return 0 to indicate we queued 0 subtasks
       logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
       return 0
-    suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{internals.summary(subtask)}>"
-    logger.spawn("task:#{subtask.task_name}").debug () -> "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
+    summary = if subtaskData?.length? then "#{subtask.name}[#{subtaskData.length}](batchId:#{batchId})" else internals.summary(subtask)
+    logger.spawn("task:#{subtask.task_name}").debug () -> "Queueing subtask: #{summary}"
     if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
       Promise.map subtaskData, (data, index) ->
         singleSubtask = _.clone(subtask)

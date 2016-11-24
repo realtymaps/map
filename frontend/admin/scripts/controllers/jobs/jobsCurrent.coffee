@@ -7,7 +7,7 @@ app.controller 'rmapsJobsCurrentCtrl',
   numericDefaults =
     aggregationType: uiGridConstants.aggregationTypes.sum
     type: 'number'
-    width: 75
+    enableFiltering: false
     cellClass: 'numberCell'
     footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
 
@@ -27,23 +27,23 @@ app.controller 'rmapsJobsCurrentCtrl',
     columnDefs:[
       field: 'name'
       displayName: 'Task'
-      width: 100
+      width: 160
       cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: COL_FIELD })">{{COL_FIELD}}</a></div>'
       footerCellTemplate: '<div>Totals</div>'
       pinnedLeft: true
     ,
       field: 'status'
       displayName: 'Status'
-      width: 75
+      width: 80
     ,
       field: 'batch_id'
       displayName: 'Batch'
-      width: 75
+      width: 80
     ,
       field: 'started'
       displayName: 'Started'
       type: 'date'
-      width: 100
+      width: 90
       cellFilter: dateFilter
       sort:
         direction: uiGridConstants.DESC
@@ -51,18 +51,18 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'finished'
       displayName: 'Finished'
       type: 'date'
-      width: 100,
+      width: 90,
       cellFilter: dateFilter
     ,
       field: 'status_changed'
       displayName: 'Changed'
       type: 'date'
-      width: 100
+      width: 90
       cellFilter: dateFilter
     ,
       field: 'initiator'
       displayName: 'Initiator'
-      width: 75
+      width: 95
     ,
       field: 'data'
       displayName: 'Data'
@@ -70,46 +70,53 @@ app.controller 'rmapsJobsCurrentCtrl',
     ].concat _.map [
       field: 'subtasks_created'
       displayName: 'Created'
+      width: 70
+    ,
+      field: 'subtasks_queued'
+      displayName: "Q'ed"
+      width: 64
     ,
       field: 'subtasks_preparing'
       displayName: 'Prep'
+      width: 64
     ,
       field: 'subtasks_running'
       displayName: 'Running'
+      width: 72
     ,
       field: 'subtasks_succeeded'
       displayName: 'Success'
+      width: 70
     ,
       field: 'subtasks_failed'
       displayName: 'Failed'
+      width: 64
     ,
       field: 'subtasks_soft_failed'
       displayName: 'S Fail'
+      width: 64
     ,
       field: 'subtasks_hard_failed'
       displayName: 'H Fail'
+      width: 64
     ,
       field: 'subtasks_infrastructure_failed'
       displayName: 'I Fail'
+      width: 64
     ,
       field: 'subtasks_canceled'
       displayName: 'Cancel'
+      width: 64
     ,
       field: 'subtasks_timeout'
       displayName: 'TimeOut'
+      width: 75
     ,
       field: 'subtasks_zombie'
       displayName: 'Zombie'
-    ,
-      field: 'warn_timeout_minutes'
-      displayName: 'Warn TO'
-      visible: false
-    ,
-      field: 'kill_timeout_minutes'
-      displayName: 'Kill TO'
-      visible: false
+      width: 68
     ], (num) ->
-      _.extend num, numericDefaults
+      _.defaults num, numericDefaults
 
 
   $scope.currentFilters = null
@@ -221,9 +228,12 @@ app.controller 'rmapsJobsCurrentCtrl',
     $scope.jobsBusy = rmapsJobsService.getHistory($scope.currentFilters.queryFilters)
     .then (jobs) ->
       _.each jobs, (job) ->
-        job.started = new Date(job.started)
-        job.finished = new Date(job.finished)
-        job.status_changed = new Date(job.status_changed)
+        if job.started?
+          job.started = new Date(job.started)
+        if job.finished?
+          job.finished = new Date(job.finished)
+        if job.status_changed?
+          job.status_changed = new Date(job.status_changed)
       $scope.jobsGrid.data = jobs.plain()
 
   $scope.loadSummary()

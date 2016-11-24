@@ -112,6 +112,7 @@ markUpToDate = (subtask) ->
       if !chunk?.length
         return
       chunkNum++
+      thisChunkNum = chunkNum
       ids = _.pluck(chunk, uuidField)
       tables.normalized.listing()
       .where(data_source_id: mlsId)
@@ -121,7 +122,7 @@ markUpToDate = (subtask) ->
       .then (finalizeIds) ->
         if finalizeIds.length == 0
           return
-        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData", mergeData: {chunk: chunkNum}})
+        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: finalizeIds, maxPage: 2500, laterSubtaskName: "finalizeData", mergeData: {chunk: thisChunkNum}})
     .then (count) ->
       logger.debug () -> "getDataChunks total: #{count}"
   .catch retsService.isMaybeTransientRetsError, (error) ->
