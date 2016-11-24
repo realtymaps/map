@@ -57,7 +57,7 @@ getPossiblyReadyTasks = (transaction) ->
   .orderByRaw("#{TH}.started ASC NULLS FIRST")
 
 summary = (subtask) ->
-  JSON.stringify(_.omit(subtask.data,['values', 'ids']))
+  subtask.name+' <'+JSON.stringify(_.omit(subtask.data,['values', 'ids'])).replace('"','')+'>(retry:#'+subtask.retry_num+'batchId:'+subtask.batch_id+')'
 
 
 withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new Promise (resolve, reject) ->
@@ -166,9 +166,9 @@ retrySubtask = ({subtask, prefix, transaction, error, quiet}) ->
     .then (taskData) ->
       # need to make sure we don't continue to retry subtasks if the task has errored in some way
       if taskData == undefined
-        logger[loglevel]("#{prefix} Can't retry subtask (task is no longer running) #{subtask.name}<#{summary(retrySubtaskData)}>, for batchId #{subtask.batch_id}: #{error}")
+        logger[loglevel]("#{prefix} Can't retry subtask (task is no longer running) #{summary(retrySubtaskData)}: #{error}")
         return
-      logger[loglevel]("#{prefix} Queuing retry ##{retrySubtaskData.retry_num}, #{subtask.name}<#{summary(retrySubtaskData)}>, for batchId #{subtask.batch_id}: #{error}")
+      logger[loglevel]("#{prefix} Queuing retry #{summary(retrySubtaskData)}: #{error}")
       tables.jobQueue.currentSubtasks({transaction})
       .insert retrySubtaskData
 
@@ -178,13 +178,13 @@ handleSubtaskError = ({prefix, subtask, newStatus, hard, error}) ->
   dbs.transaction (transaction) ->
     Promise.try () ->
       if hard
-        logger.error("#{prefix} Hard error executing subtask, #{subtask.name}<#{summary(subtask)}>(retry: ##{subtask.retry_num}), for batchId #{subtask.batch_id}: #{error}")
+        logger.error("#{prefix} Hard error executing subtask, #{summary(subtask)}: #{error}")
       else
         if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
           hard = true
           newStatus = 'hard fail'
           error = "max retries exceeded due to: #{error}"
-          logger.error("#{prefix} Hard error executing subtask, #{subtask.name}<#{summary(subtask)}>(retry: ##{subtask.retry_num}), for batchId #{subtask.batch_id}: #{error}")
+          logger.error("#{prefix} Hard error executing subtask, #{summary(subtask)}: #{error}")
         else
           retrySubtask({subtask, prefix, transaction, error, quiet: false})
     .then () ->
@@ -355,7 +355,7 @@ runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.spawn("task:#{subtask.task_name}").debug () ->  "#{prefix} Preparing to execute subtask: #{subtask.name}<#{summary(subtask)}>(retry: ##{subtask.retry_num}), for batchId #{subtask.batch_id}"
+      logger.spawn("task:#{subtask.task_name}").debug () ->  "#{prefix} Preparing to execute subtask: #{summary(subtask)}"
       return executeSubtask(subtask, prefix)
       .then nextIteration
     else
@@ -413,7 +413,7 @@ executeSubtask = (subtask, prefix) ->
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
-    logger.info "#{prefix} Executing subtask: #{subtask.name}<#{summary(subtask)}>(retry: ##{subtask.retry_num}), for batchId #{subtask.batch_id}"
+    logger.info "#{prefix} Executing subtask: #{summary(subtask)}"
     subtaskPromise = taskImpl.executeSubtask(subtask, prefix)
     .cancellable()
     .then () ->
