@@ -182,7 +182,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 if lastId == event.payload.split(delimiter)[uuidColumn]
                   found = counter
                   if overlap != found+1
-                    resultStreamLogger.debug () -> "       |  overlap id found at row #{found+1}, expected at row #{overlap}"
+                    resultStreamLogger.debug () -> "*****  |  overlap id found at row #{found+1}, expected at row #{overlap}"
                 else
                   counter++
               debugCount++
