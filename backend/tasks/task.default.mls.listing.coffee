@@ -106,7 +106,7 @@ markUpToDate = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
   mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
   .then (uuidField) ->
-    dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit, Select: uuidField, offset: 1}}
+    dataOptions = {uuidField, minDate: 0, searchOptions: {limit: subtask.data.limit||20000, Select: uuidField, offset: 1}}
     chunkNum = 0
     retsService.getDataChunks mlsId, 'listing', dataOptions, (chunk) -> Promise.try () ->
       if !chunk?.length
