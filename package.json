@@ -243,7 +243,6 @@
     "swagger-tools": "0.X",
     "terminate": "1.0.8",
     "textangular": "~1.4.6",
-    "through": "^2.3.7",
     "through2": "^2.0.0",
     "timezone-js": "^0.4.13",
     "touch": "0.0.3",
