@@ -40,8 +40,9 @@ geoJsonFormatter = (toMove, deletes) ->
   lastBuffStr = null
 
   write = (row, enc, cb) ->
+
     if !prefixWritten
-      @push(new Buffer('{"type": "FeatureCollection", "features": ['))
+      @push('{"type": "FeatureCollection", "features": [')
       prefixWritten = true
 
     if rm_property_ids[row.rm_property_id] #GTFO
@@ -55,18 +56,18 @@ geoJsonFormatter = (toMove, deletes) ->
 
     #hold off on adding to buffer so we know it has a next item to add ','
     if lastBuffStr
-      @push(new Buffer lastBuffStr + ',')
+      @push(lastBuffStr + ',')
 
     lastBuffStr = JSON.stringify(row)
     cb()
 
   end = (cb) ->
     if lastBuffStr
-      @push(new Buffer lastBuffStr)
-    @push(new Buffer(']}'))
+      @push(lastBuffStr)
+    @push(']}')
     cb()
 
-  through(write, end)
+  through.obj(write, end)
 
 
 delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->

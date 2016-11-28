@@ -105,8 +105,6 @@ uploadFile = (fileName) -> Promise.try ->
 
 
 fipsCodeQuery = (opts) ->
-  if !opts?.fips_code?
-    throw new Error('opts.fips_code required!')
 
   query = sqlHelpers.select(tables.finalized.parcel(), 'cartodb_parcel', false)
   .where(fips_code: opts.fips_code)
@@ -121,7 +119,7 @@ fipsCodeQuery = (opts) ->
     # logger.debug opts.nesw
     query = sqlHelpers.whereInBounds(query, 'geometry_raw', opts.nesw)
 
-  logger.debug -> query.toString()
+  logger.debugQuery(query)
 
   query
 

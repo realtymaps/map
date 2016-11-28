@@ -155,8 +155,8 @@ module.exports =
     unFavorite: "#{apiBase}/properties/unFavorite/"
     pva: "#{apiBase}/properties/pva/:fips_code"
   cartodb:
-    getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
-    getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"
+    getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fips_code"
+    getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fips_code"
   mls_config:
     apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
     root: apiBaseMlsConfig
