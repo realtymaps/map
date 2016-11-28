@@ -280,7 +280,7 @@ getRawRows = (subtask, rawSubid, criteria) ->
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
   .orderBy('rm_raw_id')
-  .offset(subtask.data.offset)
+  .where('rm_raw_id', '>', subtask.data.offset)
   .limit(subtask.data.count)
   if criteria
     rowsPromise = rowsPromise.where(criteria)
