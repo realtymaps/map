@@ -184,7 +184,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 else
                   counter++
               debugCount++
-              if debugCount%10000 == 0
+              if debugCount%5000 == 0
                 resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
               callback()
             when 'delimiter'
