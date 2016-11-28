@@ -257,7 +257,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
-          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}}"
           resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
