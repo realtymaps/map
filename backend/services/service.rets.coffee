@@ -132,7 +132,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
           searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
         else
           searchOptions.limit = opts.subLimit
-      logger.spawn(mlsId).debug () -> "getDataStream prepped for #{mlsId}/#{dataType}: #{searchQuery} / searchOptions: #{JSON.stringify(searchOptions)}, utcOffset: #{utcOffset}, fieldMappings: #{JSON.stringify(fieldMappings,null,2)}"
+      logger.spawn(mlsId).debug () -> "getDataStream prepped for #{mlsId}/#{dataType}: #{searchQuery} / searchOptions: #{JSON.stringify(searchOptions)}, utcOffset: #{utcOffset}"
 
       columns = null
       uuidColumn = null
@@ -184,7 +184,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 else
                   counter++
               debugCount++
-              if debugCount%1000 == 0
+              if debugCount%5000 == 0
                 resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
               callback()
             when 'delimiter'
@@ -196,7 +196,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                 finish(this, new Error('rets delimiter changed during iteration'))
               callback()
             when 'columns'
-              resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
+              resultStreamLogger.debug () -> "EVENT  |  #{event.type}"
               if !columns
                 columns = event.payload
                 columnList = event.payload.split(delimiter)[1..-2]
@@ -205,7 +205,6 @@ getDataStream = (mlsId, dataType, opts={}) ->
                     uuidColumn = i
                   if fieldMappings[column]?
                     columnList[i] = fieldMappings[column]
-                resultStreamLogger.debug () -> "       |  columnList: #{JSON.stringify(columnList, null, 2)}"
                 if opts.uuidField && !uuidColumn?
                   finish(this, new Error('failed to locate specificed UUID column'))
                 @push(type: 'columns', payload: columnList)
