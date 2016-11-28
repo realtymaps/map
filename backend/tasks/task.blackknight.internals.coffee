@@ -376,18 +376,18 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
     sqlHelpers.checkTableExists(dbFn)
     .then (exists) ->
       if !exists
-        return
+        return 0
       dbFn
-      .where('FIPS Code': mergeData.fips_code)
       .count('*')
       .then (count) ->
-        numRows = count?[0]?.count
-        if mergeData.dataType == TAX && mergeData.action == REFRESH
-          # we need to spoof a refresh for each fips in a tax refresh, because we're not keeping historical tax records
-          numRows = 1
-        if !numRows
-          return
-        jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
+        count?[0]?.count
+    .then (numRows) ->
+      if mergeData.dataType == TAX && mergeData.action == REFRESH
+        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
+        numRows = 1
+      if !numRows
+        return
+      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
 
 
 _getColumnsImpl = (fileType, action, dataType) ->

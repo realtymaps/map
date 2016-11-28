@@ -199,22 +199,15 @@ loadRawData = (subtask) ->
       numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
       mergeData.fips_code = subtask.data.fips_code
       mergeData.rawDeleteBatchId = subtask.batch_id
-      fauxSubtask = _.extend({}, subtask, data: mergeData)
-      # get the number of rows pertaining to the current fips code
-      totalNumRowsPromise = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask))
-      .where('FIPS Code': mergeData.fips_code)
-      .count('*')
-      .then (count) ->
-        count?[0]?.count || 0
+      if mergeData.dataType == internals.TAX && mergeData.action == internals.REFRESH
+        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
+        numRows = 1
     else
       laterSubtaskName = "normalizeData"
       mergeData.startTime = subtask.data.startTime
       numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
-      totalNumRowsPromise = Promise.resolve(numRows)
 
-    totalNumRowsPromise
-    .then (totalNumRows) ->
-      jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: totalNumRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
 
 
 cleanup = (subtask) ->
