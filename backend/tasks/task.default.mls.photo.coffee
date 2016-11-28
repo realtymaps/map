@@ -63,11 +63,7 @@ storePrep = (subtask) ->
     .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .catch errorHandlingUtils.isUnhandled, (error) ->
-      rootError = errorHandlingUtils.getRootCause(error)
-      if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
-        return # No results from RETS, let the task finish normally
-      else
-        throw new errorHandlingUtils.PartiallyHandledError(error, "Error getting list of updated records from RETS")
+      throw new errorHandlingUtils.PartiallyHandledError(error, "Error getting list of updated records from RETS")
 
   Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
     logger.debug () -> "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
