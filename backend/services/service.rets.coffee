@@ -244,7 +244,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   finish(this)
                   callback()
             when 'error'
-              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}}"
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
                 resultStreamLogger.debug () -> "       |  ignoring, not a real error"
@@ -349,7 +349,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
           .then () ->
             return total
           .catch rets.RetsReplyError, (err) ->
-            if err.replyTag == "NO_RECORDS_FOUND" && total > 0
+            if err.replyTag == "NO_RECORDS_FOUND"
               # code for 0 results, not really an error (DMQL is a clunky language)
               return total
             else
