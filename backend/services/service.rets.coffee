@@ -230,7 +230,6 @@ getDataStream = (mlsId, dataType, opts={}) ->
                     if !mlsInfo.verify_overlap
                       overlap *= 2  # if we aren't verifying, use a bigger overlap for safety
                 if event.payload.maxRowsExceeded && (!fullLimit || total < fullLimit)
-                  resultStreamLogger.debug () -> "       |  maxRowsExceeded, triggering next iteration"
                   searchOptions.offset = baseOffset+total-overlap
                   if fullLimit
                     searchOptions.limit = fullLimit - (searchOptions.offset - baseOffset)
@@ -256,7 +255,6 @@ getDataStream = (mlsId, dataType, opts={}) ->
               callback()
             else
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
-              resultStreamLogger.debug () -> "       |  event type not handled"
               callback()
         catch error
           resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
