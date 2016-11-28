@@ -75,7 +75,7 @@ module.exports = do ->
     if config.PAYMENT_PLATFORM.LIVE_MODE
       if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
         throw new Error("Refusing to use stripe live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
-        apiKeyNameStr = 'live'
+      apiKeyNameStr = 'live'
     else
       apiKeyNameStr = 'test'
 
