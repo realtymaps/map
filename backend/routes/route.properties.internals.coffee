@@ -51,7 +51,6 @@ refreshPins = () ->
     Promise.join keystoreSvc.cache.getValue('pin_refresh_minutes', namespace: 'time_limits'),
       profileSvc.getCurrentSessionProfile(req.session),
       (pin_refresh_minutes, profile) ->
-        logger.debug profile
         logger.debug 'comparing', moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').format(),  moment.utc().format()
         if moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').isBefore(moment.utc())
           logger.debug "Profile is older than #{pin_refresh_minutes} minutes, reloading pins"

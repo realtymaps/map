@@ -81,7 +81,6 @@ module.exports =
               # Ensure saved details are part of the saved props
               for type in ['pins', 'favorites']
                 if profile[type]?[property.rm_property_id]?
-                  logger.debug "Found #{type} #{property.rm_property_id}"
                   property.savedDetails = _.extend property.savedDetails || {},
                     profile[type][property.rm_property_id]
                   if type == 'pins'
