@@ -214,7 +214,7 @@ findNextFolderSet = (ftp, action, copyDate) -> Promise.try () ->
         continue
       if copyDate >= date
         continue
-      logger.info("New blackknight directory found: /Managed_#{action}/#{dir.name}")
+      logger.debug("New blackknight directory found: /Managed_#{action}/#{dir.name}")
 
       if date < nextFolderSet.date
         nextFolderSet = {date}
