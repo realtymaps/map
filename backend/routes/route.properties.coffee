@@ -11,7 +11,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 auth = require '../utils/util.auth'
 internals = require './route.properties.internals'
 ourTransforms = require '../utils/transforms/transforms.properties'
-logger = require('../config/logger').spawn('route.properties')
+logger = require('../config/logger').spawn('route:properties')
 profileSvc = require '../services/service.profiles'
 
 module.exports =
@@ -29,6 +29,7 @@ module.exports =
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       internals.captureMapFilterState(handleStr: "filterSummary")
+      internals.refreshPins()
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
@@ -100,6 +101,7 @@ module.exports =
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       internals.captureMapFilterState(handleStr:"drawnShapes")
+      internals.refreshPins()
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->

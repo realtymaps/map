@@ -280,7 +280,7 @@ getRawRows = (subtask, rawSubid, criteria) ->
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
   .orderBy('rm_raw_id')
-  .whereBetween('rm_raw_id', subtask.data.offset+1, subtask.data.offset+subtask.data.count)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   if criteria
     rowsPromise = rowsPromise.where(criteria)
 
@@ -513,7 +513,7 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
   parts = dataLoadHistory.raw_table_name.split('_')
-  verboseLogger = logger.spawn(parts[1]).spawn(parts[2])
+  taskLogger = logger.spawn(parts[1]).spawn(parts[2])
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     dbStreamer = null
@@ -525,7 +525,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       utilStreams.pgStreamEscape(val, delimiter)
 
     commitStreamChunk = ({linesCount}) ->
-      verboseLogger.debug () -> 'CHUNK  |  committing stream chunk'
+      taskLogger.debug () -> 'CHUNK  |  committing stream chunk'
       dbStreamer.unpipe(dbStream)
       dbStream?.write('\\.\n')
       dbStream?.end()
@@ -539,7 +539,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
     startStreamChunk = ({createTable}) ->
-      verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
+      taskLogger.debug () -> "CHUNK  |  starting new stream chunk (createTable: #{createTable})"
       promiseQuery('BEGIN TRANSACTION')
       .then () ->
         startedTransaction = true
@@ -553,9 +553,10 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               table.text(fieldName)
           promiseQuery(createRawTable.toString())
           .then () ->
-            logger.debug () -> "created raw table: #{dataLoadHistory.raw_table_name}"
+            taskLogger.debug () -> "created raw table: #{dataLoadHistory.raw_table_name}"
       .then () ->
         copyStart = "COPY \"#{dataLoadHistory.raw_table_name}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+        taskLogger.debug () -> "CHUNK  |  starting copy stream: #{copyStart}"
         dbStream = streamQuery(copyStream.from(copyStart))
         dbStreamer.pipe(dbStream)
 
@@ -579,8 +580,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
               linesCount++
-              if linesCount%1000 == 0
-                verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               Promise.try () ->
                 if opts.maxChunkSize? && linesCount%opts.maxChunkSize == 0
                   commitStreamChunk({linesCount})
@@ -589,11 +588,9 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               .then () ->
                 callback()
             when 'delimiter'
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               delimiter = event.payload
               callback()
             when 'columns'
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
@@ -606,19 +603,13 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               .then () ->
                 callback()
             when 'error'
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
                 # make sure it is a true error, not just no records returned
                 onError(event.payload)
               callback()
             else
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
-          verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-          verboseLogger.debug () -> "*****  |  error in catch block!!!"
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->

@@ -9,7 +9,6 @@ geohash = require 'geohash64'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 propertiesUtil = require  '../utils/util.properties'
 
-
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl, ignoreSaved}) ->
     limit ?= config.backendClustering.resultThreshold
@@ -66,6 +65,7 @@ module.exports =
 
             propertyIdsByCenterPoint = {}
             resultGroups = {}
+            pins = {}
             propertiesUtil.eachTrump {collection: properties, trump: 'mls'}, ({result, row}) ->
               property = row
               if queryParams.returnType
@@ -83,6 +83,10 @@ module.exports =
                 if profile[type]?[property.rm_property_id]?
                   property.savedDetails = _.extend property.savedDetails || {},
                     profile[type][property.rm_property_id]
+                  if type == 'pins'
+                    # Always return pins so the font-end can show those added by other uses
+                    pins ?= {}
+                    pins[property.rm_property_id] = property
 
               if property.data_source_type == 'mls' and property.data_source_id?
                 mlsConfigSvc.getByIdCached(property.data_source_id)
@@ -101,6 +105,7 @@ module.exports =
 
                 singletons: resultsByPropertyId
                 groups: resultGroups
+                pins: pins
                 length: properties.length + resultGroupsCtr
               else
                 resultsByPropertyId.length = properties.length
@@ -108,6 +113,7 @@ module.exports =
 
               logger.debug "Normal Query with length of #{result.length}"
               delete result.length
+
               result
 
         logger.debug () -> "queryParams.returnType: #{queryParams.returnType}"
