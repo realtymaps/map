@@ -19,6 +19,9 @@ app.directive 'rmapsJsonInput', [ () ->
 
       ctrl.$parsers.push (viewValue) ->
         try
+          if !viewValue
+            ctrl.$setValidity 'json', true
+            return null
           parsed = JSON.parse viewValue
           ctrl.$setValidity 'json', true
           parsed
@@ -28,6 +31,8 @@ app.directive 'rmapsJsonInput', [ () ->
             return
 
       ctrl.$formatters.push (value) ->
-        JSON.stringify value ? '', null, 2
+        if !value?
+          return ''
+        JSON.stringify(value, null, 2)
   }
 ]

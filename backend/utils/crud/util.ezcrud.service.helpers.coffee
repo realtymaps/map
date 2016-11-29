@@ -66,7 +66,7 @@ class ServiceCrud extends BaseObject
     # evaluate
     query.then (result) ->
       result
-    .catch isUnhandled, (error) =>
+    .catch isUnhandled, (error) ->
       throw new ServiceCrudError(error, "Error evaluating query: #{query}")
 
   getAll: (entity = {}, options = {}) ->
