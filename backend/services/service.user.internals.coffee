@@ -5,7 +5,7 @@ tables = require '../config/tables'
 
 getImage = (entity) ->
   if !entity?.account_image_id?
-    return Promise.resolve []
+    return Promise.resolve null
   tables.user.blobs()
   .where(id: entity.account_image_id)
   .then singleRow
@@ -24,7 +24,7 @@ getImageByUser = (auth_user_id) ->
 
 getImageByCompany = (company_id) ->
   if !company_id
-    return Promise.resolve []
+    return Promise.resolve null
 
   tables.user.company()
   .select('blob')
