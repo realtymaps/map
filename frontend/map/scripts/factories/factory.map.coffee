@@ -309,6 +309,10 @@ app.factory 'rmapsMapFactory',
 
         rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
+          # Watch for pins other users may have added and show them in the pins dropdown
+          for rm_property_id, pin of data?.pins
+            rmapsPropertiesService.pins[rm_property_id] ?= pin
+
           # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
           # but gets buggy when rapidly changing zooms occurs.
           @scope.zoomLevelService.trackZoom(@scope)

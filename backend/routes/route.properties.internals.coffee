@@ -1,4 +1,4 @@
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('route:properties:internals')
 Promise = require 'bluebird'
 moment = require 'moment'
 
@@ -12,7 +12,8 @@ ourTransforms = require '../utils/transforms/transforms.properties'
 propSaveSvc = require '../services/service.properties.save'
 userUtils = require '../utils/util.user'
 tables = require '../config/tables'
-
+keystoreSvc = require '../services/service.keystore'
+profileSvc = require '../services/service.profiles'
 
 appendProjectId = (req, obj) ->
   obj.project_id = profileService.getCurrentSessionProfile(req.session).project_id
@@ -43,6 +44,28 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
 
     .catch (err) ->
       next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+
+refreshPins = () ->
+  (req, res, next) ->
+    # If cached profile is older than pin_refresh_minutes, load fresh pins
+    Promise.join keystoreSvc.cache.getValue('pin_refresh_minutes', namespace: 'time_limits'),
+      profileSvc.getCurrentSessionProfile(req.session),
+      (pin_refresh_minutes, profile) ->
+        logger.debug 'comparing', moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').format(),  moment.utc().format()
+        if moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').isBefore(moment.utc())
+          logger.debug "Profile is older than #{pin_refresh_minutes} minutes, reloading pins"
+          tables.user.project()
+          .select('pins')
+          .where('id', profile.project_id)
+          .then ([project]) ->
+            profile.pins = project.pins
+            profile.rm_modified_time = moment.utc()
+            next()
+        else
+          logger.debug "Profile is still fresh"
+          next()
+    .catch (err) ->
+      next(err)
 
 handleRoute = (res, next, serviceCall) ->
   Promise.try () ->
@@ -84,6 +107,7 @@ getPva = ({req, res, next}) ->
 module.exports = {
   handleRoute
   captureMapFilterState
+  refreshPins
   appendProjectId
   save
   saves
