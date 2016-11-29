@@ -13,7 +13,7 @@ argv = require('yargs').argv
 # rewire = require('rewire')
 Spinner = require('cli-spinner').Spinner
 cartodb = require '../../backend/services/service.cartodb'
-logger = require('../../backend/config/logger')('scripts:cartodb:import')
+logger = require('../../backend/config/logger').spawn('scripts:cartodb:import')
 tables = require '../../backend/config/tables'
 # console.log(cartodb)
 
