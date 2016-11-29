@@ -101,6 +101,9 @@ app.provider 'rmapsPageService', () ->
           .then ->
             $state.go 'map', params, { reload: true }
 
+        else if !$rootScope.identity
+          $state.go 'login'
+
         else
           $state.go 'main'
 

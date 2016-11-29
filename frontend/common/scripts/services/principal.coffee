@@ -34,6 +34,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventCon
     _authenticated = false
     _resolved = false
     _isStaff = null
+    $rootScope.identity = null
     $rootScope.$emit rmapsEventConstants.principal.logout.success
 
   # Returns a promise that is resolved/rejected based on the result of API call
