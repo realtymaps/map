@@ -1,10 +1,8 @@
 {validators} = require '../util.validation'
 
 transforms =
-    nesw:
-      transform: validators.neSwBounds
-      required: false
-    fipscode:
+    nesw: validators.neSwBounds
+    fips_code:
       transform: validators.string(minLength:1)
       required: true
     limit: validators.integer()

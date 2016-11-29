@@ -156,7 +156,7 @@ sql = (sqlStr) ->
   internals.execSql(sqlStr)
 
 
-getByFipsCode = (opts) -> Promise.try () ->
+getByFipsCode = (opts) ->
   internals.fipsCodeQuery(opts)
 
 

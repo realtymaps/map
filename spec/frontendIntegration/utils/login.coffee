@@ -1,7 +1,6 @@
 ###globals by, element, browser###
-module.exports = (root = 'http://localhost:8085') ->
+module.exports = (root = 'http://localhost:8085/map') ->
   browser.get root
-  element(`by`.css('.main')).click()
 
   element(`by`.css('#username')).sendKeys(process.env.FRONTEND_INTEGRATION_EMAIL)
 
