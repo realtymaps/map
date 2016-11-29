@@ -134,7 +134,7 @@ include ../includes/mixins/_noteInputMixin.jade
               .row.content-row
                 .col-sm-6
                   .content-label Creation Date
-                  .content-value(ng-if="!property.creation_date")
+                  .content-value(ng-if="property.creation_date")
                     span {{property.creation_date | date : 'MM/dd/yyyy'}}
                   .content-value(ng-if="!property.creation_date")
                     span -
