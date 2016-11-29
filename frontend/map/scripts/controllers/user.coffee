@@ -79,7 +79,8 @@ rmapsUsStates
 
       $http.put backendRoutes.userSession.image, blob: @cropBlob
       .success =>
-        delete @cropBlob
+        if $scope.user.account_image_id?
+          delete @cropBlob
         delete @blob
 
   $scope.companyImageForm =
@@ -106,7 +107,8 @@ rmapsUsStates
 
       $http.put backendRoutes.userSession.companyImage.replace(':account_image_id',''), _.extend(blob: @cropBlob, $scope.company)
       .success =>
-        delete @cropBlob
+        if $scope.company.account_image_id?
+          delete @cropBlob
         delete @blob
 
   $scope.pass =
