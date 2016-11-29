@@ -117,7 +117,7 @@ app.service 'rmapsPropertyFormatterService',
           return 'Asking Price/SqFt'
 
       getDaysForSale: (result) ->
-        end = moment(result.close_date or moment.utc())
+        end = moment(result.close_date or result.discontinued_date or moment.utc())
         start = moment(result.creation_date)
         days = end.diff(start, 'days')
         return days
