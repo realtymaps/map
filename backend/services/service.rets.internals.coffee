@@ -64,7 +64,7 @@ getRetsClient = (mlsId, handler) ->
 
 isMaybeTransientRetsError = (error) ->
   cause = errorHandlingUtils.getRootCause(error)
-  if cause instanceof rets.RetsReplyError && cause.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
+  if cause instanceof rets.RetsReplyError && cause.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED", "TOO_MANY_ACTIVE_QUERIES"]
     return true
   if cause instanceof rets.RetsServerError && httpStatus.isMaybeTransientError(cause.httpStatus)
     return true
