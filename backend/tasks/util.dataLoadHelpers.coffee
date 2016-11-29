@@ -202,6 +202,51 @@ _getUsedInputFields = (validationDefinition) ->
     return [validationDefinition.output]
 
 
+getValidationStrings = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
+  if dataSourceType == 'mls'
+    dataSourcePromise = Promise.try () ->
+      mlsConfigService.getByIdCached(dataSourceId)
+      .then (mlsConfig) ->
+        mlsConfig.data_rules
+  else if dataSourceType == 'county'
+    dataSourcePromise = Promise.try () ->
+      Promise.resolve {} # no global rules, so far
+
+  dataSourcePromise
+  .then (global_rules) ->
+    whereClause =
+      data_source_id: dataSourceId
+      data_type: dataType
+    if listName
+      whereClause.list = listName
+    if fieldName
+      whereClause.output = fieldName
+    tables.config.dataNormalization()
+    .where(whereClause)
+    .orderBy('list')
+    .orderBy('ordering')
+    .then (validations=[]) ->
+      validationMap = {}
+      for validationDef in validations
+        validationMap[validationDef.list] ?= []
+
+        # If transform was overridden, use it directly
+        if !_.isEmpty validationDef.transform
+          return validationDef.transform
+
+        # Most common case, generate the transform from the rule configuration
+        else
+          if validationDef.list == 'base'
+            rule = validatorBuilder.buildBaseRule(dataSourceType, dataType) validationDef
+          else
+            rule = validatorBuilder.buildDataRule validationDef
+
+          validationDef.transform = rule.getTransformString global_rules
+
+        validationMap[validationDef.list].push(validationDef)
+      return {validationMap: validationMap}
+
+
 getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
   if dataSourceType == 'mls'
     dataSourcePromise = Promise.try () ->
@@ -688,6 +733,7 @@ module.exports = {
   recordChangeCounts
   activateNewData
   getValidationInfo
+  getValidationStrings
   normalizeData
   getRawRows
   getValues

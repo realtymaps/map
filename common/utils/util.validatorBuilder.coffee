@@ -58,7 +58,7 @@ ruleDefaults =
 
     # Transforms that should precede type-specific logic
     if globalOpts.nullString
-      transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
+      transformArr.push name: 'globalNullify', options: value: String(globalOpts.nullString)
     if @config.doLookup
       transformArr.push name: 'map', options: {unmapped: @config.unmapped||'pass', lookup: {lookupName: @config.LookupName, proxyName: @input, dataSourceId: @data_source_id, dataListType: @data_type}}
     if @config.nullEmptyArray
@@ -170,7 +170,6 @@ _rules =
     listing:
       creation_date:
         alias: 'Creation Date'
-        required: true
         type: name: 'datetime'
 
       data_source_uuid:
@@ -220,7 +219,6 @@ _rules =
 
       days_on_market_filter:
         alias: 'Days on Market Filter'
-        required: true
         type: name: 'days_on_market'
         input: {}
         valid: () ->
