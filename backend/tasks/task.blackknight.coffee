@@ -75,8 +75,9 @@ copyFtpDrop = (subtask) ->
 
   # expect 6 paths in the folder set
   .then (folderSet) ->
-    logger.info () -> "Processing blackknight data for date: #{folderSet.date}"
-    logger.debug () -> "Paths: #{JSON.stringify(folderSet)}"
+    if !folderSet.date?
+      logger.info () -> "Processing blackknight data for date: #{folderSet.date}"
+      logger.debug () -> "Paths: #{JSON.stringify(folderSet)}"
 
     # traverse each path...
     filteredFiles = []

@@ -513,7 +513,6 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
   parts = dataLoadHistory.raw_table_name.split('_')
-  taskLogger = logger.spawn(parts[1]).spawn(parts[2])
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     dbStreamer = null
@@ -525,7 +524,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       utilStreams.pgStreamEscape(val, delimiter)
 
     commitStreamChunk = ({linesCount}) ->
-      taskLogger.debug () -> 'CHUNK  |  committing stream chunk'
       dbStreamer.unpipe(dbStream)
       dbStream?.write('\\.\n')
       dbStream?.end()
@@ -539,7 +537,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
     startStreamChunk = ({createTable}) ->
-      taskLogger.debug () -> "CHUNK  |  starting new stream chunk (createTable: #{createTable})"
       promiseQuery('BEGIN TRANSACTION')
       .then () ->
         startedTransaction = true
@@ -553,10 +550,9 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               table.text(fieldName)
           promiseQuery(createRawTable.toString())
           .then () ->
-            taskLogger.debug () -> "created raw table: #{dataLoadHistory.raw_table_name}"
+            logger.debug () -> "created raw table: #{dataLoadHistory.raw_table_name}"
       .then () ->
         copyStart = "COPY \"#{dataLoadHistory.raw_table_name}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
-        taskLogger.debug () -> "CHUNK  |  starting copy stream: #{copyStart}"
         dbStream = streamQuery(copyStream.from(copyStart))
         dbStreamer.pipe(dbStream)
 
@@ -613,13 +609,17 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        commitStreamChunk({linesCount})
+        totalLines = linesCount + (opts.initialCount ? 0)
+        Promise.try () ->
+          if startedTransaction
+            commitStreamChunk({linesCount})
         .then () ->
-          promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
+          if totalLines > 0
+            promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
         .then () ->
           callback()
           if !hadError
-            resolve(linesCount+ (opts.initialCount ? 0))
+            resolve(totalLines)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{dataLoadHistory.raw_table_name}: #{err}")
