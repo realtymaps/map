@@ -20,6 +20,7 @@ transforms = require '../utils/transforms/transforms.userSession'
 internals = require './route.userSession.internals'
 userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -63,6 +64,17 @@ login = (req, res, next) -> Promise.try () ->
       sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->
         internals.getIdentity(req, res, next)
+  .catch errorHandlingUtils.isUnhandled, (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, 'Unexpected error during login')
+  .catch (err) ->
+    logger.error('Error during login: '+err.msg)
+    return next new ExpressResponse(alert: {
+      msg: err.msg
+      id: alertIds.loginFailure
+    }, {
+      status: httpStatus.UNAUTHORIZED
+      quiet: true
+    })
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->

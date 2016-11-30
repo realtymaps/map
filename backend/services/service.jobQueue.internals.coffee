@@ -57,7 +57,7 @@ getPossiblyReadyTasks = (transaction) ->
   .orderByRaw("#{TH}.started ASC NULLS FIRST")
 
 summary = (subtask) ->
-  ' |- '+subtask.name+' -| <'+JSON.stringify(_.omit(subtask.data,['values', 'ids'])).replace(/"/g,'')+'>(retry:#'+subtask.retry_num+',batchId:'+subtask.batch_id+')'
+  ' |- '+subtask.name+' -|  <'+JSON.stringify(_.omit(subtask.data,['values', 'ids'])).replace(/"/g,'')+'>(retry:#'+subtask.retry_num+',batchId:'+subtask.batch_id+')'
 
 
 withDbLock = ({lockId, maxWaitSeconds, retryIntervalSeconds=2}, handler) -> new Promise (resolve, reject) ->
