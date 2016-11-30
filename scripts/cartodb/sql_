@@ -10,7 +10,7 @@ Promise = require 'bluebird'
 argv = require('yargs').argv
 Spinner = require('cli-spinner').Spinner
 cartodb = require '../../backend/services/service.cartodb'
-logger = require('../../backend/config/logger')('scripts:cartodb:sql_')
+logger = require('../../backend/config/logger').spawn('scripts:cartodb:sql_')
 
 makeSpinner = () ->
   spinner = new Spinner('running.. %s')
