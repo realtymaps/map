@@ -89,7 +89,7 @@ ensureSessionCount = (req) -> Promise.try () ->
   .returning('session_id')
   .delete()
   .then (sessionIds) ->
-    logger.debug () -> "session securities deleted due to missing session: #{JSON.stringify(_.pluck(sessionIds, 'session_id'), null, 2)}"
+    logger.debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
     tables.auth.sessionSecurity()
     .where(user_id: req.user.id)
   .then (sessionSecurities=[]) ->
@@ -111,7 +111,7 @@ deleteSecurities = (criteria) ->
   .returning('session_id')
   .delete()
   .then (sessionIds) ->
-    logger.debug () -> "session securities deleted: #{JSON.stringify(_.pluck(sessionIds, 'session_id'), null, 2)}"
+    logger.debug () -> "session securities deleted: #{JSON.stringify(sessionIds, null, 2)}"
 
 
 getSecuritiesForSession = (sessionId) ->
