@@ -1,2 +1,16 @@
 .collapse-header
   h2 MLS
+
+.row.collapse-header.mls-details(ng-repeat="mls in mlses")
+  .row
+    .col-md-6
+      label Broker Name
+      p {{identity.user.first_name}} {{identity.user.last_name}}
+    .col-md-6
+      label MLS
+      p {{mls.formal_name}}
+    .col-md-6
+      label MLS Agent ID
+      p
+        span 123456
+        span - Verified

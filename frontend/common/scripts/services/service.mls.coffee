@@ -11,6 +11,9 @@ mod.service 'rmapsMlsService', ($log, $http) ->
   getAllSupported: (data = {}) ->
     $http.postData(mlsRoutes.supported, data)
 
+  getForUser: () ->
+    $http.getData(mlsRoutes.getForUser)
+
   getSupportedStates: () ->
     $http.getData(mlsRoutes.supportedStates)
 

@@ -1,7 +1,9 @@
-{lookup, config} = require '../config/tables'
+{lookup, config, auth, finalized} = require '../config/tables'
 {basicColumns} = require '../utils/util.sql.columns'
+sqlHelpers = require '../utils/util.sql.helpers'
 clone =  require 'clone'
 logger = require('../config/logger').spawn('services:mls')
+dbs = require '../config/dbs'
 _ = require 'lodash'
 
 supported =
@@ -65,6 +67,21 @@ getAllSupported = (queryObj) ->
     query.where queryObj
   query
 
+getForUser = (session) ->
+  dbs.transaction (transaction) ->
+    auth.user({transaction})
+    .select(['first_name', 'last_name', 'mlses_verified']) # add licence_number?
+    .where(id: session.userid)
+    .then (results) ->
+      sqlHelpers.expectSingleRow(results)
+    .then (user) ->
+
+      sqlHelpers.whereIn(config.mls({transaction}), config.mls.tableName + '.id', user.mlses_verified)
+      .then (mlses) ->
+        # need to know licence number in order to show verified
+        mlses
+
+
 getCollectiveCenter = (mlses) ->
   #st_collect aggregates all points
   #then we get the center of those via st_centroid
@@ -88,6 +105,7 @@ getCollectiveCenter = (mlses) ->
 module.exports = {
   getAll
   getAllSupported
+  getForUser
   getCollectiveCenter
   toFipsCounties
   supported

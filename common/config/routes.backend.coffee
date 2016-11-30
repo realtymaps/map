@@ -179,6 +179,7 @@ module.exports =
     getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
     getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
     getObjectList: "#{apiBaseMls}/:mlsId/objects"
+    getForUser: "#{apiBaseMls}/user"
     testOverlapSettings: "#{apiBaseMls}/:mlsId/overlap"
   data_source:
     apiBaseDataSource: apiBaseDataSource
