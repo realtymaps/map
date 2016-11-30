@@ -66,6 +66,7 @@ base =
     resave: false
     saveUninitialized: true
     unset: 'destroy'
+    ttl: 30*24*60*60 # 30 days
   SESSION_SECURITY:
     name: 'anticlone'
     app: 'map'
