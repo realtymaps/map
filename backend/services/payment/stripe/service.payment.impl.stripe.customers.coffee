@@ -84,6 +84,9 @@ StripeCustomers = (stripe) ->
       email: authUser.email
 
     .then (customer) ->
+      logger.debug -> "@@@@ Customer Creation Success @@@@"
+      logger.debug -> customer
+
       [subscription] = _.filter customer.subscriptions.data, (el) -> el.plan.id == plan
       _.extend authUser,
         stripe_customer_id: customer.id
