@@ -431,7 +431,7 @@ executeSubtask = (subtask, prefix) ->
     if subtask.warn_timeout_minutes
       warnTimeout = null
       doNotification = (minutes) ->
-        logger.warn("Subtask from #{subtask.batch_id} has run over #{minutes} minutes: #{subtask.name}")
+        logger.warn("Subtask from #{subtask.batch_id} has run over #{minutes} minutes: #{summary(subtask)}")
         warnTimeout = setTimeout(doNotification, 10*60*1000, minutes+10)
         enqueueNotification payload:
           subject: 'subtask: long run warning'
