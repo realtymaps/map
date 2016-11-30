@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 
-logger = require('../config/logger').spawn('auth')
+logger = require('../config/logger').spawn('session')
 config = require '../config/config'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
@@ -39,7 +39,7 @@ getSessionUser = (req) -> Promise.try () ->
 # (nem) moved here to avoid circular dependency on userSession route
 logout = (req, res, next) -> Promise.try () ->
   if req.user
-    logger.debug "attempting to log user out: #{req.user.username}"
+    logger.debug () -> "attempting to log user out: #{req.user.username} (#{req.sessionID})"
     delete req.session.current_profile_id
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
@@ -80,19 +80,19 @@ checkSessionSecurity = (req, res) ->
     cookie = req.signedCookies[config.SESSION_SECURITY.name]
     if not cookie
       if req.user
-        return Promise.reject(new SessionSecurityError('user', "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", 'warn'))
-      return Promise.reject(new SessionSecurityError('nothing', 'no session security cookie found for anonymous user', false))
+        throw new SessionSecurityError('user', "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", 'warn')
+      throw new SessionSecurityError('nothing', 'no session security cookie found for anonymous user', false)
     values = cookie.split('.')
     if values.length != 3
       if req.user
-        return Promise.reject(new SessionSecurityError('user', "invalid session security cookie found for user #{req.user.username} on session: #{req.sessionID} / #{cookie}"))
+        throw new SessionSecurityError('user', "invalid session security cookie found for user #{req.user.username} on session: #{req.sessionID} / #{cookie}")
       else
-        return Promise.reject(new SessionSecurityError())
+        throw new SessionSecurityError()
     context.cookieValues = {userId: parseInt(values[0]), sessionId: values[1], token: values[2]}
 
     if (req.user)
       if req.user.id != context.cookieValues.userId
-        return Promise.reject(new SessionSecurityError('user', "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}"))
+        throw new SessionSecurityError('user', "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}")
       context.sessionId = req.sessionID
     else
       context.sessionId = context.cookieValues.sessionId
@@ -104,28 +104,28 @@ checkSessionSecurity = (req, res) ->
       # this is the happy path
       return securities[0]
     if securities.length > 1
-      return Promise.reject(new SessionSecurityError('user', "multiple session security objects found for user #{req.user?.username} on session: #{context.sessionId}"))
+      throw new SessionSecurityError('user', "multiple session security objects found for user #{req.user?.username} on session: #{context.sessionId}")
     if req.user
-      return Promise.reject(new SessionSecurityError('session', "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", 'warn'))
+      throw new SessionSecurityError('session', "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", 'warn')
     else
-      return Promise.reject(new SessionSecurityError('nothing', 'anonymous user with no session security', false))
+      throw new SessionSecurityError('nothing', 'anonymous user with no session security', false)
   .then (security) ->
     if context.cookieValues.userId != security.user_id
-      return Promise.reject(new SessionSecurityError('session', "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}"))
+      throw new SessionSecurityError('session', "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}")
     sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
     .then (tokenHash) ->
       if req.user
         # this is a logged-in user, so validate
         if tokenHash != security.token
-          return Promise.reject(new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", 'warn'))
+          throw new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", 'warn')
         return
       else
         # this isn't a logged-in user, so validate only if remember_me was set; if
         # we do validate, then we need to do some login work
         if not security.remember_me
-          return Promise.reject(new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug'))
+          throw new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug')
         if tokenHash != security.token
-          return Promise.reject(new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn'))
+          throw new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn')
 
         req.session.userid = context.cookieValues.userId
         getSessionUser(req)
@@ -135,10 +135,14 @@ checkSessionSecurity = (req, res) ->
   .catch SessionSecurityError, (err) ->
     # figure out what we need to invalidate and do it
     switch (err.invalidate)
-      when 'security' then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
-      when 'session' then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
-      when 'user' then invalidatePromise = sessionSecurityService.deleteSecurities(user_id: req.user.id)
-      else return Promise.resolve() # "nothing" is a valid possibility
+      when 'security'
+        return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
+      when 'session'
+        invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
+      when 'user'
+        invalidatePromise = sessionSecurityService.deleteSecurities(user_id: req.user.id)
+      else
+        return Promise.resolve() # "nothing" is a valid possibility
     return invalidatePromise.then () ->
       req.session.destroyAsync()
     .then () ->
