@@ -241,6 +241,8 @@ pools =
 base.DBS = _.merge(base.DBS, pools[scriptName])
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 config = _.merge({}, base, environmentConfig[base.ENV])
+if scriptName == '__REPL'
+  config.IS_REPL = true
 
 
 module.exports = config

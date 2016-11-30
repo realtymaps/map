@@ -4,7 +4,9 @@ Promise = require 'bluebird'
 config = require './config'
 logger = require('./logger').spawn('dbs')
 _ = require 'lodash'
-shutdown = require './shutdown'
+
+if config.IS_REPL
+  require('./shutdown').setup()
 
 
 if !config.DBS.MAIN.connection && !process.env.IS_HEROKU
