@@ -1,0 +1,159 @@
+#!/usr/bin/env coffee
+
+###
+Simple stripe script to manage customers.
+
+options:
+-- method - <string> main function to call
+-- getAllDelete
+-- dry -  string to boolean to test dry runs
+-- methodOpts - json method options
+-- filter - to become methodOpts.filter
+-- regExp - to become methodOpts.regExp
+
+
+Example:
+
+foreman run ./scripts/stripe/customers --getAllDelete=true --filter=description --regExp="nick\+.*"
+
+  Will delete all accounts with a description matching the regExp nick\+.*
+
+foreman run ./scripts/stripe/customers --getAllDelete=true --filter=description --regExp="nick\+.*" --dry=delete
+
+  Will get all customers matching the regExp but not delete them.
+
+foreman run ./scripts/stripe/customers --method=getAllStream --filter=description --regExp="nick\+.*"
+
+  Will get all customers matching the regExp.
+###
+Promise = require 'bluebird'
+argv = require('yargs').argv
+Spinner = require('cli-spinner').Spinner
+stripeSvcPromise = require '../../backend/services/payment/stripe'
+logger = require('../../backend/config/logger').spawn('scripts:stripe:customer')
+JSON5 = require 'json5'
+through = require 'through2'
+require('../../backend/extensions/stream')
+_ = require 'lodash'
+
+
+makeSpinner = () ->
+  spinner = new Spinner('running.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+  spinner
+
+{method, getAllDelete, dry, methodOpts, filter, regExp} = argv
+
+methodOpts = JSON5.parse(methodOpts || '{}')
+
+if filter? && regExp
+  _.assign methodOpts, filter: {key: filter, regExp}
+
+if dry == 'delete'
+  dryDelete = true
+  dry = false
+else
+  dry = dry == 'true'
+
+if getAllDelete || method == 'getAllDelete'
+  method = 'getAllStream'
+  doDelete = true
+
+if !method
+  console.error("Method argument required")
+  process.exit(1)
+
+spin = makeSpinner()
+
+logger.debug -> 'Derrived Options'
+logger.debug -> {method, getAllDelete, dry, methodOpts, dryDelete}
+
+handleStream = ({stream, stripeSvc}) ->
+  return stream
+  .pipe through.obj (customer, enc, cb) ->
+    if dryDelete || !doDelete
+      log = true
+      logger.debug ->
+        log = false
+        "Customer: #{customer.id}"
+
+      logger.debug ->
+        "Customer: Filter: #{filter}:#{customer[filter]}"
+
+      if log
+        console.log  "Customer: #{customer.id}"
+        console.log "Customer: Filter: #{filter}:#{customer[filter]}"
+
+      if dryDelete
+        console.log  "DRY DELETION of: #{customer.id}"
+      return cb()
+
+    console.log "handleStream: DOING REAL DELETE."
+
+    stripeSvc.customers.remove(customer, false)
+    .then () ->
+      logger.debug -> "Deleted Customer: #{customer.id}"
+      cb()
+    .catch (e) ->
+      cb(e)
+    return
+  .toPromise()
+
+handlePromise = ({result, stripeSvc}) ->
+  results = if Array.isArray(result.data)
+    result.data
+  else
+    [result.data]
+
+  Promise.each results, (customer) ->
+    console.log  "handlePromise: Handling customer: #{customer.id}"
+
+    if !doDelete
+      return customer
+
+    if dryDelete
+      console.log  "DRY DELETION of: #{customer.id}"
+      return customer
+
+    console.log "handlePromise: DOING REAL DELETE."
+    stripeSvc.customers.remove(customer)
+    .then (res) ->
+      logger.debug -> "Deleted Customer: #{customer.id}"
+      logger.debug -> "handlePromise: response"
+      logger.debug -> res
+      customer
+
+stripeSvcPromise
+.then (stripeSvc) -> Promise.try ->
+  methodToRun = stripeSvc.customers[method]
+  if !methodToRun?
+    throw new Error('Invalid Method')
+
+  mainPromiseFn = () ->
+    if dry
+      return Promise.resolve(logger.debug -> "Dry execution with #{JSON5.stringify methodOpts}")
+
+    logger.debug -> "Executing main method: #{method}"
+    Promise.resolve(methodToRun(methodOpts))
+
+
+  mainPromiseFn()
+  .then (maybeStream) ->
+    logger.debug ->
+      logger.debug -> "Done main method."
+
+    if maybeStream.pipe?
+      return handleStream({stream: maybeStream, stripeSvc})
+
+    handlePromise({result: maybeStream, stripeSvc})
+
+.then () ->
+  logger.debug -> "@@@@ TOTAL SUCCESS @@@@"
+.catch (e) ->
+  logger.debug -> "@@@@ TOTAL Failure @@@@"
+  logger.error(e.message)
+  process.exit(1)
+.finally ->
+  spin.stop()
+  process.exit(0)
