@@ -59,7 +59,7 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
 
 
 submitPaymentPlan = ({plan, token, authUser, transaction}) ->
-  logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
+  logger.debug -> "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
   paymentServices.customers.create
     authUser: authUser
     plan: plan
@@ -88,7 +88,9 @@ setNewUserMapPosition = ({authUser, transaction}) ->
     .select('fips_codes', 'mlses_verified')
     .where id: authUser.id
   )
-  .then ([user]) ->
+  .then ([user]=[]) ->
+    if !user?
+      throw Error("No user exists to set map postion!")
     logger.debug -> "@@@@ user @@@@"
     logger.debug -> user
     _.extend authUser, user
@@ -132,8 +134,14 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
 
   Promise.all promises
   .then () ->
+    logger.debug -> "PRE: setNewUserMapPosition"
     setNewUserMapPosition({authUser, transaction})
-  .then () -> authUser
+    logger.debug -> "POST: setNewUserMapPosition"
+  .then () ->
+    logger.debug -> "Returning authUser"
+    logger.debug -> authUser
+    authUser
+
 
 
 module.exports = {
