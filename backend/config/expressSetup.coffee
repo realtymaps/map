@@ -16,6 +16,7 @@ auth = require '../utils/util.auth'
 uuid = require '../utils/util.uuid'
 ExpressResponse = require '../utils/util.expressResponse'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+shutdown = require './shutdown'
 escape = require('escape-html')
 
 # express midlewares
@@ -75,6 +76,8 @@ app.use methodOverride()
 # session store (postgres)
 config.SESSION_STORE.pg = dbs.get('pg')
 config.SESSION.store = new sessionStore(config.SESSION_STORE)
+shutdown.onExit () ->
+  config.SESSION.store.close()
 config.SESSION.genid = uuid.genUUID
 app.use session(config.SESSION)
 
