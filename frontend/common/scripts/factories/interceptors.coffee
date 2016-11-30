@@ -41,10 +41,12 @@ interceptors =
         # yay!  the backend wants us to show an alert!
         $rootScope.$emit rmapsEventConstants.alert.spawn, response.data?.alert
       else if error && response.status != 0  && response.status != -1 # status==0 is weird conditions that we probably don't want the user to see, -1 is similar (cancelled is one case)
-        alert =
-          id: "#{response.status}-#{response.config?.url?.split('?')[0].split('#')[0]}"
-          msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
-        $rootScope.$emit rmapsEventConstants.alert.spawn, alert
+        id = "#{response.status}-#{response.config?.url?.split('?')[0].split('#')[0]}"
+        if response.headers('Content-Type')?.toLower() != 'application/json'
+          msg = commonConfig.UNEXPECTED_MESSAGE(escapeHtml("Malformed error response; hosting provider may be experiencing problems.  HTTP status: #{response.status}"))
+        else
+          msg = commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
+        $rootScope.$emit(rmapsEventConstants.alert.spawn, {id, msg})
       return response
     response: handle
     responseError: (response) -> $q.reject(handle(response, true))
