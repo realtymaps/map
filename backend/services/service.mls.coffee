@@ -75,10 +75,8 @@ getForUser = (session) ->
     .then (results) ->
       sqlHelpers.expectSingleRow(results)
     .then (user) ->
-
       sqlHelpers.whereIn(config.mls({transaction}), config.mls.tableName + '.id', user.mlses_verified)
       .then (mlses) ->
-        # need to know licence number in order to show verified
         mlses
 
 
