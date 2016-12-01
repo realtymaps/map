@@ -238,10 +238,17 @@ module.exports =
   login:
     method: 'post'
     handle: login
+    middleware: auth.sessionSetup
 
-  logout: auth.logout
+  logout:
+    method: 'get'
+    handle: auth.logout
+    middleware: auth.sessionSetup
 
-  identity: internals.getIdentity
+  identity:
+    method: 'get'
+    handle: internals.getIdentity
+    middleware: auth.sessionSetup
 
   updateState:
     method: 'post'
