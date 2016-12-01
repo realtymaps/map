@@ -239,6 +239,16 @@ _rules =
       status:
         alias: 'Status'
         required: true
+        valid: () ->
+          # you must mark something for all values
+          if !@config.mapping
+            return false
+          if !@_lookups
+            return false
+          for lookup in @_lookups
+            if !@config.mapping[lookup.LongValue]?
+              return false
+          return true
 
       status_display:
         alias: 'Status Display'
@@ -478,14 +488,14 @@ typeRules =
       truthyOutput: 'yes'
       falsyOutput: 'no'
     valid: () ->
-      if !@lookups
+      if !@_lookups
         return true
       # if this field has a lookup, you must mark something for all lookups, and must have both truthy and falsy values
       if !@config.truthiness
         return false
       foundTruthy = false
       foundFalsy = false
-      for lookup in @lookups
+      for lookup in @_lookups
         if !@config.truthiness[lookup.LongValue]?
           return false
         if @config.truthiness[lookup.LongValue]
