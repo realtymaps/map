@@ -1,18 +1,23 @@
 app = require '../app.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app.factory 'rmapsLoginFactory', (
 $rootScope
 $location
 $log
 $state
+$uibModal
+$http
 rmapsPrincipalService
 rmapsProfilesService
 rmapsEventConstants
 rmapsLoginHack
 rmapsMapAuthorizationFactory
 rmapsLoginService) ->
+
+  $log = $log.spawn('rmapsLoginFactory')
 
   ($scope) ->
 
@@ -22,7 +27,23 @@ rmapsLoginService) ->
     loginFailed = (response) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
+      $scope.loginFailed = true
       $state.go 'login'
+
+    $scope.forgotPassword = () ->
+      modalInstance = $uibModal.open
+        scope: $scope
+        template: require('../../html/views/templates/modals/passwordReset.jade')()
+
+      modalInstance.result.then () ->
+        $log.debug 'Sending password reset to', $scope.form.email
+        $http.post backendRoutes.userSession.requestResetPassword, $scope.form
+        .then (response) ->
+          $log.debug response
+          $scope.passwordResetSent = true
+          $uibModal.open
+            scope: $scope
+            template: require('../../html/views/templates/modals/passwordReset.jade')()
 
     $scope.doLogin = (loginObj) ->
       $scope.loginInProgress = true

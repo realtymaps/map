@@ -20,7 +20,8 @@ transforms = require '../utils/transforms/transforms.userSession'
 internals = require './route.userSession.internals'
 userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
-
+backendRoutes = require '../../common/config/routes.backend.coffee'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
@@ -222,6 +223,39 @@ updatePassword = (req, res, next) ->
     userSessionService.updatePassword(req.user, validBody.password)
     .then ->
       res.json(true)
+    .catch (err) ->
+      throw new PartiallyHandledError(err)
+
+requestResetPassword = (req, res, next) ->
+  validation.validateAndTransformRequest(req.body, transforms.requestResetPassword)
+  .then (validBody) ->
+    userSessionService.requestResetPassword(validBody.email, req.headers.host)
+    .then (r) ->
+      res.json(true)
+    .catch (err) ->
+      next new ExpressResponse({message: "Could not send password reset to #{email}, is email valid?"},
+        {status: httpStatus.BAD_REQUEST, quiet: true})
+
+getResetPassword = (req, res, next) ->
+  userSessionService.getResetPassword req.query?.key
+  .then (result) ->
+    res.json(result)
+  .catch (err) ->
+    next new ExpressResponse({message: "Password reset may have expired."},
+     {status: httpStatus.BAD_REQUEST, quiet: true})
+
+doResetPassword = (req, res, next) ->
+  validation.validateAndTransformRequest(req.body, transforms.doResetPassword)
+  .then (validBody) ->
+    userSessionService.doResetPassword validBody
+    .then () ->
+      # redirect to our login page, preserving the POST method of the request with code 307
+      # NOTE: our api calls are handled through structure that automatically sends data through
+      #   `res.json`, so non-api web endpoints (such as login) need to be redirected to instead of directly called.
+      res.redirect(307, backendRoutes.userSession.login)
+    .catch (err) ->
+      next new ExpressResponse({message: "Error resetting password."},
+        {status: httpStatus.BAD_REQUEST, quiet: true})
 
 module.exports =
   root:
@@ -274,3 +308,15 @@ module.exports =
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: updatePassword
+
+  requestResetPassword:
+    method: 'post'
+    handle: requestResetPassword
+
+  getResetPassword:
+    method: 'get'
+    handle: getResetPassword
+
+  doResetPassword:
+    method: 'post'
+    handle: doResetPassword

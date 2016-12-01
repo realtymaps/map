@@ -30,6 +30,7 @@ module.exports =
   userTeamMembers: '/userTeamMembers'
   userPaymentHistory: '/userPaymentHistory'
   clientEntry:   'clientEntry/:key'
+  passwordReset:   'passwordReset/:key'
 
   addProjects:    'addProjects'
   onboarding:     'onboarding'

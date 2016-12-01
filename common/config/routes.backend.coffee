@@ -61,6 +61,9 @@ module.exports =
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
+    requestResetPassword: "#{apiBaseSession}/requestResetPassword"
+    getResetPassword: "#{apiBaseSession}/getResetPassword"
+    doResetPassword: "#{apiBaseSession}/doResetPassword"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes

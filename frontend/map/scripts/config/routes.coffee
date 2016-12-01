@@ -175,6 +175,11 @@ module.exports = app.config (
     permissionsRequired: false
     sticky: false
 
+  buildState 'passwordReset',
+    loginRequired: false
+    permissionsRequired: false
+    sticky: false
+
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'

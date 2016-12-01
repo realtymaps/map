@@ -12,6 +12,8 @@
           .form-group
             label(for="password") Password:
             input#password(type="password" name="password" ng-model="form.password")
+          .form-group(ng-show="loginFailed")
+            a(ng-click="forgotPassword()") Forgot password?
           .row.form-group
             .col-md-6
               input(type="submit",value="Log In")
