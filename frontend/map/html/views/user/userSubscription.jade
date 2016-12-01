@@ -33,5 +33,21 @@
   .row.subscription-buttons(ng-hide="subscription.error")
     .btn.btn-default(ng-hide="subscription.canceled_at" ng-click="unsubscribe()") Unsubscribe
 
+.collapse-header
+  h2 Fips Codes
+.row.collapse-header.subscription-details(ng-show="data.fips")
+  .row(ng-hide="subscription.error")
+    .col-md-9
+      .row(ng-repeat="f in data.fips")
+        .col-md-4
+          Label State
+          p {{f.state}}
+        .col-md-4
+          Label County
+          p {{f.county}}
+        .col-md-4
+          Label Code
+          p {{f.code}}
+
   .row.help-block(ng-show="subscription.error")
     p {{ subscription.error }}

@@ -9,6 +9,9 @@ class FipsCodeService extends ServiceCrud
   getAll: (queryObj) ->
     @dbFn().where(queryObj)
 
+  getByCode: (fipsCodes) ->
+    sqlHelpers.whereIn(@dbFn(), 'code', fipsCodes)
+
   getCollectiveCenter: ({fipsCodes, mlses}) ->
     if !mlses?
       #st_collect aggregates all points

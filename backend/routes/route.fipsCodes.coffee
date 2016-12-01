@@ -6,6 +6,7 @@ fipsCodes = require '../services/service.fipsCodes'
 {validateAndTransformRequest} = require '../utils/util.validation'
 {handleRoute} = require '../utils/util.route.helpers'
 transforms = require '../utils/transforms/transforms.fipsCodes.coffee'
+filterService = require '../services/service.properties.combined.filterSummary'
 
 
 class FipsCodesCrud extends RouteCrud
@@ -37,6 +38,13 @@ class FipsCodesCrud extends RouteCrud
       .then (validReq) =>
         @svc.getAllSupportedMlsCodes(validReq.body)
 
+  getForUser: (req, res, next) ->
+    handleRoute req, res, next, ->
+      filterService.getFipsMLSForUser(req.session.userid)
+      .then ({fips}) ->
+        fipsCodes.getByCode(fips)
+
+
 module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
   root:
     method: 'post'
@@ -49,3 +57,5 @@ module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
     method: 'post'
   getAllSupportedMlsCodes:
     method: 'post'
+  getForUser:
+    method: 'get'
