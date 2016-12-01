@@ -12,7 +12,12 @@ class StripeEventHandlingError extends NamedError
   constructor: (args...) ->
     super('StripeEventHandling', args...)
 
+class GetAllStreamError extends NamedError
+  constructor: (args...) ->
+    super('GetAllStream', args...)
+
 module.exports = _.extend {}, StripeErrors,
   CustomerCreateFailedError: CustomerCreateFailedError
   StripeEventHandlingError: StripeEventHandlingError
   handler: ourHandler
+  GetAllStreamError: GetAllStreamError

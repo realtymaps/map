@@ -6,19 +6,12 @@ require './karma'
 require './mocha'
 require './protractor'
 open = require 'open'
-shutdown = require '../../backend/config/shutdown'
 
+#NOTE if we add protractor it will need to fire up express first with the assets built
 
-gulp.task 'spec', gulp.series(
-  gulp.parallel('commonSpec', 'backendSpec', 'frontendSpec') #, 'protractor')
-  , 'gulpSpec')
+gulp.task 'spec', gulp.parallel('commonSpec', 'backendSpec', 'frontendSpec', 'gulpSpec')
 
-gulp.task 'rebuildSpec', gulp.series( 'otherAssets', 'browserifyAll'
-  gulp.parallel('commonSpec', 'backendSpec')
-  , 'gulpSpec'
-  , 'frontendSpec'
-  # , 'protractor' # commented out until circle ci issues are resolved
-  , () -> shutdown.exit())
+gulp.task 'rebuildSpec', gulp.series('otherAssets', 'browserifyAll', 'spec')
 
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 

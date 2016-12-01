@@ -1,3 +1,4 @@
+_ = require 'lodash'
 require('chai').should()
 sinon = require 'sinon'
 rewire = require 'rewire'
@@ -5,11 +6,41 @@ Promise = require 'bluebird'
 {basePath} = require '../globalSetup'
 SqlMock = require '../../specUtils/sqlMock'
 
+internals = rewire "#{basePath}/routes/route.onboarding.internals"
 onboardingRoute = rewire "#{basePath}/routes/route.onboarding"
+
 logger = require("../../specUtils/logger").spawn('backend:route:onboarding')
 
 subject = null
 # onboardingRoute.__set__ 'mergeHandles', ->
+
+setInternal = (obj) ->
+  createPasswordHashStub = sinon.stub().returns(Promise.resolve('password'))
+
+  internals.__set__ 'emailServices', {}
+  internals.__set__ 'mlsAgentService',
+    exists: () ->
+      Promise.resolve(true)
+  internals.__set__ 'paymentServices', {}
+
+  internals.__set__ 'userSessionService',
+    createPasswordHash: createPasswordHashStub
+  internals.__set__ 'tables', @tablesStubs
+  internals.__set__ 'planService',
+    getPlanId: () ->
+      logger.debug -> "FAKE CUSTOMER CREATED"
+      Promise.resolve(1)
+
+
+  for k,v of obj
+    logger.debug -> "internals[k] = v #{k}"
+    #sketchy as I need to set both public and private
+    internals[k] = v
+    internals.__set__ k, v
+
+  logger.debug -> internals
+
+  onboardingRoute.__set__ 'internals', internals
 
 describe "route.onboarding", ->
 
@@ -18,9 +49,7 @@ describe "route.onboarding", ->
       json: sinon.stub()
     @next = sinon.stub()
 
-    onboardingRoute.__set__ 'transaction'
-    @createPasswordHashStub = sinon.stub().returns(Promise.resolve('password'))
-    @validateAndTransformRequestStub = sinon.stub()
+    validateAndTransformRequestStub = sinon.stub()
 
     sqlMocks =
       user: new SqlMock 'auth', 'user'
@@ -49,33 +78,28 @@ describe "route.onboarding", ->
 
     @transaction = (dbName, trxQueryCb) =>
       Promise.try () ->
-        # logger.debug.cyan "trxQueryCb!!!!!!!!!!!!!!!!!!"
+        logger.debug.cyan "trxQueryCb!!!!!!!!!!!!!!!!!!"
         trxQueryCb({})
       .then () =>
-        # logger.debug.magenta "THEN!!!!!!!!!!!!!!!!!!"
+        logger.debug.magenta "THEN!!!!!!!!!!!!!!!!!!"
         @transactionThenStub()
       .catch (error) =>
-        # logger.debug.yellow error
-        # logger.debug.magenta "CATCH!!!!!!!!!!!!!!!!!!"
+        logger.debug.yellow error
+        logger.debug.magenta "CATCH!!!!!!!!!!!!!!!!!!"
         @transactionCatchStub()
+
     onboardingRoute.__set__ 'wrapHandleRoutes', ({handles}) ->
       handles
-    onboardingRoute.__set__ 'emailServices', {}
-    onboardingRoute.__set__ 'mlsAgentService',
-      exists: () ->
-        Promise.resolve(true)
-    onboardingRoute.__set__ 'paymentServices', {}
-    onboardingRoute.__set__ 'transaction', @transaction
-    onboardingRoute.__set__ 'createPasswordHash', @createPasswordHashStub
-    onboardingRoute.__set__ 'tables', @tablesStubs
-    onboardingRoute.__set__ 'getPlanId', () ->
-      Promise.resolve(1)
+    onboardingRoute.__set__ 'dbs',
+      transaction: @transaction
 
-    onboardingRoute.__set__ 'validateAndTransformRequest', (req) => Promise.try =>
-      @validateAndTransformRequestStub()
+    onboardingRoute.__set__ 'validateAndTransformRequest', (req) -> Promise.try ->
+      validateAndTransformRequestStub()
       req
 
     subject = onboardingRoute.__get__ 'handles'
+
+
 
   describe 'createUser', ->
     beforeEach ->
@@ -95,10 +119,10 @@ describe "route.onboarding", ->
     describe "submitPaymentPlan", ->
 
       it 'on reject error transaction catches', ->
-        onboardingRoute.__set__ 'internals',
+        setInternal.call @,
           submitPaymentPlan: () ->
             logger.debug "PAYMENT CALLED"
-            Promise.reject('PLANNED')
+            Promise.reject(new Error 'PLANNED')
 
           submitEmail: () ->
             logger.debug "EMAIL CALLED"
@@ -113,7 +137,7 @@ describe "route.onboarding", ->
           @transactionCatchStub.called.should.be.true
 
       it 'on resolve transaction resolves', ->
-        onboardingRoute.__set__ 'internals',
+        setInternal.call @,
           submitPaymentPlan: () ->
             logger.debug "PAYMENT CALLED"
             Promise.resolve(authUser:{}, customer:{})
@@ -133,14 +157,14 @@ describe "route.onboarding", ->
     describe "submitEmail", ->
 
       it 'on reject error transaction catches', ->
-        onboardingRoute.__set__ 'internals',
+        setInternal.call @,
           submitPaymentPlan: () ->
             logger.debug "PAYMENT CALLED"
             Promise.resolve(authUser:{}, customer:{})
 
           submitEmail: () ->
             logger.debug "EMAIL CALLED"
-            Promise.reject()
+            Promise.reject(new Error('PLANNED'))
 
           setNewUserMapPosition: () ->
             logger.debug "setNewUserMapPosition CALLED"
@@ -152,7 +176,7 @@ describe "route.onboarding", ->
           @transactionCatchStub.called.should.be.true
 
       it 'on resolve transaction resolves', ->
-        onboardingRoute.__set__ 'internals',
+        setInternal.call @,
           submitPaymentPlan: () ->
             logger.debug "PAYMENT CALLED"
             Promise.resolve(authUser:{}, customer:{})

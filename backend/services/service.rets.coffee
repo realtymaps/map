@@ -181,6 +181,8 @@ getDataStream = (mlsId, dataType, opts={}) ->
               else
                 if lastId == event.payload.split(delimiter)[uuidColumn]
                   found = counter
+                  if overlap != found+1
+                    resultStreamLogger.debug () -> "*****  |  overlap id found at row #{found+1}, expected at row #{overlap}"
                 else
                   counter++
               debugCount++
@@ -244,7 +246,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
                   finish(this)
                   callback()
             when 'error'
-              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+              resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}}"
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
                 resultStreamLogger.debug () -> "       |  ignoring, not a real error"
@@ -257,7 +259,7 @@ getDataStream = (mlsId, dataType, opts={}) ->
               resultStreamLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
-          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}, buffer: #{resultStream._readableState.length}/#{resultStream._readableState.highWaterMark}}"
+          resultStreamLogger.debug () -> "EVENT  |  data: {lines: #{debugCount}}"
           resultStreamLogger.debug () -> "*****  |  error in catch block!!!"
           finish(this, error)
           callback()
@@ -321,7 +323,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 throw new SoftFail('failed to locate RETS overlap record')
               results = response.results.slice(found+1)
               if results.length == 0
-                throw new SoftFail('no new results found in interation')
+                logger.warn "no new results found in getDataChunks interation for #{mlsId}/#{dataType}; #{total} results received so far"
             else
               results = response.results
             if opts.uuidField?
@@ -338,18 +340,20 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 searchOptions.limit = fullLimit - (searchOptions.offset - baseOffset)
                 if opts.subLimit
                   searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
-              handlerPromise = Promise.try () ->
-                handler(results)
-              .catch errorHandlingUtils.isUnhandled, (err) ->
-                throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
-              nextIterationPromise = searchIteration()
-              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
+              keepQuerying = true
             else
+              keepQuerying = false
+            Promise.try () ->
               handler(results)
+            .catch errorHandlingUtils.isUnhandled, (err) ->
+              throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
+            .then () ->
+              if keepQuerying
+                searchIteration
           .then () ->
             return total
           .catch rets.RetsReplyError, (err) ->
-            if err.replyTag == "NO_RECORDS_FOUND" && total > 0
+            if err.replyTag == "NO_RECORDS_FOUND"
               # code for 0 results, not really an error (DMQL is a clunky language)
               return total
             else

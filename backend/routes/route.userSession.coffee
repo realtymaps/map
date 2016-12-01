@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('route.userSession')
+logger = require('../config/logger').spawn('session:userSession:route')
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
@@ -22,35 +22,30 @@ userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug "attempting to log user out (someone is logging in): #{req.user.email}"
+    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.username} (#{req.sessionID})"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
-      logger.debug "attempting session regenerateAsync"
       req.session.regenerateAsync()
-      logger.debug "post session regenerateAsync"
   else
     promise = Promise.resolve()
 
   promise.then () ->
     if !req.body.password
-      logger.debug "no password specified for login: #{req.body.email}"
       return false
-    logger.debug "attempting to do login for email: #{req.body.email}"
     userSessionService.verifyPassword(req.body.email, req.body.password)
   .catch (err) ->
-    logger.debug "failed authentication: #{err}"
     return false
   .then (user) -> Promise.try ->
     userSessionService.verifyValidAccount(user)
   .then (user) ->
     if !user
-      logger.debug "user undefined"
       return next new ExpressResponse(alert: {
         msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
@@ -59,11 +54,21 @@ login = (req, res, next) -> Promise.try () ->
         quiet: true
       })
     else
-      logger.debug () -> "acquired user: #{JSON.stringify(user)}"
       req.session.userid = user.id
       sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->
         internals.getIdentity(req, res, next)
+  .catch errorHandlingUtils.isUnhandled, (err) ->
+    throw new errorHandlingUtils.PartiallyHandledError(err, 'Unexpected error during login')
+  .catch (err) ->
+    logger.error('Error during login: '+err.msg)
+    return next new ExpressResponse(alert: {
+      msg: err.msg
+      id: alertIds.loginFailure
+    }, {
+      status: httpStatus.UNAUTHORIZED
+      quiet: true
+    })
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
@@ -71,7 +76,7 @@ setCurrentProfile = (req, res, next) -> Promise.try () ->
     next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
 
   req.session.current_profile_id = req.body.currentProfileId
-  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+  logger.debug () -> "set req.session.current_profile_id: #{req.session.current_profile_id}"
 
   rm_modified_time = moment()
 
@@ -111,8 +116,7 @@ profiles = (req, res, next) ->
       .then (validBody) ->
         profileService.update(validBody, req.user.id)
         .then () ->
-          logger.debug 'SESSION: clearing profiles'
-          delete req.session.profiles#to force profiles refresh in cache
+          delete req.session.profiles  # to force profiles refresh in cache
           internals.updateCache(req, res, next)
 
 newProject = (req, res, next) ->
@@ -209,7 +213,6 @@ companyRoot = (req, res, next) ->
           q.then (company_id) ->
             if !company_id?
               throw new Error('Error creating new company')
-            logger.debug company_id
 
             tables.auth.user({transaction})
             .where id: req.user.id

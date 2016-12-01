@@ -53,6 +53,8 @@ div(ng-controller="rmapsHeaderCtrl")
             include ./header/_logo
             .mobile-header-title
               span {{rmapsPageService.getTitle()}}
+          .mobile-header-right(ng-if="!principal.isAuthenticated()")
+            include ./header/_rightnav
 
   // Project Viewer Header for Mobile
   div(ng-if="mobileHeaderType() == 'VIEWER'")

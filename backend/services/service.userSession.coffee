@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
-logger = require('../config/logger').spawn("service:userSession")
+logger = require('../config/logger').spawn("session:userSession:service")
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 tables = require '../config/tables'
@@ -31,13 +31,11 @@ preprocessHash = (password) -> Promise.try () ->
 createPasswordHash = (password) ->
   keystore.cache.getValue('password', namespace: 'hashing cost factors')
   .then (passwordCostFactor) ->
-    #logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
     return bcrypt.hashAsync(password, passwordCostFactor)
   .then (hash) -> return "bcrypt$#{hash}"
 
 
 verifyPassword = (email, password) ->
-  #logger.debug "attempting to verify password for email: #{email}"
   tables.auth.user()
   .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
   .then (user=[]) ->
@@ -59,7 +57,6 @@ verifyPassword = (email, password) ->
       compare.then (match) ->
         if not match
           return Promise.reject("given password doesn't match hash for email: #{email}")
-        #logger.debug "password verified for email: #{email}"
         if hashData.needsUpdate
           # in the background, update this user's hash
           logger.info "updating password hash for email: #{email}"

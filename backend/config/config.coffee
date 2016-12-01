@@ -66,6 +66,7 @@ base =
     resave: false
     saveUninitialized: true
     unset: 'destroy'
+    ttl: 30*24*60*60 # 30 days
   SESSION_SECURITY:
     name: 'anticlone'
     app: 'map'
@@ -241,6 +242,8 @@ pools =
 base.DBS = _.merge(base.DBS, pools[scriptName])
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 config = _.merge({}, base, environmentConfig[base.ENV])
+if scriptName == '__REPL'
+  config.IS_REPL = true
 
 
 module.exports = config

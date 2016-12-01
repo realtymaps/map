@@ -15,11 +15,35 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         field: 'name'
         displayName: 'Name'
         cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
-        width: 120
+        width: 140
         enableCellEdit: false
         pinnedLeft: true
         sort:
           direction: uiGridConstants.ASC
+      ,
+        field: 'active'
+        displayName: 'Active?'
+        type: 'boolean'
+        defaultValue: false
+        width: 65
+        cellClass: 'clickable-cell'
+        pinnedLeft: true
+      ,
+        field: '_run'
+        displayName: 'Run'
+        enableCellEdit: false
+        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-primary btn-xs" ng-click="grid.appScope.runTask(row.entity)">RUN</button></div>'
+        width: 50
+        enableFiltering: false
+        pinnedLeft: true
+    ,
+        field: '_cancel'
+        displayName: 'Cancel'
+        enableCellEdit: false
+        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-danger btn-xs" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</button></div>'
+        width: 68
+        enableFiltering: false
+        pinnedLeft: true
       ,
         field: 'description'
         displayName: 'Description'
@@ -33,7 +57,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         enableCellEdit: true
         editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
         defaultValue: "{}"
-        width: 250
+        width: 50
         cellClass: 'clickable-cell'
       ,
         field: 'blocked_by_tasks'
@@ -57,54 +81,40 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         field: 'ignore_until'
         displayName: 'Ignore Until'
         type: 'date'
-        width: 125
+        width: 95
         cellFilter: 'date:"MM/dd/yy HH:mm"'
         cellClass: 'clickable-cell'
+        enableFiltering: false
       ,
         field: 'repeat_period_minutes'
         displayName: 'Repeat min'
         type: 'number'
         defaultValue: 60
-        width: 125
+        width: 92
         cellClass: 'clickable-cell'
+        enableFiltering: false
       ,
         field: 'warn_timeout_minutes'
         displayName: 'Warn TO min'
         type: 'number'
         defaultValue: 5
-        width: 125
+        width: 105
         cellClass: 'clickable-cell'
+        enableFiltering: false
       ,
         field: 'kill_timeout_minutes'
         displayName: 'Kill TO min'
         type: 'number'
         defaultValue: 5
-        width: 125
+        width: 90
         cellClass: 'clickable-cell'
+        enableFiltering: false
       ,
         field: 'fail_retry_minutes'
         displayName: 'Fail Retry min'
         type: 'number'
         defaultValue: 5
-        width: 125
+        width: 106
         cellClass: 'clickable-cell'
-      ,
-        field: 'active'
-        displayName: 'Active?'
-        type: 'boolean'
-        defaultValue: false
-        width: 100
-        cellClass: 'clickable-cell'
-      ,
-        field: '_run'
-        displayName: 'Run'
-        enableCellEdit: false
-        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-primary btn-xs" ng-click="grid.appScope.runTask(row.entity)">RUN</button></div>'
-        width: 100
-      ,
-        field: '_cancel'
-        displayName: 'Cancel'
-        enableCellEdit: false
-        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-danger btn-xs" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</button></div>'
-        width: 100
+        enableFiltering: false
     ]

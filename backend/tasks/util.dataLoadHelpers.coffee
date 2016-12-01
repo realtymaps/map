@@ -202,6 +202,51 @@ _getUsedInputFields = (validationDefinition) ->
     return [validationDefinition.output]
 
 
+getValidationStrings = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
+  if dataSourceType == 'mls'
+    dataSourcePromise = Promise.try () ->
+      mlsConfigService.getByIdCached(dataSourceId)
+      .then (mlsConfig) ->
+        mlsConfig.data_rules
+  else if dataSourceType == 'county'
+    dataSourcePromise = Promise.try () ->
+      Promise.resolve {} # no global rules, so far
+
+  dataSourcePromise
+  .then (global_rules) ->
+    whereClause =
+      data_source_id: dataSourceId
+      data_type: dataType
+    if listName
+      whereClause.list = listName
+    if fieldName
+      whereClause.output = fieldName
+    tables.config.dataNormalization()
+    .where(whereClause)
+    .orderBy('list')
+    .orderBy('ordering')
+    .then (validations=[]) ->
+      validationMap = {}
+      for validationDef in validations
+        validationMap[validationDef.list] ?= []
+
+        # If transform was overridden, use it directly
+        if !_.isEmpty validationDef.transform
+          return validationDef.transform
+
+        # Most common case, generate the transform from the rule configuration
+        else
+          if validationDef.list == 'base'
+            rule = validatorBuilder.buildBaseRule(dataSourceType, dataType) validationDef
+          else
+            rule = validatorBuilder.buildDataRule validationDef
+
+          validationDef.transform = rule.getTransformString global_rules
+
+        validationMap[validationDef.list].push(validationDef)
+      return {validationMap: validationMap}
+
+
 getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
   if dataSourceType == 'mls'
     dataSourcePromise = Promise.try () ->
@@ -280,7 +325,7 @@ getRawRows = (subtask, rawSubid, criteria) ->
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
   .orderBy('rm_raw_id')
-  .whereBetween('rm_raw_id', subtask.data.offset+1, subtask.data.offset+subtask.data.count)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   if criteria
     rowsPromise = rowsPromise.where(criteria)
 
@@ -513,7 +558,6 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
   parts = dataLoadHistory.raw_table_name.split('_')
-  verboseLogger = logger.spawn(parts[1]).spawn(parts[2])
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     dbStreamer = null
@@ -525,7 +569,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       utilStreams.pgStreamEscape(val, delimiter)
 
     commitStreamChunk = ({linesCount}) ->
-      verboseLogger.debug () -> 'CHUNK  |  committing stream chunk'
       dbStreamer.unpipe(dbStream)
       dbStream?.write('\\.\n')
       dbStream?.end()
@@ -539,7 +582,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
     startStreamChunk = ({createTable}) ->
-      verboseLogger.debug () -> 'CHUNK  |  starting new stream chunk'
       promiseQuery('BEGIN TRANSACTION')
       .then () ->
         startedTransaction = true
@@ -579,8 +621,6 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
               linesCount++
-              if linesCount%1000 == 0
-                verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
               Promise.try () ->
                 if opts.maxChunkSize? && linesCount%opts.maxChunkSize == 0
                   commitStreamChunk({linesCount})
@@ -589,11 +629,9 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               .then () ->
                 callback()
             when 'delimiter'
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               delimiter = event.payload
               callback()
             when 'columns'
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               columns = []
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
@@ -606,29 +644,27 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               .then () ->
                 callback()
             when 'error'
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               if !(event.payload instanceof rets.RetsReplyError) || event.payload.replyTag != "NO_RECORDS_FOUND"
                 # make sure it is a true error, not just no records returned
                 onError(event.payload)
               callback()
             else
-              verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-              verboseLogger.debug () -> "EVENT  |  #{event.type}: #{JSON.stringify(event.payload)}"
               callback()
         catch error
-          verboseLogger.debug () -> "EVENT  |  data: {lines: #{linesCount}, buffer: #{dbStreamer._readableState.length}/#{dbStreamer._readableState.highWaterMark}}"
-          verboseLogger.debug () -> "*****  |  error in catch block!!!"
           onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        commitStreamChunk({linesCount})
+        totalLines = linesCount + (opts.initialCount ? 0)
+        Promise.try () ->
+          if startedTransaction
+            commitStreamChunk({linesCount})
         .then () ->
-          promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
+          if totalLines > 0
+            promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
         .then () ->
           callback()
           if !hadError
-            resolve(linesCount+ (opts.initialCount ? 0))
+            resolve(totalLines)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{dataLoadHistory.raw_table_name}: #{err}")
@@ -697,6 +733,7 @@ module.exports = {
   recordChangeCounts
   activateNewData
   getValidationInfo
+  getValidationStrings
   normalizeData
   getRawRows
   getValues

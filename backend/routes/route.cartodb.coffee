@@ -7,10 +7,10 @@ module.exports =
       method: 'get'
       handle: (req, res, next) ->
         internals.getByFipsCode req, res, next, (validParams,res) ->
-          dispistion = "attachment; filename=#{req.params.fipscode}"
+          dispistion = "attachment; filename=#{req.params.fips_code}"
           #if we have options set them to the file name seperated by "-"
-          #fipscode-rm_property_id-limit.json
-          if validParams.fipscode? #error handled in service
+          #fips_code-rm_property_id-limit.json
+          if validParams.fips_code? #error handled in service
             ['start_rm_property_id', 'limit'].forEach (prop) ->
               if validParams[prop]?
                 dispistion += "-#{validParams[prop]}"
