@@ -28,4 +28,21 @@ checkAllowed = (required, allowed) ->
 
   return granted
 
-module.exports = {checkAllowed: checkAllowed}
+isPermissionRequired = (toMatch, permissionsToSearch) ->
+  if !permissionsToSearch?
+    return false
+
+  if typeof(permissionsToSearch) is 'string'
+    return toMatch == permissionsToSearch
+
+  if Array.isArray(permissionsToSearch)
+    toSearch = permissionsToSearch
+
+  toSearch = toSearch || permissionsToSearch?.any || permissionsToSearch?.all || []
+
+  toSearch.indexOf(toMatch) > -1
+
+module.exports = {
+  checkAllowed
+  isPermissionRequired
+}

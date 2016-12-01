@@ -66,6 +66,9 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}
   globby(inputGlob)
   .then (newEntries) ->
     l.debug -> 'late entries'
+    l.debug -> 'newEntries'
+    l.debug -> newEntries
+
     entries = newEntries
     _bundle2Gulp()
 

@@ -77,6 +77,8 @@ setPlan = (userId, plan) ->
           created
 
 getStatus = (user) -> Promise.try () ->
+  if user.is_superuser
+    return 'pro'
   if !user.stripe_customer_id?  # if no subscription exists...
     if !user.is_staff  # ... and if not a staff, it's a subaccount
       return null

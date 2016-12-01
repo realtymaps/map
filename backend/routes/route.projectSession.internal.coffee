@@ -65,7 +65,7 @@ class ClientsCrud extends RouteCrud
         parent_id: req.user.id
         first_name: req.body.first_name
         last_name: req.body.last_name
-        username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
+        username: req.body.username || req.body.email #same varchar size (dont use first_last)
         email: req.body.email
       parent:
         id: req.user.id
@@ -81,7 +81,7 @@ class ClientsCrud extends RouteCrud
         name: 'client_created' # altered to 'client_invited' for emails that exist in system
         verify_host: req.headers.host
 
-    projectSvc.addClient clientEntryValue
+    projectSvc.addClient(clientEntryValue)
     .catch errorUtils.isUnhandled, (err) ->
       throw new errorUtils.PartiallyHandledError(err, "Error adding new client with email #{req.body.email}")
 

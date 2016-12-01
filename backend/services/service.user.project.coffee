@@ -152,12 +152,15 @@ class ProjectCrud extends ThenableCrud
 
         # create new user for 'client_created' vero event
         if result.length == 0
-          userPromise = tables.auth.user(transaction: trx)
-          .insert user
-          .returning 'id'
-          .then ([id]) ->
+          userPromise = logger.debugQuery(
+            tables.auth.user(transaction: trx)
+            .insert user
+            .returning 'id'
+          ).then ([id]) ->
             user.id = id
             evtdata.name = 'client_created'
+
+
 
         # use existing user for 'client_invited' vero event
         else
