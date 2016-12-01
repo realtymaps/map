@@ -7,7 +7,7 @@ validation = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 status = require '../../common/utils/httpStatus'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-{InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.userSession'
+{InActiveUserError} = require '../utils/errors/util.errors.userSession'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
@@ -32,7 +32,7 @@ wrappedCLS = (req, res, promisFnToWrap) ->
     namespace.exit(ctx)
     logger.spawn('cls').debug 'CLS: Context exited'
 
-module.exports = (app) ->
+module.exports = (app, sessionMiddlewares) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
     logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
@@ -56,12 +56,18 @@ module.exports = (app) ->
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
-          else if isCausedBy(InValidEmailError, error) || isCausedBy(InActiveUserError, error)
+          else if isCausedBy(InActiveUserError, error)
             returnStatus = status.UNAUTHORIZED
           else
             returnStatus = status.INTERNAL_SERVER_ERROR
           next new ExpressResponse({alert: msg: error.message}, {status: returnStatus, quiet: error.quiet})
-    app[route.method](route.path, route.middleware..., wrappedHandle)
+    # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
+    # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
+    if route.middleware.length > 0
+      middlewares = [].concat(sessionMiddlewares, route.middleware)
+    else
+      middlewares = []
+    app[route.method](route.path, middlewares..., wrappedHandle)
 
   paths = {}
   for routerEntry in app._router.stack when routerEntry?.route?

@@ -72,28 +72,6 @@ app.use bodyParser.json(limit: '5mb')
 app.use multipart()
 app.use methodOverride()
 
-
-# session store (postgres)
-config.SESSION_STORE.pg = dbs.get('pg')
-config.SESSION.store = new sessionStore(config.SESSION_STORE)
-shutdown.onExit () ->
-  config.SESSION.store.close()
-config.SESSION.genid = uuid.genUUID
-app.use session(config.SESSION)
-
-
-# promisify sessions
-app.use Promise.nodeifyWrapper(promisify.sessionMiddleware)
-
-# do login session management
-app.use Promise.nodeifyWrapper(auth.setSessionCredentials)
-
-# do session security checks
-app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
-
-# enable flash messages
-app.use connectFlash()
-
 swaggerObject = require('js-yaml').load(require('fs').readFileSync(__dirname + '/swagger.yaml'))
 swagger.initializeMiddleware swaggerObject, (middleware) ->
   # This middleware is required by the other swagger middlewares
@@ -114,8 +92,33 @@ swagger.initializeMiddleware swaggerObject, (middleware) ->
   if process.env.NODE_ENV == 'development'
     app.use middleware.swaggerUi()
 
+
+sessionMiddlewares = []
+
+# session store (postgres)
+config.SESSION_STORE.pg = dbs.get('pg')
+config.SESSION.store = new sessionStore(config.SESSION_STORE)
+shutdown.onExit () ->
+  config.SESSION.store.close()
+config.SESSION.genid = uuid.genUUID
+
+sessionMiddlewares.push(session(config.SESSION))
+
+# promisify sessions
+sessionMiddlewares.push(Promise.nodeifyWrapper(promisify.sessionMiddleware))
+
+# do login session management
+sessionMiddlewares.push(Promise.nodeifyWrapper(auth.setSessionCredentials))
+
+# do session security checks
+sessionMiddlewares.push(Promise.nodeifyWrapper(auth.checkSessionSecurity))
+
+# enable flash messages
+sessionMiddlewares.push(connectFlash())
+
+
 # bootstrap routes
-require('../routes')(app)
+require('../routes')(app, sessionMiddlewares)
 
 app.use (data, req, res, next) ->
   logger.debug 'ExpressResponse Middleware'
