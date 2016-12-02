@@ -61,7 +61,7 @@ app.config(($provide, $validationProvider) ->
 
   defaultMsg =
     password:
-      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice'
+      error: 'Password does not meet requirements: minimum length 10, at least 1 lowercase, 1 capital, 1 number.'
     required:
       error: 'Required'
     url:

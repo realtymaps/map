@@ -14,7 +14,7 @@ handles = wrapHandleRoutes handles:
     clientEntrySvc.setPasswordAndBounce req.body
     .then (client) ->
       req.body = client
-      
+
       # redirect to our login page, preserving the POST method of the request with code 307
       # NOTE: our api calls are handled through structure that automatically sends data through
       #   `res.json`, so non-api web endpoints (such as login) need to be redirected to instead of directly called.

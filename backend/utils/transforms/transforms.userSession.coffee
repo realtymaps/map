@@ -77,10 +77,20 @@ companyRoot =
 updatePassword =
   password: validators.string(regex: config.VALIDATION.password)
 
+requestResetPassword =
+  email: validators.string(regex: config.VALIDATION.email)
+
+doResetPassword =
+  key: validators.string()
+  email: validators.string(regex: config.VALIDATION.email)
+  password: validators.string(regex: config.VALIDATION.password)
+
 module.exports = {
   root
   profiles
   companyImage
   companyRoot
   updatePassword
+  requestResetPassword
+  doResetPassword
 }

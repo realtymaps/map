@@ -2,8 +2,11 @@ Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 logger = require('../config/logger').spawn("session:userSession:service")
 keystore = require '../services/service.keystore'
+uuid = require '../utils/util.uuid'
 tables = require '../config/tables'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
+frontendRoutes = require '../../common/config/routes.frontend'
+dbs = require '../config/dbs'
 
 _updateUser = (id, attributes) ->
   tables.auth.user()
@@ -62,11 +65,72 @@ verifyPassword = (email, password) ->
           .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
         return user
 
-updatePassword = (user, password, overwrite = true) ->
+updatePassword = (user, password, transaction, overwrite = true) ->
   createPasswordHash(password).then (password) ->
-    toSet = if overwrite then password else tables.auth.user().raw("coalesce(password, '#{password}')")
-    tables.auth.user().update(password: toSet)
+    toSet = if overwrite then password else tables.auth.user().raw("coalesce(password, ?)", password)
+    tables.auth.user({transaction}).update(password: toSet)
     .where(id: user.id)
+
+# This method is invoked when a user clicks the "Forgot Password" link
+requestResetPassword = (email, host) ->
+  if !email
+    throw new Error('Email required')
+
+  tables.auth.user().select('id', 'email', 'first_name', 'last_name', 'username')
+  .where('email', email)
+  .then ([user]) ->
+    if !user
+      throw new Error('User not found')
+
+    # save important information for client login later in keystore
+    # `passwordResetObj` also has data for vero template, so we send it there too
+    passwordResetKey = uuid.genUUID()
+    reset_url = "http://#{host}/#{frontendRoutes.passwordReset.replace(':key', passwordResetKey)}"
+
+    passwordResetObj =
+      user: user
+      evtdata:
+        name: 'password_reset'
+        verify_host: host
+        reset_url: reset_url
+
+    keystore.setValue(passwordResetKey, passwordResetObj, namespace: 'password-reset')
+    .then () ->
+      require('./email/vero').then ({vero}) ->
+        vero.createUserAndTrackEvent(
+          user.id
+          user.email
+          user
+          passwordResetObj.evtdata.name
+          passwordResetObj
+        )
+  .catch (err) ->
+    logger.debug err
+    throw err
+
+# This method is invoked when a user clicks the link to the password reset page
+getResetPassword = (key) ->
+  keystore.getValue key, namespace: 'password-reset'
+  .then (entry) ->
+    email: entry.user.email
+    first_name: entry.user.first_name
+    last_name: entry.user.last_name
+    username: entry.user.username
+  .catch (err) ->
+    logger.debug err
+    throw err
+
+# This method is invoked when the user submits a new password via the reset form
+doResetPassword = ({key, password}) ->
+  dbs.transaction 'main', (trx) ->
+    keystore.getValue key, namespace: 'password-reset', transaction: trx
+    .then (entry) ->
+      updatePassword(id: entry.user.id, password, trx, true)
+      .then () ->
+        keystore.deleteValue('password-reset', key, trx)
+  .catch (err) ->
+    logger.debug err
+    throw err
 
 verifyValidAccount = (user) ->
   return unless user
@@ -81,4 +145,7 @@ module.exports = {
   verifyPassword
   verifyValidAccount
   updatePassword
+  requestResetPassword
+  getResetPassword
+  doResetPassword
 }

@@ -83,6 +83,8 @@ setValuesMap = (map, options={}) -> Promise.try () ->
     return Promise.props resultsPromises
   dbs.ensureTransaction(options.transaction, handler)
 
+deleteValue = (namespace, key, transaction) ->
+  tables.config.keystore({transaction}).where({namespace,key}).delete()
 
 _cached = {}
 _cached.getValue = memoize.promise(_getValue, length: 3, primitive: true, maxAge: 10*60*1000, preFetch: .1)
@@ -96,6 +98,7 @@ module.exports =
   getValuesMap: (namespace, options={}) -> _getValuesMap(namespace, options.defaultValues, options.transaction)
   setValue: setValue
   setValuesMap: setValuesMap
+  deleteValue: deleteValue
   cache:
     getValue: (key, options={}) -> _cached.getValue(key, options.namespace, options.defaultValue)
     getValues: (namespace, options={}) -> _cached.getValues(namespace)
