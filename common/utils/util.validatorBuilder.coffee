@@ -159,6 +159,19 @@ _rules =
       agent_status:
         alias: 'Status'
         required: true
+        forceLookups: true
+        valid: () ->
+          # you must mark something for all values
+          if !@input || !@config.mapping
+            return false
+          if !@_lookups
+            # probably need to add more code to handle any MLS that gets here, so mark as invalid to draw dev attention
+            return false
+          for lookup in @_lookups
+            if !@config.mapping[lookup.LongValue]?
+              return false
+          return true
+
       email:
         alias: 'Email'
       work_phone:
