@@ -22,7 +22,8 @@ promisifySession = (req, res) -> Promise.try () ->
   req.session.regenerateAsync = () ->
     req.session.regenerateAsyncImpl()
     .then () ->
-      # it would be nice to have some explanation here on to why we recurse
+      # The below is not recursion; it happens during a call to req.session.regenerateAsync, which actually creates
+      # a brand new session on req, and thus requires that we promisify the new session object
       promisifySession(req, res)
   Promise.resolve()
 

@@ -331,13 +331,21 @@ requirePermissions = (permissions, options = {}) ->
     return process.nextTick(next)
 
 
-module.exports =
-  setSessionCredentials: setSessionCredentials
-  checkSessionSecurity: checkSessionSecurity
-  requireLogin: requireLogin
-  requireProject: requireProject
-  requireProjectParent: requireProjectParent
-  requireProjectEditor: requireProjectEditor
-  requirePermissions: requirePermissions
-  requireSubscriber: requireSubscriber
-  logout: logout
+# for now this is a no-op, because session stuff gets automatically added when any route-specific middleware is
+# configured -- this is a placeholder to be used when we just need to trigger session middleware inclusion
+sessionSetup = (req, res, next) ->
+  process.nextTick(next)
+
+
+module.exports = {
+  setSessionCredentials
+  checkSessionSecurity
+  requireLogin
+  requireProject
+  requireProjectParent
+  requireProjectEditor
+  requirePermissions
+  requireSubscriber
+  logout
+  sessionSetup
+}
