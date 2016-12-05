@@ -10,7 +10,7 @@ VeroUser = (vero) ->
     {authUser, subscriptionStatus, eventName, eventData} = opts
 
     vero.createUserAndTrackEvent(
-      @getUniqueUserId(authUser), authUser.email,
+      getUniqueUserId(authUser), authUser.email,
         _.extend(
           _.pick(authUser, ['first_name','last_name']),
           subscription_status: subscriptionStatus || 'trial'
