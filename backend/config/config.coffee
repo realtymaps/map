@@ -129,6 +129,8 @@ base =
     MAX_ATTEMPTS: 10
   ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
   RMAPS_MAP_INSTANCE_NAME: process.env.RMAPS_MAP_INSTANCE_NAME
+  SUBSCR:
+    PLAN: common.plan
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =

@@ -13,7 +13,7 @@
     .col-md-6
       label Member Since
       p {{ subscription.start * 1000 | date:'MM/dd/yyyy' }}
-    .col-md-6
+    .col-md-6(ng-show="subscription.discount")
       label Discounts
       p(ng-show="subscription.discount") {{ subscription.discount | currency }}
       p(ng-show="!subscription.discount") None
@@ -31,23 +31,29 @@
       p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
 
   .row.subscription-buttons(ng-hide="subscription.error")
-    .btn.btn-default(ng-hide="subscription.canceled_at" ng-click="unsubscribe()") Unsubscribe
+    .col-md-6(ng-hide="subscription.canceled_at")
+      .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
+    .col-md-6(ng-hide="subscription.canceled_at || identity.subscription == 'pro'")
+      .btn.btn-default(ng-click="upgrade()") Upgrade
 
-.collapse-header
+
+
+div
   h2 Fips Codes
-.row.collapse-header.subscription-details(ng-show="data.fips")
+.row.subscription-details(ng-show="data.fips")
   .row(ng-hide="subscription.error")
     .col-md-9
-      .row(ng-repeat="f in data.fips")
-        .col-md-4
-          Label State
-          p {{f.state}}
-        .col-md-4
-          Label County
-          p {{f.county}}
-        .col-md-4
-          Label Code
-          p {{f.code}}
+      table.table.table-hover
+        thead
+          tr
+            th Code
+            th State
+            th County
+        tbody
+          tr(ng-repeat="f in data.fips")
+            td {{f.code}}
+            td {{f.state}}
+            td {{f.county}}
 
   .row.help-block(ng-show="subscription.error")
     p {{ subscription.error }}
