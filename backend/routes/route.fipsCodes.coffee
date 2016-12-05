@@ -33,7 +33,7 @@ class FipsCodesCrud extends RouteCrud
 
   getAllSupportedMlsCodes: (req, res, next) =>
     handleRoute req, res, next, =>
-      @validRequest req, 'getAllMlsCodes'
+      validateAndTransformRequest req, transforms.getAllMlsCodes
       .then (validReq) =>
         @svc.getAllSupportedMlsCodes(validReq.body)
 

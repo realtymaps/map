@@ -42,7 +42,7 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
             .row
               .col-md-8.col-sm-8.col-xs-11
                 .form-group
-                  .label All MLS:
+                  .label MLS:
                   .col-md-8.col-sm-8.col-xs-11
                     // all mls codes
                     input.form-control(
@@ -103,32 +103,79 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
 
     div(ng-if="user.plan.name === 'standard'")
       h2 Select your state and county
-      p Maecenas eu placerat ante. Fusce ut neque justo, et aliquet enim. In hac habitasse platea dictumst. Nullam commodo neque erat, vitae facilisis erat. Cras at mauris ut tortor vestibulum fringilla vel sed metus.
+      p Please select your state and county that you would like to have privledges to.
 
         form.form-horizontal(role='form' name='userForm')
-          .form-payment
-            .row
-              .col-md-6.col-sm-6.col-xs-12
-                .form-group
-                  .label State:
-                  .col-lg-6
-                    select.form-control(ng-model="user.us_state_code" validator="required" name="userStateCode")
-                      option(
-                        ng-repeat="entity in us_states"
-                        ng-selected="{{entity.code == user.us_state}}"
-                        value="{{entity.code}}") {{entity.code}} - {{entity.name}}
+        .form-payment
+          .row
+            .col-md-8.col-sm-8.col-xs-11(ng-if="supportedStates")
+              .form-group
+                .label Show Supported States:
+                .col-lg-12
+                  input(type="checkbox" ng-model="supportedStates.show" ng-change="supportedStates.change()")
+          .row
+            .col-md-8.col-sm-8.col-xs-11
+              .form-group(ng-if="!supportedStates.show")
+                .label All States (with defined MlSes):
+                .col-md-8.col-sm-8.col-xs-11
+                  select.form-control(
+                    ng-model="user.us_state_code"
+                    validator="required"
+                    name="us_state_code"
+                    ng-options="entity.code as stateView(entity) for entity in us_states_possible")
 
-              .col-md-6.col-sm-6.col-xs-12
-                .form-group
-                  .label County:
-                  .col-lg-6
-                    select.form-control(ng-model="user.fips_code" validator="required" name="userFipsCode")
-                      option(
-                        ng-repeat="entity in counties"
-                        ng-selected="{{entity.fips_code == user.fips_code}}"
-                        value="{{entity.fips_code}}") {{entity.county}} - {{entity.fips_code}}
-            .row
-              .col-md-6.col-sm-6.col-xs-12
-                .form-group
-                  .col-md-3
-                    input.btn.btn-primary(value='Done' type='button' ng-click="user.submit()" validation-submit="userForm")
+              .form-group(ng-if="supportedStates.show")
+                .label Supported States:
+                .col-md-8.col-sm-8.col-xs-11
+                  select.form-control(
+                    ng-model="user.us_state_code"
+                    validator="required"
+                    name="us_state_code"
+                    ng-options="entity.code as stateView(entity) for entity in us_states_supported")
+          .row
+            .col-md-8.col-sm-8.col-xs-11(ng-if="supportedFips")
+              .form-group
+                .label Show Supported Counties / Fips Codes:
+                .col-lg-12
+                  input(type="checkbox" ng-model="supportedFips.show" ng-change="supportedFips.change()")
+          .row
+            .col-md-8.col-sm-8.col-xs-11
+              .form-group
+                .label Counties / Fips Codes:
+                .col-md-8.col-sm-8.col-xs-11
+                  // all fips codes
+                  input.form-control(
+                    ng-if="!supportedFips.show && supportedFips || !supportedFips.show"
+                    ng-model="user.fips_code"
+                    validator="required"
+                    name="fips_code"
+                    type="text"
+                    placeholder="Search Counties / Fips"
+                    typeahead-input-formatter="mlsInputFormatter($model)"
+                    uib-typeahead="entity.fips_code as fipsView(entity) for entity in counties | filter:$viewValue | limitTo:14")
+                  // our supported fips_code codes
+                  input.form-control(
+                    ng-if="supportedFips.show && supportedFips && supportedFips.show"
+                    ng-model="user.fips_code"
+                    validator="required"
+                    name="fips_code"
+                    type="text"
+                    placeholder="Search Counties / Fips"
+                    typeahead-input-formatter="mlsInputFormatter($model)"
+                    uib-typeahead="entity.fips_code as fipsView(entity) for entity in mlsFipsCounties | filter:$viewValue | limitTo:14")
+
+          .row(ng-show="user.fips_code")
+            .col-md-8.col-sm-8.col-xs-11
+              .form-group
+                .col-md-3
+                  input.btn.btn-primary(
+                    ng-if="view.supportedCode"
+                    ng-value='doneButton.getText()'
+                    ng-attr-title='doneButton.getTitle()'
+                    type='button' ng-click="user.submit()"
+                    validation-submit="userForm")
+                  input.btn.btn-primary(
+                    ng-if="!view.supportedCode"
+                    value="Done / Abort"
+                    type='button' ng-click="user.unsupportedSubmit()"
+                    validation-submit="userForm")
