@@ -661,6 +661,11 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .then () ->
           if totalLines > 0
             promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
+            .catch analyzeValue.isKnexError, (err) ->
+              if err.code == '23505'
+                # this means we hit an error where the index exists, even though we specified IF NOT EXISTS; we can ignore
+                return
+              throw err
         .then () ->
           callback()
           if !hadError
