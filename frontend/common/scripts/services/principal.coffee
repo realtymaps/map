@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 mod = require '../module.coffee'
 
-mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventConstants) ->
+mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventConstants, rmapsMainOptions) ->
   $log = $log.spawn 'principalService'
   #
   # Private Service Variables
@@ -92,7 +92,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventCon
   # always implies an active subscription when set to 'pro' or 'standard'
   hasSubscription: (subscription) ->
     if !subscription?
-      return _identity and (_identity.subscription == 'pro' or _identity.subscription == 'standard')
+      return _identity and (_identity.subscription == rmapsMainOptions.plan.PRO or _identity.subscription == rmapsMainOptions.plan.STANDARD)
     else
       return _identity and _identity.subscription == subscription
 

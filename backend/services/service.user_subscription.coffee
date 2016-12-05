@@ -68,10 +68,8 @@ setPlan = (userId, plan) ->
 
     stripe.customers.cancelSubscription(res.customer, res.id)
     .then (cancelled) ->
-      console.log "cancelled: \n#{JSON.stringify(cancelled)}"
       stripe.subscriptions.create({customer: res.customer, plan: config.SUBSCR.PLAN.PRO})
       .then (created) ->
-        console.log "created:\n#{JSON.stringify(created)}"
         tables.auth.user()
         .update stripe_subscription_id: created.id
         .where id: userId

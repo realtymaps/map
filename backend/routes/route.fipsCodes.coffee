@@ -40,8 +40,6 @@ class FipsCodesCrud extends RouteCrud
 
   getForUser: (req, res, next) ->
     handleRoute req, res, next, ->
-      console.log "req.user: #{JSON.stringify(req.user)}"
-      console.log "req.session: #{JSON.stringify(req.session)}"
       filterService.getFipsMLSForUser(req.session.userid)
       .then ({fips}) ->
         fipsCodes.getByCode(fips)

@@ -1,7 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.provider 'rmapsOnboardingOrderService', () ->
+app.provider 'rmapsOnboardingOrderService', (rmapsMainOptions) ->
   class OnBoardingOrder
     constructor: (@steps = [
       'onboardingPayment'
@@ -46,18 +46,18 @@ app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvi
     'onboardingPayment'
     'onboardingLocation'
     'onboardingFinishYay'
-  ], 'pro', 'onboardingLocation'
+  ], rmapsMainOptions.plan.PRO, 'onboardingLocation'
 
 app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   @getPlanFromState = ($state) ->
     return unless $state
-    if /pro/i.test($state.current.name)
-      'pro'
+    RegExp(rmapsMainOptions.plan.PRO, "i").test($state.current.name)
+      rmapsMainOptions.plan.PRO
 
   @getOrderSvc = (plan) =>
     if !_.isString plan
       plan = @getPlanFromState(plan)# then plan should be $state
-    if plan == 'pro'
+    if plan == rmapsMainOptions.plan.PRO
       return rmapsOnboardingProOrderServiceProvider
     rmapsOnboardingOrderServiceProvider
 
