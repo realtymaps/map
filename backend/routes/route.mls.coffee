@@ -29,6 +29,12 @@ module.exports =
           logger.debug validReq
           mlsService.getAllSupported(validReq.body)
 
+  getForUser:
+    method: 'get'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        mlsService.getForUser(req.session)
+
   supportedStates:
     method: 'get'
     handle: (req, res, next) ->
