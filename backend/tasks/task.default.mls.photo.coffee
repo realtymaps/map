@@ -13,50 +13,75 @@ internals = require './task.default.mls.photo.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 250
-MAX_PAGES = 0
 
 
 storePrep = (subtask) ->
-  idsObj = {}
   logger.debug () -> "storePrep for #{subtask.task_name}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
   mlsId = subtask.task_name.split('_')[0]
   logger.debug () -> "mlsId is #{mlsId}"
 
-  retryPhotosPromise = tables.deletes.retry_photos()
-  .where(data_source_id: mlsId)
-  .whereNot(batch_id: subtask.batch_id)
-  .then (rows) ->
-    logger.debug () -> "Found #{rows.length} retries"
-    for row in rows
-      idsObj[row.data_source_uuid] =
-        data_source_uuid: row.data_source_uuid
-        photo_id: row.photo_id
+  stepNumOffset = 0
+  _getRetriesIteratively = (minId=0) -> Promise.try () ->
+    tables.deletes.retry_photos()
+    .where(data_source_id: mlsId)
+    .whereNot(batch_id: subtask.batch_id)
+    .where('id', '>', minId)
+    .orderBy('id')
+    .limit(numRowsToPagePhotos)
+    .then (results) ->
+      if !results.length
+        return
+      logger.debug () -> "Found #{results.length} retries in chunk"
+      for row,i in results
+        results[i] =
+          data_source_uuid: row.data_source_uuid
+          photo_id: row.photo_id
+      jobQueue.queueSubsequentSubtask({
+        subtask
+        laterSubtaskName: "store"
+        stepNumOffset
+        manualData: {values: results, chunk: stepNumOffset, count: results.length}
+      })
+      .then () ->
+        # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
+        stepNumOffset++
+        _getRetriesIteratively(results[results.length-1].id)
 
-  updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
-  lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_last_mod_time field for #{mlsId}")
-  uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing').catch (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving data_source_uuid field for #{mlsId}")
-  photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing').catch (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
+  _getRetriesIteratively()
+  .then () ->
+    updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+    lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
+      throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_last_mod_time field for #{mlsId}")
+    uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing').catch (err) ->
+      throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving data_source_uuid field for #{mlsId}")
+    photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing').catch (err) ->
+      throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
-  # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
-  updatedPhotosPromise = Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
-    logger.debug arguments
+    # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+    Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
+  .then (updateThreshold, lastModField, uuidField, photoIdField) ->
     dataOptions = {minDate: updateThreshold, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
-    if MAX_PAGES
-      dataOptions.searchOptions.limit = NUM_ROWS_TO_PAGINATE_FOR_PHOTOS * MAX_PAGES
-    logger.debug dataOptions
+    if subtask.data.limit
+      dataOptions.searchOptions.limit = subtask.data.limit
 
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
         return
       logger.debug () -> "Found #{chunk.length} updated rows in chunk"
-      for row in chunk
-        idsObj[row[uuidField]] =
+      for row,i in chunk
+        chunk[i] =
           data_source_uuid: row[uuidField]
           photo_id: row[photoIdField]
+      jobQueue.queueSubsequentSubtask({
+        subtask
+        laterSubtaskName: "store"
+        stepNumOffset
+        manualData: {values: chunk, chunk: stepNumOffset, count: chunk.length}
+      })
+      .then () ->
+        # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
+        stepNumOffset++
 
     logger.debug () -> "Getting data chunks for #{mlsId}"
     retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
@@ -64,19 +89,6 @@ storePrep = (subtask) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, "Error getting list of updated records from RETS")
-
-  Promise.join retryPhotosPromise, updatedPhotosPromise, () ->
-    logger.debug () -> "Got #{Object.keys(idsObj).length} updates + retries (after dupes removed)"
-    jobQueue.queueSubsequentPaginatedSubtask({
-      subtask
-      totalOrList: _.values(idsObj)
-      maxPage: numRowsToPagePhotos
-      laterSubtaskName: "store"
-      # this makes debugging easier
-      # MAIN REASON is WE are limited to a single login for many MLSes
-      # THIS IS A MAJOR BOTTLE KNECK
-      concurrency: 1
-    })
 
 store = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
