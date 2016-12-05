@@ -19,7 +19,7 @@ exit = (opts={}) ->
   , 9000
 
   logger.debug "Process exit initiated..."
-  Promise.join(exitHandlers)
+  Promise.join(for handler in exitHandlers then Promise.try(handler))
   .then () ->
     dbs = require('./dbs')
     dbs.shutdown(quiet: !opts.error)

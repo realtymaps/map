@@ -3,21 +3,29 @@
   handler
   CustomerCreateFailedError
   StripeInvalidRequestError
+  GetAllStreamError
 } = require '../../../utils/errors/util.errors.stripe'
 tables = require '../../../config/tables'
 logger = require('../../../config/logger').spawn('stripe')
 stripeErrorEnums = require '../../../enums/enum.stripe.errors'
 _ = require 'lodash'
+Promise = require 'bluebird'
+through = require 'through2'
+
 
 StripeCustomers = (stripe) ->
 
-  remove = (authUser) ->
-    onMissingArgsFail
-      args:
-        id: authUser.stripe_customer_id
-      required: ['id']
+  remove = (authUser, isAuthUser = true) ->
+    id = if isAuthUser
+      onMissingArgsFail
+        args:
+          id: authUser.stripe_customer_id
+        required: ['id']
+      authUser.stripe_customer_id
+    else
+      authUser.id
 
-    stripe.customers.del authUser.stripe_customer_id
+    stripe.customers.del id
     .then () ->
       logger.info "Success: removal of customer #{authUser.stripe_customer_id}"
 
@@ -73,8 +81,12 @@ StripeCustomers = (stripe) ->
       source: token
       plan: plan
       description: authUser.email + ' ' + extraDescription
+      email: authUser.email
 
     .then (customer) ->
+      logger.debug -> "@@@@ Customer Creation Success @@@@"
+      logger.debug -> customer
+
       [subscription] = _.filter customer.subscriptions.data, (el) -> el.plan.id == plan
       _.extend authUser,
         stripe_customer_id: customer.id
@@ -97,6 +109,73 @@ StripeCustomers = (stripe) ->
     if !authUser.stripe_customer_id?
       throw new Error("`stripe_customer_id` is null for user #{authUser.id}.  Ensure session is updated, frontend refreshed, and stripe account made.")
     stripe.customers.retrieve authUser.stripe_customer_id
+
+  #used to do paging in admin or some frontend app
+  getAll = ({limit = 50} = {}) ->
+    stripe.customers.list({limit})
+
+  ###
+    Public: Returns a stream of paged customer objects that match an optional filter.
+
+   - `limit`  - Number of objects to page
+   - `filter` - object
+        "key": String Expression of a field to match. Use dot notation for nesting.
+          Example: customer.field1.field2
+            filter: "field1.field2"
+            To get email, filter:"email"
+        "regExp": to test a field against.
+    Returns stream the emits customer objects.
+
+    NOTE: Consider checking https://github.com/stripe/stripe-node/issues/225 to see if paging is implemented yet.
+
+    NOTE: USED BY: ./scripts/stripe/customer for customer management
+  ###
+  getAllStream = ({limit = 50, filter} = {}) ->
+
+    if filter?
+      filter.regExp = new RegExp(filter.regExp)
+
+    retStream = through.obj (obj, enc, cb) ->
+      @push(obj)
+      cb()
+
+    getSome = (lastCustomer) ->
+      opts = if !lastCustomer?
+        {limit}
+      else
+        {limit, starting_after: lastCustomer.id}
+
+      stripe.customers.list(opts)
+      .then (resp) -> Promise.try ->
+        if !Array.isArray(resp.data)
+          throw new Error('Stripe.customers.list: Invalid Data Response type.')
+
+        if !resp.data.length
+          retStream.end()
+          return
+
+        for customer in resp.data
+          if !filter?
+            logger.debug -> "customer #{customer.id}"
+            retStream.write(customer)
+          else
+            val = _.get(customer, filter.key)
+
+            if val?
+              if filter.regExp.test(val)
+                logger.debug -> "customer #{customer.id}"
+                retStream.write(customer)
+          lastCustomer = customer
+
+        return getSome(lastCustomer)
+      .catch (e) ->
+        logger.error  e
+        retStream.emit("error", new GetAllStreamError("Failed to get some customers", e))
+      return null
+
+    getSome()
+    return retStream
+
 
   getSources = (authUser) ->
     get(authUser)
@@ -141,13 +220,19 @@ StripeCustomers = (stripe) ->
     logger.debug -> "Capturing stripe charge: #{JSON.stringify opts}"
     stripe.charges.capture opts.charge, _.pick opts, [ 'amount', 'receipt_email', 'statement_descriptor' ]
 
-  remove: remove
-  create: create
-  get: get
-  getDefaultSource: getDefaultSource
-  replaceDefaultSource: replaceDefaultSource
-  charge: charge
-  capture: capture
-  handleCreationError: handleCreationError
+
+  {
+    remove
+    create
+    get: get
+    getAll
+    getAllStream
+    getSources
+    getDefaultSource
+    replaceDefaultSource
+    charge
+    capture
+    handleCreationError
+  }
 
 module.exports = StripeCustomers

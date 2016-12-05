@@ -66,6 +66,7 @@ base =
     resave: false
     saveUninitialized: true
     unset: 'destroy'
+    ttl: 30*24*60*60 # 30 days
   SESSION_SECURITY:
     name: 'anticlone'
     app: 'map'
@@ -127,6 +128,7 @@ base =
     DELIVERY_THRESH_MIN: 12
     MAX_ATTEMPTS: 10
   ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
+  RMAPS_MAP_INSTANCE_NAME: process.env.RMAPS_MAP_INSTANCE_NAME
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
@@ -241,6 +243,8 @@ pools =
 base.DBS = _.merge(base.DBS, pools[scriptName])
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 config = _.merge({}, base, environmentConfig[base.ENV])
+if scriptName == '__REPL'
+  config.IS_REPL = true
 
 
 module.exports = config

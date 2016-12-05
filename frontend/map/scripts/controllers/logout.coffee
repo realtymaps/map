@@ -8,6 +8,7 @@ module.exports = app.controller 'rmapsLogoutCtrl', (
 $state
 $http
 $timeout
+$rootScope
 rmapsPrincipalService
 rmapsMainOptions
 rmapsSpinnerService
@@ -35,5 +36,6 @@ rmapsProfilesService
       .success (data, status) ->
         delayedUrl()
       .finally ->
+        $rootScope.user = null
         rmapsPrincipalService.unsetIdentity()
         rmapsProfilesService.unsetCurrentProfile()

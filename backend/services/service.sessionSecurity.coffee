@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
-logger = require('../config/logger').spawn("service:sessionSecurity")
+logger = require('../config/logger').spawn("session:sessionSecurity")
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
@@ -67,8 +67,6 @@ ensureSessionCount = (req) -> Promise.try () ->
     return Promise.resolve()
   maxLoginsPromise = keystore.cache.getValuesMap('plans')
   .then (plans) ->
-    logger.debug plans
-
     groups = Object.keys(req.session.groups)
 
     if !groups.length
@@ -84,11 +82,14 @@ ensureSessionCount = (req) -> Promise.try () ->
 
     plan.maxLogins
 
-  sessionSecuritiesPromise = tables.auth.sessionSecurity().whereNotExists () ->
+  sessionSecuritiesPromise = tables.auth.sessionSecurity()
+  .whereNotExists () ->
     @select(1).from(tables.auth.session.tableName)
     .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
+  .returning('session_id')
   .delete()
-  .then () ->
+  .then (sessionIds) ->
+    logger.debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
     tables.auth.sessionSecurity()
     .where(user_id: req.user.id)
   .then (sessionSecurities=[]) ->
@@ -96,8 +97,9 @@ ensureSessionCount = (req) -> Promise.try () ->
 
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     if maxLogins <= sessionSecurities.length
-      logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
+      logger.debug () -> "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing sessions"
       sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'rm_modified_time').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
+      logger.debug () -> "session securities deleted: #{JSON.stringify(sessionIdsToDelete, null, 2)}"
       tables.auth.sessionSecurity()
       .whereIn('session_id', sessionIdsToDelete)
       .delete()
@@ -106,7 +108,10 @@ ensureSessionCount = (req) -> Promise.try () ->
 deleteSecurities = (criteria) ->
   tables.auth.sessionSecurity()
   .where(criteria)
+  .returning('session_id')
   .delete()
+  .then (sessionIds) ->
+    logger.debug () -> "session securities deleted: #{JSON.stringify(sessionIds, null, 2)}"
 
 
 getSecuritiesForSession = (sessionId) ->

@@ -1,12 +1,10 @@
 _ = require 'lodash'
 mod = require '../module.coffee'
 
-statusData =
+status =
   pending: 'pending'
   forSale: 'for sale'
   discontinued: 'discontinued'
-
-statusFilter =
   sold: 'sold'
 
 agentStatus =
@@ -96,15 +94,14 @@ address =
   showStreetInfo: 'Show Street Info'
 
 mod.constant 'rmapsParcelEnums', {
-  status: _.extend({}, statusData, statusFilter)
-  statusData
+  status
   agentStatus
   categories
   address
   propertyType
   datetimeFormats
   lookupOptions:
-    status: _.values(statusData)
+    status: _.values(status)
     property_type: _.values(propertyType)
     agent_status: _.values(agentStatus)
 }

@@ -54,7 +54,6 @@ getClientEntry = (key) ->
     .catch errorHelpers.isUnhandled, (err) ->
       throw new errorHelpers.PartiallyHandledError(err, "Error while getting keystore for key #{key}")
 
-
 # sets password (if applicable) then logs client in to map
 setPasswordAndBounce = (client) ->
   _updateClient(client)

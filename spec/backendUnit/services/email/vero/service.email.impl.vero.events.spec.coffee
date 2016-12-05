@@ -32,6 +32,7 @@ describe "service.email.impl.vero.events", ->
     internals = require("#{basePath}/services/email/vero/service.email.impl.vero.events.internals")(@vero)
 
     @authUser =
+      id: 1
       first_name: "Bo"
       last_name: "Jackson"
       email: ".nows@gmail.com"
@@ -50,7 +51,7 @@ describe "service.email.impl.vero.events", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
     it "id" , ->
-      @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
+      @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
 
     it "email" , ->
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
@@ -81,7 +82,7 @@ describe "service.email.impl.vero.events", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
     it "id" , ->
-      @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
+      @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
 
     it "email" , ->
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
@@ -117,7 +118,7 @@ describe "service.email.impl.vero.events", ->
         @vero.createUserAndTrackEvent.called.should.be.ok
 
       it "id" , ->
-        @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
+        @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
 
       it "email" , ->
         @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
@@ -154,7 +155,7 @@ describe "service.email.impl.vero.events", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
     it "id" , ->
-      @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
+      @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
 
     it "email" , ->
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email

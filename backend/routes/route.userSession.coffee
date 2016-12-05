@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('route.userSession')
+logger = require('../config/logger').spawn('session:userSession:route')
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
@@ -20,37 +20,32 @@ transforms = require '../utils/transforms/transforms.userSession'
 internals = require './route.userSession.internals'
 userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+backendRoutes = require '../../common/config/routes.backend.coffee'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug "attempting to log user out (someone is logging in): #{req.user.email}"
+    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.username} (#{req.sessionID})"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
-      logger.debug "attempting session regenerateAsync"
       req.session.regenerateAsync()
-      logger.debug "post session regenerateAsync"
   else
     promise = Promise.resolve()
 
   promise.then () ->
     if !req.body.password
-      logger.debug "no password specified for login: #{req.body.email}"
       return false
-    logger.debug "attempting to do login for email: #{req.body.email}"
     userSessionService.verifyPassword(req.body.email, req.body.password)
   .catch (err) ->
-    logger.debug "failed authentication: #{err}"
     return false
   .then (user) -> Promise.try ->
     userSessionService.verifyValidAccount(user)
   .then (user) ->
     if !user
-      logger.debug "user undefined"
       return next new ExpressResponse(alert: {
         msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
@@ -59,7 +54,6 @@ login = (req, res, next) -> Promise.try () ->
         quiet: true
       })
     else
-      logger.debug () -> "acquired user: #{JSON.stringify(user)}"
       req.session.userid = user.id
       sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
       .then () ->
@@ -82,7 +76,7 @@ setCurrentProfile = (req, res, next) -> Promise.try () ->
     next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
 
   req.session.current_profile_id = req.body.currentProfileId
-  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+  logger.debug () -> "set req.session.current_profile_id: #{req.session.current_profile_id}"
 
   rm_modified_time = moment()
 
@@ -122,8 +116,7 @@ profiles = (req, res, next) ->
       .then (validBody) ->
         profileService.update(validBody, req.user.id)
         .then () ->
-          logger.debug 'SESSION: clearing profiles'
-          delete req.session.profiles#to force profiles refresh in cache
+          delete req.session.profiles  # to force profiles refresh in cache
           internals.updateCache(req, res, next)
 
 newProject = (req, res, next) ->
@@ -220,7 +213,6 @@ companyRoot = (req, res, next) ->
           q.then (company_id) ->
             if !company_id?
               throw new Error('Error creating new company')
-            logger.debug company_id
 
             tables.auth.user({transaction})
             .where id: req.user.id
@@ -234,6 +226,39 @@ updatePassword = (req, res, next) ->
     userSessionService.updatePassword(req.user, validBody.password)
     .then ->
       res.json(true)
+    .catch (err) ->
+      throw new PartiallyHandledError(err)
+
+requestResetPassword = (req, res, next) ->
+  validation.validateAndTransformRequest(req.body, transforms.requestResetPassword)
+  .then (validBody) ->
+    userSessionService.requestResetPassword(validBody.email, req.headers.host)
+    .then (r) ->
+      res.json(true)
+    .catch (err) ->
+      next new ExpressResponse({message: "Could not send password reset, is email valid?"},
+        {status: httpStatus.BAD_REQUEST, quiet: true})
+
+getResetPassword = (req, res, next) ->
+  userSessionService.getResetPassword req.query?.key
+  .then (result) ->
+    res.json(result)
+  .catch (err) ->
+    next new ExpressResponse({message: "Password reset may have expired."},
+     {status: httpStatus.BAD_REQUEST, quiet: true})
+
+doResetPassword = (req, res, next) ->
+  validation.validateAndTransformRequest(req.body, transforms.doResetPassword)
+  .then (validBody) ->
+    userSessionService.doResetPassword validBody
+    .then () ->
+      # redirect to our login page, preserving the POST method of the request with code 307
+      # NOTE: our api calls are handled through structure that automatically sends data through
+      #   `res.json`, so non-api web endpoints (such as login) need to be redirected to instead of directly called.
+      res.redirect(307, backendRoutes.userSession.login)
+    .catch (err) ->
+      next new ExpressResponse({message: "Error resetting password."},
+        {status: httpStatus.BAD_REQUEST, quiet: true})
 
 module.exports =
   root:
@@ -247,10 +272,17 @@ module.exports =
   login:
     method: 'post'
     handle: login
+    middleware: auth.sessionSetup
 
-  logout: auth.logout
+  logout:
+    method: 'get'
+    handle: auth.logout
+    middleware: auth.sessionSetup
 
-  identity: internals.getIdentity
+  identity:
+    method: 'get'
+    handle: internals.getIdentity
+    middleware: auth.sessionSetup
 
   updateState:
     method: 'post'
@@ -286,3 +318,15 @@ module.exports =
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: updatePassword
+
+  requestResetPassword:
+    method: 'post'
+    handle: requestResetPassword
+
+  getResetPassword:
+    method: 'get'
+    handle: getResetPassword
+
+  doResetPassword:
+    method: 'post'
+    handle: doResetPassword

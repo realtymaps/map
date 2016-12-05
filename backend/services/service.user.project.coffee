@@ -16,8 +16,8 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 
 safeProject = basicColumns.project
-vero = null
-require('../services/email/vero').then (svc) -> vero = svc.vero
+veroSvc = null
+require('../services/email/vero').then (svc) -> veroSvc = svc
 
 
 _inviteClient = (clientEntryValue) ->
@@ -37,8 +37,8 @@ _inviteClient = (clientEntryValue) ->
   keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
   .then () ->
     # email new client
-    vero.createUserAndTrackEvent(
-      clientEntryValue.user.id
+    veroSvc.vero.createUserAndTrackEvent(
+      veroSvc.user.getUniqueUserId(clientEntryValue.user)
       clientEntryValue.user.email
       clientEntryValue.user
       clientEntryValue.evtdata.name

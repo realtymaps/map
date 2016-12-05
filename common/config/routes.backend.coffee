@@ -61,6 +61,9 @@ module.exports =
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
+    requestResetPassword: "#{apiBaseSession}/requestResetPassword"
+    getResetPassword: "#{apiBaseSession}/getResetPassword"
+    doResetPassword: "#{apiBaseSession}/doResetPassword"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes
@@ -180,6 +183,7 @@ module.exports =
     getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
     getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
     getObjectList: "#{apiBaseMls}/:mlsId/objects"
+    getForUser: "#{apiBaseMls}/user"
     testOverlapSettings: "#{apiBaseMls}/:mlsId/overlap"
   data_source:
     apiBaseDataSource: apiBaseDataSource

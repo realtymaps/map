@@ -323,7 +323,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 throw new SoftFail('failed to locate RETS overlap record')
               results = response.results.slice(found+1)
               if results.length == 0
-                throw new SoftFail('no new results found in interation')
+                logger.warn "no new results found in getDataChunks interation for #{mlsId}/#{dataType}; #{total} results received so far"
             else
               results = response.results
             if opts.uuidField?
@@ -340,14 +340,16 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
                 searchOptions.limit = fullLimit - (searchOptions.offset - baseOffset)
                 if opts.subLimit
                   searchOptions.limit = Math.min(searchOptions.limit, opts.subLimit)
-              handlerPromise = Promise.try () ->
-                handler(results)
-              .catch errorHandlingUtils.isUnhandled, (err) ->
-                throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
-              nextIterationPromise = searchIteration()
-              Promise.join handlerPromise, nextIterationPromise, () ->  # no-op
+              keepQuerying = true
             else
+              keepQuerying = false
+            Promise.try () ->
               handler(results)
+            .catch errorHandlingUtils.isUnhandled, (err) ->
+              throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
+            .then () ->
+              if keepQuerying
+                searchIteration
           .then () ->
             return total
           .catch rets.RetsReplyError, (err) ->

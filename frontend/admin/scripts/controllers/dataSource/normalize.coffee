@@ -175,16 +175,18 @@ rmapsAdminConstants) ->
       target._lookups = field._lookups = lookups
       if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         target.lookups = field.lookups = field._lookups
-    if field?._lookups
-      setLookups(field._lookups)
-    else if field && !field._lookups && field.config.LookupName
-      config = $scope.mlsData.current
-      schema = $scope.mlsData.dataListType.id + "_data"
-
-      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config[schema].db, field.config.LookupName
-      .then (lookups) ->
-        setLookups(lookups)
-        $scope.$evalAsync()
+    if field?
+      if field._lookups
+        setLookups(field._lookups)
+      else if field.config.LookupName
+        config = $scope.mlsData.current
+        schema = $scope.mlsData.dataListType.id + "_data"
+        $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config[schema].db, field.config.LookupName
+        .then (lookups) ->
+          setLookups(lookups)
+          $scope.$evalAsync()
+      else if target.forceLookups && field.type.name == 'boolean'
+        setLookups([{LongValue: '0'}, {LongValue: '1'}])
 
   # Move rules between categories
   $scope.onDropCategory = (drag, drop, target) ->

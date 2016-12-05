@@ -1,4 +1,7 @@
 .row.col-md-12.scroll(ng-if="fieldData.current.config.doLookup" ng-repeat="lookup in fieldData.current.lookups")
+  .row.col-md-5.lookup.heading
+    .col-md-8 Server value:
+    .col-md-4 Map to our value:
   .row.col-md-5.lookup
     .col-md-8 {{lookup.LongValue}}
     .col-md-4
