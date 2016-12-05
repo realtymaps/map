@@ -32,6 +32,7 @@ describe "service.email.impl.vero.events", ->
     internals = require("#{basePath}/services/email/vero/service.email.impl.vero.events.internals")(@vero)
 
     @authUser =
+      id: 1
       first_name: "Bo"
       last_name: "Jackson"
       email: ".nows@gmail.com"
