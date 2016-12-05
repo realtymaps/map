@@ -6,6 +6,9 @@
 
 
 .row.col-md-12.scroll
+  .row.col-md-5.lookup.heading
+    .col-md-8 Server value:
+    .col-md-4 Map to our value:
   .row.col-md-5.lookup(ng-repeat="lookup in fieldData.current.lookups")
     .col-md-8 {{lookup.LongValue}}
     .col-md-4
