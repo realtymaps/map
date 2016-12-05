@@ -96,9 +96,9 @@ requestResetPassword = (email, host) ->
 
     keystore.setValue(passwordResetKey, passwordResetObj, namespace: 'password-reset')
     .then () ->
-      require('./email/vero').then ({vero}) ->
-        vero.createUserAndTrackEvent(
-          user.id
+      require('./email/vero').then (svc) ->
+        svc.vero.createUserAndTrackEvent(
+          svc.user.getUniqueUserId(user)
           user.email
           user
           passwordResetObj.evtdata.name
