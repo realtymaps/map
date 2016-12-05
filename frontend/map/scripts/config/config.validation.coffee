@@ -51,7 +51,6 @@ app.config(($provide, $validationProvider) ->
       return true unless value
       value.length <= param;
     checkUniqueEmail: (value, scope, element, attrs, param) ->
-      console.log "checkUniqueEmail()"
       config =
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isUnique, email: value, config)
