@@ -128,6 +128,7 @@ base =
     DELIVERY_THRESH_MIN: 12
     MAX_ATTEMPTS: 10
   ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
+  RMAPS_MAP_INSTANCE_NAME: process.env.RMAPS_MAP_INSTANCE_NAME
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =

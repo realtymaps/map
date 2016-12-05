@@ -236,7 +236,7 @@ requestResetPassword = (req, res, next) ->
     .then (r) ->
       res.json(true)
     .catch (err) ->
-      next new ExpressResponse({message: "Could not send password reset to #{email}, is email valid?"},
+      next new ExpressResponse({message: "Could not send password reset, is email valid?"},
         {status: httpStatus.BAD_REQUEST, quiet: true})
 
 getResetPassword = (req, res, next) ->
