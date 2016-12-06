@@ -60,8 +60,7 @@ storePrep = (subtask) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
     # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
-    Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
-    .then (updateThreshold, lastModField, uuidField, photoIdField) ->
+    Promise.join updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
       dataOptions = {minDate: updateThreshold, subLimit: numRowsToPagePhotos, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
       if subtask.data.limit
         dataOptions.searchOptions.limit = subtask.data.limit
