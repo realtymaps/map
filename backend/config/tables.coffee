@@ -75,6 +75,7 @@ module.exports =
     notificationExpired: 'user_notification_expired'
     notificationConfig: 'user_notification_config'
     eventsQueue: 'user_events_queue'
+    history: 'user_history'
   mail:
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'

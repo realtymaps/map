@@ -16,9 +16,23 @@ rmapsMainOptions
     fips: null
 
   $scope.unsubscribe = () ->
-    rmapsSubscriptionService.deactivate()
-    .then (subscription) ->
-      $scope.subscription = subscription
+    modalInstance = $uibModal.open
+      scope: $scope
+      template: require('../../../html/views/templates/modals/confirmDeactivate.jade')()
+
+    $scope.deactivation =
+      reason: null
+    $scope.processing = false
+    $scope.showCancelButton = true
+    $scope.modalCancel = modalInstance.dismiss
+    $scope.modalOk = () ->
+      $scope.processing = true
+      rmapsSubscriptionService.deactivate($scope.deactivation.reason)
+      .then (subscription) ->
+        $scope.subscription = subscription
+        $scope.processing = false
+      .finally () ->
+        modalInstance.close()
 
   $scope.upgrade = () ->
     modalInstance = $uibModal.open
@@ -34,6 +48,8 @@ rmapsMainOptions
       .then (res) ->
         $rootScope.identity.subscription = res.plan.id
         $scope.subscription = res
+
+
 
   rmapsSubscriptionService.getSubscription()
   .then (subscription) ->

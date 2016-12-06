@@ -53,8 +53,6 @@ getPlan = (userId) ->
     .then (planDetails) ->
       _.merge plan, planDetails.value
 
-# deprecated code, using subscription status instead of user_group for
-#   subscription-based access checks
 setPlan = (userId, plan) ->
   getSubscription(userId)
   .then (res) ->
@@ -106,7 +104,7 @@ getSubscription = (userId) ->
   .catch isUnhandled, (err) ->
     throw new PartiallyHandledError(err, "We encountered an issue while accessing your subscription")
 
-deactivate = (userId) ->
+deactivate = (userId, reason) ->
   dbs.transaction 'main', (trx) ->
     _getStripeIds(userId, trx)
     .then ({stripe_customer_id, stripe_subscription_id}) ->
@@ -116,7 +114,11 @@ deactivate = (userId) ->
         .update status: 'inactive'
         .where auth_user_id: userId
         .then () ->
+          tables.user.history()
+          .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
+        .then () ->
           response
+
     .catch isUnhandled, (err) ->
       throw new PartiallyHandledError(err, "Encountered an issue deactivating the account, please contact customer service.")
 
