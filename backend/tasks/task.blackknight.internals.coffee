@@ -310,6 +310,11 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       # (i.e. we've started on a new date, and so need to load the delete files and queue the available FIPS codes)
       fipsMap = _.extend(table1.fipsMap, table2.fipsMap, table3.fipsMap)
       processInfo.fipsQueue = _.keys(fipsMap).sort()
+      if Array.isArray(subtask.data.fips_codes)
+        processInfo.fipsQueue = _.intersection(processInfo.fipsQueue, subtask.data.fips_codes)
+      else if subtask.data.fips_codes
+        processInfo.fipsQueue = _.filter processInfo.fipsQueue, (fips) ->
+          (new RegExp(subtask.data.fips_codes)).test(fips)
       processInfo.fips = processInfo.fipsQueue[0]
       processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'normalSubid', processInfo.fips)
       processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'normalSubid', processInfo.fips)
