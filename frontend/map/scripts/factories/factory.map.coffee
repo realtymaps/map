@@ -311,7 +311,7 @@ app.factory 'rmapsMapFactory',
         .then (data) =>
           # Watch for pins/favorites other users may have added and show them in dropdowns
           for type in ['pins', 'favorites']
-            for rm_property_id, prop of data?.saves[type]
+            for rm_property_id, prop of data?.saves?[type]
               rmapsPropertiesService[type][rm_property_id] ?= prop
 
           # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
