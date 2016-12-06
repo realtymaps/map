@@ -17,7 +17,8 @@ app.controller 'rmapsMapAreasCtrl', (
       $scope.areas = data
 
   $scope.areaListToggled = (isOpen) ->
-    getAll(false)
+    if isOpen
+      getAll(false)
     $rootScope.$emit rmapsEventConstants.areas.dropdownToggled, isOpen
 
   #
