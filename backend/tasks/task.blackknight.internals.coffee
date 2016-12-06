@@ -298,6 +298,10 @@ getProcessInfo = (subtask, subtaskStartTime) ->
         for action in [REFRESH, UPDATE]
           for dataType in [TAX, DEED, MORTGAGE]
             # need to force re-processing of the raw delete data so we can delete for the current FIPS
+            if dataType == TAX && action == REFRESH
+              # we need to skip this, because we're not keeping historical tax records and so we manage our own tax
+              # refresh deletes as part of the loadRawData subtask for the refresh data
+              continue
             processInfo[DELETE].push
               action: action
               dataType: dataType
@@ -387,9 +391,6 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
       .then (count) ->
         count?[0]?.count
     .then (numRows) ->
-      if mergeData.dataType == TAX && mergeData.action == REFRESH
-        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
-        numRows = 1
       if !numRows
         return
       jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
