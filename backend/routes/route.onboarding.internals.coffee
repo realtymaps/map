@@ -122,7 +122,7 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
     promises.push(tables.auth.m2m_user_locations({transaction})
     .insert(auth_user_id: authUser.id, fips_code: fips_code))
 
-  if mls_id? && mls_code? && plan == 'pro'
+  if mls_id? && mls_code? && plan == config.SUBSCR.PLAN.PRO
     promises.push(
       mlsAgentService.exists(data_source_id: mls_code, license_number: mls_id)
       .then (is_verified) ->

@@ -131,6 +131,7 @@ module.exports =
     getAll: "#{apiBaseFipsCodes}/state/:state"
     getAllMlsCodes: "#{apiBaseFipsCodes}/mls"
     getAllSupportedMlsCodes: "#{apiBaseFipsCodes}/mlsSupported"
+    getForUser: "#{apiBaseFipsCodes}/user"
   account_use_types:
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes

@@ -5,7 +5,7 @@ module.exports = (namespace = cls.getNamespace(NAMESPACE)) ->
 
   getCurrentUserId = () ->
     req = namespace.get('req')
-    req.user.id
+    req.user?.id
 
   {
     namespace

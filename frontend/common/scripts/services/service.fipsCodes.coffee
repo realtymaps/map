@@ -14,3 +14,6 @@ mod.service 'rmapsFipsCodesService', ($log, $http) ->
 
   getAllSupportedMlsCodes: (data = {}) ->
     $http.postData(fipsRoutes.getAllSupportedMlsCodes, data)
+
+  getForUser: () ->
+    $http.getData(fipsRoutes.getForUser)
