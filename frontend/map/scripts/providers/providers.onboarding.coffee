@@ -41,17 +41,17 @@ app.provider 'rmapsOnboardingOrderService', (rmapsMainOptions) ->
 
   new OnBoardingOrder()
 
-app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvider) ->
+app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvider, rmapsMainOptions) ->
   new rmapsOnboardingOrderServiceProvider.clazz [
     'onboardingPayment'
     'onboardingLocation'
     'onboardingFinishYay'
   ], rmapsMainOptions.plan.PRO, 'onboardingLocation'
 
-app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
+app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider, rmapsMainOptions) ->
   @getPlanFromState = ($state) ->
     return unless $state
-    RegExp(rmapsMainOptions.plan.PRO, "i").test($state.current.name)
+    if RegExp(rmapsMainOptions.plan.PRO, "i").test($state.current.name)
       rmapsMainOptions.plan.PRO
 
   @getOrderSvc = (plan) =>

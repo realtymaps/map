@@ -61,4 +61,4 @@ module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
     method: 'get'
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-    ]    
+    ]
