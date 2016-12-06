@@ -213,6 +213,8 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
     else
       singleSubtask = _.clone(subtask)
       delete singleSubtask.active
+      if stepNumOffset
+        singleSubtask.step_num += stepNumOffset
       singleSubtask.data = subtaskData
       singleSubtask.task_data = freshTaskData
       singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding

@@ -33,6 +33,7 @@ storePrep = (subtask) ->
       if !results.length
         return
       logger.debug () -> "Found #{results.length} retries in chunk"
+      lastId = results[results.length-1].id
       for row,i in results
         results[i] =
           data_source_uuid: row.data_source_uuid
@@ -46,7 +47,7 @@ storePrep = (subtask) ->
       .then () ->
         # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
         stepNumOffset++
-        _getRetriesIteratively(results[results.length-1].id)
+        _getRetriesIteratively(lastId)
 
   _getRetriesIteratively()
   .then () ->
