@@ -22,6 +22,29 @@ app.controller 'rmapsMlsCtrl',
         obj[key] = value
       return obj
 
+    makePhotoOptions = () ->
+      objects:
+        use: false
+        change: () ->
+          if !@use
+            delete $scope.mlsData.current.listing_data.photoObjects
+            getObjectOptions('listing_data')
+      info:
+        editing: false
+        temp: ''
+        edit:() ->
+          @temp = '' + $scope.mlsData.current.listing_data.photoInfo
+          $scope.schemaOptions.listing_data.photos.info.editing = true
+
+        save:() ->
+          $scope.mlsData.current.listing_data.photoInfo = @temp
+          @temp = ''
+          @editing = false
+
+        cancel: () ->
+          @temp = ''
+          @editing = false
+
     restoreInitDbValueHack = (schema) ->
       dropdown = angular.element(document.querySelector('#dbselect'))[0] # get the actual dropdown element
       options = dropdown.options # options list
@@ -50,6 +73,7 @@ app.controller 'rmapsMlsCtrl',
         db: []
         table: []
         column: []
+        photos: makePhotoOptions()
       agent_data:
         db: []
         table: []
@@ -175,7 +199,24 @@ app.controller 'rmapsMlsCtrl',
       .finally () ->
         $scope.loading = false
 
+    formatPhotoObjects = () ->
+      if _.isString $scope.mlsData.current.listing_data.photoObjects
+        if !$scope.mlsData.current.listing_data.photoObjects
+          delete $scope.mlsData.current.listing_data.photoObjects
+        else
+          $scope.mlsData.current.listing_data.photoObjects = $scope.mlsData.current.listing_data.photoObjects.trimAll().split(',')
+
     getObjectOptions = (schema) ->
+      $scope.schemaOptions.listing_data.photos = makePhotoOptions()
+
+      if !$scope.mlsData.current.listing_data.largestPhotoObject
+        $scope.mlsData.current.listing_data.largestPhotoObject = 'Photo'
+
+      if $scope.mlsData.current.listing_data.photoObjects?.length
+        $scope.schemaOptions.listing_data.photos.objects.use = true
+        $scope.fieldNameMap.objects = $scope.mlsData.current.listing_data.photoObjects
+        return
+
       rmapsMlsService.getObjectList($scope.mlsData.current.id)
       .then (data) ->
         $scope.fieldNameMap.objects = data.map (v) -> v.VisibleName
@@ -283,6 +324,7 @@ app.controller 'rmapsMlsCtrl',
         $scope.loading = false
 
     $scope.saveMlsConfigData = () ->
+      formatPhotoObjects()
       $scope.loading = true
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
@@ -344,8 +386,8 @@ app.controller 'rmapsMlsCtrl',
     # test for whether MLS is ready and eligible for task activation and normalization
     $scope.isReady = (mlsObj) ->
       _.every ['db', 'table', 'field'], (k) ->
-        listing_data_truth = (mlsObj.listing_data? and k of mlsObj.listing_data and mlsObj.listing_data[k] != '')
-        agent_data_truth = (mlsObj.agent_data? and k of mlsObj.agent_data and mlsObj.agent_data[k] != '')
+        listing_data_truth = (mlsObj.listing_data? && k of mlsObj.listing_data && mlsObj.listing_data[k] != '')
+        agent_data_truth = (mlsObj.agent_data? && k of mlsObj.agent_data && mlsObj.agent_data[k] != '')
         return listing_data_truth && agent_data_truth
 
     # modal for Create mlsData
