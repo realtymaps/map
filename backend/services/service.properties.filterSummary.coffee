@@ -65,7 +65,7 @@ module.exports =
 
             propertyIdsByCenterPoint = {}
             resultGroups = {}
-            pins = {}
+            saves = pins: {}, favorites: {}
             propertiesUtil.eachTrump {collection: properties, trump: 'mls'}, ({result, row}) ->
               property = row
               if queryParams.returnType
@@ -78,15 +78,13 @@ module.exports =
 
               result[property.rm_property_id] = toLeafletMarker property
 
-              # Ensure saved details are part of the saved props
               for type in ['pins', 'favorites']
                 if profile[type]?[property.rm_property_id]?
+                  # Ensure saved details are part of the saved props
                   property.savedDetails = _.extend property.savedDetails || {},
                     profile[type][property.rm_property_id]
-                  if type == 'pins'
-                    # Always return pins so the font-end can show those added by other uses
-                    pins ?= {}
-                    pins[property.rm_property_id] = property
+                  # Always return pins/favorites so the font-end can show those added by other uses
+                  saves[type][property.rm_property_id] = property
 
               if property.data_source_type == 'mls' and property.data_source_id?
                 mlsConfigSvc.getByIdCached(property.data_source_id)
@@ -105,7 +103,7 @@ module.exports =
 
                 singletons: resultsByPropertyId
                 groups: resultGroups
-                pins: pins
+                saves: saves
                 length: properties.length + resultGroupsCtr
               else
                 resultsByPropertyId.length = properties.length
