@@ -179,13 +179,6 @@ module.exports = {
       "Delete": [
         {
           "action": "Refresh",
-          "dataType": "tax",
-          "fips_code": "12099",
-          "rawDeleteBatchId": "saved_batch_id",
-          "rawTableSuffix": "R_DELETES_20160406"
-        },
-        {
-          "action": "Refresh",
           "dataType": "deed",
           "fips_code": "12099",
           "rawDeleteBatchId": "saved_batch_id",
