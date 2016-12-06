@@ -197,10 +197,19 @@ rmapsMapTogglesFactory
   getNotes = (force = false) ->
     rmapsNotesService.getAll(force)
     .then (data) ->
-      $log.debug "received note data #{data.length} " if data?.length
+      $log.debug "received note data"
+
+      # Enable notes layer if a new note is found after initial load
+      if $scope.map.notesList
+        newNotes = _.difference(_.keys(data), _.keys($scope.map.notesList))
+        if newNotes.length && "#{data[newNotes[0]].auth_user_id}" != "#{$rootScope.identity.user?.id}"
+          msg = "New note from #{data[newNotes[0]].first_name} -- '#{data[newNotes[0]].text}'"
+          $log.debug msg
+          $rootScope.$emit rmapsEventConstants.alert.spawn, msg: msg, type: 'info'
+          $scope.map.layers.overlays?.notes?.visible = true
+
       $scope.map.notesList = data
       $scope.map.markers.notes = setMarkerNotesDataOptions(data)
-
 
   $rootScope.$onRootScope rmapsEventConstants.notes, ->
     getNotes(true)
