@@ -61,31 +61,31 @@ storePrep = (subtask) ->
 
     # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
     Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
-  .then (updateThreshold, lastModField, uuidField, photoIdField) ->
-    dataOptions = {minDate: updateThreshold, subLimit: numRowsToPagePhotos, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
-    if subtask.data.limit
-      dataOptions.searchOptions.limit = subtask.data.limit
+    .then (updateThreshold, lastModField, uuidField, photoIdField) ->
+      dataOptions = {minDate: updateThreshold, subLimit: numRowsToPagePhotos, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
+      if subtask.data.limit
+        dataOptions.searchOptions.limit = subtask.data.limit
 
-    handleChunk = (chunk) -> Promise.try () ->
-      if !chunk?.length
-        return
-      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
-      for row,i in chunk
-        chunk[i] =
-          data_source_uuid: row[uuidField]
-          photo_id: row[photoIdField]
-      jobQueue.queueSubsequentSubtask({
-        subtask
-        laterSubtaskName: "store"
-        stepNumOffset
-        manualData: {values: chunk, chunk: stepNumOffset, count: chunk.length}
-      })
-      .then () ->
-        # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
-        stepNumOffset++
+      handleChunk = (chunk) -> Promise.try () ->
+        if !chunk?.length
+          return
+        logger.debug () -> "Found #{chunk.length} updated rows in chunk"
+        for row,i in chunk
+          chunk[i] =
+            data_source_uuid: row[uuidField]
+            photo_id: row[photoIdField]
+        jobQueue.queueSubsequentSubtask({
+          subtask
+          laterSubtaskName: "store"
+          stepNumOffset
+          manualData: {values: chunk, chunk: stepNumOffset, count: chunk.length}
+        })
+        .then () ->
+          # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
+          stepNumOffset++
 
-    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
-    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+      logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
+      retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
     .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
     .catch errorHandlingUtils.isUnhandled, (error) ->
