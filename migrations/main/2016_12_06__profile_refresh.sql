@@ -1,0 +1,1 @@
+update config_keystore set key='profile_refresh_seconds', value='30' where key='pin_refresh_minutes';
