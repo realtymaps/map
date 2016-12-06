@@ -222,6 +222,7 @@ module.exports =
     byId: "#{apiBaseMailCampaigns}/:id"
     sendCampaign: "#{apiBaseMailCampaigns}/:id/sendCampaign"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/review"
+    #TODO: Why are the rest of these routes not a base of apiBaseMailCampaigns?
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"
