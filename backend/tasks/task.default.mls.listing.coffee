@@ -107,7 +107,7 @@ markUpToDate = (subtask) ->
   taskLogger = logger.spawn(mlsId)
   mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
   .then (uuidField) ->
-    dataOptions = {uuidField, minDate: 0, searchOptions: {subLimit: (subtask.data.subLimit||2500), Select: uuidField, offset: 1}}
+    dataOptions = {uuidField, minDate: 0, subLimit: (subtask.data.subLimit||2500), searchOptions: {Select: uuidField, offset: 1}}
     chunkNum = 0
     taskLogger.debug () -> "==================== getDataChunks (#{mlsId}): starting"
     retsService.getDataChunks mlsId, 'listing', dataOptions, (chunk) -> Promise.try () ->

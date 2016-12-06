@@ -61,7 +61,7 @@ storePrep = (subtask) ->
     # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
     Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
   .then (updateThreshold, lastModField, uuidField, photoIdField) ->
-    dataOptions = {minDate: updateThreshold, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
+    dataOptions = {minDate: updateThreshold, subLimit: numRowsToPagePhotos, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
     if subtask.data.limit
       dataOptions.searchOptions.limit = subtask.data.limit
 
@@ -92,7 +92,7 @@ storePrep = (subtask) ->
 
 store = (subtask) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
-  taskLogger.debug () -> "Page #{subtask.data.i}/#{subtask.data.of} Offset: #{subtask.data.offset} Count: #{subtask.data.count}"
+  taskLogger.debug () -> "Page #{subtask.data.chunk}, Count: #{subtask.data.count}"
   if !subtask?.data?.values.length
     taskLogger.debug () -> "No photos to store for #{subtask.task_name}"
     return
