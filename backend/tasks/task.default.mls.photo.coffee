@@ -84,7 +84,7 @@ storePrep = (subtask) ->
         # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
         stepNumOffset++
 
-    logger.debug () -> "Getting data chunks for #{mlsId}"
+    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
     retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
     .catch retsService.isMaybeTransientRetsError, (error) ->
       throw new SoftFail(error, "Transient RETS error; try again later")
