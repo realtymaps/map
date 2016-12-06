@@ -203,6 +203,8 @@ loadRawData = (subtask) ->
       s3account: awsService.buckets.BlackknightData
 
   .then (numRows) ->
+    if !numRows
+      return
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
