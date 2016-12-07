@@ -190,7 +190,7 @@ isUnique = (tableFn, whereClause, id, name = 'Entity') ->
 
   query = query.whereNot(id:id) if id?
 
-  logger.debug query.toString()
+  logger.debug -> query.toString()
 
   query.then singleRow
   .then (row) ->

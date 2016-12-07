@@ -124,6 +124,9 @@ getSecuritiesForSession = (sessionId) ->
 sessionLoginProcess = (req, res, user, opts={}) ->
   subscriptionSvc.getStatus user
   .then (subscription_status) ->
+    logger.debug -> "setting user"
+    logger.debug -> user
+
     req.user = user
     req.session.subscription = subscription_status
     userUtils.cacheUserValues(req)
