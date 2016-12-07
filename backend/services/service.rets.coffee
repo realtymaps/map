@@ -351,7 +351,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
               throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
             .then () ->
               if keepQuerying
-                searchIteration
+                searchIteration()
           .then () ->
             return total
           .catch rets.RetsReplyError, (err) ->
