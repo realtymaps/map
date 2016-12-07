@@ -204,7 +204,7 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
         if mergeData?
           _.extend(singleSubtask.data, mergeData)
         singleSubtask.task_data = freshTaskData
-        singleSubtask.task_step = "#{singleSubtask.task_name}_#{('00000'+(singleSubtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+        singleSubtask.task_step = "#{singleSubtask.task_name}_#{('0000000'+(singleSubtask.step_num||'FINAL__')).slice(-7)}"
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction: transaction)
         .insert singleSubtask
@@ -217,7 +217,7 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
         singleSubtask.step_num += stepNumOffset
       singleSubtask.data = subtaskData
       singleSubtask.task_data = freshTaskData
-      singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+      singleSubtask.task_step = "#{subtask.task_name}_#{('0000000'+(singleSubtask.step_num||'FINAL__')).slice(-7)}"
       singleSubtask.batch_id = batchId
       tables.jobQueue.currentSubtasks(transaction: transaction)
       .insert singleSubtask
