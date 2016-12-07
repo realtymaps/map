@@ -7,7 +7,8 @@ app.controller 'rmapsMapAreasCtrl', (
   $http,
   $log,
   rmapsDrawnUtilsService,
-  rmapsEventConstants) ->
+  rmapsEventConstants,
+  toastr) ->
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
   $log = $log.spawn("map:areas")
@@ -21,11 +22,15 @@ app.controller 'rmapsMapAreasCtrl', (
       if $scope.areas && !fromDrawing
         existingById = _.indexBy $scope.areas, 'properties.id'
         newById = _.indexBy data, 'properties.id'
-        $log.debug existingById
         newAreas = _.filter(data, (d) -> !existingById[d.properties.id])
         if newAreas.length
-          $log.debug newAreas
           $rootScope.$emit rmapsEventConstants.areas.addDrawItem, newAreas
+          areaToast = toastr.info "A new area was added by a collaborator", 'New Area Added',
+            closeButton: true
+            timeOut: 0
+            onHidden: (hidden) ->
+              toastr.clear areaToast
+
         removedAreas = _.filter($scope.areas, (d) -> !newById[d.properties.id])
         for area in removedAreas
           $rootScope.$emit rmapsEventConstants.areas.removeDrawItem, area
