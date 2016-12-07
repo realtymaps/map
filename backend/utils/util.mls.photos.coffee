@@ -36,18 +36,14 @@ imageStream = (object) ->
     eventLogger.debug -> event.headerInfo
     everSentData = true
 
-    if event.dataStream
+    stream = if event.dataStream
       event.dataStream
-      .once 'error', (err) ->
-        error = err
-      .pipe(retStream)
-
     else if event.headerInfo.location #YAY it is cached for us already
       request(event.headerInfo.location)
-      .pipe(retStream)
     else
       through()
-      .pipe(retStream)
+
+    stream.pipe(retStream)
 
   retStream
 
