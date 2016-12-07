@@ -12,17 +12,21 @@ email = (id, {tableFn, regex} = {}) ->
   if config.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN
     regex.push(VALIDATION.realtymapsEmail)
 
+  logger.debug -> "pre cls id: #{id}"
+
   id ?= clsFactory().getCurrentUserId()
+
+  logger.debug -> {id, regex}
 
   transform: [
     validators.string({regex})
-    validators.unique {
+    validators.unique({
       tableFn
       id
       name: 'email'
       clauseGenFn: (value) ->
         email: value
-    }
+    })
   ]
   required: true
 
