@@ -13,7 +13,7 @@ app.controller 'rmapsMapAreasCtrl', (
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
   $log = $log.spawn("map:areas")
 
-  getAll = ({cache, fromDrawing}) ->
+  getAreas = ({cache, fromDrawing} = {}) ->
     drawnShapesSvc.getAreasNormalized(cache)
     .then (data) ->
       $log.debug data
@@ -37,9 +37,11 @@ app.controller 'rmapsMapAreasCtrl', (
 
       $scope.areas = data
 
+  $scope.map.getAreas = _.throttle getAreas, 30000, leading: true, trailing: false
+
   $scope.areaListToggled = (isOpen) ->
     if isOpen
-      getAll({cache:false})
+      getAreas({cache:false})
     $rootScope.$emit rmapsEventConstants.areas.dropdownToggled, isOpen
 
   #
@@ -47,9 +49,9 @@ app.controller 'rmapsMapAreasCtrl', (
   #
 
   $scope.$onRootScope rmapsEventConstants.areas, () ->
-    getAll({cache:false,fromDrawing:true})
+    getAreas({cache:false,fromDrawing:true})
 
   #
   # Load the area list
   #
-  getAll({cache:false})
+  getAreas({cache:false})
