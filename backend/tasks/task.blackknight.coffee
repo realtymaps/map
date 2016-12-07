@@ -182,7 +182,7 @@ checkProcessQueue = (subtask) ->
 
 _queueDeleteData = (subtask, mergeData, numRows) ->
   numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
-  mergeData.fips_code = subtask.data.fips_code
+  mergeData.fips_code = subtask.data.fips_code || subtask.data.normalSubid
   mergeData.rawDeleteBatchId = subtask.batch_id
   jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "deleteData", mergeData})
 
