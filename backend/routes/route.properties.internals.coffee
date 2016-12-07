@@ -1,7 +1,7 @@
 logger = require('../config/logger').spawn('route:properties:internals')
 Promise = require 'bluebird'
 moment = require 'moment'
-
+_ = require 'lodash'
 profileService = require '../services/service.profiles'
 profileError = require '../utils/errors/util.error.profile'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
@@ -47,18 +47,24 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
 
 refreshPins = () ->
   (req, res, next) ->
-    # If cached profile is older than pin_refresh_minutes, load fresh pins
-    Promise.join keystoreSvc.cache.getValue('pin_refresh_minutes', namespace: 'time_limits'),
+    # If cached profile is older than profile_refresh_seconds, load fresh pins
+    Promise.join keystoreSvc.cache.getValue('profile_refresh_seconds', namespace: 'time_limits'),
       profileSvc.getCurrentSessionProfile(req.session),
-      (pin_refresh_minutes, profile) ->
-        logger.debug 'comparing', moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').format(),  moment.utc().format()
-        if moment(profile.rm_modified_time).add(pin_refresh_minutes, 'minutes').isBefore(moment.utc())
-          logger.debug "Profile is older than #{pin_refresh_minutes} minutes, reloading pins"
+      (profile_refresh_seconds, profile) ->
+        logger.debug 'comparing', moment(profile.rm_modified_time).add(profile_refresh_seconds, 'seconds').format(),  moment.utc().format()
+        if moment(profile.rm_modified_time).add(profile_refresh_seconds, 'seconds').isBefore(moment.utc())
+          logger.debug "Profile is older than #{profile_refresh_seconds} seconds, reloading profile"
           tables.user.project()
-          .select('pins')
-          .where('id', profile.project_id)
+          .innerJoin(tables.user.profile.tableName, "#{tables.user.project.tableName}.id", "#{tables.user.profile.tableName}.project_id")
+          .select('pins', 'favorites')
+          .where(
+            "#{tables.user.project.tableName}.id": profile.project_id
+            "#{tables.user.profile.tableName}.auth_user_id": req.user.id
+          )
           .then ([project]) ->
+            logger.debug "Found #{_.values(project.pins).length}, #{_.values(project.favorites).length}"
             profile.pins = project.pins
+            profile.favorites = project.favorites
             profile.rm_modified_time = moment.utc()
             next()
         else

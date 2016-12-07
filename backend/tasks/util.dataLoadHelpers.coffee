@@ -136,7 +136,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       .where(subset)
       .where(deleted: subtask.batch_id)
       .then (results) ->
-        logger.spawn(subtask.task_name).debug () -> "markForDeletes: #{results.length}"
+        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "markForDeletes #{JSON.stringify(subtask.data.subset||{})}: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
@@ -155,12 +155,12 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
     data_source_id: data_source_id || subtask.task_name
   _.extend(subset, subtask.data.subset)
 
-  # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.ensureTransaction transaction, 'main', (transaction) ->
     Promise.try () ->
       if deletes == DELETE.UNTOUCHED
         # in this mode, we delete all rows on this subset that don't have the current batch_id, because we assume this is
         # a full data sync, and if we didn't touch it that means it should be deleted
+        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting untouched finalized rows: #{JSON.stringify(subtask.data.subset||{})}"
         tables.finalized[tableProp](transaction: transaction)
         .where(subset)
         .whereNot(batch_id: subtask.batch_id)
@@ -168,6 +168,7 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
       else
         # in this mode, we're doing an incremental update, so every row has been handled individually, either with an
         # upsert, or with an indicated delete below
+        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> 'deleting indicated finalized rows'
         tables.finalized[tableProp](transaction: transaction, as: 'deleter')
         .where(data_source_id: data_source_id || subtask.task_name)
         .whereExists () ->
@@ -661,6 +662,11 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .then () ->
           if totalLines > 0
             promiseQuery("CREATE INDEX IF NOT EXISTS \"#{dataLoadHistory.raw_table_name}_rm_valid_idx\" ON \"#{dataLoadHistory.raw_table_name}\" (rm_valid)")
+            .catch analyzeValue.isKnexError, (err) ->
+              if err.code == '23505'
+                # this means we hit an error where the index exists, even though we specified IF NOT EXISTS; we can ignore
+                return
+              throw err
         .then () ->
           callback()
           if !hadError

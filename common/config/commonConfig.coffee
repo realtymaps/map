@@ -83,6 +83,10 @@ commonConfig =
     # note: consider the expoment of first `pow` is L + 1, and the exponent of the second `pow` is L, your random string will have length L
     getKey: () -> "#{Math.round((Math.pow(36, 17) - Math.random() * Math.pow(36, 16))).toString(36).slice(1)}.pdf"
 
+  plan:
+    PRO: 'pro'
+    STANDARD: 'standard'
+
   mail:
     # pricing formula for a letter
     getPrice: ({firstPage, extraPage, pages}) ->

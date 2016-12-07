@@ -13,6 +13,36 @@ coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true)
 
+_collectFipsMLS = (user, profile) -> Promise.try ->
+  permissions =
+    fips: []
+    mls: []
+
+  # Limit to FIPS codes and verified MLS for this user
+  permissions.fips.push(user.fips_codes...)
+  permissions.mls.push(user.mlses_verified...)
+
+  # Include by proxy MLS available to project owner
+  if profile?.parent_auth_user_id? && profile?.parent_auth_user_id != user.id
+    return tables.auth.user()
+      .select('mlses_verified')
+      .where('id', profile.parent_auth_user_id).then ([owner]) ->
+        logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
+        permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
+        permissions
+  logger.debug "@@@@ permissions @@@@"
+  logger.debug permissions
+
+  return permissions
+
+getFipsMLSForUser = (userid) ->
+  tables.auth.user()
+  .select(['id', 'fips_codes', 'mlses_verified'])
+  .where(id: userid)
+  .then ([user]) ->
+    _collectFipsMLS(user)
+
+
 getPermissions = (profile) -> Promise.try ->
   logger.debug () -> "Getting permissions..."
   tables.auth.user()
@@ -28,25 +58,7 @@ getPermissions = (profile) -> Promise.try ->
     if user.is_superuser
       return superuser: true
     else
-      permissions =
-        fips: []
-        mls: []
-
-      # Limit to FIPS codes and verified MLS for this user
-      permissions.fips.push(user.fips_codes...)
-      permissions.mls.push(user.mlses_verified...)
-
-      # Include by proxy MLS available to project owner
-      if profile.parent_auth_user_id? && profile.parent_auth_user_id != user.id
-        return tables.auth.user()
-          .select('mlses_verified')
-          .where('id', profile.parent_auth_user_id).then ([owner]) ->
-            logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
-            permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
-            permissions
-      logger.debug "@@@@ permissions @@@@"
-      logger.debug permissions
-      return permissions
+      _collectFipsMLS(user, profile)
 
 
 queryPermissions = (query, permissions = {}) ->
@@ -211,6 +223,7 @@ module.exports = {
   getDefaultQuery
   getFilterSummaryAsQuery
   cluster: internals
+  getFipsMLSForUser
   getPermissions
   queryPermissions
   scrubPermissions

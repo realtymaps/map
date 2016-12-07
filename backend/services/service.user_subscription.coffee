@@ -1,4 +1,5 @@
 _ = require 'lodash'
+config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -55,25 +56,35 @@ getPlan = (userId) ->
 # deprecated code, using subscription status instead of user_group for
 #   subscription-based access checks
 setPlan = (userId, plan) ->
-  tables.auth.m2m_user_group()
-  .update group_id: plan
-  .where user_id: userId
-  .then (result) ->
-    getPlan userId
-    .then (newPlan) ->
-      newPlan
+  getSubscription(userId)
+  .then (res) ->
+
+    # defensive checks
+    if res.canceled_at
+      throw new PartiallyHandledError(err, "Current subscription is cancelled, please re-enroll.")
+
+    if res.plan?.id == config.SUBSCR.PLAN.PRO
+      throw new PartiallyHandledError(err, "Current subscription is already premium status.")
+
+    stripe.customers.cancelSubscription(res.customer, res.id)
+    .then (cancelled) ->
+      stripe.subscriptions.create({customer: res.customer, plan: config.SUBSCR.PLAN.PRO})
+      .then (created) ->
+        tables.auth.user()
+        .update stripe_subscription_id: created.id
+        .where id: userId
+        .then () ->
+          created
 
 getStatus = (user) -> Promise.try () ->
-  if user.is_super
-    return 'pro'
   if !user.stripe_customer_id?  # if no subscription exists...
     if !user.is_staff  # ... and if not a staff, it's a subaccount
       return null
     permSvc.getPermissionsForUserId user.id
     .then (results) ->
       # return subscription level for the staff if granted a perm for it
-      return 'pro' if results.access_premium
-      return 'standard' if results.access_standard
+      return config.SUBSCR.PLAN.PRO if results.access_premium
+      return config.SUBSCR.PLAN.STANDARD if results.access_standard
       return null
 
   else # a stripe subscription exists, retrieve status

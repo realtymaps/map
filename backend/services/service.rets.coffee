@@ -296,7 +296,9 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
       total = 0
       overlap = 0
       lastId = null
+      logger.spawn(mlsId).debug () -> "buildSearchQuery(#{JSON.stringify(schemaInfo)}, #{utcOffset}, #{JSON.stringify(opts)})"
       searchQuery = internals.buildSearchQuery(schemaInfo, utcOffset, opts)
+      logger.spawn(mlsId).debug () -> "searchQuery: #{searchQuery}"
       searchOptions =
         count: 0
       _.extend(searchOptions, opts.searchOptions)

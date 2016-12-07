@@ -1,6 +1,5 @@
 logger = require('../config/logger').spawn('map:details:combined')
 validation = require '../utils/util.validation'
-{validators} = validation
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -8,7 +7,6 @@ dbs = require '../config/dbs'
 _ = require 'lodash'
 mlsConfigSvc = require './service.mls_config'
 Promise = require 'bluebird'
-moment = require 'moment'
 transforms = require('../utils/transforms/transforms.properties').detail
 propertyUtils =  require '../utils/util.properties'
 
@@ -103,7 +101,8 @@ getProperty = ({query, profile}) ->
 
 # Retrieve a set of properties by rm_property_id (filter data only)
 getProperties = ({query, profile, trump}) ->
-  logger.debug -> {query, trump}
+  logger.debug -> {query, trump, profile}
+
   validation.validateAndTransform query, transforms.properties
   .then (queryParams) ->
     queryParams.columns = 'filter'

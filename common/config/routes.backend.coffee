@@ -131,6 +131,7 @@ module.exports =
     getAll: "#{apiBaseFipsCodes}/state/:state"
     getAllMlsCodes: "#{apiBaseFipsCodes}/mls"
     getAllSupportedMlsCodes: "#{apiBaseFipsCodes}/mlsSupported"
+    getForUser: "#{apiBaseFipsCodes}/user"
   account_use_types:
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes
@@ -221,6 +222,7 @@ module.exports =
     byId: "#{apiBaseMailCampaigns}/:id"
     sendCampaign: "#{apiBaseMailCampaigns}/:id/sendCampaign"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/review"
+    #TODO: Why are the rest of these routes not a base of apiBaseMailCampaigns?
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"

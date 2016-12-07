@@ -151,7 +151,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       status: 'running'
       status_changed: dbs.get('main').raw('NOW()')
 
-queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try () ->
+queueSubtasks = ({transaction, batchId, subtasks, concurrency, stepNumOffset}) -> Promise.try () ->
   if !subtasks?.length
     return 0
   internals.checkTask(transaction, batchId, subtasks[0].task_name)
@@ -162,18 +162,18 @@ queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try (
       logger.spawn("task:#{subtasks[0].task_name}").debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
       return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
-      queueSubtask({transaction, batchId, taskData, subtask, concurrency})
+      queueSubtask({transaction, batchId, taskData, subtask, concurrency, stepNumOffset})
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
 # convenience function to get another subtask config and then enqueue it based on the current subtask
-queueSubsequentSubtask = ({transaction, subtask, laterSubtaskName, manualData, replace, concurrency}) ->
+queueSubsequentSubtask = ({transaction, subtask, laterSubtaskName, manualData, replace, concurrency, stepNumOffset}) ->
   subtaskName = "#{subtask.task_name}_#{laterSubtaskName}"
   internals.getSubtaskConfig(subtaskName, subtask.task_name, transaction)
   .then (laterSubtask) ->
-    queueSubtask({transaction, batchId: subtask.batch_id, subtask: laterSubtask, manualData, replace, concurrency})
+    queueSubtask({transaction, batchId: subtask.batch_id, subtask: laterSubtask, manualData, replace, concurrency, stepNumOffset})
 
-queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, concurrency}) -> Promise.try () ->
+queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, concurrency, stepNumOffset}) -> Promise.try () ->
   if !subtask.active
     logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue inactive subtask for batchId #{batchId}: #{subtask.name}"
     return 0
@@ -198,6 +198,8 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
         delete singleSubtask.active
         if concurrency
           singleSubtask.step_num += Math.floor(index/concurrency)
+        if stepNumOffset
+          singleSubtask.step_num += stepNumOffset
         singleSubtask.data = data
         if mergeData?
           _.extend(singleSubtask.data, mergeData)
@@ -211,6 +213,8 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
     else
       singleSubtask = _.clone(subtask)
       delete singleSubtask.active
+      if stepNumOffset
+        singleSubtask.step_num += stepNumOffset
       singleSubtask.data = subtaskData
       singleSubtask.task_data = freshTaskData
       singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
@@ -330,16 +334,16 @@ getQueueNeeds = () ->
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency}) ->
+queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency, stepNumOffset}) ->
   internals.getSubtaskConfig("#{subtask.task_name}_#{laterSubtaskName}", subtask.task_name, transaction)
   .then (laterSubtask) ->
-    queuePaginatedSubtask({transaction, batchId: subtask.batch_id, totalOrList, maxPage, subtask: laterSubtask, mergeData, concurrency})
+    queuePaginatedSubtask({transaction, batchId: subtask.batch_id, totalOrList, maxPage, subtask: laterSubtask, mergeData, concurrency, stepNumOffset})
 
-queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData, concurrency}) -> Promise.try () ->
+queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData, concurrency, stepNumOffset}) -> Promise.try () ->
   data = internals.buildQueuePaginatedSubtaskDatas {totalOrList, maxPage, mergeData}
   if !data
     return
-  queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency})
+  queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency, stepNumOffset})
 
 runWorker = (queueName, id, quit=false) ->
   if cluster.worker?
