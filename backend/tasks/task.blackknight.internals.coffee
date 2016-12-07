@@ -298,6 +298,10 @@ getProcessInfo = (subtask, subtaskStartTime) ->
         for action in [REFRESH, UPDATE]
           for dataType in [TAX, DEED, MORTGAGE]
             # need to force re-processing of the raw delete data so we can delete for the current FIPS
+            if dataType == TAX && action == REFRESH
+              # we need to skip this, because we're not keeping historical tax records and so we manage our own tax
+              # refresh deletes as part of the loadRawData subtask for the refresh data
+              continue
             processInfo[DELETE].push
               action: action
               dataType: dataType
@@ -310,6 +314,11 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       # (i.e. we've started on a new date, and so need to load the delete files and queue the available FIPS codes)
       fipsMap = _.extend(table1.fipsMap, table2.fipsMap, table3.fipsMap)
       processInfo.fipsQueue = _.keys(fipsMap).sort()
+      if Array.isArray(subtask.data?.fips_codes)
+        processInfo.fipsQueue = _.intersection(processInfo.fipsQueue, subtask.data.fips_codes)
+      else if subtask.data?.fips_codes
+        processInfo.fipsQueue = _.filter processInfo.fipsQueue, (fips) ->
+          (new RegExp(subtask.data.fips_codes)).test(fips)
       processInfo.fips = processInfo.fipsQueue[0]
       processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'normalSubid', processInfo.fips)
       processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'normalSubid', processInfo.fips)
@@ -382,9 +391,6 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
       .then (count) ->
         count?[0]?.count
     .then (numRows) ->
-      if mergeData.dataType == TAX && mergeData.action == REFRESH
-        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
-        numRows = 1
       if !numRows
         return
       jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})

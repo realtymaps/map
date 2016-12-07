@@ -42,6 +42,12 @@ rmapsMlsService
       return
     _formatMLS(entity.mls, entity.full_name)
 
+  $scope.fipsView = (entity) ->
+    if !entity
+      return
+    _formatMLS(entity.fips_code, entity.county)
+
+
   # for uib-typeahead-input-formatter since the typeahead can not figure out
   # the difference between ng-model value and label/view
   $scope.mlsInputFormatter = (mlsCode) ->
@@ -200,6 +206,11 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     change: () ->
       delete $scope.user.mls_code
 
+  $scope.supportedFips =
+    show: true
+    change: () ->
+      delete $scope.user.fips_code
+
   $scope.supportedStates =
     show: true
     change: () ->
@@ -242,6 +253,9 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     $scope.view.supportedCode = _.any $scope.supportedMlsCodes, (mls) ->
       mlsToMatch == mls.mls
 
+  $scope.$watch 'user.fips_code', (code) ->
+    $scope.view.supportedCode = _.any $scope.mlsFipsCounties, (mls) ->
+      code == mls.fips_code
 
   $log.debug $scope
 

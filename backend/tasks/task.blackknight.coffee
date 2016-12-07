@@ -180,6 +180,18 @@ checkProcessQueue = (subtask) ->
     internals.useProcessInfo(subtask, processInfo)
 
 
+_queueDeleteData = (subtask, mergeData, numRows) ->
+  numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
+  mergeData.fips_code = subtask.data.fips_code || subtask.data.normalSubid
+  mergeData.rawDeleteBatchId = subtask.batch_id
+  jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "deleteData", mergeData})
+
+_queueNormalizeData = (subtask, mergeData, numRows) ->
+  mergeData.startTime = subtask.data.startTime
+  numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
+  jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "normalizeData", mergeData})
+
+
 loadRawData = (subtask) ->
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
@@ -191,25 +203,21 @@ loadRawData = (subtask) ->
       s3account: awsService.buckets.BlackknightData
 
   .then (numRows) ->
+    if !numRows
+      return
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
       normalSubid: subtask.data.normalSubid
     if subtask.data.fileType == internals.DELETE
-      laterSubtaskName = "deleteData"
-      numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
-      mergeData.fips_code = subtask.data.fips_code
-      mergeData.rawDeleteBatchId = subtask.batch_id
-      if mergeData.dataType == internals.TAX && mergeData.action == internals.REFRESH
-        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
-        numRows = 1
+      _queueDeleteData(subtask, mergeData, numRows)
     else
-      laterSubtaskName = "normalizeData"
-      mergeData.startTime = subtask.data.startTime
-      numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
-
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
+      _queueNormalizeData(subtask, mergeData, numRows)
+      .then () ->
+        if subtask.data.action == internals.REFRESH && subtask.data.dataType == internals.TAX
+          delete mergeData.startTime
+          _queueDeleteData(subtask, mergeData, 1)
 
 
 cleanup = (subtask) ->

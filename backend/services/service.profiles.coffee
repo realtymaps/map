@@ -103,8 +103,10 @@ getClientProfiles = (auth_user_id) -> Promise.try () ->
 getCurrentSessionProfile = (session) ->
   try
     if !session?
+      logger.debug -> 'no session'
       req = clsFactory().namespace.get 'req'
       if !req? || !('session' of req)
+        logger.debug -> 'no session in req'
         rmapsNamespace = process.namespaces.rmaps
         logger.error "Unable to fetch `req` from namespace object: #{rmapsNamespace}"
         throw new profileErr.CurrentProfileError("Unable to acquire `req` from rmaps namespace.")
@@ -120,6 +122,9 @@ getCurrentSessionProfile = (session) ->
     logger.error "session: #{JSON.stringify(_.omit(session,['profiles']))}"
     logger.error "session profile ids: #{JSON.stringify(Object.keys(session.profiles))}"
     throw new profileErr.CurrentProfileError("Error while acquiring current profile.")
+
+  logger.debug -> "returning profile"
+  logger.debug -> profile
   profile
 
 # The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be

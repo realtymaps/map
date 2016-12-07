@@ -13,7 +13,7 @@ class FipsCodeService extends ServiceCrud
     sqlHelpers.whereIn(@dbFn(), 'code', fipsCodes)
 
   getCollectiveCenter: ({fipsCodes, mlses}) ->
-    if !mlses?
+    if !mlses?.length
       #st_collect aggregates all points
       #then we get the center of those via st_centroid
       rawSelect = @dbFn.raw 'st_asgeojson(st_centroid(st_collect(??)))::json as geo_json', 'geometry_center_raw'
