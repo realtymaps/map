@@ -136,7 +136,6 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       .where(subset)
       .where(deleted: subtask.batch_id)
       .then (results) ->
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "markForDeletes #{JSON.stringify(subtask.data.subset||{})}: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
@@ -160,7 +159,6 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
       if deletes == DELETE.UNTOUCHED
         # in this mode, we delete all rows on this subset that don't have the current batch_id, because we assume this is
         # a full data sync, and if we didn't touch it that means it should be deleted
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting untouched finalized rows: #{JSON.stringify(subtask.data.subset||{})}"
         tables.finalized[tableProp](transaction: transaction)
         .where(subset)
         .whereNot(batch_id: subtask.batch_id)
@@ -168,7 +166,6 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
       else
         # in this mode, we're doing an incremental update, so every row has been handled individually, either with an
         # upsert, or with an indicated delete below
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> 'deleting indicated finalized rows'
         tables.finalized[tableProp](transaction: transaction, as: 'deleter')
         .where(data_source_id: data_source_id || subtask.task_name)
         .whereExists () ->

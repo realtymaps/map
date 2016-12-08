@@ -161,7 +161,7 @@ updateProcessInfo = (newProcessInfo) ->
     if newProcessInfo.other_values
       _.extend(processInfo, newProcessInfo.other_values)
 
-    processInfo[DATES_QUEUED] = _.uniq(processInfo[DATES_QUEUED]).sort()
+    processInfo[DATES_QUEUED] = _.filter(_.uniq(processInfo[DATES_QUEUED]), (v) -> v?).sort()
 
     Promise.try () ->
       if !newProcessInfo.fips_code?
@@ -254,7 +254,7 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       processInfo.deleteBatchId = oldProcessInfo[DELETE_BATCH_ID]
       logger.debug () -> "processing date/fips: #{processInfo.date}/#{processInfo.fips}"
     else if oldProcessInfo[DATES_QUEUED].length > 0
-      nextDate = _.reduce(oldProcessInfo[DATES_QUEUED], (min, val) -> if min < val then min else val)
+      nextDate = _.reduce(oldProcessInfo[DATES_QUEUED], (min, val) -> if !val? || min < val then min else val)
       if oldProcessInfo[MAX_DATE] && nextDate > oldProcessInfo[MAX_DATE]
         logger.debug () -> "next date would be #{nextDate}, GTFO due to maxDate of #{oldProcessInfo[MAX_DATE]}"
         return processInfo
