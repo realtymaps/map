@@ -236,10 +236,8 @@ deleteData = (subtask) ->
     else
       return dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
-    require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "found #{rows.length} delete rows for #{subtask.data.action}-#{subtask.data.dataType}"
     Promise.each rows, (row) ->
       if subtask.data.action == internals.REFRESH
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting all normalized rows for #{row['FIPS Code']} (#{subtask.data.dataType})"
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
