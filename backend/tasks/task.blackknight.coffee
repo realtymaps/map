@@ -365,8 +365,15 @@ ready = () ->
   keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_INFO, defaultValues: processDefaults)
   .then (processInfo) ->
     # definitely run task if there are new dates and/or FIPS to process
-    if processInfo[internals.DATES_QUEUED].length > 0 || processInfo[internals.FIPS_QUEUED].length > 0
+    if processInfo[internals.FIPS_QUEUED].length > 0
       return true
+    if processInfo[internals.DATES_QUEUED].length > 0
+      if !processInfo[internals.MAX_DATE]
+        return true
+      nextDate = _.reduce(processInfo[internals.DATES_QUEUED], (min, val) -> if min < val then min else val)
+      if nextDate <= processInfo[internals.MAX_DATE]
+        return true
+      return false
 
     keystore.getValuesMap(internals.BLACKKNIGHT_COPY_INFO, defaultValues: copyDefaults)
     .then (copyDates) ->
