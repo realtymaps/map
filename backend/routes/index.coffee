@@ -35,21 +35,16 @@ wrappedCLS = (req, res, promisFnToWrap) ->
 
 module.exports = (app, sessionMiddlewares) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method}) handleQuery=#{route.handleQuery}"
+    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method}) #{if route.handleQuery then 'handleQuery' else ''}"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
         Promise.try () ->
           logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
           if route.handleQuery
-            logger.debug "calling handleQuery"
-            x = route.handle(req, res, next)
-            # .catch (err) ->
-            #   logger.debug "Error on route.handle"
-            #   throw err
-            routeHelpers.handleQuery x, res
+            result = route.handle(req, res, next)
+            routeHelpers.handleQuery result, res
           else
-            logger.debug "skipping handleQuery"
             route.handle(req, res, next)
         .catch isUnhandled, (error) ->
           msg = [

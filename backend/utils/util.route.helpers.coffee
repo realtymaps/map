@@ -9,7 +9,6 @@ logger = require('../config/logger').spawn('util.route.helpers')
 clsFactory = require './util.cls'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
-
 class NotFoundError extends Error
 
 methodExec = (req, methods, next) ->
@@ -50,21 +49,12 @@ handleQuery = (q, res, lHandleQuery) ->
       logger.error("#{analyzeValue.getSimpleMessage(result)}")
       throw err
 
-
-# This could be replaced by calls to handleQuery
+# TODO: Could probably be replaced by handleQuery
 handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->
     if isDirect
       return toExec(req, res, next)
-
     handleQuery toExec(req, res, next), res
-
-# wrapHandleRoutes = ({handles, isDirect}) ->
-#   for key, origFn of handles
-#     do (key, origFn) ->
-#       handles[key] = (req, res, next) ->
-#         handleRoute req, res, next, origFn, isDirect
-#   handles
 
 #http://stackoverflow.com/questions/10183291/how-to-get-the-full-url-in-express
 fullUrl = (req, pathname) ->
@@ -84,6 +74,5 @@ module.exports =
   NotFoundError: NotFoundError
   handleQuery: handleQuery
   handleRoute: handleRoute
-  # wrapHandleRoutes: wrapHandleRoutes
   fullUrl: fullUrl
   clsFullUrl: clsFullUrl
