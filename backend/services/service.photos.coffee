@@ -8,6 +8,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 internals = require './service.photos.internals'
 mlsConfigService = require './service.mls_config'
 errorUtils = require '../utils/errors/util.error.partiallyHandledError'
+{NoPhotoObjectsError} = require '../utils/errors/util.errors.photos'
 probe = require 'probe-image-size'
 
 getMetaData = (opts) -> Promise.try () ->
@@ -28,7 +29,7 @@ getMetaData = (opts) -> Promise.try () ->
     meta = row?.photos?[opts.image_id]
 
     if !meta?.url
-      throw new Error 'meta.url is not found!'
+      throw new NoPhotoObjectsError(quiet: true, "Photo not found")
 
     # logger.debug meta
     meta

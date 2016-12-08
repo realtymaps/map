@@ -4,10 +4,10 @@ transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
-{HttpStatusCodeError, BadContentTypeError} = require '../utils/errors/util.errors.photos'
+{HttpStatusCodeError, BadContentTypeError, NoPhotoObjectsError} = require '../utils/errors/util.errors.photos'
+ExpectedSingleRowError = require '../utils/errors/util.error.expectedSingleRow'
 config = require '../config/config'
-{PartiallyHandledError, isUnhandled, QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
-
+{PartiallyHandledError, isUnhandled, QuietlyHandledError, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 
 ### NOTE:
 
@@ -73,3 +73,5 @@ module.exports =
         next new ExpressResponse(alert: {msg: err.message}, {status: err.statusCode, quiet: err.quiet})
       .catch BadContentTypeError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNSUPPORTED_MEDIA_TYPE, quiet: err.quiet})
+      .catch NoPhotoObjectsError, ExpectedSingleRowError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})
