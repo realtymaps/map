@@ -88,8 +88,6 @@ describe "route.onboarding", ->
         logger.debug.magenta "CATCH!!!!!!!!!!!!!!!!!!"
         @transactionCatchStub()
 
-    onboardingRoute.__set__ 'wrapHandleRoutes', ({handles}) ->
-      handles
     onboardingRoute.__set__ 'dbs',
       transaction: @transaction
 
@@ -97,7 +95,7 @@ describe "route.onboarding", ->
       validateAndTransformRequestStub()
       req
 
-    subject = onboardingRoute.__get__ 'handles'
+    subject = onboardingRoute
 
 
 
@@ -132,7 +130,7 @@ describe "route.onboarding", ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
 
-        subject.createUser(@mockReq, @res, @next)
+        subject.createUser.handle(@mockReq, @res, @next)
         .then =>
           @transactionCatchStub.called.should.be.true
 
@@ -150,7 +148,7 @@ describe "route.onboarding", ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
 
-        subject.createUser(@mockReq, @res, @next)
+        subject.createUser.handle(@mockReq, @res, @next)
         .then =>
           @transactionThenStub.called.should.be.true
 
@@ -171,7 +169,7 @@ describe "route.onboarding", ->
             Promise.resolve()
 
 
-        subject.createUser(@mockReq, @res, @next)
+        subject.createUser.handle(@mockReq, @res, @next)
         .then =>
           @transactionCatchStub.called.should.be.true
 
@@ -188,6 +186,6 @@ describe "route.onboarding", ->
           setNewUserMapPosition: () ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
-        subject.createUser(@mockReq, @res, @next)
+        subject.createUser.handle(@mockReq, @res, @next)
         .then =>
           @transactionThenStub.called.should.be.true
