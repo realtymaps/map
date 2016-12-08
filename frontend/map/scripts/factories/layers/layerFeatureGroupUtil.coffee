@@ -25,7 +25,7 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
       if !geojsonModel?.properties?.id?
         return
       for key, val of featureGroup._layers
-        if val.model.properties?.id == geojsonModel.properties.id
+        if val.model?.properties?.id == geojsonModel.properties.id
           item = val
           break
       item

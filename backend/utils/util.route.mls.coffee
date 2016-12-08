@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn('routes:mls:internals')
+logger = require('../config/logger').spawn('util:route:mls')
 ExpressResponse =  require './util.expressResponse'
 validation = require './util.validation'
 retsService = require '../services/service.rets'
@@ -55,18 +55,18 @@ handleImages = ({res, next, object, mlsId, photoIds}) ->
   }
 
 
-handleRetsObjectResponse = (res, next, photoIds, mlsId, object) ->
+handleRetsObjectResponse = ({res, next, photoIds, mlsId, object}) ->
   opts = {res, next, photoIds, mlsId, object}
 
-  logger.debug opts.object.headerInfo, true
+  logger.debug -> opts.object.headerInfo
 
   if isSingleImage(opts.photoIds)
     return handleImage(opts)
   handleImages(opts)
 
 
-getPhoto = ({entity, res, next, photoType}) ->
-  logger.debug entity
+getPhoto = ({entity, res, next, photoType, objectsOpts}) ->
+  logger.debug -> {entity, photoType, objectsOpts}
 
   {photoIds, mlsId, databaseId} = entity
 
@@ -78,9 +78,13 @@ getPhoto = ({entity, res, next, photoType}) ->
     databaseName:databaseId
     photoIds
     photoType
+    objectsOpts
   })
   .then (object) ->
-    handleRetsObjectResponse(res, next, photoIds, mlsId, object)
+    logger.debug -> "object"
+    logger.debug -> object
+
+    handleRetsObjectResponse({res, next, photoIds, mlsId, object})
   .catch validation.DataValidationError, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.BAD_REQUEST, quiet: error.quiet})
   .catch photoErrors.isNotFound, (error) ->

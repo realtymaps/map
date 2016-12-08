@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn("validation:object")
 validateAndTransform = require './util.impl.validateAndTransform'
 
 module.exports = (options = {}) ->
@@ -9,6 +9,7 @@ module.exports = (options = {}) ->
     if !values
       return null
     if options.json
+      logger.debug -> values
       values = JSON.parse values
     if options.pluck
       return values[options.pluck]
