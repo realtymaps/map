@@ -45,6 +45,7 @@ describe "task.blackknight.internal", () ->
           "#{bkServiceInternals.DATES_COMPLETED}": ['19800100']
           "#{bkServiceInternals.FIPS_QUEUED}": ['22222']
           "#{bkServiceInternals.CURRENT_PROCESS_DATE}": '19800101'
+          "#{bkServiceInternals.MAX_DATE}": null
         done()
 
     it 'should pop fips and date from queues if last fips', (done) ->
