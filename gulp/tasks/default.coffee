@@ -18,6 +18,8 @@ gulp.task 'mapAssets', gulp.series 'angular', 'otherAssets'
 
 gulp.task 'adminAssets', gulp.series 'angularAdmin', 'otherAssets'
 
+gulp.task 'adminAssetsWatch', gulp.series 'angularAdmin', 'otherAssets', 'angularWatchAdmin'
+
 gulp.task 'frontendAssets', gulp.series 'mapAssets', 'angularAdmin'
 
 gulp.task 'frontendAssetsWatch', gulp.series 'frontendAssets', 'watch_all_front'

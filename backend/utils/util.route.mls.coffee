@@ -7,7 +7,7 @@ photoUtil = require './util.mls.photos'
 {PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 httpStatus = require '../../common/utils/httpStatus'
 photoErrors = require './errors/util.errors.photos'
-RetsError =  require 'rets-client'
+{RetsError} =  require 'rets-client'
 
 
 hasNoStar = (photoIds) ->
