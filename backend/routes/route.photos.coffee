@@ -1,6 +1,5 @@
 photosService = require '../services/service.photos'
 logger = require('../config/logger').spawn('route:photos')
-{mergeHandles, wrapHandleRoutes} = require '../utils/util.route.helpers'
 transforms = require '../utils/transforms/transforms.photos'
 {validateAndTransformRequest} = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
@@ -28,10 +27,10 @@ _getContentType = (payload) ->
   fileExt = splitted[splitted.length - 1]
   "image/#{fileExt}"
 
-handles = wrapHandleRoutes
-  isDirect: true
-  handles:
-    getResized: (req, res, next) ->
+module.exports =
+  getResized:
+    method: 'get'
+    handle: (req, res, next) ->
       validateAndTransformRequest req, transforms.getResized
       .then (validReq) ->
         #TODO might want to consider an enum of width heights to allow
@@ -77,8 +76,3 @@ handles = wrapHandleRoutes
         next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNSUPPORTED_MEDIA_TYPE, quiet: err.quiet})
       .catch (err) ->
         next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})
-
-
-
-module.exports = mergeHandles handles,
-  getResized: method: 'get'

@@ -10,6 +10,7 @@ status = require '../../common/utils/httpStatus'
 {InActiveUserError} = require '../utils/errors/util.errors.userSession'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+routeHelpers = require '../utils/util.route.helpers'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -34,13 +35,22 @@ wrappedCLS = (req, res, promisFnToWrap) ->
 
 module.exports = (app, sessionMiddlewares) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method})"
+    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} initialized (#{route.method}) handleQuery=#{route.handleQuery}"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
         Promise.try () ->
           logger.debug () -> "Express router processing  #{req.method} #{req.url}..."
-          route.handle(req, res, next)
+          if route.handleQuery
+            logger.debug "calling handleQuery"
+            x = route.handle(req, res, next)
+            # .catch (err) ->
+            #   logger.debug "Error on route.handle"
+            #   throw err
+            routeHelpers.handleQuery x, res
+          else
+            logger.debug "skipping handleQuery"
+            route.handle(req, res, next)
         .catch isUnhandled, (error) ->
           msg = [
             "****************** add better error handling code to cover this error! ******************"

@@ -10,6 +10,7 @@ createRoute = (routeId, moduleId, backendRoutes, options) ->
     method: options.method || 'get'
     middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
     order: options.order || 0
+    handleQuery: options.handleQuery
   if route.path and not route.handle
     throw new Error "route: #{moduleId}.#{routeId} has no handle"
   if route.handle and not route.path
