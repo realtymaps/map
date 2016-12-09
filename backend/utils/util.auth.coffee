@@ -69,8 +69,6 @@ ignoreThisMethod = (thisMethod, methods) ->
 setSessionCredentials = (req, res) ->
   getSessionUser(req).then (user) ->
     # set the user on the request
-    logger.debug -> "setting user"
-    logger.debug -> _.omit user, "password"
     req.user = user
     if req.user
       return userUtils.cacheUserValues(req)
