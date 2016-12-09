@@ -353,7 +353,7 @@ useProcessInfo = (subtask, processInfo) ->
       "#{CURRENT_PROCESS_DATE}": processInfo.date
   dbs.transaction 'main', (transaction) ->
     dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'cleanup', manualData: newProcessInfo, replace: true})
-    if !processInfo.hasFiles
+    if !processInfo.hasFiles || !processInfo.fips
       return dates
 
     keystore.setValue(DELETED_FIPS, false, {namespace: BLACKKNIGHT_PROCESS_INFO, transaction})
