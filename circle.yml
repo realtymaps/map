@@ -2,7 +2,7 @@ machine:
   # pre:
   #   - mkdir ~/.yarn-cache
   node:
-    version: v4.6.1
+    version: v4.7.0
 
 
 # circleci

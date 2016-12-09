@@ -27,6 +27,9 @@ rmapsMainOptions) ->
     #This appears like your breaking single serving principal (one place to look)
     #However, it is not because the psuedo permissions below is being added so that the normal permissions work flow
     #works as is via route.coffee "permissionsRequired".
+    if !_identity?.permissions?
+      return
+
     for name in [
       "isSubscriber"
       "isProjectEditor"
