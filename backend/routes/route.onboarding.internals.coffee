@@ -132,17 +132,15 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
         .insert({auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id, is_verified})
     )
 
-  Promise.all promises
-  .then () ->
+  Promise.all(promises).then () ->
     logger.debug -> "PRE: setNewUserMapPosition"
     setNewUserMapPosition({authUser, transaction})
-    logger.debug -> "POST: setNewUserMapPosition"
+    .then ->
+      logger.debug -> "POST: setNewUserMapPosition"
   .then () ->
     logger.debug -> "Returning authUser"
     logger.debug -> authUser
     authUser
-
-
 
 module.exports = {
   createNewUser
