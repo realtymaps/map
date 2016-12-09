@@ -1,8 +1,15 @@
 app = require '../../app.coffee'
 replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
 module.exports = app
+_ = require 'lodash'
 
-app.controller 'rmapsUserPaymentMethodCtrl', ($scope, $log, $uibModal, stripe, rmapsPaymentMethodService, rmapsCreditCardService) ->
+app.controller 'rmapsUserPaymentMethodCtrl', (
+$scope
+$log
+$uibModal
+stripe
+rmapsPaymentMethodService) ->
+
   $log = $log.spawn("map:userPaymentMethod")
 
   $scope.payment = null

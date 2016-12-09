@@ -1,6 +1,7 @@
 ###global: rangy###
 app = require '../app.coffee'
 _ = require 'lodash'
+Case = require 'case'
 
 ###
   Docs for reference and to maintain with this file:
@@ -108,11 +109,31 @@ restrictElement = (scope, element, attrs, options) ->
 
 # return an options object parsed from directive attribute value
 getOptions = (flags = "") ->
-  options =
-    disable: /disable/.test flags
-    noModal: /^(?=.*disable)(?=.*noModal).*$/.test flags # noModal used with `disable` option (any order)
-    hide: /hide/.test flags
-    omit: !flags # default, expect something on element like `ng-if="false"`
+  #TODO: allow message for message override
+  disable: /disable/.test flags
+  noModal: /^(?=.*disable)(?=.*noModal).*$/.test flags # noModal used with `disable` option (any order)
+  hide: /hide/.test flags
+  omit: !flags || /omit/.test(flags)# default, expect something on element like `ng-if="false"`
+
+
+link = ({name, runPerms, $uibModal, $compile, message}) -> (scope, element, attrs) ->
+  dashName = Case.kebab(name)
+  if !runPerms()
+
+    # options and services to pass around
+    optionalFlags = if attrs[name] == dashName then "" else attrs[name]
+    options = _.merge({message, $uibModal}, getOptions(optionalFlags))
+
+    # restriction logic
+    restrictElement(scope, element, attrs, options)
+
+  # suppress recursive calls, then compile
+  # NOTE removeAttribute does not exist when we are in ng-repeat
+  # ng-repeat needs to delay the complile / removal to post ng-repeat compile
+  if attrs[name]? && element[0]?.removeAttribute?
+    element.removeAttr(dashName)
+
+  $compile(element)(scope)
 
 
 # require the logged user to be a designated editor on current project
@@ -120,21 +141,13 @@ app.directive 'rmapsRequireProjectEditor', ($rootScope, $log, $compile, $uibModa
   restrict: 'A'
   terminal: true
   priority: 1000
-  link: (scope, element, attrs) ->
-    if !rmapsPrincipalService.isProjectEditor()
-
-      # options and services to pass around
-      optionalFlags = if attrs.rmapsRequireProjectEditor == 'rmaps-require-project-editor' then "" else attrs.rmapsRequireProjectEditor
-      options = _.merge getOptions(optionalFlags),
-        message: "You must be the editor of your current project to do that."
-        $uibModal: $uibModal
-
-      # restriction logic
-      restrictElement(scope, element, attrs, options)
-
-    # suppress recursive calls, then compile
-    element.removeAttr('rmaps-require-project-editor')
-    $compile(element)(scope)
+  link: link({
+    name: 'rmapsRequireProjectEditor'
+    message: "You must be the editor of your current project to do that."
+    runPerms: () -> rmapsPrincipalService.isProjectEditor()
+    $compile
+    $uibModal
+  })
 
 
 # require the logged user to be an active subscriber
@@ -142,19 +155,23 @@ app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $uibModal, 
   restrict: 'A'
   terminal: true
   priority: 1000
-  link: (scope, element, attrs) ->
-    if !rmapsPrincipalService.isSubscriber()
+  link: link({
+    name: 'rmapsRequireSubscriber'
+    message: "You must have a paid subscription to do that."
+    runPerms: () -> rmapsPrincipalService.isSubscriber()
+    $compile
+    $uibModal
+  })
 
-      # options and services to pass around
-      optionalFlags = if attrs.rmapsRequireSubscriber == 'rmaps-require-subscriber' then "" else attrs.rmapsRequireSubscriber
-      options = _.merge getOptions(optionalFlags),
-        message: "You must have a paid subscription to do that."
-        $uibModal: $uibModal
 
-      # restriction logic
-      restrictElement(scope, element, attrs, options)
-
-    # suppress recursive calls, then compile
-    element.removeAttr('rmaps-require-subscriber')
-    $compile(element)(scope)
-
+app.directive 'rmapsRequireMls', ($rootScope, $log, $compile, $uibModal, rmapsPrincipalService) ->
+  restrict: 'A'
+  terminal: true
+  priority: 1000
+  link: link({
+    name: 'rmapsRequireMls'
+    message: "You must be an MLS agent."
+    runPerms: () -> rmapsPrincipalService.isMLS()
+    $compile
+    $uibModal
+  })

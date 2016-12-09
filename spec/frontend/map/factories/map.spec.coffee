@@ -41,6 +41,8 @@ describe "rmapsMapFactory factory", ->
             project_id: 2
           }
         }
+        user:{}
+        permissions:{}
       }
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )

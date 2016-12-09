@@ -120,10 +120,11 @@ profiles = (req, res, next) ->
           internals.updateCache(req, res, next)
 
 newProject = (req, res, next) ->
-
-  throw new Error 'Error creating new project, name is required' unless req.body.name
-
+  # this route needs propper vsalidation via validation.validateAndTransformRequest
   Promise.try () ->
+    if !req.body.name
+      throw new Error 'Error creating new project, name is required'
+
     profileService.getCurrentSessionProfile req.session
 
   .then (profile) ->
