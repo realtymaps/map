@@ -18,6 +18,9 @@ rmapsMainOptions
   $scope.data =
     fips: null
 
+  #
+  # tests / flags
+  #
   $scope.showSubscription = () ->
     return ($scope.subscription? && $scope.subscription.status != 'expired' && $scope.subscription.plan.id != 'deactivated')
 
@@ -27,6 +30,10 @@ rmapsMainOptions
   $scope.isExpired = () ->
     return $scope.subscription?.status == rmapsMainOptions.plan.EXPIRED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.plan.PAID_LIST)
 
+
+  #
+  # Account actions
+  #
   $scope.unsubscribe = () ->
     modalInstance = $uibModal.open
       scope: $scope
@@ -46,6 +53,7 @@ rmapsMainOptions
         modalInstance.close()
         $scope.processing--
 
+
   $scope.upgrade = () ->
     modalInstance = $uibModal.open
       scope: $scope
@@ -64,27 +72,28 @@ rmapsMainOptions
       .finally () ->
         $scope.processing--
 
-  $scope.reactivate = (opts = {needCard: false}) ->
 
+  $scope.reactivate = (opts = {needCard: false}) ->
+    # flag that lets us know if expired or not (expired means we need CC)
     needCard = $scope.isExpired()
 
-    console.log "\nreactivate()"
-    console.log "opts: #{JSON.stringify(opts)}"
+    # reactivate modal context
     modalInstance = $uibModal.open
       scope: $scope
       template: require('../../../html/views/templates/modals/confirm.jade')()
-
     $scope.showCancelButton = true
     $scope.modalTitle = "Reactivating subscription..."
     if needCard
       $scope.modalBody = "You will be prompted to enter credit card information."
     $scope.modalCancel = modalInstance.dismiss
+
+    # confirmed reactivate...
     $scope.modalOk = () ->
       $scope.processing++
 
-      # reactivatePlan = $rootScope.identity?.user?.stripe_plan_id
-      $scope.payment = null
+      # credit-card modal context
       if needCard
+        # all credit-card updating is handled within this modal/template, so no need to pass cc source around.
         modalInstanceCC = $uibModal.open
           animation: true
           template: replaceCCModalTemplate
@@ -98,7 +107,6 @@ rmapsMainOptions
 
         ccPromise = modalInstanceCC.result
         .then (result) ->
-          console.log "result:\n#{JSON.stringify(result)}"
           if !result then return null
           return result
         .catch () ->
@@ -106,20 +114,23 @@ rmapsMainOptions
       else
         ccPromise = $q.when(null)
 
-
-      # if ($rootScope.identity.subscription in [rmapsMainOptions.plan.PRO, rmapsMainOptions.plan.STANDARD] &&
-      #   $scope.subscription.
+      # process reactivation
       ccPromise
       .then (ccInfo) ->
-        console.log "ccInfo: #{JSON.stringify(ccInfo)}"
-        if !ccInfo? && needCard
+
+        # if we needed a CC, but the info is null, the CC form must've been unsuccessful or exited.
+        if needCard && !ccInfo?
           $scope.modalBody = "Invalid credit card info."
+
+        # if an error occured, indicate that
         else if ccInfo == "error"
           $scope.modelBody = "An error occured while updating payment info."
+
+        # proceed with reactivation, our CC will be updated if we needed one
         else
           rmapsSubscriptionService.reactivate()
           .then (res) ->
-            console.log "reactivated...\nres:\n#{JSON.stringify(res,null,2)}"
+            # update subscription, and modal context with success content
             $rootScope.identity.subscription = res.plan.id
             $scope.subscription = res
             $scope.modalBody = "Your #{res.plan.id} subscription has been renewed."
@@ -128,20 +139,23 @@ rmapsMainOptions
             $scope.showCancelButton = false
 
           .catch () ->
+            # update modal context with error content
             $scope.modalBody = "There was an issue while renewing your subscription.  Please contact customer service."
             $scope.modalOk = ->
               modalInstance.close()
+
       .finally () ->
         $scope.processing--
 
+  #
+  # Data 
+  #
   $scope.processing++
   rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
-    console.log "subscription:\n#{JSON.stringify(subscription,null,2)}"
-    console.log "rootScope:"
-    console.log $rootScope
-    console.log "$rootScope.subscrPlans: #{JSON.stringify($rootScope.subscrPlans)}"
-    console.log "$rootScope.identity.subscription: #{$rootScope.identity.subscription}"
+    console.log "stripe subscription:\n#{JSON.stringify(subscription,null,2)}"
+    console.log "identity.subscription:\n#{$rootScope.identity.subscription}"
+    console.log "user.stripe_plan_id:\n#{$rootScope.user.stripe_plan_id}"
     $scope.subscription = subscription
   .finally () ->
     $scope.processing--

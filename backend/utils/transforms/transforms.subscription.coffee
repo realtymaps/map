@@ -5,7 +5,7 @@ module.exports =
 
   updatePlan:
     params: validators.object subValidateSeparate:
-      plan: validators.choice(choices: [config.SUBSCR.PLAN.PRO, config.SUBSCR.PLAN.STANDARD])
+      plan: validators.choice(choices: config.SUBSCR.PLAN.PAID_LIST)
     query: validators.object isEmptyProtect: true
 
   deactivation:

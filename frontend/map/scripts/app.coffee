@@ -111,7 +111,6 @@ rmapsPrincipalService) ->
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
     user.name = user.full_name or user.username
-    console.log "extending #{JSON.stringify(rmapsMainOptions.plan)} onto $rootScope..."
     _.extend $rootScope,
       mainOptions: rmapsMainOptions['map']
       user: user

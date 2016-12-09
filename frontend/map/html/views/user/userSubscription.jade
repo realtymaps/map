@@ -44,21 +44,15 @@ div(ng-hide="processing > 0")
         p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
 
   .row.subscription-buttons(ng-hide="subscription.error")
-    .col-md-6(ng-show="showSubscription()")
+    .col-md-6(ng-show="!subscription.canceled_at && showSubscription()")
       .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
+
     .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscrPlans.STANDARD")
       .btn.btn-default(ng-click="upgrade()") Upgrade
-    //- .col-md-6(ng-show="subscription.canceled_at || (subscription.status == 'expired' && subscription.plan.id)")
-    //-   .btn.btn-default(ng-click="reactivate()") Reactivate
 
     .col-md-6(ng-show="isDeactivated() || isExpired()")
       .btn.btn-default(ng-click="reactivate()") Reactivate
 
-
-  //- .row.collapse-header.subscription-details(ng-show="!(subscription && subscription.status != 'expired')")
-  //-   .row.subscription-buttons
-  //-     .col-md-6
-  //-       .btn.btn-default(ng-click="subscribe()") Subscribe
 
   div(ng-show="showSubscription()")
     div

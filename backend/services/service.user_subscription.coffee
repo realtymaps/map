@@ -13,7 +13,6 @@ stripeErrors = require '../utils/errors/util.errors.stripe'
 stripe = null
 require('../services/services.payment').then (svc) -> stripe = svc.stripe
 
-console.log "\n\nstripe error keys:\n#{JSON.stringify(Object.keys(stripeErrors))}\n\n"
 
 # Return "dummy" subscription objects that emulates a stripe subscription
 # For use when canceled subscription data is no longer available from stripe
@@ -22,11 +21,8 @@ expiredSubscription = (planId) ->
   plan:
     id: planId
 
-_getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_plan_id) -> Promise.try () ->
-  console.log "\n_getStripeSubscription()"
-  console.log "stripe_customer_id, stripe_subscription_id, stripe_plan_id: #{stripe_customer_id}, #{stripe_subscription_id}, #{stripe_plan_id}"
-  console.log "retriving..."
 
+_getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_plan_id) -> Promise.try () ->
   if !stripe_subscription_id?
     if stripe_plan_id?
       return expiredSubscription(stripe_plan_id)
@@ -34,7 +30,6 @@ _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_pla
 
   stripe.customers.retrieveSubscription stripe_customer_id, stripe_subscription_id
   .then (subscription) ->
-    console.log "returning subscription:\n#{JSON.stringify(subscription)}"
     return subscription
 
   # If the subscription was canceled, stripe deletes the subscription upon period_end.
@@ -42,19 +37,17 @@ _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_pla
   # Ideally, we will have gotten a webhook event to let us know to remove it.
   .catch stripeErrors.StripeInvalidRequestError, (err) ->
 
+    # nullify subscription_id so we know its expired
     tables.auth.user()
     .update stripe_subscription_id: null
     .where {stripe_customer_id}
     .then () ->
 
-      if stripe_plan_id? # defensive; we would expect a plan_id if there exists a subscription_id
-        console.log "returning dummy subscription"
+      if stripe_plan_id? # defensive; we would expect a plan_id if there existed a subscription_id
         return expiredSubscription(stripe_plan_id)
       else
         throw new PartiallyHandledError("No subscription or plan is associated with user #{stripe_customer_id}.")
 
-  .finally () ->
-    console.log "stripe retrieve promise finally"
 
 _getStripeIds = (userId, trx) ->
   tables.auth.user(transaction: trx)
@@ -91,6 +84,7 @@ getPlan = (userId) ->
     .then (planDetails) ->
       _.merge plan, planDetails.value
 
+
 # requires a STRIPE subscription object with a status and plan keys in order to determine status string
 _getStatusString = (subscription) ->
   console.log "_getStatusString()"
@@ -107,17 +101,14 @@ _getStatusString = (subscription) ->
   # NOTE: a status of 'expired' is set by us since stripe deletes inactive subscriptions
   return subscription.status
 
+
+# update plan among paid subscription levels
 updatePlan = (userId, plan) ->
-  if !(plan in config.SUBSCR.PLAN.VALID_LIST)
+  if !(plan in config.SUBSCR.PLAN.PAID_LIST)
     throw new PartiallyHandledError(err, "Cannot upgrade to plan #{plan} because it is invalid.")
-  console.log "setPlan()"
-  console.log "plan: #{plan}"
-  console.log "userId: #{userId}"
-  if !plan?
-    throw new Error('NO PLAN WTF')
+
   getSubscription(userId)
   .then (res) ->
-    console.log "res:\n#{JSON.stringify(res,null,2)}"
 
     # defensive checks, just return the subscription if it's the same plan as needing set
     if res.plan?.id == plan
@@ -125,38 +116,23 @@ updatePlan = (userId, plan) ->
         status: _getStatusString(res)
         updated: res
       }
-      # throw new PartiallyHandledError(err, "Current subscription is already premium status.")
 
     stripe.subscriptions.update(res.id, {plan, trial_end:'now'}) # ensure not to re-add trial period added just for switching plans
     .then (updated) ->
-      updateSubscription =
+      newPlan =
         stripe_subscription_id: updated.id
-
-      # if we're deactivating, leave the `auth_user.stripe_plan_id` alone since we want to maintain record of previous plan
-      if plan != config.SUBSCR.PLAN.DEACTIVATED
-        updateSubscription.stripe_plan_id = plan
+        stripe_plan_id: plan
 
       tables.auth.user()
-      .update stripe_subscription_id: updated.id, stripe_plan_id: plan
+      .update newPlan
       .where id: userId
       .then () ->
         status: _getStatusString(updated)
         updated: updated
 
-    # stripe.customers.cancelSubscription(res.customer, res.id)
-    # .then (cancelled) ->
-    #   stripe.subscriptions.create({customer: res.customer, plan})
-    #   .then (created) ->
-    #     tables.auth.user()
-    #     .update stripe_subscription_id: created.id, stripe_plan_id: plan
-    #     .where id: userId
-    #     .then () ->
-    #       status: _getStatusString(created)
-    #       created: created
 
+# returns a status for `session.subscription` to use for subscription level access
 getStatus = (user) -> Promise.try () ->
-  console.log "getStatus()"
-  console.log "user.stripe_plan_id: #{user.stripe_plan_id}"
   if !user.stripe_customer_id? || !user.stripe_subscription_id? # if no customer or subscription exists...
     permSvc.getPermissionsForUserId user.id
     .then (results) ->
@@ -172,6 +148,7 @@ getStatus = (user) -> Promise.try () ->
 
   else return config.SUBSCR.PLAN.NONE
 
+
 getSubscription = (userId) ->
   _getStripeIds(userId)
   .then ({stripe_customer_id, stripe_subscription_id, stripe_plan_id}) ->
@@ -179,6 +156,7 @@ getSubscription = (userId) ->
 
   .catch isUnhandled, (err) ->
     throw new PartiallyHandledError(err, "We encountered an issue while accessing your subscription")
+
 
 reactivate = (userId) -> Promise.try () ->
   dbs.transaction 'main', (trx) ->
@@ -190,6 +168,7 @@ reactivate = (userId) -> Promise.try () ->
           created: null
         }
 
+      # if a stripe_subscription_id
       promise = Promise.resolve()
       if stripe_subscription_id?
         promise = promise.then () ->
@@ -212,7 +191,6 @@ reactivate = (userId) -> Promise.try () ->
 
       .catch isUnhandled, (err) ->
         throw new PartiallyHandledError(err, "Encountered an issue reactivating the account, please contact customer service.")
-
 
 
 deactivate = (userId, reason) ->
