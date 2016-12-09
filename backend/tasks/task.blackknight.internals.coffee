@@ -177,16 +177,18 @@ updateProcessInfo = (newProcessInfo) ->
     .then () ->
       if !newProcessInfo.date || processInfo[FIPS_QUEUED].length > 0
         # if we didn't process a date, or we did and we still have more FIPS codes queued, then don't change the date
-        processInfo[CURRENT_PROCESS_DATE] = null
-        index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
-        if index >= 0
-          processInfo[DATES_QUEUED].splice(index, 1)
-        else
-          logger.warn "Unable to remove date #{newProcessInfo.date} from #{processInfo[DATES_QUEUED]}"
-        if processInfo[DATES_COMPLETED].indexOf(newProcessInfo.date) == -1
-          processInfo[DATES_COMPLETED].push(newProcessInfo.date)
-        else
-          logger.warn "Date already marked as completed: #{newProcessInfo.date} in #{processInfo[DATES_COMPLETED]}"
+        return
+        
+      processInfo[CURRENT_PROCESS_DATE] = null
+      index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
+      if index >= 0
+        processInfo[DATES_QUEUED].splice(index, 1)
+      else
+        logger.warn "Unable to remove date #{newProcessInfo.date} from #{processInfo[DATES_QUEUED]}"
+      if processInfo[DATES_COMPLETED].indexOf(newProcessInfo.date) == -1
+        processInfo[DATES_COMPLETED].push(newProcessInfo.date)
+      else
+        logger.warn "Date already marked as completed: #{newProcessInfo.date} in #{processInfo[DATES_COMPLETED]}"
     .then () ->
       keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO})
 
