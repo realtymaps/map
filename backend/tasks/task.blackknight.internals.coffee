@@ -165,7 +165,7 @@ updateProcessInfo = (newProcessInfo) ->
 
     Promise.try () ->
       if !newProcessInfo.fips_code?
-        # this task was an empty run, nothing to do here
+        # this task was an empty run, no fips stuff to deal with
         return
 
       # remove the fips code first
@@ -174,9 +174,9 @@ updateProcessInfo = (newProcessInfo) ->
         processInfo[FIPS_QUEUED].splice(index, 1)
       else
         logger.warn "Unable to remove FIPS #{newProcessInfo.fips_code} from [#{processInfo[FIPS_QUEUED]}]"
-
-      # if we removed the last FIPS code, then indicate we need to move on to the next date
-      if processInfo[FIPS_QUEUED].length == 0
+    .then () ->
+      if !newProcessInfo.date || processInfo[FIPS_QUEUED].length > 0
+        # if we didn't process a date, or we did and we still have more FIPS codes queued, then don't change the date
         processInfo[CURRENT_PROCESS_DATE] = null
         index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
         if index >= 0
@@ -187,7 +187,6 @@ updateProcessInfo = (newProcessInfo) ->
           processInfo[DATES_COMPLETED].push(newProcessInfo.date)
         else
           logger.warn "Date already marked as completed: #{newProcessInfo.date} in #{processInfo[DATES_COMPLETED]}"
-
     .then () ->
       keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO})
 
