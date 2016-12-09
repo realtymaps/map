@@ -21,6 +21,8 @@ describe "rmapsFilterManagerService", ->
             id: 1
           }
         }
+        user:{}
+        permissions:{}
       }
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: identity )

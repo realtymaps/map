@@ -236,10 +236,8 @@ deleteData = (subtask) ->
     else
       return dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
-    require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "found #{rows.length} delete rows for #{subtask.data.action}-#{subtask.data.dataType}"
     Promise.each rows, (row) ->
       if subtask.data.action == internals.REFRESH
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting all normalized rows for #{row['FIPS Code']} (#{subtask.data.dataType})"
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
@@ -365,8 +363,15 @@ ready = () ->
   keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_INFO, defaultValues: processDefaults)
   .then (processInfo) ->
     # definitely run task if there are new dates and/or FIPS to process
-    if processInfo[internals.DATES_QUEUED].length > 0 || processInfo[internals.FIPS_QUEUED].length > 0
+    if processInfo[internals.FIPS_QUEUED].length > 0
       return true
+    if processInfo[internals.DATES_QUEUED].length > 0
+      if !processInfo[internals.MAX_DATE]
+        return true
+      nextDate = _.reduce(processInfo[internals.DATES_QUEUED], (min, val) -> if min < val then min else val)
+      if nextDate <= processInfo[internals.MAX_DATE]
+        return true
+      return false
 
     keystore.getValuesMap(internals.BLACKKNIGHT_COPY_INFO, defaultValues: copyDefaults)
     .then (copyDates) ->

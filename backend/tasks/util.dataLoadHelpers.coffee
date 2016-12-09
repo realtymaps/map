@@ -136,7 +136,6 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       .where(subset)
       .where(deleted: subtask.batch_id)
       .then (results) ->
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "markForDeletes #{JSON.stringify(subtask.data.subset||{})}: #{results.length}"
         # even though it takes place on another db, we want to wait to commit the earlier transaction until the below
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
@@ -160,7 +159,6 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
       if deletes == DELETE.UNTOUCHED
         # in this mode, we delete all rows on this subset that don't have the current batch_id, because we assume this is
         # a full data sync, and if we didn't touch it that means it should be deleted
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting untouched finalized rows: #{JSON.stringify(subtask.data.subset||{})}"
         tables.finalized[tableProp](transaction: transaction)
         .where(subset)
         .whereNot(batch_id: subtask.batch_id)
@@ -168,7 +166,6 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
       else
         # in this mode, we're doing an incremental update, so every row has been handled individually, either with an
         # upsert, or with an indicated delete below
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> 'deleting indicated finalized rows'
         tables.finalized[tableProp](transaction: transaction, as: 'deleter')
         .where(data_source_id: data_source_id || subtask.task_name)
         .whereExists () ->
@@ -401,21 +398,17 @@ normalizeData = (subtask, options) -> Promise.try () ->
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
 updateRecord = (opts) -> Promise.try () ->
   {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
-  diffExcludeKeys ?= []
-  diffBooleanKeys ?= []
   delay ?= 100
-  flattenRows ?= true
 
   q = null
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
-    q = tables.normalized[dataType](subid: subid)
+    tables.normalized[dataType](subid: subid)
     .select('*')
     .where
       data_source_id: updateRow.data_source_id
       data_source_uuid: updateRow.data_source_uuid
-    q
   .then (result) ->
     if !result?.length
       # no existing row, just insert
@@ -439,30 +432,20 @@ updateRecord = (opts) -> Promise.try () ->
     else
       # found an existing row, so need to update, but include change log
       oldRow = result[0]
+      changes = _getRowChanges({updateRow, oldRow, dataSourceType, dataType, diffExcludeKeys, diffBooleanKeys, flattenRows})
 
-      # possibly flatten the rows
-      newData = if flattenRows then _flattenRow(updateRow, dataSourceType, dataType) else updateRow
-      oldData = if flattenRows then _flattenRow(oldRow, dataSourceType, dataType) else oldRow
-      # remove excluded keys
-      newData = _.omit(newData, diffExcludeKeys)
-      oldData = _.omit(oldData, diffExcludeKeys)
-      # do our brand of diff
-      changes = _diff(newData, oldData)
-      # mask certain changed values with the simple `true` value
-      for field in diffBooleanKeys
-        if changes.hasOwnProperty(field)
-          changes[field] = true
-
-      if oldRow.deleted && updateRow.deleted && oldRow.deleted != updateRow.deleted
-        updateRow.deleted = oldRow.deleted
-      updateRow.change_history = oldRow.change_history ? []
+      change_history = oldRow.change_history ? []
       if !_.isEmpty(changes)
         updateRow.updated = stats.batch_id
-        updateRow.change_history.push changes
-      updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
+        change_history.push changes
+      updateRow.change_history = sqlHelpers.safeJsonArray(change_history)
+
+      if oldRow.deleted && updateRow.deleted
+        updateRow.deleted = oldRow.deleted
 
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
+
       tables.normalized[dataType](subid: subid)
       .where
         data_source_uuid: updateRow.data_source_uuid
@@ -501,22 +484,53 @@ _flattenRow = (row, dataSourceType, dataType) ->
   return flattened
 
 
+_getRowChanges = ({updateRow, oldRow, dataSourceType, dataType, diffExcludeKeys, diffBooleanKeys, flattenRows}) ->
+  diffExcludeKeys ?= []
+  diffBooleanKeys ?= []
+  flattenRows ?= true
+
+  # possibly flatten the rows
+  newData = if flattenRows then _flattenRow(updateRow, dataSourceType, dataType) else updateRow
+  oldData = if flattenRows then _flattenRow(oldRow, dataSourceType, dataType) else oldRow
+
+  # remove excluded keys
+  newData = _.omit(newData, diffExcludeKeys)
+  oldData = _.omit(oldData, diffExcludeKeys)
+
+  # do our brand of diff
+  changes = _diff(newData, oldData)
+
+  # mask certain changed values with the simple `true` value
+  for field in diffBooleanKeys
+    if changes.hasOwnProperty(field)
+      changes[field] = true
+
+  return changes
+
+
 # this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
 # taken from row2 (intended to be the older set)
 _diff = (row1, row2) ->
   result = {}
   for fieldName, value1 of row1
-    if _.isEqual(value1, row2[fieldName])
+    value2 = row2[fieldName]
+    value1 ?= null
+    value2 ?= null
+    if _.isEqual(value1, value2)
       continue
     type1 = typeof(value1)
-    type2 = typeof(row2[fieldName])
-    if type1 != type2 && (type1 == 'string' || type2 == 'string')
-      if ''+value1 == ''+row2[fieldName]
+    type2 = typeof(value2)
+    if type1 != type2 && (type1 == 'number' || type2 == 'number')
+      if parseFloat(value1) == parseFloat(value2)
+        # same as numbers, one was just a string coming from a pg NUMERIC column, ignore
         continue
-    result[fieldName] = (row2[fieldName] ? null)
+    result[fieldName] = value2
 
   # then get fields missing from row1
-  _.extend result, _.omit(row2, Object.keys(row1))
+  for fieldName, value2 of row2 when !(fieldName of row1) && value2 != null
+    result[fieldName] = value2
+
+  return result
 
 
 manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->

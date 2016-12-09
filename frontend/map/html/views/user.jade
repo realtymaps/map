@@ -10,7 +10,17 @@
                 a(ui-sref="user") My Account
               li(ng-repeat="state in $state.get() | filter:{parent: 'user'}"
                 ng-class="{active: $state.is(state.name)}")
-                a(ui-sref="{{state.name}}") {{getStateName(state.name) | humanize }}
+
+                a(ng-if="!state.isPermissionRequired('isSubscriber') && !state.isPermissionRequired('isMLS')"
+                  ui-sref="{{state.name}}") {{getStateName(state.name) | humanize }}
+
+                a(ng-if="state.isPermissionRequired('isSubscriber')"
+                  rmaps-require-subscriber
+                  ui-sref="{{state.name}}") {{getStateName(state.name) | humanize }}
+
+                a(ng-if="state.isPermissionRequired('isMLS')"
+                  rmaps-require-mls
+                  ui-sref="{{state.name}}") {{getStateName(state.name) | humanize }}
 
 
         .col-md-9.content
@@ -202,7 +212,7 @@
                           input.btn.btn-primary(value='Save' type='button' ng-click="companyImageForm.save()")
                           span
                           input.btn.btn-default(value='Cancel' type='reset')
-                      
+
 
                     .col-md-8.col-sm-6.col-xs-12.personal-info
                       h3 Company info

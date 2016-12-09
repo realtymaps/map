@@ -23,6 +23,8 @@ safeUserFields = [
   'account_use_type_id'
   'company_id'
   'parent_id'
+  'mlses_verified'
+  'fips_codes'
 ]
 
 # tests subscription status of the (if active) req.session
