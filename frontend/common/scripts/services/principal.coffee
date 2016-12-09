@@ -86,13 +86,13 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, $log, rmapsEventCon
   ##
 
   isSubscriber: () ->
-    return (_identity and _identity.subscription? and
-      _identity.subscription != 'canceled' and _identity.subscription != 'unpaid')
+    return (_identity and _identity.subscription? and _identity.subscription in rmapsMainOptions.plan.PAID_LIST)
 
   # always implies an active subscription when set to 'pro' or 'standard'
+  # behaves like `isSubscriber` if not passed parameter
   hasSubscription: (subscription) ->
     if !subscription?
-      return _identity and (_identity.subscription == rmapsMainOptions.plan.PRO or _identity.subscription == rmapsMainOptions.plan.STANDARD)
+      return _identity and (_identity.subscription in rmapsMainOptions.plan.PAID_LIST)
     else
       return _identity and _identity.subscription == subscription
 

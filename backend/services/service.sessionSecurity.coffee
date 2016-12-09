@@ -122,8 +122,10 @@ getSecuritiesForSession = (sessionId) ->
 
 
 sessionLoginProcess = (req, res, user, opts={}) ->
+  console.log "\n\ngetting subscr status from user:\n#{JSON.stringify(user,null,2)}"
   subscriptionSvc.getStatus user
   .then (subscription_status) ->
+    console.log "subscription_status: #{subscription_status}\n\n"
     logger.debug -> "setting user"
     logger.debug -> _.omit user, "password"
 

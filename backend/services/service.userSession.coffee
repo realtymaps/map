@@ -41,6 +41,7 @@ verifyPassword = (email, password) ->
   .then (user=[]) ->
     user[0] ? {}
   .then (user) ->
+    console.log "user obj:\n#{JSON.stringify(user,null,2)}"
     if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
       # to prevent timing attacks from determining validity of email

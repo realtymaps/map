@@ -9,9 +9,16 @@ app.service 'rmapsSubscriptionService', ($http, $sce) ->
     .then ({data}) ->
       data
 
-  setPlan: (plan) ->
-    $http.put subscriptionAPI.setPlan.replace(':plan', plan)
+  updatePlan: (plan) ->
+    $http.put subscriptionAPI.update.replace(':plan', plan)
     .then ({data}) ->
+      data
+
+  reactivate: () ->
+    $http.put subscriptionAPI.reactivate
+    .then ({data}) ->
+      console.log "reactivatePlan()"
+      console.log "data:\n#{JSON.stringify(data)}"
       data
 
   getSubscription: () ->

@@ -1,6 +1,6 @@
 section.white-page.onboarding.onboarding-plan(ng-cloak)
   .container
-    div(ng-if="user.plan.name === 'pro'")
+    div(ng-if="user.plan.name === subscrPlans.PRO")
       h2 Select your MLS
       p Please select your MLS to be associated with your MLS identification for verification purposes. Once verified you will have access to all MLS data for your your MLS.
       p If you select an unsupported MLS you will have access to all our county data. This is essentially the "standard" plan, and you will have a trial according to that plan.
@@ -101,7 +101,7 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                       type='button' ng-click="user.unsupportedSubmit()"
                       validation-submit="userForm")
 
-    div(ng-if="user.plan.name === 'standard'")
+    div(ng-if="user.plan.name === subscrPlans.STANDARD")
       h2 Select your state and county
       p Please select your state and county that you would like to have privledges to.
 
