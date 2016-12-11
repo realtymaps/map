@@ -117,6 +117,8 @@ rmapsMainOptions
       # process reactivation
       ccPromise
       .then (ccInfo) ->
+        $scope.modalDisable = true
+        $scope.modalBody = "Please do not close this window during processing..."
 
         # if we needed a CC, but the info is null, the CC form must've been unsuccessful or exited.
         if needCard && !ccInfo?
@@ -134,6 +136,7 @@ rmapsMainOptions
             $rootScope.identity.subscription = res.plan.id
             $scope.subscription = res
             $scope.modalBody = "Your #{res.plan.id} subscription has been renewed."
+            $scope.modalDisable = false
             $scope.modalOk = ->
               modalInstance.close()
             $scope.showCancelButton = false
@@ -141,6 +144,7 @@ rmapsMainOptions
           .catch () ->
             # update modal context with error content
             $scope.modalBody = "There was an issue while renewing your subscription.  Please contact customer service."
+            $scope.modalDisable = false
             $scope.modalOk = ->
               modalInstance.close()
 
@@ -153,9 +157,6 @@ rmapsMainOptions
   $scope.processing++
   rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
-    console.log "stripe subscription:\n#{JSON.stringify(subscription,null,2)}"
-    console.log "identity.subscription:\n#{$rootScope.identity.subscription}"
-    console.log "user.stripe_plan_id:\n#{$rootScope.user.stripe_plan_id}"
     $scope.subscription = subscription
   .finally () ->
     $scope.processing--

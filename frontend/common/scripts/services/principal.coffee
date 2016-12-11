@@ -36,9 +36,7 @@ rmapsMainOptions) ->
       "isProjectViewer"
     ]
       do (name) ->
-        if self[name](_identity)
-          #We are stating here that because we are not a client account that we meet the permissions of isParentAccount
-          _identity.permissions[name] = true
+        _identity.permissions[name] = self[name]()
 
     if _identity.user?.mlses_verified?.length
       _identity.permissions.isMLS = true
@@ -118,12 +116,12 @@ rmapsMainOptions) ->
   ##
   ##
 
-  isSubscriber: () ->
+  isSubscriber = () ->
     return (_identity and _identity.subscription? and _identity.subscription in rmapsMainOptions.plan.PAID_LIST)
 
   # always implies an active subscription when set to 'pro' or 'standard'
   # behaves like `isSubscriber` if not passed parameter
-  hasSubscription: (subscription) ->
+  hasSubscription = (subscription) ->
     if !subscription?
       return isSubscriber()
     else

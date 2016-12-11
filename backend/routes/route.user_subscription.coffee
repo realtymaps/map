@@ -6,23 +6,6 @@ subscriptionTransforms = require('../utils/transforms/transforms.subscription')
 userSubscriptionService = require '../services/service.user_subscription'
 
 
-
-  reactivate: (req) ->
-    validateAndTransformRequest(req, subscriptionTransforms.reactivation)
-    .then (validReq) ->
-      userSubscriptionService.reactivate req.session.userid
-
-    # need to update our current session subscription status
-    .then (subscriptionInfo) ->
-      req.session.subscription = subscriptionInfo.status
-      return subscriptionInfo.created
-
-  deactivate: (req) ->
-    validateAndTransformRequest(req, subscriptionTransforms.deactivation)
-    .then (validReq) ->
-      userSubscriptionService.deactivate req.session.userid, validReq.body.reason
-
-
 module.exports =
   getPlan:
     method: "get"
@@ -38,6 +21,7 @@ module.exports =
     handleQuery: true
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireSubscriber() # avoid bouncing around on plans with this endpoint unless they're active/paid
     ]
     handle: (req) ->
       validateAndTransformRequest(req, subscriptionTransforms.updatePlan)
@@ -78,6 +62,7 @@ module.exports =
     handleQuery: true
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requireSubscriber()
     ]
     handle: (req) ->
       validateAndTransformRequest(req, subscriptionTransforms.deactivation)

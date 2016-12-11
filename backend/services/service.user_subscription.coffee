@@ -173,8 +173,8 @@ reactivate = (userId) -> Promise.try () ->
           created: null
         }
 
-      # if a stripe_subscription_id
       promise = Promise.resolve()
+      # if a stripe_subscription_id existings while reactivating, that means it should be a "deactivated" subscription plan that we need to cancel
       if stripe_subscription_id?
         promise = promise.then () ->
           stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: false}
@@ -203,7 +203,7 @@ deactivate = (userId, reason) ->
     _getStripeIds(userId, trx)
     .then ({stripe_customer_id, stripe_subscription_id}) ->
       stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: true}
-      .then (response) ->
+      .then (canceledSubscription) ->
         tables.user.project(transaction: trx)
         .update status: 'inactive'
         .where auth_user_id: userId
@@ -211,7 +211,7 @@ deactivate = (userId, reason) ->
           tables.user.history()
           .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
         .then () ->
-          response
+          canceledSubscription
 
     .catch isUnhandled, (err) ->
       throw new PartiallyHandledError(err, "Encountered an issue deactivating the account, please contact customer service.")
