@@ -6,24 +6,23 @@ onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 dbs = require '../config/dbs'
 internals = require './route.onboarding.internals'
 
-
-handles = wrapHandleRoutes handles:
-  createUser: (req) ->
-    # req = _.pick req, ['body', 'params', 'query']
-    validateAndTransformRequest req, onboardingTransforms.createUser
-    .then (validReq) ->
-      {plan, token, fips_code, mls_code, mls_id} = validReq.body
-      plan = plan.name
-      dbs.transaction 'main', (transaction) ->
-        internals.createNewUser({body:validReq.body, transaction, plan})
-        .then (authUser) ->
-          expectSingleRow(authUser)
-        .then (authUser) ->
-          internals.setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
-        .then (authUser) ->
-          internals.submitPaymentPlan {plan, token, authUser, transaction}
-        .then ({authUser, customer}) ->
-          internals.submitEmail {authUser, plan, customer}
-
-module.exports = mergeHandles handles,
-  createUser: method: "post"
+module.exports =
+  createUser:
+    method: "post"
+    handleQuery: true
+    handle: (req) ->
+      # req = _.pick req, ['body', 'params', 'query']
+      validateAndTransformRequest req, onboardingTransforms.createUser
+      .then (validReq) ->
+        {plan, token, fips_code, mls_code, mls_id} = validReq.body
+        plan = plan.name
+        dbs.transaction 'main', (transaction) ->
+          internals.createNewUser({body:validReq.body, transaction, plan})
+          .then (authUser) ->
+            expectSingleRow(authUser)
+          .then (authUser) ->
+            internals.setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
+          .then (authUser) ->
+            internals.submitPaymentPlan {plan, token, authUser, transaction}
+          .then ({authUser, customer}) ->
+            internals.submitEmail {authUser, plan, customer}

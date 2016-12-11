@@ -8,7 +8,6 @@ through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-util = require 'util'
 
 
 getSystemData = (mlsId) ->
@@ -368,8 +367,16 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
 
 
 getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
-  objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
+  logger.debug -> "getPhotosObject orig args"
+  logger.debug -> {mlsId, databaseName, photoIds, objectsOpts, photoType}
+
+  objectsOpts ?= {}
   photoType ?= 'Photo'
+
+  objectsOpts = _.assign {alwaysGroupObjects: true, ObjectData: '*'}, objectsOpts
+
+  logger.debug -> "getPhotosObject post args"
+  logger.debug -> {mlsId, databaseName, photoIds, objectsOpts, photoType}
 
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)

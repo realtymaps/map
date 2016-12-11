@@ -16,8 +16,9 @@ getParamPhoto = ({req, res, next, photoType}) ->
   validation.validateAndTransformRequest(req, transforms.paramPhoto)
   .then (validReq) ->
     photoType = validReq.query.photoType || photoType
+    {objectsOpts} = validReq.query
 
-    mlsRouteUtil.getPhoto({entity: validReq.params, res, next, photoType})
+    mlsRouteUtil.getPhoto({entity: validReq.params, res, next, photoType, objectsOpts})
 
 # example
 # single image:
@@ -34,7 +35,8 @@ getQueryPhoto = ({req, res, next, photoType}) ->
     logger.debug -> validReq.query
 
     photoType = validReq.query.photoType || photoType
-    mlsRouteUtil.getPhoto({entity: _.merge(validReq.params, photoIds:validReq.query.ids), res, next, photoType})
+    {objectsOpts} = validReq.query
+    mlsRouteUtil.getPhoto({entity: _.merge(validReq.params, photoIds:validReq.query.ids), res, next, photoType, objectsOpts})
 
 # this  gets some data from a RETS server based on a query, and returns it as an array of row objects plus and array of
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a

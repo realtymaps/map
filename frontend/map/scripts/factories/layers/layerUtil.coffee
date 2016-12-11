@@ -23,8 +23,8 @@ rmapsZoomLevelService) ->
       return L.multiPolygon
     L.polygon
 
-  createPolygon = (geometry) ->
-    getPolygonFactory(geometry)(geometry.coordinates)
+  createPolygon = (geometry, options) ->
+    getPolygonFactory(geometry)(geometry.coordinates, options)
 
 
   filterParcelsFromSummary = ({parcels, props}) ->
@@ -58,6 +58,7 @@ rmapsZoomLevelService) ->
     return
 
   {
+    createPolygon
     filterParcelsFromSummary
     parcelTileVisSwitching
     isEmptyData: instance.isEmptyData

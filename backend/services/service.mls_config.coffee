@@ -1,11 +1,9 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:mls_config')
 externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
-jobService = require './service.jobs'
 memoize = require 'memoizee'
 sqlHelpers = require '../utils/util.sql.helpers'
 

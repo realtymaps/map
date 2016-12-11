@@ -47,7 +47,10 @@ isKnexUndefined = (err) ->
 
 isCausedBy = (errorType, _err) ->
   check = (err) ->
-    return getRootCause(err) instanceof errorType
+    cause = err
+    while !(cause instanceof errorType) && cause instanceof PartiallyHandledError && cause.jse_cause?
+      cause = cause.jse_cause
+    return err instanceof errorType
   if _err
     return check(_err)
   else
@@ -56,7 +59,7 @@ isCausedBy = (errorType, _err) ->
 
 getRootCause = (err) ->
   cause = err
-  while cause instanceof PartiallyHandledError
+  while cause instanceof PartiallyHandledError && cause.jse_cause?
     cause = cause.jse_cause
   return cause
 

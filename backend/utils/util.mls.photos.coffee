@@ -1,13 +1,17 @@
 Archiver = require 'archiver'
 through = require 'through2'
-logger = require('../config/logger').spawn('mlsPhotos')
+logger = require('../config/logger').spawn('util:mls:photos')
+payloadLogger = require('../config/logger').spawn('util:mls:photos:payload')
+eventLogger = require('../config/logger').spawn('util:mls:photos:event')
+logger = require('../config/logger').spawn('util:mls:photos')
 photoErrors = require '../utils/errors/util.errors.photos'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-
+request = require 'request'
 
 ###
-  using through2 to return a stream now which eventually has data pushed to it
-  via event.dataStream
+  Return a single image stream which is either a direct dataStream or cached location stream.
+
+  The immediate returnable stream is used to track if the image stream is empty.
 ###
 imageStream = (object) ->
   error = null
@@ -25,17 +29,21 @@ imageStream = (object) ->
 
   everSentData = false
   #as data MAYBE comes in push it to the returned stream
-  object.objectStream.on 'data', (event) ->
+  object.objectStream.once 'data', (event) ->
     if event.error
       return error = event.error
 
-    logger.debug -> event.headerInfo
+    eventLogger.debug -> event.headerInfo
     everSentData = true
 
-    event.dataStream
-    .once 'error', (err) ->
-      error = err
-    .pipe(retStream)
+    stream = if event.dataStream
+      event.dataStream
+    else if event.headerInfo.location #YAY it is cached for us already
+      request(event.headerInfo.location)
+    else
+      through()
+
+    stream.pipe(retStream)
 
   retStream
 
@@ -49,31 +57,37 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       # logger.debug "error event received"
       cb(new photoErrors.ObjectsStreamError(error))
     catch err
-      logger.debug analyzeValue.getFullDetails(err)
+      logger.debug -> analyzeValue.getFullDetails(err)
       throw err
 
   object.objectStream.on 'data', (event) ->
 
     try
-      # logger.debug "data event received"
+      # eventLogger.debug "data event received"
 
       if event?.error?
-        logger.debug "data event has an error #{analyzeValue.getFullDetails(event.error)}"
+        eventLogger.debug -> "data event has an error #{analyzeValue.getFullDetails(event.error)}"
         cb(event.error)
         return
 
-      # logger.debug event.headerInfo
+      eventLogger.debug -> "event"
+      eventLogger.debug -> event
       listingId = event.headerInfo.contentId
       fileExt = event.headerInfo.contentType.replace('image/','')
       contentType = event.headerInfo.contentType
+      location = event.headerInfo.location
 
       everSentData = true
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
-      # logger.debug "fileName: #{fileName}"
 
       # not handling event.dataStream.once 'error' on purpose
       # this makes it easier to discern overall errors vs individual photo error
-      payload = {data: event.dataStream, name: fileName, imageId, contentType}
+      payload = {data: event.dataStream, name: fileName, imageId, contentType, location}
+
+      if payload.location?
+        eventLogger.makeData = () ->
+          logger.debug -> 'calling makeData'
+          request(payload.location)
 
       if event.headerInfo.objectData?
         payload.objectData = event.headerInfo.objectData
@@ -81,7 +95,7 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
       imageId++
       cb(null, payload)
     catch err
-      logger.debug analyzeValue.getFullDetails(err)
+      eventLogger.debug -> analyzeValue.getFullDetails(err)
       throw err
 
   object.objectStream.once 'end', () ->
@@ -99,6 +113,22 @@ imagesHandle = (object, cb, doThrowNoEvents = false) ->
 
 imagesStream = (object, archive = Archiver('zip')) ->
 
+  ###
+    Example: Chunked Response to download images directly
+    ===========================================
+     retsVersion: 'RETS/1.7.2',
+     contentType: 'multipart/parallel; boundary="FLEXmYAyiXwGY1E4dlWSd9AQllVeyTEr76nECY088ghM661fGttsmo";charset=US-ASCII',
+     transferEncoding: 'chunked'
+  ###
+
+  ###
+    Example: Object Stream of Events of location URLS
+    ===========================================
+     retsVersion: 'RETS/1.7.2',
+     contentType: 'multipart/parallel; boundary="FLEXrE2BqYPB4un1rgf1yc3iUHJ7dQkY3zo1MIiC1Cl66ldbQNjeRj";charset=US-ASCII',
+     contentLength: '7476'
+  ###
+
   retStream = through()
 
   archive.once 'error', (err)  ->
@@ -111,10 +141,19 @@ imagesStream = (object, archive = Archiver('zip')) ->
 
     if isEnd
       archive.finalize()
-      logger.debug("Archive wrote #{archive.pointer()} bytes")
+      payloadLogger.debug("Archive wrote #{archive.pointer()} bytes")
       return
 
-    archive.append(payload.data, name: payload.name)
+    payloadLogger.debug -> "payload"
+    payloadLogger.debug -> payload
+
+    if payload.data?
+      archive.append(payload.data, name: payload.name)
+
+    if payload.location?
+      payloadLogger.debug -> 'payload.location'
+      archive.append(payload.makeData(), name: payload.name)
+
 
   archive.pipe(retStream)
 

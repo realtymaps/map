@@ -10,6 +10,7 @@ $uibModal
 rmapsEventConstants
 rmapsPropertiesService
 rmapsD3Stats
+toastr
 ) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')
 
@@ -51,3 +52,15 @@ rmapsD3Stats
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/statisticsAreaStatus.jade')()
+
+  propertyAdded = (event, {type, prop}) ->
+    if !rmapsPropertiesService[type][prop.rm_property_id]
+      rmapsPropertiesService[type][prop.rm_property_id] = prop
+      propToast = toastr.info "New #{type} Added", prop.address.street,
+        closeButton: true
+        timeOut: 0
+        onHidden: (hidden) ->
+          toastr.clear propToast
+
+  $rootScope.$on rmapsEventConstants.map.properties.pin, propertyAdded
+  $rootScope.$on rmapsEventConstants.map.properties.favorite, propertyAdded

@@ -208,6 +208,7 @@
     "phantomjs-prebuilt": "2.1.7",
     "poppler-simple": "^0.2.4",
     "pretty-hrtime": "^0.2.1",
+    "probe-image-size": "3.X",
     "promise-ftp": "^1.2.12",
     "promise-ftp-common": "^1.1.5",
     "promise-sftp": "0.X",

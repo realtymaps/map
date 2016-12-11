@@ -87,7 +87,6 @@ getPlan = (userId) ->
 
 # requires a STRIPE subscription object with a status and plan keys in order to determine status string
 _getStatusString = (subscription) ->
-  console.log "_getStatusString()"
   if subscription.status == 'trialing' || subscription.status == 'active'
 
     # note: when a subscription is canceled or in grace period, this will still
@@ -133,14 +132,20 @@ updatePlan = (userId, plan) ->
 
 # returns a status for `session.subscription` to use for subscription level access
 getStatus = (user) -> Promise.try () ->
+
+  # stripe_customer or stripe_subscr may not exist for staff, client subusers, etc...
   if !user.stripe_customer_id? || !user.stripe_subscription_id? # if no customer or subscription exists...
+
+    # check internal permissions (special case stuff like for superuser or staff is handled there)...
     permSvc.getPermissionsForUserId user.id
     .then (results) ->
       # return subscription level for the staff if granted a perm for it
       return config.SUBSCR.PLAN.PRO if results.access_premium
       return config.SUBSCR.PLAN.STANDARD if results.access_standard
+
       return config.SUBSCR.PLAN.NONE
 
+  # a customer with a stripe_plan_id implies we either have or had a subscription, so try to get it...
   else if user.stripe_plan_id? # a stripe subscription exists, retrieve status
     _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
     .then (subscription) ->

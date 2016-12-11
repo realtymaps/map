@@ -29,6 +29,10 @@ getSessionUser = (req) -> Promise.try () ->
   .where(id: req.session.userid)
   .then (user=[]) ->
     user?[0] ? false
+  .then (user) ->
+    if user.mlses_verified?.length
+      user.mlses_verified = _.uniq user.mlses_verified, true, (m) -> m.toUpperCase()
+    user
   .catch (err) ->
     logger.warn analyzeValue.getFullDetails err
     return false
@@ -65,8 +69,6 @@ ignoreThisMethod = (thisMethod, methods) ->
 setSessionCredentials = (req, res) ->
   getSessionUser(req).then (user) ->
     # set the user on the request
-    logger.debug -> "setting user"
-    logger.debug -> _.omit user, "password"
     req.user = user
     if req.user
       return userUtils.cacheUserValues(req)

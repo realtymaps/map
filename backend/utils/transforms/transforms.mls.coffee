@@ -32,6 +32,7 @@ queryPhoto =
         transform: validators.object(json:true)
         required: true
       photoType: validators.string(minLength:2)
+      objectsOpts: validators.object(json: true)
     required: true
   body: validators.object isEmptyProtect: true
 
@@ -43,6 +44,7 @@ paramPhoto =
     databaseId: validators.string(minLength:2)
   query: validators.object subValidateSeparate:
     photoType: validators.string(minLength:2)
+    objectsOpts: validators.object(json: true)
   body: validators.object isEmptyProtect: true
 
 module.exports = {
