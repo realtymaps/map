@@ -5,7 +5,7 @@ include ../mixins/_circleNrMixin.jade
     +circleNrMixin(locals.circleNrArg)
     span.content
       span.author {{model.first_name}} {{model.last_name}} &nbsp;
-      .model-address(ng-if="model.address")
+      .note-address(ng-if="model.address")
         span {{model.address.street}} {{model.address.unit}}
         span {{model.address.citystate}} {{model.address.zip}}
       .text(ng-if="model.text && model.text.length < 25") {{model.text}}
