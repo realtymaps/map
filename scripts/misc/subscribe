@@ -2,6 +2,9 @@
 //
 // Tool for accounting for stripe_subscription_id in `auth_user`.
 // Creates new subscriptions for customers that don't already have active subscriptions.
+//
+// This is a tool meant for resetting and debugging quickly during work on stripe subscription flows.
+//
 // NOTHING is done on users that already have a `stripe_subscription_id`, even if it's an inactive subscription.
 //   (you can make `stripe_subscription_id` null on users for which a new subscription is desired though)
 //
@@ -79,9 +82,10 @@ getFirstActiveSubscription = function(stripe_customer_id) {
 }
 
 // get sub_id saved to db
-saveSubscriptionId = function(stripe_customer_id, stripe_subscription_id) {
+saveSubscriptionId = function(stripe_customer_id, stripe_subscription_id, stripe_plan_id) {
   return tables.auth.user().update({
-    "stripe_subscription_id": stripe_subscription_id}
+    "stripe_subscription_id": stripe_subscription_id,
+    "stripe_plan_id": stripe_plan_id}
   ).where('stripe_customer_id', stripe_customer_id)
   .then( function(){
     successIds.push(stripe_customer_id);
@@ -123,8 +127,8 @@ getSuperusers = function() {
 }
 
 // creates a customer for the user, and applies a subscription
-createCustomerId = function(user_id) {
-  return stripe.customers.create({source: testSourceCC, plan: plan})
+createCustomerId = function(user_id, email) {
+  return stripe.customers.create({source: testSourceCC, plan: plan, email: email})
   .then( function(response){
     var subscriptions = response.subscriptions.data;
     var subscription = null;
@@ -163,7 +167,7 @@ stripeBootstrap
         customer_id = user.stripe_customer_id
 
         // procure a customer_id
-        getCustomerId = (!customer_id) ? createCustomerId(user.id) : Promise.resolve({customer_id: customer_id, subscription_id: null});
+        getCustomerId = (!customer_id) ? createCustomerId(user.id, user.email) : Promise.resolve({customer_id: customer_id, subscription_id: null});
 
         // add to users to process
         promises.push(
@@ -174,7 +178,7 @@ stripeBootstrap
             if (result.subscription_id == null) {
               return getFirstActiveSubscription(result.customer_id)
               .then( function(active){
-                if (typeof(active) != 'undefined' && active) return saveSubscriptionId(result.customer_id, active.id);
+                if (typeof(active) != 'undefined' && active) return saveSubscriptionId(result.customer_id, active.id, plan);
                 else return createSubscription(result.customer_id);
               })
             }
