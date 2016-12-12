@@ -28,7 +28,7 @@ END;
 $$;
 
 SELECT refactor_store_photos();
-DROP FUNCTION refactor_store_photos(VOID);
+DROP FUNCTION refactor_store_photos();
 
 UPDATE jq_subtask_config
 SET
