@@ -12,7 +12,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 internals = require './task.default.mls.photo.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
-NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 500
+NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
 
 
 storePrep = (subtask) ->
