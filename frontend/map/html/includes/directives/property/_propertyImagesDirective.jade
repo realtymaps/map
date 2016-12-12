@@ -34,6 +34,6 @@
 
   flickity.carousel(ng-if="property.photos.length && !coverImage")
     .carousel-cell(ng-repeat="photo in property.photos" index="photo.index")
-      img(src="/assets/progress-big.gif" data-flickity-lazyload="{{photo.url}}")
+      img(data-flickity-lazyload="{{photo.url}}")
 
   .prop-image-status(ng-if="showStatus" class="{{formatters.property.getStatusLabelClass(property)}}") {{formatters.property.getStatusLabel(property, imageWidth)}}
