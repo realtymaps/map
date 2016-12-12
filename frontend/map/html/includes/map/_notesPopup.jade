@@ -1,4 +1,12 @@
-include ../mixins/_noteMixin.jade
+include ../mixins/_circleNrMixin.jade
 
 .notes-popup
-  +noteMixin(locals.first_name, locals.last_name, locals.text, locals.circleNrArg)
+  .note-mixin
+    +circleNrMixin(locals.circleNrArg)
+    span.content
+      span.author {{model.first_name}} {{model.last_name}} &nbsp;
+      .model-address(ng-if="model.address")
+        span {{model.address.street}} {{model.address.unit}}
+        span {{model.address.citystate}} {{model.address.zip}}
+      .text(ng-if="model.text && model.text.length < 25") {{model.text}}
+      .text.large(ng-if="model.text && model.text.length >= 25") {{model.text}}
