@@ -1,4 +1,5 @@
 app = require '../../app.coffee'
+Flickity = require 'flickity-imagesloaded'
 
 app.directive 'propertyImages', (
   $log
@@ -19,7 +20,14 @@ app.directive 'propertyImages', (
     panoramaControls: '@'
     showStatusVal: '@showStatus'
 
-  controller: ($scope) ->
+  controller: ($scope, $element) ->
+
+    $scope.flickityOptions =
+      contain: true
+      cellAlign: 'center'
+      imagesLoaded: true
+      lazyLoad: true
+      pageDots: false
 
     $scope.active = 0
     $scope.showStatus = ($scope.showStatusVal?.toLowerCase() == 'true')
@@ -68,6 +76,11 @@ app.directive 'propertyImages', (
         photos.push
           index: i - 1
           url: "#{resizeUrl}&image_id=#{i}"
+
+      $timeout ->
+        $scope.imagesLoaded = true
+        $log.debug new Flickity('flickity', $scope.flickityOptions)
+      , 50
     else
       imageLoaded()
 
