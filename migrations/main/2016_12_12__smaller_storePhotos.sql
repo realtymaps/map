@@ -29,3 +29,9 @@ $$;
 
 SELECT refactor_store_photos();
 DROP FUNCTION refactor_store_photos(VOID);
+
+UPDATE jq_subtask_config
+SET
+  kill_timeout_minutes = 15,
+  warn_timeout_minutes = 10
+WHERE name LIKE '%_store_photo';
