@@ -40,8 +40,7 @@ span(
                   .note-address(ng-if="note.address")
                     span {{note.address.street}} {{note.address.unit}}
                     span {{note.address.citystate}} {{note.address.zip}}
-                  .text(ng-if="note.text && note.text.length < 25") {{note.text}}
-                  .text.large(ng-if="note.text && note.text.length >= 25") {{note.text}}
+                  .text {{note.text}}
 
               // TODO - add sketch feature in
                 span.sketch
