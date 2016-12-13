@@ -26,7 +26,7 @@ app.directive 'propertyImages', (
       contain: true
       cellAlign: 'center'
       imagesLoaded: true
-      lazyLoad: true
+      lazyLoad: 1
       pageDots: false
 
     $scope.active = 0
