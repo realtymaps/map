@@ -9,6 +9,7 @@ mlsHelpers = require('./util.mlsHelpers')
 _ = require('lodash')
 awsService = require '../services/service.aws'
 internals = require './task.cleanup.internals'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 
 
 rawTables = () ->

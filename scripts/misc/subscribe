@@ -2,6 +2,9 @@
 //
 // Tool for accounting for stripe_subscription_id in `auth_user`.
 // Creates new subscriptions for customers that don't already have active subscriptions.
+//
+// This is a tool meant for resetting and debugging quickly during work on stripe subscription flows.
+//
 // NOTHING is done on users that already have a `stripe_subscription_id`, even if it's an inactive subscription.
 //   (you can make `stripe_subscription_id` null on users for which a new subscription is desired though)
 //
