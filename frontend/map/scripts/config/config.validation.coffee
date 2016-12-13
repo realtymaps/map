@@ -47,11 +47,11 @@ app.config(($provide, $validationProvider) ->
 
     optMinlength: (value, scope, element, attrs, param) ->
       return true unless value
-      value.length >= param;
+      value.length >= param
 
     optMaxlength: (value, scope, element, attrs, param) ->
       return true unless value
-      value.length <= param;
+      value.length <= param
 
     optAddress: (value, scope, element, attrs, param) ->
       return true unless value
