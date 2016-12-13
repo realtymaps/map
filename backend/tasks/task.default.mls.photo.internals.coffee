@@ -77,20 +77,39 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
     .then (upload) ->
 
       payload.data.once 'error', (error) ->
-
+        logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "error" event (payload): '+analyzeValue.getSimpleMessage(error)
         reject(ensureError(error))
 
       upload.concurrentParts(5)
       upload.once 'uploaded', (details) ->
-        logger.spawn(row.data_source_id).debug details
+        logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "uploaded" event: '+JSON.stringify(details)
         resolve(details)
 
       upload.once 'error', (error) ->
+        logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "error" event (upload): '+analyzeValue.getSimpleMessage(error)
         reject(ensureError(error))
+
+      #payload.data.once 'close', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "close" event (payload): '+JSON.stringify(details)
+
+      #payload.data.once 'end', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "end" event (payload): '+JSON.stringify(details)
+
+      #payload.data.once 'finish', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "finish" event (payload): '+JSON.stringify(details)
+
+      #upload.once 'close', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "close" event (upload): '+JSON.stringify(details)
+
+      #upload.once 'end', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "end" event (upload): '+JSON.stringify(details)
+
+      #upload.once 'finish', (details) ->
+      #  logger.spawn(row.data_source_id).debug () -> '['+newFileName+'] "finish" event (upload): '+JSON.stringify(details)
 
       payload.data.pipe(upload)
 
-    .catch (error) -> #missing catch
+    .catch (error) ->
       reject(ensureError(error))
 
 
@@ -170,7 +189,7 @@ _makeUpsertPhoto = ({row, obj, imageId, transaction, table, newFileName}) ->
       transaction
     }
 
-    logger.debug query.toString()
+    #logger.debug query.toString()
     query
 
 
@@ -183,7 +202,7 @@ _enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
       dbFn: tables.deletes.photos
       transaction
     }
-    logger.debug query.toString()
+    #logger.debug query.toString()
     query
   else
     Promise.resolve()
@@ -191,7 +210,6 @@ _enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
 
 storePhotos = (subtask, idObj) -> Promise.try () ->
   taskLogger = logger.spawn(subtask.task_name)
-  taskLogger.debug idObj
 
   mlsId = subtask.task_name.split('_')[0]
   successCtr = 0
@@ -201,7 +219,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
   errorDetails = null
 
   {data_source_uuid, photo_id} = idObj
-  photoRow =
+  photoCriteria =
     data_source_id: mlsId
     data_source_uuid: data_source_uuid
 
@@ -209,7 +227,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
 
   mlsConfigPromise = mlsConfigService.getByIdCached(mlsId)
   photoRowPromise = tables.finalized.photo()
-  .where(photoRow)
+  .where(photoCriteria)
   Promise.join mlsConfigPromise, photoRowPromise, (mlsConfig, rows) ->
 
     taskLogger.debug () -> "Found #{rows.length} existing photo rows for uuid #{data_source_uuid}"
@@ -233,12 +251,10 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
       }
       .then (obj) -> new Promise (resolve, reject) ->
 
-        finePhotologger.debug () -> "RETS responded:\n#{Object.keys(obj)}"
-
         promises = []
         mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
           try
-            finePhotologger.debug () -> "imagesHandle:\n#{payload}"
+            #finePhotologger.debug () -> _.omit(payload, 'data')
 
             if err
               finePhotologger.debug () -> "imagesHandle error:\n#{analyzeValue.getFullDetails(err)}"
@@ -247,12 +263,11 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
               finePhotologger.debug () -> "imagesHandle End!"
               return resolve(Promise.all promises)
 
-            finePhotologger.debug _.omit(payload, 'data')
             {imageId, objectData} = payload
 
             if row? && _hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
               skipsCtr++
-              finePhotologger.debug () -> "photo has same updateDate (#{objectData?.uploadDate}) GTFO."
+              #finePhotologger.debug () -> "photo has same updateDate (#{objectData?.uploadDate}) GTFO."
               return
 
             # Deterministic but partition-friendly bucket names (10000 prefixes)
@@ -262,15 +277,22 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
             partition = crypto.createHash('md5').update(partition).digest('hex').slice(0,4)
             newFileName = "#{partition}/#{mlsId}/#{data_source_uuid}/#{payload.name}"
 
-            uploadPromise = _updatePhoto(subtask, {
-              newFileName
-              imageId
-              data_source_uuid
-              objectData
-              row: photoRow
-              transaction
-              table: tables.finalized.photo
-            })
+            uploadPromise = _uploadPhoto({photoRes, newFileName, payload, row: photoCriteria, debugArray: photoUploadDebug[newFileName]})
+            .then () ->
+              finePhotologger.debug () -> "finished photo upload: #{newFileName}"
+              successCtr++
+              # Cancel any pending deletes since the photo uploaded successfully
+              tables.deletes.photos({transaction}).delete({key: newFileName}).returning('key')
+            .then () ->
+              _updatePhoto(subtask, {
+                newFileName
+                imageId
+                data_source_uuid
+                objectData
+                row: photoCriteria
+                transaction
+                table: tables.finalized.photo
+              })
             .then () ->
               if row?
                 # Queue the OLD photo for deletion
@@ -279,15 +301,6 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
                 partition = crypto.createHash('md5').update(partition).digest('hex').slice(0,4)
                 oldFileName = "#{partition}/#{mlsId}/#{data_source_uuid}/#{payload.name}"
                 _enqueuePhotoToDelete(oldFileName, subtask.batch_id, {transaction})
-            .then () ->
-              _uploadPhoto({photoRes, newFileName, payload, row: photoRow})
-            .then () ->
-              finePhotologger.debug 'photo upload success'
-              successCtr++
-              # Cancel any pending deletes since the photo uploaded successfully
-              tables.deletes.photos({transaction}).delete({key: newFileName}).returning('key')
-              .then (result) ->
-                finePhotologger.debug result
             .catch (error) ->
               errorDetails ?= analyzeValue.getFullDetails(error)
               taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
@@ -312,16 +325,14 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
     if needsRetry || (errorsCtr > 0)
       sqlHelpers.upsert
         dbFn: tables.deletes.retry_photos
-        idObj:
-          data_source_id: mlsId
-          data_source_uuid: data_source_uuid
-          batch_id: subtask.batch_id
+        idObj: photoCriteria
         entityObj:
+          batch_id: subtask.batch_id
           photo_id: photo_id
           error: errorDetails
         conflictOverrideObj:
-          error: undefined
           photo_id: undefined
+          retries: tables.deletes.retry_photos.raw('EXCLUDED.retries + 1')
   .then () ->
     {successCtr, skipsCtr, errorsCtr}
 

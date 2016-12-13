@@ -12,7 +12,8 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 internals = require './task.default.mls.photo.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
-NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 100
+NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 500
+MAX_RETRIES = 50
 
 
 storePrep = (subtask) ->
@@ -27,6 +28,7 @@ storePrep = (subtask) ->
     .where(data_source_id: mlsId)
     .whereNot(batch_id: subtask.batch_id)
     .where('id', '>', minId)
+    .where('retries', '<', MAX_RETRIES)
     .orderBy('id')
     .limit(numRowsToPagePhotos)
     .then (results) ->
@@ -101,14 +103,13 @@ store = (subtask) -> Promise.try () ->
   totalSkips = 0
   totalErrors = 0
 
-  Promise.each subtask.data.values, (idObj) ->
-    # taskLogger.debug () -> "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
+  Promise.each subtask.data.values, (idObj, i) ->
+    taskLogger.debug () -> "processing photo_store value: #{i}/#{JSON.stringify(idObj)}"
     internals.storePhotos(subtask, idObj)
     .then ({successCtr, skipsCtr, errorsCtr}) ->
       totalSuccess += successCtr
       totalSkips += skipsCtr
       totalErrors += errorsCtr
-      # taskLogger.debug () -> "Finished property #{idObj.data_source_uuid}"
   .then () ->
     taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
   .catch retsService.isMaybeTransientRetsError, (error) ->
