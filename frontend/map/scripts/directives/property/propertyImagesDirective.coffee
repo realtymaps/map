@@ -79,7 +79,7 @@ app.directive 'propertyImages', (
 
       $timeout ->
         $scope.imagesLoaded = true
-        $log.debug new Flickity('flickity', $scope.flickityOptions)
+        $log.debug new Flickity($element.find('flickity')[0], $scope.flickityOptions)
       , 50
     else
       imageLoaded()
