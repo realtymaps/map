@@ -1,4 +1,4 @@
-include ../mixins/_noteMixin.jade
+include ../mixins/_circleNrMixin.jade
 
 span(
   ng-hide="Toggles.getHideAnyDraw()"
@@ -33,7 +33,14 @@ span(
         li(ng-repeat="note in map.notesList" ng-cloak ng-click="centerOn(note)")
           div
             span.enity
-              +noteMixin('{{note.first_name}}', '{{note.last_name}}','{{note.text}}','{{note.$index}}', true)
+              .note-mixin
+                +circleNrMixin('{{note.$index}}')
+                span.content
+                  span.author {{note.first_name}} {{note.last_name}} &nbsp;
+                  .note-address(ng-if="note.address")
+                    span {{note.address.street}} {{note.address.unit}}
+                    span {{note.address.citystate}} {{note.address.zip}}
+                  .text {{note.text}}
 
               // TODO - add sketch feature in
                 span.sketch
