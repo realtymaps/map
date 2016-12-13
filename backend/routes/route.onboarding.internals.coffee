@@ -24,7 +24,8 @@ require('../services/services.payment').then (svc) ->
 
 createNewUser = ({body, transaction, plan}) -> Promise.try ->
 
-  return throw new Error "OnBoarding API not ready" if !emailServices or !paymentServices
+  if !emailServices or !paymentServices
+    throw new Error("OnBoarding API not ready")
 
   entity = _.pick body, sqlColumns.basicColumns.user
   entity.email_validation_hash = emailService.makeEmailHash()
