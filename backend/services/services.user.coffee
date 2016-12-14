@@ -1,5 +1,6 @@
-_ = require 'lodash'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('services:user')
+# coffeelint: enable=check_scope
 tables = require '../config/tables'
 {Crud, ThenableCrud, ThenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns} = require '../utils/util.sql.columns'

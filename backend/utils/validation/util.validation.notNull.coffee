@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
-gjv = require 'geojson-validation'
+
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->

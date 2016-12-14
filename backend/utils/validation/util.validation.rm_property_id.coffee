@@ -1,11 +1,12 @@
 Promise = require 'bluebird'
-logger = require '../../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn("util:validation:rm_property_id")
+# coffeelint: enable=check_scope
 DataValidationError = require '../errors/util.error.dataValidation'
 arrayValidation = require './util.validation.array'
 fipsValidation = require './util.validation.fips'
 stringValidation = require './util.validation.string'
 defaultsValidation = require './util.validation.defaults'
-objectValidation = require './util.validation.object'
 
 
 # TODO: this will need to do sophisticated address-based lookups as well

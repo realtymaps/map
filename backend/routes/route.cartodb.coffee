@@ -1,4 +1,6 @@
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:cartodb")
+# coffeelint: enable=check_scope
 internals = require './route.cartodb.internals'
 
 

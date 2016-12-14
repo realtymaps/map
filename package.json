@@ -83,7 +83,7 @@
     "coffeeify": "git://github.com/nmccready/coffeeify.git#d22c0449ceb9c5de1a524ab4a20eef94b3e340a8",
     "coffeelint": "1.11.1",
     "coffeelint-stylish": "^0.1.2",
-    "coffeescope2": "0.4.3",
+    "coffeescope2": "0.4.4",
     "color-wrap": "^0.0.3",
     "colors": "^1.1.2",
     "compression": "1.1.X",

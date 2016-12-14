@@ -1,8 +1,8 @@
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('route:clientEntry')
+# coffeelint: enable=check_scope
 backendRoutes = require '../../common/config/routes.backend'
 clientEntrySvc = require '../services/service.clientEntry'
-userSessionRte = require './route.userSession'
-{createPasswordHash} =  require '../services/service.userSession'
 
 module.exports =
   getClientEntry:

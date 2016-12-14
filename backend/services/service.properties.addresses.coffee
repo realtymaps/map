@@ -1,5 +1,7 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("service:properties:addresses")
+# coffeelint: enable=check_scope
 validation = require '../utils/util.validation'
 {getBaseParcelQueryByBounds} = require './service.properties.parcels'
 

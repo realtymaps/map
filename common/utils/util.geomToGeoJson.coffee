@@ -30,7 +30,9 @@ toGeoFeatureCollection = ({rows = [], opts = {}, doClone = true}) ->
     rows = _.uniq rows, (r) ->
       r[opts.uniqueKey]
 
+  # coffeelint: disable=check_scope
   rows = for key, row of rows
+  # coffeelint: enable=check_scope
     toGeoFeature(row, opts)
 
   type: 'FeatureCollection'

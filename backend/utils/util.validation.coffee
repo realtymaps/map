@@ -1,5 +1,7 @@
 _ = require 'lodash'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('utils:validation')
+# coffeelint: enable=check_scope
 DataValidationError = require './errors/util.error.dataValidation'
 loaders = require './util.loaders'
 doValidationSteps = require './validation/util.impl.doValidationSteps'
@@ -16,7 +18,9 @@ validateAndTransformRequest = (params, definitions) ->
   removeMissing = (params, req) ->
     #TODO This is not always ideal see validation.mapKeys and or using input to remap
     #thinking of adding an ignore list, with parent key
+    # coffeelint: disable=check_scope
     for k, v of params
+    # coffeelint: enable=check_scope
       if !req[k]?
         delete params[k]
       else if _.isObject(params[k]) and _.isObject(req[k])
@@ -39,7 +43,9 @@ defaultRequestTransforms = (obj) ->
 
   return def unless obj
 
+  # coffeelint: disable=check_scope
   for key, val of def
+  # coffeelint: enable=check_scope
     obj[key] = if obj[key]? then obj[key] else def[key]
   obj
 

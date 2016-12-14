@@ -73,7 +73,9 @@ loadRouteOptions = (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
         create()
         continue
 
+      # coffeelint: disable=check_scope
       for key, method of options.methods
+      # coffeelint: enable=check_scope
         #clone route options to have a new instance of a method
         options = _.merge {}, options, method: method
         create()

@@ -6,7 +6,9 @@ libs = [
   require 'knex/lib/schema/builder'
 ]
 
+# coffeelint: disable=check_scope
 for key, lib of libs
+# coffeelint: enable=check_scope
   lib::stringify = (errCb) ->
     @stream()
     .on 'error', (err)->

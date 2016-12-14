@@ -1,4 +1,4 @@
-{lookup, config, auth, finalized} = require '../config/tables'
+{lookup, config, auth} = require '../config/tables'
 {basicColumns} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 clone =  require 'clone'

@@ -6,7 +6,6 @@ logger = require('../config/logger').spawn('task:blackknight:internals')
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 keystore = require '../services/service.keystore'
-moment = require 'moment'
 dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 tables = require '../config/tables'
@@ -392,7 +391,7 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
   # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
   # this means we have to count the number of relevant rows in those tables
   numRowsToPage = subtask.data?.numRowsToPageDelete || NUM_ROWS_TO_PAGINATE
-  activated = false
+
   Promise.map processInfo[DELETE], (mergeData) ->
     fauxSubtask = _.extend({}, subtask, data: mergeData)
     dbFn = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))

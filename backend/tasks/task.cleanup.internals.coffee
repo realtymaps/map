@@ -1,6 +1,8 @@
 Promise = require('bluebird')
 tables = require('../config/tables')
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('task:cleanup:internals')
+# coffeelint: enable=check_scope
 rawLogger = require('../config/logger').spawn('task:cleanup:internals:rawTables')
 config = require('../config/config')
 dbs = require('../config/dbs')

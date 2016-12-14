@@ -1,13 +1,12 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 httpStatus = require '../../common/utils/httpStatus'
-DataValidationError = require './errors/util.error.dataValidation'
-{MissingVarError, UpdateFailedError} = require './errors/util.errors.crud'
 ExpressResponse = require './util.expressResponse'
 url = require 'url'
 logger = require('../config/logger').spawn('util.route.helpers')
 clsFactory = require './util.cls'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+
 
 class NotFoundError extends Error
 

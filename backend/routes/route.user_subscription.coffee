@@ -1,5 +1,6 @@
-_ = require 'lodash'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route.user_subscription")
+# coffeelint: enable=check_scope
 auth = require '../utils/util.auth'
 subscriptionTransforms = require('../utils/transforms/transforms.subscription')
 {validateAndTransformRequest} = require '../utils/util.validation'

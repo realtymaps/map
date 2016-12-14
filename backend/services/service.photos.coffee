@@ -5,9 +5,7 @@ logger = require('../config/logger').spawn('service:photos')
 tables = require '../config/tables'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 sqlHelpers = require '../utils/util.sql.helpers'
-internals = require './service.photos.internals'
 mlsConfigService = require './service.mls_config'
-errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 {NoPhotoObjectsError} = require '../utils/errors/util.errors.photos'
 probe = require 'probe-image-size'
 

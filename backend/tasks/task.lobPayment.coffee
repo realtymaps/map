@@ -1,8 +1,7 @@
 Promise = require "bluebird"
 jobQueue = require '../services/service.jobQueue'
-{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
-_ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger').spawn('task:lobPayment')
 moment = require 'moment'
@@ -64,8 +63,7 @@ findCampaigns = (subtask) ->
 chargeCampaign = (subtask) ->
   campaign = subtask.data
 
-  payment = require('../services/services.payment')
-
+  require('../services/services.payment')
   .then (payment) ->
 
     logger.debug "Checking whether #{campaign.label} is ready for billing"

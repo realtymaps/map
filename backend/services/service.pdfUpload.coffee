@@ -1,9 +1,7 @@
 tables = require '../config/tables'
 awsService = require './service.aws'
-lobService = require './service.lob'
 pdfService = require './service.pdf'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
-mockLobData = require '../json/mail.fakeLetter.json'
 
 
 class PdfUploadService extends ServiceCrud
