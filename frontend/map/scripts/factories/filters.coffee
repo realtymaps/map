@@ -2,6 +2,8 @@
 Filters service to get current and set filters
 ###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 app.factory 'rmapsFiltersFactory', () ->
 

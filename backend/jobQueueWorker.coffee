@@ -6,6 +6,7 @@ jobQueue = require './services/service.jobQueue'
 require './routes/route.hirefire'
 shutdown = require './config/shutdown'
 analyzeValue = require '../common/utils/util.analyzeValue'
+Promise = require 'bluebird'
 
 
 queueName = process.argv[2]

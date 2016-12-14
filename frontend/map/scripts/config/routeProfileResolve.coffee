@@ -1,5 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 app.constant 'rmapsRouteProfileResolve', (
 $location
@@ -33,4 +35,3 @@ currentIdentity
       # Default to the session profile or the first profile for the identity
       $log.debug "Loading profile based on identity.currentProfileId #{currentIdentity.currentProfileId}"
       return rmapsProfilesService.setCurrentProfileByIdentity currentIdentity
-

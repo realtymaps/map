@@ -1,4 +1,5 @@
 msie = document.documentMode
+_ = require 'lodash'
 ###
   PLEASE NOTE!
 
@@ -138,7 +139,7 @@ _http = (opts, cb) ->
       # Occurs when accessing file resources or on Android 4.1 stock browser
       # while retrieving files from application cache.
       if status == 0
-        status = if response then 200 else if urlResolve(url).protocol == 'file' then 404 else 0
+        status = if response then 200 else if urlResolve(opts.url).protocol == 'file' then 404 else 0
 
       if !isSuccess(status)
         err = statusText

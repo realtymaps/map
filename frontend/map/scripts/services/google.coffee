@@ -52,13 +52,13 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
         type = 'Point'
 
         _toLatLon = (geoJson) ->
-          return unless _isPoint(geoJson)
+          return if type != geoJson.type
           new Point(geoJson.coordinates[1], geoJson.coordinates[0])
 
         #public
         toLatLon: _toLatLon
         toBounds:(geoJson) ->
-          return unless _isCorrectType(type, geoJson)
+          return if type != geoJson.type
           point = _toLatLon(geoJson)
           new L.latLngBounds(point,point)
 

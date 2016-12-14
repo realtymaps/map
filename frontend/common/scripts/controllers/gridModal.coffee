@@ -1,4 +1,7 @@
 mod = require '../module.coffee'
+_ = require 'lodash'
+
+
 mod.factory 'rmapsGridModalFactory', ($log) ->
   ->
     [ '$scope', '$uibModalInstance', 'columnDefs', 'record', 'gridName', 'fieldTypeMap',

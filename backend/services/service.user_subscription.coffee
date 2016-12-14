@@ -61,10 +61,10 @@ setPlan = (userId, plan) ->
 
     # defensive checks
     if res.canceled_at
-      throw new PartiallyHandledError(err, "Current subscription is cancelled, please re-enroll.")
+      throw new PartiallyHandledError("Current subscription is cancelled, please re-enroll.")
 
     if res.plan?.id == config.SUBSCR.PLAN.PRO
-      throw new PartiallyHandledError(err, "Current subscription is already premium status.")
+      throw new PartiallyHandledError("Current subscription is already premium status.")
 
     stripe.customers.cancelSubscription(res.customer, res.id)
     .then (cancelled) ->

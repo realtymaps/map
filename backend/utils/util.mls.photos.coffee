@@ -1,118 +1,97 @@
+_ = require 'lodash'
 Archiver = require 'archiver'
 through = require 'through2'
 logger = require('../config/logger').spawn('util:mls:photos')
-payloadLogger = require('../config/logger').spawn('util:mls:photos:payload')
 eventLogger = require('../config/logger').spawn('util:mls:photos:event')
 logger = require('../config/logger').spawn('util:mls:photos')
 photoErrors = require '../utils/errors/util.errors.photos'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 request = require 'request'
 
+
+imageEventTransform = () ->
+  everSentData = false
+  imageId = 0
+
+  # coffeelint: disable=check_scope
+  transform = (event, enc, cb) ->
+  # coffeelint: enable=check_scope
+    try
+
+      if event?.error?
+        eventLogger.debug -> "data event has an error #{analyzeValue.getFullDetails(event.error)}"
+        #NOTE this should be a RetsError
+        cb(event.error)
+        return
+
+      listingId = event.headerInfo.contentId
+      fileExt = event.headerInfo.contentType.replace('image/','')
+      location = event.headerInfo.location
+      fileName = "#{listingId}_#{imageId}.#{fileExt}"
+
+      event.extra = {fileExt,fileName,imageId,listingId}
+
+      if location?
+        event.extra.makeDataStream = () ->
+          logger.debug -> 'calling event.extra.makeDataStream'
+          request(location)
+
+      imageId++
+      everSentData = true
+
+      @push(event)
+      return cb()
+    catch error
+      return cb(new photoErrors.ObjectsStreamError(error))
+
+  flush = (cb) ->
+    if !everSentData
+      eventLogger.debug -> "Error: Finished Events Transform with no object events"
+      return cb(new photoErrors.NoPhotoObjectsError 'No object events')
+    eventLogger.debug -> "Finished Events Transform"
+    cb()
+
+  through.obj(transform, flush)
+
+
+toPhotoStream = (retsPhotoObject) ->
+  retsPhotoObject.objectStream
+  .pipe(imageEventTransform())
+
+
 ###
   Return a single image stream which is either a direct dataStream or cached location stream.
 
   The immediate returnable stream is used to track if the image stream is empty.
 ###
-imageStream = (object) ->
-  error = null
+imageStream = (photoObject) ->
+  l = logger.spawn("imageStream")
+  l.debug -> "photoObject"
+  l.debug -> _.omit photoObject, "objectStream"
 
-  #immediate returnable stream
-  retStream = through (chunk, enc, callback) ->
-    if !chunk && !everSentData
-      return callback new Error 'No object events'
+  retStream = through()
 
-    if error?
-      return callback(error)
-
-    @push chunk
-    callback()
-
-  everSentData = false
-  #as data MAYBE comes in push it to the returned stream
-  object.objectStream.once 'data', (event) ->
-    if event.error
-      return error = event.error
-
-    eventLogger.debug -> event.headerInfo
-    everSentData = true
+  toPhotoStream(photoObject).once 'data', (event) ->
 
     stream = if event.dataStream
+      l.debug -> "event.dataStream"
       event.dataStream
-    else if event.headerInfo.location #YAY it is cached for us already
-      request(event.headerInfo.location)
+    else if event.extra.makeDataStream #YAY it is cached for us already
+      l.debug -> "event.makeDataStream"
+      event.extra.makeDataStream()
     else
+      l.debug -> "event has no dataStream"
       through()
 
     stream.pipe(retStream)
 
-  retStream
+  return retStream
 
 
-imagesHandle = (object, cb, doThrowNoEvents = false) ->
-  everSentData = false
-  imageId = 0
-
-  object.objectStream.once 'error', (error) ->
-    try
-      # logger.debug "error event received"
-      cb(new photoErrors.ObjectsStreamError(error))
-    catch err
-      logger.debug -> analyzeValue.getFullDetails(err)
-      throw err
-
-  object.objectStream.on 'data', (event) ->
-
-    try
-      # eventLogger.debug "data event received"
-
-      if event?.error?
-        eventLogger.debug -> "data event has an error #{analyzeValue.getFullDetails(event.error)}"
-        cb(event.error)
-        return
-
-      eventLogger.debug -> "event"
-      eventLogger.debug -> event
-      listingId = event.headerInfo.contentId
-      fileExt = event.headerInfo.contentType.replace('image/','')
-      contentType = event.headerInfo.contentType
-      location = event.headerInfo.location
-
-      everSentData = true
-      fileName = "#{listingId}_#{imageId}.#{fileExt}"
-
-      # not handling event.dataStream.once 'error' on purpose
-      # this makes it easier to discern overall errors vs individual photo error
-      payload = {data: event.dataStream, name: fileName, imageId, contentType, location}
-
-      if payload.location?
-        eventLogger.makeData = () ->
-          logger.debug -> 'calling makeData'
-          request(payload.location)
-
-      if event.headerInfo.objectData?
-        payload.objectData = event.headerInfo.objectData
-
-      imageId++
-      cb(null, payload)
-    catch err
-      eventLogger.debug -> analyzeValue.getFullDetails(err)
-      throw err
-
-  object.objectStream.once 'end', () ->
-    try
-      # logger.debug "end event received"
-      if !everSentData and doThrowNoEvents
-        # logger.debug "end event received -- callback with NoPhotoObjectsError"
-        cb(new photoErrors.NoPhotoObjectsError 'No object events')
-      # logger.debug "end event received -- no NoPhotoObjectsError"
-      cb(null, null, true)
-    catch err
-      logger.debug analyzeValue.getFullDetails(err)
-      throw err
-
-
-imagesStream = (object, archive = Archiver('zip')) ->
-
+imagesStream = (photoObject, archive = Archiver('zip')) ->
+  l = logger.spawn("imagesStream")
+  l.debug -> "photoObject"
+  l.debug -> _.omit photoObject, "objectStream"
   ###
     Example: Chunked Response to download images directly
     ===========================================
@@ -132,34 +111,45 @@ imagesStream = (object, archive = Archiver('zip')) ->
   retStream = through()
 
   archive.once 'error', (err)  ->
+    l.error err
     retStream.emit('error', new photoErrors.ArchiveError(err))
 
-  #pump images through the archive
-  imagesHandle object, (err, payload, isEnd) ->
-    if err
-      return retStream.emit('error', err)
+  toArchive = (event, enc, cb) ->
+    try
+      if event.dataStream?
+        l.debug -> "event.dataStream fileName: #{event.extra.fileName}"
+        archive.append(event.dataStream, name: event.extra.fileName)
 
-    if isEnd
+      if event.extra.makeDataStream?
+        l.debug -> "event.extra.makeDataStream() fileName: #{event.extra.fileName}"
+        archive.append(event.extra.makeDataStream(), name: event.extra.fileName)
+
+      l.debug -> "finish appending fileName: #{event.extra.fileName}"
+      cb()
+    catch error
+      cb(new photoErrors.ArchiveError(error))
+
+
+  flush = (cb) ->
+    try
       archive.finalize()
-      payloadLogger.debug("Archive wrote #{archive.pointer()} bytes")
-      return
+      l.debug -> "Archive wrote #{archive.pointer()} bytes"
+      cb()
+    catch error
+      cb(new photoErrors.ArchiveError(error))
 
-    payloadLogger.debug -> "payload"
-    payloadLogger.debug -> payload
 
-    if payload.data?
-      archive.append(payload.data, name: payload.name)
-
-    if payload.location?
-      payloadLogger.debug -> 'payload.location'
-      archive.append(payload.makeData(), name: payload.name)
-
+  toPhotoStream(photoObject)
+  .pipe(through.obj(toArchive,flush))
 
   archive.pipe(retStream)
 
+  return retStream
+
 
 module.exports = {
-  imagesHandle
+  imageEventTransform
+  toPhotoStream
   imagesStream
   imageStream
 }

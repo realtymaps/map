@@ -1,16 +1,13 @@
-{should, expect}= require('chai')
+{should}= require('chai')
 should()
-# sinon = require 'sinon'
 Promise = require 'bluebird'
-logger = require('../../specUtils/logger').spawn('task.default.mls.photo.internals')
+# logger = require('../../specUtils/logger').spawn('task:util:mls:photo')
 rewire = require 'rewire'
-subject = rewire "../../../backend/tasks/task.default.mls.photo.internals"
-SqlMock = require '../../specUtils/sqlMock.coffee'
+subject = rewire "../../../backend/tasks/util.mlsPhotoHelpers"
+SqlMock = require '../../specUtils/sqlMock'
 
 
-describe 'task.default.mls.photo.internals', ->
-
-  _getCdnPhotoShard = subject.__get__('_getCdnPhotoShard')
+describe 'util.mlsPhotoHelpers', ->
 
   subject.__set__ 'keystore', cache:
     getValuesMap: -> Promise.try ->
@@ -20,9 +17,6 @@ describe 'task.default.mls.photo.internals', ->
   # See SqlMock.coffee for explanation of blockToString
   photo = new SqlMock('finalized', 'photo', blockToString: true)
 
-  tableMocks =
-    finalized:
-      photo: () -> photo
 
   beforeEach ->
     photo.resetSpies()
@@ -35,7 +29,7 @@ describe 'task.default.mls.photo.internals', ->
       row = {data_source_id, data_source_uuid}
       newFileName = 'kitchen.jpg'
 
-      _getCdnPhotoShard({
+      subject.getCdnPhotoShard({
         row
         newFileName
       })

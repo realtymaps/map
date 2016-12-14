@@ -6,6 +6,7 @@ through = require 'through2'
 mlsHelpers = require '../tasks/util.mlsHelpers'
 transforms = require '../utils/transforms/transforms.mls'
 mlsRouteUtil = require '../utils/util.route.mls'
+Promise =  require 'bluebird'
 
 
 # example

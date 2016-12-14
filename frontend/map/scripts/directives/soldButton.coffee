@@ -1,4 +1,6 @@
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 app.directive 'rmapsSoldButton', ($rootScope, $log, $compile, rmapsFiltersFactory) ->
   $log = $log.spawn 'rmapsSoldButton'

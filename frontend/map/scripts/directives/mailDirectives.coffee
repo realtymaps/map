@@ -1,6 +1,6 @@
-###global: rangy###
 app = require '../app.coffee'
 _ = require 'lodash'
+rangy = require 'rangy'
 config = require '../../../../common/config/commonConfig.coffee'
 
 
