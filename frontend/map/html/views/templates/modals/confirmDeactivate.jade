@@ -1,0 +1,15 @@
+include ../../../../../common/html/includes/mixins/_spinnerMixin.jade
+
+.modal-header
+  h3.modal-title Are you sure?
+  +spinnerMixin()(ng-if="processing")
+.modal-body
+  p Please tell us your reason for deactivation:
+  textarea.form-control(
+    cols=25
+    rows=4
+    ng-model="deactivation.reason"
+  )
+.modal-footer
+  button.btn.btn-default(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel
+  button.btn.btn-primary(type='button', ng-click='(modalOk || $close)(); $event.stopPropagation()') OK
