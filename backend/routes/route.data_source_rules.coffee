@@ -1,5 +1,6 @@
-_ = require 'lodash'
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("route:data_source_rules")
+# coffeelint: enable=check_scope
 auth = require '../utils/util.auth'
 rulesService = require '../services/service.dataSourceRules'
 crudHelpers = require '../utils/crud/util.crud.route.helpers'

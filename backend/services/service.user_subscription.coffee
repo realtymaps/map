@@ -3,8 +3,9 @@ config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
-db = dbs.get('main')
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("service.user_subscription")
+# coffeelint: enable=check_scope
 permSvc = require './service.permissions'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
@@ -104,7 +105,7 @@ _getStatusString = (subscription) ->
 # update plan among paid subscription levels
 updatePlan = (userId, plan) ->
   if !(plan in config.SUBSCR.PLAN.PAID_LIST)
-    throw new PartiallyHandledError(err, "Cannot upgrade to plan #{plan} because it is invalid.")
+    throw new PartiallyHandledError("Cannot upgrade to plan #{plan} because it is invalid.")
 
   getSubscription(userId)
   .then (res) ->

@@ -36,14 +36,13 @@ getImageByCompany = (company_id) ->
 
 upsertImage = ({entity, blob, context}) ->
   context ?= 'user'
+  fkTable = tables.user.company
+
+  linkIdField = 'company_id'
 
   if context == 'user'
     fkTable = tables.auth.user
     linkIdField = 'auth_user_id'
-  else
-    fkTable = tables.user.company
-    linkIdField = 'company_id'
-
 
   getImage(entity)
   .then (image) ->

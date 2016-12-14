@@ -3,7 +3,6 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require '../config/logger'
-sqlHelpers = require '../utils/util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
 externalAccounts = require '../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
@@ -157,4 +156,5 @@ module.exports = new TaskImplementation 'corelogic', {
   finalizeDataPrep
   finalizeData
   activateNewData: dataLoadHelpers.activateNewData
+  saveProcessedDates
 }

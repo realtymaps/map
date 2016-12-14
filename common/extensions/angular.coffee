@@ -34,7 +34,7 @@ if window?.angular?
 
   # copied from angular private functions
   if !angular.getBlockNodes
-    angular.getBlockNodes = getBlockNodes = (nodes) ->
+    angular.getBlockNodes = (nodes) ->
       # TODO(perf): update `nodes` instead of creating a new object?
       node = nodes[0]
       endNode = nodes[nodes.length - 1]

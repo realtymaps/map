@@ -87,7 +87,7 @@ transform = (filename, {matches, skips} = {}) ->
     # logger.debug -> matches
 
     badContents = null
-    for toCheck, i in matches
+    for toCheck in matches
       if !/ngInject/g.test(toCheck) && !isAngularInjection(toCheck)
         badContents = toCheck
         break

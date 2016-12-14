@@ -18,8 +18,8 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 util = require 'util'
 keystore = require '../services/service.keystore'
 dbs = require '../config/dbs'
-sqlHelpers = require '../utils/util.sql.helpers'
 internals = require './task.digimaps.internals'
+
 
 {
   NUM_ROWS_TO_PAGINATE

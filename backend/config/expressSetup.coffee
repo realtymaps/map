@@ -4,7 +4,6 @@ config = require './config'
 
 newrelic = require './newrelic'
 express = require 'express'
-path = require 'path'
 Promise = require 'bluebird'
 paths = require '../../common/config/paths'
 _ = require 'lodash'
@@ -26,14 +25,15 @@ session = require 'express-session'
 sessionStore = require('connect-pg-simple')(session)
 compress = require 'compression'
 bodyParser = require 'body-parser'
+# coffeelint: disable=check_scope
 favicon = require 'serve-favicon'
+# coffeelint: enable=check_scope
 cookieParser = require 'cookie-parser'
 methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 promisify = require './promisify'
-sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
 
 app = express()

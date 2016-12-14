@@ -1,7 +1,5 @@
-_ = require 'lodash'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
-Promise = require 'bluebird'
 
 
 commonColumnFields = [

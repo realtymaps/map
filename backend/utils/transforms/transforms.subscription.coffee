@@ -1,5 +1,5 @@
 config = require '../../config/config'
-{validators, requireAllTransforms} = require '../util.validation'
+{validators} = require '../util.validation'
 
 module.exports =
 

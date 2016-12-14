@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 chargeService = null
 require('../services/services.payment').then (svc) ->
   chargeService = svc.charges

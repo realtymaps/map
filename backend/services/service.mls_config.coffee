@@ -1,5 +1,7 @@
 _ = require 'lodash'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('service:mls_config')
+# coffeelint: enable=check_scope
 externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'

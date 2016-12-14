@@ -1,7 +1,6 @@
 _ = require 'lodash'
 require '../../common/extensions/strings'
 logger = require('../config/logger').spawn('task:util:events')
-tables = require('../config/tables')
 notificationsSvc = require '../services/service.notifications'
 profileService = require '../services/service.profiles'
 propertyDetailsService = require '../services/service.properties.combined.details'
@@ -49,7 +48,9 @@ _propertiesReduce = (rows) ->
 
 _propertiesFlatten = (propertiesMap) ->
   flat = []
+  # coffeelint: disable=check_scope
   for k, v of propertiesMap
+  # coffeelint: enable=check_scope
     for k2, row of v
       if k2 == 'nulls'
         flat = flat.concat row
@@ -152,7 +153,9 @@ _propertySavedUserDataExtension = ({auth_user_id, project_id}, options) ->
     logger.debug profile
 
     promises = []
+    # coffeelint: disable=check_scope
     for key, props of clonedOptions.properties
+    # coffeelint: enable=check_scope
       for property in props
         do (property) ->
           if !property?.rm_property_id? and !property?.geometry_center?

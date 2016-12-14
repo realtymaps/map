@@ -1,7 +1,9 @@
 auth = require '../utils/util.auth'
 {user} = require '../services/services.user'
 {RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('route:user')
+# coffeelint: enable=check_scope
 {mergeHandles} = require '../utils/util.route.helpers'
 validation = require '../utils/util.validation'
 transforms = require '../utils/transforms/transforms.user'
