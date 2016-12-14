@@ -2,7 +2,6 @@ _ = require 'lodash'
 memoize = require 'memoizee'
 Promise = require 'bluebird'
 
-config = require '../config/config'
 logger = require '../config/logger'
 tables = require '../config/tables'
 dbs = require '../config/dbs'

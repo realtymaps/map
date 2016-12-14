@@ -2,11 +2,10 @@ Promise = require "bluebird"
 jobQueue = require '../services/service.jobQueue'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
-_ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
 LobErrors = require '../utils/errors/util.errors.lob'
 lobSvc = require '../services/service.lob'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+{isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 logger = require('../config/logger').spawn('task:lobCleanup')
 config = require '../config/config'
 

@@ -1,6 +1,8 @@
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('task:mls')
+# coffeelint: enable=check_scope
 tables = require '../config/tables'
 retsService = require '../services/service.rets'
 dataLoadHelpers = require './util.dataLoadHelpers'

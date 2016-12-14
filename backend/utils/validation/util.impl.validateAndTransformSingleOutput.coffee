@@ -1,6 +1,8 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require('../../config/logger').spawn('utils:validation')
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn('utils:imple:validateAndTransformSingleOutput')
+# coffeelint: enable=check_scope
 doValidationSteps = require './util.impl.doValidationSteps'
 DataValidationError = require '../errors/util.error.dataValidation'
 noop = require './util.validation.noop'

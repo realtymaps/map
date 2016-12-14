@@ -210,7 +210,7 @@ safeJsonEntity = (entity) ->
   # JSON array when serializing to SQL, plus to ensure we get a db-NULL instead of a JSON null
   if typeof(entity) != 'object'
     return entity
-  result = _.mapValues entity, (val) ->
+  return _.mapValues entity, (val) ->
     if _.isArray(val)
       return JSON.stringify(val)
     return val

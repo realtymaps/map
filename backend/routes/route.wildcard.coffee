@@ -1,6 +1,7 @@
-config = require '../config/config'
 ExpressResponse = require '../utils/util.expressResponse'
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("route:wildcard")
+# coffeelint: enable=check_scope
 httpStatus = require '../../common/utils/httpStatus'
 viewsRoute = require './route.views'
 

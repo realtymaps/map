@@ -2,7 +2,9 @@ _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
-logger = require('../config/logger').spawn('routes:crud:projectSession')
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn('routes:projectSession:internals')
+# coffeelint: enable=check_scope
 tables = require('../config/tables')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
@@ -12,7 +14,6 @@ userSvc = (require '../services/services.user').user.clone().init(false, true, '
 userUtils = require '../utils/util.user'
 ProjectSvcClass = require('../services/service.user.project')
 # Needed for temporary create client user workaround until onboarding is completed
-routeUserSessionInternals = require './route.userSession.internals'
 Promise = require 'bluebird'
 # End temporary
 projectSvc = new ProjectSvcClass(tables.user.project).init(false)

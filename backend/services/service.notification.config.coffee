@@ -2,7 +2,9 @@ _ = require 'lodash'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 internals =  require './service.notification.config.internals'
-logger = require('../config/logger')
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("service:notification")
+# coffeelint: enable=check_scope
 clone = require 'clone'
 
 ###

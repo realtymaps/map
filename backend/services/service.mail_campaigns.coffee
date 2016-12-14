@@ -61,12 +61,13 @@ class MailService extends ServiceCrud
       .then (response) ->
 
         # 'sent' and 'total' statistics
-        details =
+        return {
           single_lob_response: letterResults.lob_response
           sent: letterResults.sent
           total: letterResults.count
           pdf: response.pdf
           price: response.price
+        }
 
   getProperties: (project_id, auth_user_id) ->
 

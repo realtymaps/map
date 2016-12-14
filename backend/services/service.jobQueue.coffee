@@ -1,10 +1,7 @@
 require '../config/promisify'
-path = require 'path'
-loaders = require '../utils/util.loaders'
 Promise = require 'bluebird'
 sqlHelpers = require '../utils/util.sql.helpers'
 logger = require('../config/logger').spawn('jobQueue')
-analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 tables = require '../config/tables'
 cluster = require 'cluster'
@@ -290,7 +287,6 @@ doMaintenance = () ->
 
 getQueueNeeds = () ->
   queueNeeds = {}
-  queueZombies = {}
   queueConfigs = {}
   dbs.transaction (transaction) ->
     queueConfigPromise = tables.jobQueue.queueConfig({transaction})

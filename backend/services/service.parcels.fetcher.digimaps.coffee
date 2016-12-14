@@ -89,8 +89,9 @@ defineImports = (opts) -> Promise.try ->
           .finally () ->
             logger.debug 'closing getClient'
             getClient.end()
-
+      # coffeelint: disable=check_scope
       for key, name of folderNamesToProcess
+      # coffeelint: enable=check_scope
         fullPath = "/#{rootDir}/#{name}/#{endDir}"
         logger.debug "defineImports: step 2, fullPath: #{fullPath}"
         promises.push _getImports(fullPath)

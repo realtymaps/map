@@ -130,7 +130,6 @@ getCurrentSessionProfile = (session) ->
 # The parameter "profile" may actually be an entity with both project & profile fields, but doesn't have to be
 update = (profile, auth_user_id) -> Promise.try () ->
   if !auth_user_id? then throw new Error("auth_user_id is undefined")
-  updatePromises = []
 
   where = {id: profile.id, auth_user_id: auth_user_id}
   _updateProfileWhere(profile, where)

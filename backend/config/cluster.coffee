@@ -1,5 +1,4 @@
 # Include the cluster module
-Promise = require 'bluebird'
 cluster = require('cluster')
 config = require './config'
 logger = require('./logger').spawn('cluster')

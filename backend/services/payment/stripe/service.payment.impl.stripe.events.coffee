@@ -3,8 +3,6 @@ _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 {emailPlatform} = require '../../services.email'
 tables = require '../../../config/tables'
-dbs = require '../../../config/dbs'
-db = dbs.get('main')
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted

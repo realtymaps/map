@@ -1,6 +1,8 @@
 escape = require 'escape-html'
 Promise = require 'bluebird'
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn('service:expressResponse')
+# coffeelint: enable=check_scope
 csvStringify = Promise.promisify(require('csv-stringify'))
 {PartiallyHandledError} = require './errors/util.error.partiallyHandledError'
 

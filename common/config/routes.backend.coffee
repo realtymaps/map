@@ -138,8 +138,6 @@ module.exports =
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes
     byId: "#{apiBaseAccountUseTypes}/:id"
-  version:
-    version: "#{apiBase}/version"
   config:
     apiBase: apiBaseConfig
     safeConfig: "#{apiBaseConfig}/safeConfig"

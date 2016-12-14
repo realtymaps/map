@@ -1,6 +1,7 @@
-_ = require 'lodash'
 Promise = require 'bluebird'
-logger = require '../../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn("util:validation:numStories")
+# coffeelint: enable=check_scope
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->

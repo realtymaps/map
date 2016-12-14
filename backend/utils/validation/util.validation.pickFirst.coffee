@@ -3,7 +3,9 @@ Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 arrayValidation = require './util.validation.array'
 doValidationSteps = require './util.impl.doValidationSteps'
-logger = require '../../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn("util:validation:pickFirst")
+# coffeelint: enable=check_scope
 
 module.exports = (options = {}) ->
   (param, values) ->

@@ -8,7 +8,7 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('dataLoadHelpers')
 sqlHelpers = require '../utils/util.sql.helpers'
 dbs = require '../config/dbs'
-{HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
 copyStream = require 'pg-copy-streams'
 utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
@@ -298,7 +298,9 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
       usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
       diffExcludeKeys = ['rm_raw_id']
       if dataSourceType == 'mls'
+        # coffeelint: disable=check_scope
         for groupName, validationList of validationMap
+        # coffeelint: enable=check_scope
           for validationDefinition in validationList
             # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
             # fields for those don't have to be explicitly reused
@@ -308,7 +310,9 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
               # explicitly exclude these keys from diff, because they are derived values based on date
               diffExcludeKeys.concat(_getUsedInputFields(validationDefinition))
       else if dataSourceType == 'county'
+        # coffeelint: disable=check_scope
         for groupName, validationList of validationMap
+        # coffeelint: enable=check_scope
           for validationDefinition in validationList
             # generally, don't count the 'base' fields as being used, but we do for 'address', as the source
             # fields for those don't have to be explicitly reused
@@ -469,9 +473,14 @@ _flattenRow = (row, dataSourceType, dataType) ->
   flattened = {}
 
   # first get the [{name: x1, value: y1} ...] lists flattened down as {x1: y1, x2: y2, ...}
+  # coffeelint: disable=check_scope
   for groupName, groupList of row.shared_groups
+  # coffeelint: enable=check_scope
     getValues(groupList, flattened)
+
+  # coffeelint: disable=check_scope
   for groupName, groupList of row.subscriber_groups
+  # coffeelint: enable=check_scope
     getValues(groupList, flattened)
 
   # then merge in hidden and ungrouped fields
@@ -572,7 +581,7 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
-  parts = dataLoadHistory.raw_table_name.split('_')
+
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
     dbStreamer = null

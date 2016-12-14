@@ -1,5 +1,6 @@
-_ = require 'lodash'
-logger = require('../config/logger').spawn("route.paymentMethod")
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("route:paymentMethod")
+# coffeelint: enable=check_scope
 auth = require '../utils/util.auth'
 paymentTransforms = require('../utils/transforms/transforms.payment')
 {validateAndTransformRequest} = require '../utils/util.validation'

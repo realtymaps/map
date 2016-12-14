@@ -1,7 +1,9 @@
 gulp = require 'gulp'
 istanbul = require 'gulp-coffee-istanbul'
 paths = require '../../common/config/paths'
+# coffeelint: disable=check_scope
 logger = require('../util/logger').spawn('mocha')
+# coffeelint: enable=check_scope
 require './unitPrep'
 {spawn} = require('child_process')
 

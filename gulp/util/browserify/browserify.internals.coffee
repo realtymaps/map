@@ -119,7 +119,7 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
 
   #look for new files
   #TODO: I don't believe this is working currently
-  watcher = watch inputGlob, conf.chokidarOpts, _.debounce () ->
+  watch inputGlob, conf.chokidarOpts, _.debounce () ->
     # Re-evaluate input pattern so new files are picked up
     globby(inputGlob)
     .then (newEntries) ->
