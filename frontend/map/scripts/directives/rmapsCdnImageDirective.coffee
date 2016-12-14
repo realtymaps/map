@@ -21,7 +21,7 @@ app.directive 'rmapsCdnImage', ($rootScope, $log, $compile, $interpolate) ->
     remap = (srcAttr, originalSrc = element.attr(srcAttr)) ->
       $log.debug "original #{srcAttr}:", originalSrc
       interpolatedSrc = $interpolate(originalSrc)(scope)
-      if interpolatedSrc?.indexOf('http') != 0
+      if interpolatedSrc?.indexOf('http') != 0 && interpolatedSrc?.indexOf('//' != 0)
         shard = (interpolatedSrc.match(/.*\/(\w+)\.\w+/)?[1]?.charCodeAt(0) || 0) % 2
         element.attr(srcAttr, "//prodpull#{shard+1}-realtymapsterllc.netdna-ssl.com#{originalSrc}")
         $log.debug "new #{srcAttr}", element.attr(srcAttr)
