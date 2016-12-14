@@ -81,7 +81,7 @@ createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
     cssOpts.minify = true
 
   b = browserify config
-  .transform(coffeelint({lintIgnore, watch}))
+  .transform(coffeelint({lintIgnore, watch, doSourceMaps}))
   .on 'error', (error) ->
     logger.error error.stack
     logger.error error
