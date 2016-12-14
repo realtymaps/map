@@ -19,7 +19,7 @@ app.directive 'propertyImages', (
     coverImage: '@'
     panoramaControls: '@'
     showStatusVal: '@showStatus'
-    blockGoogle: '@blockGoogle'
+    blockGoogleVal: '@blockGoogle'
 
   controller: ($scope, $element) ->
 
@@ -32,6 +32,7 @@ app.directive 'propertyImages', (
 
     $scope.active = 0
     $scope.showStatus = ($scope.showStatusVal?.toLowerCase() == 'true')
+    $scope.blockGoogle = ($scope.blockGoogleVal?.toLowerCase() == 'true')
 
     $scope.formatters = {
       results: new rmapsResultsFormatterService  scope: $scope

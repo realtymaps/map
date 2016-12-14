@@ -22,7 +22,7 @@
       width 100%
       position absolute
       left 0
-      top 25%
+      top 35%
 
   .carousel
     width 100%
@@ -42,6 +42,7 @@
         height auto
         display block
         position relative
+        min-height 200px
         &:before
           content " "
           display block
@@ -53,7 +54,6 @@
           background-color $gray_lighter
           border 2px dotted $gray
           border-radius 5px
-          min-height 700px
         &:after
           content "\f12a"
           font-size 50px
@@ -62,6 +62,7 @@
           position absolute
           width 100%
           left 0
+          top 25%
 
 // Wrapper DIV around Property image or street view
 .prop-image
@@ -82,6 +83,8 @@
 
       img
         min-width 750px
+        &.flickity-lazyerror
+          min-height 565px
 
   .carousel
     .item
