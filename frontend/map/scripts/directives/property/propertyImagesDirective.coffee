@@ -19,6 +19,7 @@ app.directive 'propertyImages', (
     coverImage: '@'
     panoramaControls: '@'
     showStatusVal: '@showStatus'
+    blockGoogle: '@blockGoogle'
 
   controller: ($scope, $element) ->
 

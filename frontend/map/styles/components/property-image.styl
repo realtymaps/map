@@ -5,6 +5,25 @@
 //
 
 .property-img
+
+  .no-images
+    height 150px
+    &:before
+      content " "
+      position absolute
+      left 0
+      height 100%
+      width 100%
+      background-color $gray_lighter
+    &:after
+      content "No Photos"
+      font-size 20px
+      color $gray
+      width 100%
+      position absolute
+      left 0
+      top 25%
+
   .carousel
     width 100%
 
@@ -23,7 +42,6 @@
         height auto
         display block
         position relative
-        min-height 700px
         &:before
           content " "
           display block
@@ -35,6 +53,7 @@
           background-color $gray_lighter
           border 2px dotted $gray
           border-radius 5px
+          min-height 700px
         &:after
           content "\f12a"
           font-size 50px
