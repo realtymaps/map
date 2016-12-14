@@ -1,5 +1,7 @@
 app = require '../app.coffee'
 numeral = require 'numeral'
+_ = require 'lodash'
+
 
 #http://stackoverflow.com/questions/17063000/ng-model-for-input-type-file
 app.directive 'rmapsFileRead', () ->

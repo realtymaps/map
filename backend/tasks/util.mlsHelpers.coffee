@@ -8,7 +8,6 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsConfigService = require '../services/service.mls_config'
 retsCacheService = require '../services/service.retsCache'
 sqlHelpers = require '../utils/util.sql.helpers'
-dbs = require '../config/dbs'
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task

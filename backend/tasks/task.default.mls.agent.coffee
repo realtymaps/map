@@ -4,12 +4,9 @@ jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
 logger = require('../config/logger').spawn('task:mls:agent')
 mlsHelpers = require './util.mlsHelpers'
-retsService = require '../services/service.rets'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 memoize = require 'memoizee'
-errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
-{SoftFail} = require '../utils/errors/util.error.jobQueue'
 internals = require './task.default.mls.agent.internals'
 
 

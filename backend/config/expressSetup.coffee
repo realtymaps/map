@@ -57,9 +57,9 @@ app.use helmet.nocache()
 app.use compress()
 
 app.use serveStatic(config.FRONTEND_ASSETS.PATH, {
-  setHeaders: (res, path) ->
+  setHeaders: (res, _path) ->
     # Turn on caching headers for images
-    if path.match(/\.(png|jpg|svg|gif)$/)
+    if _path.match(/\.(png|jpg|svg|gif)$/)
       res.setHeader('Cache-Control', "public, max-age=#{config.FRONTEND_ASSETS.MAX_AGE_SEC}")
 })
 

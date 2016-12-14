@@ -6,6 +6,7 @@ notificationsSvc = require '../services/service.notifications'
 profileService = require '../services/service.profiles'
 propertyDetailsService = require '../services/service.properties.combined.details'
 clone = require 'clone'
+Promise =  require 'bluebird'
 
 processHandlers =
   notifications: notificationsSvc

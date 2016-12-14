@@ -7,6 +7,7 @@ _ = require 'lodash'
 db = dbs.get('main')
 propertySvc = require './service.properties.combined.details'
 logger = require('../config/logger').spawn('service:mail_campaigns')
+Promise = require 'bluebird'
 
 
 class MailService extends ServiceCrud

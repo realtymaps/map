@@ -1,6 +1,8 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.charges
+_ = require 'lodash'
+
 
 app.service 'rmapsChargesService', ($http, $log) ->
   $log = $log.spawn("payment:rmapsChargesService")

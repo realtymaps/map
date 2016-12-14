@@ -139,6 +139,7 @@ wrapRoutesTrait = (baseKlass) ->
 
     byId: (req, res, next) ->
       @handleQuery super(req, res, next), res
+  return RoutesTrait
 
 routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
   wrapRoutesTrait(baseKlass)

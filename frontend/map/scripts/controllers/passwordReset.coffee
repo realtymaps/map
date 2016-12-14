@@ -2,6 +2,8 @@ app = require '../app.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
+
 
 module.exports = app.controller 'rmapsPasswordResetCtrl', (
   $rootScope,
