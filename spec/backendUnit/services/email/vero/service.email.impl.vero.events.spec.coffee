@@ -3,14 +3,12 @@ sinon = require 'sinon'
 Promise = require 'bluebird'
 {basePath, commonPath} = require '../../../globalSetup'
 rewire = require 'rewire'
-subject = rewire "#{basePath}/services/email/vero/service.email.impl.vero.events"
-internals = null
+subject = require "#{basePath}/services/email/vero/service.email.impl.vero.events"
 paymentEvents = require "#{basePath}/enums/enum.vero.events"
 emailRoutes = require("#{commonPath}/config/routes.backend").email
 Case = require 'case'
 mockCls = require '../../../../specUtils/mockCls'
 routeHelpers = require "#{basePath}/utils/util.route.helpers"
-
 
 
 describe "service.email.impl.vero.events", ->
@@ -29,8 +27,6 @@ describe "service.email.impl.vero.events", ->
     @vero =
       createUserAndTrackEvent: sinon.stub().returns(Promise.resolve())
 
-    internals = require("#{basePath}/services/email/vero/service.email.impl.vero.events.internals")(@vero)
-
     @authUser =
       id: 1
       first_name: "Bo"
@@ -39,139 +35,99 @@ describe "service.email.impl.vero.events", ->
       email_validation_hash: "radarIsJammed"
       cancel_email_hash: "terminated"
 
+    @inErrorSupportPhrase = subject(@vero).inErrorSupportPhrase
+
+
   describe "subscriptionSignUp", ->
 
     beforeEach ->
-      @promise = subject(@vero).subscriptionSignUp(authUser: @authUser, plan: 'standard')
+      @promise = subject(@vero).subscriptionSignUp(@authUser)
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "is called", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
-    it "id" , ->
-      @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
-
-    it "email" , ->
+    it "has appropriate vero API arguments", ->
+      @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"      
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
-
-    it "userData" , ->
       @vero.createUserAndTrackEvent.args[0][2].should.be.eql
         first_name: @authUser.first_name
         last_name: @authUser.last_name
-        subscription_status: 'trial'
-
-    it "eventName" , ->
       @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.customerSubscriptionCreated
-
-    it "eventData" , ->
       @vero.createUserAndTrackEvent.args[0][4].should.be.eql
-        verify_url: routeHelpers.clsFullUrl emailRoutes.verify.replace(":hash", @authUser.email_validation_hash)
-        in_error_support_phrase: internals.inErrorSupportPhrase
+        verify_url: routeHelpers.clsFullUrl(emailRoutes.verify.replace(":hash", @authUser.email_validation_hash))
+        in_error_support_phrase: @inErrorSupportPhrase
+
 
   describe "subscriptionTrialEnding", ->
 
     beforeEach ->
-      @promise = subject(@vero).subscriptionTrialEnding(authUser: @authUser, plan: 'standard')
+      @promise = subject(@vero).subscriptionTrialEnding(@authUser)
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "is called", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
-    it "id" , ->
+    it "has appropriate vero API arguments", ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
-
-    it "email" , ->
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
-
-    it "userData" , ->
       @vero.createUserAndTrackEvent.args[0][2].should.be.eql
         first_name: @authUser.first_name
         last_name: @authUser.last_name
-        subscription_status: 'trial'
-
-    it "eventName" , ->
       @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.customerSubscriptionTrialWillEnd
-
-    it "eventData" , ->
       @vero.createUserAndTrackEvent.args[0][4].should.be.eql
         cancel_plan_url: routeHelpers.clsFullUrl emailRoutes.cancelPlan.replace(":cancelPlan", @authUser.cancel_email_hash)
-        in_error_support_phrase: internals.inErrorSupportPhrase
+        in_error_support_phrase: @inErrorSupportPhrase
+
 
   [
     'subscriptionVerified'
     'subscriptionUpdated'
-    'subscriptionDeleted'
   ].forEach (testName) ->
     describe testName, ->
 
       beforeEach ->
-        @promise = subject(@vero)[testName](authUser: @authUser, plan: 'standard')
+        @promise = subject(@vero)[testName](@authUser)
 
-      it "can run", ->
+      it "passes sanity check", ->
         @promise
-
-      it "is called", ->
         @vero.createUserAndTrackEvent.called.should.be.ok
 
-      it "id" , ->
+      it "has appropriate vero API arguments", ->
         @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
-
-      it "email" , ->
         @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
-
-      it "userData" , ->
         @vero.createUserAndTrackEvent.args[0][2].should.be.eql
           first_name: @authUser.first_name
           last_name: @authUser.last_name
-          subscription_status: 'trial'
 
-      it "eventName" , ->
         name = 'customer' + Case.pascal testName
         event = paymentEvents[name] || paymentEvents[testName]
         @vero.createUserAndTrackEvent.args[0][3].should.be.eql event
-
-      it "eventData" , ->
         @vero.createUserAndTrackEvent.args[0][4].should.be.eql
-          in_error_support_phrase: internals.inErrorSupportPhrase
+          in_error_support_phrase: @inErrorSupportPhrase
 
-  testName = 'notificationPropertiesSaved'
-  describe testName, ->
 
+  describe "notificationPropertiesSaved", ->
     beforeEach ->
-      @promise = subject(@vero)[testName] {
+      @promise = subject(@vero).notificationPropertiesSaved {
         authUser: @authUser
         properties: []
         notification_id: 1
       }
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "is called", ->
       @vero.createUserAndTrackEvent.called.should.be.ok
 
-    it "id" , ->
+    it "has appropriate vero API arguments", ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql "#{process.env.RMAPS_MAP_INSTANCE_NAME}_development_#{@authUser.id}"
-
-    it "email" , ->
       @vero.createUserAndTrackEvent.args[0][1].should.be.eql @authUser.email
-
-    it "userData" , ->
       @vero.createUserAndTrackEvent.args[0][2].should.be.eql
         first_name: @authUser.first_name
         last_name: @authUser.last_name
-        subscription_status: 'trial'
-
-    it "eventName" , ->
       @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents.notificationPropertiesSaved
-
-    it "eventData" , ->
-      @vero.createUserAndTrackEvent.args[0][4].should.be.eql {
-        in_error_support_phrase: internals.inErrorSupportPhrase
+      @vero.createUserAndTrackEvent.args[0][4].should.contain.all.keys {
+        in_error_support_phrase: @inErrorSupportPhrase
         properties: []
         notification_id: 1
       }
