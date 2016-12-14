@@ -13,7 +13,8 @@ app.controller 'rmapsMlsCtrl',
   rmapsEventConstants,
   rmapsAdminConstants,
   rmapsPrincipalService,
-  rmapsJobsService) ->
+  rmapsJobsService,
+  rmapsCleanData) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
@@ -22,13 +23,6 @@ app.controller 'rmapsMlsCtrl',
         obj[key] = value
       return obj
 
-    makePhotoOptions = () ->
-      objects:
-        use: false
-        change: () ->
-          if !@use
-            delete $scope.mlsData.current.listing_data.photoObjects
-            getObjectOptions('listing_data')
       info:
         editing: false
         temp: ''
@@ -68,16 +62,11 @@ app.controller 'rmapsMlsCtrl',
     $scope.adminRoutes = adminRoutes
     $scope.$state = $state
     $scope.step = 0
-    $scope.schemaOptions =
-      listing_data:
-        db: []
-        table: []
-        column: []
-        photos: makePhotoOptions()
-      agent_data:
-        db: []
-        table: []
-        column: []
+    $scope.schemaOptions = rmapsAdminConstants.defaults.schemaOptions (use, {parentName}) ->
+      if !use && parentName == 'photos'
+        delete $scope.mlsData.current.listing_data.photoObjects
+        getObjectOptions('listing_data')
+
 
     $scope.allowPasswordReset = false
     $scope.mlsData =
@@ -109,11 +98,13 @@ app.controller 'rmapsMlsCtrl',
         db: disabled: false
         table: disabled: false
         field: disabled: false #needs a better name
+        mlsListingId: false
 
       agent_data:
         db: disabled: false
         table: disabled: false
         field: disabled: false #needs a better name
+        mlsListingId: false
 
     # extract existing configs, populate idOptions
     $scope.loading = true
@@ -150,6 +141,7 @@ app.controller 'rmapsMlsCtrl',
       rmapsMlsService.testOverlapSettings(obj.id)
 
     # when getting new mlsData, update the dropdowns as needed
+    # NOTE MAIN ENTRY from mls.jade where (scope.mlsData.current = whatever) was set by ng-model
     $scope.updateObjectOptions = (obj) ->
       $scope.loading = true
 
@@ -196,16 +188,19 @@ app.controller 'rmapsMlsCtrl',
         else
           $scope.mlsData.current.listing_data.photoObjects = $scope.mlsData.current.listing_data.photoObjects.trimAll().split(',')
 
-    getObjectOptions = (schema) ->
-      $scope.schemaOptions.listing_data.photos = makePhotoOptions()
-
-      if !$scope.mlsData.current.listing_data.largestPhotoObject
-        $scope.mlsData.current.listing_data.largestPhotoObject = 'Photo'
+    initListingDefaults = (schema) ->
+      # basic place to setup defailts on top of current if it is missing
+      # TODO should this be coming from admin.coffee / rmapsAdminConstants?
+      if schema != 'listing_data'
+        return
 
       if $scope.mlsData.current.listing_data.photoObjects?.length
         $scope.schemaOptions.listing_data.photos.objects.use = true
         $scope.fieldNameMap.objects = $scope.mlsData.current.listing_data.photoObjects
-        return
+
+    getObjectOptions = (schema) ->
+
+      initListingDefaults(schema)
 
       rmapsMlsService.getObjectList($scope.mlsData.current.id)
       .then (data) ->
@@ -345,6 +340,9 @@ app.controller 'rmapsMlsCtrl',
         $scope.mlsData.current[schema].table = ''
         $scope.mlsData.current[schema].field = ''
         $scope.mlsData.current[schema].field_type = ''
+        $scope.mlsData.current[schema].mlsListingId = rmapsCleanData()
+
+
         $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
         $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
         promise = getTableOptions(schema)
@@ -353,6 +351,7 @@ app.controller 'rmapsMlsCtrl',
         $scope.schemaOptions[schema].column = []
         $scope.mlsData.current[schema].field = ''
         $scope.mlsData.current[schema].field_type = ''
+        $scope.mlsData.current[schema].mlsListingId = rmapsCleanData()
         $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
         promise = getColumnOptions(schema)
 
@@ -405,7 +404,7 @@ app.controller 'rmapsMlsCtrl',
           $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: msg }
 
     $scope.selectIcon = () ->
-      modalInstance = $uibModal.open
+      $uibModal.open
         animation: $scope.animationsEnabled
         template: selectIconTemplate
         controller: 'rmapsModalLogoCtrl'

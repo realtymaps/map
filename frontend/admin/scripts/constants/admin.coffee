@@ -1,5 +1,17 @@
 app = require '../app.coffee'
 
+cleanData = () ->
+  name: ''
+  type: ''
+
+changeObjectsFactory = (change, {objectsName, parentName}) ->
+  objectsName ?= 'objects'
+
+  "#{objectsName}":
+    use: false
+    change: () ->
+      change(@use, {objectsName, parentName})
+
 admin =
   dtColumnRegex: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
   defaults:
@@ -16,7 +28,12 @@ admin =
       dmca_contact_name: null
       dmca_contact_address: null
     propertySchema:
-      listing_data: {}
+      listing_data: {
+        largestPhotoObject: 'Photo'
+        mlsListingId: cleanData()
+        field: ''
+        field_type: ''
+      }
     agentSchema:
       agent_data: {}
     otherConfig:
@@ -24,6 +41,17 @@ admin =
       verify_overlap: true
     task:
       active: false
+    schemaOptions: (changeCb) ->
+      listing_data:
+        db: []
+        table: []
+        column: []
+        photos: changeObjectsFactory(changeCb, {parentName: 'photos'})
+      agent_data:
+        db: []
+        table: []
+        column: []
+
   dataSource:
     lookupThreshold: 50
   ui:
@@ -36,3 +64,6 @@ admin =
         type: 'checkbox'
 
 app.constant 'rmapsAdminConstants', admin
+
+app.factory 'rmapsCleanData', cleanData
+app.factory 'rmapsChangeObjectsFactory', changeObjectsFactory

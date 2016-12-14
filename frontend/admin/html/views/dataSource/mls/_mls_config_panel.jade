@@ -122,6 +122,18 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 ng-change="mlsData.current.listing_data.field_type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data.field]"
                 ng-disabled="formItems.listing_data.field.disabled")
                   option(value="" disabled)
+
+            tr
+              td
+                label(ng-class="{ 'half-opacity': formItems.listing_data.field.disabled }").data-label MLS Listing ID Column:
+              td
+                select(
+                type="text"
+                ng-model="mlsData.current.listing_data.mlsListingId.name"
+                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.column"
+                ng-change="mlsData.current.listing_data.mlsListingId.type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data.mlsListingId.name]"
+                ng-disabled="formItems.listing_data.mlsListingId.disabled")
+                  option(value="" disabled)
             // BEGIN Photo Settings
             tr(ng-if="mlsData.current.id")
               td
