@@ -53,7 +53,6 @@ app.directive 'propertyImages', (
 
     imageLoaded = (event, img) ->
       $timeout ->
-        $scope.imageLoaded = true
         $scope.$evalAsync()
       , 50
 
@@ -71,18 +70,24 @@ app.directive 'propertyImages', (
       if $scope.imageHeight
         resizeUrl += "&height=#{$scope.imageHeight}"
 
+      numPhotos = $scope.property.actual_photo_count - 1
+      if $scope.coverImage
+        numPhotos = 1
+      else if numPhotos == 1
+        $scope.coverImage = true
+
       # Skip the first image, it is expected to be a duplicate
-      for i in [1..$scope.property.actual_photo_count - 1]
+      for i in [1..numPhotos]
         photos.push
           index: i - 1
           url: "#{resizeUrl}&image_id=#{i}"
 
-      $timeout ->
-        $scope.imagesLoaded = true
-        $log.debug new Flickity($element.find('flickity')[0], $scope.flickityOptions)
-      , 50
-    else
-      imageLoaded()
+      if !$scope.coverImage
+        $timeout ->
+          $log.debug new Flickity($element.find('flickity')[0], $scope.flickityOptions)
+        , 50
+
+    imageLoaded()
 
     $scope.property.photos = photos
     # $log.debug $scope.property.photos
