@@ -1,5 +1,6 @@
 ###globals L###
 app = require '../../app.coffee'
+L = require 'leaflet'
 
 # Leaflet control directive definitions should have these properties:
 #

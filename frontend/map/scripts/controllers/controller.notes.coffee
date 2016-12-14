@@ -4,6 +4,9 @@ notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 originator = 'map'
 _ = require 'lodash'
+L = require 'leaflet'
+
+
 
 app.controller 'rmapsNotesModalCtrl', (
 $rootScope
@@ -143,7 +146,8 @@ rmapsMapTogglesFactory
   rmapsEventsLinkerService,
   rmapsNotesService,
   rmapsPopupLoaderService,
-  rmapsCurrentMapService
+  rmapsCurrentMapService,
+  toastr
 ) ->
 
   mapId = rmapsCurrentMapService.mainMapId()
@@ -180,7 +184,8 @@ rmapsMapTogglesFactory
             last_name: model.last_name
             text: model.text
             circleNrArg: model.$index
-          needToCompile: false
+            address: model.address
+          needToCompile: true
         })
 
     markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)

@@ -1,7 +1,7 @@
-###global _:true###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
 
 app.controller 'rmapsUserCtrl', (
 $scope

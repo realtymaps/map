@@ -64,9 +64,9 @@ rmapsLeafletHelpers) ->
     modalInstance.result
 
   #create with no modal and default a name
-  ### eslint-disable###
+
   $scope.create = (model, layer) ->
-    ### eslint-enable###
+
     model.properties.area_name = "Untitled Area"
     signalUpdate(drawnShapesSvc.create model)
     .then (id) ->

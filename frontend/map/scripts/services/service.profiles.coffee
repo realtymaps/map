@@ -188,9 +188,9 @@ app.service 'rmapsProfilesService', (
       #
 
       if currentMap?.scope?.map?
-        ### eslint-disable###
+        
         oldCenter = _.extend {}, currentMap?.scope?.map?.center
-        ### eslint-enable###
+        
         if map_position?.center?
           newCenter = NgLeafletCenter(map_position.center || rmapsMainOptions.map.options.json.center)
           newCenter.docWhere = 'rmapsProfilesService currentMainMap'

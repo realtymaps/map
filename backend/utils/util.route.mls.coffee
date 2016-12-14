@@ -8,6 +8,8 @@ photoUtil = require './util.mls.photos'
 httpStatus = require '../../common/utils/httpStatus'
 photoErrors = require './errors/util.errors.photos'
 {RetsError} =  require 'rets-client'
+ourRetsErrors = require './errors/util.errors.rets'
+require '../extensions/stream'
 
 
 hasNoStar = (photoIds) ->
@@ -22,36 +24,33 @@ isSingleImage = (photoIds) ->
   false
 
 
-handleGenericImage = ({setContentTypeFn, getStreamFn, next, res}) ->
-  setContentTypeFn()
-  getStreamFn()
-  .on 'error', (error) ->
+respond = ({stream, next, res}) ->
+  stream
+  .pipe(res)
+  .once 'error', (error) ->
     if isUnhandled(error)
       error = new PartiallyHandledError(error, 'uncaught image streaming error (*** add better error handling code to cover this case! ***)')
     next new ExpressResponse(error.message, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
-  .pipe(res)
 
 
 handleImage = ({res, next, object}) ->
-  handleGenericImage {
+  res.type object.headerInfo.contentType
+
+  respond {
     res
     next
-    setContentTypeFn: () ->
-      res.type object.headerInfo.contentType
-    getStreamFn: () ->
-      photoUtil.imageStream(object)
+    stream: photoUtil.imageStream(object)
   }
 
 
 handleImages = ({res, next, object, mlsId, photoIds}) ->
-  handleGenericImage {
+  listingIds = _.keys(photoIds).join('_')
+  res.attachment("#{mlsId}_#{listingIds}_photos.zip")
+
+  respond {
     res
     next
-    setContentTypeFn: () ->
-      listingIds = _.keys(photoIds).join('_')
-      res.attachment("#{mlsId}_#{listingIds}_photos.zip")
-    getStreamFn: () ->
-      photoUtil.imagesStream(object)
+    stream: photoUtil.imagesStream(object)
   }
 
 
@@ -85,14 +84,13 @@ getPhoto = ({entity, res, next, photoType, objectsOpts}) ->
     logger.debug -> object
 
     handleRetsObjectResponse({res, next, photoIds, mlsId, object})
+    .toPromise()
   .catch validation.DataValidationError, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.BAD_REQUEST, quiet: error.quiet})
-  .catch photoErrors.isNotFound, (error) ->
+  .catch photoErrors.isNotFound, RetsError, ourRetsErrors.UknownMlsConfig, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.NOT_FOUND, quiet: error.quiet})
   .catch photoErrors.PhotoError, (error) ->
     next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
-  .catch RetsError, (error) ->
-    next new ExpressResponse(error.message||error, {status: httpStatus.NOT_FOUND, quiet: error.quiet})
   .catch (error) ->
     if isUnhandled(error)
       error = new PartiallyHandledError(error, 'uncaught photo error (*** add better error handling code to cover this case! ***)')
@@ -102,7 +100,7 @@ getPhoto = ({entity, res, next, photoType, objectsOpts}) ->
 module.exports = {
   hasNoStar
   isSingleImage
-  handleGenericImage
+  respond
   handleImage
   handleImages
   handleRetsObjectResponse

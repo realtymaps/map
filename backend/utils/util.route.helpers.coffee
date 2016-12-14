@@ -13,7 +13,8 @@ class NotFoundError extends Error
 
 methodExec = (req, methods, next) ->
   if !methods[req.method]
-    return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: quiet, status: httpStatus.BAD_REQUEST})
+    #TODO: should quiet come from params, query or body?
+    return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: false, status: httpStatus.BAD_REQUEST})
   methods[req.method]()
 
 mergeHandles = (handles, config, options) ->

@@ -1,5 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
 app.controller 'rmapsOnboardingCtrl', (
@@ -279,20 +281,4 @@ app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $q, $log, $state, $timeo
 
   attempts = 0
 
-  #TODO: This is a temporary hack around login issues where there is some strangeness where login fails
-  #
-  # related errors:
-  #  - account NOT_FOUND:
-  #       Possible race where the account creation from the final submit (create account)
-  #       is not really finished on the backend
-  #  - password undefined - (contoller loses context of $scope.user this is expected if the page is refreshed/changed)
-  doLogin = ->
-    attempts++
-    $q.delay(2000)
-    .then () ->
-      $scope.doLogin($scope.user)
-
-  doLogin()
-  .catch () ->
-    if attempts < 2
-      doLogin()
+  $scope.doLogin($scope.user)

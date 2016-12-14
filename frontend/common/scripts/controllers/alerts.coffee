@@ -45,6 +45,9 @@
 #     to MainOpions.alerts.quietMillis
 ###
 mod = require '../module.coffee'
+_ = require 'lodash'
+
+
 mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsEventConstants, $log, rmapsMainOptions) ->
   $scope.alerts = []
   alertsMap = {}

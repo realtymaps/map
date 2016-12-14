@@ -9,7 +9,7 @@ memoize = require 'memoizee'
 
 
 if !config.LOGGING.ENABLE
-  debug.enable(null)
+  debug.enable(process.env.DEBUG || null)
 else
   names = config.LOGGING.ENABLE.split(/[, ]/g)
   for name,i in names
@@ -19,6 +19,7 @@ else
       names[i] = name+'*'
     else
       names[i] = name+':*'
+  names = names.concat((process.env.DEBUG||'').split(','))
   debug.enable(names.join(','))
 
 # fixing it so we don't get redundant timestamps on prod

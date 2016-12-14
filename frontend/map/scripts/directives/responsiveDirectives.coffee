@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
+
 #
 # This is based on the ngIf directive implementation, but is applied to CSS class selectors
 #
@@ -36,7 +37,7 @@ generateViewDirective = ($animate, $window, showView) ->
           childScope.$destroy()
           childScope = null
         if block
-          previousElements = getBlockNodes(block.clone)
+          previousElements = angular.getBlockNodes(block.clone)
           $animate.leave(previousElements).then ->
             previousElements = null
             return

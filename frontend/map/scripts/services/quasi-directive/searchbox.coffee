@@ -1,4 +1,6 @@
 app = require '../../app.coffee'
+L = require 'leaflet'
+
 
 app.service 'rmapsSearchboxService', ($log, leafletData) ->
 

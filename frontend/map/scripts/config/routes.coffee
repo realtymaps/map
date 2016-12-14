@@ -1,10 +1,11 @@
-###global _:true###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+_ = require 'lodash'
+
+
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
-
 stateDefaults =
   sticky: false
   loginRequired: true

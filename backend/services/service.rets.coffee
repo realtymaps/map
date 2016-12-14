@@ -275,6 +275,14 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     # syntactic sugar to allow a default opts value, but leave the handler at the end of the param list
     handler = opts
     opts = {}
+
+  if opts.iterationLimit?
+    {iterationLimit} = opts
+    iterationLimit = Number(iterationLimit)
+    delete opts.iterationLimit
+
+  iterationCtr = 0
+
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     # override mls schemaInfo with optional `schemaInfo` if provided
     if !_.isEmpty(opts?.schemaInfo)
@@ -349,7 +357,14 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
             .catch errorHandlingUtils.isUnhandled, (err) ->
               throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
             .then () ->
-              if keepQuerying
+              iterationCtr++
+              withinLimit = true
+
+              if iterationLimit?
+                withinLimit = iterationCtr < iterationLimit
+                logger.debug -> "iterationCtr: #{iterationCtr} < iterationLimit: #{iterationLimit} : #{withinLimit}"
+
+              if keepQuerying && withinLimit
                 searchIteration()
           .then () ->
             return total

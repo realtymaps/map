@@ -178,7 +178,7 @@ updateProcessInfo = (newProcessInfo) ->
       if !newProcessInfo.date || processInfo[FIPS_QUEUED].length > 0
         # if we didn't process a date, or we did and we still have more FIPS codes queued, then don't change the date
         return
-        
+
       processInfo[CURRENT_PROCESS_DATE] = null
       index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
       if index >= 0
