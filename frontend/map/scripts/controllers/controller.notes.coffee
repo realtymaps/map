@@ -180,7 +180,8 @@ rmapsMapTogglesFactory
             last_name: model.last_name
             text: model.text
             circleNrArg: model.$index
-          needToCompile: false
+            address: model.address
+          needToCompile: true
         })
 
     markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)

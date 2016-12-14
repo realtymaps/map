@@ -1,11 +1,14 @@
 include _circleNrMixin.jade
 
-mixin noteMixin(first_name, last_name, text, circleNrArg)
+mixin noteMixin(note, circleNrArg)
   .note-mixin
     +circleNrMixin(circleNrArg)
     span.content
-      span.author #{first_name} #{last_name} &nbsp;
-      if text && text.length < 25
-        .text #{text}
+      span.author #{note.first_name} #{note.last_name} &nbsp;
+      .note-address(ng-if="note.address")
+        span {{note.address.street}} {{note.address.unit}}
+        span {{note.address.citystate}} {{note.address.zip}}
+      if note.text && note.text.length < 25
+        .text #{note.text}
       else
-        .text.large #{text}
+        .text.large #{note.text}
