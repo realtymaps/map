@@ -105,12 +105,12 @@ rmapsPrincipalService) ->
 
   $log = $log.spawn('rmapsAppCtrl')
 
+  $rootScope.subscrPlans = rmapsMainOptions.plan # expose plan ids for use among jade files
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
     user.name = user.full_name or user.username
-
     _.extend $rootScope,
       mainOptions: rmapsMainOptions['map']
       user: user

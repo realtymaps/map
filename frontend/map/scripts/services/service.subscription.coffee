@@ -9,8 +9,13 @@ app.service 'rmapsSubscriptionService', ($http, $sce) ->
     .then ({data}) ->
       data
 
-  setPlan: (plan) ->
-    $http.put subscriptionAPI.setPlan.replace(':plan', plan)
+  updatePlan: (plan) ->
+    $http.put subscriptionAPI.updatePlan.replace(':plan', plan)
+    .then ({data}) ->
+      data
+
+  reactivate: () ->
+    $http.put subscriptionAPI.reactivate
     .then ({data}) ->
       data
 
@@ -21,7 +26,7 @@ app.service 'rmapsSubscriptionService', ($http, $sce) ->
     .catch (err) ->
       return error: $sce.trustAsHtml(err.data.alert.msg)
 
-  deactivate: () ->
-    $http.put subscriptionAPI.deactivate
+  deactivate: (reason) ->
+    $http.put subscriptionAPI.deactivate, {reason: reason}
     .then ({data}) ->
       data
