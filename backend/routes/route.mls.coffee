@@ -31,6 +31,9 @@ module.exports =
 
   getForUser:
     method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
     handle: (req, res, next) ->
       handleRoute req, res, next, ->
         mlsService.getForUser(req.session)
