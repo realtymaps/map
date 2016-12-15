@@ -57,7 +57,6 @@ module.exports =
       # need to update our current session subscription status
       .then (subscriptionInfo) ->
         req.session.subscription = subscriptionInfo.status
-        console.log "updated session, returning create subscriptiong info...."
         return subscriptionInfo.created
 
   deactivate:
