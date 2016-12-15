@@ -46,7 +46,7 @@ findCampaigns = (subtask) ->
       tables.mail.letters()
       .select('id')
       .where('user_mail_campaign_id', campaign.id)
-      .whereNotIn('status', ['sent', 'error-invalid'])
+      .whereIn('status', ['ready', 'error-transient'])
 
       .then (unsent) ->
         if unsent?.length && forceCaptureDate.isAfter(moment())
@@ -112,7 +112,7 @@ chargeCampaign = (subtask) ->
           id: campaign.id
         .then () ->
           tables.mail.letters({transaction})
-          .update(status: 'error-max-time')
+          .update(status: 'error-cancelled')
           .where('user_mail_campaign_id', campaign.id)
           .whereIn('status', ['error-transient', 'ready'])
 
