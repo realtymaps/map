@@ -63,8 +63,7 @@ StripeEvents = (stripe) ->
     stripe.events.retrieve(eventObj.id)
     .catch stripeErrors.StripeInvalidRequestError, (err) ->
       logger.warn "Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}"
-      return eventObj
-      #return null
+      return null
 
   handle = (eventObj) -> Promise.try () ->
     dbs.transaction 'main', (trx) ->
