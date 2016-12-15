@@ -4,7 +4,6 @@ stripeErrors = require '../../../utils/errors/util.errors.stripe'
 emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
 dbs = require '../../../config/dbs'
-db = dbs.get('main')
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted
