@@ -2,7 +2,7 @@
 
   rmaps-street-view-panorama.prop-image-panorama(
     ng-cloak
-    ng-if="!property.photos.length"
+    ng-if="!property.photos.length && !blockGoogle"
     ng-show="panoramaOk() && panoramaControls"
     style="background-color:transparent;"
     focalcoord="property.geometry_center"
@@ -12,15 +12,19 @@
 
   img(
     ng-cloak
-    ng-if="!property.photos.length && panoramaOk() && !panoramaControls"
+    ng-if="!property.photos.length && panoramaOk() && !panoramaControls && !blockGoogle"
     ng-src="{{formatters.property.google.StreetView.getUrl(property, imageWidth, imageHeight)}}"
     title="{{property.title}}"
     ui-sref="property({id:property.rm_property_id})")
 
   img(
     ng-cloak
-    ng-if="!property.photos.length && !panoramaOk()"
+    ng-if="!property.photos.length && !blockGoogle && !panoramaOk()"
     ng-src="{{formatters.property.google.Satellite.getUrl(property, imageWidth, imageHeight)}}"
+    ui-sref="property({id:property.rm_property_id})")
+
+  .no-images(
+    ng-if="!property.photos.length && blockGoogle"
     ui-sref="property({id:property.rm_property_id})")
 
   img(
