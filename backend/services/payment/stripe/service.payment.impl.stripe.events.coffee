@@ -3,6 +3,7 @@ _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
+dbs = require '../../../config/dbs'
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted
@@ -61,8 +62,7 @@ StripeEvents = (stripe) ->
     stripe.events.retrieve(eventObj.id)
     .catch stripeErrors.StripeInvalidRequestError, (err) ->
       logger.warn "Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}"
-      return eventObj
-      #return null
+      return null
 
   handle = (eventObj) -> Promise.try () ->
     dbs.transaction 'main', (trx) ->
