@@ -1,3 +1,4 @@
+_ = require 'lodash'
 app = require '../../app.coffee'
 replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
 module.exports = app
@@ -10,6 +11,7 @@ $uibModal
 $q
 rmapsSubscriptionService
 rmapsFipsCodesService
+rmapsPaymentMethodService
 rmapsMainOptions
 ) ->
   $log = $log.spawn("map:userSubscription")
@@ -17,6 +19,7 @@ rmapsMainOptions
   $scope.processing = 0
   $scope.data =
     fips: null
+    payment: null
 
   #
   # tests / flags
@@ -30,6 +33,9 @@ rmapsMainOptions
   $scope.isExpired = () ->
     return $scope.subscription?.status == rmapsMainOptions.plan.EXPIRED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.plan.PAID_LIST)
 
+  $scope.isInGracePeriod = () ->
+    # did user cancel, but we're still active
+    return $scope.subscription?.canceled_at? && !$scope.subscription?.ended_at?
 
   #
   # Account actions
@@ -93,19 +99,9 @@ rmapsMainOptions
 
       # credit-card modal context
       if needCard
+
         # all credit-card updating is handled within this modal/template, so no need to pass cc source around.
-        modalInstanceCC = $uibModal.open
-          animation: true
-          template: replaceCCModalTemplate
-          controller: 'rmapsReplaceCCModalCtrl'
-          resolve:
-            modalTitle: () ->
-              return "New Credit Card"
-
-            showCancelButton: () ->
-              return null
-
-        ccPromise = modalInstanceCC.result
+        ccPromise = $scope.replaceCC()
         .then (result) ->
           if !result then return null
           return result
@@ -151,12 +147,32 @@ rmapsMainOptions
       .finally () ->
         $scope.processing--
 
+  # self-service modal for replacing CC
+  $scope.replaceCC = () ->
+    modalInstance = $uibModal.open
+      animation: true
+      template: replaceCCModalTemplate
+      controller: 'rmapsReplaceCCModalCtrl'
+      resolve:
+        modalTitle: () ->
+          return "Replace Credit Card"
+
+        showCancelButton: () ->
+          return false
+
+    modalInstance.result.then (result) ->
+      if !result then return null
+
+      # update payment with returned credit card
+      return $scope.data.payment = result
+
   #
   # Data 
   #
   $scope.processing++
   rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
+    console.log "\n\nsubscription:\n#{JSON.stringify(subscription,null,2)}"
     $scope.subscription = subscription
   .finally () ->
     $scope.processing--
@@ -165,5 +181,13 @@ rmapsMainOptions
   rmapsFipsCodesService.getForUser()
   .then (fipsData) ->
     $scope.data.fips = fipsData
+  .finally () ->
+    $scope.processing--
+
+  $scope.processing++
+  rmapsPaymentMethodService.getDefaultSource()
+  .then (source) ->
+    console.log "\n\nsource:\n#{JSON.stringify(source)}"
+    $scope.data.payment = source
   .finally () ->
     $scope.processing--

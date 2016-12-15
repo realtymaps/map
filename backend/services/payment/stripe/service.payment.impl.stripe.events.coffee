@@ -30,6 +30,11 @@ StripeEvents = (stripe) ->
     emailPlatform.events.subscriptionDeleted
       authUser: authUser
       plan: subscription.data.object.plan.name
+    .then () ->
+      tables.user.project()
+      .update status: 'inactive'
+      .where auth_user_id: authUser.id
+      # DELETE THE CC      
 
   _eventHandles[customerSubscriptionUpdated] = (subscription, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionUpdated}"

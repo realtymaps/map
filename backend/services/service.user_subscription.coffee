@@ -175,7 +175,8 @@ reactivate = (userId) -> Promise.try () ->
         }
 
       promise = Promise.resolve()
-      # if a stripe_subscription_id existings while reactivating, that means it should be a "deactivated" subscription plan that we need to cancel
+      # if a stripe_subscription_id existings while reactivating, that means it should be a subscription plan that we need to cancel
+      #   (for example "deactivated" subscription or a subscription in post-cancel grace period)
       if stripe_subscription_id?
         promise = promise.then () ->
           stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: false}
@@ -205,12 +206,8 @@ deactivate = (userId, reason) ->
     .then ({stripe_customer_id, stripe_subscription_id}) ->
       stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: true}
       .then (canceledSubscription) ->
-        tables.user.project(transaction: trx)
-        .update status: 'inactive'
-        .where auth_user_id: userId
-        .then () ->
-          tables.user.history()
-          .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
+        tables.user.history(transaction: trx)
+        .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
         .then () ->
           canceledSubscription
 
