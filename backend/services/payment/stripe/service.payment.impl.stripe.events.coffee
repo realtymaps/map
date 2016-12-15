@@ -27,26 +27,25 @@ StripeEvents = (stripe) ->
 
   _eventHandles[customerSubscriptionDeleted] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionDeleted}"
-    emailPlatform.events.subscriptionDeleted
-      authUser: authUser
-      plan: subscription.data.object.plan.name
-    .then () ->
-      tables.user.project()
-      .update status: 'inactive'
-      .where auth_user_id: authUser.id
 
     # Check status of deleted / canceled subscription.
     # NOTE: this status that stripe sets for an failed payment subscr is controled in the stripe dashboard
     #   (it should be configured to set a failed subscription status to "unpaid", which means an expired subscr for us)
-    if eventObj.data.object.status == 'unpaid'
-      return emailPlatform.events.subscriptionExpired(authUser)
+    (if eventObj.data.object.status == 'unpaid'
+      emailPlatform.events.subscriptionExpired(authUser)
       .then () ->
         stripe.customers.retrieve authUser.stripe_customer_id
         .then (customer) ->
           stripe.customers.deleteCard(customer.id, customer.default_source)
 
     else
-      return emailPlatform.events.subscriptionDeactivated(authUser)
+      emailPlatform.events.subscriptionDeactivated(authUser))
+
+    # deactivate any projects this user owned
+    .then () ->
+      tables.user.project()
+      .update status: 'inactive'
+      .where auth_user_id: authUser.id
 
   _eventHandles[customerSubscriptionUpdated] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionUpdated}"
