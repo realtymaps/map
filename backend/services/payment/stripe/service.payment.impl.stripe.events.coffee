@@ -44,13 +44,9 @@ StripeEvents = (stripe) ->
         stripe.customers.retrieve authUser.stripe_customer_id
         .then (customer) ->
           stripe.customers.deleteCard(customer.id, customer.default_source)
-          .then (res) ->
-            console.log "deleted card #{customer.default_source}, response:\n#{JSON.stringify(res,null,2)}"
-            res
 
     else
       return emailPlatform.events.subscriptionDeactivated(authUser)
-
 
   _eventHandles[customerSubscriptionUpdated] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionUpdated}"

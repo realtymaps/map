@@ -1,4 +1,3 @@
-_ = require 'lodash'
 app = require '../../app.coffee'
 replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
 module.exports = app
