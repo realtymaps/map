@@ -39,6 +39,29 @@ app.controller 'rmapsMlsCtrl',
           @temp = ''
           @editing = false
 
+    initPhotoSchemaOptions = () ->
+      objects:
+        use: false
+        change: () ->
+          if !@use
+            delete $scope.mlsData.current.listing_data.photoObjects
+            getObjectOptions('listing_data')
+      info:
+        editing: false
+        temp: ''
+        edit:() ->
+          @temp = '' + $scope.mlsData.current.listing_data.photoInfo
+          $scope.schemaOptions.listing_data.photos.info.editing = true
+
+        save:() ->
+          $scope.mlsData.current.listing_data.photoInfo = @temp
+          @temp = ''
+          @editing = false
+
+        cancel: () ->
+          @temp = ''
+          @editing = false
+
     restoreInitDbValueHack = (schema) ->
       dropdown = angular.element(document.querySelector('#dbselect'))[0] # get the actual dropdown element
       options = dropdown.options # options list
@@ -62,10 +85,10 @@ app.controller 'rmapsMlsCtrl',
     $scope.adminRoutes = adminRoutes
     $scope.$state = $state
     $scope.step = 0
-    $scope.schemaOptions = rmapsAdminConstants.defaults.schemaOptions (use, {parentName}) ->
-      if !use && parentName == 'photos'
-        delete $scope.mlsData.current.listing_data.photoObjects
-        getObjectOptions('listing_data')
+    $scope.schemaOptions = _.merge {}, rmapsAdminConstants.defaults.schemaOptions,
+      listing_data:
+        photos:
+          initPhotoSchemaOptions()
 
 
     $scope.allowPasswordReset = false
@@ -188,22 +211,16 @@ app.controller 'rmapsMlsCtrl',
         else
           $scope.mlsData.current.listing_data.photoObjects = $scope.mlsData.current.listing_data.photoObjects.trimAll().split(',')
 
-    initListingDefaults = (schema) ->
-      # basic place to setup defailts on top of current if it is missing
-      # TODO should this be coming from admin.coffee / rmapsAdminConstants?
-      if schema != 'listing_data'
-        return
-
-      if $scope.mlsData.current.listing_data.photoObjects?.length
-        $scope.schemaOptions.listing_data.photos.objects.use = true
-        $scope.fieldNameMap.objects = $scope.mlsData.current.listing_data.photoObjects
 
     getObjectOptions = (schema) ->
 
-      initListingDefaults(schema)
-
       rmapsMlsService.getObjectList($scope.mlsData.current.id)
       .then (data) ->
+
+        if schema == 'listing_data' && $scope.mlsData.current.listing_data.photoObjects?.length
+          $scope.schemaOptions.listing_data.photos.objects.use = true
+          return
+
         $scope.fieldNameMap.objects = data.map (v) -> v.VisibleName
 
     # pull db options and enable next step as appropriate

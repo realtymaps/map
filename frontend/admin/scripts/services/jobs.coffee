@@ -62,16 +62,16 @@ app.service 'rmapsJobsService', (Restangular) ->
     Restangular.all(jobsAPI).all('subtasks').getList(filters)
 
 
-  service =
-    #getCurrent: getCurrent
-    getHistory: getHistory
-    getSubtaskErrorHistory: getSubtaskErrorHistory
-    getHealth: getHealth
-    getQueue: getQueue
-    getTasks: getTasks
-    getTask: getTask
-    updateTask: updateTask
-    getSubtask: getSubtask
-    getSummary: getSummary
-    runTask: runTask
-    cancelTask: cancelTask
+  return {
+    getHistory
+    getSubtaskErrorHistory
+    getHealth
+    getQueue
+    getTasks
+    getTask
+    updateTask
+    getSubtask
+    getSummary
+    runTask
+    cancelTask
+  }

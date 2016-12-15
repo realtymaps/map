@@ -4,13 +4,6 @@ cleanData = () ->
   name: ''
   type: ''
 
-changeObjectsFactory = (change, {objectsName, parentName}) ->
-  objectsName ?= 'objects'
-
-  "#{objectsName}":
-    use: false
-    change: () ->
-      change(@use, {objectsName, parentName})
 
 admin =
   dtColumnRegex: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
@@ -41,12 +34,12 @@ admin =
       verify_overlap: true
     task:
       active: false
-    schemaOptions: (changeCb) ->
+    schemaOptions:
       listing_data:
         db: []
         table: []
         column: []
-        photos: changeObjectsFactory(changeCb, {parentName: 'photos'})
+        photos: null # must be created in $scope
       agent_data:
         db: []
         table: []
@@ -66,4 +59,3 @@ admin =
 app.constant 'rmapsAdminConstants', admin
 
 app.factory 'rmapsCleanData', cleanData
-app.factory 'rmapsChangeObjectsFactory', changeObjectsFactory

@@ -141,7 +141,7 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
               td.pad-left
                 select(
                   ng-model="mlsData.current.listing_data.largestPhotoObject"
-                  ng-options="option for option in fieldNameMap.objects")
+                  ng-options="option for option in (mlsData.current.listing_data.photoObjects || fieldNameMap.objects)")
                   option(value="" disabled) Select Photo Object
 
             tr(ng-if="mlsData.current.id")
