@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 stringValidation = require './util.validation.string'
 floatValidation = require './util.validation.float'
 

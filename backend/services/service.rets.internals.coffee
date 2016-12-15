@@ -9,6 +9,7 @@ externalAccounts = require './service.externalAccounts'
 mlsConfigService = require './service.mls_config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 httpStatus = require '../../common/utils/httpStatus'
+ourRetsErrors = require '../utils/errors/util.errors.rets'
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -47,10 +48,10 @@ getRetsClient = (mlsId, handler) ->
     {creds, serverInfo}
   .catch (err) ->
     logger.error analyzeValue.getFullDetails(err)
-    throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
+    throw new ourRetsErrors.UknownMlsConfig("Can't get MLS config for #{mlsId}: #{err.message || err}")
   .then ({creds, serverInfo}) ->
     if !creds || !serverInfo
-      throw new Error("Can't get MLS config for #{mlsId}: {creds: #{!!creds}, serverInfo: #{!!serverInfo}}")
+      throw new ourRetsErrors.UknownMlsConfig("Can't get MLS config for #{mlsId}: {creds: #{!!creds}, serverInfo: #{!!serverInfo}}")
     _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
     .then (retsClient) ->
       handler(retsClient, serverInfo)

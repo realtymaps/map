@@ -1,4 +1,6 @@
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("route:notesSession")
+# coffeelint: enable=check_scope
 notesSvc = require '../services/services.notes'
 RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 auth = require '../utils/util.auth'

@@ -1,11 +1,13 @@
 tables = require '../config/tables'
-{expectSingleRow, jsonSafeArray} = require '../utils/util.sql.helpers'
+{expectSingleRow} = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
 require '../config/promisify'
 memoize = require 'memoizee'
 Encryptor = require '../utils/util.encryptor'
 config = require '../config/config'
-logger = require('../config/logger').spawn('externalAccounts')
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn('service:externalAccounts')
+# coffeelint: enable=check_scope
 JSON5 = require('json5')
 
 

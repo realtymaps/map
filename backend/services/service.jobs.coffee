@@ -1,10 +1,11 @@
-util = require 'util'
 _ = require 'lodash'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('service:jobs')
+# coffeelint: enable=check_scope
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
-jobQueue = require './service.jobQueue'
 dbs = require '../config/dbs'
+
 
 #
 # crud for queue/task/subtask, with added flavor to search substrings among multiple fields

@@ -162,9 +162,9 @@ app.provider 'rmapsPageService', () ->
     #
     # State Change Success listener to store page type to avoid repeated evaluation of parent-hierarchy
     #
-      ### eslint-disable###
+      
     $rootScope.$on "$stateChangeSuccess", (event, toState) ->
-      ### eslint-enable###
+      
       page._findParentPageType()
 
     return page

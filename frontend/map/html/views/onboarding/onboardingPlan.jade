@@ -11,16 +11,16 @@ section.white-page.onboarding.onboarding-user.plan.ng-cloak
           p Eum admodum conceptam sententiae ea. Sea sint nibh impedit ex, sea ea elitr possim vulputate. Dicat oratio qualisque ei nec, vix erat constituam in. Probatus imperdiet ullamcorper in quo, eos impetus voluptua assentior no. Ius te delenit gubergren, pro ne alia feugiat salutatus.
           p Price: {{view.user.plan.standard.priceFormatted}}
           button.btn.btn-primary(
-            ng-click="user.plan.set('standard')"
-            ng-bind="user.plan.getSelected('standard')"
+            ng-click="user.plan.set(subscrPlans.STANDARD)"
+            ng-bind="user.plan.getSelected(subscrPlans.STANDARD)"
           )
         .col-md-6.col-sm-6.col-xs-12
           p Pro
           p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           p Price: {{view.user.plan.pro.priceFormatted}}
           button.btn.btn-primary(
-            ng-click="user.plan.set('pro')"
-            ng-bind="user.plan.getSelected('pro')"
+            ng-click="user.plan.set(subscrPlans.PRO)"
+            ng-bind="user.plan.getSelected(subscrPlans.PRO)"
           )
       .row
         h2 Sign up to start your free month

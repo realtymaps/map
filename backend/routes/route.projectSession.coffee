@@ -1,6 +1,8 @@
 auth = require '../utils/util.auth'
 ProjectSvcClass = require('../services/service.user.project')
-logger = require '../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("route:projectSession")
+# coffeelint: enable=check_scope
 {mergeHandles} = require '../utils/util.route.helpers'
 safeProjectCols = require('../utils/util.sql.helpers').columns.project
 tables = require '../config/tables'

@@ -5,7 +5,6 @@ require '../config/promisify'
 memoize = require 'memoizee'
 mlsConfigService = null
 errors = require '../utils/errors/util.errors.task'
-_ = require 'lodash'
 
 
 # static function that takes a task name and returns a promise resolving to either the task's implementation module, or

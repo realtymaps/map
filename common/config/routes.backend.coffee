@@ -19,6 +19,7 @@ apiBaseProjects = "#{apiBase}/projects"
 apiBaseUserSubscription = "#{apiBase}/subscription"
 apiBaseUserSubscriptionPlan = "#{apiBase}/subscriptionPlan"
 apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
+apiBaseReactivateSubscription = "#{apiBase}/reactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
@@ -116,7 +117,8 @@ module.exports =
     apiBase: apiBaseUserSubscription
     getSubscription: apiBaseUserSubscription
     getPlan: apiBaseUserSubscriptionPlan
-    setPlan: "#{apiBaseUserSubscriptionPlan}/:plan"
+    updatePlan: "#{apiBaseUserSubscriptionPlan}/:plan"
+    reactivate: "#{apiBaseReactivateSubscription}"
     deactivate: "#{apiBaseDeactivateSubscription}"
   company:
     apiBase: apiBaseCompanies
@@ -136,8 +138,6 @@ module.exports =
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes
     byId: "#{apiBaseAccountUseTypes}/:id"
-  version:
-    version: "#{apiBase}/version"
   config:
     apiBase: apiBaseConfig
     safeConfig: "#{apiBaseConfig}/safeConfig"

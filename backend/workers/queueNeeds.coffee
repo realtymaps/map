@@ -3,9 +3,8 @@
 queueNeeds = () ->
   hirefire = require('../services/service.hirefire')
   jobQueueErrors = require '../utils/errors/util.error.jobQueue'
-  config = require '../config/config'
-
   logger = require('../config/logger').spawn('workers:queueNeeds')
+
 
   logger.debug("Executing updateQueueNeeds...")
   hirefire.updateQueueNeeds()

@@ -1,6 +1,7 @@
-### global _###
 stampit = require 'stampit'
 app = require '../../../app.coffee'
+_ = require 'lodash'
+
 
 app.factory 'rmapSummaryMutation', (
 $q

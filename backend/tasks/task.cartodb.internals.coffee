@@ -1,5 +1,7 @@
 Promise = require 'bluebird'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('task:cartodb:internals')
+# coffeelint: enable=check_scope
 loggerSync = require('../config/logger').spawn('task:cartodb:internals:sync')
 tables = require '../config/tables'
 cartodbSvc = require '../services/service.cartodb'

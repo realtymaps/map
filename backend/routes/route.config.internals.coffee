@@ -1,7 +1,6 @@
 config = require '../config/config.coffee'
 Promise = require 'bluebird'
 memoize = require 'memoizee'
-_ = require 'lodash'
 {hiddenRequire} = require '../../common/utils/webpackHack.coffee'
 # karma hack workaround
 memoize.promise ?= () ->
@@ -47,7 +46,7 @@ safeConfig =
 safeConfigPromise = () ->
   externalAccounts = hiddenRequire '../../backend/services/service.externalAccounts'
 
-  stripePromise = externalAccounts.getAccountInfo 'stripe'
+  externalAccounts.getAccountInfo 'stripe'
   .then ({other}) ->
     if config.PAYMENT_PLATFORM.LIVE_MODE
       if config.ENV != 'production' && !config.ALLOW_LIVE_APIS

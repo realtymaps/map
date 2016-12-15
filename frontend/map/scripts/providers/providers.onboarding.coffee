@@ -1,4 +1,4 @@
-###global _:true###
+_ = require 'lodash'
 app = require '../app.coffee'
 
 app.provider 'rmapsOnboardingOrderService', (rmapsMainOptions) ->

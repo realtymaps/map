@@ -1,5 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
 app.controller 'rmapsOnboardingCtrl', (

@@ -155,7 +155,7 @@ class Encryptor
     digestData = []
     if aad?.length
       if @authentication == 'automatic'
-        cipher.setAAD(aad)
+        decipher.setAAD(aad)
       else if @authentication
         digestData.unshift(aad)
 

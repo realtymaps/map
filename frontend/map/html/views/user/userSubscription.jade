@@ -1,59 +1,73 @@
-.collapse-header
-  h2 Subscription
-.row.collapse-header.subscription-details(ng-show="subscription")
-  .row(ng-hide="subscription.error")
-    .col-md-6
-      label Status
-      p(ng-show="subscription.canceled_at") Canceled
-      p(ng-show="!subscription.canceled_at") {{ subscription.status | humanize }}
-    .col-md-6
-      label Plan
-      p {{ subscription.plan.metadata.alias | humanize }}
-      p {{ subscription.plan.metadata.price | currency }} / Month
-    .col-md-6
-      label Member Since
-      p {{ subscription.start * 1000 | date:'MM/dd/yyyy' }}
-    .col-md-6(ng-show="subscription.discount")
-      label Discounts
-      p(ng-show="subscription.discount") {{ subscription.discount | currency }}
-      p(ng-show="!subscription.discount") None
-    .col-md-6(ng-show="subscription.status == 'trialing' && !subscription.canceled_at")
-      label Trial End
-      p {{ subscription.trial_end * 1000 | date:'MM/dd/yyyy'  }}
-    .col-md-6(ng-show="subscription.status != 'trialing' && !subscription.canceled_at")
-      label Current Expiration
-      p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
-    .col-md-6(ng-show="subscription.canceled_at")
-      label Period End
-      p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
-    .col-md-6(ng-show="subscription.canceled_at")
-      label Canceled On
-      p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
+div(ng-hide="processing > 0")
+  .collapse-header
+    h2 Subscription
+    .row.help-block(ng-show="subscription.error")
+      p {{ subscription.error }}
+  .row.collapse-header.subscription-details(ng-show="!subscription")
+    h3 Contact RealtyMaps to enroll, today!
+
+
+  .row.collapse-header.subscription-details(ng-show="subscription.plan.id == 'deactivated'")
+    .row(ng-hide="subscription.error")
+      .col-md-6
+        label Status
+        p Deactivated
+
+  .row.collapse-header.subscription-details(ng-show="showSubscription()")
+    .row(ng-hide="subscription.error")
+      .col-md-6
+        label Status
+        p(ng-show="subscription.canceled_at") Canceled
+        p(ng-show="!subscription.canceled_at") {{ subscription.status | humanize }}
+      .col-md-6
+        label Plan
+        p {{ subscription.plan.metadata.alias | humanize }}
+        p {{ subscription.plan.metadata.price | currency }} / Month
+      .col-md-6
+        label Member Since
+        p {{ subscription.start * 1000 | date:'MM/dd/yyyy' }}
+      .col-md-6(ng-show="subscription.discount")
+        label Discounts
+        p(ng-show="subscription.discount") {{ subscription.discount | currency }}
+        p(ng-show="!subscription.discount") None
+      .col-md-6(ng-show="subscription.status == 'trialing' && !subscription.canceled_at")
+        label Trial End
+        p {{ subscription.trial_end * 1000 | date:'MM/dd/yyyy'  }}
+      .col-md-6(ng-show="subscription.status != 'trialing' && !subscription.canceled_at")
+        label Current Expiration
+        p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
+      .col-md-6(ng-show="subscription.canceled_at")
+        label Period End
+        p {{ subscription.current_period_end * 1000 | date:'MM/dd/yyyy'  }}
+      .col-md-6(ng-show="subscription.canceled_at")
+        label Canceled On
+        p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
 
   .row.subscription-buttons(ng-hide="subscription.error")
-    .col-md-6(ng-hide="subscription.canceled_at")
+    .col-md-6(ng-show="!subscription.canceled_at && showSubscription()")
       .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
-    .col-md-6(ng-hide="subscription.canceled_at || identity.subscription == 'pro'")
+
+    .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscrPlans.STANDARD")
       .btn.btn-default(ng-click="upgrade()") Upgrade
 
+    .col-md-6(ng-show="isDeactivated() || isExpired()")
+      .btn.btn-default(ng-click="reactivate()") Reactivate
 
 
-div
-  h2 Fips Codes
-.row.subscription-details(ng-show="data.fips")
-  .row(ng-hide="subscription.error")
-    .col-md-9
-      table.table.table-hover
-        thead
-          tr
-            th Code
-            th State
-            th County
-        tbody
-          tr(ng-repeat="f in data.fips")
-            td {{f.code}}
-            td {{f.state}}
-            td {{f.county}}
-
-  .row.help-block(ng-show="subscription.error")
-    p {{ subscription.error }}
+  div(ng-show="showSubscription()")
+    div
+      h2 Fips Codes
+    .row.subscription-details(ng-show="data.fips")
+      .row(ng-hide="subscription.error")
+        .col-md-9
+          table.table.table-hover
+            thead
+              tr
+                th Code
+                th State
+                th County
+            tbody
+              tr(ng-repeat="f in data.fips")
+                td {{f.code}}
+                td {{f.state}}
+                td {{f.county}}

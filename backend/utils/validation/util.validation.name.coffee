@@ -1,7 +1,9 @@
 Promise = require 'bluebird'
 stringValidation = require './util.validation.string'
 objectValidation = require './util.validation.object'
-logger = require '../../config/logger'
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn("util:validation:name")
+# coffeelint: enable=check_scope
 
 module.exports = (options = {}) ->
   composite = objectValidation(subValidateEach: stringValidation(options))

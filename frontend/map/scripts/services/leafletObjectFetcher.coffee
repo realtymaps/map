@@ -1,4 +1,6 @@
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 app.factory 'rmapsLeafletObjectFetcherFactory', ($log, $q, leafletData) ->
   #elementId: div id

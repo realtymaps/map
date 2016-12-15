@@ -400,6 +400,7 @@ executeSubtask = (subtask, prefix) ->
   getSubtaskConfig(subtask.name, subtask.task_name)
   .then (subtaskConfig) ->
     subtaskConfig.data ?= {}
+    subtaskConfig.step_num = subtask.step_num
     _.defaultsDeep(subtaskConfig, subtask)
     delete subtaskConfig.active
     subtask = _.clone(subtaskConfig)

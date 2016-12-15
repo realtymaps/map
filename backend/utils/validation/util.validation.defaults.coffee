@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-DataValidationError = require '../errors/util.error.dataValidation'
+
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->

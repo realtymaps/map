@@ -5,7 +5,6 @@ _logger = require('../../config/logger').spawn('ezcrud:route')
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 {
   validateAndTransform
-  validateAndTransformRequest
   defaultRequestTransforms
   falsyDefaultTransformsToNoop
 } = require '../util.validation'
