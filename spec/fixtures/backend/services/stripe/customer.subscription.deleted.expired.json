@@ -1,0 +1,51 @@
+{
+  "id": "evt_17TisNAKk28RH19G2peYvbtT",
+  "object": "event",
+  "api_version": "2015-10-16",
+  "created": 1452907751,
+  "data": {
+    "object": {
+      "id": "sub_7jBECxiT276IdJ",
+      "object": "subscription",
+      "application_fee_percent": null,
+      "cancel_at_period_end": false,
+      "canceled_at": null,
+      "current_period_end": 1455499750,
+      "current_period_start": 1452907750,
+      "customer": "cus_7jBEgA5lJ6721E",
+      "discount": null,
+      "ended_at": null,
+      "metadata": {},
+      "plan": {
+        "id": "standard",
+        "object": "plan",
+        "amount": 1500,
+        "created": 1452578576,
+        "currency": "usd",
+        "interval": "month",
+        "interval_count": 1,
+        "livemode": false,
+        "metadata": {
+          "maxLogins": "1",
+          "price": "15",
+          "alias": "basic",
+          "interval": "month",
+          "priceFormatted": "$15.00"
+        },
+        "name": "standard",
+        "statement_descriptor": null,
+        "trial_period_days": 30
+      },
+      "quantity": 1,
+      "start": 1452907750,
+      "status": "unpaid",
+      "tax_percent": null,
+      "trial_end": 1455499750,
+      "trial_start": 1452907750
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": "req_7jBEDhMnYTQLoz",
+  "type": "customer.subscription.deleted"
+}

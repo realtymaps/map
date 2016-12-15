@@ -73,9 +73,7 @@ submitPaymentPlan = ({plan, token, authUser, transaction}) ->
 
 submitEmail = ({authUser, plan}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  emailServices.events.subscriptionSignUp
-    authUser: authUser
-    plan: plan
+  emailServices.events.subscriptionSignUp(authUser)
   .catch (error) ->
     logger.info "SignUp Failed, reverting Payment Customer"
     paymentServices.customers.handleCreationError

@@ -43,6 +43,7 @@ describe "service.payment.impl.stripe.events", ->
       events:
         retrieve: sinon.stub()
 
+    # override the vero event handlers to noop
     @emailEvents = _.mapValues emailEvents(), () ->
       sinon.stub().returns(Promise.resolve())
 
@@ -52,45 +53,53 @@ describe "service.payment.impl.stripe.events", ->
 
     beforeEach ->
       fileName = jsonString.replace(":file", paymentEvents.customerSubscriptionVerified)
-      # console.log fileName
       eventData = require(fileName)
-      # console.log "eventData"
-      # console.log eventData, true
       @stripe.events.retrieve.returns(Promise.resolve eventData)
-
       @promise = subject(@stripe).handle(eventData)
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "called", ->
       @stripe.events.retrieve.called.should.be.ok
       @emailEvents.subscriptionVerified.called.should.be.ok
 
-    it 'opts', ->
-      @emailEvents.subscriptionVerified.args[0][0].should.be.eql
-        authUser: mockAuthUser
-        plan: "standard"
+    it "calls vero handler appropriately", ->
+      @emailEvents.subscriptionVerified.args[0][0].should.be.eql(mockAuthUser)
+      
 
-  describe paymentEvents.customerSubscriptionDeleted, ->
+  describe paymentEvents.customerSubscriptionDeleted + ".expired", ->
 
     beforeEach ->
-      fileName = jsonString.replace(":file", paymentEvents.customerSubscriptionDeleted)
+      fileName = jsonString.replace(":file", paymentEvents.customerSubscriptionDeleted + ".expired")
       eventData = require(fileName)
       @stripe.events.retrieve.returns(Promise.resolve eventData)
       @promise = subject(@stripe).handle(eventData)
 
-    it "can run", ->
+    it "passes sanity check", ->
+
       @promise
-
-    it "called", ->
       @stripe.events.retrieve.called.should.be.ok
-      @emailEvents.subscriptionDeleted.called.should.be.ok
+      @emailEvents.subscriptionExpired.called.should.be.ok
 
-    it 'opts', ->
-      @emailEvents.subscriptionDeleted.args[0][0].should.be.eql
-        authUser: mockAuthUser
-        plan: "standard"
+    it 'calls vero handler appropriately', ->
+      @emailEvents.subscriptionExpired.args[0][0].should.be.eql(mockAuthUser)
+
+
+  describe paymentEvents.customerSubscriptionDeleted + ".deactivated", ->
+
+    beforeEach ->
+      fileName = jsonString.replace(":file", paymentEvents.customerSubscriptionDeleted + ".deactivated")
+      eventData = require(fileName)
+      @stripe.events.retrieve.returns(Promise.resolve eventData)
+      @promise = subject(@stripe).handle(eventData)
+
+    it "passes sanity check", ->
+      @promise
+      @stripe.events.retrieve.called.should.be.ok
+      @emailEvents.subscriptionDeactivated.called.should.be.ok
+
+    it 'calls vero handler appropriately', ->
+      @emailEvents.subscriptionDeactivated.args[0][0].should.be.eql(mockAuthUser)
+
 
   describe paymentEvents.customerSubscriptionUpdated, ->
 
@@ -100,17 +109,14 @@ describe "service.payment.impl.stripe.events", ->
       @stripe.events.retrieve.returns(Promise.resolve eventData)
       @promise = subject(@stripe).handle(eventData)
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "called", ->
       @stripe.events.retrieve.called.should.be.ok
       @emailEvents.subscriptionUpdated.called.should.be.ok
 
-    it 'opts', ->
-      @emailEvents.subscriptionUpdated.args[0][0].should.be.eql
-        authUser: mockAuthUser
-        plan: "standard"
+    it 'calls vero handler appropriately', ->
+      @emailEvents.subscriptionUpdated.args[0][0].should.be.eql(mockAuthUser)
+
 
   describe paymentEvents.customerSubscriptionTrialWillEnd, ->
 
@@ -120,14 +126,10 @@ describe "service.payment.impl.stripe.events", ->
       @stripe.events.retrieve.returns(Promise.resolve eventData)
       @promise = subject(@stripe).handle(eventData)
 
-    it "can run", ->
+    it "passes sanity check", ->
       @promise
-
-    it "called", ->
       @stripe.events.retrieve.called.should.be.ok
       @emailEvents.subscriptionTrialEnding.called.should.be.ok
 
-    it 'opts', ->
-      @emailEvents.subscriptionTrialEnding.args[0][0].should.be.eql
-        authUser: mockAuthUser
-        plan: "standard"
+    it 'calls vero handler appropriately', ->
+      @emailEvents.subscriptionTrialEnding.args[0][0].should.be.eql(mockAuthUser)

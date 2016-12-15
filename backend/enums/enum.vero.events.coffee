@@ -47,6 +47,8 @@ events = [
   "customer.subscription.trial_will_end"
   #NOTE UNDERSCORES ARE THE WAY FORWARD
   # if switch the above to periods to underscores in vero then we will have duplicates in the New Campaign view.
+  "subscription_deactivated"
+  "subscription_expired"
   "notification_properties_saved"
   "client_created"
   "client_invited"

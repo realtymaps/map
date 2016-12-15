@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
-{emailPlatform} = require '../../services.email'
+emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
@@ -11,78 +11,84 @@ customerSubscriptionTrialWillEnd} = require '../../../enums/enum.vero.events'
 logger = require('../../../config/logger').spawn('stripe')
 
 
-emailPlatform.then (platform) ->
-  emailPlatform = platform
+emailPlatform = null
+# ('../../services.email').emailPlatform is same as '../../email/vero' (bootstrapped `events` and `vero`)
+emailSvc.emailPlatform.then (platform) -> emailPlatform = platform
 
 StripeEvents = (stripe) ->
   _eventHandles = {}
-  _eventHandles['default'] = (subscription, authUser) ->
+  _eventHandles['default'] = (eventObj, authUser) ->
     logger.debug "default stripe webhook event handling"
 
-  _eventHandles[customerSubscriptionCreated] = (subscription, authUser) ->
+  _eventHandles[customerSubscriptionCreated] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionCreated}"
-    emailPlatform.events.subscriptionVerified
-      authUser: authUser
-      plan: subscription.data.object.plan.name
+    emailPlatform.events.subscriptionVerified(authUser)
 
-  _eventHandles[customerSubscriptionDeleted] = (subscription, authUser) ->
+  _eventHandles[customerSubscriptionDeleted] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionDeleted}"
-    emailPlatform.events.subscriptionDeleted
-      authUser: authUser
-      plan: subscription.data.object.plan.name
 
-  _eventHandles[customerSubscriptionUpdated] = (subscription, authUser) ->
+    # Check status of deleted / canceled subscription.
+    # NOTE: this status that stripe sets for an failed payment subscr is controled in the stripe dashboard
+    #   (it should be configured to set a failed subscription status to "unpaid", which means an expired subscr for us)
+    if eventObj.data.object.status == 'unpaid'
+      return emailPlatform.events.subscriptionExpired(authUser)
+    else
+      return emailPlatform.events.subscriptionDeactivated(authUser)
+
+  _eventHandles[customerSubscriptionUpdated] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionUpdated}"
-    emailPlatform.events.subscriptionUpdated
-      authUser: authUser
-      plan: subscription.data.object.plan.name
+    emailPlatform.events.subscriptionUpdated(authUser)
 
-  _eventHandles[customerSubscriptionTrialWillEnd] = (subscription, authUser) ->
+  _eventHandles[customerSubscriptionTrialWillEnd] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionTrialWillEnd}"
-    emailPlatform.events.subscriptionTrialEnding
-      authUser: authUser
-      plan: subscription.data.object.plan.name
+    emailPlatform.events.subscriptionTrialEnding(authUser)
 
-  _eventHandles = _.mapValues _eventHandles, (origFunction) ->
-    (subscription) -> Promise.try () ->
-      {customer} = subscription.data.object
-      logger.debug "Attempting to get auth_user that has a stipe customer id of #{customer}"
-      unless customer
-        logger.debug subscription, true
 
-      q = tables.auth.user().where(stripe_customer_id: customer)
-      # logger.debug q.toString()
+  _getAuthUser = (eventObj, trx) ->
+    customer = eventObj.data.object.customer
+    logger.debug "Attempting to get auth_user that has a stipe customer id of #{customer}"
 
-      q.then (results) ->
-        expectSingleRow(results)
-      .then (authUser) ->
-        origFunction subscription, authUser
+    if !customer
+      logger.warn -> "Customer reference not found in event object:\n#{JSON.stringify(eventObj)}"
+
+    tables.auth.user(transaction: trx).where(stripe_customer_id: customer)
+    .then (results) ->
+      expectSingleRow(results)
+
 
   _verify = (eventObj) ->
     logger.debug "_verify"
-    stripe.events.retrieve eventObj.id
+    stripe.events.retrieve(eventObj.id)
+    .catch stripeErrors.StripeInvalidRequestError, (err) ->
+      logger.warn "Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}"
+      return eventObj
+      #return null
 
   handle = (eventObj) -> Promise.try () ->
-    callEvent = _eventHandles[eventObj.type] or _eventHandles['default']
+    dbs.transaction 'main', (trx) ->
+      _verify(eventObj)
+      .then (validEvent) ->
+        _getAuthUser(validEvent, trx)
+        .then (authUser) ->
+          if validEvent? && authUser?
 
-    _verify(eventObj)
-    .then (validEvent) ->
+            callEvent = _eventHandles[validEvent.type] or _eventHandles['default']
 
-      # log the event in event history
-      tables.event.history()
-      .insert(
-        auth_user_id: tables.auth.user().select('id').where(stripe_customer_id: validEvent.data.object.customer)
-        event_type: validEvent.type
-        data_blob: validEvent
-      ).then () ->
-        logger.debug "Event successfully inserted into history table."
-        logger.debug "POST _verify"
-        logger.debug "calling #{eventObj.type}"
-        logger.debug _eventHandles, true
+            # log the event in event history
+            tables.event.history(transaction: trx)
+            .insert(
+              auth_user_id: authUser.id
+              event_type: validEvent.type
+              data_blob: validEvent
+            ).then () ->
+              logger.debug "Event successfully inserted into history table."
+              logger.debug "POST _verify"
+              logger.debug "calling #{validEvent.type}"
+              logger.debug _eventHandles, true
 
-        callEvent(validEvent)
-      .catch (err) ->
-        throw new stripeErrors.StripeEventHandlingError err, "Error while logging & handling stripe webhook event."
+              callEvent(validEvent, authUser)
+            .catch (err) ->
+              throw new stripeErrors.StripeEventHandlingError err, "Error while logging & handling stripe webhook event."
 
   handle: handle
 
