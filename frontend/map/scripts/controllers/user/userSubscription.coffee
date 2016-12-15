@@ -128,6 +128,7 @@ rmapsMainOptions
         else
           rmapsSubscriptionService.reactivate()
           .then (res) ->
+            console.log "reactivated, response:\n#{JSON.stringify(res,null,2)}"
             # update subscription, and modal context with success content
             $rootScope.identity.subscription = res.plan.id
             $scope.subscription = res

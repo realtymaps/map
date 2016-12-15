@@ -165,6 +165,7 @@ getSubscription = (userId) ->
 
 
 reactivate = (userId) -> Promise.try () ->
+  console.log "\n\n##########\nreactivate()"
   dbs.transaction 'main', (trx) ->
     _getStripeIds(userId, trx)
     .then ({stripe_customer_id, stripe_subscription_id, stripe_plan_id}) ->
@@ -179,7 +180,10 @@ reactivate = (userId) -> Promise.try () ->
       #   (for example "deactivated" subscription or a subscription in post-cancel grace period)
       if stripe_subscription_id?
         promise = promise.then () ->
+          console.log "\n\ncanceling subscription..."
           stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: false}
+          .then (res) ->
+            console.log "canceled, res:\n#{JSON.stringify(res,null,2)}"
 
       promise.then () ->
         payload =
@@ -187,14 +191,20 @@ reactivate = (userId) -> Promise.try () ->
           plan: stripe_plan_id
           trial_end: 'now' # no trial period on reactivation
 
+        console.log "\n\ncreating subscription\npayload:\n#{JSON.stringify(payload,null,2)}"
         stripe.subscriptions.create(payload)
         .then (created) ->
+          console.log "created, created:\n#{JSON.stringify(created,null,2)}"
           tables.auth.user(transaction: trx)
           .update stripe_subscription_id: created.id, stripe_plan_id: created.plan.id
           .where id: userId
           .then () ->
+            console.log "completed local id update"
             status: _getStatusString(created)
             created: created
+          .catch (err) ->
+            analyzeValue = require '../../common/utils/util.analyzeValue'
+            console.log "err:\n#{analyzeValue.getSimpleMessage(error)}"
 
       .catch isUnhandled, (err) ->
         throw new PartiallyHandledError(err, "Encountered an issue reactivating the account, please contact customer service.")

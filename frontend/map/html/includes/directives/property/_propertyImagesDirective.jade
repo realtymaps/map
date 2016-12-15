@@ -1,10 +1,8 @@
 .property-img(ng-class="{static: !property.photos.length && panoramaControls}")
-  .spinner(ng-if="!imageLoaded && !coverImage")
-    img(rmaps-cdn-image ng-src="/assets/progress-big.gif")
 
   rmaps-street-view-panorama.prop-image-panorama(
     ng-cloak
-    ng-if="!property.photos.length"
+    ng-if="!property.photos.length && !blockGoogle"
     ng-show="panoramaOk() && panoramaControls"
     style="background-color:transparent;"
     focalcoord="property.geometry_center"
@@ -14,15 +12,19 @@
 
   img(
     ng-cloak
-    ng-if="!property.photos.length && panoramaOk() && !panoramaControls"
+    ng-if="!property.photos.length && panoramaOk() && !panoramaControls && !blockGoogle"
     ng-src="{{formatters.property.google.StreetView.getUrl(property, imageWidth, imageHeight)}}"
     title="{{property.title}}"
     ui-sref="property({id:property.rm_property_id})")
 
   img(
     ng-cloak
-    ng-if="!property.photos.length && !panoramaOk()"
+    ng-if="!property.photos.length && !blockGoogle && !panoramaOk()"
     ng-src="{{formatters.property.google.Satellite.getUrl(property, imageWidth, imageHeight)}}"
+    ui-sref="property({id:property.rm_property_id})")
+
+  .no-images(
+    ng-if="!property.photos.length && blockGoogle"
     ui-sref="property({id:property.rm_property_id})")
 
   img(
@@ -32,15 +34,8 @@
     title="{{property.title}}"
     ui-sref="property({id:property.rm_property_id})")
 
-  div.carousel.carousel-standard(
-    uib-carousel
-    active="active"
-    carousel-image-error="/assets/mls_unavailable.png"
-    ng-if="property.photos.length && !coverImage"
-    ng-show="imageLoaded")
-
-    div(uib-slide ng-repeat="photo in property.photos" index="photo.index")
-      img.resizable(ng-src="{{photo.url}}" style="margin:auto;" ui-sref="property({id:property.rm_property_id})")
-      .carousel-caption(ng-if="photo.caption" ng-cloak) {{photo.caption}}
+  flickity.carousel(ng-if="property.photos.length && !coverImage")
+    .carousel-cell(ng-repeat="photo in property.photos" index="photo.index")
+      img(data-flickity-lazyload="{{photo.url}}" ui-sref="property({id:property.rm_property_id})")
 
   .prop-image-status(ng-if="showStatus" class="{{formatters.property.getStatusLabelClass(property)}}") {{formatters.property.getStatusLabel(property, imageWidth)}}

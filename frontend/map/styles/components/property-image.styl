@@ -4,6 +4,66 @@
 // This component should be used when a Google Street View or Property Image is displayed for a property
 //
 
+.property-img
+
+  .no-images
+    height 150px
+    &:before
+      content " "
+      position absolute
+      left 0
+      height 100%
+      width 100%
+      background-color $gray_lighter
+    &:after
+      content "No Photos"
+      font-size 20px
+      color $gray
+      width 100%
+      position absolute
+      left 0
+      top 35%
+
+  .carousel
+    width 100%
+
+    img
+      min-width 275px
+      opacity 0
+      transition opacity 0.5s
+      &.flickity-lazyloaded
+        opacity 1
+      &.flickity-lazyerror
+        opacity 1
+        font-weight 300
+        line-height 2
+        text-align center
+        width 100%
+        height auto
+        display block
+        position relative
+        min-height 200px
+        &:before
+          content " "
+          display block
+          position absolute
+          top -10px
+          left 0
+          height calc(100% + 10px)
+          width 100%
+          background-color $gray_lighter
+          border 2px dotted $gray
+          border-radius 5px
+        &:after
+          content "\f12a"
+          font-size 50px
+          font-family FontAwesome
+          color $gray
+          position absolute
+          width 100%
+          left 0
+          top 25%
+
 // Wrapper DIV around Property image or street view
 .prop-image
   position: relative;
@@ -20,6 +80,11 @@
       display flex
       align-items center
       justify-content center
+
+      img
+        min-width 750px
+        &.flickity-lazyerror
+          min-height 565px
 
   .carousel
     .item

@@ -188,8 +188,11 @@ StripeCustomers = (stripe) ->
       _.find customer?.sources?.data, 'id', customer?.default_source
 
   replaceDefaultSource = (authUser, source) ->
+    console.log "\n\n##########\nreplaceDefaultSource()"
+    console.log "source:\n#{JSON.stringify(source,null,2)}"
     stripe.customers.update authUser.stripe_customer_id, {source: source}
     .then (customer) ->
+      console.log "replaceDefaultSource completed, customer:\n#{JSON.stringify(customer,null,2)}"
       _.find customer?.sources?.data, 'id', customer?.default_source
 
   charge = (opts, idempotency_key) ->
