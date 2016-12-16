@@ -11,9 +11,9 @@
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('sqft_finished')")
         li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
-    #results-list-container(infinite-scroll='formatters.results.loadMore(false)' infinite-scroll-distance='1' infinite-scroll-container='"#results-list-container"')
-      #results-list.list()
-        ul.list
+    #results-list-container
+      #results-list.list
+        ul.list(infinite-scroll='formatters.results.loadMore(false)' infinite-scroll-container="'#results-list-container'" infinite-scroll-distance='0')
           li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit")
             .property-card
               property-images(property="property" image-width="275" cover-image="true" show-status="true")
@@ -23,6 +23,7 @@
                               pin-click='formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()'
                               favorite-click='formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()'
                               )
+
 
 .mobile-only
   #detail-card-tray(ng-controller="rmapsSwipeTrayCtrl")

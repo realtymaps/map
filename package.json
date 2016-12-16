@@ -198,7 +198,7 @@
     "newrelic": "1.X.X",
     "ng-file-upload": "~12.0.1",
     "ng-img-crop-full-extended": "0.4.X",
-    "ng-infinite-scroll": "git://github.com/realtymaps/ngInfiniteScroll#68e6609cf80930e6ec730c733de34152db95297b",
+    "ng-infinite-scroll": "^1.3.0",
     "node-uuid": "1.4.3",
     "nodemailer": "1.3.4",
     "nodemon": "1.X",
