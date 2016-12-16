@@ -56,7 +56,7 @@ storePrep = (subtask) ->
 
   _getRetriesIteratively()
   .then () ->
-    updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+    updatePromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
     lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_last_mod_time field for #{mlsId}")
     uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing').catch (err) ->
@@ -65,8 +65,7 @@ storePrep = (subtask) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
     # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
-    Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
-    .then (updateThreshold, lastModField, uuidField, photoIdField) ->
+    Promise.join updatePromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
       dataOptions = {
         minDate: updateThreshold
         subLimit: numRowsToPagePhotos
