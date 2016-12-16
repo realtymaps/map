@@ -119,6 +119,7 @@ base =
   MAILING_PLATFORM:
     LIVE_MODE: toBool(process.env.MAILING_IS_LIVE, defaultValue: false)
     CAMPAIGN_BILLING_DELAY_DAYS: 1
+    CAMPAIGN_BILLING_CAPTURE_DAYS: 6
     READ_PDF_URL_RETRIES: 6
     LOB_MAX_RETRIES: 5
     S3_UPLOAD: _.merge common.pdfUpload, common.mail.s3_upload
