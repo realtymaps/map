@@ -34,7 +34,8 @@
     "environments": ["es5", "node", "commonjs", "mocha", "browser"],
     "globals": {
       "angular": true,
-      "google": true
+      "google": true,
+      "inject": true
     },
     "overwrite": false,
     "shadow": false,

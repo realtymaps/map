@@ -6,8 +6,14 @@ cleanData = () ->
 
 
 admin =
-  dtColumnRegex: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
   defaults:
+    columns: [
+      'lastModTime'
+      'mlsListingId'
+    ]
+    columnRegExes:
+      lastModTime: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
+      mlsListingId: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
     base:
       id: null
       name: null
@@ -34,6 +40,7 @@ admin =
       verify_overlap: true
     task:
       active: false
+
     schemaOptions:
       listing_data:
         db: []
@@ -44,6 +51,39 @@ admin =
         db: []
         table: []
         column: []
+
+    fieldNameMap:
+      listing_data:
+        dbNames: {}
+        tableNames: {}
+        lastModTime:
+          columnNames: {}
+          columnTypes: {}
+        mlsListingId:
+          columnNames: {}
+          columnTypes: {}
+        # objects: {}
+      agent_data:
+        dbNames: {}
+        tableNames: {}
+        lastModTime:
+          columnNames: {}
+          columnTypes: {}
+      objects: {}
+
+    # simple tracking for listing_data dropdowns
+    formItems:
+      listing_data:
+        db: disabled: false
+        table: disabled: false
+        lastModTime: disabled: false
+        mlsListingId: false
+
+      agent_data:
+        db: disabled: false
+        table: disabled: false
+        lastModTime: disabled: false
+        mlsListingId: false
 
   dataSource:
     lookupThreshold: 50

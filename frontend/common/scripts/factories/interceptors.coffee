@@ -1,5 +1,3 @@
-qs = require 'qs'
-httpStatus = require '../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
 escapeHtml = require 'escape-html'
 mod = require '../module.coffee'

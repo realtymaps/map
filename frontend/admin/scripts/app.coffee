@@ -19,7 +19,6 @@ require 'ng-infinite-scroll'
 require 'ui-router-extras/release/ct-ui-router-extras.js'
 require 'restangular'#requires lodash globally
 
-
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 require '../../../common/utils/angularModule.coffee'

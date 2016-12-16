@@ -42,7 +42,7 @@ beforeEach ->
         $timeout.flush()
 
       fn() if fn?
-      scope.$digest() unless scope.$$phase
+      scope.$digest() if !scope.$$phase
 
       if $httpBackend.hasPendingRequests()
         # $log.debug "FLUSHING $httpBackend"

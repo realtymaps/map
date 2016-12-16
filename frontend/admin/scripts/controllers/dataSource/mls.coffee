@@ -8,7 +8,7 @@ selectIconTemplate = require('../../../html/views/templates/selectIcon.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl',
-  ($rootScope, $scope, $location, $state, $timeout, $uibModal, $q,
+  ($rootScope, $scope, $location, $state, $timeout, $uibModal, $q, $log,
   rmapsMlsService,
   rmapsEventConstants,
   rmapsAdminConstants,
@@ -101,33 +101,13 @@ app.controller 'rmapsMlsCtrl',
     $scope.ui = rmapsAdminConstants.ui
 
     # keep track of readable names
-    $scope.fieldNameMap =
-      listing_data:
-        dbNames: {}
-        tableNames: {}
-        columnNames: {}
-        columnTypes: {}
-        # objects: {}
-      agent_data:
-        dbNames: {}
-        tableNames: {}
-        columnNames: {}
-        columnTypes: {}
-      objects: {}
+    $scope.fieldNameMap = _.clone rmapsAdminConstants.defaults.fieldNameMap
+
 
     # simple tracking for listing_data dropdowns
-    $scope.formItems =
-      listing_data:
-        db: disabled: false
-        table: disabled: false
-        field: disabled: false #needs a better name
-        mlsListingId: false
+    $scope.formItems = _.clone rmapsAdminConstants.defaults.formItems
 
-      agent_data:
-        db: disabled: false
-        table: disabled: false
-        field: disabled: false #needs a better name
-        mlsListingId: false
+    $scope.columns = _.clone rmapsAdminConstants.defaults.columns
 
     # extract existing configs, populate idOptions
     $scope.loading = true
@@ -242,7 +222,8 @@ app.controller 'rmapsMlsCtrl',
           $scope.schemaOptions[schema].table = []
           $scope.schemaOptions[schema].column = []
           $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
-          $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+          $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+          $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
           $q.reject(new Error('Error retrieving databases from MLS.'))
       else
         $scope.schemaOptions[schema].db = []
@@ -250,7 +231,8 @@ app.controller 'rmapsMlsCtrl',
         $scope.schemaOptions[schema].column = []
         $scope.formItems[schema].db.disabled = true if $scope.formItems[schema].db?
         $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
-        $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+        $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+        $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
         return $q.when()
 
     # pull table options and enable next step as appropriate
@@ -269,13 +251,15 @@ app.controller 'rmapsMlsCtrl',
           $scope.schemaOptions[schema].table = []
           $scope.schemaOptions[schema].column = []
           $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
-          $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+          $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+          $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
           $q.reject(new Error('Error retrieving tables from MLS.'))
       else
         $scope.schemaOptions[schema].table = []
         $scope.schemaOptions[schema].column = []
         $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
-        $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+        $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+        $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
         return $q.when()
 
     # pull column options and enable next step as appropriate
@@ -284,26 +268,41 @@ app.controller 'rmapsMlsCtrl',
       if $scope.mlsData.current.id and $scope.mlsData.current[schema].db and $scope.mlsData.current[schema].table
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current[schema].db, $scope.mlsData.current[schema].table)
         .then (rawData) ->
-          data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
-          r = rmapsAdminConstants.dtColumnRegex
-          $scope.schemaOptions[schema].column = _.flatten(
-            # ok props to whomever made this; (your smart) now what the heck does it do?
-            # guess flattens / keeps objects where the k or v are a string
-            [o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == 'string' && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == 'string' && r.test(v.toLowerCase())))
-            ], true)
-          $scope.formItems[schema].field.disabled = false if $scope.formItems[schema].field?
-          $scope.fieldNameMap[schema].columnNames = {}
-          $scope.fieldNameMap[schema].columnTypes = {}
-          for datum in data
-            $scope.fieldNameMap[schema].columnNames[datum.SystemName] = datum.LongName
-            $scope.fieldNameMap[schema].columnTypes[datum.SystemName] = datum.DataType
-          data
+          makeError = (thing) ->
+            err = new Error "#{thing}: schema: #{schema}, column: #{column} UNDEFINED"
+            $log.error(err)
+            throw err
+
+          for column in $scope.columns
+            regex = rmapsAdminConstants.defaults.columnRegExes[column]
+
+            if !regex?
+              makeError("regex")
+
+            if !$scope.formItems[schema]?[column]?
+              makeError("formItems")
+
+            if !$scope.fieldNameMap[schema]?[column]?
+              makeError("fieldNameMap")
+
+            data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
+            $scope.schemaOptions[schema][column].options = _.flatten(
+              # ok props to whomever made this; (your smart) now what the heck does it do?
+              # guess flattens / keeps objects where the k or v are a string and they match the regex
+              [o for o in data when (_.some(k for k in _.keys(o) when _.isString(k) && regex.test(k.toLowerCase())) or _.some(v for v in _.values(o) when _.isString(v) && regex.test(v.toLowerCase())))
+              ], true)
+            $scope.formItems[schema][column].disabled = false if $scope.formItems[schema][column]?
+            $scope.fieldNameMap[schema][column].columnNames = {}
+            $scope.fieldNameMap[schema][column].columnTypes = {}
+            for datum in data
+              $scope.fieldNameMap[schema][column].columnNames[datum.SystemName] = datum.LongName
+              $scope.fieldNameMap[schema][column].columnTypes[datum.SystemName] = datum.DataType
+            data
         .catch () ->
-          $scope.schemaOptions[schema].column
           $q.reject(new Error('Error retrieving columns from MLS.'))
       else
-        $scope.schemaOptions[schema].column
-        $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+        for column in $scope.columns
+          $scope.formItems[schema][column].disabled = true if $scope.formItems[schema][column]?
         return $q.when()
 
     $scope.saveServerData = () ->
@@ -355,21 +354,21 @@ app.controller 'rmapsMlsCtrl',
         $scope.schemaOptions[schema].table = []
         $scope.schemaOptions[schema].column = []
         $scope.mlsData.current[schema].table = ''
-        $scope.mlsData.current[schema].field = ''
-        $scope.mlsData.current[schema].field_type = ''
+        $scope.mlsData.current[schema].lastModTime = rmapsCleanData()
         $scope.mlsData.current[schema].mlsListingId = rmapsCleanData()
 
 
         $scope.formItems[schema].table.disabled = true if $scope.formItems[schema].table?
-        $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+        $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+        $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
         promise = getTableOptions(schema)
 
       else if toStep == 2 # table option just changed, reset table and fields
         $scope.schemaOptions[schema].column = []
-        $scope.mlsData.current[schema].field = ''
-        $scope.mlsData.current[schema].field_type = ''
+        $scope.mlsData.current[schema].lastModTime = rmapsCleanData()
         $scope.mlsData.current[schema].mlsListingId = rmapsCleanData()
-        $scope.formItems[schema].field.disabled = true if $scope.formItems[schema].field?
+        $scope.formItems[schema].lastModTime.disabled = true if $scope.formItems[schema].lastModTime?
+        $scope.formItems[schema].mlsListingId.disabled = true if $scope.formItems[schema].mlsListingId?
         promise = getColumnOptions(schema)
 
       else
