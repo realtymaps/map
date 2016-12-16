@@ -103,6 +103,17 @@ deletePhotos = (subtask) ->
     .catch (error) ->
       throw new jobQueueErrors.SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
+deleteSessionSecurities = (subtask) ->
+  tables.auth.sessionSecurity()
+  .whereNotExists () ->
+    @select(1).from(tables.auth.session.tableName)
+    .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
+  .returning('session_id')
+  .delete()
+  .then (sessionIds) ->
+    logger.spawn(subtask.name).debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
+
+
 
 module.exports = new TaskImplementation 'cleanup', {
   rawTables
@@ -113,4 +124,5 @@ module.exports = new TaskImplementation 'cleanup', {
   deleteParcels
   deletePhotosPrep
   deletePhotos
+  deleteSessionSecurities
 }
