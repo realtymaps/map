@@ -64,8 +64,9 @@ storePrep = (subtask) ->
     photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing').catch (err) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
-    # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+    # DON'T change this to Promise.join(promises...).then() syntax -- for some reason it doesn't work here
     Promise.join updatePromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
+      # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
       dataOptions = {
         minDate: updateThreshold
         subLimit: numRowsToPagePhotos
