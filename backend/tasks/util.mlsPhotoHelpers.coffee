@@ -71,8 +71,6 @@ uploadPhoto = ({photoRes, newFileName, event, row}) ->
 
       sources = {upload, "event.dataStream": event.dataStream}
       registerEventHandler = (name, source, extraHandler) ->
-        if !sources[source]?
-          console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+JSON.stringify(source)+' / '+name+' / '+Object.keys(sources))
         sources[source].once name, (event) ->
           logger.spawn(row.data_source_id).debug () -> "[#{newFileName}] '#{name}' event (#{source}): #{analyzeValue.getSimpleMessage(event)}"
           extraHandler?(event)
