@@ -22,7 +22,7 @@ rmapsLoginService) ->
   ($scope) ->
 
     $scope.loginInProgress = false
-    $scope.form = {}
+    $scope.form = {email: '', password: '', remember_me: false}
 
     loginFailed = (response) ->
       $log.error "Could not log in", response
@@ -46,8 +46,11 @@ rmapsLoginService) ->
             template: require('../../html/views/templates/modals/passwordReset.jade')()
 
     $scope.doLogin = (loginObj) ->
+      loginObj ?= $scope.form
+      # angular checkbox models don't interact well with lastpass, this fixes it
+      loginObj.remember_me = document.querySelector('#remember_me').checked
       $scope.loginInProgress = true
-      rmapsLoginService.login(loginObj || $scope.form)
+      rmapsLoginService.login(loginObj)
       .then ({data, status}) ->
 
         if !httpStatus.isWithinOK status
