@@ -31,14 +31,15 @@ StripeEvents = (stripe) ->
     # Check status of deleted / canceled subscription.
     # NOTE: this status that stripe sets for an failed payment subscr is controled in the stripe dashboard
     #   (it should be configured to set a failed subscription status to "unpaid", which means an expired subscr for us)
-    (if eventObj.data.object.status == 'unpaid'
-      emailPlatform.events.subscriptionExpired(authUser).then () ->
-        stripe.customers.retrieve authUser.stripe_customer_id
-        .then (customer) ->
-          stripe.customers.deleteCard(customer.id, customer.default_source)
+    Promise.try () ->
+      if eventObj.data.object.status == 'unpaid'
+        emailPlatform.events.subscriptionExpired(authUser).then () ->
+          stripe.customers.retrieve authUser.stripe_customer_id
+          .then (customer) ->
+            stripe.customers.deleteCard(customer.id, customer.default_source)
 
-    else
-      emailPlatform.events.subscriptionDeactivated(authUser))
+      else
+        emailPlatform.events.subscriptionDeactivated(authUser)
 
     # deactivate any projects this user owned
     # promise
