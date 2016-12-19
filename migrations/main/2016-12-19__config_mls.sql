@@ -23,6 +23,9 @@ where agent_data->'field_type' is null and agent_data->'field' is not null;
 update config_mls
   set
   listing_data=listing_data - 'field',
-  listing_data=listing_data - 'field_type',
-  agent_data=agent_data - 'field',
-  agent_data=agent_data - 'field_type';
+  agent_data=agent_data - 'field';
+
+  update config_mls
+    set
+    listing_data=listing_data - 'field_type',
+    agent_data=agent_data - 'field_type';
