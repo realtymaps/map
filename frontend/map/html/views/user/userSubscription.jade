@@ -50,8 +50,24 @@ div(ng-hide="processing > 0")
     .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscrPlans.STANDARD")
       .btn.btn-default(ng-click="upgrade()") Upgrade
 
-    .col-md-6(ng-show="isDeactivated() || isExpired()")
+    .col-md-6(ng-show="isDeactivated() || isExpired() || isInGracePeriod()")
       .btn.btn-default(ng-click="reactivate()") Reactivate
+
+  .collapse-header
+    h2 Payment Method
+  .row.collapse-header.cc-details(ng-show="data.payment")
+    h4 Card Info
+    .row
+      .col-md-1
+        img(rmaps-cdn-image ng-src="assets/cc/{{data.payment.brand}}Icon.png")
+      .col-md-5
+        p {{ data.payment.brand }} ending in {{ data.payment.last4 }}
+        p {{ ('00'+data.payment.exp_month).slice(-2) }}/{{ data.payment.exp_year }}
+      .col-md-6
+        label Name on Card
+        p {{ data.payment.name }}
+    .row.cc-buttons
+      .btn.btn-default(ng-click="replaceCC()") Replace
 
 
   div(ng-show="showSubscription()")

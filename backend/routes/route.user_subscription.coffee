@@ -48,6 +48,7 @@ module.exports =
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
+    handleQuery: true
     handle: (req) ->
       validateAndTransformRequest(req, subscriptionTransforms.reactivation)
       .then (validReq) ->

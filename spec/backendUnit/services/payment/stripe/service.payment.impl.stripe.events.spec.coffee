@@ -28,26 +28,37 @@ describe "service.payment.impl.stripe.events", ->
 
     mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
     mockHistoryTable = new SqlMock 'event', 'history'
+    mockProjectTable = new SqlMock 'user', 'project'
 
-    tables =
+    @tables =
       auth:
         user: () ->
           mockUserTable
       event:
         history: () ->
           mockHistoryTable
+      user:
+        project: () ->
+          mockProjectTable
 
-    subject.__set__ 'tables', tables
+    dbs =
+      transaction: (main, cb) ->
+        Promise.resolve(cb()) # fine to leave the `transaction` injected parameter undefined
 
+    subject.__set__ 'tables', @tables
+    subject.__set__ 'dbs', dbs
     @stripe =
       events:
         retrieve: sinon.stub()
+      customers:
+        retrieve: sinon.stub()
+        deleteCard: sinon.stub()
 
     # override the vero event handlers to noop
     @emailEvents = _.mapValues emailEvents(), () ->
       sinon.stub().returns(Promise.resolve())
-
     subject.__set__ 'emailPlatform', events: @emailEvents
+
 
   describe paymentEvents.customerSubscriptionVerified, ->
 
@@ -71,14 +82,21 @@ describe "service.payment.impl.stripe.events", ->
     beforeEach ->
       fileName = jsonString.replace(":file", paymentEvents.customerSubscriptionDeleted + ".expired")
       eventData = require(fileName)
-      @stripe.events.retrieve.returns(Promise.resolve eventData)
+      customer =
+        id: mockAuthUser.id
+        default_source: {}
+      @stripe.events.retrieve.returns(Promise.resolve(eventData))
+      @stripe.customers.retrieve.returns(Promise.resolve(customer))
+      @stripe.customers.deleteCard.returns(Promise.resolve())
       @promise = subject(@stripe).handle(eventData)
 
     it "passes sanity check", ->
 
       @promise
       @stripe.events.retrieve.called.should.be.ok
+      @stripe.customers.deleteCard.called.should.be.ok
       @emailEvents.subscriptionExpired.called.should.be.ok
+      @tables.user.project().updateSpy.called.should.be.ok
 
     it 'calls vero handler appropriately', ->
       @emailEvents.subscriptionExpired.args[0][0].should.be.eql(mockAuthUser)
@@ -96,6 +114,7 @@ describe "service.payment.impl.stripe.events", ->
       @promise
       @stripe.events.retrieve.called.should.be.ok
       @emailEvents.subscriptionDeactivated.called.should.be.ok
+      @tables.user.project().updateSpy.called.should.be.ok
 
     it 'calls vero handler appropriately', ->
       @emailEvents.subscriptionDeactivated.args[0][0].should.be.eql(mockAuthUser)

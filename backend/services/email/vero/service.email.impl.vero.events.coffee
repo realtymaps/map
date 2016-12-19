@@ -16,7 +16,6 @@ If this was not initiated by you or feel this is in error please contact [contac
 """
 
 VeroEvents = (vero) ->
-
   _send = (authUser, eventName, override = {}) ->
     p = _.defaultsDeep override,
       id: veroUserSvc.getUniqueUserId(authUser)

@@ -162,13 +162,9 @@ module.exports = app.config (
       showSteps: true
 
   buildState 'snail'
-  buildState 'user'#, page: {title: 'My Account', dynamicTitle: true }
+  buildState 'user'
   buildChildState 'userMLS', 'user', {page: { title: 'MLS' }, permissionsRequired: "isMLS"}
-  #TODO: begin being combined
-  buildChildState 'userSubscription', 'user', page: { title: 'Subscription' }, permissionsRequired: "isSubscriber"
-  buildChildState 'userPaymentMethod', 'user', page: { title: 'Payment Method' }
-  #end combined
-
+  buildChildState 'userSubscription', 'user', page: { title: 'Subscription' }
   buildChildState 'userNotifications', 'user', page: { title: 'Notifications' }
   buildChildState 'userPaymentHistory', 'user', page: { title: 'Payment History' }
 
