@@ -137,10 +137,10 @@ getDataStream = (mlsId, dataType, opts={}) ->
       uuidColumn = null
       delimiter = null
       done = false
-      retsStream = null
+      retsResult = null
       finish = (that, error) ->
         logger.spawn(mlsId).debug () -> "getDataStream finished for #{mlsId}/#{dataType}, error: #{analyzeValue.getFullDetails(error)}"
-        retsStream.unpipe(resultStream)
+        retsResult.retsStream.unpipe(resultStream)
         done = true
         if error
           that.push(type: 'error', payload: error)
@@ -155,11 +155,11 @@ getDataStream = (mlsId, dataType, opts={}) ->
           resolved = false
           internals.getRetsClient mlsId, (retsClientIteration) ->
             new Promise (resolve2, reject2) ->
-              retsStream = retsClientIteration.search.stream.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions, true)
-              retsStream.pipe(resultStream, end: false)
-              retsStream.on 'end', resolve2
+              retsResult = retsClientIteration.search.stream.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions, true)
+              retsResult.retsStream.pipe(resultStream, end: false)
+              retsResult.retsStream.on 'end', resolve2
               resolved = true
-              resolve(retsStream)
+              resolve(retsResult.retsStream)
           .catch (error) ->
             if !resolved
               resolved = true

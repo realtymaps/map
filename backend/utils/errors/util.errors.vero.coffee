@@ -12,10 +12,6 @@ class SubscriptionVerifiedError extends PayloadError
   constructor: (payload, args...) ->
     super(payload, 'SubscriptionVerified', args...)
 
-class SubscriptionDeletedError extends PayloadError
-  constructor: (payload, args...) ->
-    super(payload, 'SubscriptionDeleted', args...)
-
 class SubscriptionUpdatedError extends PayloadError
   constructor: (payload, args...) ->
     super(payload, 'SubscriptionUpdated', args...)
@@ -23,6 +19,14 @@ class SubscriptionUpdatedError extends PayloadError
 class SubscriptionTrialEndedError extends PayloadError
   constructor: (payload, args...) ->
     super(payload, 'SubscriptionTrialEnded', args...)
+
+class SubscriptionDeactivatedError extends PayloadError
+  constructor: (payload, args...) ->
+    super(payload, 'SubscriptionDeleted', args...)
+
+class SubscriptionExpiredError extends PayloadError
+  constructor: (payload, args...) ->
+    super(payload, 'SubscriptionDeleted', args...)
 
 class CancelPlanError extends PayloadError
   constructor: (payload, args...) ->
@@ -36,9 +40,10 @@ module.exports = {
   SubscriptionSignUpError
   SubscriptionCreatedError
   SubscriptionVerifiedError
-  SubscriptionDeletedError
   SubscriptionUpdatedError
   SubscriptionTrialEndedError
+  SubscriptionDeactivatedError
+  SubscriptionExpiredError
   CancelPlanError
   NotificationPropertiesSavedError
 }

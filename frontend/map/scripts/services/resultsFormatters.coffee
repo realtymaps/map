@@ -10,7 +10,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
   class ResultsFormatter
 
-    RESULTS_LIST_DEFAULT_LENGTH: 10
+    RESULTS_LIST_DEFAULT_LENGTH: 0
     LOAD_MORE_LENGTH: 10
 
     _isWithinBounds = (map, prop) ->
@@ -108,15 +108,17 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
           $timeout.cancel @loader
         else
           return
-      @loader = $timeout @throttledLoadMore, 20
+      @loader = $timeout =>
+        @loader = null
+        @throttledLoadMore(@getAmountToLoad())
+      , 20
 
     getAmountToLoad: () ->
       return @LOAD_MORE_LENGTH
 
-    throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
-      $log.debug "throttledLoadMore()"
+    throttledLoadMore: (amountToLoad = 0) =>
+      $log.debug "throttledLoadMore(#{amountToLoad})"
 
-      amountToLoad = @getAmountToLoad()
       resultsPotentialLength = 0
 
       if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length

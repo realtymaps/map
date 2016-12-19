@@ -18,23 +18,21 @@ imageEventTransform = () ->
   # coffeelint: enable=check_scope
     try
 
-      if event?.error?
+      if event.type == 'error'
         eventLogger.debug -> "data event has an error #{analyzeValue.getFullDetails(event.error)}"
         #NOTE this should be a RetsError
         cb(event.error)
         return
 
+      if event.type == 'headerInfo'
+        cb()
+        return
+
       listingId = event.headerInfo.contentId
       fileExt = event.headerInfo.contentType.replace('image/','')
-      location = event.headerInfo.location
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
 
       event.extra = {fileExt,fileName,imageId,listingId}
-
-      if location?
-        event.extra.makeDataStream = () ->
-          logger.debug -> 'calling event.extra.makeDataStream'
-          request(location)
 
       imageId++
       everSentData = true
@@ -73,12 +71,11 @@ imageStream = (photoObject) ->
 
   toPhotoStream(photoObject).once 'data', (event) ->
 
-    stream = if event.dataStream
+    stream = if event.type == 'dataStream'
       l.debug -> "event.dataStream"
       event.dataStream
-    else if event.extra.makeDataStream #YAY it is cached for us already
-      l.debug -> "event.makeDataStream"
-      event.extra.makeDataStream()
+    else if event.type == 'location' #YAY it is cached for us already
+      request(event.headerInfo.location)
     else
       l.debug -> "event has no dataStream"
       through()
@@ -116,13 +113,12 @@ imagesStream = (photoObject, archive = Archiver('zip')) ->
 
   toArchive = (event, enc, cb) ->
     try
-      if event.dataStream?
+      if event.type == 'dataStream'
         l.debug -> "event.dataStream fileName: #{event.extra.fileName}"
         archive.append(event.dataStream, name: event.extra.fileName)
 
-      if event.extra.makeDataStream?
-        l.debug -> "event.extra.makeDataStream() fileName: #{event.extra.fileName}"
-        archive.append(event.extra.makeDataStream(), name: event.extra.fileName)
+      else if event.type == 'location'
+        archive.append(request(event.headerInfo.location), name: event.extra.fileName)
 
       l.debug -> "finish appending fileName: #{event.extra.fileName}"
       cb()

@@ -3,101 +3,121 @@ Promise = require 'bluebird'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
+veroErrors = require '../../../utils/errors/util.errors.vero'
+veroUserSvc = require './service.email.impl.vero.user'
+analyzeValue = require '../../../../common/utils/util.analyzeValue'
 logger = require('../../../config/logger').spawn('vero')
-internals = null
 emailRoutes = backendRoutes.email
 
+inErrorSupportPhrase = """
+PS:
+
+If this was not initiated by you or feel this is in error please contact [contact me] (support@realtymaps.com) .
+"""
 
 VeroEvents = (vero) ->
 
-  internals = require('./service.email.impl.vero.events.internals')(vero)
-
-  # Returns the vero-promise response as Promise([user, event]).
-  subscriptionSignUp = (opts, attempt) -> Promise.try () ->
-    @name = "subscriptionSignUp"
-
-    onMissingArgsFail args: opts, required: ['authUser']
-
-    {authUser} = opts
-
-    verifyUrl = clsFullUrl emailRoutes.verify.replace(":hash", authUser.email_validation_hash)
-
-    logger.debug "VERIFY URL"
-    logger.debug.yellow verifyUrl
-
-    _.merge opts,
+  _send = (authUser, eventName, override = {}) ->
+    p = _.defaultsDeep override,
+      id: veroUserSvc.getUniqueUserId(authUser)
+      email: authUser.email
+      userData: _.extend(_.pick(authUser, ['first_name','last_name']))
+      eventName: eventName
       eventData:
-        verify_url: verifyUrl
+        in_error_support_phrase: inErrorSupportPhrase
 
-    internals.sendVeroMsg {
-      opts
-      attempt
-      recallFn: @
-      errorName: "SubscriptionSignUpError"
-      eventName: "customerSubscriptionCreated"
-    }
+    logger.debug -> "Tracking on VERO: #{eventName}, parameters:\n#{JSON.stringify(p)}"
+    vero.createUserAndTrackEvent(p.id, p.email, p.userData, p.eventName, p.eventData)
+
+  subscriptionSignUp = (authUser) -> Promise.try () ->
+    logger.debug "subscriptionSignUp()"
+
+    verify_url = clsFullUrl emailRoutes.verify.replace(":hash", authUser.email_validation_hash)
+    logger.debug "VERIFY URL"
+    logger.debug.yellow verify_url
+
+    _send(authUser, "customer.subscription.created", {eventData: {verify_url}})
+    .catch (err) ->
+      throw new veroErrors.SubscriptionSignUpError(err, analyzeValue.getFullDetails(err))
+
+  subscriptionTrialEnding = (authUser) -> Promise.try () ->
+    logger.debug "subscriptionTrialEnding()"
+
+    cancel_plan_url = clsFullUrl emailRoutes.cancelPlan.replace(":cancelPlan", authUser.cancel_email_hash)
+    logger.debug "CANCEL PLAN URL"
+    logger.debug.yellow cancel_plan_url
+
+    _send(authUser, "customer.subscription.trial_will_end", {eventData: {cancel_plan_url}})
+    .catch (err) ->
+      throw new veroErrors.SubscriptionTrialEndedError(err, analyzeValue.getFullDetails(err))
+
+  # Purpose To send a Welcome Email stating that the account validation was successful
+  subscriptionVerified = (authUser) ->
+    logger.debug "subscriptionVerified()"
+    _send(authUser, "customer.subscription.verified")
+    .catch (err) ->
+      throw new veroErrors.SubscriptionVerifiedError(err, analyzeValue.getFullDetails(err))
+
+  subscriptionUpdated = (authUser) ->
+    logger.debug "subscriptionUpdated()"
+    _send(authUser, "customer.subscription.updated")
+    .catch (err) ->
+      throw new veroErrors.SubscriptionUpdatedError(err, analyzeValue.getFullDetails(err))
 
 
-  subscriptionTrialEnding = (opts) -> Promise.try () ->
-    @name = "subscriptionTrialEnding"
-    logger.debug "handling vero #{@name}"
+  subscriptionDeactivated = (authUser) ->
+    logger.debug "subscriptionDeactivated()"
+    _send(authUser, "subscription_deactivated")
+    .catch (err) ->
+      throw new veroErrors.SubscriptionDeactivatedError(err, analyzeValue.getFullDetails(err))
 
-    internals.cancelPlanOptions opts
 
-    internals.sendVeroMsg {
-      opts
-      errorName: "SubscriptionTrialEndedError"
-      eventName: "customerSubscriptionTrialWillEnd"
-    }
-
-  #Purpose To send a Welcome Email stating that the account validation was successful
-  subscriptionVerified = (opts) ->
-    @name = "subscriptionVerified"
-    logger.debug "handling vero #{@name}"
-
-    internals.sendVeroMsg {
-      opts
-      errorName: "SubscriptionVerifiedError"
-      eventName: "customerSubscriptionVerified"
-    }
-
-  subscriptionUpdated = (opts) ->
-    @name = "subscriptionUpdated"
-    logger.debug "handling vero #{@name}"
-
-    internals.sendVeroMsg {
-      opts
-      errorName: "SubscriptionUpdatedError"
-      eventName: "customerSubscriptionUpdated"
-    }
-
-  subscriptionDeleted = (opts) ->
-    @name = "subscriptionDeleted"
-    logger.debug "handling vero #{@name}"
-
-    internals.sendVeroMsg {
-      opts
-      errorName: "SubscriptionDeletedError"
-      eventName: "customerSubscriptionDeleted"
-    }
+  subscriptionExpired = (authUser) ->
+    logger.debug "subscriptionExpired()"
+    _send(authUser, "subscription_expired")
+    .catch (err) ->
+      throw new veroErrors.SubscriptionExpiredError(err, analyzeValue.getFullDetails(err))
 
 
   notificationPropertiesSaved = (opts) ->
-    internals.notificationProperties {
-      opts
-      name: "notificationPropertiesSaved"
-      errorName: "NotificationPropertiesSavedError"
-      eventName: "notificationPropertiesSaved"
+    logger.debug "notificationPropertiesSaved()"
+    {
+      authUser
+      properties
+      type
+      frequency
+      notification_id
+      project_id
+      from
+    } = onMissingArgsFail args: opts, required: ['authUser', 'properties', 'notification_id']
+
+    eventData = {
+      properties
+      type
+      frequency
+      notification_id
+      project_id
+      from
+      in_error_support_phrase: inErrorSupportPhrase
     }
 
+    _send(authUser, "notification_properties_saved", {eventData})
+    .catch (err) ->
+      throw new veroErrors.NotificationPropertiesSavedError(err, analyzeValue.getFullDetails(err))
+
+#
+# public expose
+#
 
   {
     subscriptionSignUp
     subscriptionVerified
     subscriptionTrialEnding
     subscriptionUpdated
-    subscriptionDeleted
+    subscriptionDeactivated
+    subscriptionExpired
     notificationPropertiesSaved
+    inErrorSupportPhrase
   }
 
 module.exports = VeroEvents

@@ -61,6 +61,8 @@ require 'angular-busy/dist/angular-busy.css'
 require 'textangular/dist/textAngular.css'
 require 'angular-toastr/dist/angular-toastr.css'
 
+require 'flickity/dist/flickity.min.css'
+
 app = window.angular.module 'rmapsMapApp', [
   'rmapsCommonUtils'
   'angular-data.DSCacheFactory'

@@ -342,10 +342,14 @@ queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, 
   queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency, stepNumOffset})
 
 runWorker = (queueName, id, quit=false) ->
-  if cluster.worker?
-    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
+  if id?
+    processId = "-#{id}"
   else
-    prefix = "<#{queueName}-#{id}>"
+    processId = ""
+  if cluster.worker?
+    prefix = "<#{queueName}-#{cluster.worker.id}#{processId}>"
+  else
+    prefix = "<#{queueName}#{processId}>"
   logger.spawn("queue:#{queueName}").debug () -> "#{prefix} worker starting..."
   internals.runWorkerImpl(queueName, prefix, quit)
 
