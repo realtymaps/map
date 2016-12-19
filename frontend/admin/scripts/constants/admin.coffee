@@ -100,4 +100,4 @@ admin =
 
 app.constant 'rmapsAdminConstants', admin
 
-app.factory 'rmapsCleanData', cleanData
+app.constant 'rmapsCleanData', cleanData
