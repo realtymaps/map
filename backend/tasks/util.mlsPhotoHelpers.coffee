@@ -217,7 +217,7 @@ storeStream = ({photoRowClause, row, transaction, photoRes, subtask, mlsId, data
   flush = (cb) ->
     fineLogger.debug -> "storeStream End!"
 
-    @emit 'counters', {successCtr, skipsCtr, errorsCtr, uploadsCtr}
+    @emit 'counters', {successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}
     cb()
 
   # coffeelint: disable=check_scope

@@ -60,6 +60,7 @@ rmapsUsStates) ->
 
   rootScopeDefer.resolve($rootScope)
 
+angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 500)
 
 module.exports = {
   rootScopePromise: rootScopeDefer.promise
