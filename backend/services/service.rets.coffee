@@ -290,11 +290,11 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     else
       schemaInfo = mlsInfo["#{dataType}_data"]
 
-    if !schemaInfo.lastModTime
+    if !schemaInfo.lastModTime?
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
       logger.spawn(mlsId).debug () -> "determining RETS time zone offset for #{mlsId}"
-      if schemaInfo.lastModTime != 'Date'
+      if schemaInfo.lastModTime.type != 'Date'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
