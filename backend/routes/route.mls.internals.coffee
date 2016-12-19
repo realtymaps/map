@@ -30,12 +30,11 @@ getPhotoIds = (req, res, next) ->
       iterationLimit
     }
 
-    # retStream = through.obj (chunks, enc, cb) ->
-    #   for chunk in chunks
-    #     logger.debug -> 'though pushed chunk'
-    #     @push(chunk)
-    #   cb()
-    allChunks = []
+    retStream = through.obj (chunks, enc, cb) ->
+      for chunk in chunks
+        @push(chunk)
+      cb()
+
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
         return
@@ -45,22 +44,19 @@ getPhotoIds = (req, res, next) ->
           data_source_uuid: row[uuidField]
           photo_id: row[photoIdField]
 
-      allChunks.push(chunk)
-      # retStream.emit(chunk)
+      retStream.write(chunk)
 
     logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
     retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
     .then () ->
       logger.debug -> "done: retsService.getDataChunks"
-      _.flatten(allChunks)
-      # retStream.end()
-    # .catch (err) ->
-      # retStream.error(err)
+      retStream.end()
+    .catch (err) ->
+      retStream.error(err)
 
-    # retStream
-    # .pipe(JSONStream.stringify())
-    # .pipe(res)
-    # .toPromise()
+    retStream
+    .pipe(JSONStream.stringify())
+    .pipe(res)
 
 
 # example
