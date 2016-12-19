@@ -4,8 +4,6 @@ Promise = require 'bluebird'
 
 app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) ->
 
-  mlsAPI = backendRoutes.mls.apiBaseMls
-  mlsConfigAPI = backendRoutes.mls_config.apiBase
   dataSourceAPI = backendRoutes.data_source.apiBaseDataSource
   lookupAPI = backendRoutes.data_source.apiBaseDataSourceLookups
 

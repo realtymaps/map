@@ -1,6 +1,7 @@
 _ = require 'lodash'
 require '../../common/extensions/strings'
 logger = require('../config/logger').spawn('task:util:events')
+tables = require('../config/tables')
 notificationsSvc = require '../services/service.notifications'
 profileService = require '../services/service.profiles'
 propertyDetailsService = require '../services/service.properties.combined.details'

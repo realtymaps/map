@@ -1,5 +1,3 @@
-_ = require 'lodash'
-
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 mod = require '../module.coffee'
 

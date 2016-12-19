@@ -71,7 +71,7 @@ storePrep = (subtask) ->
         minDate: updateThreshold
         subLimit: numRowsToPagePhotos
         searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}
-        listing_data: {field: lastModField}
+        listing_data: {lastModTime: lastModField}
         iterationLimit: subtask.data?.iterationLimit
       }
 

@@ -31,11 +31,12 @@ class MlsConfigService extends ServiceCrud
       if entity.schemaReady == 'true'
 
         # for "schemaReady" to be true, the listing_data json fields
-        # "db", "table", and "field" need to exist and have length > 0
+        # "db", "table", and "lastModTime" need to exist and have length > 0
+        # if mlsListingId is going to be considered a requirement prior to normalization then it needs to be here
         query
         .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
-        .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
+        .whereRaw("char_length(cast(listing_data->>\'lastModTime\' as text)) > ?", [0])
       delete entity.schemaReady
 
     super(entity, query: query)

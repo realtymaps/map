@@ -3,11 +3,11 @@ should()
 Promise = require 'bluebird'
 # logger = require('../../specUtils/logger').spawn('task:util:mls:photo')
 rewire = require 'rewire'
-subject = rewire "../../../backend/tasks/util.mlsPhotoHelpers"
+subject = rewire "../../../backend/tasks/task.default.mls.photo.internals"
 SqlMock = require '../../specUtils/sqlMock'
 
 
-describe 'util.mlsPhotoHelpers', ->
+describe 'task.default.mls.photo.internals', ->
 
   subject.__set__ 'keystore', cache:
     getValuesMap: -> Promise.try ->

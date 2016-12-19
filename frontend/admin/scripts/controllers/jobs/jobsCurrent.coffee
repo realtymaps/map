@@ -216,7 +216,9 @@ app.controller 'rmapsJobsCurrentCtrl',
       empty = emptyDatum(col.field for col in $scope.summaryGrid.columnDefs)
       for timeframe, statuses of summaryObj
         datum = _.clone empty
+        # coffeelint: disable=check_scope
         for status, count of statuses
+        # coffeelint: enable=check_scope
           datum[initialDimension] = timeframe
           datum[status] = cSum(summaryObj, timeframe, status)
 
