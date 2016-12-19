@@ -12,16 +12,18 @@ getPhotoIds = (req) ->
   validation.validateAndTransformRequest(req, transforms.getPhotoIds)
   .then (validReq) ->
     {mlsId} = validReq.params
-    {uuidField, photoIdField, subLimit, iterationLimit} = validReq.query
+    {lastModTimeField, uuidField, photoIdField, subLimit, iterationLimit, limit} = validReq.query
 
     subLimit ?= 1
     iterationLimit ?= 5
+    limit ?= 5
 
     logger.debug -> {mlsId, uuidField, photoIdField, subLimit, iterationLimit}
 
     dataOptions = {
       subLimit
-      searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}
+      searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1, limit}
+      listing_data: {lastModTime: lastModTimeField}
       iterationLimit
     }
 

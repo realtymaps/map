@@ -32,6 +32,9 @@ getPhotoIds =
     photoIdField:
       transform: validators.string(minLength:2)
       required: true
+    lastModTimeField:
+      transform: validators.string(minLength:2)
+      required: true
   body: validators.object isEmptyProtect: true
 
 queryPhoto =

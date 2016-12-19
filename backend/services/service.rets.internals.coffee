@@ -81,14 +81,14 @@ buildSearchQuery = (tableData, utcOffset, opts) ->
   criteria = []
   for key,val of opts.criteria
     criteria.push("(#{key}=#{val})")
-  if tableData.field_type == 'Date'
+  if tableData.lastModTime.type == 'Date'
     format = 'YYYY-MM-DD'
   else  # tableData.field_type == 'DateTime'
     format = 'YYYY-MM-DD[T]HH:mm:ss[Z]'
   if opts.maxDate?
-    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
+    criteria.push("(#{tableData.lastModTime.name}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
   if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
-    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.minDate ? 0)).utcOffset(utcOffset).format(format)}+)")
+    criteria.push("(#{tableData.lastModTime.name}=#{moment.utc(new Date(opts.minDate ? 0)).utcOffset(utcOffset).format(format)}+)")
   return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
 
 
