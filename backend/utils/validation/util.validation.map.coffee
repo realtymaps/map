@@ -18,7 +18,7 @@ getLookupMap = (data_source_id, data_list_type, LookupName, param, value) ->
       lookup[row.Value] = row.LongValue
     return lookup
 
-getLookupMap = memoize.promise(getLookupMap, {primitive: true})
+getLookupMap = memoize.promise(getLookupMap, {primitive: true, length: 3})
 
 
 getLookupName = (data_source_id, data_list_type, proxyName, param, value) ->
@@ -32,11 +32,15 @@ getLookupName = (data_source_id, data_list_type, proxyName, param, value) ->
       throw new DataValidationError("lookup proxy '#{data_source_id}/#{data_list_type}/#{proxyName}' has no lookup name", param, value)
     return rows[0]?.LookupName
 
-getLookupName = memoize.promise(getLookupName, {primitive: true})
+getLookupName = memoize.promise(getLookupName, {primitive: true, length: 3})
 
 
 
 doMapping = (param, options, map, singleValue) ->
+  mapped = map[singleValue]
+  if mapped?
+    return mapped
+  singleValue = singleValue.trim()
   mapped = map[singleValue]
   if mapped?
     return mapped
