@@ -83,7 +83,7 @@ buildSearchQuery = (tableData, utcOffset, opts) ->
     criteria.push("(#{key}=#{val})")
   if tableData.lastModTime.type == 'Date'
     format = 'YYYY-MM-DD'
-  else  # tableData.field_type == 'DateTime'
+  else  # tableData.lastModTime.type == 'DateTime'
     format = 'YYYY-MM-DD[T]HH:mm:ss[Z]'
   if opts.maxDate?
     criteria.push("(#{tableData.lastModTime.name}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
