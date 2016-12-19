@@ -19,7 +19,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
   mlsId = subtask.task_name.split('_')[0]
 
   needsRetry = false
-  errorDetails = null
+  globalErrorDetails = null
 
   {data_source_uuid, photo_id} = idObj
   photoRowClause = {data_source_id: mlsId, data_source_uuid}
@@ -73,10 +73,10 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
       return
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsId}/#{data_source_uuid}")
   .catch (error) ->
-    errorDetails ?= analyzeValue.getFullDetails(error)
+    globalErrorDetails ?= analyzeValue.getFullDetails(error)
     needsRetry = true
-    taskLogger.debug () -> "overall error: #{errorDetails}"
-  .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr}) ->
+    taskLogger.debug () -> "overall error: #{globalErrorDetails}"
+  .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}) ->
     Promise.try () ->
       if !needsRetry && errorsCtr == 0
         return
@@ -86,7 +86,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
         entityObj:
           batch_id: subtask.batch_id
           photo_id: photo_id
-          error: errorDetails
+          error: errorDetails ? globalErrorDetails
         conflictOverrideObj:
           photo_id: undefined
           retries: tables.deletes.retry_photos.raw('EXCLUDED.retries + 1')

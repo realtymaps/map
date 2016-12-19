@@ -26,7 +26,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter)
     logger.debug 'Logging in client ', loginUrl
     retsClient.login()
     .then () ->
-      logger.debug () -> "Logged in to RETS server at #{loginUrl}: #{retsClient.systemData.retsVersion} [#{retsClient.systemData.retsServer}]"
+      logger.debug () -> "Logged in to RETS server at #{loginUrl}: #{retsClient.loginHeaderInfo.retsVersion} [#{retsClient.loginHeaderInfo.server}]"
       retsClient
     .catch errorHandlingUtils.isUnhandled, (error) ->
       _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
