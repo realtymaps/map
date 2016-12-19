@@ -13,9 +13,11 @@ VeroBootstrap = do () ->
     externalAccounts.getAccountInfo('vero')
     .then ({other}) ->
       API_KEYS = other
-      throw new CriticalError('vero API_KEYS intialization failed.') unless other
+      if !API_KEYS?.auth_token
+        throw new CriticalError('vero API_KEYS intialization failed.')
       vero = veroFactory(API_KEYS.auth_token)
-      logger.debug 'vero initialized'
+      logger.debug "vero initialized w token #{API_KEYS.auth_token.slice(-3)}"
+      logger.debug(vero)
       vero
   .catch (err) ->
     logger.error "CRITICAL ERROR: OUR EMAIL PLATFORM IS NOT SETUP CORRECTLY"
