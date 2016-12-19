@@ -28,12 +28,12 @@ admin =
       disclaimer_text: null
       dmca_contact_name: null
       dmca_contact_address: null
+
     propertySchema:
       listing_data: {
         largestPhotoObject: 'Photo'
         mlsListingId: cleanData()
-        field: ''
-        field_type: ''
+        lastModTime: cleanData()
       }
     agentSchema:
       agent_data: {}

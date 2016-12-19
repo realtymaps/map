@@ -120,7 +120,7 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 type="text"
                 ng-model="mlsData.current.listing_data[key].name"
                 ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.columns[key].options"
-                ng-change="mlsData.current.listing_data.[key].type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data[key]]"
+                ng-change="mlsData.current.listing_data[key].type = fieldNameMap.listing_data[key].columnTypes[mlsData.current.listing_data[key].name]"
                 ng-disabled="formItems.listing_data[key].disabled")
                   option(value="" disabled)
 
@@ -217,7 +217,7 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 type="text"
                 ng-model="mlsData.current.agent_data[key].name"
                 ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.agent_data.columns[key].options"
-                ng-change="mlsData.current.agent_data.[key].type = fieldNameMap.agent_data.columnTypes[mlsData.current.agent_data[key]]"
+                ng-change="mlsData.current.agent_data[key].type = fieldNameMap.agent_data[key].columnTypes[mlsData.current.agent_data[key].name]"
                 ng-disabled="formItems.agent_data[key].disabled")
                   option(value="" disabled)
       .row

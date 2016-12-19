@@ -100,11 +100,11 @@ getDataStream = (mlsId, dataType, opts={}) ->
   logger.spawn(mlsId).debug () -> "getting data stream for #{mlsId}/#{dataType}: #{JSON.stringify(opts)}"
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     schemaInfo = mlsInfo["#{dataType}_data"]
-    if !schemaInfo.field
+    if !schemaInfo.lastModTime
       throw new errorHandlingUtils.PartiallyHandledError("Cannot query without a timestamp field to filter (check MLS config field 'Update Timestamp Column' for #{mlsId}/#{dataType})")
     offsetPromise = Promise.try () ->
       # determine time zone offset so we can use the correct date if server doesn't support a full DateTime
-      if schemaInfo.field_type == 'DateTime'
+      if schemaInfo.lastModTime.type == 'DateTime'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -290,11 +290,11 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     else
       schemaInfo = mlsInfo["#{dataType}_data"]
 
-    if !schemaInfo.field
+    if !schemaInfo.lastModTime
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
       logger.spawn(mlsId).debug () -> "determining RETS time zone offset for #{mlsId}"
-      if schemaInfo.field_type != 'Date'
+      if schemaInfo.lastModTime != 'Date'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->

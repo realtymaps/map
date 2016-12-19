@@ -53,11 +53,12 @@
                   label.data-label Table:
                 td
                   span.data-entry {{fieldNameMap.listing_data.tableNames[mlsData.current.listing_data.table]}}
-              tr
+
+              tr(ng-repeat="(key, longName) in columns.listing_data")
                 td
-                  label.data-label Update Timestamp Column:
+                  label.data-label {{longName}} Column:
                 td
-                  span.data-entry {{fieldNameMap.listing_data.columnNames[mlsData.current.listing_data.field]}} ({{mlsData.current.listing_data.field_type}})
+                  span.data-entry {{fieldNameMap.listing_data.columnNames[mlsData.current.listing_data[key].name]}} ({{mlsData.current.listing_data[key].type}})
         tr
           td
             label.data-label Agent Schema
@@ -73,11 +74,12 @@
                   label.data-label Table:
                 td
                   span.data-entry {{fieldNameMap.agent_data.tableNames[mlsData.current.agent_data.table]}}
-              tr
+
+              tr(ng-repeat="(key, longName) in columns.agent_data")
                 td
-                  label.data-label Update Timestamp Column:
+                  label.data-label {{longName}} Column:
                 td
-                  span.data-entry {{fieldNameMap.agent_data.columnNames[mlsData.current.agent_data.field]}} ({{mlsData.current.listing_data.field_type}})
+                  span.data-entry {{fieldNameMap.agent_data.columnNames[mlsData.current.agent_data[key].name]}} ({{mlsData.current.agent_data[key].type}})
         tr
           td
             label.data-label Objects:
