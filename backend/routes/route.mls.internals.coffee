@@ -7,16 +7,19 @@ mlsHelpers = require '../tasks/util.mlsHelpers'
 transforms = require '../utils/transforms/transforms.mls'
 mlsRouteUtil = require '../utils/util.route.mls'
 Promise =  require 'bluebird'
+JSONStream = require 'JSONStream'
+require '../extensions/stream'
 
-getPhotoIds = (req) ->
+
+getPhotoIds = (req, res, next) ->
   validation.validateAndTransformRequest(req, transforms.getPhotoIds)
   .then (validReq) ->
     {mlsId} = validReq.params
     {lastModTimeField, uuidField, photoIdField, subLimit, iterationLimit, limit} = validReq.query
 
     subLimit ?= 1
-    iterationLimit ?= 5
-    limit ?= 5
+    iterationLimit ?= 2
+    limit ?= 3
 
     logger.debug -> {mlsId, uuidField, photoIdField, subLimit, iterationLimit}
 
@@ -27,6 +30,11 @@ getPhotoIds = (req) ->
       iterationLimit
     }
 
+    # retStream = through.obj (chunks, enc, cb) ->
+    #   for chunk in chunks
+    #     logger.debug -> 'though pushed chunk'
+    #     @push(chunk)
+    #   cb()
     allChunks = []
     handleChunk = (chunk) -> Promise.try () ->
       if !chunk?.length
@@ -38,11 +46,21 @@ getPhotoIds = (req) ->
           photo_id: row[photoIdField]
 
       allChunks.push(chunk)
+      # retStream.emit(chunk)
 
     logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
     retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
     .then () ->
+      logger.debug -> "done: retsService.getDataChunks"
       _.flatten(allChunks)
+      # retStream.end()
+    # .catch (err) ->
+      # retStream.error(err)
+
+    # retStream
+    # .pipe(JSONStream.stringify())
+    # .pipe(res)
+    # .toPromise()
 
 
 # example

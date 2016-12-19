@@ -118,7 +118,7 @@ module.exports =
       auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
     ]
     handle: (req, res, next) ->
-      internals.getPhotoIds(req)
+      internals.getPhotoIds(req, res, next)
 
   getPhotos:
     method: 'get'
