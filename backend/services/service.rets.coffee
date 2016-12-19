@@ -276,13 +276,6 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     handler = opts
     opts = {}
 
-  if opts.iterationLimit?
-    {iterationLimit} = opts
-    iterationLimit = Number(iterationLimit)
-    delete opts.iterationLimit
-
-  iterationCtr = 0
-
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     # override mls schemaInfo with optional `schemaInfo` if provided
     if !_.isEmpty(opts?.schemaInfo)
@@ -357,14 +350,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
             .catch errorHandlingUtils.isUnhandled, (err) ->
               throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
             .then () ->
-              iterationCtr++
-              withinLimit = true
-
-              if iterationLimit?
-                withinLimit = iterationCtr < iterationLimit
-                logger.debug -> "iterationCtr: #{iterationCtr} < iterationLimit: #{iterationLimit} : #{withinLimit}"
-
-              if keepQuerying && withinLimit
+              if keepQuerying
                 searchIteration()
           .then () ->
             return total

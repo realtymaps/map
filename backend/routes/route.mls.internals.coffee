@@ -15,23 +15,21 @@ getPhotoIds = (req, res, next) ->
   validation.validateAndTransformRequest(req, transforms.getPhotoIds)
   .then (validReq) ->
     {mlsId} = validReq.params
-    {lastModTimeField, uuidField, photoIdField, subLimit, iterationLimit, limit} = validReq.query
+    {lastModTimeField, uuidField, photoIdField, subLimit, limit} = validReq.query
 
     subLimit ?= 1
-    iterationLimit ?= 2
-    limit ?= 3
+    limit ?= 2
 
-    logger.debug -> {mlsId, uuidField, photoIdField, subLimit, iterationLimit}
+    logger.debug -> {mlsId, uuidField, photoIdField, subLimit}
 
     dataOptions = {
       subLimit
       searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1, limit}
       listing_data: {lastModTime: lastModTimeField}
-      iterationLimit
     }
 
     retStream = through.obj (chunks, enc, cb) ->
-      for chunk in chunks
+      for chunk in chunks #flatten
         @push(chunk)
       cb()
 
@@ -53,6 +51,9 @@ getPhotoIds = (req, res, next) ->
       retStream.end()
     .catch (err) ->
       retStream.error(err)
+
+    # since some MLSes are dog **** slow stream the response
+    res.type("application/json")
 
     retStream
     .pipe(JSONStream.stringify())
