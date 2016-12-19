@@ -111,29 +111,20 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 ng-change="processAndProceed(2, 'listing_data')"
                 ng-disabled="formItems.listing_data.table.disabled")
                   option(value="" disabled)
-            tr
+
+            tr(ng-repeat="(key, longName) in columns.listing_data")
               td
-                label(ng-class="{ 'half-opacity': formItems.listing_data.field.disabled }").data-label Update Timestamp Column:
+                label(ng-class="{ 'half-opacity': formItems.listing_data[key].disabled }").data-label {{longName}} Column:
               td
                 select(
                 type="text"
-                ng-model="mlsData.current.listing_data.field"
-                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.column"
-                ng-change="mlsData.current.listing_data.field_type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data.field]"
-                ng-disabled="formItems.listing_data.field.disabled")
+                ng-model="mlsData.current.listing_data[key].name"
+                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.columns[key].options"
+                ng-change="mlsData.current.listing_data.[key].type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data[key]]"
+                ng-disabled="formItems.listing_data[key].disabled")
                   option(value="" disabled)
 
-            tr
-              td
-                label(ng-class="{ 'half-opacity': formItems.listing_data.field.disabled }").data-label MLS Listing ID Column:
-              td
-                select(
-                type="text"
-                ng-model="mlsData.current.listing_data.mlsListingId.name"
-                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.listing_data.column"
-                ng-change="mlsData.current.listing_data.mlsListingId.type = fieldNameMap.listing_data.columnTypes[mlsData.current.listing_data.mlsListingId.name]"
-                ng-disabled="formItems.listing_data.mlsListingId.disabled")
-                  option(value="" disabled)
+
             // BEGIN Photo Settings
             tr(ng-if="mlsData.current.id")
               td
@@ -217,16 +208,17 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 ng-change="processAndProceed(2, 'agent_data')"
                 ng-disabled="formItems.agent_data.table.disabled")
                   option(value="" disabled)
-            tr
+
+            tr(ng-repeat="(key, longName) in columns.agent_data")
               td
-                label(ng-class="{ 'half-opacity': formItems.agent_data.field.disabled }").data-label Update Timestamp Column:
+                label(ng-class="{ 'half-opacity': formItems.agent_data[key].disabled }").data-label {{longName}} Column:
               td
                 select(
                 type="text"
-                ng-model="mlsData.current.agent_data.field"
-                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.agent_data.column"
-                ng-change="mlsData.current.agent_data.field_type = fieldNameMap.agent_data.columnTypes[mlsData.current.agent_data.field]"
-                ng-disabled="formItems.agent_data.field.disabled")
+                ng-model="mlsData.current.agent_data[key].name"
+                ng-options="value.SystemName as value.LongName group by value.DataType for value in schemaOptions.agent_data.columns[key].options"
+                ng-change="mlsData.current.agent_data.[key].type = fieldNameMap.agent_data.columnTypes[mlsData.current.agent_data[key]]"
+                ng-disabled="formItems.agent_data[key].disabled")
                   option(value="" disabled)
       .row
         .col-md-12

@@ -7,13 +7,15 @@ cleanData = () ->
 
 admin =
   defaults:
-    columns: [
-      'lastModTime'
-      'mlsListingId'
-    ]
+    columns:
+      listing_data:
+        lastModTime: "Update Timestamp"
+        mlsListingId: "MLS Listing ID"
+      agent_data:
+        lastModTime: "Update Timestamp"
     columnRegExes:
       lastModTime: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
-      mlsListingId: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
+      mlsListingId: /.*?mls.*number.*?|.*?listing.*id.*?|.*?sysid.*?|.*?mls.*id.*?/
     base:
       id: null
       name: null
@@ -45,12 +47,12 @@ admin =
       listing_data:
         db: []
         table: []
-        column: []
+        columns: {}
         photos: null # must be created in $scope
       agent_data:
         db: []
         table: []
-        column: []
+        columns: {}
 
     fieldNameMap:
       listing_data:
