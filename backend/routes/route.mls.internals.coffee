@@ -8,6 +8,40 @@ transforms = require '../utils/transforms/transforms.mls'
 mlsRouteUtil = require '../utils/util.route.mls'
 Promise =  require 'bluebird'
 
+getPhotoIds = (req) ->
+  validation.validateAndTransformRequest(req, transforms.getPhotoIds)
+  .then (validReq) ->
+    {mlsId} = validReq.params
+    {uuidField, photoIdField, subLimit, iterationLimit} = validReq.query
+
+    subLimit ?= 1
+    iterationLimit ?= 5
+
+    logger.debug -> {mlsId, uuidField, photoIdField, subLimit, iterationLimit}
+
+    dataOptions = {
+      subLimit
+      searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}
+      iterationLimit
+    }
+
+    allChunks = []
+    handleChunk = (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
+      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
+      for row,i in chunk
+        chunk[i] =
+          data_source_uuid: row[uuidField]
+          photo_id: row[photoIdField]
+
+      allChunks.push(chunk)
+
+    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
+    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+    .then () ->
+      _.flatten(allChunks)
+
 
 # example
 #   https://localhost:8085/api/mls/swflmls/databases/Property/2329201
@@ -120,6 +154,7 @@ testOverlapSettings = (mlsId) ->
 
 
 module.exports = {
+  getPhotoIds
   getQueryPhoto
   getParamPhoto
   getDataDump

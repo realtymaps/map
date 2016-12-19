@@ -111,6 +111,15 @@ module.exports =
   up an MLS system for its photos.
   ###
 
+  getPhotoIds:
+    method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
+    handle: (req, res, next) ->
+      internals.getPhotoIds(req)
+
   getPhotos:
     method: 'get'
     middleware: [

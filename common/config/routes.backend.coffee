@@ -182,6 +182,7 @@ module.exports =
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
     getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
     getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
+    getPhotoIds: "#{apiBaseMls}/:mlsId/photos/photoIds"
     getObjectList: "#{apiBaseMls}/:mlsId/objects"
     getForUser: "#{apiBaseMls}/user"
     testOverlapSettings: "#{apiBaseMls}/:mlsId/overlap"
