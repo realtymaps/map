@@ -96,15 +96,15 @@ requestResetPassword = (email, host) ->
 
     keystore.setValue(passwordResetKey, passwordResetObj, namespace: 'password-reset')
     .then () ->
-      require('./email/vero').then (veroSvc) ->
-        require('../config/logger').spawn('vero:debug').debug(veroSvc)
-        veroSvc.vero.createUserAndTrackEvent(
-          veroSvc.user.getUniqueUserId(user)
-          user.email
-          user
-          passwordResetObj.evtdata.name
-          passwordResetObj
-        )
+      require('./email/vero')
+    .then (veroSvc) ->
+      veroSvc.vero.createUserAndTrackEvent(
+        veroSvc.user.getUniqueUserId(user)
+        user.email
+        user
+        passwordResetObj.evtdata.name
+        passwordResetObj
+      )
   .catch (err) ->
     logger.debug err
     throw err

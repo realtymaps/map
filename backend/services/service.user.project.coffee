@@ -35,7 +35,6 @@ _inviteClient = (clientEntryValue) ->
   .then () ->
     require('./email/vero')
   .then (veroSvc) ->
-    require('../config/logger').spawn('vero:debug').debug(veroSvc)
     # email new client
     veroSvc.vero.createUserAndTrackEvent(
       veroSvc.user.getUniqueUserId(clientEntryValue.user)
