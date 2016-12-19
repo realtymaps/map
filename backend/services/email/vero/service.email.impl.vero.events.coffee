@@ -7,7 +7,6 @@ veroErrors = require '../../../utils/errors/util.errors.vero'
 veroUserSvc = require './service.email.impl.vero.user'
 analyzeValue = require '../../../../common/utils/util.analyzeValue'
 logger = require('../../../config/logger').spawn('vero')
-internals = null
 emailRoutes = backendRoutes.email
 
 inErrorSupportPhrase = """
