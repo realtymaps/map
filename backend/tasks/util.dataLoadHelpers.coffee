@@ -228,12 +228,7 @@ getValidationStrings = (dataSourceType, dataSourceId, dataType, listName, fieldN
       for validationDef in validations
         validationMap[validationDef.list] ?= []
 
-        # If transform was overridden, use it directly
-        if !_.isEmpty validationDef.transform
-          return validationDef.transform
-
-        # Most common case, generate the transform from the rule configuration
-        else
+        if _.isEmpty validationDef.transform
           if validationDef.list == 'base'
             rule = validatorBuilder.buildBaseRule(dataSourceType, dataType) validationDef
           else
