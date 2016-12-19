@@ -23,21 +23,6 @@ app.controller 'rmapsMlsCtrl',
         obj[key] = value
       return obj
 
-      info:
-        editing: false
-        temp: ''
-        edit:() ->
-          @temp = '' + $scope.mlsData.current.listing_data.photoInfo
-          $scope.schemaOptions.listing_data.photos.info.editing = true
-
-        save:() ->
-          $scope.mlsData.current.listing_data.photoInfo = @temp
-          @temp = ''
-          @editing = false
-
-        cancel: () ->
-          @temp = ''
-          @editing = false
 
     initPhotoSchemaOptions = () ->
       objects:
