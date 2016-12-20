@@ -5,12 +5,14 @@ clsFactory = require '../util.cls'
 logger = require('../../config/logger').spawn("transforms:emails")
 config = require '../../config/config'
 
-email = (id, {tableFn, regex} = {}) ->
-  tableFn ?= tables.auth.user
+validEmail = ({regex} = {}) ->
   regex ?= [VALIDATION.email]
-
   if config.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN
     regex.push(VALIDATION.realtymapsEmail)
+  validators.string({regex})
+
+uniqueEmail = (id, {tableFn, regex} = {}) ->
+  tableFn ?= tables.auth.user
 
   logger.debug -> "pre cls id: #{id}"
 
@@ -19,7 +21,7 @@ email = (id, {tableFn, regex} = {}) ->
   logger.debug -> {id, regex}
 
   transform: [
-    validators.string({regex})
+    validEmail({regex})
     validators.unique({
       tableFn
       id
@@ -34,7 +36,7 @@ emailRequest = (id) ->
   params: validators.object isEmptyProtect: true
   query: validators.object isEmptyProtect: true
   body: validators.object subValidateSeparate:
-    email: email(id)
+    email: uniqueEmail(id)
 
 emailVerifyRequest =
   params: validators.object subValidateSeparate:
@@ -46,7 +48,8 @@ emailVerifyRequest =
 
 
 module.exports = {
-  email
+  validEmail
+  uniqueEmail
   emailRequest
   emailVerifyRequest
 }

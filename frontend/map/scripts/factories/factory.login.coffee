@@ -48,7 +48,7 @@ rmapsLoginService) ->
     $scope.doLogin = (loginObj) ->
       loginObj ?= $scope.form
       # angular checkbox models don't interact well with lastpass, this fixes it
-      loginObj.remember_me = document.querySelector('#remember_me').checked
+      loginObj.remember_me = document.querySelector('#remember_me')?.checked
       $scope.loginInProgress = true
       rmapsLoginService.login(loginObj)
       .then ({data, status}) ->
