@@ -72,7 +72,6 @@ storePrep = (subtask) ->
         subLimit: numRowsToPagePhotos
         searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}
         listing_data: {lastModTime: lastModField}
-        iterationLimit: subtask.data?.iterationLimit
       }
 
       if subtask.data.limit
