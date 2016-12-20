@@ -126,18 +126,24 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
 
 
             // BEGIN Photo Settings
+            tr.sep
+              td(colSpan=3)
+                label.data-label.sep-photos Photos
             tr(ng-if="mlsData.current.id")
               td
-                label.data-label Largest Photo Object:
+                label.data-label Largest Object:
               td.pad-left
                 select(
                   ng-model="mlsData.current.listing_data.largestPhotoObject"
                   ng-options="option for option in (mlsData.current.listing_data.photoObjects || fieldNameMap.objects)")
                   option(value="" disabled) Select Photo Object
 
+              td
+                a(href="JavaScript:void(0)" ng-click="openPhotoHelper()") Largest Object Help
+
             tr(ng-if="mlsData.current.id")
               td
-                label.data-label Photo Objects:
+                label.data-label Objects:
               td.pad-left
                 label Override?:
                 input(type="checkbox"
@@ -155,11 +161,20 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                   placeholder="Comma Delimited list to set photoObjects"
                   ng-model="mlsData.current.listing_data.photoObjects")
 
+            tr(ng-if="mlsData.current.id")
+              td
+                label.data-label Location:
+              td.pad-left
+                .bt-group
+                  label.btn.btn-primary(ng-model="mlsData.current.listing_data.Location" uib-btn-radio="0") 0
+                  label.btn.btn-primary(ng-model="mlsData.current.listing_data.Location" uib-btn-radio="1") 1
+
+
             tr.photo-info(ng-if="mlsData.current.id")
               td
                 a.main-link(ng-if="mlsData.current.listing_data.photoInfo"
-                  href="{{mlsData.current.listing_data.photoInfo}}") Photo Additional Info:
-                label.data-label(ng-if="!mlsData.current.listing_data.photoInfo") Photo Additional Info:
+                  href="{{mlsData.current.listing_data.photoInfo}}") Additional Info:
+                label.data-label(ng-if="!mlsData.current.listing_data.photoInfo") Additional Info:
               td.pad-left
                 form(ng-if="schemaOptions.listing_data.photos.info.editing")
                   input(
@@ -172,6 +187,8 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                 a(href="JavaScript:void(0)"
                   ng-click="schemaOptions.listing_data.photos.info.edit()"
                 ) Edit
+            tr.sep
+              td(colSpan=3)
           // END Photo Settings
       .row
         .col-md-12

@@ -1,6 +1,9 @@
-require('angular/angular')
-require('angular-simple-logger')
-require('angular-ui-router')
+require 'angular/angular'
+require 'angular-simple-logger'
+require 'angular-ui-router'
+require 'spinkit/css/spinkit.css'
+require 'font-awesome/css/font-awesome.css'
+
 # maybe later on angular-extend-promises
 # their .each is buggy and does not pass bluebird specs
 # lastly the module is difficult to import '../tmp/lodash' must be replaced everywhere
