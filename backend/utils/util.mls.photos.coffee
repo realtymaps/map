@@ -18,24 +18,19 @@ imageEventTransform = () ->
   # coffeelint: enable=check_scope
     try
 
-      if event.type == 'error'
-        eventLogger.debug -> "data event has an error #{analyzeValue.getFullDetails(event.error)}"
-        #NOTE this should be a RetsError
-        cb(event.error)
-        return
-
       if event.type == 'headerInfo'
         cb()
         return
 
       listingId = event.headerInfo.contentId
-      fileExt = event.headerInfo.contentType.replace('image/','')
-      fileName = "#{listingId}_#{imageId}.#{fileExt}"
+      if event.type != 'error'
+        fileExt = event.headerInfo.contentType?.replace('image/','')
+        fileName = "#{listingId}_#{imageId}.#{fileExt}"
+        everSentData = true
 
       event.extra = {fileExt,fileName,imageId,listingId}
 
       imageId++
-      everSentData = true
 
       @push(event)
       return cb()
@@ -71,14 +66,15 @@ imageStream = (photoObject) ->
 
   toPhotoStream(photoObject).once 'data', (event) ->
 
-    stream = if event.type == 'dataStream'
+    if event.type == 'dataStream'
       l.debug -> "event.dataStream"
-      event.dataStream
+      stream = event.dataStream
     else if event.type == 'location' #YAY it is cached for us already
-      request(event.headerInfo.location)
-    else
+      stream = request(event.headerInfo.location)
+    else  # probably an error
       l.debug -> "event has no dataStream"
-      through()
+      stream = through()
+      stream.write(event)
 
     stream.pipe(retStream)
 

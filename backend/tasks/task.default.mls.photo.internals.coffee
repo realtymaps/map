@@ -211,6 +211,12 @@ enqueuePhotoToDelete = (key, batch_id, {transaction}) ->
     Promise.resolve()
 
 
+class SkipPhotoError extends NamedError
+  constructor: (args...) ->
+    @quiet = true
+    super('SkipPhotoError', args...)
+
+
 storeStream = ({photoRowClause, row, transaction, photoRes, subtask, mlsId, data_source_uuid, photo_id} = {}) ->
   taskLogger = logger.spawn(subtask.task_name)
 
@@ -223,22 +229,25 @@ storeStream = ({photoRowClause, row, transaction, photoRes, subtask, mlsId, data
   flush = (cb) ->
     fineLogger.debug -> "storeStream End!"
 
-    @emit 'counters', {successCtr, skipsCtr, errorsCtr, uploadsCtr}
+    @emit 'counters', {successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}
     cb()
 
   # coffeelint: disable=check_scope
   transform = (event, enc, cb) ->
   # coffeelint: enable=check_scope
-    try
-      fineLogger.debug -> "storeStream event (#{event.headerInfo.objectId})"
+    imageId = objectData = location = newFileName = null
+    Promise.try () ->
       {imageId} = event.extra
       {objectData, location} = event.headerInfo
 
+      fineLogger.debug -> "storeStream event (#{imageId})"
+
+      if event.type == 'error'
+        throw event.error
+
       if row? && hasSameUploadDate(objectData?.uploadDate, row?.photos[imageId]?.objectData?.uploadDate)
-        skipsCtr++
         fineLogger.debug () -> "photo has same updateDate (#{objectData?.uploadDate}) GTFO."
-        cb()
-        return
+        throw new SkipPhotoError()
 
       # Deterministic but partition-friendly bucket names (10000 prefixes)
       # http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
@@ -247,52 +256,44 @@ storeStream = ({photoRowClause, row, transaction, photoRes, subtask, mlsId, data
       partition = cryptoUtil.md5(partition).slice(0,4)
       newFileName = "#{partition}/#{mlsId}/#{data_source_uuid}/#{event.extra.fileName}"
 
-      Promise.try () ->
-        if location? #don't cache it or worry about deleting it; it is already cached
-          fineLogger.debug -> "has location, GTFO"
-          return
-        uploadPhoto({photoRes, newFileName, event, row: photoRowClause})
-        .then () ->
-          fineLogger.debug -> "upload successful"
-          uploadsCtr++
-          # Cancel any pending deletes since the photo uploaded successfully
-          tables.deletes.photos({transaction}).delete({key: newFileName}).returning('key')
+      if location? #don't cache it or worry about deleting it; it is already cached
+        fineLogger.debug -> "has location, GTFO"
+        return
+      uploadPhoto({photoRes, newFileName, event, row: photoRowClause})
       .then () ->
-        updatePhoto(subtask, {
-          newFileName
-          imageId
-          data_source_uuid
-          objectData
-          row: photoRowClause
-          transaction
-          location
-          photo_id
-        })
-      .then () ->
-        if row? && !location?
-          # Queue the OLD photo for deletion
-          uploadDate = (new Date(row?.photos[imageId]?.objectData?.uploadDate || null)).getTime()
-          partition = "#{mlsId}/#{data_source_uuid}/#{uploadDate}"
-          partition = cryptoUtil.md5(partition).slice(0,4)
-          oldFileName = "#{partition}/#{mlsId}/#{data_source_uuid}/#{event.extra.fileName}"
-          enqueuePhotoToDelete(oldFileName, subtask.batch_id, {transaction})
-      .then () ->
-        successCtr++
-      .catch (error) ->
-        errorDetails ?= analyzeValue.getFullDetails(error)
-        logger.error(errorDetails)
-        taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
-        errorsCtr++
-
-      .then () ->
-        cb()
-      .catch (error) ->
-        taskLogger.debug -> "promise error while processing event: #{JSON.stringify(event.headerInfo)}\n#{analyzeValue.getFullDetails(err)}"
-        cb(error)
-
-    catch err
-      taskLogger.debug -> "synchronous error while processing event: #{JSON.stringify(event.headerInfo)}\n#{analyzeValue.getFullDetails(err)}"
-      cb(err)
+        fineLogger.debug -> "upload successful"
+        uploadsCtr++
+        # Cancel any pending deletes since the photo uploaded successfully
+        tables.deletes.photos({transaction}).delete({key: newFileName}).returning('key')
+    .then () ->
+      updatePhoto(subtask, {
+        newFileName
+        imageId
+        data_source_uuid
+        objectData
+        row: photoRowClause
+        transaction
+        location
+        photo_id
+      })
+    .then () ->
+      if row? && !location?
+        # Queue the OLD photo for deletion
+        uploadDate = (new Date(row?.photos[imageId]?.objectData?.uploadDate || null)).getTime()
+        partition = "#{mlsId}/#{data_source_uuid}/#{uploadDate}"
+        partition = cryptoUtil.md5(partition).slice(0,4)
+        oldFileName = "#{partition}/#{mlsId}/#{data_source_uuid}/#{event.extra.fileName}"
+        enqueuePhotoToDelete(oldFileName, subtask.batch_id, {transaction})
+    .then () ->
+      successCtr++
+    .catch errorHandlingUtils.isCausedBy(SkipPhotoError), () ->
+      skipsCtr++
+    .catch (error) ->
+      errorDetails ?= analyzeValue.getFullDetails(error)
+      taskLogger.debug () -> "single-photo error (was: #{row?.photos[imageId]?.key}, now: #{newFileName}): #{errorDetails}"
+      errorsCtr++
+    .then () ->
+      cb()
 
   return through.obj(transform, flush)
 
@@ -363,9 +364,11 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
     needsRetry = true
     taskLogger.debug () -> "overall error: #{globalErrorDetails}"
   .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}) ->
+    taskLogger.debug () -> "Photos uploaded: #{uploadsCtr} | skipped: #{skipsCtr} | errors: #{errorsCtr} | successes: #{successCtr}"
     Promise.try () ->
       if !needsRetry && errorsCtr == 0
         return
+      taskLogger.debug () -> "marking listing for retry"
       sqlHelpers.upsert
         dbFn: tables.deletes.retry_photos
         idObj: photoRowClause
@@ -377,7 +380,6 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
           photo_id: undefined
           retries: tables.deletes.retry_photos.raw('EXCLUDED.retries + 1')
     .then () ->
-      taskLogger.debug () -> "Photos uploaded: #{uploadsCtr} | skipped: #{skipsCtr} | errors: #{errorsCtr} | successes: #{successCtr}"
       return {successCtr, skipsCtr, errorsCtr, uploadsCtr}
 
 
