@@ -32,7 +32,7 @@ form.add-project(name="clientForm")
                 ng-model="clientCopy.email"
                 placeholder="name@email.com"
                 required
-                validator="email,required,checkUniqueEmail,maxlength=75")
+                validator="email,required,checkValidEmail,maxlength=75")
             .col-sm-3
               label(for="cell_phone") Work #
               input.form-control(

@@ -17,6 +17,24 @@ module.exports =
         if bool
           "account validated via email"
 
+  isValid:
+    method: 'post'
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req) ->
+      logger.debug -> req.user
+
+      transforms = params:
+        email: emailTransforms.validEmail()
+
+      validateAndTransformRequest(req, transforms)
+      .then (validReq) ->
+        logger.debug -> "isValid: true"
+        logger.debug -> validReq
+        true
+
   #existing email check
   isUnique:
     method: 'post'

@@ -116,7 +116,7 @@ getSecuritiesForSession = (sessionId) ->
 sessionLoginProcess = (req, res, user, opts={}) ->
   subscriptionSvc.getStatus user
   .then (subscription_status) ->
-    logger.debug -> "setting user"
+    logger.debug -> "User #{user.id} subscription status is #{subscription_status}"
     logger.debug -> _.omit user, "password"
 
     req.user = user

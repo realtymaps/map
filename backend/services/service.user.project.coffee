@@ -11,6 +11,7 @@ permissionsService = require './service.permissions'
 profileSvc = require './service.profiles'
 keystoreSvc = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
+errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 Promise = require 'bluebird'
 _ = require 'lodash'
@@ -141,34 +142,49 @@ class ProjectCrud extends ThenableCrud
         true
 
   addClient: (clientEntryValue) ->
-    {user, project, profile, evtdata} = clientEntryValue
-    dbs.transaction 'main', (trx) ->
+    {user, parent, project, profile, evtdata} = clientEntryValue
+
+    dbs.transaction 'main', (transaction) ->
+
       # get the invited user if exists
-      tables.auth.user(transaction: trx)
-      .select 'id', 'email', 'first_name', 'last_name', 'parent_id', 'username'
-      .where email: user.email
-      .then (result) ->
+      tables.auth.user({transaction})
+      .select(
+        "#{tables.auth.user.tableName}.id as id",
+        "#{tables.user.profile.tableName}.id as profile_id",
+        'email',
+        'username',
+        'first_name',
+        'last_name',
+        "#{tables.auth.user.tableName}.parent_id as parent_id"
+
+      )
+      .leftJoin(tables.user.profile.tableName, ->
+        @on("#{tables.user.profile.tableName}.auth_user_id", "=", "#{tables.auth.user.tableName}.id")
+        .andOn("project_id", "=", tables.user.profile.raw("?", project.id))
+      )
+      .where('email', user.email)
+      .then ([existingUser]) ->
+
+        # use existing user for 'client_invited' vero event
+        if existingUser
+          if existingUser.profile_id?
+            throw new errorUtils.PartiallyHandledError("User already has access to this project")
+          user.id = existingUser.id
+          evtdata.name = 'client_invited'
+          userPromise = Promise.resolve()
 
         # create new user for 'client_created' vero event
-        if result.length == 0
+        else
+          user.parent_id = parent.id
           userPromise = logger.debugQuery(
-            tables.auth.user(transaction: trx)
+            tables.auth.user({transaction})
             .insert user
             .returning 'id'
           ).then ([id]) ->
             user.id = id
             evtdata.name = 'client_created'
 
-
-
-        # use existing user for 'client_invited' vero event
-        else
-          user = _.merge user, result[0]
-          evtdata.name = 'client_invited'
-          userPromise = Promise.resolve()
-
         userPromise
-
         # invite the client (whether created or existing)
         .then () ->
           _inviteClient clientEntryValue
@@ -180,22 +196,23 @@ class ProjectCrud extends ThenableCrud
         .then (authPermission) ->
           logger.debug "Found new client permission id: #{authPermission.id}"
           # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
-          throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
+          if !authPermission
+            throw new Error('Could not find permission id for "unlimited_logins"')
           permission =
             user_id: user.id
             permission_id: authPermission.id
-            transaction: trx
+            transaction: transaction
           permissionsService.setPermissionForUserId permission
 
         # profile stuff
         .then ->
           newProfile = _.merge profile,
             auth_user_id: user.id
-            parent_auth_user_id: user.parent_id
+            parent_auth_user_id: parent.id
             project_id: project.id
             favorites: {}
 
-          profileSvc.createForProject newProfile, trx
+          profileSvc.createForProject newProfile, transaction
 
 
 #temporary to not conflict with project
