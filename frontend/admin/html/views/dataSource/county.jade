@@ -42,7 +42,6 @@
       include ../../includes/dataSource/fieldConfig/common/year_built.jade
       include ../../includes/dataSource/fieldConfig/common/bathrooms.jade
       include ../../includes/dataSource/fieldConfig/common/boolean.jade
-      include ../../includes/dataSource/fieldConfig/common/decimal.jade
       include ../../includes/dataSource/fieldConfig/common/name.jade
       include ../../includes/dataSource/fieldConfig/county/data_source_uuid.jade
       include ../../includes/dataSource/fieldConfig/county/fips.jade
@@ -53,6 +52,7 @@
     .col-md-12.scroll(ng-if="fieldData.current.list != 'base'")
       include ../../includes/dataSource/fieldConfig/common/nonBase.jade
 
+    include ../../includes/dataSource/fieldConfig/common/decimal.jade
     include ../../includes/dataSource/fieldConfig/county/array.jade
     include ../../includes/dataSource/fieldConfig/county/lookups.jade
     include ../../includes/dataSource/fieldConfig/common/lookups.jade
