@@ -29,11 +29,17 @@ describe "service.payment.impl.stripe.events", ->
     mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
     mockHistoryTable = new SqlMock 'event', 'history'
     mockProjectTable = new SqlMock 'user', 'project'
+    mockSessionTable = new SqlMock 'auth', 'session'
+    mockSessionSecurityTable = new SqlMock 'auth', 'sessionSecurity'
 
     @tables =
       auth:
         user: () ->
           mockUserTable
+        session: () ->
+          mockSessionTable
+        sessionSecurity: () ->
+          mockSessionSecurityTable
       event:
         history: () ->
           mockHistoryTable
@@ -97,6 +103,8 @@ describe "service.payment.impl.stripe.events", ->
       @stripe.customers.deleteCard.called.should.be.ok
       @emailEvents.subscriptionExpired.called.should.be.ok
       @tables.user.project().updateSpy.called.should.be.ok
+      @tables.auth.session().delSpy.called.should.be.ok
+      @tables.auth.sessionSecurity().delSpy.called.should.be.ok
 
     it 'calls vero handler appropriately', ->
       @emailEvents.subscriptionExpired.args[0][0].should.be.eql(mockAuthUser)
@@ -115,6 +123,8 @@ describe "service.payment.impl.stripe.events", ->
       @stripe.events.retrieve.called.should.be.ok
       @emailEvents.subscriptionDeactivated.called.should.be.ok
       @tables.user.project().updateSpy.called.should.be.ok
+      @tables.auth.session().delSpy.called.should.be.ok
+      @tables.auth.sessionSecurity().delSpy.called.should.be.ok
 
     it 'calls vero handler appropriately', ->
       @emailEvents.subscriptionDeactivated.args[0][0].should.be.eql(mockAuthUser)
