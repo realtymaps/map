@@ -232,6 +232,9 @@ app.factory 'rmapsMapFactory',
             getMail: () ->
               $q.resolve() #place holder for rmapsMapMailCtrl so we can access it here in this parent directive
 
+            getAreas: () ->
+              $q.resolve() #place holder for rmapsMapAreasCtrl so we can access it here in this parent directive
+
             listingDetail: undefined
 
             markers:
@@ -285,7 +288,6 @@ app.factory 'rmapsMapFactory',
         @scope.$evalAsync =>
           if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
             @scope.map.markers.addresses = {}
-            @scope.map.markers.notes = []
             _.each @scope.map.geojson, (val) ->
               val.data = _emptyGeoJsonData
           d.resolve()
@@ -312,7 +314,7 @@ app.factory 'rmapsMapFactory',
           # Watch for pins/favorites other users may have added and show them in dropdowns
           for type in ['pins', 'favorites']
             for rm_property_id, prop of data?.saves?[type]
-              rmapsPropertiesService[type][rm_property_id] ?= prop
+              $rootScope.$emit rmapsEventConstants.map.properties[type.slice(0,-1)], {type, prop}
 
           # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
           # but gets buggy when rapidly changing zooms occurs.
@@ -365,7 +367,7 @@ app.factory 'rmapsMapFactory',
 
         rmapsLayerUtilService.parcelTileVisSwitching({scope:@scope, event})
 
-        $q.all [promise, @drawFilterSummary({cache, event}), @scope.map.getNotes(), @scope.map.getMail()]
+        $q.all [promise, @drawFilterSummary({cache, event}), @scope.map.getNotes(), @scope.map.getAreas(), @scope.map.getMail()]
         .then () =>
           # handle ui-leaflet / leaflet polygon stacked no click bug
           # https://realtymaps.atlassian.net/browse/MAPD-1295

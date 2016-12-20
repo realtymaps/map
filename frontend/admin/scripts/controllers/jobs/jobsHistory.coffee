@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
-Promise = require 'bluebird'
+
 
 app.controller 'rmapsJobsHistoryCtrl',
 ($window, $scope, $rootScope, $log, $location, rmapsJobsService, uiGridConstants, $state) ->
@@ -211,7 +211,9 @@ app.controller 'rmapsJobsHistoryCtrl',
     $scope.jobsBusy = rmapsJobsService.getHistory(filters)
     .then (currentJobList) ->
       $scope.currentJobList = [{name: 'All Tasks'}].concat currentJobList.plain()
+      # coffeelint: disable=check_scope
       for e, i in $scope.currentJobList
+      # coffeelint: enable=check_scope
         $scope.currentJobList[i].selectid = i
 
   $scope.loadReadyHistory = () ->

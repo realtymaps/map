@@ -30,32 +30,45 @@ app.config(($provide, $validationProvider) ->
     password: validation.password
     phone: validation.phone
     realtymapsEmail: validation.realtymapsEmail
-    optPhone: (value, scope, element, attrs, param) ->
-      return true unless value
-      #optional URL
-      !!value.match(validation.phone)?.length
     address: validation.address
     zipcode: validation.zipcode.US
+
+    optPhone: (value, scope, element, attrs, param) ->
+      return true unless value
+      validation.phone.test(value)
+
     optUrl: (value, scope, element, attrs, param) ->
       return true unless value
-      #optional URL
-      !!value.match(validation.url)?.length
+      validation.url.test(value)
+
     optNumber: (value, scope, element, attrs, param) ->
       return true unless value
-      #optional URL
-      !!value.match(validation.number)?.length
+      validation.number.test(value)
+
     optMinlength: (value, scope, element, attrs, param) ->
       return true unless value
-      value.length >= param;
+      value.length >= param
+
     optMaxlength: (value, scope, element, attrs, param) ->
       return true unless value
-      value.length <= param;
+      value.length <= param
+
+    optAddress: (value, scope, element, attrs, param) ->
+      return true unless value
+      validation.address.test(value)
+
+    optZipcode: (value, scope, element, attrs, param) ->
+      return true unless value
+      validation.zipcode.US.test(value)
+
     checkUniqueEmail: (value, scope, element, attrs, param) ->
       config =
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isUnique, email: value, config)
+
     checkValidMlsAgent: (value, scope, element, attrs, param) ->
       $http.post(backendRoutes.mls.activeAgent, scope[param], {alerts: false})
+
 
 
 
@@ -94,7 +107,11 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid phone number'
     address:
       error: 'Invalid address'
+    optAddress:
+      error: 'Invalid address'
     zipcode:
+      error: 'Invalid US zipcode'
+    optZipcode:
       error: 'Invalid US zipcode'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)

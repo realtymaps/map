@@ -1,8 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 httpStatus = require '../../common/utils/httpStatus'
-DataValidationError = require './errors/util.error.dataValidation'
-{MissingVarError, UpdateFailedError} = require './errors/util.errors.crud'
 ExpressResponse = require './util.expressResponse'
 url = require 'url'
 logger = require('../config/logger').spawn('util.route.helpers')
@@ -14,7 +12,8 @@ class NotFoundError extends Error
 
 methodExec = (req, methods, next) ->
   if !methods[req.method]
-    return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: quiet, status: httpStatus.BAD_REQUEST})
+    #TODO: should quiet come from params, query or body?
+    return next new ExpressResponse({alert: {msg: "HTTP METHOD: #{req.method} not supported for route."}}, {quiet: false, status: httpStatus.BAD_REQUEST})
   methods[req.method]()
 
 mergeHandles = (handles, config, options) ->
@@ -24,7 +23,7 @@ mergeHandles = (handles, config, options) ->
   loggerNS.debug -> "mergeHandles, config:\n#{JSON.stringify(config)}"
   for key of config
     _.extend config[key],
-      handle: unless config[key].handle? then handles[key] else handles[config[key].handle]
+      handle: if config[key].handle? then handles[config[key].handle] else handles[key]
   config
 
 handleQuery = (q, res, lHandleQuery) ->
@@ -50,31 +49,12 @@ handleQuery = (q, res, lHandleQuery) ->
       logger.error("#{analyzeValue.getSimpleMessage(result)}")
       throw err
 
-
-
+# TODO: Could probably be replaced by handleQuery
 handleRoute = (req, res, next, toExec, isDirect) ->
   Promise.try () ->
     if isDirect
       return toExec(req, res, next)
-
     handleQuery toExec(req, res, next), res
-  .catch DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch MissingVarError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
-  .catch UpdateFailedError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
-  .catch (err) ->
-    if !err.quiet
-      logger.error analyzeValue.getFullDetails(err)
-    next(err)
-
-wrapHandleRoutes = ({handles, isDirect}) ->
-  for key, origFn of handles
-    do (key, origFn) ->
-      handles[key] = (req, res, next) ->
-        handleRoute req, res, next, origFn, isDirect
-  handles
 
 #http://stackoverflow.com/questions/10183291/how-to-get-the-full-url-in-express
 fullUrl = (req, pathname) ->
@@ -94,6 +74,5 @@ module.exports =
   NotFoundError: NotFoundError
   handleQuery: handleQuery
   handleRoute: handleRoute
-  wrapHandleRoutes: wrapHandleRoutes
   fullUrl: fullUrl
   clsFullUrl: clsFullUrl

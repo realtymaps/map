@@ -1,10 +1,11 @@
-###global _:true###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+_ = require 'lodash'
+
+
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
-
 stateDefaults =
   sticky: false
   loginRequired: true
@@ -161,12 +162,10 @@ module.exports = app.config (
       showSteps: true
 
   buildState 'snail'
-  buildState 'user'#, page: {title: 'My Account', dynamicTitle: true }
-  buildChildState 'userMLS', 'user', page: { title: 'MLS' }
+  buildState 'user'
+  buildChildState 'userMLS', 'user', {page: { title: 'MLS' }, permissionsRequired: "isMLS"}
   buildChildState 'userSubscription', 'user', page: { title: 'Subscription' }
-  buildChildState 'userPaymentMethod', 'user', page: { title: 'Payment Method' }
   buildChildState 'userNotifications', 'user', page: { title: 'Notifications' }
-  buildChildState 'userTeamMembers', 'user', page: { title: 'Team Members' }
   buildChildState 'userPaymentHistory', 'user', page: { title: 'Payment History' }
 
   buildState 'clientEntry',

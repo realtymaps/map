@@ -1,11 +1,11 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('service:mls_config')
+# coffeelint: enable=check_scope
 externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
-jobService = require './service.jobs'
 memoize = require 'memoizee'
 sqlHelpers = require '../utils/util.sql.helpers'
 
@@ -31,11 +31,12 @@ class MlsConfigService extends ServiceCrud
       if entity.schemaReady == 'true'
 
         # for "schemaReady" to be true, the listing_data json fields
-        # "db", "table", and "field" need to exist and have length > 0
+        # "db", "table", and "lastModTime" need to exist and have length > 0
+        # if mlsListingId is going to be considered a requirement prior to normalization then it needs to be here
         query
         .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
-        .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
+        .whereRaw("char_length(cast(listing_data->>\'lastModTime\' as text)) > ?", [0])
       delete entity.schemaReady
 
     super(entity, query: query)

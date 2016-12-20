@@ -29,6 +29,10 @@ getSessionUser = (req) -> Promise.try () ->
   .where(id: req.session.userid)
   .then (user=[]) ->
     user?[0] ? false
+  .then (user) ->
+    if user.mlses_verified?.length
+      user.mlses_verified = _.uniq user.mlses_verified, true, (m) -> m.toUpperCase()
+    user
   .catch (err) ->
     logger.warn analyzeValue.getFullDetails err
     return false

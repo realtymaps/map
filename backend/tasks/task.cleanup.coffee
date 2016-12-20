@@ -5,10 +5,10 @@ config = require('../config/config')
 dbs = require('../config/dbs')
 TaskImplementation = require('./util.taskImplementation')
 jobQueue = require('../services/service.jobQueue')
-mlsHelpers = require('./util.mlsHelpers')
 _ = require('lodash')
 awsService = require '../services/service.aws'
 internals = require './task.cleanup.internals'
+jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 
 
 rawTables = () ->
@@ -99,9 +99,20 @@ deletePhotos = (subtask) ->
       .where {key}
       .del()
       .catch (error) ->
-        throw new SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+        throw new jobQueueErrors.SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
     .catch (error) ->
-      throw new SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+      throw new jobQueueErrors.SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+
+deleteSessionSecurities = (subtask) ->
+  tables.auth.sessionSecurity()
+  .whereNotExists () ->
+    @select(1).from(tables.auth.session.tableName)
+    .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
+  .returning('session_id')
+  .delete()
+  .then (sessionIds) ->
+    logger.spawn(subtask.name).debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
+
 
 
 module.exports = new TaskImplementation 'cleanup', {
@@ -113,4 +124,5 @@ module.exports = new TaskImplementation 'cleanup', {
   deleteParcels
   deletePhotosPrep
   deletePhotos
+  deleteSessionSecurities
 }

@@ -31,6 +31,9 @@ module.exports =
 
   getForUser:
     method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
     handle: (req, res, next) ->
       handleRoute req, res, next, ->
         mlsService.getForUser(req.session)
@@ -107,6 +110,15 @@ module.exports =
   talking directly to a specific mls system. Therefore, they are purley for debugging and setting
   up an MLS system for its photos.
   ###
+
+  getPhotoIds:
+    method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
+    handle: (req, res, next) ->
+      internals.getPhotoIds(req, res, next)
 
   getPhotos:
     method: 'get'

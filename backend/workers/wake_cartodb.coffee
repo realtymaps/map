@@ -4,7 +4,6 @@ wakeCartodb = () ->
   Promise = require 'bluebird'
   request = require 'request'
   request = Promise.promisify(request)
-  config = require '../config/config'
   cartodbConfig = require '../config/cartodb/cartodb'
   analyzeValue = require '../../common/utils/util.analyzeValue'
 

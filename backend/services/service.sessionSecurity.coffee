@@ -83,14 +83,6 @@ ensureSessionCount = (req) -> Promise.try () ->
     plan.maxLogins
 
   sessionSecuritiesPromise = tables.auth.sessionSecurity()
-  .whereNotExists () ->
-    @select(1).from(tables.auth.session.tableName)
-    .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
-  .returning('session_id')
-  .delete()
-  .then (sessionIds) ->
-    logger.debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
-    tables.auth.sessionSecurity()
     .where(user_id: req.user.id)
   .then (sessionSecurities=[]) ->
     sessionSecurities
@@ -124,6 +116,9 @@ getSecuritiesForSession = (sessionId) ->
 sessionLoginProcess = (req, res, user, opts={}) ->
   subscriptionSvc.getStatus user
   .then (subscription_status) ->
+    logger.debug -> "setting user"
+    logger.debug -> _.omit user, "password"
+
     req.user = user
     req.session.subscription = subscription_status
     userUtils.cacheUserValues(req)

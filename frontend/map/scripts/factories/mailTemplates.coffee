@@ -1,5 +1,6 @@
-###global _:true###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 app.service 'rmapsMailTemplateFactory', (
   $rootScope,

@@ -1,5 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
 app.controller 'rmapsOnboardingCtrl', (
@@ -41,6 +43,12 @@ rmapsMlsService
     if !entity
       return
     _formatMLS(entity.mls, entity.full_name)
+
+  $scope.fipsView = (entity) ->
+    if !entity
+      return
+    _formatMLS(entity.fips_code, entity.county)
+
 
   # for uib-typeahead-input-formatter since the typeahead can not figure out
   # the difference between ng-model value and label/view
@@ -200,6 +208,11 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     change: () ->
       delete $scope.user.mls_code
 
+  $scope.supportedFips =
+    show: true
+    change: () ->
+      delete $scope.user.fips_code
+
   $scope.supportedStates =
     show: true
     change: () ->
@@ -242,6 +255,9 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesServi
     $scope.view.supportedCode = _.any $scope.supportedMlsCodes, (mls) ->
       mlsToMatch == mls.mls
 
+  $scope.$watch 'user.fips_code', (code) ->
+    $scope.view.supportedCode = _.any $scope.mlsFipsCounties, (mls) ->
+      code == mls.fips_code
 
   $log.debug $scope
 
@@ -265,20 +281,4 @@ app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $q, $log, $state, $timeo
 
   attempts = 0
 
-  #TODO: This is a temporary hack around login issues where there is some strangeness where login fails
-  #
-  # related errors:
-  #  - account NOT_FOUND:
-  #       Possible race where the account creation from the final submit (create account)
-  #       is not really finished on the backend
-  #  - password undefined - (contoller loses context of $scope.user this is expected if the page is refreshed/changed)
-  doLogin = ->
-    attempts++
-    $q.delay(2000)
-    .then () ->
-      $scope.doLogin($scope.user)
-
-  doLogin()
-  .catch () ->
-    if attempts < 2
-      doLogin()
+  $scope.doLogin($scope.user)

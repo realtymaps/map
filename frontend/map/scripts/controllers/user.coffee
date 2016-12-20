@@ -1,23 +1,27 @@
-###global _:true###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
 
 app.controller 'rmapsUserCtrl', (
-$scope,
-$rootScope,
-$location,
-$http,
-$state,
-rmapsEventConstants,
-rmapsMainOptions,
-$log,
-rmapsUsStates
+$scope
+$rootScope
+$location
+$http
+$state
+rmapsEventConstants
+rmapsMainOptions
+$log
 ) ->
+
+  $log = $log.spawn('maps:user')
+  $log.debug -> "$state"
+  $log.debug -> $state.get('userSubscription')
 
   {profile} = rmapsMainOptions.images.dimensions
   maxImagePixles = profile.width
   imageQuality = profile.quality
+
 
   spawnAlert = (msg) ->
     alert =
@@ -28,9 +32,6 @@ rmapsUsStates
 
   $scope.getStateName = (name) ->
     name.replace /user(.+)/, '$1'
-
-
-  $scope.us_states = rmapsUsStates.all
 
   $http.get(backendRoutes.account_use_types.root)
   .then ({data}) ->

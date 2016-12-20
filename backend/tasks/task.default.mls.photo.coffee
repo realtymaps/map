@@ -11,13 +11,17 @@ memoize = require 'memoizee'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 internals = require './task.default.mls.photo.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 
-NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 250
+
+NUM_ROWS_TO_PAGINATE_FOR_PHOTOS = 500
+MAX_RETRIES = 50
 
 
 storePrep = (subtask) ->
   logger.debug () -> "storePrep for #{subtask.task_name}"
   numRowsToPagePhotos = subtask.data?.numRowsToPagePhotos || NUM_ROWS_TO_PAGINATE_FOR_PHOTOS
+
   mlsId = subtask.task_name.split('_')[0]
   logger.debug () -> "mlsId is #{mlsId}"
 
@@ -27,6 +31,7 @@ storePrep = (subtask) ->
     .where(data_source_id: mlsId)
     .whereNot(batch_id: subtask.batch_id)
     .where('id', '>', minId)
+    .where('retries', '<', MAX_RETRIES)
     .orderBy('id')
     .limit(numRowsToPagePhotos)
     .then (results) ->
@@ -51,7 +56,7 @@ storePrep = (subtask) ->
 
   _getRetriesIteratively()
   .then () ->
-    updateThresholdPromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
+    updatePromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
     lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_last_mod_time field for #{mlsId}")
     uuidPromise = mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing').catch (err) ->
@@ -59,35 +64,42 @@ storePrep = (subtask) ->
     photoIdPromise = mlsHelpers.getMlsField(mlsId, 'photo_id', 'listing').catch (err) ->
       throw new errorHandlingUtils.PartiallyHandledError(err, "Error retrieving photo_id field for #{mlsId}")
 
-    # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
-    Promise.join(updateThresholdPromise, lastModPromise, uuidPromise, photoIdPromise)
-  .then (updateThreshold, lastModField, uuidField, photoIdField) ->
-    dataOptions = {minDate: updateThreshold, subLimit: numRowsToPagePhotos, searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}, listing_data: {field: lastModField}}
-    if subtask.data.limit
-      dataOptions.searchOptions.limit = subtask.data.limit
+    # DON'T change this to Promise.join(promises...).then() syntax -- for some reason it doesn't work here
+    Promise.join updatePromise, lastModPromise, uuidPromise, photoIdPromise, (updateThreshold, lastModField, uuidField, photoIdField) ->
+      # grab all uuid's whose `lastModField` is greater than `updateThreshold` (datetime of last task run)
+      dataOptions = {
+        minDate: updateThreshold
+        subLimit: numRowsToPagePhotos
+        searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1}
+        listing_data: {lastModTime: lastModField}
+      }
 
-    handleChunk = (chunk) -> Promise.try () ->
-      if !chunk?.length
-        return
-      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
-      for row,i in chunk
-        chunk[i] =
-          data_source_uuid: row[uuidField]
-          photo_id: row[photoIdField]
-      jobQueue.queueSubsequentSubtask({
-        subtask
-        laterSubtaskName: "store"
-        stepNumOffset
-        manualData: {values: chunk, chunk: stepNumOffset, count: chunk.length}
-      })
-      .then () ->
-        # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
-        stepNumOffset++
+      if subtask.data.limit
+        dataOptions.searchOptions.limit = subtask.data.limit
 
-    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
-    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+      handleChunk = (chunk) -> Promise.try () ->
+        if !chunk?.length
+          return
+        logger.debug () -> "Found #{chunk.length} updated rows in chunk"
+        for row,i in chunk
+          chunk[i] =
+            data_source_uuid: row[uuidField]
+            photo_id: row[photoIdField]
+
+        jobQueue.queueSubsequentSubtask({
+          subtask
+          laterSubtaskName: "store"
+          stepNumOffset
+          manualData: {values: chunk, chunk: stepNumOffset, count: chunk.length}
+        })
+        .then () ->
+          # we are limited to a single login for many MLSes, so we have to prevent simultaneous instances of `store`
+          stepNumOffset++
+
+      logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
+      retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
     .catch retsService.isMaybeTransientRetsError, (error) ->
-      throw new SoftFail(error, "Transient RETS error; try again later")
+      throw new jobQueueErrors.SoftFail(error, "Transient RETS error; try again later")
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, "Error getting list of updated records from RETS")
 
@@ -101,19 +113,21 @@ store = (subtask) -> Promise.try () ->
   totalSuccess = 0
   totalSkips = 0
   totalErrors = 0
+  totalUploads = 0
 
-  Promise.each subtask.data.values, (idObj) ->
-    # taskLogger.debug () -> "Calling mlsHelpers.storePhotosNew() for property #{idObj.data_source_uuid}"
+  Promise.each subtask.data.values, (idObj, i) ->
+    taskLogger.debug () -> "processing photo_store value: #{i}/#{JSON.stringify(idObj)}"
     internals.storePhotos(subtask, idObj)
-    .then ({successCtr, skipsCtr, errorsCtr}) ->
+    .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr}) ->
       totalSuccess += successCtr
       totalSkips += skipsCtr
       totalErrors += errorsCtr
-      # taskLogger.debug () -> "Finished property #{idObj.data_source_uuid}"
+      totalUploads += uploadsCtr
+      taskLogger.debug () -> "Finished property #{idObj.data_source_uuid}"
   .then () ->
-    taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors}"
+    taskLogger.debug () -> "Total photos uploaded: #{totalSuccess} | skipped: #{totalSkips} | errors: #{totalErrors} | uploads: #{totalUploads}"
   .catch retsService.isMaybeTransientRetsError, (error) ->
-    throw new SoftFail(error, "Transient RETS error; try again later")
+    throw new jobQueueErrors.SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (err) ->
     taskLogger.debug () -> "#{analyzeValue.getFullDetails(err)}"
     throw err

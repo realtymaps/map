@@ -1,5 +1,7 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('map:parcels')
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn('service:properties:parcels')
+# coffeelint: enable=check_scope
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 sqlColumns = require './../utils/util.sql.columns.coffee'

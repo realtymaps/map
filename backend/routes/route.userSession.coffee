@@ -22,7 +22,7 @@ userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
-analyzeValue = require '../../common/utils/util.analyzeValue'
+
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
@@ -120,10 +120,11 @@ profiles = (req, res, next) ->
           internals.updateCache(req, res, next)
 
 newProject = (req, res, next) ->
-
-  throw new Error 'Error creating new project, name is required' unless req.body.name
-
+  # this route needs propper vsalidation via validation.validateAndTransformRequest
   Promise.try () ->
+    if !req.body.name
+      throw new Error 'Error creating new project, name is required'
+
     profileService.getCurrentSessionProfile req.session
 
   .then (profile) ->

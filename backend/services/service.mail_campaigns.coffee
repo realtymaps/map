@@ -7,6 +7,7 @@ _ = require 'lodash'
 db = dbs.get('main')
 propertySvc = require './service.properties.combined.details'
 logger = require('../config/logger').spawn('service:mail_campaigns')
+Promise = require 'bluebird'
 
 
 class MailService extends ServiceCrud
@@ -60,14 +61,19 @@ class MailService extends ServiceCrud
       .then (response) ->
 
         # 'sent' and 'total' statistics
-        details =
+        return {
           single_lob_response: letterResults.lob_response
           sent: letterResults.sent
           total: letterResults.count
           pdf: response.pdf
           price: response.price
+        }
 
   getProperties: (project_id, auth_user_id) ->
+
+    if !project_id? || !auth_user_id?
+      return Promise.resolve([])
+
     tables.mail.campaign().select([
       "#{tables.mail.campaign.tableName}.id as campaign_id"
       "#{tables.mail.campaign.tableName}.name as campaign_name"
@@ -97,8 +103,12 @@ class MailService extends ServiceCrud
         propertyIndex[letter.rm_property_id] ?= []
         propertyIndex[letter.rm_property_id].push letter
 
-      tables.user.profile().select().where({auth_user_id, project_id})
+      tables.user.profile()
+      .where({auth_user_id, project_id})
       .then ([profile]) ->
+        if !profile? # or should we throw and return Bad Request or Not Found on route?
+          return []
+
         propertySvc.getProperties({
           query:
             rm_property_id: _.keys propertyIndex

@@ -6,6 +6,7 @@ jobQueue = require './services/service.jobQueue'
 require './routes/route.hirefire'
 shutdown = require './config/shutdown'
 analyzeValue = require '../common/utils/util.analyzeValue'
+Promise = require 'bluebird'
 
 
 queueName = process.argv[2]
@@ -32,7 +33,11 @@ tables.jobQueue.queueConfig()
   cluster queueName, clusterOpts, () ->
     workers = []
     for i in [1..queue.subtasks_per_process]
-      workers.push jobQueue.runWorker(queueName, i, quit)
+      if queue.subtasks_per_process > 1
+        id = i
+      else
+        id = null
+      workers.push jobQueue.runWorker(queueName, id, quit)
     Promise.all(workers)
     .then () ->
       if quit

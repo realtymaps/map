@@ -231,6 +231,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
       return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q
 
+  return ThenableTrait
 
 ThenableCrud = thenables[0]
 

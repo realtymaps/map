@@ -24,7 +24,8 @@ require('../services/services.payment').then (svc) ->
 
 createNewUser = ({body, transaction, plan}) -> Promise.try ->
 
-  return throw new Error "OnBoarding API not ready" if !emailServices or !paymentServices
+  if !emailServices or !paymentServices
+    throw new Error("OnBoarding API not ready")
 
   entity = _.pick body, sqlColumns.basicColumns.user
   entity.email_validation_hash = emailService.makeEmailHash()
@@ -72,9 +73,7 @@ submitPaymentPlan = ({plan, token, authUser, transaction}) ->
 
 submitEmail = ({authUser, plan}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  emailServices.events.subscriptionSignUp
-    authUser: authUser
-    plan: plan
+  emailServices.events.subscriptionSignUp(authUser)
   .catch (error) ->
     logger.info "SignUp Failed, reverting Payment Customer"
     paymentServices.customers.handleCreationError
@@ -132,17 +131,15 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
         .insert({auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id, is_verified})
     )
 
-  Promise.all promises
-  .then () ->
+  Promise.all(promises).then () ->
     logger.debug -> "PRE: setNewUserMapPosition"
     setNewUserMapPosition({authUser, transaction})
-    logger.debug -> "POST: setNewUserMapPosition"
+    .then ->
+      logger.debug -> "POST: setNewUserMapPosition"
   .then () ->
     logger.debug -> "Returning authUser"
     logger.debug -> authUser
     authUser
-
-
 
 module.exports = {
   createNewUser

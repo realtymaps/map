@@ -7,7 +7,7 @@ require '../../config/promisify'
 
 
 getLookupMap = (data_source_id, data_list_type, LookupName, param, value) ->
-  query = tables.config.dataSourceLookups()
+  tables.config.dataSourceLookups()
   .select('LongValue', 'Value')
   .where({data_source_id, data_list_type, LookupName})
   .then (rows) ->
@@ -17,11 +17,12 @@ getLookupMap = (data_source_id, data_list_type, LookupName, param, value) ->
     for row in rows
       lookup[row.Value] = row.LongValue
     return lookup
-getLookupMap = memoize.promise(getLookupMap, {primitive: true})
+
+getLookupMap = memoize.promise(getLookupMap, {primitive: true, length: 3})
 
 
 getLookupName = (data_source_id, data_list_type, proxyName, param, value) ->
-  query = tables.config.dataSourceFields()
+  tables.config.dataSourceFields()
   .select('LookupName')
   .where({data_source_id, data_list_type, SystemName: proxyName})
   .then (rows) ->
@@ -30,11 +31,16 @@ getLookupName = (data_source_id, data_list_type, proxyName, param, value) ->
     if !rows[0]?.LookupName
       throw new DataValidationError("lookup proxy '#{data_source_id}/#{data_list_type}/#{proxyName}' has no lookup name", param, value)
     return rows[0]?.LookupName
-getLookupName = memoize.promise(getLookupName, {primitive: true})
+
+getLookupName = memoize.promise(getLookupName, {primitive: true, length: 3})
 
 
 
 doMapping = (param, options, map, singleValue) ->
+  mapped = map[singleValue]
+  if mapped?
+    return mapped
+  singleValue = singleValue.trim()
   mapped = map[singleValue]
   if mapped?
     return mapped

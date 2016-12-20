@@ -9,9 +9,9 @@ vendorAssetsPipe = require '../pipeline/vendor.assets'
 # vendorPipe = require '../pipeline/vendor.scripts'
 # vendorJsonPipe = require '../pipeline/vendor.json'
 
-
+# coffeelint: disable=check_scope
 logger = (require '../util/logger').spawn('vendor')
-
+# coffeelint: enable=check_scope
 
 gulp.task 'vendor_fonts', ->
   gulp.src(vendorFontsPipe)

@@ -1,6 +1,8 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require('../../config/logger').spawn('utils:validation')
+# coffeelint: disable=check_scope
+logger = require('../../config/logger').spawn('utils:impl:validationAndTransform')
+# coffeelint: enable=check_scope
 validateAndTransformSingleOutput = require './util.impl.validateAndTransformSingleOutput'
 
 ###########
@@ -35,7 +37,7 @@ validateAndTransformSingleOutput = require './util.impl.validateAndTransformSing
 module.exports = (params, definitions) -> Promise.try () ->
   if !definitions?
     throw new Error 'validateAndTransform: required transform definitions!'
-    
+
   if _.isArray(definitions)
     promiseList = for definition in definitions
       do (definition) ->

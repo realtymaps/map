@@ -9,6 +9,7 @@ externalAccounts = require './service.externalAccounts'
 mlsConfigService = require './service.mls_config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 httpStatus = require '../../common/utils/httpStatus'
+ourRetsErrors = require '../utils/errors/util.errors.rets'
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -25,7 +26,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter)
     logger.debug 'Logging in client ', loginUrl
     retsClient.login()
     .then () ->
-      logger.debug () -> "Logged in to RETS server at #{loginUrl}: #{retsClient.systemData.retsVersion} [#{retsClient.systemData.retsServer}]"
+      logger.debug () -> "Logged in to RETS server at #{loginUrl}: #{retsClient.loginHeaderInfo.retsVersion} [#{retsClient.loginHeaderInfo.server}]"
       retsClient
     .catch errorHandlingUtils.isUnhandled, (error) ->
       _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
@@ -47,10 +48,10 @@ getRetsClient = (mlsId, handler) ->
     {creds, serverInfo}
   .catch (err) ->
     logger.error analyzeValue.getFullDetails(err)
-    throw new Error("Can't get MLS config for #{mlsId}: #{err.message || err}")
+    throw new ourRetsErrors.UknownMlsConfig("Can't get MLS config for #{mlsId}: #{err.message || err}")
   .then ({creds, serverInfo}) ->
     if !creds || !serverInfo
-      throw new Error("Can't get MLS config for #{mlsId}: {creds: #{!!creds}, serverInfo: #{!!serverInfo}}")
+      throw new ourRetsErrors.UknownMlsConfig("Can't get MLS config for #{mlsId}: {creds: #{!!creds}, serverInfo: #{!!serverInfo}}")
     _getRetsClientInternalWrapper(creds.url, creds.username, creds.password, serverInfo.static_ip)
     .then (retsClient) ->
       handler(retsClient, serverInfo)
@@ -80,14 +81,14 @@ buildSearchQuery = (tableData, utcOffset, opts) ->
   criteria = []
   for key,val of opts.criteria
     criteria.push("(#{key}=#{val})")
-  if tableData.field_type == 'Date'
+  if tableData.lastModTime.type == 'Date'
     format = 'YYYY-MM-DD'
-  else  # tableData.field_type == 'DateTime'
+  else  # tableData.lastModTime.type == 'DateTime'
     format = 'YYYY-MM-DD[T]HH:mm:ss[Z]'
   if opts.maxDate?
-    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
+    criteria.push("(#{tableData.lastModTime.name}=#{moment.utc(new Date(opts.maxDate)).utcOffset(utcOffset).format(format)}-)")
   if opts.minDate? || criteria.length == 0  # need to have at least 1 criteria
-    criteria.push("(#{tableData.field}=#{moment.utc(new Date(opts.minDate ? 0)).utcOffset(utcOffset).format(format)}+)")
+    criteria.push("(#{tableData.lastModTime.name}=#{moment.utc(new Date(opts.minDate ? 0)).utcOffset(utcOffset).format(format)}+)")
   return criteria.join(" #{opts.booleanOp ? 'AND'} ")  # default to AND, but allow for OR
 
 

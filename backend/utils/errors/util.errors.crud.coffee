@@ -1,4 +1,3 @@
-_ = require 'lodash'
 NamedError = require './util.error.named'
 
 class IsIdObjError extends NamedError

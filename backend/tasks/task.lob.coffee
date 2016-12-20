@@ -3,15 +3,13 @@ jobQueue = require '../services/service.jobQueue'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
 logger = require '../config/logger'
-_ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
 lobSvc = require '../services/service.lob'
 LobErrors = require '../utils/errors/util.errors.lob'
 logger = require('../config/logger').spawn('task:lob')
 {safeJsonArray} = require '../utils/util.sql.helpers'
-moment = require 'moment'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-config = require '../config/config'
+{isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 #
 # This task find letters that have been queued from a mail campaign

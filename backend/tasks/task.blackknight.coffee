@@ -75,7 +75,7 @@ copyFtpDrop = (subtask) ->
 
   # expect 6 paths in the folder set
   .then (folderSet) ->
-    if !folderSet.date?
+    if folderSet.date?
       logger.info () -> "Processing blackknight data for date: #{folderSet.date}"
       logger.debug () -> "Paths: #{JSON.stringify(folderSet)}"
 
@@ -180,6 +180,18 @@ checkProcessQueue = (subtask) ->
     internals.useProcessInfo(subtask, processInfo)
 
 
+_queueDeleteData = (subtask, mergeData, numRows) ->
+  numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
+  mergeData.fips_code = subtask.data.fips_code || subtask.data.normalSubid
+  mergeData.rawDeleteBatchId = subtask.batch_id
+  jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "deleteData", mergeData})
+
+_queueNormalizeData = (subtask, mergeData, numRows) ->
+  mergeData.startTime = subtask.data.startTime
+  numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
+  jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "normalizeData", mergeData})
+
+
 loadRawData = (subtask) ->
   internals.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
@@ -191,25 +203,21 @@ loadRawData = (subtask) ->
       s3account: awsService.buckets.BlackknightData
 
   .then (numRows) ->
+    if !numRows
+      return
     mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
       normalSubid: subtask.data.normalSubid
     if subtask.data.fileType == internals.DELETE
-      laterSubtaskName = "deleteData"
-      numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
-      mergeData.fips_code = subtask.data.fips_code
-      mergeData.rawDeleteBatchId = subtask.batch_id
-      if mergeData.dataType == internals.TAX && mergeData.action == internals.REFRESH
-        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
-        numRows = 1
+      _queueDeleteData(subtask, mergeData, numRows)
     else
-      laterSubtaskName = "normalizeData"
-      mergeData.startTime = subtask.data.startTime
-      numRowsToPage = subtask.data?.numRowsToPageNormalize || internals.NUM_ROWS_TO_PAGINATE
-
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName, mergeData})
+      _queueNormalizeData(subtask, mergeData, numRows)
+      .then () ->
+        if subtask.data.action == internals.REFRESH && subtask.data.dataType == internals.TAX
+          delete mergeData.startTime
+          _queueDeleteData(subtask, mergeData, 1)
 
 
 cleanup = (subtask) ->
@@ -228,10 +236,8 @@ deleteData = (subtask) ->
     else
       return dataLoadHelpers.getRawRows(subtask, rawSubid, 'FIPS Code': subtask.data.fips_code)
   .then (rows) ->
-    require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "found #{rows.length} delete rows for #{subtask.data.action}-#{subtask.data.dataType}"
     Promise.each rows, (row) ->
       if subtask.data.action == internals.REFRESH
-        require('../config/logger').spawn('joe_troubleshoot').spawn(subtask.task_name).debug () -> "deleting all normalized rows for #{row['FIPS Code']} (#{subtask.data.dataType})"
         # delete the entire FIPS, we're loading a full refresh
         normalDataTable(subid: row['FIPS Code'])
         .where
@@ -357,8 +363,15 @@ ready = () ->
   keystore.getValuesMap(internals.BLACKKNIGHT_PROCESS_INFO, defaultValues: processDefaults)
   .then (processInfo) ->
     # definitely run task if there are new dates and/or FIPS to process
-    if processInfo[internals.DATES_QUEUED].length > 0 || processInfo[internals.FIPS_QUEUED].length > 0
+    if processInfo[internals.FIPS_QUEUED].length > 0
       return true
+    if processInfo[internals.DATES_QUEUED].length > 0
+      if !processInfo[internals.MAX_DATE]
+        return true
+      nextDate = _.reduce(processInfo[internals.DATES_QUEUED], (min, val) -> if min < val then min else val)
+      if nextDate <= processInfo[internals.MAX_DATE]
+        return true
+      return false
 
     keystore.getValuesMap(internals.BLACKKNIGHT_COPY_INFO, defaultValues: copyDefaults)
     .then (copyDates) ->

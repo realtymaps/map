@@ -1,6 +1,8 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
+
+
 app.directive 'rmapsGoogleAutocomplete', ($parse, $compile, $timeout, $document, $log, rmapsGoogleService) ->
   $log = $log.spawn 'rmapsGoogleAutocomplete'
 

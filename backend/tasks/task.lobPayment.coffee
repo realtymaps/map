@@ -1,13 +1,13 @@
 Promise = require "bluebird"
 jobQueue = require '../services/service.jobQueue'
-{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
-_ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
 logger = require('../config/logger').spawn('task:lobPayment')
 moment = require 'moment'
 {isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 config = require '../config/config'
+dbs = require '../config/dbs'
 
 #
 # This task finds campaigns that are ready for final billing
@@ -39,13 +39,17 @@ findCampaigns = (subtask) ->
         logger.debug "#{campaign.label} will be ignored until #{readyDate.format()}"
         return
 
+      forceCaptureDate = moment(campaign.stripe_charge.created, 'X').add(config.MAILING_PLATFORM.CAMPAIGN_BILLING_CAPTURE_DAYS, 'days')
+      if forceCaptureDate.isBefore(moment())
+        logger.debug "#{campaign.label} has been sending too long, capturing NOW"
+
       tables.mail.letters()
       .select('id')
       .where('user_mail_campaign_id', campaign.id)
-      .whereNotIn('status', ['sent', 'error-invalid'])
+      .whereIn('status', ['ready', 'error-transient'])
 
       .then (unsent) ->
-        if unsent?.length
+        if unsent?.length && forceCaptureDate.isAfter(moment())
           logger.debug "#{campaign.label} still has #{unsent.length} unsent letters and/or errors - skipping billing for now"
           return
         else
@@ -64,8 +68,7 @@ findCampaigns = (subtask) ->
 chargeCampaign = (subtask) ->
   campaign = subtask.data
 
-  payment = require('../services/services.payment')
-
+  require('../services/services.payment')
   .then (payment) ->
 
     logger.debug "Checking whether #{campaign.label} is ready for billing"
@@ -100,12 +103,19 @@ chargeCampaign = (subtask) ->
 
       logger.info "Captured #{stripeCharge.amount/100} for #{campaign.label}"
 
-      tables.mail.campaign()
-      .update
-        status: 'paid'
-        stripe_charge: stripeCharge
-      .where
-        id: campaign.id
+      dbs.transaction (transaction) ->
+        tables.mail.campaign({transaction})
+        .update
+          status: 'paid'
+          stripe_charge: stripeCharge
+        .where
+          id: campaign.id
+        .then () ->
+          tables.mail.letters({transaction})
+          .update(status: 'error-cancelled')
+          .where('user_mail_campaign_id', campaign.id)
+          .whereIn('status', ['error-transient', 'ready'])
+
 
 subtasks =
   findCampaigns: findCampaigns

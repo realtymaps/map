@@ -45,6 +45,7 @@ describe "task.blackknight.internal", () ->
           "#{bkServiceInternals.DATES_COMPLETED}": ['19800100']
           "#{bkServiceInternals.FIPS_QUEUED}": ['22222']
           "#{bkServiceInternals.CURRENT_PROCESS_DATE}": '19800101'
+          "#{bkServiceInternals.MAX_DATE}": null
         done()
 
     it 'should pop fips and date from queues if last fips', (done) ->
@@ -61,6 +62,7 @@ describe "task.blackknight.internal", () ->
           "#{bkServiceInternals.DATES_COMPLETED}": ['19800100', '19800101']
           "#{bkServiceInternals.FIPS_QUEUED}": []
           "#{bkServiceInternals.CURRENT_PROCESS_DATE}": null
+          "#{bkServiceInternals.MAX_DATE}": null
         done()
 
     it 'should populate fips queues if set', (done) ->
@@ -77,6 +79,7 @@ describe "task.blackknight.internal", () ->
           "#{bkServiceInternals.DATES_COMPLETED}": ['19800100', '19800101']
           "#{bkServiceInternals.CURRENT_PROCESS_DATE}": null
           "#{bkServiceInternals.FIPS_QUEUED}": ['22222', '33333']
+          "#{bkServiceInternals.MAX_DATE}": null
         _keystoreContext[bkServiceInternals.BLACKKNIGHT_PROCESS_INFO].should.deep.equal expected
         done()
 

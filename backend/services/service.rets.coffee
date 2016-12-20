@@ -8,7 +8,6 @@ through2 = require 'through2'
 internals = require './service.rets.internals'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-util = require 'util'
 
 
 getSystemData = (mlsId) ->
@@ -101,11 +100,11 @@ getDataStream = (mlsId, dataType, opts={}) ->
   logger.spawn(mlsId).debug () -> "getting data stream for #{mlsId}/#{dataType}: #{JSON.stringify(opts)}"
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     schemaInfo = mlsInfo["#{dataType}_data"]
-    if !schemaInfo.field
+    if !schemaInfo.lastModTime
       throw new errorHandlingUtils.PartiallyHandledError("Cannot query without a timestamp field to filter (check MLS config field 'Update Timestamp Column' for #{mlsId}/#{dataType})")
     offsetPromise = Promise.try () ->
       # determine time zone offset so we can use the correct date if server doesn't support a full DateTime
-      if schemaInfo.field_type == 'DateTime'
+      if schemaInfo.lastModTime.type == 'DateTime'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -138,10 +137,10 @@ getDataStream = (mlsId, dataType, opts={}) ->
       uuidColumn = null
       delimiter = null
       done = false
-      retsStream = null
+      retsResult = null
       finish = (that, error) ->
         logger.spawn(mlsId).debug () -> "getDataStream finished for #{mlsId}/#{dataType}, error: #{analyzeValue.getFullDetails(error)}"
-        retsStream.unpipe(resultStream)
+        retsResult.retsStream.unpipe(resultStream)
         done = true
         if error
           that.push(type: 'error', payload: error)
@@ -156,11 +155,11 @@ getDataStream = (mlsId, dataType, opts={}) ->
           resolved = false
           internals.getRetsClient mlsId, (retsClientIteration) ->
             new Promise (resolve2, reject2) ->
-              retsStream = retsClientIteration.search.stream.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions, true)
-              retsStream.pipe(resultStream, end: false)
-              retsStream.on 'end', resolve2
+              retsResult = retsClientIteration.search.stream.query(schemaInfo.db, schemaInfo.table, searchQuery, searchOptions, true)
+              retsResult.retsStream.pipe(resultStream, end: false)
+              retsResult.retsStream.on 'end', resolve2
               resolved = true
-              resolve(retsStream)
+              resolve(retsResult.retsStream)
           .catch (error) ->
             if !resolved
               resolved = true
@@ -276,6 +275,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     # syntactic sugar to allow a default opts value, but leave the handler at the end of the param list
     handler = opts
     opts = {}
+
   internals.getRetsClient mlsId, (retsClient, mlsInfo) ->
     # override mls schemaInfo with optional `schemaInfo` if provided
     if !_.isEmpty(opts?.schemaInfo)
@@ -283,11 +283,11 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
     else
       schemaInfo = mlsInfo["#{dataType}_data"]
 
-    if !schemaInfo.field
+    if !schemaInfo.lastModTime?
       throw new errorHandlingUtils.PartiallyHandledError('Cannot query without a timestamp field to filter (check MLS config field "Update Timestamp Column")')
     Promise.try () ->
       logger.spawn(mlsId).debug () -> "determining RETS time zone offset for #{mlsId}"
-      if schemaInfo.field_type != 'Date'
+      if schemaInfo.lastModTime.type != 'Date'
         return 0
       getSystemData(mlsId)
       .then (systemData) ->
@@ -351,7 +351,7 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
               throw new errorHandlingUtils.PartiallyHandledError(err, 'error in chunk handler')
             .then () ->
               if keepQuerying
-                searchIteration
+                searchIteration()
           .then () ->
             return total
           .catch rets.RetsReplyError, (err) ->
@@ -368,8 +368,16 @@ getDataChunks = (mlsId, dataType, opts, handler) ->
 
 
 getPhotosObject = ({mlsId, databaseName, photoIds, objectsOpts, photoType}) ->
-  objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
+  logger.debug -> "getPhotosObject orig args"
+  logger.debug -> {mlsId, databaseName, photoIds, objectsOpts, photoType}
+
+  objectsOpts ?= {}
   photoType ?= 'Photo'
+
+  objectsOpts = _.assign {alwaysGroupObjects: true, ObjectData: '*'}, objectsOpts
+
+  logger.debug -> "getPhotosObject post args"
+  logger.debug -> {mlsId, databaseName, photoIds, objectsOpts, photoType}
 
   internals.getRetsClient mlsId, (retsClient) ->
     retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)

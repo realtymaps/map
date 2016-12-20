@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('task:countyHelpers:internals')
 tables = require '../config/tables'
-{HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 moment = require 'moment'
 sqlHelpers = require '../utils/util.sql.helpers'
 

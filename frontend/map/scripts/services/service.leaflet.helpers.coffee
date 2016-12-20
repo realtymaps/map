@@ -3,21 +3,22 @@ app = require '../app.coffee'
 
 app.service 'rmapsLeafletHelpers', () ->
 
-  geoJsonToFeatureGroup = (geoJson) ->
+  geoJsonToFeatureGroup = (geoJson, featureGroup, style = {}) ->
     if !Array.isArray geoJson
       geoJson = [geoJson]
 
-    drawnItems = new L.FeatureGroup()
+    featureGroup ?= new L.FeatureGroup()
     L.geoJson geoJson,
+      style: style
       onEachFeature: (feature, layer) ->
         ['Circle', 'Marker'].forEach (name) ->
           if feature.properties?.shape_extras?.type == name
             layer = L[name].createFromFeature feature
 
         layer.model = feature
-        drawnItems.addLayer layer
+        featureGroup.addLayer layer
 
-    drawnItems
+    featureGroup
 
   {
     geoJsonToFeatureGroup

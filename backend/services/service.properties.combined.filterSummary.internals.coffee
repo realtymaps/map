@@ -1,7 +1,9 @@
 config = require '../config/config'
 zoomThresh = config.MAP.options.zoomThresh
 tables = require '../config/tables'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('service:filterSummary:combined:internals')
+# coffeelint: enable=check_scope
 dbs = require '../config/dbs'
 
 _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->

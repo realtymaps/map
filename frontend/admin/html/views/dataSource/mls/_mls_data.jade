@@ -1,0 +1,132 @@
+.mls-data(ng-show="mlsData.current.id")
+  .progressPills(ng-show="mlsData.current.id")
+    tabset(type="pills")
+      tab(heading="MLS Data")
+  .panel.panel-default
+    .panel-body
+      table.table.table-striped
+        tr
+          td(colSpan="2")
+            button(ng-click="goNormalize()").btn.btn-success Configure MLS Fields
+        tr
+          td
+            label.data-label ID:
+          td
+            span.data-entry {{mlsData.current.id}}
+        tr
+          td
+            label.data-label Active:
+          td
+            span.data-entry {{mlsData.task.active}}
+        tr
+          td
+            label.data-label Formal Name:
+          td
+            span.data-entry {{mlsData.current.formal_name}}
+        tr
+          td
+            label.data-label Name:
+          td
+            span.data-entry {{mlsData.current.name}}
+        tr
+          td
+            label.data-label Username:
+          td
+            span.data-entry {{mlsData.current.username}}
+        tr
+          td
+            label.data-label URL:
+          td
+            span.data-entry {{mlsData.current.url}}
+        tr
+          td
+            label.data-label Property Listings Schema
+          td
+            table.table
+              tr
+                td
+                  label.data-label Database:
+                td
+                  span.data-entry {{fieldNameMap.listing_data.dbNames[mlsData.current.listing_data.db]}}
+              tr
+                td
+                  label.data-label Table:
+                td
+                  span.data-entry {{fieldNameMap.listing_data.tableNames[mlsData.current.listing_data.table]}}
+
+              tr(ng-repeat="(key, longName) in columns.listing_data")
+                td
+                  label.data-label {{longName}} Column:
+                td
+                  span.data-entry {{fieldNameMap.listing_data[key].columnNames[mlsData.current.listing_data[key].name]}} ({{mlsData.current.listing_data[key].type}})
+        tr
+          td
+            label.data-label Agent Schema
+          td
+            table.table
+              tr
+                td
+                  label.data-label Database:
+                td
+                  span.data-entry {{fieldNameMap.agent_data.dbNames[mlsData.current.agent_data.db]}}
+              tr
+                td
+                  label.data-label Table:
+                td
+                  span.data-entry {{fieldNameMap.agent_data.tableNames[mlsData.current.agent_data.table]}}
+
+              tr(ng-repeat="(key, longName) in columns.agent_data")
+                td
+                  label.data-label {{longName}} Column:
+                td
+                  span.data-entry {{fieldNameMap.agent_data[key].columnNames[mlsData.current.agent_data[key].name]}} ({{mlsData.current.agent_data[key].type}})
+        tr
+          td
+            label.data-label Objects:
+          td
+            span.data-entry {{fieldNameMap.objects}}
+        tr
+          td
+            label.data-label DMCA Contact Name:
+          td
+            span.data-entry {{mlsData.current.dmca_contact_name}}
+        tr
+          td
+            label.data-label DMCA Contact Address:
+          td
+            span.data-entry {{mlsData.current.dmca_contact_address}}
+        tr
+          td
+            label.data-label Disclaimer Logo:
+          td
+            div(ng-show="mlsData.current.disclaimer_logo")
+              .data-entry {{mlsData.current.disclaimer_logo}}
+              img.mls-icon(ng-src="/assets/mlsicons/{{mlsData.current.disclaimer_logo}}")
+        tr
+          td
+            label.data-label Disclaimer Text:
+          td
+            span.data-entry {{mlsData.current.disclaimer_text}}
+
+        tr
+          td
+            label.data-label Notes:
+          td
+            span.data-entry {{mlsData.current.notes}}
+
+        tr(ng-show="hasAllDefaultOtherConfig()").config-tr
+          td(colspan=2)
+            label.data-label Using default value for all other configuration options.
+
+        tr(ng-hide="hasAllDefaultOtherConfig()").config-tr
+          td(colspan=2)
+            label.data-label Using default value for all configuration options&nbsp;
+              i except
+              | :
+
+
+        tr(ng-repeat="(field, default) in mlsData.configDefaults" ng-show="mlsData.current[field] != default")
+          td
+            label.data-label {{ui.otherConfig[field].label}}:
+          td
+            span.data-entry {{mlsData.current[field] | emptyValueOutput }}

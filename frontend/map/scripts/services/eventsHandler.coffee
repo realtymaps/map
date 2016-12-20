@@ -208,7 +208,7 @@ $state) ->
     rmapsEventsLinkerService.hookMap mapCtrl.mapId, do ->
       ### eslint-disable ###
       doubleClick = (event) ->
-        ### eslint-enable###
+        
         mapLogger.debug "doubleClick"
 
       singleClick = (event) ->
@@ -253,9 +253,9 @@ $state) ->
 
         return
 
-      ### eslint-disable###
+      
       moveend: (event) ->
-        ### eslint-enable###
+        
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
         closeWindow()
 

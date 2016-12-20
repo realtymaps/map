@@ -1,8 +1,9 @@
-.row.col-md-12.scroll(ng-if="fieldData.current.config.doLookup" ng-repeat="lookup in fieldData.current.lookups")
+.row.col-md-12.scroll(ng-if="fieldData.current.config.doLookup")
+  .row.col-md-5.lookup.help(ng-if="!lookupOptions[fieldData.current.output]") Replace source values with more readable values where necessary
   .row.col-md-5.lookup.heading
     .col-md-8 Server value:
     .col-md-4 Map to our value:
-  .row.col-md-5.lookup
+  .row.col-md-5.lookup(ng-repeat="lookup in fieldData.current.lookups")
     .col-md-8 {{lookup.LongValue}}
     .col-md-4
       select(
@@ -21,4 +22,3 @@
         type="text"
         placeholder="Display value"
       )
-  .col-md-6.help(ng-if="!lookupOptions[fieldData.current.output]" ng-show="$index == 0") Replace source values with more readable values where necessary

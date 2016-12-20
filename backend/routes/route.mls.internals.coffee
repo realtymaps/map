@@ -6,6 +6,58 @@ through = require 'through2'
 mlsHelpers = require '../tasks/util.mlsHelpers'
 transforms = require '../utils/transforms/transforms.mls'
 mlsRouteUtil = require '../utils/util.route.mls'
+Promise =  require 'bluebird'
+JSONStream = require 'JSONStream'
+require '../extensions/stream'
+
+
+getPhotoIds = (req, res, next) ->
+  validation.validateAndTransformRequest(req, transforms.getPhotoIds)
+  .then (validReq) ->
+    {mlsId} = validReq.params
+    {lastModTimeField, uuidField, photoIdField, subLimit, limit} = validReq.query
+
+    subLimit ?= 1
+    limit ?= 2
+
+    logger.debug -> {mlsId, uuidField, photoIdField, subLimit}
+
+    dataOptions = {
+      subLimit
+      searchOptions: {Select: "#{uuidField},#{photoIdField}", offset: 1, limit}
+      listing_data: {lastModTime: lastModTimeField}
+    }
+
+    retStream = through.obj (chunks, enc, cb) ->
+      for chunk in chunks #flatten
+        @push(chunk)
+      cb()
+
+    handleChunk = (chunk) -> Promise.try () ->
+      if !chunk?.length
+        return
+      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
+      for row,i in chunk
+        chunk[i] =
+          data_source_uuid: row[uuidField]
+          photo_id: row[photoIdField]
+
+      retStream.write(chunk)
+
+    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
+    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
+    .then () ->
+      logger.debug -> "done: retsService.getDataChunks"
+      retStream.end()
+    .catch (err) ->
+      retStream.error(err)
+
+    # since some MLSes are dog **** slow stream the response
+    res.type("application/json")
+
+    retStream
+    .pipe(JSONStream.stringify())
+    .pipe(res)
 
 
 # example
@@ -16,8 +68,9 @@ getParamPhoto = ({req, res, next, photoType}) ->
   validation.validateAndTransformRequest(req, transforms.paramPhoto)
   .then (validReq) ->
     photoType = validReq.query.photoType || photoType
+    {objectsOpts} = validReq.query
 
-    mlsRouteUtil.getPhoto({entity: validReq.params, res, next, photoType})
+    mlsRouteUtil.getPhoto({entity: validReq.params, res, next, photoType, objectsOpts})
 
 # example
 # single image:
@@ -34,7 +87,8 @@ getQueryPhoto = ({req, res, next, photoType}) ->
     logger.debug -> validReq.query
 
     photoType = validReq.query.photoType || photoType
-    mlsRouteUtil.getPhoto({entity: _.merge(validReq.params, photoIds:validReq.query.ids), res, next, photoType})
+    {objectsOpts} = validReq.query
+    mlsRouteUtil.getPhoto({entity: _.merge(validReq.params, photoIds:validReq.query.ids), res, next, photoType, objectsOpts})
 
 # this  gets some data from a RETS server based on a query, and returns it as an array of row objects plus and array of
 # column names as suitable for passing directly to a csv library we use.  The intent here is to allow us to get a
@@ -117,6 +171,7 @@ testOverlapSettings = (mlsId) ->
 
 
 module.exports = {
+  getPhotoIds
   getQueryPhoto
   getParamPhoto
   getDataDump

@@ -20,6 +20,9 @@ String.orNA = (val) ->
 String.orDash = (val) ->
   val or '-'
 
+String::trimAll = () ->
+  @replace(/\s/g,'')
+
 String::firstRest = (find) ->
   findLoc = @indexOf find
   if findLoc < 0

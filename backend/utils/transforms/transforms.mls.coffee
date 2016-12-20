@@ -22,6 +22,21 @@ lookupAgent =
       transform: validators.string(minLength:2)
       required: true
 
+getPhotoIds =
+  params: requireAllTransforms validators.object subValidateSeparate: requireAllTransforms
+    mlsId: validators.string(minLength:2)
+  query: validators.object subValidateSeparate:
+    uuidField:
+      transform: validators.string(minLength:2)
+      required: true
+    photoIdField:
+      transform: validators.string(minLength:2)
+      required: true
+    lastModTimeField:
+      transform: validators.string(minLength:2)
+      required: true
+  body: validators.object isEmptyProtect: true
+
 queryPhoto =
   params: requireAllTransforms validators.object subValidateSeparate: requireAllTransforms
     mlsId: validators.string(minLength:2)
@@ -32,6 +47,7 @@ queryPhoto =
         transform: validators.object(json:true)
         required: true
       photoType: validators.string(minLength:2)
+      objectsOpts: validators.object(json: true)
     required: true
   body: validators.object isEmptyProtect: true
 
@@ -43,11 +59,13 @@ paramPhoto =
     databaseId: validators.string(minLength:2)
   query: validators.object subValidateSeparate:
     photoType: validators.string(minLength:2)
+    objectsOpts: validators.object(json: true)
   body: validators.object isEmptyProtect: true
 
 module.exports = {
   lookup
   lookupAgent
+  getPhotoIds
   queryPhoto
   paramPhoto
 }

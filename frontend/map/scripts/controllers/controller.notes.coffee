@@ -3,6 +3,10 @@ app = require '../app.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 originator = 'map'
+_ = require 'lodash'
+L = require 'leaflet'
+
+
 
 app.controller 'rmapsNotesModalCtrl', (
 $rootScope
@@ -142,7 +146,8 @@ rmapsMapTogglesFactory
   rmapsEventsLinkerService,
   rmapsNotesService,
   rmapsPopupLoaderService,
-  rmapsCurrentMapService
+  rmapsCurrentMapService,
+  toastr
 ) ->
 
   mapId = rmapsCurrentMapService.mainMapId()
@@ -179,7 +184,8 @@ rmapsMapTogglesFactory
             last_name: model.last_name
             text: model.text
             circleNrArg: model.$index
-          needToCompile: false
+            address: model.address
+          needToCompile: true
         })
 
     markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
@@ -203,9 +209,13 @@ rmapsMapTogglesFactory
       if $scope.map.notesList
         newNotes = _.difference(_.keys(data), _.keys($scope.map.notesList))
         if newNotes.length && "#{data[newNotes[0]].auth_user_id}" != "#{$rootScope.identity.user?.id}"
-          msg = "New note from #{data[newNotes[0]].first_name} -- '#{data[newNotes[0]].text}'"
+          msg = "New note from #{data[newNotes[0]].first_name}"
           $log.debug msg
-          $rootScope.$emit rmapsEventConstants.alert.spawn, msg: msg, type: 'info'
+          noteToast = toastr.info msg, data[newNotes[0]].text,
+            closeButton: true
+            timeOut: 0
+            onHidden: (hidden) ->
+              toastr.clear noteToast
           $scope.map.layers.overlays?.notes?.visible = true
 
       $scope.map.notesList = data
@@ -228,7 +238,7 @@ rmapsMapTogglesFactory
       $scope.map.markers.notes = notes
       directiveControls.markers.create($scope.map.markers)#<-- me dangerous
 
-  $scope.map.getNotes = getNotes
+  $scope.map.getNotes = _.throttle getNotes, 30000, leading: true, trailing: false
 
   $scope.$watch 'Toggles.showNotes', (newVal) ->
     $scope.map.layers.overlays?.notes?.visible = !!newVal

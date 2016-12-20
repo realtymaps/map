@@ -1,5 +1,11 @@
 app = require '../app.coffee'
+_ = require 'lodash'
+
 color = '#ffa500'
+itemsOptions =
+  color: color
+  fillColor: color
+  className: 'rmaps-area'
 
 app.controller "rmapsDrawAreaCtrl", (
 $scope
@@ -13,6 +19,8 @@ rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
 rmapsFeatureGroupUtil
 rmapsCurrentMapService
+rmapsLayerUtilService
+rmapsLeafletHelpers
 ) ->
   $scope.tacked = false
 
@@ -91,10 +99,7 @@ rmapsCurrentMapService
         handles
         drawnItems
         name: "area"
-        itemsOptions:
-          color: color
-          fillColor: color
-          className: 'rmaps-area'
+        itemsOptions
         drawOptions:
           control: (promisedControl) ->
             promisedControl.then (control) ->
@@ -121,3 +126,6 @@ rmapsCurrentMapService
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)
+
+    $rootScope.$onRootScope rmapsEventConstants.areas.addDrawItem, (event, geojsonModels) ->
+      rmapsLeafletHelpers.geoJsonToFeatureGroup(geojsonModels, drawnItems, itemsOptions)

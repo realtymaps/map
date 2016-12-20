@@ -1,3 +1,5 @@
+_ =  require 'lodash'
+
 if window?.angular?
 
   parents = (element, propToSearch, searchStr, isFirst = false) ->
@@ -17,8 +19,33 @@ if window?.angular?
     pars
 
   #NOTE if we keep digging down this rabbit hole just pull in JQuery
-  angular.element::parentsByClass = (toFindStr, isFirst) ->
-    parents(@, 'className', toFindStr, isFirst)
+  if !angular.element::parentsByClass?
+    angular.element::parentsByClass = (toFindStr, isFirst) ->
+      parents(@, 'className', toFindStr, isFirst)
+  else
+    console.warn "angular.element::parentsByClass: already defined"
 
-  angular.element::parentsById = (toFindStr, isFirst) ->
-    parents(@, 'id', toFindStr, isFirst)
+  if !angular.element::parentsById?
+    angular.element::parentsById = (toFindStr, isFirst) ->
+      parents(@, 'id', toFindStr, isFirst)
+  else
+    console.warn "angular.element::parentsById: already defined"
+
+
+  # copied from angular private functions
+  if !angular.getBlockNodes
+    angular.getBlockNodes = (nodes) ->
+      # TODO(perf): update `nodes` instead of creating a new object?
+      node = nodes[0]
+      endNode = nodes[nodes.length - 1]
+      blockNodes = undefined
+      i = 1
+      while node != endNode and (node = node.nextSibling)
+        if blockNodes or nodes[i] != node
+          if !blockNodes
+            blockNodes = angular.element([].slice.call(nodes, 0, i))
+          blockNodes.push node
+        i++
+      blockNodes or nodes
+  else
+    console.warn "angular.getBlockNodes: already defined"

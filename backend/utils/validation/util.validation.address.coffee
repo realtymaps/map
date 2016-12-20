@@ -1,5 +1,4 @@
 Promise = require 'bluebird'
-DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
 logger = require('../../config/logger').spawn('validation:address')
 usStates = require '../../../common/utils/util.usStates'

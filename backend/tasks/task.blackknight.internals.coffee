@@ -6,7 +6,6 @@ logger = require('../config/logger').spawn('task:blackknight:internals')
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../services/service.jobQueue'
 keystore = require '../services/service.keystore'
-moment = require 'moment'
 dbs = require '../config/dbs'
 awsService = require '../services/service.aws'
 tables = require '../config/tables'
@@ -26,6 +25,7 @@ DATES_QUEUED = 'dates queued'
 FIPS_QUEUED = 'fips queued'
 CURRENT_PROCESS_DATE = 'current process date'
 LAST_COMPLETED_DATE = 'last completed date'
+MAX_DATE = 'max date'
 DATES_COMPLETED = 'dates completed'
 NO_NEW_DATA_FOUND = 'no new data found'
 DELETE_BATCH_ID = 'delete batch_id'
@@ -150,6 +150,7 @@ updateProcessInfo = (newProcessInfo) ->
   defaults[DATES_QUEUED] = []
   defaults[DATES_COMPLETED] = []
   defaults[FIPS_QUEUED] = []
+  defaults[MAX_DATE] = null
 
   processInfoPromise = keystore.getValuesMap(BLACKKNIGHT_PROCESS_INFO, defaultValues: defaults)
   Promise.join processInfoPromise, (processInfo) ->
@@ -159,17 +160,24 @@ updateProcessInfo = (newProcessInfo) ->
     if newProcessInfo.other_values
       _.extend(processInfo, newProcessInfo.other_values)
 
-    processInfo[DATES_QUEUED] = _.uniq(processInfo[DATES_QUEUED]).sort()
+    processInfo[DATES_QUEUED] = _.filter(_.uniq(processInfo[DATES_QUEUED]), (v) -> v?).sort()
 
-    # remove the fips code first
-    index = processInfo[FIPS_QUEUED].indexOf(newProcessInfo.fips_code)
-    if index >= 0
-      processInfo[FIPS_QUEUED].splice(index, 1)
-    else
-      logger.warn "Unable to remove FIPS #{newProcessInfo.fips_code} from [#{processInfo[FIPS_QUEUED]}]"
+    Promise.try () ->
+      if !newProcessInfo.fips_code?
+        # this task was an empty run, no fips stuff to deal with
+        return
 
-    # if we removed the last FIPS code, then indicate we need to move on to the next date
-    if processInfo[FIPS_QUEUED].length == 0
+      # remove the fips code first
+      index = processInfo[FIPS_QUEUED].indexOf(newProcessInfo.fips_code)
+      if index >= 0
+        processInfo[FIPS_QUEUED].splice(index, 1)
+      else
+        logger.warn "Unable to remove FIPS #{newProcessInfo.fips_code} from [#{processInfo[FIPS_QUEUED]}]"
+    .then () ->
+      if !newProcessInfo.date || processInfo[FIPS_QUEUED].length > 0
+        # if we didn't process a date, or we did and we still have more FIPS codes queued, then don't change the date
+        return
+
       processInfo[CURRENT_PROCESS_DATE] = null
       index = processInfo[DATES_QUEUED].indexOf(newProcessInfo.date)
       if index >= 0
@@ -180,8 +188,8 @@ updateProcessInfo = (newProcessInfo) ->
         processInfo[DATES_COMPLETED].push(newProcessInfo.date)
       else
         logger.warn "Date already marked as completed: #{newProcessInfo.date} in #{processInfo[DATES_COMPLETED]}"
-
-    keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO})
+    .then () ->
+      keystore.setValuesMap(processInfo, {namespace: BLACKKNIGHT_PROCESS_INFO})
 
 pushProcessingDate = (date) -> Promise.try () ->
   keystore.getValue(DATES_QUEUED, namespace: BLACKKNIGHT_PROCESS_INFO, defaultValue: [])
@@ -246,9 +254,14 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       processInfo.deleteBatchId = oldProcessInfo[DELETE_BATCH_ID]
       logger.debug () -> "processing date/fips: #{processInfo.date}/#{processInfo.fips}"
     else if oldProcessInfo[DATES_QUEUED].length > 0
-      processInfo.date = oldProcessInfo[DATES_QUEUED].sort()[0]
+      nextDate = _.reduce(oldProcessInfo[DATES_QUEUED], (min, val) -> if !val? || min < val then min else val)
+      if oldProcessInfo[MAX_DATE] && nextDate > oldProcessInfo[MAX_DATE]
+        logger.debug () -> "next date would be #{nextDate}, GTFO due to maxDate of #{oldProcessInfo[MAX_DATE]}"
+        return processInfo
+      processInfo.date = nextDate
       logger.debug () -> "processing new date: #{processInfo.date}"
     else
+      logger.debug () -> "no dates or fips to process, GTFO"
       return processInfo
 
     tableIds = Object.keys(tableIdMap)
@@ -298,6 +311,10 @@ getProcessInfo = (subtask, subtaskStartTime) ->
         for action in [REFRESH, UPDATE]
           for dataType in [TAX, DEED, MORTGAGE]
             # need to force re-processing of the raw delete data so we can delete for the current FIPS
+            if dataType == TAX && action == REFRESH
+              # we need to skip this, because we're not keeping historical tax records and so we manage our own tax
+              # refresh deletes as part of the loadRawData subtask for the refresh data
+              continue
             processInfo[DELETE].push
               action: action
               dataType: dataType
@@ -310,6 +327,11 @@ getProcessInfo = (subtask, subtaskStartTime) ->
       # (i.e. we've started on a new date, and so need to load the delete files and queue the available FIPS codes)
       fipsMap = _.extend(table1.fipsMap, table2.fipsMap, table3.fipsMap)
       processInfo.fipsQueue = _.keys(fipsMap).sort()
+      if Array.isArray(subtask.data?.fipsCodes)
+        processInfo.fipsQueue = _.intersection(processInfo.fipsQueue, subtask.data.fipsCodes)
+      else if subtask.data?.fipsCodes
+        processInfo.fipsQueue = _.filter processInfo.fipsQueue, (fips) ->
+          (new RegExp(subtask.data.fipsCodes)).test(fips)
       processInfo.fips = processInfo.fipsQueue[0]
       processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'normalSubid', processInfo.fips)
       processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'normalSubid', processInfo.fips)
@@ -331,7 +353,7 @@ useProcessInfo = (subtask, processInfo) ->
       "#{CURRENT_PROCESS_DATE}": processInfo.date
   dbs.transaction 'main', (transaction) ->
     dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'cleanup', manualData: newProcessInfo, replace: true})
-    if !processInfo.hasFiles
+    if !processInfo.hasFiles || !processInfo.fips
       return dates
 
     keystore.setValue(DELETED_FIPS, false, {namespace: BLACKKNIGHT_PROCESS_INFO, transaction})
@@ -369,7 +391,7 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
   # skip the load subtask, because we're piggybacking on a load that happened alongside a prior fips code
   # this means we have to count the number of relevant rows in those tables
   numRowsToPage = subtask.data?.numRowsToPageDelete || NUM_ROWS_TO_PAGINATE
-  activated = false
+
   Promise.map processInfo[DELETE], (mergeData) ->
     fauxSubtask = _.extend({}, subtask, data: mergeData)
     dbFn = tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(fauxSubtask, mergeData.rawDeleteBatchId))
@@ -382,9 +404,6 @@ _queuePerFileSubtasks = (transaction, subtask, processInfo, action) -> Promise.t
       .then (count) ->
         count?[0]?.count
     .then (numRows) ->
-      if mergeData.dataType == TAX && mergeData.action == REFRESH
-        # we need to spoof a single refresh for each fips in a tax refresh, because we're not keeping historical tax records
-        numRows = 1
       if !numRows
         return
       jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: 'deleteData', mergeData})
@@ -422,6 +441,7 @@ module.exports = {
   FIPS_QUEUED
   NO_NEW_DATA_FOUND
   LAST_COMPLETED_DATE
+  MAX_DATE
   CURRENT_PROCESS_DATE
   DATES_COMPLETED
   DELETE

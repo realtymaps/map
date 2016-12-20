@@ -16,9 +16,6 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 
 safeProject = basicColumns.project
-veroSvc = null
-require('../services/email/vero').then (svc) -> veroSvc = svc
-
 
 _inviteClient = (clientEntryValue) ->
   # save important information for client login later in keystore
@@ -36,6 +33,8 @@ _inviteClient = (clientEntryValue) ->
   logger.debug -> "_inviteClient(), clientEntryValue:\n#{JSON.stringify(clientEntryValue)}"
   keystoreSvc.setValue(clientEntryKey, clientEntryValue, namespace: 'client-entry')
   .then () ->
+    require('./email/vero')
+  .then (veroSvc) ->
     # email new client
     veroSvc.vero.createUserAndTrackEvent(
       veroSvc.user.getUniqueUserId(clientEntryValue.user)
@@ -152,12 +151,15 @@ class ProjectCrud extends ThenableCrud
 
         # create new user for 'client_created' vero event
         if result.length == 0
-          userPromise = tables.auth.user(transaction: trx)
-          .insert user
-          .returning 'id'
-          .then ([id]) ->
+          userPromise = logger.debugQuery(
+            tables.auth.user(transaction: trx)
+            .insert user
+            .returning 'id'
+          ).then ([id]) ->
             user.id = id
             evtdata.name = 'client_created'
+
+
 
         # use existing user for 'client_invited' vero event
         else

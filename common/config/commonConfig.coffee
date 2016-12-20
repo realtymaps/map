@@ -86,6 +86,11 @@ commonConfig =
   plan:
     PRO: 'pro'
     STANDARD: 'standard'
+    DEACTIVATED: 'deactivated'
+    PAID_LIST: ['pro', 'standard']
+    VALID_LIST: ['pro', 'standard', 'deactivated']
+    EXPIRED: 'expired' # cancelled accounts that have passed `period_end`
+    NONE: 'none' # subusers, cancelled accounts still active, anyone that can login w/o a subscription
 
   mail:
     # pricing formula for a letter

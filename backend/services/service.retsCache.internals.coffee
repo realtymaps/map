@@ -3,12 +3,10 @@ logger = require('../config/logger').spawn('service:rets:internals')
 keystore = require './service.keystore'
 dataSource = require './service.dataSource'
 retsService = require '../services/service.rets'
-mlsConfigService = require './service.mls_config'
 moment = require 'moment'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 Promise = require 'bluebird'
 UnhandledNamedError = require '../utils/errors/util.error.unhandledNamed'
-analyzeValue = require '../../common/utils/util.analyzeValue'
 
 RETS_REFRESHES = 'rets-refreshes'
 SEVEN_DAYS_MILLIS = 7*24*60*60*1000

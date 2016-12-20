@@ -10,6 +10,7 @@ createRoute = (routeId, moduleId, backendRoutes, options) ->
     method: options.method || 'get'
     middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
     order: options.order || 0
+    handleQuery: options.handleQuery
   if route.path and not route.handle
     throw new Error "route: #{moduleId}.#{routeId} has no handle"
   if route.handle and not route.path
@@ -72,7 +73,9 @@ loadRouteOptions = (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
         create()
         continue
 
+      # coffeelint: disable=check_scope
       for key, method of options.methods
+      # coffeelint: enable=check_scope
         #clone route options to have a new instance of a method
         options = _.merge {}, options, method: method
         create()

@@ -19,6 +19,7 @@ apiBaseProjects = "#{apiBase}/projects"
 apiBaseUserSubscription = "#{apiBase}/subscription"
 apiBaseUserSubscriptionPlan = "#{apiBase}/subscriptionPlan"
 apiBaseDeactivateSubscription = "#{apiBase}/deactivateSubscription"
+apiBaseReactivateSubscription = "#{apiBase}/reactivateSubscription"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
@@ -116,7 +117,8 @@ module.exports =
     apiBase: apiBaseUserSubscription
     getSubscription: apiBaseUserSubscription
     getPlan: apiBaseUserSubscriptionPlan
-    setPlan: "#{apiBaseUserSubscriptionPlan}/:plan"
+    updatePlan: "#{apiBaseUserSubscriptionPlan}/:plan"
+    reactivate: "#{apiBaseReactivateSubscription}"
     deactivate: "#{apiBaseDeactivateSubscription}"
   company:
     apiBase: apiBaseCompanies
@@ -136,8 +138,6 @@ module.exports =
     apiBase: apiBaseAccountUseTypes
     root: apiBaseAccountUseTypes
     byId: "#{apiBaseAccountUseTypes}/:id"
-  version:
-    version: "#{apiBase}/version"
   config:
     apiBase: apiBaseConfig
     safeConfig: "#{apiBaseConfig}/safeConfig"
@@ -182,6 +182,7 @@ module.exports =
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
     getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
     getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
+    getPhotoIds: "#{apiBaseMls}/:mlsId/photos/photoIds"
     getObjectList: "#{apiBaseMls}/:mlsId/objects"
     getForUser: "#{apiBaseMls}/user"
     testOverlapSettings: "#{apiBaseMls}/:mlsId/overlap"
@@ -222,6 +223,7 @@ module.exports =
     byId: "#{apiBaseMailCampaigns}/:id"
     sendCampaign: "#{apiBaseMailCampaigns}/:id/sendCampaign"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/review"
+    #TODO: Why are the rest of these routes not a base of apiBaseMailCampaigns?
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
     testLetter: "#{apiBase}/testLetter/:letter_id"

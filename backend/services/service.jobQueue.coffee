@@ -1,10 +1,7 @@
 require '../config/promisify'
-path = require 'path'
-loaders = require '../utils/util.loaders'
 Promise = require 'bluebird'
 sqlHelpers = require '../utils/util.sql.helpers'
 logger = require('../config/logger').spawn('jobQueue')
-analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 tables = require '../config/tables'
 cluster = require 'cluster'
@@ -204,7 +201,7 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
         if mergeData?
           _.extend(singleSubtask.data, mergeData)
         singleSubtask.task_data = freshTaskData
-        singleSubtask.task_step = "#{singleSubtask.task_name}_#{('00000'+(singleSubtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+        singleSubtask.task_step = "#{singleSubtask.task_name}_#{('0000000'+(singleSubtask.step_num||'FINAL__')).slice(-7)}"
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction: transaction)
         .insert singleSubtask
@@ -217,7 +214,7 @@ queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, c
         singleSubtask.step_num += stepNumOffset
       singleSubtask.data = subtaskData
       singleSubtask.task_data = freshTaskData
-      singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+      singleSubtask.task_step = "#{subtask.task_name}_#{('0000000'+(singleSubtask.step_num||'FINAL__')).slice(-7)}"
       singleSubtask.batch_id = batchId
       tables.jobQueue.currentSubtasks(transaction: transaction)
       .insert singleSubtask
@@ -290,7 +287,6 @@ doMaintenance = () ->
 
 getQueueNeeds = () ->
   queueNeeds = {}
-  queueZombies = {}
   queueConfigs = {}
   dbs.transaction (transaction) ->
     queueConfigPromise = tables.jobQueue.queueConfig({transaction})
@@ -346,10 +342,14 @@ queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, 
   queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency, stepNumOffset})
 
 runWorker = (queueName, id, quit=false) ->
-  if cluster.worker?
-    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
+  if id?
+    processId = "-#{id}"
   else
-    prefix = "<#{queueName}-#{id}>"
+    processId = ""
+  if cluster.worker?
+    prefix = "<#{queueName}-#{cluster.worker.id}#{processId}>"
+  else
+    prefix = "<#{queueName}#{processId}>"
   logger.spawn("queue:#{queueName}").debug () -> "#{prefix} worker starting..."
   internals.runWorkerImpl(queueName, prefix, quit)
 

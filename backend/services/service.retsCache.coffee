@@ -1,4 +1,3 @@
-_ = require 'lodash'
 logger = require('../config/logger').spawn('service:retsCache')
 tables = require '../config/tables'
 Promise = require 'bluebird'
@@ -14,7 +13,7 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 
 _getRetsMetadata = (opts) ->
-  {callName, mlsId, otherIds, forceRefresh, overrideKey, cacheSpecs} = opts
+  {callName, mlsId, otherIds, overrideKey} = opts
   Promise.try () ->
     internals.decideIfRefreshNecessary(opts)
   .then (doRefresh) ->

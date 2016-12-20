@@ -1,6 +1,8 @@
 Promise = require 'bluebird'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('task:mls')
+# coffeelint: enable=check_scope
 tables = require '../config/tables'
 retsService = require '../services/service.rets'
 dataLoadHelpers = require './util.dataLoadHelpers'
@@ -8,7 +10,6 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 mlsConfigService = require '../services/service.mls_config'
 retsCacheService = require '../services/service.retsCache'
 sqlHelpers = require '../utils/util.sql.helpers'
-dbs = require '../config/dbs'
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task

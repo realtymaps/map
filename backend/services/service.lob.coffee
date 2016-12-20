@@ -117,7 +117,7 @@ buildLetter = (campaign, recipient) ->
   address_from = getAddress campaign.sender_info
   address_property = getAddress(recipient.property || recipient)
 
-  letter =
+  return {
     auth_user_id: campaign.auth_user_id
     user_mail_campaign_id: campaign.id
     address_to: address_to
@@ -135,6 +135,7 @@ buildLetter = (campaign, recipient) ->
         recipientType: recipient.type
         uuid: uuid.v1() # important for retries
       data: getMacroData(campaign, address_to, address_from, address_property)
+  }
 
 getMacroData = (campaign, address_to, address_from, address_property = {}) ->
   # These may act as placeholders in HTML content
@@ -230,10 +231,11 @@ getPriceQuote = (userId, campaignId) ->
           # get price per letter
           priceService.getPricePerLetter({pages, color: campaign.options.color})
           .then (price) ->
-            result =
+            return {
               pdf: uri
               pricePerLetter: price
               price: (price * campaign.recipients.length)
+            }
 
     .catch (err) ->
       throw new Error(err, "Could not produce a preview or price for mail campaign #{campaignId}.")

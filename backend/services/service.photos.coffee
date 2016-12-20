@@ -1,14 +1,13 @@
 Promise = require 'bluebird'
 request = require 'request'
 _ =  require 'lodash'
-# config = require '../config/config'
 logger = require('../config/logger').spawn('service:photos')
 tables = require '../config/tables'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 sqlHelpers = require '../utils/util.sql.helpers'
-internals = require './service.photos.internals'
 mlsConfigService = require './service.mls_config'
-errorUtils = require '../utils/errors/util.error.partiallyHandledError'
+{NoPhotoObjectsError} = require '../utils/errors/util.errors.photos'
+probe = require 'probe-image-size'
 
 getMetaData = (opts) -> Promise.try () ->
   onMissingArgsFail
@@ -25,83 +24,96 @@ getMetaData = (opts) -> Promise.try () ->
     rows = _.filter rows, (r) ->
       !!Object.keys(r.photos).length
     row = sqlHelpers.expectSingleRow(rows)
-    photo = row?.photos?[opts.image_id]
-    logger.debug photo
-    photo
+    meta = row?.photos?[opts.image_id]
 
-getRawPayload = (opts) ->
-  getMetaData(opts)
-  .then (meta) -> Promise.try ->
     if !meta?.url
-      throw new Error 'meta.url is not found!'
+      throw new NoPhotoObjectsError(quiet: true, "Photo not found")
 
-    stream: request(meta.url)
-    meta: meta
+    # logger.debug meta
+    meta
 
 getResizedPayload = (opts) -> Promise.try () ->
   {width, height, data_source_id, data_source_uuid, image_id} = opts
 
-  logger.debug "Requested resize of photo #{data_source_uuid}##{image_id} to #{width||'?'}px x #{height||'?'}px"
+  logger.debug "Photo request #{data_source_uuid}##{image_id} @ #{width||'?'}px x #{height||'?'}px"
 
-  getRawPayload(opts)
-  .then (payload) ->
+  getMetaData(opts)
 
-    {stream, meta} = payload
+  .then (meta) ->
+    probe(meta.url)
 
-    Promise.try ->
+    .catch (err) ->
+      logger.debug "Could not probe image size because:", err?.message
+      return false # Will fallback to metadata or MLS
 
-      if payload.meta?.width? && payload.meta?.height?
-        logger.debug "Using photo metadata for originalSize: #{payload.meta.width} x #{payload.meta.height}"
-        width: payload.meta.width
-        height: payload.meta.height
+    .then (probeResult) ->
+      logger.debug probeResult
+
+      # Preferred way of determining image size
+      if probeResult?.width && probeResult?.height
+        logger.debug "Using probed photo for originalSize: #{probeResult.width} x #{probeResult.height}"
+        meta.width = probeResult.width
+        meta.height = probeResult.height
+        return meta
+
+      # Image-specific metadata exists, so use that
+      else if meta.width? && meta.height?
+        logger.debug "Using photo metadata for originalSize: #{meta.width} x #{meta.height}"
+        return meta
+
+      # Least desirable case, trust the MLS
       else
-        mlsConfigService.getByIdCached(data_source_id)
+        return mlsConfigService.getByIdCached(data_source_id)
         .then (mlsInfo) ->
-          logger.debug "Using MLS photores for originalSize: #{mlsInfo.listing_data.photoRes.width} x #{mlsInfo.listing_data.photoRes.height}"
-          mlsInfo.listing_data.photoRes
+          if mlsInfo?.listing_data?.photoRes
+            logger.debug "Using MLS photores for originalSize: #{mlsInfo.listing_data.photoRes.width} x #{mlsInfo.listing_data.photoRes.height}"
+            meta.width = mlsInfo.listing_data.photoRes.width
+            meta.height = mlsInfo.listing_data.photoRes.height
+          else
+            logger.debug "Could not get MLS photores for #{data_source_id}, is it configured?"
+          return meta
 
     .catch (err) ->
       logger.warn err
-      logger.warn "Could NOT get original size for photo!"
+      logger.warn "Could NOT get original size for photo because:", err?.message
 
-    .then (originalSize) ->
+    .then () ->
+      # Note request() and pipe() must be called on the same tick
+      stream = request(meta.url)
 
       _resize = (width, height) ->
-        if Number(width) != Number(originalSize?.width) || Number(height) != Number(originalSize?.height)
+        logger.debug "Resize from #{meta.width}px x #{meta.height}px -> #{width}px x #{height}px"
+        if Number(width) != Number(meta?.width) || Number(height) != Number(meta?.height)
           logger.debug "Resizing to #{width}px x #{height}px"
-
           stream = stream.pipe((require 'sharp')().resize(width, height))
-          meta = _.extend {}, payload.meta, {width, height}
-
+          meta = _.extend {}, meta, {width, height}
           #Using this method seems to cause 504 gateway timeout.
           # internals.resize {stream, width, height}
           # .then (resizeStream) ->
           #   stream = resizeStream
-          #   meta = _.extend {}, payload.meta, {width, height}
-
-      Promise.try () ->
-        if originalSize?.width && originalSize?.height # we can get aspect
-          aspect = originalSize.width / originalSize.height
-          if width && !height
-            _resize(width, Math.round(width/aspect))
-          else if !width && height
-            _resize(Math.round(height*aspect), height)
-          else if width && height
-            _resize(width, height)
-        else if width && height # no originalSize, so resize only if width and height provided
-          _resize(width, height)
-      .catch (err) ->
-        if err.message == 'You cannot pipe after data has been emitted from the response.'
-          throw new errorUtils.QuietlyHandledError(err, 'no image available')
+          #   meta = _.extend {}, meta, {width, height}
         else
-          throw err
+          logger.debug "Resize unnecessary, streaming unmodified image"
 
-    .then () ->
+      if meta?.width && meta?.height # we can get aspect
+        aspect = meta.width / meta.height
+        logger.debug "Aspect ratio:", aspect
+        if width && !height
+          _resize(width, Math.round(width/aspect))
+        else if !width && height
+          _resize(Math.round(height*aspect), height)
+        else if width && height
+          _resize(width, height)
+        else
+          logger.debug "No target size, streaming unmodified image"
+      else if width && height # no originalSize, so resize only if width and height provided
+        logger.debug "No aspect ratio, but we got both dimensions"
+        _resize(width, height)
+      else
+        logger.debug "Cannot resize, streaming unmodified image"
 
-      {stream, meta}
+      return {stream, meta}
 
 module.exports = {
-  getRawPayload
-  getMetaData
   getResizedPayload
 }

@@ -17,9 +17,12 @@ $rootScope
 $timeout
 rmapsCurrentMapService
 rmapsMainOptions
-rmapsMapTogglesFactory) ->
+rmapsMapTogglesFactory
+rmapsUsStates) ->
 
   $log = $log.spawn('map:runner:run.map')
+
+  $rootScope.us_states = rmapsUsStates.all
 
   $rootScope.updateToggles = (map_toggles = {}) ->
     $log.debug 'updateToggles', map_toggles
@@ -57,6 +60,7 @@ rmapsMapTogglesFactory) ->
 
   rootScopeDefer.resolve($rootScope)
 
+angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 500)
 
 module.exports = {
   rootScopePromise: rootScopeDefer.promise

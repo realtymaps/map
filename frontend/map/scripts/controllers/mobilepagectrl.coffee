@@ -1,5 +1,7 @@
 ### globals angular, _ ###
 app = require '../app.coffee'
+_ = require 'lodash'
+
 
 module.exports = app.controller 'rmapsMobilePageCtrl', (
   $scope,
