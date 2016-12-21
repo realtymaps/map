@@ -1,4 +1,3 @@
-_ = require 'lodash'
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 

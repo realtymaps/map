@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
-moment = require 'moment'
+
 
 app.controller 'rmapsPropertyCtrl',
   (

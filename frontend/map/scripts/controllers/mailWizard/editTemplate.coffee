@@ -9,8 +9,6 @@ app.controller 'rmapsEditTemplateCtrl',
   $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
-  editor = {}
-
   $scope.saveButtonText =
     'saved': 'All Changes Saved'
     'saving': 'Saving...'

@@ -86,7 +86,8 @@ app.factory 'rmapsPropertyMarkerGroup', (
       # and verify that only events for the appropriate Group layer will be handled
       event = "leafletDirectiveMarker.#{@parent.mapId}.click"
       $scope.$on event, (event, args) =>
-        {leafletEvent, leafletObject, model, modelName, layerName} = args
+        # {leafletEvent, leafletObject, model, modelName, layerName} = args
+        {model, layerName} = args
 
         if layerName == @layerName
           # Marker click was in the correct group, call the handler

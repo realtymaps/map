@@ -49,13 +49,12 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     steps = config.options.stepsArray
 
     # Find the closest step values lower than the existing min and higher than the existing max
-    stepMin = 0
     stepMinIdx = 0
     stepMax = -1
     stepMaxIdx = -1
+
     for step, idx in steps
       if step <= presetMin
-        stepMin = step
         stepMinIdx = idx
 
       if step >= presetMax and stepMax == -1
@@ -82,16 +81,14 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     else
       presetMax = maxValue
 
-    # TODO: delete this? It is not being used.
-    config =
-      min: minValue
-      max: maxValue
-      options:
-        floor: minValue,
-        ceil: maxValue
-        stepsArray: steps
-        hideLimitLabels: true
-        onChange: $scope.makeDirty
+    min: minValue
+    max: maxValue
+    options:
+      floor: minValue,
+      ceil: maxValue
+      stepsArray: steps
+      hideLimitLabels: true
+      onChange: $scope.makeDirty
 
   $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
   $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax

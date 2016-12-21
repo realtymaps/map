@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-_ = require 'lodash'
 
 app.service 'rmapsResponsiveViewService', ($window) ->
   xs        = 768

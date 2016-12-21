@@ -1,6 +1,5 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-planAPI = backendRoutes.plans.apiBase
 subscriptionAPI = backendRoutes.user_subscription
 
 app.service 'rmapsSubscriptionService', ($http, $sce) ->
