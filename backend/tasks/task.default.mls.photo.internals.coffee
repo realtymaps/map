@@ -357,7 +357,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
       return {successCtr: 0, skipsCtr: 0, errorsCtr: 0, uploadsCtr: 0, errorDetails: null}
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsId}/#{data_source_uuid}")
   .catch (error) ->
-    errorDetails ?= analyzeValue.getFullDetails(error)
+    errorDetails = analyzeValue.getFullDetails(error)
     taskLogger.debug () -> "overall error: #{errorDetails}"
     return {successCtr: 0, skipsCtr: 0, errorsCtr: 0, uploadsCtr: 0, errorDetails}
   .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}) ->
