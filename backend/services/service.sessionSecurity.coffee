@@ -9,6 +9,7 @@ config = require '../config/config'
 tables = require '../config/tables'
 subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
+planSvc = require './service.plans'
 errors = require '../utils/errors/util.errors.userSession'
 
 
@@ -65,21 +66,9 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     logger.debug () -> "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = keystore.cache.getValuesMap('plans')
-  .then (plans) ->
-    groups = Object.keys(req.session.groups)
 
-    if !groups.length
-      throw new errors.NeedsGroupPermissions('User has no groups')
-
-    plan =_.find Object.keys(plans), (p) ->
-      !!req.session.groups[p.toInitCaps() + ' Tier']
-
-    if !plan
-      logger.info 'groups: ' + groups.join(',')
-      logger.info 'plans: '+ Object.keys(plans).join(',')
-      throw new errors.InValidPlanError('plan not found')
-
+  maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plans are via stripe, and memoized
+  .then (plan) ->
     plan.maxLogins
 
   sessionSecuritiesPromise = tables.auth.sessionSecurity()
