@@ -357,7 +357,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
     if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
       # assume the listing has been deleted / we no longer have access
       taskLogger.debug () -> "Listing no longer accessible, skipping: #{mlsId}/#{data_source_uuid}"
-      return
+      return {successCtr: 0, skipsCtr: 0, errorsCtr: 0, uploadsCtr: 0, errorDetails: null}
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsId}/#{data_source_uuid}")
   .catch (error) ->
     globalErrorDetails ?= analyzeValue.getFullDetails(error)
