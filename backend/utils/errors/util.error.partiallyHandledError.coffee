@@ -1,3 +1,4 @@
+_ = require 'lodash'
 VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
@@ -45,12 +46,13 @@ isKnexUndefined = (err) ->
   err? && (err instanceof Error) && /Undefined binding\(s\) detected when compiling.*/.test(err.message)
 
 
-isCausedBy = (errorType, _err) ->
+isCausedBy = (errorTypes, _err) ->
+  if !_.isArray(errorTypes)
+    errorTypes = [errorTypes]
+
   check = (err) ->
-    cause = err
-    while !(cause instanceof errorType) && cause instanceof PartiallyHandledError && cause.jse_cause?
-      cause = cause.jse_cause
-    return err instanceof errorType
+    return _.any errorTypes, (errorType) -> (err instanceof errorType)
+
   if _err
     return check(_err)
   else

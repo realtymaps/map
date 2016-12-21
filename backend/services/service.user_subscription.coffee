@@ -1,4 +1,3 @@
-_ = require 'lodash'
 config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'

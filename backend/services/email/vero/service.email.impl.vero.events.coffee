@@ -30,7 +30,7 @@ VeroEvents = (vero) ->
 
   subscriptionSignUp = (authUser) -> Promise.try () ->
     logger.debug "subscriptionSignUp()"
-    console.log "authUser:\n#{JSON.stringify(authUser,null,2)}"
+
     verify_url = clsFullUrl emailRoutes.verify.replace(":hash", authUser.email_validation_hash)
     logger.debug "VERIFY URL"
     logger.debug.yellow verify_url

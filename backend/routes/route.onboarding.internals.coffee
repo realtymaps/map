@@ -9,9 +9,9 @@ mlsAgentService = require '../services/service.mls.agent'
 errors = require '../utils/errors/util.errors.onboarding'
 tables = require '../config/tables'
 userSessionService =  require '../services/service.userSession'
-planService = require '../services/service.plans'
 sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 emailServices = null
 paymentServices = null
@@ -33,8 +33,6 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
   entity.is_active = true # if we demand email validation again, then remove this line
   entity.stripe_plan_id = plan
 
-  logger.debug "user entity:\n#{JSON.stringify(entity,null,2)}"
-
   userSessionService.createPasswordHash(entity.password)
   .then (password) ->
     # console.log.magenta "password"
@@ -47,6 +45,11 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
       #Making sure we have all the updated information / de-normalized
       tables.auth.user({transaction}).select(sqlColumns.basicColumns.user.concat("id")...)
       .where id: parseInt id
+
+    .catch analyzeValue.isKnexError, (err) ->
+      if err.code == '23505'  # unique constraint
+        throw new errors.UserExists("This account already exists.  Try resetting your password.")
+      throw new Error(err)
 
 
 submitPaymentPlan = ({plan, token, authUser, transaction}) ->

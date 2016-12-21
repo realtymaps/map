@@ -10,7 +10,6 @@ tables = require '../config/tables'
 subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 planSvc = require './service.plans'
-errors = require '../utils/errors/util.errors.userSession'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -67,9 +66,9 @@ ensureSessionCount = (req) -> Promise.try () ->
     logger.debug () -> "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
 
-  maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plans are via stripe, and memoized
+  maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plan data via stripe api, and memoized
   .then (plan) ->
-    plan.maxLogins
+    plan.metadata.maxLogins
 
   sessionSecuritiesPromise = tables.auth.sessionSecurity()
     .where(user_id: req.user.id)

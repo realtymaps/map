@@ -2,10 +2,7 @@ stripeFactory = require 'stripe'
 externalAccounts = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
 config = require '../../../config/config'
-{onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 logger = require('../../../config/logger').spawn('stripe')
-shutdown = require '../../../config/shutdown'
-_ = require 'lodash'
 
 
 module.exports = do ->
