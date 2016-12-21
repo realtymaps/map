@@ -61,6 +61,11 @@ app.config(($provide, $validationProvider) ->
       return true unless value
       validation.zipcode.US.test(value)
 
+    checkValidEmail: (value, scope, element, attrs, param) ->
+      config =
+        alerts: param != 'disableAlert'
+      $http.post(backendRoutes.email.isValid, email: value, config)
+
     checkUniqueEmail: (value, scope, element, attrs, param) ->
       config =
         alerts: param != 'disableAlert'
@@ -85,6 +90,8 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid Email'
     realtymapsEmail:
       error: "Email must be of the '@realtymaps.com' domain"
+    checkValidEmail:
+      error: 'Invalid Email'
     checkUniqueEmail:
       error: 'Email must be unique'
     checkValidMlsAgent:

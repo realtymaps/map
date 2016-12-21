@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
+{PartiallyHandledError, isUnhandled} = require '../../../utils/errors/util.error.partiallyHandledError'
 emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
 dbs = require '../../../config/dbs'
@@ -48,6 +49,20 @@ StripeEvents = (stripe) ->
       .update status: 'inactive'
       .where auth_user_id: authUser.id
 
+    # clean/end session (forces relog)
+    .then () ->
+      tables.auth.session()
+      .whereIn 'sid', () ->
+        @select('session_id')
+        .from tables.auth.sessionSecurity.tableName
+        .where user_id: authUser.id
+      .del()
+      .then () ->
+        tables.auth.sessionSecurity()
+        .where user_id: authUser.id
+        .del()
+
+
   _eventHandles[customerSubscriptionUpdated] = (eventObj, authUser) ->
     logger.debug "stripe handling #{customerSubscriptionUpdated}"
     emailPlatform.events.subscriptionUpdated(authUser)
@@ -73,16 +88,19 @@ StripeEvents = (stripe) ->
     logger.debug "_verify"
     stripe.events.retrieve(eventObj.id)
     .catch stripeErrors.StripeInvalidRequestError, (err) ->
-      logger.warn "Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}"
       return null
+
 
   handle = (eventObj) -> Promise.try () ->
     dbs.transaction 'main', (trx) ->
       _verify(eventObj)
       .then (validEvent) ->
+        if !validEvent?
+          throw new PartiallyHandledError("Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}")
+
         _getAuthUser(validEvent, trx)
         .then (authUser) ->
-          if validEvent? && authUser?
+          if authUser?
 
             callEvent = _eventHandles[validEvent.type] or _eventHandles['default']
 
