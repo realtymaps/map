@@ -240,7 +240,7 @@ module.exports =
     apiBase: apiBaseEmail
     verify: "#{apiBaseEmail}/:hash"
     isValid: "#{apiBaseEmail}/isValid"
-    isUnique: "#{apiBaseEmail}/isUnique"
+    isValidLoggedIn: "#{apiBaseEmail}/isValidLoggedIn"
     cancelPlan: "#{apiBaseEmail}/cancel/:hash"
   onboarding:
     apiBase: apiBaseOnboarding
