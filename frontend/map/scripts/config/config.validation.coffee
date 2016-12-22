@@ -61,20 +61,27 @@ app.config(($provide, $validationProvider) ->
       return true unless value
       validation.zipcode.US.test(value)
 
+    #NOTE: all your doing here is validating the email regex on the backend
+    # You could just use angular validation or validate the email regex above (email: validation.email).
     checkValidEmail: (value, scope, element, attrs, param) ->
       config =
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isValid, email: value, config)
 
+    ###
+    Do not be mistaken; this also checks if the email is valid!
+
+    If the user is logged in and the email address is a duplicate but that user is
+    the owner; then there is no problem. However, if the user is not logged in and the email
+    is not unique then the route should fail.
+    ###
     checkUniqueEmail: (value, scope, element, attrs, param) ->
       config =
         alerts: param != 'disableAlert'
-      $http.post(backendRoutes.email.isUnique, email: value, config)
+      $http.post(backendRoutes.email.isValid, {email: value, doUnique: true}, config)
 
     checkValidMlsAgent: (value, scope, element, attrs, param) ->
       $http.post(backendRoutes.mls.activeAgent, scope[param], {alerts: false})
-
-
 
 
   defaultMsg =

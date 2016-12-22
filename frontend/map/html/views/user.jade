@@ -146,7 +146,7 @@
                               name="email"
                               ng-model="user.email"
                               type='text'
-                              validator="email,required,checkUniqueEmail")
+                              validator="email,required,checkUniqueEmail=disableAlert")
                         .form-group
                           label.col-md-3.control-label(title="Not for login.") username / alias:
                           .col-md-8
