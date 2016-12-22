@@ -138,7 +138,7 @@ div(ng-class="{ 'not-allowed': !mlsData.current.id, 'fourth-opacity': !mlsData.c
                   ng-options="option for option in (mlsData.current.listing_data.photoObjects || fieldNameMap.objects)")
                   option(value="" disabled) Select Photo Object
 
-              td
+              td(ng-if="mlsData.current.listing_data.mlsListingId.name && mlsData.current.listing_data.photoId.name")
                 a(href="JavaScript:void(0)" ng-click="openPhotoHelper()") Largest Object Help
 
             tr(ng-if="mlsData.current.id")
