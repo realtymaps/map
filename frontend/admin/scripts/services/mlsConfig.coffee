@@ -1,9 +1,11 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
+qs = require 'qs'
 
 
-app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '$rootScope', (Restangular, $http, rmapsEventConstants, $rootScope) ->
+app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '$rootScope', '$log',
+(Restangular, $http, rmapsEventConstants, $rootScope, $log) ->
 
   mlsAPI = backendRoutes.mls.apiBaseMls
   mlsConfigAPI = backendRoutes.mls_config.apiBase
@@ -54,6 +56,34 @@ app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '
     # bypass XHR / $http file-dl drama, and Restangular req/res complication.
     backendRoutes.mls.getDataDump.replace(':mlsId', configId).replace(':dataType', dataType) + "?limit=#{limit}"
 
+  getPhotoIds = ({mlsId, uuidField, photoIdField, lastModTimeField, limit}) ->
+    $http.getData(backendRoutes.mls.getPhotoIds.replace(':mlsId', mlsId), {
+        params: {uuidField, photoIdField, lastModTimeField, limit}
+        cache: true
+    })
+
+  buildPhotoUrl = ({mlsId, database, photoId, imageId, photoType, objectsOpts}) ->
+    database ?= 'Property'
+    mainUrl = '//' + location.host + backendRoutes.mls.getPhotos.replace(':mlsId', mlsId).replace(':databaseId', database) + "?"
+    params = {
+      ids:
+        "#{photoId}": imageId
+      photoType
+    }
+
+    if objectsOpts?
+      params.objectsOpts = objectsOpts
+
+    # mainUrl += qs.stringify(params)
+    mainUrl += 'ids=' + JSON.stringify(params.ids)
+    mainUrl += '&' + qs.stringify({photoType: params.photoType})
+    if objectsOpts?
+      mainUrl += '&objectsOpts=' + JSON.stringify(params.objectsOpts)
+    # when transform: validators.object(json:true) || validators.object() are either ok
+    # then we can just use  # mainUrl += qs.stringify(params)
+    $log.debug -> "buildPhotoUrl: #{mainUrl}"
+    mainUrl
+
   testOverlapSettings = (configId) ->
     $http.getData(backendRoutes.mls.testOverlapSettings.replace(':mlsId', configId))
     .then (data) ->
@@ -92,6 +122,8 @@ app.service 'rmapsMlsService', ['Restangular', '$http', 'rmapsEventConstants', '
     getLookupTypes
     getDataDumpUrl
     getObjectList
+    getPhotoIds
+    buildPhotoUrl
     testOverlapSettings
   }
 

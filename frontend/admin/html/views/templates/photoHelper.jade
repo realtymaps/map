@@ -1,0 +1,23 @@
+include ../../../../common/html/includes/mixins/_spinnerMixin.jade
+
+.photo-helper-modal
+  .panel.panel-default
+    .panel-heading
+      .page-modal-close
+        a(href="#" ng-click="model.photoHelper.close()")
+          i.fa.fa-lg.fa-close
+      h3 Select the best photo object
+      br
+      p Select an image to set the LargestPhotoObject / photoType. As the default resolution.
+
+    .panel-body
+      +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
+
+      // since we're in the isolated scope of the model we base the call to that
+      rmaps-flickity(
+        ng-if="!(Spinner.getLoadingCount() > 0)"
+        photos="model.photoHelper.photos"
+        ready="model.photoHelper.isReady"
+        options='{"findWidth":true, "lazyLoad": 3}')
+
+      button(ng-click="cancel()").btn.btn-danger Cancel
