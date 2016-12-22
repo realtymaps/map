@@ -337,6 +337,7 @@ requirePermissions = (permissions, options = {}) ->
 
 # for now this is a no-op, because session stuff gets automatically added when any route-specific middleware is
 # configured -- this is a placeholder to be used when we just need to trigger session middleware inclusion
+# Essentially a noop function to get the session possibly set
 sessionSetup = (req, res, next) ->
   process.nextTick(next)
 

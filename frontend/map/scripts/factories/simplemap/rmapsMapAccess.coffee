@@ -84,7 +84,7 @@ app.factory 'rmapsMapAccess', (
   # Private Implementation
   #
   clear = () ->
-    mapAccessCache = {}
+    {}
 
   #
   # Handle Logout

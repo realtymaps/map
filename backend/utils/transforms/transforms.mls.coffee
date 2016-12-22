@@ -26,6 +26,8 @@ getPhotoIds =
   params: requireAllTransforms validators.object subValidateSeparate: requireAllTransforms
     mlsId: validators.string(minLength:2)
   query: validators.object subValidateSeparate:
+    subLimit: transform: validators.integer()
+    limit: transform: validators.integer()
     uuidField:
       transform: validators.string(minLength:2)
       required: true

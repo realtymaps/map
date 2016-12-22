@@ -728,3 +728,14 @@ Place for our custom Theming of bootstrap
     color #FFF !important
     &:before
       border-color $rm_notforsale transparent transparent $rm_notforsale !important
+
+for num in 75 80 85 90 95 100
+  .modal-{num}
+    margin: 0;
+    margin-right: auto;
+    margin-left: auto;
+    width: unit(num,'%');
+    height: unit(num,'%');
+
+.modal-fullscreen
+  @extends .modal-100

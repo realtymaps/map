@@ -313,7 +313,9 @@ app.factory 'rmapsMapFactory',
         .then (data) =>
           # Watch for pins/favorites other users may have added and show them in dropdowns
           for type in ['pins', 'favorites']
+            # coffeelint: disable=check_scope
             for rm_property_id, prop of data?.saves?[type]
+            # coffeelint: enable=check_scope
               $rootScope.$emit rmapsEventConstants.map.properties[type.slice(0,-1)], {type, prop}
 
           # `@scope.$watch 'map.center.zoom',` would've been recommended method of tracking changing zoom values,
@@ -414,7 +416,9 @@ app.factory 'rmapsMapFactory',
         verboseLogger.debug 'lBounds'
         if not paths #and not @scope.drawUtil.isEnabled
           paths  = []
+          # coffeelint: disable=check_scope
           for k, b of lBounds
+          # coffeelint: enable=check_scope
             if b?
               paths.push [b.lat, b.lng]
 

@@ -32,7 +32,9 @@ rmapsHttpTempCache
           promise: $http.getData(url, {cache})
           .then (data) ->
             index = 0
+            # coffeelint: disable=check_scope
             for key, val of data
+            # coffeelint: enable=check_scope
               val.$index = ++index
               val.text = decodeURIComponent(val.text)
             _notes = data

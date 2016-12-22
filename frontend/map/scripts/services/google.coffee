@@ -99,7 +99,10 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
 
     UiMap:
       getCorrectModel: (model) ->
-        childModel = if model.model? then model.model else model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+        if model.model?
+          model.model
+        else
+          model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
 
     StreetView: do ->
       getUrl: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->

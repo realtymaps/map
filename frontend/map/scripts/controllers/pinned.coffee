@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
-d3 = require 'd3'
+
 
 app.controller 'rmapsPinnedCtrl', (
 $log

@@ -109,7 +109,7 @@ app.directive 'propertyButtons', (
         $scope.newMail =
           property_ids: [property.rm_property_id]
 
-        modalInstance = $uibModal.open
+        $uibModal.open
           scope: $scope
           template: require('../../../html/views/templates/modals/modal-mailHistory.jade')()
 

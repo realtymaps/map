@@ -73,7 +73,7 @@ app.service 'rmapsPropertyFormatterService',
             units = soldRange.match(/^\d+ ([a-z])/)[1]
             units = if units == 'm' then 'M' else units
             minDate = moment().subtract(qty, units)
-          catch error
+          catch
             return _forSaleClass[rmapsParcelEnums.status.discontinued]
         else
           if $rootScope.selectedFilters?.closeDateMin
@@ -102,7 +102,7 @@ app.service 'rmapsPropertyFormatterService',
             else
               format = 'MMM D, YYYY'
             return "Sold: #{moment(result.close_date).format(format)}"
-          catch error
+          catch
             return "No Sold Record"
         else
           return result.status

@@ -7,6 +7,7 @@ modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 selectIconTemplate = require('../../../html/views/templates/selectIcon.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
+
 app.controller 'rmapsMlsCtrl',
   ($rootScope, $scope, $location, $state, $timeout, $uibModal, $q, $log,
   rmapsMlsService,
@@ -14,7 +15,8 @@ app.controller 'rmapsMlsCtrl',
   rmapsAdminConstants,
   rmapsPrincipalService,
   rmapsJobsService,
-  rmapsCleanData) ->
+  rmapsCleanData
+  rmapsPhotoHelper) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
@@ -153,12 +155,20 @@ app.controller 'rmapsMlsCtrl',
       .finally () ->
         $scope.loading = false
 
-    formatPhotoObjects = () ->
+    ###
+      Area to fix the formatting of $scope.mlsData.current prior to saving
+
+      Some fields that are defined a certain way should be deleted.
+    ###
+    formatOnSave = () ->
       if _.isString $scope.mlsData.current.listing_data.photoObjects
         if !$scope.mlsData.current.listing_data.photoObjects
           delete $scope.mlsData.current.listing_data.photoObjects
         else
           $scope.mlsData.current.listing_data.photoObjects = $scope.mlsData.current.listing_data.photoObjects.trimAll().split(',')
+
+      if $scope.mlsData.current.listing_data.Location == 0
+        delete $scope.mlsData.current.listing_data.Location
 
 
     getObjectOptions = (schema) ->
@@ -166,9 +176,13 @@ app.controller 'rmapsMlsCtrl',
       rmapsMlsService.getObjectList($scope.mlsData.current.id)
       .then (data) ->
 
-        if schema == 'listing_data' && $scope.mlsData.current.listing_data.photoObjects?.length
-          $scope.schemaOptions.listing_data.photos.objects.use = true
-          return
+        if schema == 'listing_data'
+          if !$scope.mlsData.current.listing_data.Location?
+            $scope.mlsData.current.listing_data.Location = 0
+
+          if $scope.mlsData.current.listing_data.photoObjects?.length
+            $scope.schemaOptions.listing_data.photos.objects.use = true
+            return
 
         $scope.fieldNameMap.objects = data.map (v) -> v.VisibleName
 
@@ -314,7 +328,7 @@ app.controller 'rmapsMlsCtrl',
         $scope.loading = false
 
     $scope.saveMlsConfigData = () ->
-      formatPhotoObjects()
+      formatOnSave()
       $scope.loading = true
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
@@ -386,6 +400,9 @@ app.controller 'rmapsMlsCtrl',
 
     # modal for Create mlsData
     $scope.animationsEnabled = true
+
+    $scope.openPhotoHelper = rmapsPhotoHelper($scope)
+
     $scope.openCreate = () ->
       modalInstance = $uibModal.open
         animation: $scope.animationsEnabled

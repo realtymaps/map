@@ -35,7 +35,7 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
       cancelAll()
 
       return unless options
-      myId = promisesIndex += 1
+      promisesIndex += 1
 
       if !cancelablePromise?
         deferred.resolve()
@@ -46,9 +46,9 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
       .catch (error) ->
         deferred.reject(error)
       .finally () =>
-        delete promiseHash[@name + myId]
+        delete promiseHash[@name + promisesIndex]
 
-      promiseHash[@name + myId] = cancelablePromise
+      promiseHash[@name + promisesIndex] = cancelablePromise
 
       deferred.promise #return a regular promise
 

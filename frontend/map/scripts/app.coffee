@@ -50,8 +50,6 @@ require '../../../common/extensions/index.coffee'
 require '../../common/scripts/module.coffee'
 
 
-require 'spinkit/css/spinkit.css'
-require 'font-awesome/css/font-awesome.css'
 require 'leaflet/dist/leaflet.css'
 require 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 require 'leaflet-zoombox/L.Control.ZoomBox.css'
@@ -61,7 +59,6 @@ require 'angular-busy/dist/angular-busy.css'
 require 'textangular/dist/textAngular.css'
 require 'angular-toastr/dist/angular-toastr.css'
 
-require 'flickity/dist/flickity.min.css'
 
 app = window.angular.module 'rmapsMapApp', [
   'rmapsCommonUtils'

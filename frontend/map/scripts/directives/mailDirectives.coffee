@@ -171,10 +171,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
       if node.nodeType == 3
         classedNode = node.parentNode
-        macro = node.data
       else
         classedNode = node
-        macro = node.childNodes[0].data
 
       classedNode.classList.add 'highlight-display'
 
@@ -292,9 +290,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     scope.macroAction =
       whenDropped: (e) ->
         scope.editor.editorFunctions.focus() # make sure editor has focus on drop
-        sel = $window.getSelection()
         e.targetScope.displayElements.text[0].focus()
-        {range, textNode, offset} = caretFromPoint()
+        {textNode, offset} = caretFromPoint()
 
         # macro-ize markup
         scope.convertMacrosInSpan textNode, offset, scope.macro
@@ -342,9 +339,6 @@ app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
 
     # Standard letter
     pxPerPage = (11*72)
-
-    # The padding/margin needs to be set on the page-break (first) element of each page.
-    topMargin = (0.5*72)
 
     # It isn't necessary to subtract the top margin as long as the nearest position:relative parent is at the top of the page
     topMarginFirstPage = 0 # (2.7*96)
