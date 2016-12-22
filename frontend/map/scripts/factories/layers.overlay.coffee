@@ -76,10 +76,10 @@ app.factory 'rmapsOverlays', (
 
     $log.debug 'getting cartodb'
 
-    $http.get(backendRoutes.config.protectedConfig, cache:true)
+    $http.get(backendRoutes.config.safeConfig, cache:true)
     .then ({data}) ->
-      cartodb = data
-      $log.debug 'cartodb successful'
+      {cartodb} = data
+      $log.debug 'cartodb loaded', cartodb
       #only call function post login
       if cartodb?.MAPS?
         cartodb.MAPS.forEach (map) ->

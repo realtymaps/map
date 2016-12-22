@@ -44,7 +44,7 @@ app.factory 'rmapsUtilLayersBase', ($http, $rootScope, $log, rmapsEventConstants
   $log = $log.spawn('rmapsUtilLayersBase')
 
   init = ->
-    $http.get(backendRoutes.config.protectedConfig, null, cache: false)
+    $http.get(backendRoutes.config.safeConfig, cache:true)
     .then ({data} = {}) ->
       {mapbox} = data
       _mapboxKey = mapbox

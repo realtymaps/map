@@ -141,7 +141,6 @@ module.exports =
   config:
     apiBase: apiBaseConfig
     safeConfig: "#{apiBaseConfig}/safeConfig"
-    protectedConfig: "#{apiBaseConfig}/protectedConfig"
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
