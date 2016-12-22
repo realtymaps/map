@@ -7,6 +7,28 @@ ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
+_isValid = (isLoggedIn) ->
+  route =
+    method: 'post'
+    handleQuery: true
+    handle: (req, res, next) ->
+      emailTransforms.validateRequest(req)
+      .then (validReq) ->
+        logger.debug -> "isValid: true"
+        logger.debug -> validReq
+        true
+      .catch DataValidationError, (err) ->
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+      .catch errorHandlingUtils.isUnhandled, (error) ->
+        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+
+  if isLoggedIn
+    route.middleware =
+      auth.requireLogin() #do not redirect or you will cause validations to pass!
+
+  route
+
 
 module.exports =
   # does not need login as this is meant for all emails not in the system yet
@@ -26,21 +48,5 @@ module.exports =
         err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
         next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
 
-  # Not locking this down as it is needed for OnBoarding (non-logged in users as well)
-  isValid:
-    method: 'post'
-    handleQuery: true
-    middleware: [
-      auth.requireLogin(optional: true) #needed to put req.user into scope
-    ]
-    handle: (req, res, next) ->
-      emailTransforms.validateRequest(req)
-      .then (validReq) ->
-        logger.debug -> "isValid: true"
-        logger.debug -> validReq
-        true
-      .catch DataValidationError, (err) ->
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-      .catch errorHandlingUtils.isUnhandled, (error) ->
-        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+  isValid: _isValid()
+  isValidLoggedIn: _isValid(true)

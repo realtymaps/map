@@ -171,7 +171,6 @@ requireLogin = (options = {}) ->
     if !req.user
       if options.redirectOnFail
         return res.json(doLogin: true)
-      else if options.optional#go to next tick and do not throw
       else
         return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
@@ -338,6 +337,7 @@ requirePermissions = (permissions, options = {}) ->
 
 # for now this is a no-op, because session stuff gets automatically added when any route-specific middleware is
 # configured -- this is a placeholder to be used when we just need to trigger session middleware inclusion
+# Essentially a noop function to get the session possibly set
 sessionSetup = (req, res, next) ->
   process.nextTick(next)
 

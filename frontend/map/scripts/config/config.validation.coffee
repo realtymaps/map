@@ -79,6 +79,11 @@ app.config(($provide, $validationProvider) ->
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isValid, {email: value, doUnique: true}, config)
 
+    checkUniqueEmailLoggedIn: (value, scope, element, attrs, param) ->
+      config =
+        alerts: param != 'disableAlert'
+      $http.post(backendRoutes.email.isValidLoggedIn, {email: value, doUnique: true}, config)
+
     checkValidMlsAgent: (value, scope, element, attrs, param) ->
       $http.post(backendRoutes.mls.activeAgent, scope[param], {alerts: false})
 
@@ -98,6 +103,8 @@ app.config(($provide, $validationProvider) ->
       error: "Email must be of the '@realtymaps.com' domain"
     checkValidEmail:
       error: 'Invalid Email'
+    checkUniqueEmailLoggedIn:
+      error: 'Email must be unique'
     checkUniqueEmail:
       error: 'Email must be unique'
     checkValidMlsAgent:
