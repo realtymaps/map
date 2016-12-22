@@ -171,7 +171,7 @@ requireLogin = (options = {}) ->
     if !req.user
       if options.redirectOnFail
         return res.json(doLogin: true)
-      else if options.optional
+      else if options.optional#go to next tick and do not throw
       else
         return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
     return process.nextTick(next)
