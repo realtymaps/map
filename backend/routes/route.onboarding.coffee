@@ -29,7 +29,7 @@ module.exports =
           .then ({authUser, customer}) ->
             internals.submitEmail {authUser, plan, customer}
 
-        .catch isCausedBy([MlsAgentNotVierified, UserExists]), (err) ->
+        .catch isCausedBy(MlsAgentNotVierified), isCausedBy(UserExists), (err) ->
           next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: err.quiet})
 
         .catch (err) ->
