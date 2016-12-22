@@ -71,9 +71,8 @@ app.config(($provide, $validationProvider) ->
     ###
     Do not be mistaken; this also checks if the email is valid!
 
-    If the user is logged in and the email address is a duplicate but that user is
-    the owner; then there is no problem. However, if the user is not logged in and the email
-    is not unique then the route should fail.
+    If the calling user is logged in and own the unqiue email address then everything passes.
+    However, if the user is not logged in and the email is not unique then the route should fail.
     ###
     checkUniqueEmail: (value, scope, element, attrs, param) ->
       config =
