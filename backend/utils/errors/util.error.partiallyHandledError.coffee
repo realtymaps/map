@@ -46,13 +46,12 @@ isKnexUndefined = (err) ->
   err? && (err instanceof Error) && /Undefined binding\(s\) detected when compiling.*/.test(err.message)
 
 
-isCausedBy = (errorTypes, _err) ->
-  if !_.isArray(errorTypes)
-    errorTypes = [errorTypes]
-
+isCausedBy = (errorType, _err) ->
   check = (err) ->
-    return _.any errorTypes, (errorType) -> (err instanceof errorType)
-
+    cause = err
+    while !(cause instanceof errorType) && cause instanceof PartiallyHandledError && cause.jse_cause?
+      cause = cause.jse_cause
+    return cause instanceof errorType
   if _err
     return check(_err)
   else
