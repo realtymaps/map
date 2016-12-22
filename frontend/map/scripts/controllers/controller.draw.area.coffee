@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+
 
 color = '#ffa500'
 itemsOptions =

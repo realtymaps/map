@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-numeral = require 'numeral'
 _ = require 'lodash'
 
 

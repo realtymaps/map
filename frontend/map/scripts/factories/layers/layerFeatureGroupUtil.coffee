@@ -24,7 +24,9 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
     @getLayer = (geojsonModel) ->
       if !geojsonModel?.properties?.id?
         return
+      # coffeelint: disable=check_scope
       for key, val of featureGroup._layers
+      # coffeelint: enable=check_scope
         if val.model?.properties?.id == geojsonModel.properties.id
           item = val
           break

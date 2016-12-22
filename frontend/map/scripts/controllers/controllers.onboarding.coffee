@@ -279,6 +279,4 @@ app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $q, $log, $state, $timeo
     $log.error('user password missing can not auto login.')
     return
 
-  attempts = 0
-
   $scope.doLogin($scope.user)

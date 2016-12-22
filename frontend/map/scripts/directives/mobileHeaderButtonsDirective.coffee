@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+
 
 #
 # Directive allowing a view or modal to specify buttons to be added to a header in a different

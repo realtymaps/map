@@ -36,13 +36,14 @@ app.controller 'rmapsReviewCtrl', (
 
   $scope.showAddresses = (addresses) ->
     $scope.addressList = addresses
-    modalInstance = $uibModal.open
+
+    $uibModal.open
       template: require('../../../html/views/templates/modals/addressList.jade')()
       windowClass: 'address-list-modal'
       scope: $scope
 
   $scope.reviewPreview = () ->
-    modalInstance = $uibModal.open
+    $uibModal.open
       template: previewModalTemplate
       controller: 'rmapsReviewPreviewCtrl'
       openedClass: 'preview-mail-opened'

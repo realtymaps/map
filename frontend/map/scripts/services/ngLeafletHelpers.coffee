@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 
 app.service 'rmapsNgLeafletHelpersService', (nemSimpleLogger) ->
-  $log = nemSimpleLogger.spawn("map:NgLeafletHelpers")
+  # $log = nemSimpleLogger.spawn("map:NgLeafletHelpers")
   @events =
     getMapIdEventStr: (mapId = '') ->
       if mapId

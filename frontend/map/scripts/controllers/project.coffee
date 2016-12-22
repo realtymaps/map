@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
+
 
 module.exports = app
 
@@ -214,11 +214,15 @@ app.controller 'rmapsProjectCtrl',
       $scope.properties = _.values(properties)
 
       $scope.pins = []
+      # coffeelint: disable=check_scope
       for id, pin of project.pins
+      # coffeelint: enable=check_scope
         properties[id].icon = className: 'saved'
         $scope.pins.push(properties[id])
       $scope.favorites = []
+      # coffeelint: disable=check_scope
       for id, favorite of project.favorites
+      # coffeelint: enable=check_scope
         properties[id].icon = className: 'favorited'
         $scope.favorites.push(properties[id])
 

@@ -45,7 +45,7 @@ restrictElement = (scope, element, attrs, options) ->
       scope.authModal = (message) ->
         scope.modalTitle = "Restricted"
         scope.modalBody = message
-        modalInstance = options.$uibModal.open
+        options.$uibModal.open
           scope: scope
           template: require('../../html/views/templates/modals/confirm.jade')()
 
