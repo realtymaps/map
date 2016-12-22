@@ -20,7 +20,9 @@ protectedConfigPromise = () ->
 
   cartoDbPromise = cartodbConfig()
   .then (config) ->
-    ret.cartodb = config
+    ret.cartodb =
+      TILE_URL: config.TILE_URL
+      MAPS: config.MAPS
 
   googlePromise = externalAccounts.getAccountInfo('googlemaps', {quiet: true})
   .catch (err) ->

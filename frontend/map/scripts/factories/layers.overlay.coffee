@@ -3,6 +3,7 @@ pieMarkerFactory = require '../utils/util.piechart.marker.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 mainOptions = require '../config/mainOptions.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 _overlays =
   currentLocation:
@@ -68,7 +69,6 @@ app.factory 'rmapsOverlays', (
   $log
   rmapsEventConstants
   $rootScope
-  rmapsCartoDb
 ) ->
   $log = $log.spawn('util:layers:overlays')
 
@@ -76,8 +76,9 @@ app.factory 'rmapsOverlays', (
 
     $log.debug 'getting cartodb'
 
-    rmapsCartoDb.init()
-    .then (cartodb) ->
+    $http.get(backendRoutes.config.protectedConfig, cache:true)
+    .then ({data}) ->
+      cartodb = data
       $log.debug 'cartodb successful'
       #only call function post login
       if cartodb?.MAPS?
@@ -88,8 +89,6 @@ app.factory 'rmapsOverlays', (
             url: cartodb.TILE_URL
             type: 'xyz'
             layerOptions:
-              apikey: cartodb.API_KEY
-              account: cartodb.ACCOUNT
               mapid: map.mapId
               attribution: ''
               maxZoom: 21
