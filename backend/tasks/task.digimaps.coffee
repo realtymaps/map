@@ -188,7 +188,7 @@ finalizeDataPrep = (subtask) ->
       maxPage: numRowsToPageFinalize
       laterSubtaskName: "finalizeData"
       mergeData:
-        normalSubid: fipsCode #required for countyHelpers.finalizeData
+        fips_code: fipsCode #required for countyHelpers.finalizeData
     }
 
 ###
@@ -224,10 +224,10 @@ finalizeData = (subtask) ->
   # logger.debug () -> util.inspect(subtask, depth: null)
   logger.debug () -> 'beginning finalizeData'
 
-  {delay, normalSubid} = subtask.data
+  {delay, fips_code} = subtask.data
 
-  if !normalSubid?
-    throw new HardFail "normalSubid must be defined"
+  if !fips_code?
+    throw new HardFail "fips_code must be defined"
 
   Promise.each subtask.data.values, (id) ->
     parcelHelpers.finalizeData(subtask, id, delay ? DELAY_MILLISECONDS)
@@ -236,7 +236,7 @@ finalizeData = (subtask) ->
 recordChangeCounts = (subtask) ->
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel', indicateDeletes: true)
+  dataLoadHelpers.recordChangeCounts(subtask, deletesTable: 'parcel', indicateDeletes: true, normalSubid: 'digimaps', data_source_id: 'digimaps')
   .then (deletedIds) ->
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
@@ -244,7 +244,7 @@ recordChangeCounts = (subtask) ->
       maxPage: numRowsToPageFinalize
       laterSubtaskName: "finalizeData"
       mergeData:
-        normalSubid: subtask.data.subset.fips_code  # required for countyHelpers.finalizeData
+        fips_code: subtask.data.subset.fips_code  # required for countyHelpers.finalizeData
         deletedParcel: true
     }
 

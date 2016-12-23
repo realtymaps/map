@@ -177,7 +177,7 @@ getParcelJsonStream = ({fullPath, creds, streamPromise} = {}) ->
     interceptStream.pipe(t2Stream).pipe(jsonStream)
 
 rawParcelQuery = ({batch_id, fips_code, entity, select}) ->
-  q = tables.temp(subid: "#{batch_id}_digimaps_parcel_#{fips_code}")
+  q = tables.temp(subid: [batch_id, 'digimaps', 'parcel', fips_code])
 
   q.select select if select?
 

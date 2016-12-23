@@ -110,6 +110,8 @@ buildTableName = (tableName) ->
   (subid) ->
     if !tableName
       subid
+    else if Array.isArray(subid)
+      "#{tableName}_#{subid.join('_')}"
     else
       "#{tableName}_#{subid}"
 

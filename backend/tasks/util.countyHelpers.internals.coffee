@@ -9,7 +9,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 
 
 finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
-  q = tables.normalized.tax(subid: subtask.data.normalSubid)
+  q = tables.normalized.tax(subid: [data_source_id, subtask.data.fips_code])
 
   sqlHelpers.checkTableExists(q)
   .then (exists) ->
@@ -17,9 +17,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
       return null
 
     q.select('*')
-    .where
-      rm_property_id: id
-      data_source_id: data_source_id || subtask.task_name
+    .where(rm_property_id: id)
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
@@ -39,7 +37,7 @@ finalizeDataTax = ({subtask, id, data_source_id, forceFinalize}) ->
 
 
 finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
-  q = tables.normalized.deed(subid: subtask.data.normalSubid)
+  q = tables.normalized.deed(subid: [data_source_id, subtask.data.fips_code])
 
   sqlHelpers.checkTableExists(q)
   .then (exists) ->
@@ -47,9 +45,7 @@ finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
       return null
 
     q.select('*')
-    .where
-      rm_property_id: id
-      data_source_id: data_source_id || subtask.task_name
+    .where(rm_property_id: id)
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
@@ -65,7 +61,7 @@ finalizeDataDeed = ({subtask, id, data_source_id, forceFinalize}) ->
 
 finalizeDataMortgage = ({subtask, id, data_source_id}) ->
 
-  q = tables.normalized.mortgage(subid: subtask.data.normalSubid)
+  q = tables.normalized.mortgage(subid: [data_source_id, subtask.data.fips_code])
 
   sqlHelpers.checkTableExists(q)
   .then (exists) ->
@@ -73,9 +69,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
       return null
 
     q.select('*')
-    .where
-      rm_property_id: id
-      data_source_id: data_source_id || subtask.task_name
+    .where(rm_property_id: id)
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
@@ -84,7 +78,7 @@ finalizeDataMortgage = ({subtask, id, data_source_id}) ->
       return mortgageEntries
 
 
-_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+_finalizeEntry = ({entries, subtask, data_source_id}) -> Promise.try ->
   mainEntry = _.clone(entries[0])
   delete entries[0].shared_groups
   delete entries[0].subscriber_groups
@@ -99,12 +93,13 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
   mainEntry.change_history = sqlHelpers.safeJsonArray(mainEntry.change_history)
   mainEntry.update_source = subtask.task_name
+  mainEntry.data_source_id = data_source_id
   mainEntry.baths_total = mainEntry.baths?.filter
   mainEntry
 
 
-_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask}) ->
-  _finalizeEntry({entries: taxEntries, subtask})
+_promoteValues = ({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask, data_source_id}) ->
+  _finalizeEntry({entries: taxEntries, subtask, data_source_id})
   .then (tax) ->
     tax.data_source_type = 'county'
     if parcelEntries[0]
@@ -167,7 +162,7 @@ _updateDataCombined = ({subtask, id, data_source_id, transaction, tax}) ->
   tables.finalized.combined({transaction})
   .where
     rm_property_id: id
-    data_source_id: data_source_id || subtask.task_name
+    data_source_id: data_source_id
   .delete()
   .then () ->
     tables.finalized.combined({transaction})
@@ -177,7 +172,7 @@ finalizeJoin = ({subtask, id, data_source_id, transaction, taxEntries, deedEntri
   # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
   # TODO: simultaneous closings, how do we properly sort to account for that?
   # TODO: answer: by buyer/seller names, but we'll get to that later
-  _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask})
+  _promoteValues({taxEntries, deedEntries, mortgageEntries, parcelEntries, subtask, data_source_id})
   .then (tax) ->
 
     # we must use an existing transaction if there is one

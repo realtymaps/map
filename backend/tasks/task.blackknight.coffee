@@ -182,7 +182,6 @@ checkProcessQueue = (subtask) ->
 
 _queueDeleteData = (subtask, mergeData, numRows) ->
   numRowsToPage = subtask.data?.numRowsToPageDelete || internals.NUM_ROWS_TO_PAGINATE
-  mergeData.fips_code = subtask.data.fips_code || subtask.data.normalSubid
   mergeData.rawDeleteBatchId = subtask.batch_id
   jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: numRowsToPage, laterSubtaskName: "deleteData", mergeData})
 
@@ -209,7 +208,7 @@ loadRawData = (subtask) ->
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
-      normalSubid: subtask.data.normalSubid
+      fips_code: subtask.data.fips_code
     if subtask.data.fileType == internals.DELETE
       _queueDeleteData(subtask, mergeData, numRows)
     else
@@ -239,10 +238,7 @@ deleteData = (subtask) ->
     Promise.each rows, (row) ->
       if subtask.data.action == internals.REFRESH
         # delete the entire FIPS, we're loading a full refresh
-        normalDataTable(subid: row['FIPS Code'])
-        .where
-          data_source_id: 'blackknight'
-          fips_code: row['FIPS Code']
+        normalDataTable(subid: ['blackknight', row['FIPS Code']])
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
         .catch (err) ->
@@ -262,11 +258,8 @@ deleteData = (subtask) ->
           if !parcel_id?
             logger.warn("Unable to locate a parcel_id in validated `normalizedData` while processing deletes.")
 
-          normalDataTable(subid: row['FIPS Code'])
-          .where
-            data_source_id: 'blackknight'
-            fips_code: row['FIPS Code']
-            parcel_id: parcel_id
+          normalDataTable(subid: ['blackknight', row['FIPS Code']])
+          .where(parcel_id: parcel_id)
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
@@ -282,11 +275,8 @@ deleteData = (subtask) ->
           if !data_source_uuid?
             logger.warn("Unable to locate a data_source_uuid in validated `normalizedData` while processing deletes.")
 
-          normalDataTable(subid: row['FIPS Code'])
-          .where
-            data_source_id: 'blackknight'
-            fips_code: row['FIPS Code']
-            data_source_uuid: data_source_uuid
+          normalDataTable(subid: ['blackknight', row['FIPS Code']])
+          .where(data_source_uuid: data_source_uuid)
           .update(deleted: subtask.batch_id)
           .catch (err) ->
             logger.debug () -> "normalizedData: #{JSON.stringify(normalizedData)}"
@@ -298,16 +288,17 @@ normalizeData = (subtask) ->
     dataSourceId: 'blackknight'
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
+    normalSubid: ['blackknight', subtask.data.fips_code]
 
 
 # not used as a task since it is in normalizeData
 # however this makes finalizeData accessible via the subtask script
 finalizeDataPrep = (subtask) ->
-  {normalSubid} = subtask.data
-  if !normalSubid?
-    throw new SoftFail "normalSubid required"
+  {fips_code} = subtask.data
+  if !fips_code?
+    throw new SoftFail "fips_code required"
 
-  tables.normalized.tax(subid: normalSubid)
+  tables.normalized.tax(subid: ['blackknight', fips_code])
   .select('rm_property_id')
   .then (results) ->
     jobQueue.queueSubsequentPaginatedSubtask {
@@ -315,13 +306,12 @@ finalizeDataPrep = (subtask) ->
       totalOrList: _.pluck(results, 'rm_property_id')
       maxPage: 100
       laterSubtaskName: "finalizeData"
-      mergeData:
-        normalSubid: normalSubid
+      mergeData: {fips_code}
     }
 
 finalizeData = (subtask) ->
   Promise.each subtask.data.values, (id) ->
-    countyHelpers.finalizeData({subtask, id})
+    countyHelpers.finalizeData({subtask, id, data_source_id: 'blackknight'})
 
 
 ###
@@ -410,14 +400,14 @@ recordChangeCounts = (subtask) ->
       return !deletedFips
   indicatePromise
   .then (indicateDeletes) ->
-    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes})
+    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes, normalSubid: ['blackknight', subtask.data.fips_code]})
 
 
 activateNewData = (subtask) ->
   keystore.getValue(internals.DELETED_FIPS, namespace: internals.BLACKKNIGHT_PROCESS_INFO)
   .then (deletedFips) ->
     deletes = if deletedFips then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.INDICATED
-    dataLoadHelpers.activateNewData(subtask, {deletes})
+    dataLoadHelpers.activateNewData(subtask, {deletes, data_source_id: 'blackknight'})
 
 
 subtasks = {

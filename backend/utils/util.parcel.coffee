@@ -107,7 +107,7 @@ _formatParcel = (feature) -> Promise.try ->
     obj
 
 
-normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
+normalize = ({batch_id, rows, fipsCode, startTime}) ->
   stringRows = rows
 
   for row in stringRows
@@ -121,7 +121,6 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
           obj.fips_code = fipsCode
 
         _.extend obj, {
-          data_source_id
           batch_id
           rm_raw_id: row.rm_raw_id
         }
@@ -138,7 +137,6 @@ normalize = ({batch_id, rows, fipsCode, data_source_id, startTime}) ->
         _.extend ret,
           rm_raw_id: row.rm_raw_id# dont forget about me :)
           stats: {
-            data_source_id
             batch_id
             rm_raw_id: row.rm_raw_id
             up_to_date: startTime
