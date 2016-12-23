@@ -23,7 +23,9 @@ safeConfigPromise = () ->
   .then (config) ->
     safeConfig.cartodb =
       TILE_URL: config.TILE_URL
-      MAPS: config.MAPS
+      MAPS: []
+    for map in config.MAPS
+      safeConfig.cartodb.MAPS.push(name: map.name)
 
   googlePromise = externalAccounts.getAccountInfo('googlemaps', {quiet: true})
   .catch (err) ->
