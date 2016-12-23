@@ -11,7 +11,7 @@ app.service 'rmapsGoogleService', ($http, $log, $q) ->
 
   service =
     getAPI: () ->
-      $http.get(backendRoutes.config.protectedConfig, cache:true)
+      $http.get(backendRoutes.config.safeConfig, cache:true)
       .then ({data}) ->
         if data?.google
           return apiKey = "&key=#{data.google}"

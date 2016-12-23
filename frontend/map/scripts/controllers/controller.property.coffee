@@ -139,7 +139,9 @@ app.controller 'rmapsPropertyCtrl',
       pvaUrl = "//prodpull#{cdnNum}-realtymapsterllc.netdna-ssl.com/api/properties/pva/#{property.fips_code}"
       $http.get(pvaUrl)
       .then ({data}) ->
-        url = data.url.replace("{{_APN_}}", property.parcel_id)
+        apn = property.parcel_id
+        stripped_apn = property.rm_property_id.split('_')[1]
+        url = data.url.replace("{{_APN_}}", apn).replace("{{_APNX_}}", stripped_apn)
         if data.options?.post
           pvaForm = document.createElement("form")
           windowName = window.name+(new Date().getTime())
@@ -151,7 +153,7 @@ app.controller 'rmapsPropertyCtrl',
             newInput = document.createElement("input")
             newInput.type = "hidden"
             newInput.name = name
-            newInput.value = value.replace("{{_APN_}}", property.parcel_id)
+            newInput.value = value.replace("{{_APN_}}", apn).replace("{{_APNX_}}", stripped_apn)
             pvaForm.appendChild(newInput)
 
           document.body.appendChild(pvaForm)

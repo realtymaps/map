@@ -25,7 +25,6 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
 
     normalPayloadsPromise = parcelUtils.normalize {
       batch_id: subtask.batch_id
-      data_source_id: subtask.task_name
       rows
       fipsCode
       startTime
@@ -85,7 +84,7 @@ saveToNormalDb = ({subtask, rows, fipsCode, delay}) -> Promise.try ->
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
       values: successes
-      normalSubid: fipsCode  # required for countyHelpers.finalizeData
+      fips_code: fipsCode  # required for countyHelpers.finalizeData
       deletedParcel: false
     jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
@@ -128,13 +127,12 @@ activateNewData = (subtask) -> Promise.try () ->
 
   dbs.transaction 'main', (transaction) ->
 
-    activateParcels = dataLoadHelpers.activateNewData(subtask, {
+    dataLoadHelpers.activateNewData(subtask, {
       tableProp: 'parcel'
       transaction
       deletes: dataLoadHelpers.DELETE.INDICATED
+      data_source_id: 'digimaps'
     })
-    activateDataCombined = dataLoadHelpers.activateNewData(subtask, transaction: transaction, deletes: dataLoadHelpers.DELETE.INDICATED)
-    Promise.join activateParcels, activateDataCombined, () ->  # no-op
 
 
 handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->

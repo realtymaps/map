@@ -23,17 +23,17 @@ _collectFipsMLS = (user, profile) -> Promise.try ->
   permissions.mls.push(user.mlses_verified...)
 
   # Include by proxy MLS available to project owner
-  if profile?.parent_auth_user_id? && profile?.parent_auth_user_id != user.id
-    return tables.auth.user()
-      .select('mlses_verified')
-      .where('id', profile.parent_auth_user_id).then ([owner]) ->
-        logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
-        permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
-        permissions
-  logger.debug "@@@@ permissions @@@@"
-  logger.debug permissions
-
-  return permissions
+  Promise.try () ->
+    if profile?.parent_auth_user_id? && profile?.parent_auth_user_id != user.id
+      tables.auth.user()
+        .select('mlses_verified')
+        .where('id', profile.parent_auth_user_id).then ([owner]) ->
+          logger.debug () -> "Found owner: #{JSON.stringify(owner)}"
+          permissions.mls_proxy = owner.mlses_verified # NOTE: spelling/capitalization mismatches may exist
+  .then () ->
+    logger.debug "@@@@ permissions @@@@"
+    logger.debug permissions
+    return permissions
 
 getFipsMLSForUser = (userid) ->
   tables.auth.user()

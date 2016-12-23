@@ -62,7 +62,7 @@ loadRawData = (subtask) ->
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: recordCountsData, replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
 
-    Promise.join(recordCountsPromise, activatePromise, normalizePromise, markUpToDatePromise, () ->)
+    Promise.join(recordCountsPromise, activatePromise, normalizePromise, markUpToDatePromise, internals.ensureNormalizedTable(mlsId), () ->)
     .then () ->
       return numRawRows
 
@@ -74,11 +74,12 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: internals.buildRecord
     skipFinalize: subtask.data.dailyMaintenance
+    normalSubid: mlsId
 
 
 recordChangeCounts = (subtask) ->
   data_source_id = subtask.task_name.split('_')[0]
-  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id})
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id, normalSubid: data_source_id})
 
 
 # not used as a task since it is in normalizeData
@@ -87,7 +88,7 @@ finalizeDataPrep = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized.listing()
+  tables.normalized.listing({subid: mlsId})
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
@@ -118,8 +119,7 @@ markUpToDate = (subtask) ->
       thisChunkNum = chunkNum
       ids = _.pluck(chunk, uuidField)
       taskLogger.debug () -> "-------------------- getDataChunks (#{mlsId}): extracted #{ids.length} ids"
-      q = tables.normalized.listing()
-      .where(data_source_id: mlsId)
+      q = tables.normalized.listing({subid: mlsId})
       .whereIn('data_source_uuid', ids)
       .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
       .returning('rm_property_id')

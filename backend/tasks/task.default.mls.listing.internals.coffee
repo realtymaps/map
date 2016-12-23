@@ -6,7 +6,7 @@ sqlHelpers = require '../utils/util.sql.helpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 
-_finalizeEntry = ({entries, subtask}) -> Promise.try ->
+_finalizeEntry = ({entries, subtask, data_source_id}) -> Promise.try ->
   index = 0
   for entry,i in entries
     if entry.status != 'discontinued'
@@ -32,6 +32,7 @@ _finalizeEntry = ({entries, subtask}) -> Promise.try ->
   mainEntry.owner_address = sqlHelpers.safeJsonArray(mainEntry.owner_address)
   mainEntry.change_history = sqlHelpers.safeJsonArray(mainEntry.change_history)
   mainEntry.update_source = subtask.task_name
+  mainEntry.data_source_id = data_source_id
 
   mainEntry.baths_total = mainEntry.baths?.filter
 
@@ -71,16 +72,14 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
   delay ?= subtask.data?.delay || 100
   parcelHelpers = require './util.parcelHelpers'#delayed require due to circular dependency
 
-  listingsPromise = tables.normalized.listing()  # no transaction -- normalized db
+  listingsPromise = tables.normalized.listing({subid: data_source_id})  # no transaction -- normalized db
   .select('*')
   .where
     rm_property_id: id
     hide_listing: false
-    data_source_id: data_source_id
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('hide_listing')
-  .orderBy('data_source_id')
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
 
@@ -95,7 +94,7 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
       # might happen if a singleton listing is changed to hidden during the day
       return dataLoadHelpers.markForDelete(id, data_source_id, subtask.batch_id, {transaction})
 
-    _finalizeEntry({entries: listings, subtask})
+    _finalizeEntry({entries: listings, subtask, data_source_id})
     .then (listing) ->
       listing.data_source_type = 'mls'
       if parcel
@@ -109,12 +108,12 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
         if listing.zoning
           # if we have zoning info already, don't bother promoting
           return false
-        sqlHelpers.checkTableExists(tables.normalized.tax(subid: listing.fips_code))
+        sqlHelpers.checkTableExists(tables.normalized.tax(subid: ['blackknight', listing.fips_code]))
       .then (checkPromotedValues) ->
         if !checkPromotedValues
           return
         # need to query the tax table to get values to promote
-        tables.normalized.tax({subid: listing.fips_code})  # no transaction -- normalized db
+        tables.normalized.tax({subid: ['blackknight', listing.fips_code]})  # no transaction -- normalized db
         .select('zoning')
         .where
           rm_property_id: id
@@ -124,10 +123,8 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             _.extend(listing, results[0])
 
             # save back to the listing table to avoid making checks in the future
-            tables.normalized.listing()  # no transaction -- normalized db
-            .where
-              data_source_id: listing.data_source_id
-              data_source_uuid: listing.data_source_uuid
+            tables.normalized.listing({subid: data_source_id})  # no transaction -- normalized db
+            .where(data_source_uuid: listing.data_source_uuid)
             .update(results[0])
       .then () ->
         dbs.ensureTransaction transaction, 'main', (transaction) ->
@@ -141,7 +138,66 @@ finalizeData = ({subtask, id, data_source_id, finalizedParcel, transaction, dela
             .insert(listing)
 
 
+ensureNormalizedTable = (subid) ->
+  tableQuery = tables.normalized.listing({subid})
+  tableName = tableQuery.tableName
+  sqlHelpers.checkTableExists(tableQuery)
+  .then (tableAlreadyExists) ->
+    if tableAlreadyExists
+      return
+    dbs.get('normalized').schema.createTable tableName, (table) ->
+      table.timestamp('rm_inserted_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
+      table.timestamp('rm_modified_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
+      table.text('batch_id').notNullable().index()
+      table.text('deleted')
+      table.timestamp('up_to_date', true).notNullable()
+      table.json('change_history').defaultTo('[]').notNullable()
+      table.text('data_source_uuid').notNullable()
+      table.text('rm_property_id').notNullable()
+      table.integer('fips_code').notNullable()
+      table.text('parcel_id').notNullable()
+      table.json('address')
+      table.decimal('price', 13, 2)
+      table.integer('days_on_market')
+      table.integer('bedrooms')
+      table.decimal('acres', 11, 3)
+      table.integer('sqft_finished')
+      table.text('status').notNullable()
+      table.text('status_display').notNullable()
+      table.integer('rm_raw_id').notNullable()
+      table.text('inserted').notNullable()
+      table.text('updated')
+      table.json('shared_groups').notNullable()
+      table.json('subscriber_groups').notNullable()
+      table.json('hidden_fields').notNullable()
+      table.json('ungrouped_fields')
+      table.timestamp('close_date', true)
+      table.boolean('hide_listing').notNullable()
+      table.timestamp('discontinued_date', true)
+      table.boolean('hide_address').notNullable()
+      table.json('year_built')
+      table.json('baths')
+      table.text('zoning')
+      table.text('property_type')
+      table.text('description')
+      table.decimal('original_price', 13, 2)
+      table.text('photo_id')
+      table.timestamp('photo_last_mod_time', true)
+      table.timestamp('creation_date', true)
+      table.integer('days_on_market_cumulative')
+      table.integer('days_on_market_filter')
+    .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_uuid)")
+    .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
+    .raw("CREATE INDEX ON #{tableName} (inserted)")
+    .raw("CREATE INDEX ON #{tableName} (deleted)")
+    .raw("CREATE INDEX ON #{tableName} (deleted, data_source_uuid)")
+    .raw("CREATE INDEX ON #{tableName} (updated)")
+    .raw("CREATE INDEX ON #{tableName} (batch_id)")
+    .raw("CREATE INDEX ON #{tableName} (rm_property_id, hide_listing, deleted, close_date DESC)")
+
+
 module.exports = {
   buildRecord
   finalizeData
+  ensureNormalizedTable
 }

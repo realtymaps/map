@@ -11,6 +11,7 @@ status = require '../../common/utils/httpStatus'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 routeHelpers = require '../utils/util.route.helpers'
+commonConfig = require '../../common/config/commonConfig'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -57,7 +58,11 @@ module.exports = (app, sessionMiddlewares) ->
           if !_.isEmpty(req.body)
             msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
           logger.error(msg.join('\n'))
-          throw new PartiallyHandledError(error, "uncaught route handler error")
+          logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
+          throwError =
+            message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
+            quiet: logError.quiet
+          throw throwError
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
