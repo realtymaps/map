@@ -11,7 +11,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmaps
     $scope.gridName = $scope.gridName[0].toUpperCase() + $scope.gridName.slice(1)
 
     ###
-      Public: Area to handle different custom fields
+      Private: Area to handle different custom fields
 
       Returns boolean
     ###
