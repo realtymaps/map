@@ -11,6 +11,7 @@ status = require '../../common/utils/httpStatus'
 {ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 routeHelpers = require '../utils/util.route.helpers'
+commonConfig = require '../../common/config/commonConfig'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -59,7 +60,7 @@ module.exports = (app, sessionMiddlewares) ->
           logger.error(msg.join('\n'))
           logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
           throwError =
-            message: "Oops! Sorry, something unexpected happened. Please try again later, or contact support and give them this error reference: #{logError.errorRef}"
+            message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
             quiet: logError.quiet
           throw throwError
         .catch (error) ->
