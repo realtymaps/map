@@ -82,7 +82,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
         .limit(1)
         .then (row) ->
           if !row?.length
-            throw new HardFail("operation would delete all active rows for #{subtask.task_name}: #{q}")
+            throw new HardFail("operation would delete all active rows for #{subtask.task_name}: #{subid}")
         .then () ->
           # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
           # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update

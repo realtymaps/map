@@ -26,6 +26,7 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Resta
         width: 175
         defaultValue: 1
         cellClass: 'clickable-cell'
+        handleNull: true
       ,
         field: 'subtasks_per_process'
         displayName: 'Subtasks Per Process'
@@ -33,6 +34,7 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Resta
         width: 175
         defaultValue: 1
         cellClass: 'clickable-cell'
+        handleNull: true
       ,
         field: 'priority_factor'
         displayName: 'Priority Factor'
@@ -40,6 +42,7 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Resta
         width: 150
         defaultValue: 1.0
         cellClass: 'clickable-cell'
+        handleNull: true
       ,
         field: 'active'
         displayName: 'Active'
