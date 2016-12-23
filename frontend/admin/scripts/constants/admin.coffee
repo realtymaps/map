@@ -1,3 +1,4 @@
+commonConfig = require '../../../../common/config/commonConfig.coffee'
 app = require '../app.coffee'
 _ = require 'lodash'
 
@@ -31,15 +32,15 @@ admin =
       username: null
       password: null
       url: null
-      disclaimer_logo: null
-      disclaimer_text: null
+      disclaimer_logo: commonConfig.mlsicons.filelist[0]
+      disclaimer_text: commonConfig.mlsdisclaimer.default
       dmca_contact_name: null
       dmca_contact_address: null
 
     propertySchema:
       listing_data: _.extend({largestPhotoObject: 'Photo'}, _.mapValues columns.listing_data, (v) -> cleanData())
     agentSchema:
-      agent_data: _.extend({}, _.mapValues columns.agent_data, (v) -> cleanData())
+      agent_data: _.extend({}, _.mapValues(columns.agent_data, (v) -> cleanData()))
     otherConfig:
       static_ip: false
       verify_overlap: true
