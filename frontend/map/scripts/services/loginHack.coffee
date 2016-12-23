@@ -16,11 +16,11 @@ module.exports = app.service 'rmapsLoginHack', (
   ### BEGIN TERRIBLE HACK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     We need to figure out why after login succedes that some post processing routes still think we are not logged in.
 
-    Hence, why we check backendRoutes.config.protectedConfig as this route is protected by login. We recurse this route until
+    Hence, why we check backendRoutes.userSession.profiles as this route is protected by login. We recurse this route until
     we are actually logged in.
   ###
   isLoggedIn = () ->
-    $http.get backendRoutes.config.protectedConfig
+    $http.get backendRoutes.userSession.profiles
     .then ({data} = {}) ->
       if !data || data.doLogin == true
         return false
