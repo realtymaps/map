@@ -15,6 +15,8 @@ getConfig = () -> Promise.try () ->
       if key.startsWith('map-')
         maps.push(name: key.substr(4), mapId: val)
 
+    cdn = process.env.CDN_HOST || 'parcels.realtymapsterllc.netdna-ssl.com'
+
     API_KEY: accountInfo.api_key
     ACCOUNT: accountInfo.username
     API_KEY_TO_US: accountInfo.other.api_key_to_us
@@ -22,7 +24,7 @@ getConfig = () -> Promise.try () ->
     TEMPLATE: null
     ROOT_URL: root
     API_URL: apiUrl
-    TILE_URL: "/api/tiles/{mapid}/{z}/{x}/{y}"
+    TILE_URL: "//#{cdn}/api/tiles/{mapid}/{z}/{x}/{y}"
     WAKE_URLS: _.map(maps, (m) -> "#{root}/map/named/#{m.name}?#{apiUrl}")
 
 module.exports = memoize.promise(getConfig, maxAge: 15*60*1000)
