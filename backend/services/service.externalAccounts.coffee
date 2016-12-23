@@ -79,7 +79,6 @@ insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   .insert(_transform(_encrypt, opts.cipherKey, accountInfo))
   if opts.logOnly
     return console.log(query.toString())
-  console.log "insertAccountInfo query:\n#{query.toString()}"
   query
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->

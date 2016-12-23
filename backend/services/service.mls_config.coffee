@@ -73,6 +73,7 @@ class MlsConfigService extends ServiceCrud
     newMls = _.omit(entity, ['url', 'username', 'password'])
     @logger.debug () -> "create() newMls: #{JSON.stringify(newMls)}"
     newMls.id = entity.id
+
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
     dbs.transaction (transaction) ->
