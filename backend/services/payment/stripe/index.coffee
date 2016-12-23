@@ -3,8 +3,8 @@ stripeBootstrap = require './service.payment.impl.stripe.bootstrap'
 logger = (require '../../../config/logger').spawn('stripe')
 analyzeValue = require '../../../../common/utils/util.analyzeValue'
 
-module.exports = Promise.try () ->
-  stripeBootstrap
+module.exports = () -> Promise.try () ->
+  stripeBootstrap()
   .then (bootstrapped) ->
     logger.info 'backend stripe is bootsraped'
     customers: require('./service.payment.impl.stripe.customers')(bootstrapped)

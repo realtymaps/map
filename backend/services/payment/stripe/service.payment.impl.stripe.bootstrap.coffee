@@ -5,7 +5,7 @@ config = require '../../../config/config'
 logger = require('../../../config/logger').spawn('stripe')
 
 
-module.exports = do ->
+module.exports = () ->
   externalAccounts.getAccountInfo('stripe')
   .then ({other}) ->
     throw new CriticalError('Stripe API_KEYS intialization failed.') unless other
@@ -18,7 +18,7 @@ module.exports = do ->
       apiKeyNameStr = 'test'
 
     keyToUse = "secret_#{apiKeyNameStr}_api_key"
-    logger.debug "using API_KEY prop: #{keyToUse} for backend stripe"
+    logger.debug -> "using API_KEY prop: #{apiKeyNameStr} for backend stripe"
     secret_api_key = API_KEYS[keyToUse]
     stripeFactory(secret_api_key)
   .then (stripe) ->

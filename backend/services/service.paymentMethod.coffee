@@ -3,7 +3,8 @@ logger = require('../config/logger').spawn("service.paymentMethod")
 {expectSingleRow} = require '../utils/util.sql.helpers'
 
 customerService = null
-require('./services.payment').then (svc) -> customerService = svc.customers
+require('./payment/stripe')().then (svc) ->
+  customerService = svc.customers
 
 
 ### servicing, and db / stripe API for payment method operations ###

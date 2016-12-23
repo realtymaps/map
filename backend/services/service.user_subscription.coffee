@@ -11,7 +11,7 @@ permSvc = require './service.permissions'
 stripeErrors = require '../utils/errors/util.errors.stripe'
 
 stripe = null
-require('../services/services.payment').then (svc) -> stripe = svc.stripe
+require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
 
 
 # Return "dummy" subscription objects that emulates a stripe subscription
