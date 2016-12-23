@@ -66,9 +66,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
   logger.spawn(subtask.task_name).debug () -> subtask
 
   subid = buildUniqueSubtaskName(subtask)
-  subset =
-    data_source_id: opts.data_source_id || subtask.task_name
-  _.extend(subset, subtask.data.subset)
+  subset = subtask.data.subset ? {}
 
   dbs.transaction 'normalized', (transaction) ->
 
@@ -76,20 +74,20 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       if subtask.data.deletes == DELETE.UNTOUCHED
         # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
         # first such row rather than return all or count them all
-        q = tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+        tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
         .select('rm_raw_id')
         .where(batch_id: subtask.batch_id)
         .where(subset)
         .whereNull('deleted')
         .limit(1)
-        q.then (row) ->
+        .then (row) ->
           if !row?.length
             throw new HardFail("operation would delete all active rows for #{subtask.task_name}: #{q}")
         .then () ->
           # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
           # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
           # will resolve to a count of affected rows
-          tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+          tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
           .whereNot(batch_id: subtask.batch_id)
           .where(subset)
           .whereNull('deleted')
@@ -97,7 +95,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
           .then (count) ->
             [count: count]
       else if subtask.data.deletes == DELETE.INDICATED
-        tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+        tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
         .count('*')
         .where(subset)
         .where(deleted: subtask.batch_id)
@@ -108,12 +106,12 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
     # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
     unvalidatedPromise = if subtask.data.skipRawTable then 0 else _countInvalidRows(subid, false)
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
-    insertedPromise = tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+    insertedPromise = tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
     .where(inserted: subtask.batch_id)
     .where(subset)
     .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-    updatedPromise = tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+    updatedPromise = tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
     .where(updated: subtask.batch_id)
     .where(subset)
     .count('*')
@@ -131,7 +129,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       if !opts.indicateDeletes
         return
 
-      tables.normalized[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: transaction)
+      tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
       .select('rm_property_id')
       .where(subset)
       .where(deleted: subtask.batch_id)
@@ -140,7 +138,7 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
         # successfully commits for data safety
         dbs.transaction (mainDbTransaction) ->
           Promise.each results, (r) ->
-            markForDelete r.rm_property_id, (opts.data_source_id || subtask.task_name), subtask.batch_id,
+            markForDelete r.rm_property_id, opts.data_source_id, subtask.batch_id,
               deletesTable: opts.deletesTable
               transaction: mainDbTransaction
 
@@ -150,8 +148,7 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
   logger.spawn(subtask.task_name).debug subtask
 
   tableProp ?= 'combined'
-  subset =
-    data_source_id: data_source_id || subtask.task_name
+  subset = {data_source_id}
   _.extend(subset, subtask.data.subset)
 
   dbs.ensureTransaction transaction, 'main', (transaction) ->
@@ -167,12 +164,12 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
         # in this mode, we're doing an incremental update, so every row has been handled individually, either with an
         # upsert, or with an indicated delete below
         tables.finalized[tableProp](transaction: transaction, as: 'deleter')
-        .where(data_source_id: data_source_id || subtask.task_name)
+        .where(data_source_id: data_source_id)
         .whereExists () ->
           tables.deletes[tableProp](transaction: this)
           .select(1)
           .where
-            data_source_id: data_source_id || subtask.task_name
+            data_source_id: data_source_id
             batch_id: subtask.batch_id
             rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
         .delete()
@@ -180,7 +177,7 @@ activateNewData = (subtask, {tableProp, transaction, deletes, skipIndicatedDelet
           # clean up after itself in the deletes table
           tables.deletes[tableProp](transaction: transaction)
           .where
-            data_source_id: data_source_id || subtask.task_name
+            data_source_id: data_source_id
             batch_id: subtask.batch_id
           .delete()
     .then () ->
@@ -341,7 +338,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
       stats =
-        data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
         up_to_date: new Date(subtask.data.startTime)
@@ -361,7 +357,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
           stats
           diffExcludeKeys: validationInfo.diffExcludeKeys
           dataType: subtask.data.dataType
-          subid: subtask.data.normalSubid
+          subid: options.normalSubid
           dataSourceType: options.dataSourceType
           idField: options.idField || 'rm_property_id'
         })
@@ -390,7 +386,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
       of: subtask.data.of
       count: successes.length
       values: successes
-      normalSubid: subtask.data.normalSubid
+      fips_code: subtask.data.fips_code
     jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData})
 
 
@@ -405,9 +401,7 @@ updateRecord = (opts) -> Promise.try () ->
     # check for an existing row
     tables.normalized[dataType](subid: subid)
     .select('*')
-    .where
-      data_source_id: updateRow.data_source_id
-      data_source_uuid: updateRow.data_source_uuid
+    .where(data_source_uuid: updateRow.data_source_uuid)
   .then (result) ->
     if !result?.length
       # no existing row, just insert
@@ -446,9 +440,7 @@ updateRecord = (opts) -> Promise.try () ->
         parcelUtils.prepRowForRawGeom(updateRow)
 
       tables.normalized[dataType](subid: subid)
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
+      .where(data_source_uuid: updateRow.data_source_uuid)
       .update(updateRow)
   .then () ->
     updateRow[opts.idField]

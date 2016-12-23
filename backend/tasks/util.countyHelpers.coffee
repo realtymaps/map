@@ -223,7 +223,6 @@ ensureNormalizedTable = (dataType, subid) ->
     createTable = dbs.get('normalized').schema.createTable tableName, (table) ->
       table.timestamp('rm_inserted_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
       table.timestamp('rm_modified_time', true).defaultTo(dbs.get('normalized').raw('now_utc()')).notNullable()
-      table.text('data_source_id').notNullable()
       table.text('batch_id').notNullable().index()
       table.text('deleted')
       table.timestamp('up_to_date', true).notNullable()
@@ -270,19 +269,19 @@ ensureNormalizedTable = (dataType, subid) ->
         table.text('term')
         table.text('financing_type')
         table.text('loan_type')
-    .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
+    .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_uuid)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
-    .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")
-    .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
-    .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, deleted)")
-    .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
+    .raw("CREATE INDEX ON #{tableName} (inserted)")
+    .raw("CREATE INDEX ON #{tableName} (deleted)")
+    .raw("CREATE INDEX ON #{tableName} (updated)")
     if dataType == 'tax'
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, recording_date DESC NULLS LAST)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, recording_date DESC NULLS LAST)")
       .raw("CREATE INDEX ON #{tableName} (rm_property_id)")
-      .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, parcel_id)")
+      .raw("CREATE INDEX ON #{tableName} (parcel_id)")
     else
-      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, data_source_id, deleted, close_date DESC NULLS LAST)")
-      .raw("CREATE INDEX ON #{tableName} (data_source_id, fips_code, data_source_uuid)")
+      createTable = createTable.raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS LAST)")
+      .raw("CREATE INDEX ON #{tableName} (data_source_uuid)")
+    createTable
 
 
 module.exports = {
