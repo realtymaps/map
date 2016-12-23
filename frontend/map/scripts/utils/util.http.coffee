@@ -103,7 +103,6 @@ urlResolve = (url) ->
 # exactly the behavior needed here.  There is little value is mocking these out for this
 # service.
 urlParsingNode = document.createElement('a')
-originUrl = urlResolve(window.location.href)
 
 createXhr = ->
   new XMLHttpRequest()

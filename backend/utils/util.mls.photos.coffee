@@ -5,7 +5,6 @@ logger = require('../config/logger').spawn('util:mls:photos')
 eventLogger = require('../config/logger').spawn('util:mls:photos:event')
 logger = require('../config/logger').spawn('util:mls:photos')
 photoErrors = require '../utils/errors/util.errors.photos'
-analyzeValue = require '../../common/utils/util.analyzeValue'
 request = require 'request'
 
 

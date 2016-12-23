@@ -36,7 +36,6 @@ app.controller 'rmapsProjectsCtrl', (
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      currentProfileId = null
 
       rmapsProjectsService.createProject $scope.newProject
       .then (currentProfile) ->

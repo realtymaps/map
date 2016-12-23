@@ -43,7 +43,7 @@ rmapsClientsFactory
       .then loadClients
       .then () ->
         $log.debug -> "clientCopy:\n#{JSON.stringify($scope.clientCopy)}"
-        modalConfirmInstance = $uibModal.open
+        $uibModal.open
           scope: $scope
           template: require('../../html/views/templates/modals/confirm.jade')()
 

@@ -1,4 +1,5 @@
 app = require '../../app.coffee'
+_ = require 'lodash'
 
 
 app.controller 'rmapsReplaceCCModalCtrl',

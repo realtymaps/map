@@ -305,9 +305,6 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
 
   mlsId = subtask.task_name.split('_')[0]
 
-  needsRetry = false
-  globalErrorDetails = null
-
   {data_source_uuid, photo_id} = idObj
   photoRowClause = {data_source_id: mlsId, data_source_uuid}
 
@@ -357,16 +354,16 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
     if (rootError instanceof retsService.RetsReplyError) && (rootError.replyTag == 'NO_RECORDS_FOUND')
       # assume the listing has been deleted / we no longer have access
       taskLogger.debug () -> "Listing no longer accessible, skipping: #{mlsId}/#{data_source_uuid}"
-      return
+      return {successCtr: 0, skipsCtr: 0, errorsCtr: 0, uploadsCtr: 0, errorDetails: null}
     throw new errorHandlingUtils.QuietlyHandledError(error, "problem storing photos for #{mlsId}/#{data_source_uuid}")
   .catch (error) ->
-    globalErrorDetails ?= analyzeValue.getFullDetails(error)
-    needsRetry = true
-    taskLogger.debug () -> "overall error: #{globalErrorDetails}"
+    errorDetails = analyzeValue.getFullDetails(error)
+    taskLogger.debug () -> "overall error: #{errorDetails}"
+    return {successCtr: 0, skipsCtr: 0, errorsCtr: 0, uploadsCtr: 0, errorDetails}
   .then ({successCtr, skipsCtr, errorsCtr, uploadsCtr, errorDetails}) ->
     taskLogger.debug () -> "Photos uploaded: #{uploadsCtr} | skipped: #{skipsCtr} | errors: #{errorsCtr} | successes: #{successCtr}"
     Promise.try () ->
-      if !needsRetry && errorsCtr == 0
+      if !errorDetails
         return
       taskLogger.debug () -> "marking listing for retry"
       sqlHelpers.upsert
@@ -375,7 +372,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
         entityObj:
           batch_id: subtask.batch_id
           photo_id: photo_id
-          error: errorDetails ? globalErrorDetails
+          error: errorDetails
         conflictOverrideObj:
           photo_id: undefined
           retries: tables.deletes.retry_photos.raw('EXCLUDED.retries + 1')

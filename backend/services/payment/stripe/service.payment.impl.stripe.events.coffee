@@ -1,7 +1,6 @@
 Promise = require 'bluebird'
-_ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
-{PartiallyHandledError, isUnhandled} = require '../../../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError} = require '../../../utils/errors/util.error.partiallyHandledError'
 emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
 dbs = require '../../../config/dbs'

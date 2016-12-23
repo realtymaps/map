@@ -9,9 +9,13 @@ mlsRouteUtil = require '../utils/util.route.mls'
 Promise =  require 'bluebird'
 JSONStream = require 'JSONStream'
 require '../extensions/stream'
+memoize = require 'memoizee'
 
+_getPhotoIds = null
+_getPhotoIdsCached = null
 
 getPhotoIds = (req, res, next) ->
+  l = logger.spawn('getPhotoIds')
   validation.validateAndTransformRequest(req, transforms.getPhotoIds)
   .then (validReq) ->
     {mlsId} = validReq.params
@@ -20,7 +24,7 @@ getPhotoIds = (req, res, next) ->
     subLimit ?= 1
     limit ?= 2
 
-    logger.debug -> {mlsId, uuidField, photoIdField, subLimit}
+    l.debug -> {mlsId, uuidField, photoIdField, subLimit}
 
     dataOptions = {
       subLimit
@@ -28,36 +32,70 @@ getPhotoIds = (req, res, next) ->
       listing_data: {lastModTime: lastModTimeField}
     }
 
-    retStream = through.obj (chunks, enc, cb) ->
-      for chunk in chunks #flatten
-        @push(chunk)
-      cb()
+    if !_getPhotoIds?
+      l.debug -> '@@@@@ NOT CACHED _getPhotoIds: undefined @@@@@'
 
-    handleChunk = (chunk) -> Promise.try () ->
-      if !chunk?.length
-        return
-      logger.debug () -> "Found #{chunk.length} updated rows in chunk"
-      for row,i in chunk
-        chunk[i] =
-          data_source_uuid: row[uuidField]
-          photo_id: row[photoIdField]
+      _getPhotoIds = (_mlsId, _dataOptions, _res, _rowFields) ->
+        l.debug -> '@@@@@ NOT CACHED inside _getPhotoIds @@@@@'
+        retStream = through.obj (chunks, enc, cb) ->
+          for chunk in chunks #flatten
+            @push(chunk)
+          cb()
 
-      retStream.write(chunk)
+        allChunks = []
 
-    logger.debug () -> "Getting data chunks for #{mlsId}: #{JSON.stringify(dataOptions)}"
-    retsService.getDataChunks(mlsId, 'listing', dataOptions, handleChunk)
-    .then () ->
-      logger.debug -> "done: retsService.getDataChunks"
-      retStream.end()
-    .catch (err) ->
-      retStream.error(err)
+        handleChunk = (chunk) -> Promise.try () ->
+          if !chunk?.length
+            return
+          l.debug () -> "Found #{chunk.length} updated rows in chunk"
+          # l.debug -> chunk
 
-    # since some MLSes are dog **** slow stream the response
-    res.type("application/json")
+          for row,i in chunk
+            chunk[i] =
+              data_source_uuid: row[_rowFields.uuidField]
+              photo_id: row[_rowFields.photoIdField]
 
-    retStream
-    .pipe(JSONStream.stringify())
-    .pipe(res)
+          # l.debug -> chunk
+          allChunks.push(chunk)
+          retStream.write(chunk)
+
+        l.debug () -> "Getting data chunks for #{_mlsId}: #{JSON.stringify(_dataOptions)}"
+        retsService.getDataChunks(_mlsId, 'listing', _dataOptions, handleChunk)
+        .then () ->
+          logger.debug -> "done: retsService.getDataChunks"
+          retStream.end()
+        .catch (err) ->
+          retStream.error(err)
+
+        # stream portion should only run the first time (not on cache hits)
+        # since some MLSes are dog **** slow stream the response
+        _res.type("application/json")
+        _res.started = true
+
+        retStream
+        .pipe(JSONStream.stringify())
+        .pipe(_res)
+        .toPromise()
+        .then () ->
+          allChunks = _.flatten(allChunks)
+
+      #TODO: eventually figure out a clean way to add cache supports to our routes
+      # this seems way to hard to do something that should be trivial
+      # keep in mind we need to consider the req.user (session), and req
+      _getPhotoIdsCached = memoize.promise(_getPhotoIds,
+        maxAge: 15*60*1000
+        normalizer: (args) ->
+          #args is arguments object as accessible in memoized function
+          JSON.stringify(args[0]) + JSON.stringify(args[1])
+        dispose: () ->
+          _getPhotoIds = null
+      )
+
+    _getPhotoIdsCached(mlsId, dataOptions, res, {uuidField, photoIdField})
+    .then (result) ->
+      if !res.started
+        l.debug -> '@@@@ CACHED result @@@@'
+        res.json(result)
 
 
 # example

@@ -5,7 +5,7 @@ L = require 'leaflet'
 app.service 'rmapsSearchboxService', ($log, leafletData) ->
 
   # need to have the id for the main map element (mapdiv)
-  create = (mapdiv) ->
+  (mapdiv) ->
     leafletData.getMap(mapdiv)
     .then (map) ->
 
@@ -22,6 +22,7 @@ app.service 'rmapsSearchboxService', ($log, leafletData) ->
 
           # procure url;  openstreetmap query parameter urls: http://wiki.openstreetmap.org/wiki/Nominatim
           url = "//nominatim.openstreetmap.org/search?format=json&q={s}&viewbox=#{left},#{top},#{right},#{bottom}&bounded=1"
+          url
 
       # marker reference
       searchMarker = new L.Icon

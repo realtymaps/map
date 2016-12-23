@@ -21,7 +21,9 @@ rmapsLayerUtil
       if @isClusterResults()
         @scope.map.markers.filterSummary = {}
         clusters = {}
+        # coffeelint: disable=check_scope
         for k, model of @data
+        # coffeelint: enable=check_scope
           # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
           clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = MLS.setMarkerManualClusterOptions(model)
         @scope.map.markers.backendPriceCluster = clusters

@@ -152,7 +152,7 @@ app.service 'rmapsMailTemplateFactory', (
         if !toSave.project_id?
           toSave.project_id = rmapsPrincipalService.getCurrentProfile().project_id
 
-        op = rmapsMailCampaignService.create(toSave) #upserts if not already created (only if using psql 9.5)
+        rmapsMailCampaignService.create(toSave) #upserts if not already created (only if using psql 9.5)
         .then ({data}) =>
           @campaign.id = data.rows[0].id
           @campaign

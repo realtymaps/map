@@ -1,0 +1,9 @@
+.flickity.carousel(ng-if="photos")
+  .carousel-cell(ng-repeat="photo in photos track by $index" index="$index")
+    h2(ng-if="photo.info") {{photo.info}}
+
+    a(href="{{photo.link}}" ng-if="!photo.click")
+      img(data-flickity-lazyload="{{photo.url}}")
+
+    a(href="JavaScript:void(0)" ng-click="photo.click()")
+      img(data-flickity-lazyload="{{photo.url}}")

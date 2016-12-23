@@ -10,9 +10,9 @@ rmapsHttpTempCache
 ) ->
 
   (profile) ->
-    ###eslint-disable###
+    # coffeelint: disable=check_scope
     $logDraw = $log.spawn("projects:drawnShapes")
-    ###eslint-enable###
+    # coffeelint: enable=check_scope
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
     areaUrl = backendRoutes.projectSession.areas.replace(":id",profile.project_id)
 
