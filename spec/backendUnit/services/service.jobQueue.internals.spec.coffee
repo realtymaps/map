@@ -13,7 +13,7 @@ describe "service.jobQueue.internals", () ->
         totalOrList: ['1']
         maxPage: 1
         mergeData:
-          normalSubid: '12021'
+          fips_code: '12021'
       }
       datas.should.be.eql [
         offset: 0
@@ -21,7 +21,7 @@ describe "service.jobQueue.internals", () ->
         i: 1
         of: 1
         values: [ '1' ]
-        normalSubid: '12021'
+        fips_code: '12021'
       ]
 
   describe 'buildQueueSubtaskDatas', () ->
@@ -30,7 +30,7 @@ describe "service.jobQueue.internals", () ->
         totalOrList: ['1']
         maxPage: 1
         mergeData:
-          normalSubid: '12021'
+          fips_code: '12021'
       }
       queueData = jqInternals.buildQueueSubtaskDatas {subtask: {}, manualData: paginatedData}
       queueData.subtaskData.should.be.eql [
@@ -39,5 +39,5 @@ describe "service.jobQueue.internals", () ->
         i: 1
         of: 1
         values: [ '1' ]
-        normalSubid: '12021'
+        fips_code: '12021'
       ]
