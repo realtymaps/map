@@ -57,7 +57,11 @@ module.exports = (app, sessionMiddlewares) ->
           if !_.isEmpty(req.body)
             msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
           logger.error(msg.join('\n'))
-          throw new PartiallyHandledError(error, "uncaught route handler error")
+          logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
+          throwError =
+            message: "Oops! Sorry, something unexpected happened. Please try again later, or contact support and give them this error reference: #{logError.errorRef}"
+            quiet: logError.quiet
+          throw throwError
         .catch (error) ->
           if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST

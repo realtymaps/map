@@ -18,8 +18,11 @@ class PartiallyHandledError extends VError
     @name = name
     if @jse_cause?.quiet
       @quiet ?= true
-    if !(@jse_cause instanceof PartiallyHandledError)
-      @message = @message + " (Error reference #{uuid.v1()})"
+    if @jse_cause instanceof PartiallyHandledError
+      @errorRef = @jse_cause.errorRef
+    else
+      @errorRef = uuid.v1()
+      @message = @message + " (Error reference #{@errorRef})"
     if !@quiet
       @logReference()
 
