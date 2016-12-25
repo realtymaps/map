@@ -1,54 +1,52 @@
-# auth = require '../utils/util.auth'
+auth =  require '../utils/util.auth'
 emailServices = require '../services/services.email'
 logger = require('../config/logger').spawn('route:email')
-{validateAndTransformRequest} = require '../utils/util.validation'
+{DataValidationError, validateAndTransformRequest} = require '../utils/util.validation'
 emailTransforms = require('../utils/transforms/transforms.email')
-auth = require '../utils/util.auth'
+ExpressResponse = require '../utils/util.expressResponse'
+httpStatus = require '../../common/utils/httpStatus'
+errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+
+_isValid = (isLoggedIn) ->
+  route =
+    method: 'post'
+    handleQuery: true
+    handle: (req, res, next) ->
+      emailTransforms.validateRequest(req)
+      .then (validReq) ->
+        logger.debug -> "isValid: true"
+        logger.debug -> validReq
+        true
+      .catch DataValidationError, (err) ->
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+      .catch errorHandlingUtils.isUnhandled, (error) ->
+        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+
+  if isLoggedIn
+    route.middleware =
+      auth.requireLogin() #do not redirect or you will cause validations to pass!
+
+  route
+
 
 module.exports =
-  #does not need login as this is meant for all emails not in the system yet
+  # does not need login as this is meant for all emails not in the system yet
+  # endpoint is for verifying an email address hash so that an email account is conidered non-spam
   verify:
     handleQuery: true
-    handle: (req) ->
-      validateAndTransformRequest req, emailTransforms.emailVerifyRequest
+    handle: (req, res, next) ->
+      validateAndTransformRequest req, emailTransforms.verifyRequest
       .then (validReq) ->
         emailServices.validateHash(validReq.params.hash)
       .then (bool) ->
         if bool
           "account validated via email"
+      .catch DataValidationError, (err) ->
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+      .catch errorHandlingUtils.isUnhandled, (error) ->
+        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
+        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
 
-  isValid:
-    method: 'post'
-    handleQuery: true
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-    ]
-    handle: (req) ->
-      logger.debug -> req.user
-
-      transforms = params:
-        email: emailTransforms.validEmail()
-
-      validateAndTransformRequest(req, transforms)
-      .then (validReq) ->
-        logger.debug -> "isValid: true"
-        logger.debug -> validReq
-        true
-
-  #existing email check
-  isUnique:
-    method: 'post'
-    handleQuery: true
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-    ]
-    handle: (req) ->
-      logger.debug -> req.user
-
-      transforms = emailTransforms.emailRequest(req.user?.id)
-
-      validateAndTransformRequest(req, transforms)
-      .then (validReq) ->
-        logger.debug -> "isUnique: true"
-        logger.debug -> validReq
-        true
+  isValid: _isValid()
+  isValidLoggedIn: _isValid(true)

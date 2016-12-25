@@ -1,6 +1,6 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 
-app.controller 'rmapsModalInstanceCtrl', ($scope, $uibModalInstance, model) ->
+mod.controller 'rmapsModalInstanceCtrl', ($scope, $uibModalInstance, model) ->
   $scope.model = model
 
   $scope.save = ->

@@ -20,7 +20,7 @@ describe "util.countyHelpers", () ->
       subtask =
         data:
           dataType: "parcel"
-          normalSubid: '1234'
+          fips_code: '1234'
           rawTableSuffix: '1234'
           subset:
             fips_code: '1234'
@@ -54,8 +54,8 @@ describe "util.countyHelpers", () ->
       parcelHelpers.__set__ 'tables', tables
       countyHelpers.__set__ 'parcelHelpers', parcelHelpers
 
-      countyHelpers.finalizeData({subtask, id:'1', data_source_id: 'county'})
+      countyHelpers.finalizeData({subtask, id:'1', data_source_id: 'sourceName'})
 
 
     it 'should query table with subid', () ->
-      expect(propTaxMock.toString()).to.include('tax_1234')
+      expect(propTaxMock.toString()).to.include('tax_sourceName_1234')

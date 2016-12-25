@@ -135,7 +135,7 @@ _filterS3Contents = (contents, config) -> Promise.try () ->
       _.merge fileInfo,
         fileType: LOAD
         rawTableSuffix: "#{config.action.slice(0,1)}_#{fips}_#{config.date}"
-        normalSubid: fips
+        fips_code: fips
         deletes: dataLoadHelpers.DELETE.INDICATED
 
     if classified
@@ -333,8 +333,8 @@ getProcessInfo = (subtask, subtaskStartTime) ->
         processInfo.fipsQueue = _.filter processInfo.fipsQueue, (fips) ->
           (new RegExp(subtask.data.fipsCodes)).test(fips)
       processInfo.fips = processInfo.fipsQueue[0]
-      processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'normalSubid', processInfo.fips)
-      processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'normalSubid', processInfo.fips)
+      processInfo[REFRESH] = _.filter(processInfo[REFRESH], 'fips_code', processInfo.fips)
+      processInfo[UPDATE] = _.filter(processInfo[UPDATE], 'fips_code', processInfo.fips)
       processInfo.deleteBatchId = subtask.batch_id
       processInfo.loadDeleteFiles = true
       processInfo
@@ -368,9 +368,9 @@ useProcessInfo = (subtask, processInfo) ->
         subset: fips_code: processInfo.fips
       activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
       # ensure normalized data tables exist -- need all 3 no matter what types we have data for
-      taxTable = countyHelpers.ensureNormalizedTable(TAX, processInfo.fips)
-      deedTable = countyHelpers.ensureNormalizedTable(DEED, processInfo.fips)
-      mortTable = countyHelpers.ensureNormalizedTable(MORTGAGE, processInfo.fips)
+      taxTable = countyHelpers.ensureNormalizedTable(TAX, ['blackknight', processInfo.fips])
+      deedTable = countyHelpers.ensureNormalizedTable(DEED, ['blackknight', processInfo.fips])
+      mortTable = countyHelpers.ensureNormalizedTable(MORTGAGE, ['blackknight', processInfo.fips])
       Promise.join(refresh, update, deletes, access, activate, dates, taxTable, deedTable, mortTable)
 
 

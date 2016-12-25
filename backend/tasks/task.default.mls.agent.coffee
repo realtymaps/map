@@ -46,7 +46,7 @@ loadRawData = (subtask) ->
     recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: recordCountsData, replace: true})
     activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: activateData, replace: true})
 
-    Promise.join(recordCountsPromise, activatePromise, normalizePromise, () ->)
+    Promise.join(recordCountsPromise, activatePromise, normalizePromise, internals.ensureNormalizedTable(mlsId), () ->)
     .then () ->
       return numRawRows
 
@@ -59,11 +59,12 @@ normalizeData = (subtask) ->
     buildRecord: internals.buildRecord
     skipFinalize: false
     idField: 'data_source_uuid'
+    normalSubid: mlsId
 
 
 recordChangeCounts = (subtask) ->
   data_source_id = subtask.task_name.split('_')[0]
-  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id})
+  dataLoadHelpers.recordChangeCounts(subtask, {indicateDeletes: false, data_source_id, normalSubid: data_source_id})
 
 
 # not used as a task since it is in normalizeData
@@ -72,11 +73,10 @@ finalizeDataPrep = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
   numRowsToPageFinalize = subtask.data?.numRowsToPageFinalize || NUM_ROWS_TO_PAGINATE
 
-  tables.normalized.agent()
+  tables.normalized.agent({subid: mlsId})
   .select('rm_property_id')
   .where
     batch_id: subtask.batch_id
-    data_source_id: mlsId
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
     jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: numRowsToPageFinalize, laterSubtaskName: "finalizeData"})

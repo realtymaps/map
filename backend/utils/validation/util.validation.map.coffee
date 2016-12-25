@@ -40,10 +40,11 @@ doMapping = (param, options, map, singleValue) ->
   mapped = map[singleValue]
   if mapped?
     return mapped
-  singleValue = singleValue.trim()
-  mapped = map[singleValue]
-  if mapped?
-    return mapped
+  if typeof(singleValue) == 'string'
+    singleValue = singleValue.trim()
+    mapped = map[singleValue]
+    if mapped?
+      return mapped
   if !singleValue? || singleValue == ''
     return null
   if options.unmapped == 'pass'
