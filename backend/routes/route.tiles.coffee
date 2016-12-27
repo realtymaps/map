@@ -18,7 +18,6 @@ getTiles = (mapName) ->
       request {
         url
         encoding: null # ensures body will be a buffer
-        headers
       }, (err, response, body) ->
         try
           if !err
