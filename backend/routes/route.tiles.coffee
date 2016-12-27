@@ -20,10 +20,15 @@ getTiles = (mapName) ->
         encoding: null # ensures body will be a buffer
       }, (err, response, body) ->
         try
-          if !err
+          if err
+            throw new Error(err)
+          else
             if response.statusCode < 400
+              logger.debug response.statusCode
+              res.status(response.statusCode)
               for k, v of response.headers
                 if k != 'content-length'
+                  logger.debug k, v
                   res.setHeader(k, v)
               res.write(body)
               res.end()
