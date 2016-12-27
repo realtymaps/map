@@ -4,8 +4,11 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 utilsGeoJson =  require '../../../../common/utils/util.geomToGeoJson.coffee'
 analyzeValue = require  '../../../../common/utils/util.analyzeValue.coffee'
 
-app.service 'rmapsPropertiesService', ($rootScope, $http, $q, rmapsPropertyFactory,
-  rmapsEventConstants, rmapsPromiseThrottlerFactory, $log) ->
+app.service 'rmapsPropertiesService', (
+$rootScope, $http, $q, $log,
+rmapsPropertyFactory,
+rmapsEventConstants,
+rmapsPromiseThrottlerFactory) ->
 
   $log = $log.spawn("map:rmapsPropertiesService")
 

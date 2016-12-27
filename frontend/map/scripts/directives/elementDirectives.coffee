@@ -24,7 +24,7 @@ app.directive 'rmapsFileRead', () ->
 # reader.onload ->
 #     binary = reader.result; // binary data (stored as string), unsafe for most actions
 #     base64 = btoa(binary); // base64 data, safer but takes up more memory
-# reader.readAsBinaryString(img);
+# reader.readAsBinaryString(img)
 
 ['width', 'height'].forEach (name) ->
   ['client', 'natural'].forEach (heightType) ->

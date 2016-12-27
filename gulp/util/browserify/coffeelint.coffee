@@ -2,7 +2,6 @@ _ = require 'lodash'
 through = require 'through2'
 
 coffeelint = require('coffeelint')
-coffeelint.reporter = require('coffeelint-stylish').reporter
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
 
 
