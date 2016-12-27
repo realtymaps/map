@@ -15,10 +15,6 @@ getTiles = (mapName) ->
       url = "https:#{carto.ROOT_URL}/map/#{parcelMap.mapId}/#{req.params.z}/#{req.params.x}/#{req.params.y}.png"
       logger.debug url
 
-      headers =  {} #_.omit(req.headers, 'host')
-      for k, v of headers
-        logger.debug k, v
-
       request {
         url
         encoding: null # ensures body will be a buffer
@@ -29,13 +25,13 @@ getTiles = (mapName) ->
             if response.statusCode < 400
               for k, v of response.headers
                 if k != 'content-length'
-                  logger.debug k, v
                   res.setHeader(k, v)
               res.write(body)
               res.end()
               return
           throw new Error("Could not load map tile")
         catch err
+          logger.debug err
           return next new ExpressResponse(alert: {msg: "Could not load map tile"}, {status: response?.statusCode || httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
 
     .catch (err) ->
