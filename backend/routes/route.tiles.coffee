@@ -1,6 +1,7 @@
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:tiles")
 # coffeelint: enable=check_scope
+config = require '../config/config'
 request = require('request')
 cartodbConfig = require '../config/cartodb/cartodb'
 httpStatus = require '../../common/utils/httpStatus'
@@ -24,6 +25,8 @@ getTiles = (mapName) ->
             throw new Error(err)
           else
             if response.statusCode < 400
+              res.status(response.statusCode)
+              res.setHeader('cache-control', "public, max-age=#{config.FRONTEND_ASSETS.MAX_AGE_SEC}")
               res.setHeader('content-type', response.headers['content-type'] || 'image/png')
               res.write(body)
               res.end()
