@@ -24,12 +24,8 @@ getTiles = (mapName) ->
             throw new Error(err)
           else
             if response.statusCode < 400
-              logger.debug response.statusCode
               res.status(response.statusCode)
-              for k, v of response.headers
-                if k != 'content-length'
-                  logger.debug k, v
-                  res.setHeader(k, v)
+              res.setHeader(response.headers['content-type'] || 'image/png')
               res.write(body)
               res.end()
               return
