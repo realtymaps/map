@@ -154,15 +154,16 @@ app.controller 'rmapsOnboardingPaymentCtrl',
     "funding"
     "exp_month"
     "exp_year"
+    "address_zip"
   ]
 
   _reSubmitOmitFields = _safePaymentFields.slice(0, _safePaymentFields.indexOf "exp_month")
 
   _cleanReSubmit = () ->
-    # we might be resending the card info with user info changes
-    # Note: payments are handled by stripe automagically
-    $scope.user.card = _.omit $scope.user.card, _reSubmitOmitFields
-    $scope.user.card.name = "#{$scope.user.first_name} #{$scope.user.last_name}"
+    #we might be resending the card info with user info changes
+    #NOTE payment amount must be handled on backend. This is where actual charging occurs.
+    $scope.user.zip = $scope.user.card.address_zip
+    $scope.user.card = _.omit($scope.user.card, _reSubmitOmitFields)
     delete $scope.user.card.token
     $scope.user.card
 

@@ -18,7 +18,7 @@ paymentServices = null
 
 emailService.emailPlatform.then (svc) ->
   emailServices = svc
-require('../services/services.payment').then (svc) ->
+require('../services/payment/stripe')().then (svc) ->
   paymentServices = svc
 
 

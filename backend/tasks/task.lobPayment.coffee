@@ -68,7 +68,7 @@ findCampaigns = (subtask) ->
 chargeCampaign = (subtask) ->
   campaign = subtask.data
 
-  require('../services/services.payment')
+  require('../services/payment/stripe')()
   .then (payment) ->
 
     logger.debug "Checking whether #{campaign.label} is ready for billing"

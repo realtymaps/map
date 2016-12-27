@@ -1,5 +1,5 @@
 chargeService = null
-require('../services/services.payment').then (svc) ->
+require('../services/payment/stripe')().then (svc) ->
   chargeService = svc.charges
 
 module.exports =
