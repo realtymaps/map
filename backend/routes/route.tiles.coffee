@@ -13,7 +13,7 @@ getTiles = (mapName) ->
     .then (carto) ->
       parcelMap = _.find(carto.MAPS, 'name', mapName)
       url = "https:#{carto.ROOT_URL}/map/#{parcelMap.mapId}/#{req.params.z}/#{req.params.x}/#{req.params.y}.png"
-      logger.debug url
+      logger.debug -> url
 
       request {
         url
@@ -24,8 +24,7 @@ getTiles = (mapName) ->
             throw new Error(err)
           else
             if response.statusCode < 400
-              res.status(response.statusCode)
-              res.setHeader(response.headers['content-type'] || 'image/png')
+              res.setHeader('content-type', response.headers['content-type'] || 'image/png')
               res.write(body)
               res.end()
               return
