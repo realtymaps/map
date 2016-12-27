@@ -41,7 +41,6 @@ getTiles = (mapName) ->
 
       stream.pipefilter = (response, res) ->
         for k of response.headers
-          logger.debug "pipfiltering", k
           res.removeHeader(k)
         res.setHeader('cache-control', "public, max-age=#{config.FRONTEND_ASSETS.MAX_AGE_SEC}")
         res.setHeader('content-type', response.headers['content-type'] || 'image/png')
