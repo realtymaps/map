@@ -3,7 +3,7 @@ memoize = require 'memoizee'
 logger = require('../config/logger').spawn("service:plans")
 
 stripe = null
-require('./services.payment').then (svc) -> stripe = svc.stripe
+require('./payment/stripe')().then (svc) -> stripe = svc.stripe
 
 
 getAll = () ->
