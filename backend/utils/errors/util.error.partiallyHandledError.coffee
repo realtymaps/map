@@ -1,3 +1,4 @@
+_ = require 'lodash'
 VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
@@ -53,7 +54,7 @@ isCausedBy = (errorType, _err) ->
     cause = err
     while !(cause instanceof errorType) && cause instanceof PartiallyHandledError && cause.jse_cause?
       cause = cause.jse_cause
-    return err instanceof errorType
+    return cause instanceof errorType
   if _err
     return check(_err)
   else

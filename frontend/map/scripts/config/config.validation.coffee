@@ -22,7 +22,6 @@ app.config(($provide, $validationProvider) ->
 
 )
 .run ($validation, rmapsMainOptions, $http) ->
-
   {validation} = rmapsMainOptions
 
   expression =
