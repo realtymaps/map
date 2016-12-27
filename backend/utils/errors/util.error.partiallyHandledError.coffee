@@ -1,4 +1,3 @@
-_ = require 'lodash'
 VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
