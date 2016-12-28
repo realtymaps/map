@@ -3,8 +3,12 @@ app = require '../app.coffee'
 
 require '../services/leafletObjectFetcher.coffee'
 
-app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService) ->
+app.service 'rmapsResultsFormatterService', (
+$rootScope, $timeout, $filter, $log, $state, $location,
+rmapsParcelEnums,
+rmapsGoogleService,
+rmapsPropertiesService,
+rmapsFormattersService) ->
 
   $log = $log.spawn("map:rmapsResultsFormatterService")
 

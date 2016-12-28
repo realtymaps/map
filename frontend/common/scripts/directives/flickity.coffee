@@ -5,9 +5,9 @@ require 'flickity/dist/flickity.min.css'
 
 
 module.directive 'rmapsFlickity', (
-  $log
-  $timeout
-  ) ->
+$log
+$timeout
+) ->
 
   $log = $log.spawn 'rmapsFlickityDirective'
 
