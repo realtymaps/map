@@ -33,24 +33,26 @@ lint = (ignore) ->  () ->
 
   retStream
 
-watch = (what) ->
+watchGulp = (what) ->
   gulp.watch(globs, gulp.series(what))
 
-run_express = ({script, ext, delay, verbose, signal} = {}) ->
+run_express = ({script, ext, delay, verbose, signal, watch} = {}) ->
   script ?= 'backend/server.coffee'
   watch ?=  ['backend', 'common']
   delay ?= 0.3
   verbose ?= true
   signal ?= 'SIGTERM'
 
-  watch('lint')
+  watchGulp('lint')
+
+  watch = watch.map((n) -> "-w #{n}").join(' ')
 
   if argv.debug
     port = if argv.debug == true then 9999 else argv.debug
   else
     port = config.PORT
 
-  cmd = "nodemon #{script} #{port}"
+  cmd = "nodemon #{script} #{port} #{watch}"
   if verbose
     cmd += " -V"
 
@@ -84,6 +86,6 @@ gulp.task 'express', gulp.parallel 'lint', (done) ->
 
 
 module.exports = {
-  watch
+  watch: watchGulp
   lint
 }
