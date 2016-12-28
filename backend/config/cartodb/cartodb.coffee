@@ -16,23 +16,24 @@ getConfig = () -> Promise.try () ->
     mapPromises = []
 
     for key, mapId of accountInfo.other
-      if key.startsWith('map-')
-        mapName = key.substr(4)
-        mapPromises.push(
-          Promise.promisify(request.post, {context: request, multiArgs: true})({
-            url: "https:#{root}/map/named/#{mapName}?#{apiUrl}"
-            headers: 'Content-Type': 'application/json;charset=utf-8'
-          })
-          .then ([result, body]) ->
-            body = JSON.parse(body).layergroupid
+      do ->
+        if key.startsWith('map-')
+          mapName = key.substr(4)
+          mapPromises.push(
+            Promise.promisify(request.post, {context: request, multiArgs: true})({
+              url: "https:#{root}/map/named/#{mapName}?#{apiUrl}"
+              headers: 'Content-Type': 'application/json;charset=utf-8'
+            })
+            .then ([result, body]) ->
+              body = JSON.parse(body).layergroupid
 
-          .catch (err) ->
-            logger.debug err
+            .catch (err) ->
+              logger.debug err
 
-          .then (layergroupid) ->
-            name: mapName
-            mapId: layergroupid || mapId
-        )
+            .then (layergroupid) ->
+              name: mapName
+              mapId: layergroupid || mapId
+          )
 
     Promise.all(mapPromises).then (maps) ->
 
