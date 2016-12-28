@@ -1,4 +1,4 @@
-.jobs.row
+.jobs.grid-container.row
   .col-md-1.menu
     h5 Status
     ul.nav.nav-pills.nav-stacked
@@ -18,4 +18,3 @@
         a(ui-sref="jobsSubtask" ui-sref-opts="{reload: true}") Subtasks
   .col-md-11
     div(ng-repeat="state in $state.get() | filter:{parent: 'jobs'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
-

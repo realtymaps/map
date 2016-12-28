@@ -22,6 +22,9 @@ module.exports =
   utilsFipsCodes: '/fips'
   utilsMail: '/mail'
 
+  users: 'users'
+  usersCustomers: '/customers'
+
   authenticating: 'authenticating'
   accessDenied: 'accessDenied'
   pageNotFound: '*path'
