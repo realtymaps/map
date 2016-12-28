@@ -69,7 +69,9 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
             .row(ng-show="user.mls_code")
               .col-md-8.col-sm-8.col-xs-11
                 .form-group
-                  .label Your MLS ID:
+                  .label
+                    div.inline Your NRDS ID:
+                    a.inline(href="https://reg.realtor.org/roreg.nsf/retrieveID") Help me find my Id
                   .col-md-8.col-sm-8.col-xs-11
                     input.form-control(
                       name="mls_id"
