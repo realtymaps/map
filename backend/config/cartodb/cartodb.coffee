@@ -37,7 +37,7 @@ getConfig = () -> Promise.try () ->
 
     Promise.all(mapPromises).then (maps) ->
 
-      cdn = process.env.CDN_HOST || 'parcels.realtymapsterllc.netdna-ssl.com'
+      cdn = process.env.CDN_HOST || 'parcels-realtymapsterllc.netdna-ssl.com'
 
       API_KEY: accountInfo.api_key
       ACCOUNT: accountInfo.username
