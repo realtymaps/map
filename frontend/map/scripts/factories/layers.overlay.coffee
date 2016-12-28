@@ -89,7 +89,7 @@ app.factory 'rmapsOverlays', (
             url: cartodb.TILE_URL
             type: 'xyz'
             layerOptions:
-              mapid: map.mapId
+              mapid: map.name
               attribution: ''
               maxZoom: 21
 
