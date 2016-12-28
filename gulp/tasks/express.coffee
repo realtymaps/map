@@ -50,7 +50,7 @@ run_express = ({script, ext, delay, verbose, signal} = {}) ->
   else
     port = config.PORT
 
-  cmd = "nodemon #{script} #{port} #{watch}"
+  cmd = "nodemon #{script} #{port}"
   if verbose
     cmd += " -V"
 
@@ -68,7 +68,7 @@ run_express = ({script, ext, delay, verbose, signal} = {}) ->
 
   log "Running #{cmd}"
 
-  spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit', env: process.env})
+  return spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit', env: process.env})
 
 gulp.task 'lint', lint(true)
 
