@@ -37,9 +37,18 @@ login = (req, res, next) -> Promise.try () ->
     promise = Promise.resolve()
 
   promise.then () ->
-    if !req.body.password
+    if req.body.password
+      userSessionService.verifyPassword(req.body.email, req.body.password)
+    else if req.body.loginToken
+      userSessionService.verifyLoginToken({
+        superuser: req.user
+        email: req.body.email
+        loginToken: req.body.loginToken
+      })
+      .then (user) ->
+        return req.user = user
+    else
       return false
-    userSessionService.verifyPassword(req.body.email, req.body.password)
   .catch (err) ->
     return false
   .then (user) -> Promise.try ->
@@ -261,6 +270,20 @@ doResetPassword = (req, res, next) ->
       next new ExpressResponse({message: "Error resetting password."},
         {status: httpStatus.BAD_REQUEST, quiet: true})
 
+requestLoginToken = (req, res, next) ->
+  validation.validateAndTransformRequest(req.body, transforms.requestLoginToken)
+  .then (validBody) ->
+    userSessionService.requestLoginToken({
+      superuser: req.user
+      email: validBody.email
+      host: req.headers.host
+    })
+    .then (result) ->
+      res.json(result)
+    .catch (err) ->
+      next new ExpressResponse({message: "Could get login token reset, is email valid?"},
+        {status: httpStatus.BAD_REQUEST, quiet: true})
+
 module.exports =
   root:
     method: 'put'
@@ -331,3 +354,11 @@ module.exports =
   doResetPassword:
     method: 'post'
     handle: doResetPassword
+
+  requestLoginToken:
+    method: 'post'
+    middleware: [
+     auth.requireLogin(redirectOnFail: true)
+     auth.requirePermissions({all:['spoof_user']}, logoutOnFail:true)
+    ]
+    handle: requestLoginToken

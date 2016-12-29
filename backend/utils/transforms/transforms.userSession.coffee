@@ -85,6 +85,9 @@ doResetPassword =
   email: validators.string(regex: config.VALIDATION.email)
   password: validators.string(regex: config.VALIDATION.password)
 
+requestLoginToken =
+  email: validators.string(regex: config.VALIDATION.email)
+
 module.exports = {
   root
   profiles
@@ -93,4 +96,5 @@ module.exports = {
   updatePassword
   requestResetPassword
   doResetPassword
+  requestLoginToken
 }

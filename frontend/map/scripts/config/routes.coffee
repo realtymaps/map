@@ -234,6 +234,7 @@ module.exports = app.config (
   buildChildState 'review', 'mailWizard'
 
   buildState 'login', url: null, template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
+  buildState 'singleLogin', loginRequired: false
   buildState 'logout', url: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
 
