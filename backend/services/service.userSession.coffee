@@ -102,29 +102,29 @@ verifyLoginToken = ({superuser, email, loginToken}) ->
     dbs.transaction 'main', (trx) ->
       keystore.getValue email, namespace: 'login-token', transaction: trx
       .then (entry) ->
-        if !user || !entry.login_token_hash || entry.user.email != email || entry.superuser.email != superuser.email
+        if !user || !entry.login_token_hash || entry.user.email != email || entry.superuser?.email != superuser.email
           # best practice is to go ahead and hash the token before returning,
           # to prevent timing attacks from determining validity of email
           return createPasswordHash(loginToken).then () -> return false
 
-          preprocessHash(entry.login_token_hash)
-          .catch (err) ->
-            logger.error "error while preprocessing login token hash for email #{email}: #{err}"
-            Promise.reject(err)
-          .then (hashData) ->
-            compare = Promise.resolve(false)
-            switch hashData.algo
-              when 'bcrypt'
-                compare = bcrypt.compareAsync(loginToken, hashData.hash)
-            compare.then (match) ->
-              if !match
-                return Promise.reject("given token doesn't match hash for email: #{email}")
-              else if hashData.needsUpdate
-                return Promise.reject("given token is outdated for email: #{email}")
+        preprocessHash(entry.login_token_hash)
+        .catch (err) ->
+          logger.error "error while preprocessing login token hash for email #{email}: #{err}"
+          Promise.reject(err)
+        .then (hashData) ->
+          compare = Promise.resolve(false)
+          switch hashData.algo
+            when 'bcrypt'
+              compare = bcrypt.compareAsync(loginToken, hashData.hash)
+          compare.then (match) ->
+            if !match
+              return Promise.reject("given token doesn't match hash for email: #{email}")
+            else if hashData.needsUpdate
+              return Promise.reject("given token is outdated for email: #{email}")
 
-              keystore.deleteValue('login-token', email, trx)
-              .then () ->
-                return user
+            keystore.deleteValue('login-token', email, trx)
+            .then () ->
+              return user
 
 updatePassword = (user, password, transaction, overwrite = true) ->
   createPasswordHash(password).then (password) ->
