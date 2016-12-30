@@ -359,6 +359,6 @@ module.exports =
     method: 'post'
     middleware: [
      auth.requireLogin(redirectOnFail: true)
-     auth.requirePermissions({all:['spoof_user']}, logoutOnFail:true)
+     auth.requirePermissions('spoof_user', logoutOnFail:true)
     ]
     handle: requestLoginToken
