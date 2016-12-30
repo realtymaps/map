@@ -1,4 +1,5 @@
 PayloadError = require './util.error.payload.coffee'
+NamedError = require('./util.error.named')
 
 class SubscriptionSignUpError extends PayloadError
   constructor: (payload, args...) ->
@@ -36,6 +37,14 @@ class NotificationPropertiesSavedError extends PayloadError
   constructor: (payload, args...) ->
     super(payload, 'NotificationPropertiesSaved', args...)
 
+class UserIdDoesNotExistError extends NamedError
+  @is: (error) ->
+    ret = /.*Cannot get Vero id for user.*/.test(error.message)
+    ret
+
+  constructor: (args...) ->
+    super('UserIdDoesNotExistError', args...)
+
 module.exports = {
   SubscriptionSignUpError
   SubscriptionCreatedError
@@ -46,4 +55,5 @@ module.exports = {
   SubscriptionExpiredError
   CancelPlanError
   NotificationPropertiesSavedError
+  UserIdDoesNotExistError
 }

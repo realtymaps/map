@@ -9,9 +9,11 @@ module.exports = mergeHandles routeCrud(accountUseTypes),
     methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
     ]

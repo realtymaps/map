@@ -113,6 +113,12 @@ app.provider 'rmapsPageService', () ->
         else
           $state.go 'main'
 
+      goToMainOrLogin: () ->
+        if $state.current.name == 'login'
+          $state.go 'main'
+        else
+          $state.go 'login'
+
       #
       # Accessors
       #
@@ -162,9 +168,9 @@ app.provider 'rmapsPageService', () ->
     #
     # State Change Success listener to store page type to avoid repeated evaluation of parent-hierarchy
     #
-      
+
     $rootScope.$on "$stateChangeSuccess", (event, toState) ->
-      
+
       page._findParentPageType()
 
     return page

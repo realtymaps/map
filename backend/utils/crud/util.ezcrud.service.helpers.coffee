@@ -8,22 +8,22 @@ sqlHelpers = require '../util.sql.helpers'
 
 
 class ServiceCrud extends BaseObject
-  constructor: (@dbFn, options = {}) ->
+  constructor: (@dbFn, @options = {}) ->
     @logger = _logger
     if @dbFn.tableName
       @logger = @logger.spawn(@dbFn.tableName)
-    if options.debugNS
-      @logger = @logger.spawn(options.debugNS)
+    if @options.debugNS
+      @logger = @logger.spawn(@options.debugNS)
 
     # reteurnKnex flag activates the CRUD handlers below to return a {knex: <query>} object
-    @returnKnex = options.returnKnex ? false
+    @returnKnex = @options.returnKnex ? false
     # idKeys format here helps multi-pk support
-    @idKeys = options.idKeys ? ['id']
+    @idKeys = @options.idKeys ? ['id']
     @idKeys = [@idKeys] unless _.isArray @idKeys
     @logger.debug () => "Crud service using ids: #{@idKeys}"
     unless _.isFunction @dbFn
       throw new ServiceCrudError('dbFn must be a knex function')
-    @logger.debug () -> "Crud service instance made with options: #{util.inspect(options, false, 0)}"
+    @logger.debug () -> "Crud service instance made with options: #{util.inspect(@options, false, 0)}"
 
   # helpers for query / id mgmt
   _getIdObj: (sourceObj) =>

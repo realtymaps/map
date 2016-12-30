@@ -1,7 +1,7 @@
 .container.login-page(ng-show="!loginInProgress")
   .centered
     .row
-      .logo.center-block
+      .logo.center-block(ng-click="page.goToMainOrLogin()")
         img(src="/assets/logo.png")
     .row
       .col-md-4.col-md-offset-4
