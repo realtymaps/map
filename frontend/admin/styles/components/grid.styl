@@ -1,0 +1,61 @@
+.grid-container
+  width 100%
+  padding 1% 0 1% 1%
+  overflow-y scroll
+
+  *
+  *:after
+  *:before
+    transition width 0ms, height 0ms, padding 0ms, margin 0ms
+
+  .nav > li > a
+    padding: 5px 10px
+
+  .ui-grid
+    margin 20px 0
+    color black
+
+  .clickable-cell
+  .clickable-rows .ui-grid-cell
+    cursor pointer
+
+  .clickable-cell:hover
+  .clickable-rows .ui-grid-row:hover .ui-grid-cell
+    background-color rgb(179, 196, 199)
+
+  .summary-grid
+    width 100%
+    height 200px !important
+
+  .grid
+    color black
+    width 100%
+    height 300px
+
+  .numberCell
+    text-align: right
+
+  .ui-grid-footer-cell
+    padding 5px
+
+  .json-input
+    position fixed
+    width 600px
+    height 200px
+    font-family "courier new"
+    z-index 5
+
+  .ng-invalid-json
+    background-color #fdd
+
+  .summary-grid .ui-grid-canvas .ui-grid-row:first-child .ui-grid-cell
+    border-bottom 2px solid #CCC
+
+  select
+    color black
+
+  .ui-grid-header-viewport, .ui-grid-footer-viewport
+    background-color: $dark_blue_darker
+
+  .ui-grid-header-canvas, .ui-grid-footer-canvas
+    background-color: $grey_ui_grid

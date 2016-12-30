@@ -1,6 +1,7 @@
 auth = require '../utils/util.auth'
 {user} = require '../services/services.user'
-{RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
+{hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
+EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('route:user')
 # coffeelint: enable=check_scope
@@ -24,8 +25,9 @@ getImage = (req, res, next) ->
     .catch errorHandlingUtils.isUnhandled, (error) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to PUT company image')
 
-class UserCrud extends RouteCrud
-  init: () ->
+class UserCrud extends EzRouteCrud
+  constructor:() ->
+    super(arguments...)
     @permissionsCrud = hasManyRouteCrud(@svc.permissions, 'permission_id', 'user_id', 'PermissionsHasManyRouteCrud')
     @permissions = @permissionsCrud.root
     @permissionsById = @permissionsCrud.byId
@@ -33,8 +35,6 @@ class UserCrud extends RouteCrud
     @groupsCrud = hasManyRouteCrud(@svc.groups, 'group_id', 'user_id', 'GroupsHasManyRouteCrud')#.init(true)#to enable logging
     @groups = @groupsCrud.root
     @groupsById = @groupsCrud.byId
-
-    super()
 
 
 module.exports = mergeHandles new UserCrud(user),

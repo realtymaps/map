@@ -1,0 +1,8 @@
+users.grid-container.row
+  .col-md-1.menu
+    ul.nav.nav-pills.nav-stacked
+      li
+        a(ui-sref="usersCustomers" ui-sref-opts="{reload: true}") Customers
+
+  .col-md-11
+    div(ng-repeat="state in $state.get() | filter:{parent: 'users'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)

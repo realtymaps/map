@@ -1,4 +1,7 @@
 app = require '../../app.coffee'
+gridButton = require '../../../../common/html/views/templates/gridButton.jade'
+jsonInput = require '../../../html/views/templates/jsonInput.jade'
+
 
 app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory, uiGridConstants) ->
   $scope.getData = rmapsJobsService.getTasks
@@ -32,7 +35,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         field: '_run'
         displayName: 'Run'
         enableCellEdit: false
-        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-primary btn-xs" ng-click="grid.appScope.runTask(row.entity)">RUN</button></div>'
+        cellTemplate: gridButton(click: "grid.appScope.runTask(row.entity)", content: "RUN", clz: "btn btn-primary btn-xs")
         width: 50
         enableFiltering: false
         pinnedLeft: true
@@ -40,7 +43,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         field: '_cancel'
         displayName: 'Cancel'
         enableCellEdit: false
-        cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-danger btn-xs" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</button></div>'
+        cellTemplate: gridButton(click: "grid.appScope.cancelTask(row.entity)", content: "CANCEL", clz: "btn btn-danger btn-xs")
         width: 68
         enableFiltering: false
         pinnedLeft: true
@@ -55,7 +58,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Data'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+        editableCellTemplate: jsonInput
         defaultValue: "{}"
         width: 50
         cellClass: 'clickable-cell'
@@ -64,7 +67,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Blocking Tasks'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+        editableCellTemplate: jsonInput
         defaultValue: "[]"
         width: 250
         cellClass: 'clickable-cell'
@@ -73,7 +76,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Blocking Locks'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+        editableCellTemplate: jsonInput
         defaultValue: "[]"
         width: 250
         cellClass: 'clickable-cell'

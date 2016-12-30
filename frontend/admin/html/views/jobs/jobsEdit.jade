@@ -1,8 +1,19 @@
 .row.form-group
   .col-md-1
-    .btn.btn-primary(ng-click="create()" ng-show="!nameExists" ng-disabled="!recordName") New {{gridName}}
+    .btn.btn-primary(ng-click="create()"
+      ng-show="!nameExists" ng-disabled="!recordName") New {{gridName}}
     .btn.btn-danger(ng-click="delete()" ng-show="nameExists") Delete {{gridName}}
   .col-md-2
-    input.form-control(required placeholder="enter name" ng-model="recordName" ng-change="exists()")
+    input.form-control(
+      required placeholder="enter name"
+      ng-model="recordName"
+      ng-change="exists()")
 
-.jobs-grid.jobs-edit(cg-busy="gridBusy" ui-grid="grid" ui-grid-resize-columns ui-grid-edit ui-grid-cellNav ui-grid-auto-resize ui-grid-pinning)
+.grid.jobs-grid.jobs-edit(
+  cg-busy="gridBusy"
+  ui-grid="grid"
+  ui-grid-resize-columns
+  ui-grid-edit
+  ui-grid-cellNav
+  ui-grid-auto-resize
+  ui-grid-pinning)
