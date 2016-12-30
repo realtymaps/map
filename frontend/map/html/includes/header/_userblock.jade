@@ -5,14 +5,17 @@ include ../mixins/_avatarMixin.jade
     button(class="dropdown-toggle avtr" uib-dropdown-toggle)
       +avatarMixin()(class='tiny-avatar')
     ul(class="dropdown-menu right arrow")
+
       li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a.logout(ui-sref="logout") Sign Out
-      li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a(ui-sref="user") {{user.email}}
+        a(ui-sref="user") My Account
+
       li(ng-show="principal.isStaff()", ng-cloak)
         a(href="{{adminRoutes.index}}" target="_self") Admin
 
-      .block-become-a-member
+      li(ng-show="principal.isAuthenticated()", ng-cloak)
+        a.logout(ui-sref="logout") Sign Out
+
+      .block-become-a-member(ng-if="!principal.isStaff() && pricipal.isSubscriber()")
         h4 trial period
         p 30 days left
         button(class='btn btn-primary') become a member

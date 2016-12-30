@@ -16,9 +16,12 @@ require './mocha'
 # help = require('gulp-help')(gulp) #BROKEN IN GULP 4
 gulp.task 'mapAssets', gulp.series 'angular', 'otherAssets'
 
+gulp.task 'mapAssetsWatch', gulp.series 'angular', 'otherAssets', 'angularWatch'
+
 gulp.task 'adminAssets', gulp.series 'angularAdmin', 'otherAssets'
 
 gulp.task 'adminAssetsWatch', gulp.series 'angularAdmin', 'otherAssets', 'angularWatchAdmin'
+
 
 gulp.task 'frontendAssets', gulp.series 'mapAssets', 'angularAdmin'
 
