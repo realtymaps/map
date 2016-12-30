@@ -6,16 +6,16 @@ include ../mixins/_avatarMixin.jade
       +avatarMixin()(class='tiny-avatar')
     ul(class="dropdown-menu right arrow")
 
-      li(ng-show="principal.isAuthenticated()", ng-cloak)
+      li(ng-show="::principal.isAuthenticated()", ng-cloak)
         a(ui-sref="user") My Account
 
-      li(ng-show="principal.isStaff()", ng-cloak)
+      li(ng-show="::principal.isStaff()", ng-cloak)
         a(href="{{adminRoutes.index}}" target="_self") Admin
 
-      li(ng-show="principal.isAuthenticated()", ng-cloak)
+      li(ng-show="::principal.isAuthenticated()", ng-cloak)
         a.logout(ui-sref="logout") Sign Out
 
-      .block-become-a-member(ng-if="!principal.isStaff() && pricipal.isSubscriber()")
+      .block-become-a-member(ng-if="::!principal.isSubscriber()" ng-hide="::principal.isStaff()")
         h4 trial period
         p 30 days left
         button(class='btn btn-primary') become a member
