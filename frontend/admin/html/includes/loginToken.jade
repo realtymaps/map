@@ -1,0 +1,5 @@
+h3 Login As {{user.email}}
+
+p.text-center
+  .btn.btn-primary(ng-click="getToken()" ng-show="!token") Get Token
+  .btn.btn-info(ng-show="token") Your token is {{token}}
