@@ -41,7 +41,6 @@ login = (req, res, next) -> Promise.try () ->
       userSessionService.verifyPassword(req.body.email, req.body.password)
     else if req.body.loginToken
       userSessionService.verifyLoginToken({
-        superuser: req.user
         email: req.body.email
         loginToken: req.body.loginToken
       })
@@ -274,12 +273,11 @@ requestLoginToken = (req, res, next) ->
     userSessionService.requestLoginToken({
       superuser: req.user
       email: validBody.email
-      host: req.headers.host
     })
     .then (result) ->
       res.json(result)
     .catch (err) ->
-      next new ExpressResponse({message: "Could get login token reset, is email valid?"},
+      next new ExpressResponse({message: "Could not get login token, is email valid?"},
         {status: httpStatus.BAD_REQUEST, quiet: true})
 
 module.exports =

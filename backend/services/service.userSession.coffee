@@ -65,7 +65,7 @@ verifyPassword = (email, password) ->
           .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
         return user
 
-requestLoginToken = ({superuser, email, host}) ->
+requestLoginToken = ({superuser, email}) ->
   if !email
     throw new Error('Email required')
 
@@ -81,10 +81,9 @@ requestLoginToken = ({superuser, email, host}) ->
 
       loginObj =
         superuser:
-          email: superuser.email
+          email: superuser.email # not checked, just audit trail
         user: user
         login_token_hash: loginTokenHash
-        host: host
 
       keystore.setValue(email, loginObj, namespace: 'login-token')
 
@@ -94,7 +93,7 @@ requestLoginToken = ({superuser, email, host}) ->
     logger.debug err
     throw err
 
-verifyLoginToken = ({superuser, email, loginToken}) ->
+verifyLoginToken = ({email, loginToken}) ->
   tables.auth.user()
   .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
   .then (user=[]) ->
@@ -103,7 +102,7 @@ verifyLoginToken = ({superuser, email, loginToken}) ->
     dbs.transaction 'main', (trx) ->
       keystore.getValue email, namespace: 'login-token', transaction: trx
       .then (entry) ->
-        if !user || !entry.login_token_hash || entry.user.email != email
+        if !user || !entry?.login_token_hash
           # best practice is to go ahead and hash the token before returning,
           # to prevent timing attacks from determining validity of email
           return createPasswordHash(loginToken).then () -> return false
