@@ -15,6 +15,11 @@
             span.data-entry {{mlsData.current.id}}
         tr
           td
+            label.data-label Updated:
+          td
+            span.data-entry {{mlsData.current.rm_modified_time | date:"MM/dd/yyyy 'at' h:mma"}}
+        tr
+          td
             label.data-label Active:
           td
             span.data-entry {{mlsData.task.active}}

@@ -3,38 +3,43 @@
     .panel-heading
       h3 Create New MLS Config
     .panel-body
-      form(name=newMlsForm)
+      form(name="newMlsForm")
         table
           tr
             td
               label.data-label ID:
             td
-              input(type="text" ng-model="mlsModalData.id" ng-disabled="editing").form-control.input-lg
+              input(type="text" name="id" ng-model="mlsModalData.id" ng-disabled="editing" required).form-control.input-lg
           tr
             td
               label.data-label Name:
             td
-              input(type="text" ng-model="mlsModalData.name").form-control.input-lg
+              input(type="text" name="name" ng-model="mlsModalData.name" required).form-control.input-lg
+          tr
+            td
+              label.data-label Formal Name:
+            td
+              input(type="text" name="formal_name" ng-model="mlsModalData.formal_name" required).form-control.input-lg
           tr
             td
               label.data-label URL:
             td
-              input(type="text" ng-model="mlsModalData.url").form-control.input-lg
+              input(type="text" name="url" ng-model="mlsModalData.url" required).form-control.input-lg
           tr
             td
               label.data-label Username:
             td
-              input(type="text" ng-model="mlsModalData.username").form-control.input-lg
+              input(type="text" name="username" ng-model="mlsModalData.username" required).form-control.input-lg
           tr
             td
               label.data-label Password:
             td
-              input(type="password" ng-model="mlsModalData.password").form-control.input-lg
+              input(type="password" name="password" ng-model="mlsModalData.password" required).form-control.input-lg
           tr
             td
-              label.data-label Notes:
+              label.data-label Notes (not required):
             td
-              textarea(ng-model="mlsModalData.notes").form-control.input-lg
+              textarea(name="notes" ng-model="mlsModalData.notes").form-control.input-lg
 
-        button(ng-click="ok()").btn.btn-success Save
+        button(ng-click="ok()" ng-disabled="newMlsForm.$invalid").btn.btn-success Save
         button(ng-click="cancel()").btn.btn-danger Cancel
