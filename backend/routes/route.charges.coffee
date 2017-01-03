@@ -1,3 +1,4 @@
+auth = require '../utils/util.auth'
 chargeService = null
 require('../services/payment/stripe')().then (svc) ->
   chargeService = svc.charges
@@ -5,6 +6,9 @@ require('../services/payment/stripe')().then (svc) ->
 module.exports =
   getHistory:
     method: "get"
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
     handleQuery: true
     handle: (req) ->
       if !chargeService
