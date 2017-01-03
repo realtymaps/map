@@ -66,6 +66,7 @@ module.exports =
     requestResetPassword: "#{apiBaseSession}/requestResetPassword"
     getResetPassword: "#{apiBaseSession}/getResetPassword"
     doResetPassword: "#{apiBaseSession}/doResetPassword"
+    requestLoginToken: "#{apiBaseSession}/requestLoginToken"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes

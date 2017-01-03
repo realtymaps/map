@@ -65,6 +65,67 @@ verifyPassword = (email, password) ->
           .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
         return user
 
+requestLoginToken = ({superuser, email}) ->
+  if !email
+    throw new Error('Email required')
+
+  tables.auth.user().select('id', 'email')
+  .where('email', email)
+  .then ([user]) ->
+    if !user
+      throw new Error('User not found')
+
+    loginToken = uuid.genUUID()
+
+    createPasswordHash(loginToken).then (loginTokenHash) ->
+
+      loginObj =
+        superuser:
+          email: superuser.email # not checked, just audit trail
+        user: user
+        login_token_hash: loginTokenHash
+
+      keystore.setValue(email, loginObj, namespace: 'login-token')
+
+      loginToken
+
+  .catch (err) ->
+    logger.debug err
+    throw err
+
+verifyLoginToken = ({email, loginToken}) ->
+  tables.auth.user()
+  .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
+  .then (user=[]) ->
+    user[0] ? {}
+  .then (user) ->
+    dbs.transaction 'main', (trx) ->
+      keystore.getValue email, namespace: 'login-token', transaction: trx
+      .then (entry) ->
+        if !user || !entry?.login_token_hash
+          # best practice is to go ahead and hash the token before returning,
+          # to prevent timing attacks from determining validity of email
+          return createPasswordHash(loginToken).then () -> return false
+
+        preprocessHash(entry.login_token_hash)
+        .catch (err) ->
+          logger.error "error while preprocessing login token hash for email #{email}: #{err}"
+          Promise.reject(err)
+        .then (hashData) ->
+          compare = Promise.resolve(false)
+          switch hashData.algo
+            when 'bcrypt'
+              compare = bcrypt.compareAsync(loginToken, hashData.hash)
+          compare.then (match) ->
+            if !match
+              return Promise.reject("given token doesn't match hash for email: #{email}")
+            else if hashData.needsUpdate
+              return Promise.reject("given token is outdated for email: #{email}")
+
+            keystore.deleteValue('login-token', email, trx)
+            .then () ->
+              return user
+
 updatePassword = (user, password, transaction, overwrite = true) ->
   createPasswordHash(password).then (password) ->
     toSet = if overwrite then password else tables.auth.user().raw("coalesce(password, ?)", password)
@@ -144,6 +205,8 @@ verifyValidAccount = (user) ->
 module.exports = {
   createPasswordHash
   verifyPassword
+  requestLoginToken
+  verifyLoginToken
   verifyValidAccount
   updatePassword
   requestResetPassword

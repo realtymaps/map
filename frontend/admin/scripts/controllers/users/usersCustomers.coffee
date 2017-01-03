@@ -2,6 +2,7 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 gridCellView = require '../../../../common/html/views/templates/gridCellView.jade'
 gridButton = require '../../../../common/html/views/templates/gridButton.jade'
+loginTokenView = require '../../../html/includes/loginToken.jade'
 
 app.controller 'rmapsUsersCustomersCtrl', (
 $scope, $rootScope, $injector, $q, Restangular,
@@ -10,7 +11,8 @@ rmapsGridFactory,
 rmapsUsStates,
 rmapsAccountUseTypesService,
 rmapsCompanyService,
-uiGridConstants) ->
+uiGridConstants
+$uibModal) ->
 
   $scope.getData = rmapsUsersService.get
 
@@ -46,6 +48,23 @@ uiGridConstants) ->
         width: 175
         enableCellEdit: false
         pinnedLeft: true
+      ,
+        field: '_spoof'
+        displayName: 'Login'
+        width: 65
+        enableCellEdit: false
+        pinnedLeft: true
+        cellTemplate: gridButton(
+          content: "Login As"
+          clz: "btn btn-primary btn-xs"
+          click: "col.colDef.loginTokenModal(row.entity)"
+        )
+        loginTokenModal: (entity) ->
+          $uibModal.open
+            template: loginTokenView()
+            size: 'lg'
+            controller: 'rmapsLoginTokenCtrl'
+            resolve: user: () -> entity
       ,
         field: '_del'
         displayName: 'Delete'
