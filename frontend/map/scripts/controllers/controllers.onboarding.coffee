@@ -16,6 +16,7 @@ rmapsPlansService,
 rmapsOnboardingService,
 rmapsUsStates
 rmapsMlsService
+rmapsMainOptions
 ) ->
 
   $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
@@ -75,19 +76,16 @@ rmapsMlsService
         else
           delete @errorMsg
       plan:
-        name: 'standard'
+        name: rmapsMainOptions.plan.STANDARD
 
         getSelected: (planStr) ->
           if $scope.user.plan.name == planStr then 'selected' else 'select'
 
         set: (newPlan) ->
           $scope.user.plan.name = newPlan
-          rmapsOnboardingOrderSelectorService.initScope(newPlan, $scope)
-          if $scope.view?.plans?
-            $scope.user.plan.price = $scope.view.plans[newPlan]?.price
-            unless $scope.user.plan.price
-              $log.error 'invalid plan'
 
+          # determine which set of account creation steps to use, depending on plan type
+          rmapsOnboardingOrderSelectorService.initScope(newPlan, $scope)
           newPlan
 
       submit: () ->
@@ -129,7 +127,7 @@ rmapsMlsService
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
         aPlan = $scope.orderSvc.name or $scope.user.plan.name
-        currentPlan = aPlan or 'standard'
+        currentPlan = aPlan or rmapsMainOptions.plan.STANDARD
         $scope.user.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
 
@@ -156,14 +154,16 @@ app.controller 'rmapsOnboardingPaymentCtrl',
     "funding"
     "exp_month"
     "exp_year"
+    "address_zip"
   ]
 
   _reSubmitOmitFields = _safePaymentFields.slice(0, _safePaymentFields.indexOf "exp_month")
 
   _cleanReSubmit = () ->
     #we might be resending the card info with user info changes
-    #note payment amount must be handled on backend only on actually charging
-    $scope.user.card = _.omit $scope.user.card, _reSubmitOmitFields
+    #NOTE payment amount must be handled on backend. This is where actual charging occurs.
+    $scope.user.zip = $scope.user.card.address_zip
+    $scope.user.card = _.omit($scope.user.card, _reSubmitOmitFields)
     delete $scope.user.card.token
     $scope.user.card
 

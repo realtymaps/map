@@ -3,13 +3,13 @@ _ = require 'lodash'
 
 
 module.exports = app.controller 'rmapsSearchCtrl', (
-  $scope,
-  $log,
-  $rootScope,
-  $timeout,
-  $element,
-  rmapsEventConstants,
-  rmapsPropertiesService ) ->
+$scope,
+$log,
+$rootScope,
+$timeout,
+$element,
+rmapsEventConstants,
+rmapsPropertiesService ) ->
 
   $log = $log.spawn("map:search")
 

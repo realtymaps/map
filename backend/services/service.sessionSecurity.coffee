@@ -9,7 +9,7 @@ config = require '../config/config'
 tables = require '../config/tables'
 subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
-errors = require '../utils/errors/util.errors.userSession'
+planSvc = require './service.plans'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -65,22 +65,10 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     logger.debug () -> "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = keystore.cache.getValuesMap('plans')
-  .then (plans) ->
-    groups = Object.keys(req.session.groups)
 
-    if !groups.length
-      throw new errors.NeedsGroupPermissions('User has no groups')
-
-    plan =_.find Object.keys(plans), (p) ->
-      !!req.session.groups[p.toInitCaps() + ' Tier']
-
-    if !plan
-      logger.info 'groups: ' + groups.join(',')
-      logger.info 'plans: '+ Object.keys(plans).join(',')
-      throw new errors.InValidPlanError('plan not found')
-
-    plan.maxLogins
+  maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plan data via stripe api, and memoized
+  .then (plan) ->
+    plan.metadata.maxLogins
 
   sessionSecuritiesPromise = tables.auth.sessionSecurity()
     .where(user_id: req.user.id)

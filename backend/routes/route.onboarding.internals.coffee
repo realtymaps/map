@@ -9,16 +9,16 @@ mlsAgentService = require '../services/service.mls.agent'
 errors = require '../utils/errors/util.errors.onboarding'
 tables = require '../config/tables'
 userSessionService =  require '../services/service.userSession'
-planService = require '../services/service.plans'
 sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 emailServices = null
 paymentServices = null
 
 emailService.emailPlatform.then (svc) ->
   emailServices = svc
-require('../services/services.payment').then (svc) ->
+require('../services/payment/stripe')().then (svc) ->
   paymentServices = svc
 
 
@@ -31,6 +31,7 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
   entity.email_validation_hash = emailService.makeEmailHash()
   entity.is_test = !config.PAYMENT_PLATFORM.LIVE_MODE
   entity.is_active = true # if we demand email validation again, then remove this line
+  entity.stripe_plan_id = plan
 
   userSessionService.createPasswordHash(entity.password)
   .then (password) ->
@@ -40,23 +41,15 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
     # INSERT THE NEW USER
     tables.auth.user({transaction}).returning("id").insert(entity)
     .then (id) ->
-      # console.log.magenta "inserted user"
-      #NOW LINK THE USER TO THEIR SPECIFIED PLAN
-      planService.getPlanId(plan, transaction)
-      .then (groupId) ->
-        # console.log.magenta "planId/groupId: #{groupId}"
-        logger.debug "auth_user_id: #{id}"
-        #give plan / group permissions
-        # (deprecated, we'll use subscription status and plan data off stripe instead)
-        tables.auth.m2m_user_group({transaction})
-        .insert user_id: parseInt(id), group_id: parseInt(groupId)
-        .then ->
-          id
-    .then (id) ->
       logger.debug "new user (#{id}) inserted SUCCESS"
       #Making sure we have all the updated information / de-normalized
       tables.auth.user({transaction}).select(sqlColumns.basicColumns.user.concat("id")...)
       .where id: parseInt id
+
+    .catch analyzeValue.isKnexError, (err) ->
+      if err.code == '23505'  # unique constraint
+        throw new errors.UserExists("This account already exists.  Try resetting your password.")
+      throw new Error(err)
 
 
 submitPaymentPlan = ({plan, token, authUser, transaction}) ->

@@ -1,8 +1,9 @@
 config = require '../../../config/config'
+errors = require '../../../utils/errors/util.errors.vero'
 
 getUniqueUserId = (authUser) ->
-  if !authUser?.id
-    throw new Error("Cannot get Vero id for user")
+  if !authUser?.id?
+    throw new errors.UserIdDoesNotExistError("Cannot get Vero id for user")
   if config.ENV == 'production'
     return "production_#{authUser.id}"
   else

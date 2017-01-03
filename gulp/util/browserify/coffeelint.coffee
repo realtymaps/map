@@ -2,7 +2,7 @@ _ = require 'lodash'
 through = require 'through2'
 
 coffeelint = require('coffeelint')
-coffeelint.reporter = require('coffeelint-stylish').reporter
+coffeelint.reporter = require('coffeelint-stylish').reporter #needed since default reporters blow up (coffeelint/lib/reporters/default)
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
 
 

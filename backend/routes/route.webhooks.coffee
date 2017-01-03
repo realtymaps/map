@@ -3,8 +3,7 @@ logger = require('../config/logger').spawn("route:webhooks")
 stripeTransforms = require '../utils/transforms/transforms.webhooks.stripe'
 veroTransforms = require '../utils/transforms/transforms.webhooks.vero'
 veroWebhookEvents = require '../enums/enum.vero.webhook.events'
-paymentServices = require('../services/services.payment').then (services) ->
-  # '../services/services.payment' is same as '../services/payment/stripe/service.payment.impl.stripe.events'
+paymentServices = require('../services/payment/stripe')().then (services) ->
   paymentServices = services
 
 notificationQueueSvc = require('../services/service.notification.queue').instance

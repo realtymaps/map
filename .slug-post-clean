@@ -17,7 +17,6 @@ node_modules/istanbul
 node_modules/chai
 node_modules/coffee-script-mapped
 node_modules/coffeelint
-node_modules/coffeelint-stylish
 node_modules/globby
 node_modules/jasmine-core
 node_modules/rewire

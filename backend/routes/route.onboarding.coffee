@@ -6,7 +6,7 @@ dbs = require '../config/dbs'
 internals = require './route.onboarding.internals'
 httpStatus = require '../../common/utils/httpStatus'
 {isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-{MlsAgentNotVierified} = require '../utils/errors/util.errors.onboarding'
+{MlsAgentNotVierified, UserExists} = require '../utils/errors/util.errors.onboarding'
 ExpressResponse = require '../utils/util.expressResponse'
 
 module.exports =
@@ -29,8 +29,9 @@ module.exports =
           .then ({authUser, customer}) ->
             internals.submitEmail {authUser, plan, customer}
 
-        .catch isCausedBy(MlsAgentNotVierified), (err) ->
+        .catch isCausedBy(MlsAgentNotVierified), isCausedBy(UserExists), (err) ->
           next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: err.quiet})
+
         .catch (err) ->
           logger.error(err)
           next new ExpressResponse(alert: {msg: "Oops, something went wrong. Please try again later"}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})

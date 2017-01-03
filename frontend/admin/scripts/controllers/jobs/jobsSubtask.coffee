@@ -46,21 +46,25 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
       ,
         field: 'retry_delay_minutes'
         displayName: 'Retry Delay min'
+        type: 'number'
         width: 125
         cellClass: 'clickable-cell'
       ,
         field: 'retry_max_count'
         displayName: 'Max Retries'
+        type: 'number'
         width: 125
         cellClass: 'clickable-cell'
       ,
         field: 'warn_timeout_minutes'
         displayName: 'Warn TO min'
+        type: 'number'
         width: 125
         cellClass: 'clickable-cell'
       ,
         field: 'kill_timeout_minutes'
         displayName: 'Kill TO min'
+        type: 'number'
         width: 125
         cellClass: 'clickable-cell'
       ,

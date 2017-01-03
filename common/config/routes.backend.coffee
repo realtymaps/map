@@ -38,6 +38,7 @@ apiBasePaymentMethod = "#{apiBase}/paymentMethod"
 apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
+apiBaseTiles = "#{apiBase}/tiles"
 
 module.exports =
   views:
@@ -141,7 +142,6 @@ module.exports =
   config:
     apiBase: apiBaseConfig
     safeConfig: "#{apiBaseConfig}/safeConfig"
-    protectedConfig: "#{apiBaseConfig}/protectedConfig"
   properties:
     mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
@@ -265,5 +265,9 @@ module.exports =
   prices:
     apiBase: apiBasePrices
     mail: "#{apiBasePrices}/mail"
+  tiles:
+    apiBase: "#{apiBaseTiles}"
+    parcels: "#{apiBaseTiles}/parcels/:z/:x/:y"
+    parcelsAddresses: "#{apiBaseTiles}/parcelsAddresses/:z/:x/:y"
 
   # hirefire secret value set from within backend/config/config.coffee

@@ -1,38 +1,30 @@
-keystore = require '../services/service.keystore'
-groupTable =  require('../config/tables').auth.group
-clone = require 'clone'
-numeral = require 'numeral'
-logger = require '../config/logger'
-{expectSingleRow} = require '../utils/util.sql.helpers'
+memoize = require 'memoizee'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+logger = require('../config/logger').spawn("service:plans")
+
+stripe = null
+require('./payment/stripe')().then (svc) -> stripe = svc.stripe
+
 
 getAll = () ->
-  keystore.cache.getValuesMap('plans')
-  .then (plans) ->
-    for key, val of plans
-      val.priceFormatted = '$' + numeral(val.price).format('0.00a')
-      copy = clone val
-      if copy.alias?
-        copy.alias = key
-        plans[val.alias] = copy
+  stripe.plans.list()
+  .then (results) ->
+    plans = results.data
+    logger.debug -> "Retrieved plan list:\n#{JSON.stringify(plans)}"
     plans
-
-getPlanId = (planName, trx) ->
-  planName = planName.toLowerCase()
-  getAll().then (plans) ->
-    planObj = plans[planName]
-
-    q = groupTable(transaction: trx)
-    .where 'name', 'ilike', "%#{planName}%"
-    .orWhere 'name', 'ilike', "%#{planObj.alias.toLowerCase()}%"
+getAll = memoize(getAll, maxAge: 24*60*60*1000) # memoize for a day
 
 
-    logger.debug q.toString()
+getPlanById = (stripe_plan_id) ->
+  stripe.plans.retrieve stripe_plan_id
+  .then (plan) ->
+    logger.debug -> "Retrieved plan:\n#{JSON.stringify(plan)}"
+    plan
+  .catch (err) ->
+    throw new PartiallyHandledError(err, "Could not retrieve stripe plan id #{stripe_plan_id}")
+getPlanById = memoize(getPlanById, maxAge: 24*60*60*1000) # memoize for a day
 
-    q.then (results) ->
-      expectSingleRow(results)
-    .then (result) ->
-      result.id
-
-module.exports =
-  getAll: getAll
-  getPlanId: getPlanId
+module.exports = {
+  getAll
+  getPlanById
+}

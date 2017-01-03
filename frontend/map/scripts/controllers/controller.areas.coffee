@@ -2,13 +2,13 @@ app = require '../app.coffee'
 _ = require 'lodash'
 
 app.controller 'rmapsMapAreasCtrl', (
-  $rootScope,
-  $scope,
-  $http,
-  $log,
-  rmapsDrawnUtilsService,
-  rmapsEventConstants,
-  toastr) ->
+$rootScope,
+$scope,
+$http,
+$log,
+rmapsDrawnUtilsService,
+rmapsEventConstants,
+toastr) ->
 
   drawnShapesSvc = rmapsDrawnUtilsService.createDrawnSvc()
   $log = $log.spawn("map:areas")

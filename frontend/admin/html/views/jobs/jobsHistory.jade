@@ -15,7 +15,7 @@
 .row(ng-show="$state.params.task")
   .col-md-12
     h4 Task History
-    .jobs-grid(cg-busy="jobsBusy" ui-grid="jobsGrid" ui-grid-resize-columns ui-grid-pinning)
+    .grid.jobs-grid(cg-busy="jobsBusy" ui-grid="jobsGrid" ui-grid-resize-columns ui-grid-pinning)
     .row
       .col-md-12.center(ng-show="$state.params.task")
         div Showing {{jobsGrid.data.length}} Results
@@ -23,7 +23,7 @@
 .row(ng-show="$state.params.task")
   .col-md-12
     h4 Error History
-    .jobs-grid(cg-busy="errorJobsBusy" ng-show="$state.params.task" ui-grid="jobsErrorGrid" ui-grid-cellNav ui-grid-resize-columns ui-grid-pinning)
+    .grid.jobs-grid(cg-busy="errorJobsBusy" ng-show="$state.params.task" ui-grid="jobsErrorGrid" ui-grid-cellNav ui-grid-resize-columns ui-grid-pinning)
     .row
       .col-md-12.center(ng-show="$state.params.task")
         div Showing {{jobsErrorGrid.data.length}} Results
@@ -36,4 +36,3 @@
         pre {{clickedCellInfo.contents}}
 
 .warn(ng-show="!$state.params.task") No task selected.
-

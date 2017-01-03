@@ -2,6 +2,7 @@ app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
 loginTemplate = require '../../../common/html/login.jade'
+usersEditTemplate = require '../../html/views/users/usersEdit.jade'
 _ =  require 'lodash'
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
@@ -16,6 +17,7 @@ app.run ($rootScope) ->
   $rootScope.navbarPages = [
     {state: 'jobs', name: 'Jobs'}
     {state: 'dataSource', name: 'Data Source'}
+    {state: 'users', name: 'Users'}
     {state: 'utils', name: 'Utils'}
   ]
   return
@@ -67,6 +69,9 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'utils'
   buildState 'utilsFipsCodes', parent: 'utils'
   buildState 'utilsMail', parent: 'utils'
+
+  buildState 'users'
+  buildState 'usersCustomers', parent: 'users', template: usersEditTemplate
 
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false

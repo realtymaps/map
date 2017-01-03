@@ -10,7 +10,8 @@ options:
 -- methodOpts - json method options
 -- filter - to become methodOpts.filter
 -- regExp - to become methodOpts.regExp
-
+-- delUsers - delete all related auth_users as well (boolean)
+-- api - string: 'live' or 'test' defaults to config
 
 Example:
 
@@ -27,14 +28,25 @@ foreman run ./scripts/stripe/customers --method=getAllStream --filter=descriptio
   Will get all customers matching the regExp.
 ###
 Promise = require 'bluebird'
-argv = require('yargs').argv
+_ = require 'lodash'
 Spinner = require('cli-spinner').Spinner
-stripeSvcPromise = require '../../backend/services/payment/stripe'
-logger = require('../../backend/config/logger').spawn('scripts:stripe:customer')
 JSON5 = require 'json5'
 through = require 'through2'
+argv = require('yargs').argv
+config = require '../../backend/config/config'
+logger = require('../../backend/config/logger').spawn('scripts:stripe:customer')
+
+{method, getAllDelete, dry, methodOpts, filter, regExp, delUsers, api} = argv
+
+if api == 'live'
+  logger.info "LIVE MODE"
+  config.PAYMENT_PLATFORM.LIVE_MODE = true
+  config.ALLOW_LIVE_APIS = true
+
+stripeSvcPromise = require('../../backend/services/payment/stripe')(api)
+tables = require '../../backend/config/tables'
 require('../../backend/extensions/stream')
-_ = require 'lodash'
+
 
 
 makeSpinner = () ->
@@ -42,8 +54,6 @@ makeSpinner = () ->
   spinner.setSpinnerString('|/-\\')
   spinner.start()
   spinner
-
-{method, getAllDelete, dry, methodOpts, filter, regExp} = argv
 
 methodOpts = JSON5.parse(methodOpts || '{}')
 
@@ -59,6 +69,8 @@ else
 if getAllDelete || method == 'getAllDelete'
   method = 'getAllStream'
   doDelete = true
+  if !dry && !dryDelete && delUsers?
+    doDelUsers = true
 
 if !method
   console.error("Method argument required")
@@ -67,7 +79,7 @@ if !method
 spin = makeSpinner()
 
 logger.debug -> 'Derrived Options'
-logger.debug -> {method, getAllDelete, dry, methodOpts, dryDelete}
+logger.debug -> {method, getAllDelete, dry, methodOpts, dryDelete, delUsers}
 
 handleStream = ({stream, stripeSvc}) ->
   return stream
@@ -147,7 +159,11 @@ stripeSvcPromise
       return handleStream({stream: maybeStream, stripeSvc})
 
     handlePromise({result: maybeStream, stripeSvc})
-
+.then () ->
+  if doDelUsers && delUsers && !dry
+    logger.debugQuery(tables.auth.user()
+    .where('email', 'like', delUsers)
+    .del())
 .then () ->
   logger.debug -> "@@@@ TOTAL SUCCESS @@@@"
 .catch (e) ->

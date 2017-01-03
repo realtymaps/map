@@ -2,9 +2,9 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
   .container
       h2 Payment Details
       p Please enter your payment details below to complete the subscription process.
-      |Note your will not be charged until 
-      strong after&nbsp; 
-      |&nbsp;your trial period 
+      |Note your will not be charged until
+      strong after&nbsp;
+      |&nbsp;your trial period
       strong ends!
       p
       p
@@ -23,7 +23,7 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         ng-model="user.first_name"
                         type='text'
                         validator="required,minlength=2")
-                  
+
                   .form-group.form-field(ng-class="view.submittalClass")
                     .label(for="card_number") Card Number:
                       input.card-number-input.form-control(
@@ -47,7 +47,7 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         label.control-label.has-error() Invalid Credit Card
                       span(ng-show="view.doShowRequired(chargeForm.card_number, chargeForm)")
                         label.control-label.has-error() Required!!
-                        
+
                   .form-group.form-field(ng-class="view.submittalClass")
                     .label(for="card_exp_month") Exp Month:
                     .col-md-4
@@ -68,22 +68,22 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                     .col-md-5
                       input.form-control(
                         tabindex=7
-                        ng-model="user.zip"
+                        ng-model="user.card.address_zip"
                         name="zip"
                         type='text'
                         placeholder="XXXXX"
                         validator="required,zipcode")
-                        
+
                 .col-md-3.col-sm-3.col-xs-12
                   .form-group.form-field
-                    .label LastName:
+                    .label Last Name:
                       input.form-control(
                         tabindex=2
                         name="last_name"
                         ng-model="user.last_name"
                         type='text'
                         validator="required,minlength=2")
-                        
+
                   .form-group.form-field(ng-class="view.submittalClass")
                     .label.col-lg-4(for="card_cvc") Security Code:
                       input.form-control(
@@ -98,7 +98,7 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         label.control-label.has-error() Required!!
                       span(ng-show="chargeForm.card_cvc.$invalid && chargeForm.card_cvc.$viewValue")
                         label.control-label.has-error() Invalid CVC
-                  
+
                   .form-group.form-field(ng-class="view.submittalClass")
                     .label.col-md-5(for="card_exp_year") Exp Year:
                       input.form-control(
@@ -119,5 +119,4 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                     .col-md-3
                       input.btn.btn-primary(
                         tabindex=8
-                        value='Continue' type='button' ng-click="charge()" validation-submit="chargeForm")            
-                      
+                        value='Continue' type='button' ng-click="charge()" validation-submit="chargeForm")

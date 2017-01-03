@@ -306,7 +306,7 @@ sendCampaign = (userId, campaignId) ->
       .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options', 'stripe_charge', 'custom_content')
       .where(id: campaignId, auth_user_id: userId)
 
-    payment: paymentSvc or require('./services.payment') # allows rewire
+    payment: paymentSvc or require('./payment/stripe')() # allows rewire
 
     lob: lobPromise()
   })

@@ -1,4 +1,3 @@
-_ = require 'lodash'
 config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
@@ -12,7 +11,7 @@ permSvc = require './service.permissions'
 stripeErrors = require '../utils/errors/util.errors.stripe'
 
 stripe = null
-require('../services/services.payment').then (svc) -> stripe = svc.stripe
+require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
 
 
 # Return "dummy" subscription objects that emulates a stripe subscription
@@ -58,32 +57,6 @@ _getStripeIds = (userId, trx) ->
     expectSingleRow result
   .then (ids) ->
     ids
-
-
-# deprecated code, using subscription status instead of user_group for
-#   subscription-based access checks
-getPlan = (userId) ->
-  tables.auth.m2m_user_group()
-  .select(
-    "#{tables.auth.m2m_user_group.tableName}.group_id as group_id",
-    "#{tables.auth.group.tableName}.name as group_name"
-  )
-  .where "#{tables.auth.m2m_user_group.tableName}.user_id": userId
-  .join "#{tables.auth.group.tableName}", () ->
-    this.on("#{tables.auth.group.tableName}.id", "#{tables.auth.m2m_user_group.tableName}.group_id")
-  .then (plan) ->
-    expectSingleRow plan
-  .then (plan) ->
-    planName = plan.group_name
-    planKey = planName.substring(0, planName.indexOf(' ')).toLowerCase()
-    # this should eventually be replaced with stripe plan or metadata in the future
-    tables.config.keystore()
-    .select 'value'
-    .where key: planKey
-    .then (result) ->
-      expectSingleRow result
-    .then (planDetails) ->
-      _.merge plan, planDetails.value
 
 
 # requires a STRIPE subscription object with a status and plan keys in order to determine status string
@@ -135,7 +108,7 @@ updatePlan = (userId, plan) ->
 getStatus = (user) -> Promise.try () ->
 
   # stripe_customer or stripe_subscr may not exist for staff, client subusers, etc...
-  if !user.stripe_customer_id? || !user.stripe_subscription_id? # if no customer or subscription exists...
+  if !user.stripe_customer_id? && !user.stripe_subscription_id? # if no customer or subscription exists...
 
     # check internal permissions (special case stuff like for superuser or staff is handled there)...
     permSvc.getPermissionsForUserId user.id
@@ -215,7 +188,6 @@ deactivate = (userId, reason) ->
       throw new PartiallyHandledError(err, "Encountered an issue deactivating the account, please contact customer service.")
 
 module.exports = {
-  getPlan
   updatePlan
   getSubscription
   reactivate

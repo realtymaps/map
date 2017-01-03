@@ -1,23 +1,56 @@
 gulp = require 'gulp'
 log = require('gulp-util').log
 config = require '../../backend/config/config'
-coffeelint = require 'gulp-coffeelint'
 argv = require('yargs').argv
-spawn = require('child_process').spawn
+{spawn} = require('child_process')
+globby = require 'globby'
+through = require 'through2'
 
-run_express = ({script, ext, watch, delay, verbose, signal} = {}) ->
+globs = [
+  'gulp/**/*.coffee'
+  'backend/**/*.coffee'
+  'common/**/*.coffee'
+]
+
+lint = (ignore) ->  () ->
+
+  glob = globby.sync(globs)
+
+  glob.push('-q') #show errors only
+
+  stream = spawn('coffeelint', glob, {stdio: 'inherit'}) #note since using in inherit there is no .pipe
+
+  if !ignore
+    return stream
+
+  retStream = through()
+
+  stream.on('error', () ->) #sent to stdio already
+  stream.on 'close', () ->
+    retStream.end()
+  stream.on 'end', () ->
+    retStream.end()
+
+  retStream
+
+watchGulp = (what) ->
+  gulp.watch(globs, gulp.series(what))
+
+run_express = ({script, ext, delay, verbose, signal, watch} = {}) ->
   script ?= 'backend/server.coffee'
   watch ?=  ['backend', 'common']
   delay ?= 0.3
   verbose ?= true
   signal ?= 'SIGTERM'
 
+  watchGulp('lint')
+
+  watch = watch.map((n) -> "-w #{n}").join(' ')
+
   if argv.debug
     port = if argv.debug == true then 9999 else argv.debug
   else
     port = config.PORT
-
-  watch = watch.map((n) -> "-w #{n}").join(' ')
 
   cmd = "nodemon #{script} #{port} #{watch}"
   if verbose
@@ -37,16 +70,11 @@ run_express = ({script, ext, watch, delay, verbose, signal} = {}) ->
 
   log "Running #{cmd}"
 
-  spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit', env: process.env})
+  return spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {stdio: 'inherit', env: process.env})
 
-gulp.task 'lint', () ->
-  gulp.src [
-    'gulp/**/*.coffee'
-    'backend/**/*.coffee'
-    'common/**/*.coffee'
-  ]
-  .pipe coffeelint()
-  .pipe coffeelint.reporter()
+gulp.task 'lint', lint(true)
+
+gulp.task 'lint:fail', lint()
 
 gulp.task 'express', gulp.parallel 'lint', (done) ->
   run_express()
@@ -55,3 +83,9 @@ gulp.task 'express', gulp.parallel 'lint', (done) ->
     done(code)
   .once 'error', done
   done()
+
+
+module.exports = {
+  watch: watchGulp
+  lint
+}

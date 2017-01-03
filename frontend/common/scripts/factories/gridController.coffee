@@ -10,12 +10,43 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmaps
 
     $scope.gridName = $scope.gridName[0].toUpperCase() + $scope.gridName.slice(1)
 
+    _gridApi = null
+
+    ###
+      Private: Area to handle different custom fields
+
+      Returns boolean
+    ###
+    handleCustomColDefFields = (rowEntity, colDef, newValue, oldValue) ->
+      okToSave = true
+
+      #note if this a number col use type:number instead as it handles nulls correctly
+      if colDef.handleEmptyString && newValue == ''
+        if _.isFunction(colDef.handleEmptyString)
+          return okToSave = colDef.handleEmptyString(rowEntity, newValue, oldValue)
+        rowEntity.value = null
+
+      if colDef.handleNull && !newValue?
+        if _.isFunction(colDef.handleNull)
+          return okToSave = colDef.handleNull(rowEntity, newValue, oldValue)
+        window.alert("#{colDef.displayName} cannot be undefined.")
+        #revert
+        rowEntity[colDef.field] = oldValue || colDef.defaultValue?() || colDef.defaultValue
+        okToSave = false
+
+      okToSave
+
     $scope.grid = _.extend
       enableColumnMenus: false
       enablePinning: true
       enableCellEditOnFocus: true
+      getGridApi: () -> _gridApi
       onRegisterApi: (gridApi) ->
+        _gridApi = gridApi
         gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
+          okToSave = handleCustomColDefFields(rowEntity, colDef, newValue) #GTFO possibly
+          if !okToSave
+            return
           if newValue != oldValue
             $scope.$apply()
             rowEntity.save()
@@ -79,8 +110,9 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmaps
           $scope.exists()
           $scope.recordName = ""
 
-    $scope.load = () ->
-      $scope.jobsBusy = $scope.getData({"search": $scope.nameFilters})
+    $scope.load = (filters) ->
+      filters ?= opts.filters || {"search": $scope.nameFilters}
+      $scope.jobsBusy = $scope.getData(filters)
       .then (data) ->
         $scope.grid.data = data
 
