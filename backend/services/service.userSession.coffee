@@ -80,7 +80,8 @@ requestLoginToken = ({superuser, email, host}) ->
     createPasswordHash(loginToken).then (loginTokenHash) ->
 
       loginObj =
-        superuser: superuser
+        superuser:
+          email: superuser.email
         user: user
         login_token_hash: loginTokenHash
         host: host
@@ -102,7 +103,7 @@ verifyLoginToken = ({superuser, email, loginToken}) ->
     dbs.transaction 'main', (trx) ->
       keystore.getValue email, namespace: 'login-token', transaction: trx
       .then (entry) ->
-        if !user || !entry.login_token_hash || entry.user.email != email || entry.superuser?.email != superuser.email
+        if !user || !entry.login_token_hash || entry.user.email != email
           # best practice is to go ahead and hash the token before returning,
           # to prevent timing attacks from determining validity of email
           return createPasswordHash(loginToken).then () -> return false

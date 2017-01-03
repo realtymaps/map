@@ -22,7 +22,11 @@ rmapsLoginService) ->
   ($scope) ->
 
     $scope.loginInProgress = false
-    $scope.form = {email: '', password: '', remember_me: false}
+    $scope.form =
+      email: $location.search().email || ''
+      loginToken: $location.search().loginToken || ''
+      password: ''
+      remember_me: false
 
     loginFailed = (response) ->
       $log.error "Could not log in", response

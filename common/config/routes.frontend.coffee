@@ -31,7 +31,7 @@ module.exports =
   userPaymentHistory: '/userPaymentHistory'
   clientEntry:   'clientEntry/:key'
   passwordReset:   'passwordReset/:key'
-  singleLogin:   'singleLogin/:token'
+  singleLogin:   'singleLogin'
 
   addProjects:    'addProjects'
   onboarding:     'onboarding'

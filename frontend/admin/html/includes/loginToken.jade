@@ -1,5 +1,8 @@
 h3 Login As {{user.email}}
 
-p.text-center
-  .btn.btn-primary(ng-click="getToken()" ng-show="!token") Get Token
-  .btn.btn-info(ng-show="token") Your token is {{token}}
+div.text-center
+  .btn.btn-primary(ng-click="getToken()" ng-show="!token") Get Link
+p.text-center(ng-show="token" ng-click="loginAs()")
+   a(href="{{loginUrl}}") Click to login
+p.text-center This link will only work once. Any previously generated links will be invalidated.
+p.text-center Unless you open the link in another browser/incognito window you will be logged out.

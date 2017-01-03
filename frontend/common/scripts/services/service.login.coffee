@@ -3,6 +3,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app.factory 'rmapsLoginService', ($http, $rootScope) ->
 
-  @login = ({email, password, remember_me}) ->
-    $http.post(backendRoutes.userSession.login, {email, password, remember_me})
+  @login = (loginObj) ->
+    $http.post(backendRoutes.userSession.login, loginObj)
   @

@@ -10,3 +10,7 @@ app.controller 'rmapsLoginTokenCtrl', ($scope, $http, $log, user) ->
     .then ({data}) ->
       $log.debug data
       $scope.token = data
+      $scope.loginUrl = "/singleLogin?loginToken=#{encodeURIComponent($scope.token)}&email=#{encodeURIComponent(user.email)}"
+
+  $scope.loginAs = () ->
+    location.href = $scope.loginUrl

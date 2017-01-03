@@ -45,8 +45,6 @@ login = (req, res, next) -> Promise.try () ->
         email: req.body.email
         loginToken: req.body.loginToken
       })
-      .then (user) ->
-        return req.user = user
     else
       return false
   .catch (err) ->
