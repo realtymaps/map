@@ -21,7 +21,7 @@ internals = require './route.userSession.internals'
 userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
-{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -52,29 +52,14 @@ login = (req, res, next) -> Promise.try () ->
     userSessionService.verifyValidAccount(user)
   .then (user) ->
     if !user
-      return next new ExpressResponse(alert: {
-        msg: 'Email and/or password does not match our records.'
-        id: alertIds.loginFailure
-      }, {
-        status: httpStatus.UNAUTHORIZED
-        quiet: true
-      })
-    else
-      req.session.userid = user.id
-      sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
-      .then () ->
-        internals.getIdentity(req, res, next)
-  .catch errorHandlingUtils.isUnhandled, (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, 'Unexpected error during login')
+      throw new PartiallyHandledError('Email and/or password does not match our records.')
+    req.session.userid = user.id
+    sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
+  .then () ->
+    internals.getIdentity(req, res, next)
   .catch (err) ->
-    logger.error('Error during login: '+err.msg)
-    return next new ExpressResponse(alert: {
-      msg: err.msg
-      id: alertIds.loginFailure
-    }, {
-      status: httpStatus.UNAUTHORIZED
-      quiet: true
-    })
+    err.returnStatus = httpStatus.UNAUTHORIZED
+    err.quiet = true
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->

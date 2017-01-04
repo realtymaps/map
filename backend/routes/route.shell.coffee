@@ -1,8 +1,7 @@
 auth = require '../utils/util.auth'
-ExpressResponse = require '../utils/util.expressResponse'
 {exec} = require 'child_process'
 httpStatus = require '../../common/utils/httpStatus'
-{shellHistory} = require("../config/tables").user
+tables = require("../config/tables")
 logger = require("../config/logger").spawn("route:shell")
 Promise = require 'bluebird'
 _ = require 'lodash'
@@ -15,7 +14,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       if !req.query.cmd
-        return next new ExpressResponse({alert: "misssing cmd query param"}, {status: httpStatus.BAD_REQUEST, quiet: true})
+        throw new PartiallyHandledError({returnStatus: httpStatus.BAD_REQUEST, quiet: true}, "missing cmd query param")
       exec req.query.cmd, (err, stdout, stderr) ->
         logger.info "executing command '#{req.query.cmd}'"
 
@@ -32,7 +31,7 @@ module.exports =
 
           _.extend entity, error: err || stderr
 
-        Promise.try -> shellHistory().insert entity
+        Promise.try -> tables.history.shell().insert(entity)
 
         logger.info "stdout"
         logger.info stdout

@@ -56,7 +56,6 @@ describe "rmapsFilterManagerService", ->
         @$rootScope.selectedFilters =
           forSale: true
         @digestor.digest()
-        console.log "digest 2"
 
         spyCb.called.should.be.ok
 

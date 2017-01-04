@@ -67,11 +67,5 @@ module.exports =
                 err = new QuietlyHandledError(err, 'unsupported image format or no image found')
               else
                 err = new PartiallyHandledError(err, 'uncaught photo stream error (*** add better error handling code to cover this case! ***)')
-            next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+            next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet, logError: err})
           .pipe(res)
-      .catch isCausedBy(HttpStatusCodeError), (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, {status: err.statusCode, quiet: err.quiet})
-      .catch isCausedBy(BadContentTypeError), (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNSUPPORTED_MEDIA_TYPE, quiet: err.quiet})
-      .catch isCausedBy(NoPhotoObjectsError), isCausedBy(ExpectedSingleRowError), (err) ->
-        next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.NOT_FOUND, quiet: err.quiet})

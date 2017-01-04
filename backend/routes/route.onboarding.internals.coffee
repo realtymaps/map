@@ -119,7 +119,7 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
       mlsAgentService.exists(data_source_id: mls_code, license_number: mls_id)
       .then (is_verified) ->
         if !is_verified
-          throw new errors.MlsAgentNotVierified("Agent not verified for mls_id: #{mls_id}, mls_code: #{mls_code} for email: #{authUser.email}")
+          throw new errors.MlsAgentNotVerified("Agent not verified for mls_id: #{mls_id}, mls_code: #{mls_code} for email: #{authUser.email}")
         tables.auth.m2m_user_mls({transaction})
         .insert({auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id, is_verified})
     )

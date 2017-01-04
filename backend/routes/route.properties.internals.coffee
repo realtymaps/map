@@ -6,7 +6,6 @@ profileService = require '../services/service.profiles'
 profileError = require '../utils/errors/util.error.profile'
 {validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
-ExpressResponse = require '../utils/util.expressResponse'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 ourTransforms = require '../utils/transforms/transforms.properties'
 propSaveSvc = require '../services/service.properties.save'
@@ -42,9 +41,6 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
       logger.debug "MapState saved"
       next()
 
-    .catch (err) ->
-      next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-
 refreshPins = () ->
   (req, res, next) ->
     # If cached profile is older than profile_refresh_seconds, load fresh pins
@@ -78,13 +74,6 @@ handleRoute = (res, next, serviceCall) ->
     serviceCall()
   .then (data) ->
     res.json(data)
-  .catch DataValidationError, (err) ->
-    next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch profileError.CurrentProfileError, (err) ->
-    next new ExpressResponse({profileIsNeeded: true, alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch (err) ->
-    logger.error analyzeValue.getFullDetails(err)
-    next(err)
 
 save = ({req, res, next, type}) ->
   handleRoute res, next, () ->

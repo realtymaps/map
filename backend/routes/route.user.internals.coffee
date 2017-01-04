@@ -7,6 +7,8 @@ dimensionLimits = config.IMAGES.dimensions.profile
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 userInternalsSvc = require '../services/service.user.internals'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 _handleBlob = ({promise, res, next}) -> Promise.try ->
   promise.then (result) ->
@@ -37,18 +39,18 @@ getCompanyImage = (req, res, next) ->
 
 getBlobFromReq = ({req, next}) ->
   # logger.debug req.body.blob
-  if !req.body?.blob.contains 'image/' or !req.body?.blob.contains 'base64'
-    return next new ExpressResponse({alert: 'image has incorrect formatting.'} , {status: httpStatus.BAD_REQUEST})
+  if !req.body?.blob.contains('image/') || !req.body?.blob.contains('base64')
+    throw new PartiallyHandledError({returnStatus: httpStatus.BAD_REQUEST}, 'image has incorrect formatting')
 
   if !req.body?
-    return next new ExpressResponse({alert: 'undefined image blob'} , {status: httpStatus.BAD_REQUEST})
+    throw new PartiallyHandledError({returnStatus: httpStatus.BAD_REQUEST}, 'undefined image blob')
 
   parsed = parseBase64(req.body.blob)
   buf = new Buffer(parsed.data, 'base64')
   dim = sizeOf buf
 
   if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
-    return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , {status: httpStatus.BAD_REQUEST})
+    throw new PartiallyHandledError({returnStatus: httpStatus.BAD_REQUEST}, "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}")
 
   req.body.blob
 

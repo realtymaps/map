@@ -61,16 +61,12 @@ module.exports = (app, sessionMiddlewares) ->
           logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
           throwError =
             message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
+            logError: logError
             quiet: logError.quiet
+            returnStatus: (logError.returnStatus ? status.INTERNAL_SERVER_ERROR)
           throw throwError
         .catch (error) ->
-          if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
-            returnStatus = status.BAD_REQUEST
-          else if isCausedBy(InActiveUserError, error)
-            returnStatus = status.UNAUTHORIZED
-          else
-            returnStatus = status.INTERNAL_SERVER_ERROR
-          next new ExpressResponse({alert: msg: error.message}, {status: returnStatus, quiet: error.quiet})
+          next new ExpressResponse({alert: msg: error.message}, {status: error.returnStatus, quiet: error.quiet, logError: error.logError})
     # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
     # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
     if route.middleware.length > 0

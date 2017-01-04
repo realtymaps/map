@@ -30,7 +30,7 @@ respond = ({stream, next, res}) ->
   .once 'error', (error) ->
     if isUnhandled(error)
       error = new PartiallyHandledError(error, 'uncaught image streaming error (*** add better error handling code to cover this case! ***)')
-    next new ExpressResponse(error.message, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
+    next new ExpressResponse(error.message, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet, logError: error})
 
 
 handleImage = ({res, next, object}) ->
@@ -85,16 +85,9 @@ getPhoto = ({entity, res, next, photoType, objectsOpts}) ->
 
     handleRetsObjectResponse({res, next, photoIds, mlsId, object})
     .toPromise()
-  .catch validation.DataValidationError, (error) ->
-    next new ExpressResponse(error.message||error, {status: httpStatus.BAD_REQUEST, quiet: error.quiet})
-  .catch photoErrors.isNotFound, RetsError, ourRetsErrors.UknownMlsConfig, (error) ->
-    next new ExpressResponse(error.message||error, {status: httpStatus.NOT_FOUND, quiet: error.quiet})
-  .catch photoErrors.PhotoError, (error) ->
-    next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
-  .catch (error) ->
-    if isUnhandled(error)
-      error = new PartiallyHandledError(error, 'uncaught photo error (*** add better error handling code to cover this case! ***)')
-    next new ExpressResponse(error.message||error, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: error.quiet})
+  .catch RetsError, (error) ->
+    error.returnStatus = httpStatus.NOT_FOUND
+    throw error
 
 
 module.exports = {

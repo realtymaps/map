@@ -179,7 +179,7 @@ deactivate = (userId, reason) ->
     .then ({stripe_customer_id, stripe_subscription_id}) ->
       stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: true}
       .then (canceledSubscription) ->
-        tables.user.history(transaction: trx)
+        tables.history.user(transaction: trx)
         .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
         .then () ->
           canceledSubscription
