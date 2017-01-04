@@ -90,14 +90,20 @@ commonConfig =
     # note: consider the expoment of first `pow` is L + 1, and the exponent of the second `pow` is L, your random string will have length L
     getKey: () -> "#{Math.round((Math.pow(36, 17) - Math.random() * Math.pow(36, 16))).toString(36).slice(1)}.pdf"
 
-  plan:
-    PRO: 'pro'
-    STANDARD: 'standard'
-    DEACTIVATED: 'deactivated'
-    PAID_LIST: ['pro', 'standard']
-    VALID_LIST: ['pro', 'standard', 'deactivated']
-    EXPIRED: 'expired' # cancelled accounts that have passed `period_end`
-    NONE: 'none' # subusers, cancelled accounts still active, anyone that can login w/o a subscription
+  subscription:
+    PLAN:
+      PRO: 'pro'
+      STANDARD: 'standard'
+      NONE: 'none' # subusers, cancelled accounts still active, anyone that can login w/o a subscription
+      PAID_LIST: ['pro', 'standard']
+
+    STATUS:
+      NONE: 'none'
+      ACTIVE: 'active'
+      DEACTIVATED: 'deactivated'
+      EXPIRED: 'expired' # cancelled accounts that have passed `period_end`
+      PAST_DUE: 'past_due' # https://stripe.com/docs/api#subscription_object-status
+
 
   mail:
     # pricing formula for a letter

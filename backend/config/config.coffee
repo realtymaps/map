@@ -30,7 +30,7 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
+    ENABLE: process.env.LOG_ENABLE ? '*session:sessionSecurity*,*session:userSession:route*'  # 'frontend:*,backend:*,test:*'
     TIMESTAMP: process.env.LOG_TIMESTAMP == 'true'
     LOG_TO_FILE: process.env.LOG_TO_FILE == 'true'
   DBS:
@@ -130,8 +130,7 @@ base =
     MAX_ATTEMPTS: 10
   ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
   RMAPS_MAP_INSTANCE_NAME: process.env.RMAPS_MAP_INSTANCE_NAME
-  SUBSCR:
-    PLAN: common.plan
+  SUBSCR: common.subscription
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =

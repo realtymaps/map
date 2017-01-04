@@ -1,3 +1,4 @@
+_ = require 'lodash'
 config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
@@ -104,8 +105,11 @@ updatePlan = (userId, plan) ->
         updated: updated
 
 
-# returns a status for `session.subscription` to use for subscription level access
+# determine plan and return a status to use on user & session for part of subscription level access
 getStatus = (user) -> Promise.try () ->
+  obj =
+    subscriptionPlan: config.SUBSCR.PLAN.NONE
+    subscriptionStatus: config.SUBSCR.STATUS.NONE
 
   # stripe_customer or stripe_subscr may not exist for staff, client subusers, etc...
   if !user.stripe_customer_id? && !user.stripe_subscription_id? # if no customer or subscription exists...
@@ -114,18 +118,26 @@ getStatus = (user) -> Promise.try () ->
     permSvc.getPermissionsForUserId user.id
     .then (results) ->
       # return subscription level for the staff if granted a perm for it
-      return config.SUBSCR.PLAN.PRO if results.access_premium
-      return config.SUBSCR.PLAN.STANDARD if results.access_standard
+      if results.access_premium
+        obj.subscriptionPlan = config.SUBSCR.PLAN.PRO
+        obj.subscriptionStatus = config.SUBSCR.PLAN.ACTIVE
 
-      return config.SUBSCR.PLAN.NONE
+      else if results.access_standard
+        obj.subscriptionPlan = config.SUBSCR.PLAN.STANDARD
+        obj.subscriptionStatus = config.SUBSCR.PLAN.ACTIVE
+
+      return obj
 
   # a customer with a stripe_plan_id implies we either have or had a subscription, so try to get it...
   else if user.stripe_plan_id? # a stripe subscription exists, retrieve status
     _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
     .then (subscription) ->
-      return _getStatusString(subscription)
+      obj.subscriptionPlan = subscription.plan.id
+      obj.subscriptionStatus = subscription.status
+      return obj
 
-  else return config.SUBSCR.PLAN.NONE
+  # last-ditch return NONE subscr/status, in an `else` so we dont prematurely return NONE during promises processing above
+  else return obj
 
 
 getSubscription = (userId) ->
