@@ -9,7 +9,7 @@ csvStringify = Promise.promisify(require('csv-stringify'))
 
 
 class ExpressResponse
-  constructor: (@payload, {@status=200, allowHtml=false, @format='json', @quiet=false}={}) ->
+  constructor: (@payload, {@status=200, allowHtml=false, @format='json', @quiet=false, @logError}={}) ->
     @name = 'ExpressResponse'
     @originalMsg = @payload?.alert?.msg
     if @originalMsg and !allowHtml

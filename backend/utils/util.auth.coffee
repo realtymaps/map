@@ -123,18 +123,18 @@ checkSessionSecurity = (req, res) ->
         if tokenHash != security.token
           throw new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", 'warn')
         return
-      else
-        # this isn't a logged-in user, so validate only if remember_me was set; if
-        # we do validate, then we need to do some login work
-        if not security.remember_me
-          throw new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug')
-        if tokenHash != security.token
-          throw new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn')
 
-        req.session.userid = context.cookieValues.userId
-        getSessionUser(req)
-        .then (user) ->
-          sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: true)
+      # this isn't a logged-in user, so validate only if remember_me was set; if
+      # we do validate, then we need to do some login work
+      if not security.remember_me
+        throw new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug')
+      if tokenHash != security.token
+        throw new SessionSecurityError('user', "cookie vs security token mismatch for user #{context.cookieValues.userId} on remember_me session: #{context.sessionId}", 'warn')
+
+      req.session.userid = context.cookieValues.userId
+      getSessionUser(req)
+      .then (user) ->
+        sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: true)
 
   .catch SessionSecurityError, (err) ->
     # figure out what we need to invalidate and do it

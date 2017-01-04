@@ -3,8 +3,6 @@ emailServices = require '../services/services.email'
 logger = require('../config/logger').spawn('route:email')
 {DataValidationError, validateAndTransformRequest} = require '../utils/util.validation'
 emailTransforms = require('../utils/transforms/transforms.email')
-ExpressResponse = require '../utils/util.expressResponse'
-httpStatus = require '../../common/utils/httpStatus'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 
 _isValid = (isLoggedIn) ->
@@ -18,10 +16,9 @@ _isValid = (isLoggedIn) ->
         logger.debug -> validReq
         true
       .catch DataValidationError, (err) ->
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+        throw new errorHandlingUtils.PartiallyHandledError(err, 'error interpreting query string parameters')
       .catch errorHandlingUtils.isUnhandled, (error) ->
-        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+        throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
 
   if isLoggedIn
     route.middleware =
@@ -43,10 +40,9 @@ module.exports =
         if bool
           "account validated via email"
       .catch DataValidationError, (err) ->
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
+        throw new errorHandlingUtils.PartiallyHandledError(err, 'error interpreting query string parameters')
       .catch errorHandlingUtils.isUnhandled, (error) ->
-        err = throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
-        next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+        throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
 
   isValid: _isValid()
   isValidLoggedIn: _isValid(true)

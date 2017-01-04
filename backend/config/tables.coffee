@@ -41,7 +41,6 @@ module.exports =
     parcel: 'deletes_parcel'
     retry_photos: 'retry_photos'  # this isn't a delete table, but is a similar idea, and didn't have its own category
   jobQueue:
-    dataLoadHistory: 'jq_data_load_history'
     taskConfig: 'jq_task_config'
     subtaskConfig: 'jq_subtask_config'
     queueConfig: 'jq_queue_config'
@@ -69,20 +68,22 @@ module.exports =
     notes: 'user_notes'
     drawnShapes: 'user_drawn_shapes'
     creditCards: 'user_credit_cards'
-    shellHistory: 'user_shell_history'
     errors: 'user_errors'
     notificationQueue: 'user_notification_queue'
     notificationExpired: 'user_notification_expired'
     notificationConfig: 'user_notification_config'
     eventsQueue: 'user_events_queue'
-    history: 'user_history'
   mail:
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
     pdfUpload: 'user_pdf_uploads'
   temp: 'raw_temp.'
-  event:
-    history: 'data_event_history'
+  history:
+    event: 'history_event'
+    dataLoad: 'history_data_load'
+    user: 'history_user'
+    shell: 'history_shell'
+    requestError: 'history_request_error'
   cartodb:
     syncQueue: 'cartodb_sync_queue'
 

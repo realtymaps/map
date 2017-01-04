@@ -5,9 +5,10 @@ cartodbService = require '../services/service.cartodb'
 validation = require '../utils/util.validation'
 transforms = require '../utils/transforms/transform.cartodb'
 streamUtil = require '../utils/util.streams'
-ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 logger = require('../config/logger').spawn("route:cartodb:internals")
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 getByFipsCode = (req, res, next, headersCb) ->
   Promise.try ->
@@ -29,9 +30,7 @@ getByFipsCode = (req, res, next, headersCb) ->
         logger.debug -> "config.API_KEY_TO_US"
         logger.debug -> config.API_KEY_TO_US
         if validParams?.api_key != config.API_KEY_TO_US
-          throw new Error('UNAUTHORIZED')
-        if !validParams.fips_code?
-          throw new Error('BADREQUEST')
+          throw new PartiallyHandledError('ApiKeyError', {returnStatus: httpStatus.UNAUTHORIZED}, "bad API key given: #{validParams?.api_key}")
       .then () ->
         cartodbService.getByFipsCode(validParams).stream()
         .pipe(streamUtil.geoJsonFormatter([
@@ -44,12 +43,10 @@ getByFipsCode = (req, res, next, headersCb) ->
         .pipe(res)
 
   .catch validation.DataValidationError, (err) ->
-    next new ExpressResponse({alert: {msg: err.message}}, {status: httpStatus.BAD_REQUEST, quiet: err.quiet})
-  .catch (error) ->
+    throw new PartiallyHandledError(err, 'error interpreting query string parameters')
+  .catch _.isString, (err) ->
     # we shouldn't be throwing strings!!  see: http://www.devthought.com/2011/12/22/a-string-is-not-an-error/
-    if _.isString error
-      return next new ExpressResponse({alert: {msg: "#{error} for #{req.path}."}}, {status: httpStatus[error]})
-    throw error
+    throw new Error(err)
 
 
 module.exports = {

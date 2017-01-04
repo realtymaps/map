@@ -4,16 +4,16 @@ logger = require('../config/logger').spawn("route:tiles")
 config = require '../config/config'
 request = require('request')
 cartodbConfig = require '../config/cartodb/cartodb'
-httpStatus = require '../../common/utils/httpStatus'
 _ = require 'lodash'
-ExpressResponse = require '../utils/util.expressResponse'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 getTiles = (mapName) ->
   (req, res, next) ->
 
     _onError = (err) ->
       logger.debug err
-      next new ExpressResponse(alert: {msg: "Could not load map tile"}, {status: err.statusCode || httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})
+      next new PartiallyHandledError(err, "Could not load map tile")
 
     cartodbConfig()
     .then (carto) ->

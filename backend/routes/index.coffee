@@ -3,15 +3,8 @@ loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
 Promise = require 'bluebird'
-validation = require '../utils/util.validation'
-ExpressResponse = require '../utils/util.expressResponse'
-status = require '../../common/utils/httpStatus'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-{InActiveUserError} = require '../utils/errors/util.errors.userSession'
-{ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
-analyzeValue = require '../../common/utils/util.analyzeValue'
+{isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 routeHelpers = require '../utils/util.route.helpers'
-commonConfig = require '../../common/config/commonConfig'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -48,29 +41,10 @@ module.exports = (app, sessionMiddlewares) ->
           else
             route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          msg = [
-            "****************** add better error handling code to cover this error! ******************"
-            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}"
-            # body contents will be inserted here
-            "#{analyzeValue.getSimpleMessage(error)}"
-            "****************** add better error handling code to cover this error! ******************"
-          ]
-          if !_.isEmpty(req.body)
-            msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
-          logger.error(msg.join('\n'))
-          logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
-          throwError =
-            message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
-            quiet: logError.quiet
-          throw throwError
+          error.routeInfo = route
+          throw error
         .catch (error) ->
-          if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
-            returnStatus = status.BAD_REQUEST
-          else if isCausedBy(InActiveUserError, error)
-            returnStatus = status.UNAUTHORIZED
-          else
-            returnStatus = status.INTERNAL_SERVER_ERROR
-          next new ExpressResponse({alert: msg: error.message}, {status: returnStatus, quiet: error.quiet})
+          next(error)
     # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
     # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
     if route.middleware.length > 0

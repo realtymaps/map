@@ -12,7 +12,7 @@ NUM_ROWS_TO_PAGINATE = 2500
 
 
 _tableNames = (entity) ->
-  q = tables.jobQueue.dataLoadHistory()
+  q = tables.history.dataLoad()
   .select('raw_table_name')
   .whereNotNull('raw_table_name')
 
@@ -34,21 +34,26 @@ tablenamesNotDropped = (days = config.CLEANUP.RAW_TABLE_DROP_DAYS) ->
 
 cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
   rawLogger.debug -> loadEntriesQuery.toString()
+  cleans = 0
+  drops = 0
+  skips = 0
 
   Promise.each loadEntriesQuery, (loadEntry) ->
     rawLogger.debug -> loadEntry
 
     rawTempTable = tables.temp(subid: loadEntry.raw_table_name)
-    loadEntryQuery = tables.jobQueue.dataLoadHistory().where(loadEntry)
+    loadEntryQuery = tables.history.dataLoad().where(loadEntry)
 
     sqlHelpers.checkTableExists(rawTempTable)
     .then (exists) ->
       if !exists
         rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} is already gone deleting loadHistory entry"
         #already dropped or never existed
+        skips++
         return loadEntryQuery.delete()
 
       #clean raw table
+      cleans++
       rawLogger.debug -> "@@@@ table #{loadEntry.raw_table_name} cleaning all non errors"
       rawTempTable
       .whereNull('rm_error_msg')
@@ -63,20 +68,33 @@ cleanRawTables = (loadEntriesQuery = tableNamesNotCleaned()) ->
       .then (count) ->
         if !count
           # don't need to keep an empty table around
+          drops++
           dbs.get('raw_temp')
           .schema
           .dropTableIfExists(loadEntry.raw_table_name)
+  .then () ->
+    {cleans, drops, skips}
 
 
 dropRawTables = (loadEntriesQuery = tablenamesNotDropped()) ->
+  drops = 0
+  skips = 0
   Promise.each loadEntriesQuery, (loadEntry) ->
-    dbs.get('raw_temp')
-    .schema
-    .dropTableIfExists(loadEntry.raw_table_name)
-    .then () ->
-      tables.jobQueue.dataLoadHistory()
-      .where(loadEntry)
-      .delete()
+    sqlHelpers.checkTableExists(loadEntry.raw_table_name)
+    .then (exists) ->
+      if exists
+        drops++
+        dbs.get('raw_temp')
+        .schema
+        .dropTableIfExists(loadEntry.raw_table_name)
+        .then () ->
+          tables.history.dataLoad()
+          .where(loadEntry)
+          .delete()
+      else
+        skips++
+  .then () ->
+    {drops, skips}
 
 
 module.exports = {
