@@ -72,6 +72,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
   buildState 'users'
   buildState 'usersCustomers', parent: 'users', template: usersEditTemplate
+  buildState 'usersStaff', parent: 'users', template: usersEditTemplate
 
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false

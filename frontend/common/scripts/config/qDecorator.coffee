@@ -88,11 +88,10 @@ mod.config ($provide) ->
         if !collection?.length
           return $delegate.resolve(collection)
 
-        promises = for k,v of collection
-          do (k,v) ->
-            $delegate.when(v)
-            .then (v) ->
-              cb(v, k, collection.length)
+        promises = for v,i in collection
+          $delegate.when(v)
+          .then (v) ->
+            cb(v, i, collection.length)
 
         return $delegate.all(promises)
 

@@ -1,0 +1,20 @@
+//use when we migrate to pug &attributes(attributes)
+- match = match || '$item'
+- placeholder = placeholder || "Choose..."
+- appendToBody = appendToBody || "true"
+- item = item || 'item'
+- trackBy = trackBy || ''
+
+.ui-grid-cell-contents(class=clz)
+  div()
+    ui-select-wrap()
+      ui-select(
+        multiple
+        ng-model="MODEL_COL_FIELD"
+        theme="bootstrap"
+        ng-disabled="disabled"
+        append-to-body=appendToBody)
+
+        ui-select-match(placeholder=placeholder) {{ #{match} }})
+        ui-select-choices(repeat="item in col.colDef.editDropdownOptionsArray #{trackBy} | filter: $select.search")
+          span() {{ #{item} }}

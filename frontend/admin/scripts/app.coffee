@@ -11,7 +11,7 @@ require 'angular-cookies'
 require 'angular-cache'
 require 'angular-simple-logger'
 require 'angular-state-files'
-require 'angular-ui-grid/ui-grid.js'
+require 'angular-ui-grid'
 require 'angular-ui-router'
 require 'angular-ui-bootstrap'
 require 'rmaps-angular-utils'
@@ -54,6 +54,7 @@ app = window.angular.module appName, [
   'ui.grid.pinning'
   'ui.grid.cellNav'
   'ui.grid.selection'
+  'ui.grid.pagination'
 ]
 
 require '../../../tmp/admin.templates.js' #requries rmapsAdminApp to be initialized

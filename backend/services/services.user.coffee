@@ -4,7 +4,7 @@ tables = require '../config/tables'
 dbs = require '../config/dbs'
 oldCrud = require '../utils/crud/util.crud.service.helpers'
 EzCrud = require '../utils/crud/util.ezcrud.service.helpers'
-{joinColumns, basicColumns} = require '../utils/util.sql.columns'
+{basicColumns} = require '../utils/util.sql.columns'
 stripeServices = null
 emailServices = null
 {UserIdDoesNotExistError} =  require '../utils/errors/util.errors.vero'
@@ -17,51 +17,61 @@ require('../services/payment/stripe')().then (svc) ->
   stripeServices = svc
 
 
-module.exports.accountUseTypes = new oldCrud.Crud(tables.lookup.accountUseTypes)
+group = new EzCrud(tables.auth.group)
+permission = new EzCrud(tables.auth.permission)
+m2m_group_permission = new EzCrud(tables.auth.m2m_group_permission)
+m2m_user_permission = new EzCrud(tables.auth.m2m_user_permission)
+m2m_user_group = new EzCrud(tables.auth.m2m_user_group)
+profile = new EzCrud(tables.user.profile)
 
-module.exports.group = new oldCrud.Crud(tables.auth.group)
-module.exports.permission = new oldCrud.Crud(tables.auth.permission)
-module.exports.m2m_group_permission = new oldCrud.Crud(tables.auth.m2m_group_permission)
-module.exports.m2m_user_permission = new oldCrud.Crud(tables.auth.m2m_user_permission)
-module.exports.m2m_user_group = new oldCrud.Crud(tables.auth.m2m_user_group)
+getMany = ({user, m2mCrud, linkCrud, field} = {}) ->
+  user["#{field}s"] = []
 
-module.exports.profile = new oldCrud.Crud(tables.user.profile)
-module.exports.project = new oldCrud.Crud(tables.user.project)
-module.exports.company = new oldCrud.Crud(tables.user.company)
-module.exports.drawnShapes = new oldCrud.Crud(tables.user.drawnShapes)
-module.exports.notes = new oldCrud.Crud(tables.user.notes)
+  linkName = linkCrud.dbFn.tableName
+  m2mName = m2mCrud.dbFn.tableName
+
+  m2mCrud.dbFn().join(linkName, "#{linkName}.id", "#{m2mName}.#{field}_id")
+  .select("#{m2mName}.id", "#{m2mName}.user_id", "#{linkName}.*")
+  .where(user_id: user.id)
+  .then (results) ->
+    user["#{field}s"] = results
+
+mapFks = (user) ->
+  getPermissions = getMany {user, m2mCrud: m2m_user_permission, linkCrud: permission, field: 'permission'}
+  getGroups = getMany {user, m2mCrud: m2m_user_group, linkCrud: group, field: 'group'}
+  Promise.join(getPermissions, getGroups)
+  .then ->
+    user
+
 
 
 class UserCrud extends EzCrud
-  constructor: () ->
-    super(arguments...)
 
   init: () =>
     # taking care of inits here fore internal svcs so they can be overridden
     # logger.debug 'INIT UserCrud Service'
-    @permissions = new oldCrud.ThenableHasManyCrud(tables.auth.permission, joinColumns.permission,
-      module.exports.m2m_user_permission, 'permission_id', undefined,
-      "#{tables.auth.m2m_user_group.tableName}.id").init(arguments...)
+    @permissions = m2m_user_permission
 
-    @groups = new oldCrud.ThenableHasManyCrud(tables.auth.group, joinColumns.groups,
-      module.exports.m2m_user_group, 'group_id', undefined,
-      "#{tables.auth.m2m_user_group.tableName}.id").init(arguments...)
+    @groups = m2m_user_group
 
-    @clients = new oldCrud.ThenableHasManyCrud(tables.auth.user, joinColumns.client,
-      module.exports.profile, undefined, undefined,
-      "#{tables.user.profile.tableName}.id").init(arguments...)
+    @clients = profile
 
     return @
 
   getAll: (entity = {}, options = {}) ->
-    options =
-      query: @dbFn().select(basicColumns.userSafe)
+    options = query: @dbFn().select(basicColumns.userSafe)
     super(entity, options)
+    .then (users) ->
+      Promise.map users, (user) ->
+        mapFks(user)
+
 
   getById: (entity = {}, options = {}) ->
     options =
       query: @dbFn().select(basicColumns.userSafe)
     super(entity, options)
+    .then ([result]) ->
+      mapFks(result)
 
   clone: ->
     new UserCrud(@dbFn, @options)
@@ -98,4 +108,17 @@ class UserCrud extends EzCrud
         .then () =>
           super(idEntity, options)
 
-module.exports.user = new UserCrud(tables.auth.user).init(false)
+module.exports = {
+  user: new UserCrud(tables.auth.user).init(false)
+  accountUseTypes: new oldCrud.Crud(tables.lookup.accountUseTypes)
+  project: new oldCrud.Crud(tables.user.project)
+  company: new oldCrud.Crud(tables.user.company)
+  drawnShapes: new oldCrud.Crud(tables.user.drawnShapes)
+  notes: new oldCrud.Crud(tables.user.notes)
+  profile
+  group
+  permission
+  m2m_group_permission
+  m2m_user_permission
+  m2m_user_group
+}

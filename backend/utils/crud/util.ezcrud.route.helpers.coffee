@@ -1,5 +1,6 @@
 util = require 'util'
 _ = require 'lodash'
+require '../../../common/extensions/strings'
 _logger = require('../../config/logger').spawn('ezcrud:route')
 {methodExec, handleQuery} = require '../util.route.helpers'
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
@@ -10,29 +11,36 @@ RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 } = require '../util.validation'
 
 class RouteCrud
-  constructor: (@svc, options = {}) ->
+  constructor: (@svc, @options = {}) ->
     if !@svc?
       throw new RouteCrudError('@svc must be defined')
 
     @logger = _logger
     if @svc.dbFn?.tableName
       @logger = @logger.spawn(@svc.dbFn?.tableName)
-    if options.debugNS
-      @logger = @logger.spawn(options.debugNS)
-    @enableUpsert = options.enableUpsert ? false
+    if @options.debugNS
+      @logger = @logger.spawn(@options.debugNS)
+
+    @logger.debug -> "@@@@ @options @@@@"
+    @logger.debug => @options
+
+    @enableUpsert = @options.enableUpsert ? false
 
     #essentially clone the parts of a request we want to not mutate it
-    @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
-    @initializeTransforms 'root', options, ['GET', 'POST']
-    @initializeTransforms 'byId', options
+    @logger.debug -> "@options.reqTransforms"
+    @logger.debug => @options.reqTransforms
 
-    @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
+    @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
+    @initializeTransforms 'root', ['GET', 'POST']
+    @initializeTransforms 'byId',
+
+    @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
 
 
-  initializeTransforms: (transformType, options, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
+  initializeTransforms: (transformType, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
     methods.forEach (meth) =>
       transformName = "#{transformType}#{meth}Transforms"
-      @[transformName] = options[transformName] ? defaultRequestTransforms()
+      @[transformName] = @options[transformName] ? defaultRequestTransforms()
 
   # Public: validRequest a request via transforms
   #
@@ -49,9 +57,9 @@ class RouteCrud
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
-      @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
+      @logger.debug -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
-        @logger.debug "attempting: #{transformName}"
+        @logger.debug -> "attempting: #{transformName}"
         return validateAndTransform tReq, specificTransforms
       tReq
 
@@ -84,6 +92,16 @@ class RouteCrud
     @logRequest req, 'initial req'
     @exec(req, crudMethodStr).then (tReq) =>
       @logRequest tReq, 'transformed tReq', 'tReq'
+
+      if _.isFunction @options.getEntity
+        return @options.getEntity(tReq)
+      else if _.isObject(@options.getEntity)
+        strFunc = @options.getEntity[crudMethodStr]
+        if _.isString strFunc
+          return tReq[strFunc]
+        else if strFunc?
+          return strFunc(tReq)
+
       entity = _.merge({}, tReq.params, tReq.body, tReq.query)
       entity
 

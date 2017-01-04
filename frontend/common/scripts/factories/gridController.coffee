@@ -34,6 +34,9 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmaps
         rowEntity[colDef.field] = oldValue || colDef.defaultValue?() || colDef.defaultValue
         okToSave = false
 
+      if colDef.handleCustomSave? && _.isFunction(colDef.handleCustomSave)
+        okToSave = colDef.handleCustomSave(rowEntity, newValue, oldValue)
+
       okToSave
 
     $scope.grid = _.extend
@@ -44,7 +47,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $uibModal, Restangular, rmaps
       onRegisterApi: (gridApi) ->
         _gridApi = gridApi
         gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-          okToSave = handleCustomColDefFields(rowEntity, colDef, newValue) #GTFO possibly
+          okToSave = handleCustomColDefFields(rowEntity, colDef, newValue, oldValue) #GTFO possibly
           if !okToSave
             return
           if newValue != oldValue

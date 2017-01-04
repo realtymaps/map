@@ -58,7 +58,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Data'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: jsonInput
+        editableCellTemplate: jsonInput()
         defaultValue: "{}"
         width: 50
         cellClass: 'clickable-cell'
@@ -67,7 +67,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Blocking Tasks'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: jsonInput
+        editableCellTemplate: jsonInput()
         defaultValue: "[]"
         width: 250
         cellClass: 'clickable-cell'
@@ -76,7 +76,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
         displayName: 'Blocking Locks'
         type: 'object'
         enableCellEdit: true
-        editableCellTemplate: jsonInput
+        editableCellTemplate: jsonInput()
         defaultValue: "[]"
         width: 250
         cellClass: 'clickable-cell'
