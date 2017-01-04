@@ -140,4 +140,13 @@ app.service 'rmapsPropertyFormatterService',
         return if !result.price || !result.sqft_finished
         numeral(result.price / result.sqft_finished).format('$0,0.00')
 
+      processDisclaimerTextMacros: (result) ->
+        # disclaimer text macros can be any keys that exist on the property result
+        result.disclaimer_text.replace /\{\{(\w+)\}\}/g, (test, match) ->
+          if match of result
+            if match in ["up_to_date", "created_date", "discontinued_date"] # format dates
+              return new Date(result[match]).toLocaleDateString()
+            return result[match]
+          return test
+
     return _.extend(svc, rmapsFormattersService.Common)

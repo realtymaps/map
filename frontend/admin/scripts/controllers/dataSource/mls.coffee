@@ -65,7 +65,7 @@ app.controller 'rmapsMlsCtrl',
           dbIndex = i - 1 # identifier corresponds to index of selected item, minus 1 to accout for blank element
           dropdown.value = dbIndex # forceably assign the value (for some reason this is what is not occuring upon refresh)
 
-    nonBaseDefaults = _.assign {}, rmapsAdminConstants.defaults.otherConfig, _.clone rmapsAdminConstants.defaults.propertySchema, _.clone rmapsAdminConstants.defaults.agentSchema
+    nonBaseDefaults = _.assign({}, rmapsAdminConstants.defaults.otherConfig, _.clone(rmapsAdminConstants.defaults.propertySchema), _.clone(rmapsAdminConstants.defaults.agentSchema))
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -396,7 +396,10 @@ app.controller 'rmapsMlsCtrl',
       agent_data_truth = _.every ['db', 'table'].concat(agentDataCols), (k) ->
         (mlsObj.agent_data? && k of mlsObj.agent_data && mlsObj.agent_data[k] != '')
 
-      return listing_data_truth && agent_data_truth
+      disclaimer_truth = _.every ['formal_name', 'disclaimer_text', 'disclaimer_logo'], (k) ->
+        k of mlsObj && mlsObj[k]?
+
+      return listing_data_truth && agent_data_truth && disclaimer_truth
 
     # modal for Create mlsData
     $scope.animationsEnabled = true

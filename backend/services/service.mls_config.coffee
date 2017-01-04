@@ -3,6 +3,7 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('service:mls_config')
 # coffeelint: enable=check_scope
 externalAccounts = require '../services/service.externalAccounts'
+dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
@@ -75,7 +76,7 @@ class MlsConfigService extends ServiceCrud
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
-    tables.config.mls.transaction (transaction) ->
+    dbs.transaction (transaction) ->
       tables.config.mls({transaction})
       .insert(newMls)
       .then () ->
@@ -101,7 +102,7 @@ class MlsConfigService extends ServiceCrud
       .then (subtaskTemplates) ->
         subtaskTemplatesJson = JSON.stringify(subtaskTemplates)
         subtasks = JSON.parse(subtaskTemplatesJson.replace(/<mlsid>/g, newMls.id))
-        tables.jobQueue.taskConfig({transaction})
+        tables.jobQueue.subtaskConfig({transaction})
         .insert(subtasks)
 
     .catch isUnhandled, (error) ->
