@@ -3,6 +3,9 @@ require 'angular-simple-logger'
 require 'angular-ui-router'
 require 'spinkit/css/spinkit.css'
 require 'font-awesome/css/font-awesome.css'
+require 'ui-select'
+require 'ui-select/dist/select.css'
+
 
 # maybe later on angular-extend-promises
 # their .each is buggy and does not pass bluebird specs
@@ -20,6 +23,7 @@ require 'font-awesome/css/font-awesome.css'
 mod = window.angular.module 'rmapsCommon', [
   'nemLogging'
   'ui.router'
+  'ui.select'
   # 'angular-extend-promises'
 ]
 

@@ -1,6 +1,6 @@
 rewire = require 'rewire'
 crudServiceHelpers = rewire '../../../../backend/utils/crud/util.crud.service.helpers'
-{Crud, HasManyCrud, hasManyCrud, ThenableCrud} = crudServiceHelpers
+{Crud, HasManyCrud, ThenableCrud} = crudServiceHelpers
 tables = require '../../../../backend/config/tables'
 userServices = require '../../../../backend/services/services.user'
 Promise = require 'bluebird'
@@ -12,14 +12,6 @@ errorHandlingUtils = require '../../../../backend/utils/errors/util.error.partia
 
 crudServiceHelpers.__set__('IsIdObjError', class FakeIsIdObjError extends errorHandlingUtils.QuietlyHandledError)
 
-HasManyCrudInstance = hasManyCrud(tables.auth.permission, [
-  "#{tables.auth.m2m_user_permission.tableName}.id as id"
-  "user_id"
-  "permission_id"
-  "content_type_id"
-  "name"
-  "codename"
-], userServices.m2m_user_permission, "permission_id", undefined, "#{tables.auth.m2m_user_permission.tableName}.id")
 
 describe 'util.crud.service.helpers', ->
   describe 'Crud', ->
@@ -167,80 +159,6 @@ describe 'util.crud.service.helpers', ->
         @instance.delete(1).toString()
         .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = 1""".replace(/id/g, @instance.idKey)
 
-
-    describe 'HasManyCrud', ->
-      it 'exists', ->
-        HasManyCrud.should.be.ok
-
-      describe 'defaults', ->
-        before ->
-          @instance = HasManyCrudInstance
-
-        it 'ctor', ->
-          @instance.dbFn.should.be.equal tables.auth.permission
-          @instance.idKey.should.be.equal "#{tables.auth.m2m_user_permission.tableName}.id"
-          @instance.joinCrud.should.be.equal userServices.m2m_user_permission
-
-        it 'getAll', ->
-          @instance.getAll(user_id:1).toString().should.equal """
-          select "#{tables.auth.m2m_user_permission.tableName}"."id" as "id", "user_id", "permission_id",
-           "content_type_id", "name", "codename" from "#{tables.auth.m2m_user_permission.tableName}"
-           inner join "#{tables.auth.permission.tableName}" on "#{tables.auth.permission.tableName}"."id" = "permission_id"
-           where "user_id" = 1""".replace(/\n/g, '')
-
-        it 'getById', ->
-          @instance.getById(1).toString()
-          .should.equal """
-          select "#{tables.auth.m2m_user_permission.tableName}"."id" as "id", "user_id", "permission_id",
-           "content_type_id", "name", "codename" from "#{tables.auth.m2m_user_permission.tableName}"
-           inner join "#{tables.auth.permission.tableName}" on "#{tables.auth.permission.tableName}"."id" = "permission_id"
-           where "#{tables.auth.m2m_user_permission.tableName}"."id" = 1""".replace(/\n/g, '')
-
-        describe 'update', ->
-          it 'no safe', ->
-            @instance.update(1, test:'test').toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
-
-          it 'safe', ->
-            @instance.update(1, {test:'test', crap:2}, ['test']).toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = 1 returning "id" """.trim()
-
-
-        describe 'create', ->
-          it 'default', ->
-            @instance.create({id:1, test:'test'}).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values (1, 'test') returning "id" """.trim()
-          it 'id', ->
-            @instance.create({id:1, test:'test'}, 2).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values (2, 'test') returning "id" """.trim()
-
-        it 'delete', ->
-          @instance.delete(1).toString()
-          .should.equal """delete from "#{tables.auth.m2m_user_permission.tableName}" where "id" = 1"""
-
-        describe 'clone', ->
-          it 'exists', ->
-            expect(@instance.clone).to.be.ok
-
-          describe 'works', ->
-            beforeEach ->
-              @clone = @instance.clone()
-            it 'dbFn', ->
-              @clone.dbFn.should.be.eql @instance.dbFn
-            it 'rootCols', ->
-              @clone.rootCols.should.be.eql @instance.rootCols
-            it 'joinCrud', ->
-              @clone.joinCrud.should.be.eql @instance.joinCrud
-            it 'origJoinIdStr', ->
-              expect(@clone.origJoinIdStr).to.be.eql @instance.origJoinIdStr
-            it 'origRootIdStr', ->
-              expect(@clone.origRootIdStr).to.be.eql @instance.origRootIdStr
-            it 'idKey', ->
-              @clone.idKey.should.be.eql @instance.idKey
-            it 'joinCrud', ->
-              @clone.joinCrud.should.be.eql @instance.joinCrud
-            it 'joinIdStr', ->
-              @clone.joinIdStr.should.be.eql @instance.joinIdStr
 
     describe 'ThenableCrud', ->
       it 'exists', ->

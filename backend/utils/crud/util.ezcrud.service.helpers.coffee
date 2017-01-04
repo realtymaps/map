@@ -5,6 +5,7 @@ isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
 sqlHelpers = require '../util.sql.helpers'
+Promise = require 'bluebird'
 
 
 class ServiceCrud extends BaseObject
@@ -69,46 +70,59 @@ class ServiceCrud extends BaseObject
     .catch isUnhandled, (error) ->
       throw new ServiceCrudError(error, "Error evaluating query: #{query}")
 
+  _maybeIterate: ({entity, options, iterator}, fn) ->
+    iterator ?= "map"
+    if !Array.isArray(entity)
+      return fn(entity, options)
+
+    Promise[iterator] entity, (e) ->
+      fn(e, options)
+
   getAll: (entity = {}, options = {}) ->
     @logger.debug () -> "getAll() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
     query = options.query ? @dbFn()
     @_wrapQuery(sqlHelpers.buildQuery(knex: query, entity: entity), options)
 
   create: (entity, options = {}) ->
-    @logger.debug () -> "create() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapQuery((options.query ? @dbFn()).insert(sqlHelpers.safeJsonEntity(entity)), options)
+    @_maybeIterate {entity, options}, (entity, options) =>
+      @logger.debug () -> "create() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
+      @_wrapQuery((options.query ? @dbFn()).insert(sqlHelpers.safeJsonEntity(entity)), options)
 
   # implies restrictions and forces on id matches
   getById: (entity, options = {}) ->
-    @logger.debug () -> "getById() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
+    @_maybeIterate {entity, options}, (entity, options) =>
+      @logger.debug () -> "getById() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
 
-    # allow `entity` to represent a primitive
-    ids = if _.isObject(entity) or @idKeys.length > 1 then entity else {"#{@idKeys[0]}": entity}
-    throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys ids
+      # allow `entity` to represent a primitive
+      ids = if _.isObject(entity) or @idKeys.length > 1 then entity else {"#{@idKeys[0]}": entity}
+      throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys ids
 
-    @logger.debug () -> "ids: #{JSON.stringify(ids)}"
-    @_wrapQuery((options.query ? @dbFn()).where(ids), options)
+      @logger.debug () -> "ids: #{JSON.stringify(ids)}"
+      @_wrapQuery((options.query ? @dbFn()).where(ids), options)
 
   update: (entity, options = {}) ->
-    @logger.debug () -> "update() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    throw new ServiceCrudError("update on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys entity
-    ids = @_getIdObj entity
-    entity = _.omit entity, @idKeys
-    @logger.debug () -> "ids: #{JSON.stringify(ids)}"
-    @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    @_wrapQuery (options.query ? @dbFn()).where(ids).update(sqlHelpers.safeJsonEntity(entity)), options
+    @_maybeIterate {entity, options}, (entity, options) =>
+      @logger.debug () -> "update() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
+      throw new ServiceCrudError("update on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys entity
+      ids = @_getIdObj entity
+      entity = _.omit entity, @idKeys
+      @logger.debug () -> "ids: #{JSON.stringify(ids)}"
+      @logger.debug () -> "entity: #{JSON.stringify(entity)}"
+      @_wrapQuery (options.query ? @dbFn()).where(ids).update(sqlHelpers.safeJsonEntity(entity)), options
 
   upsert: (entity, options = {}) ->
-    @logger.debug () -> "upsert() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    ids = @_getIdObj entity
-    entity = _.omit entity, @idKeys
-    @logger.debug () -> "ids: #{JSON.stringify(ids)}"
-    @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: sqlHelpers.safeJsonEntity(entity), tableName: @dbFn.tableName
-    @_wrapQuery((options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options)
+    @_maybeIterate {entity, options}, (entity, options) =>
+      @logger.debug () -> "upsert() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
+      ids = @_getIdObj entity
+      entity = _.omit entity, @idKeys
+      @logger.debug () -> "ids: #{JSON.stringify(ids)}"
+      @logger.debug () -> "entity: #{JSON.stringify(entity)}"
+      upsertQuery = sqlHelpers.buildUpsertBindings idObj:ids, entityObj: sqlHelpers.safeJsonEntity(entity), tableName: @dbFn.tableName
+      @_wrapQuery((options.query ? @dbFn()).raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (entity, options = {}) ->
-    @logger.debug () -> "delete() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapQuery((options.query ? @dbFn()).where(entity).delete(), options)
+    @_maybeIterate {entity, options}, (entity, options) =>
+      @logger.debug () -> "delete() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
+      @_wrapQuery((options.query ? @dbFn()).where(entity).delete(), options)
 
 module.exports = ServiceCrud

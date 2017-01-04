@@ -1,7 +1,8 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsUsersService', (Restangular) ->
+
+app.service 'rmapsUsersService', ($q, Restangular) ->
 
   api = backendRoutes.user.apiBase
   getIdFromElem = Restangular.configuration.getIdFromElem
@@ -13,27 +14,26 @@ app.service 'rmapsUsersService', (Restangular) ->
       else
         getIdFromElem(elem)
 
-  _init = () ->
-    Restangular.all(api)
+  Restangular.addRequestInterceptor  (element, operation, what, url) ->
+    if ['put', 'post'].indexOf(operation) > -1
+      #remove fk fields upon saving
+      #upon saving groups or permissions they should route to their specific route /api/permissions , /api/groups
+      delete element.permissions
+      delete element.groups
+    return element
+
 
   get = (filters = {}) ->
-    _init().getList(filters)
+    Restangular.all(api).getList(filters)
 
-  subResource = (resource) ->
-    _init().all(resource)
+  getGroups = (entity, filters = {}) ->
+    entity.all('groups').getList(filters)
 
-  getGroups = (filters = {}) ->
-    subResource('groups').getList(filters)
-
-  getPermissions = (filters = {}) ->
-    subResource('permissions').getList(filters)
-
-  updatePermission = (name, permission) ->
-    subResource('permissions').one(name).customPUT(permission)
+  getPermissions = (entity, filters = {}) ->
+    entity.all('permissions').getList(filters)
 
   return {
     get
-    getGroups
     getPermissions
-    updatePermission
+    getGroups
   }

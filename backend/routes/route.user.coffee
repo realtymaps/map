@@ -1,6 +1,5 @@
 auth = require '../utils/util.auth'
 {user} = require '../services/services.user'
-{hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn('route:user')
@@ -11,6 +10,7 @@ transforms = require '../utils/transforms/transforms.user'
 userInternals = require '../services/service.user.internals'
 {parseBase64} = require '../utils/util.image'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+transforms = require '../utils/transforms/transforms.user'
 
 
 getImage = (req, res, next) ->
@@ -28,11 +28,21 @@ getImage = (req, res, next) ->
 class UserCrud extends EzRouteCrud
   constructor:() ->
     super(arguments...)
-    @permissionsCrud = hasManyRouteCrud(@svc.permissions, 'permission_id', 'user_id', 'PermissionsHasManyRouteCrud')
+    @permissionsCrud = new EzRouteCrud @svc.permissions, {
+      rootPOSTTransforms: transforms.permissions.rootPOST
+      byIdDELETETransforms: transforms.permissions.byIdDELETE
+      getEntity:
+        rootPOST: 'body'
+    }
     @permissions = @permissionsCrud.root
     @permissionsById = @permissionsCrud.byId
 
-    @groupsCrud = hasManyRouteCrud(@svc.groups, 'group_id', 'user_id', 'GroupsHasManyRouteCrud')#.init(true)#to enable logging
+    @groupsCrud = new EzRouteCrud @svc.groups, {
+      rootPOSTTransforms: transforms.groups.rootPOST
+      byIdDELETETransforms: transforms.groups.byIdDELETE
+      getEntity:
+        rootPOST: 'body'
+    }
     @groups = @groupsCrud.root
     @groupsById = @groupsCrud.byId
 

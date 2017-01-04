@@ -40,7 +40,6 @@ require 'angular-numeraljs/dist/angular-numeraljs.js'
 require 'angular-load'
 require 'angular-credit-cards'
 
-require 'isteven-angular-multiselect/isteven-multi-select.js'
 require 'ng-img-crop-full-extended/compile/minified/ng-img-crop.js'#has css
 
 window._ = _
