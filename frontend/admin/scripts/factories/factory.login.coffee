@@ -21,6 +21,7 @@ rmapsLoginService) ->
 
     $scope.loginInProgress = false
     $scope.form = {}
+    $scope.showForm = !$rootScope.identity
 
     loginFailed = (response) ->
       $log.error "Could not log in", response
