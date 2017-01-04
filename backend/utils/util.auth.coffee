@@ -10,7 +10,6 @@ httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-{PartiallyHandledError} = require './errors/util.error.partiallyHandledError'
 
 
 class SessionSecurityError extends Error

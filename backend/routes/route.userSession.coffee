@@ -8,7 +8,6 @@ userSvc = require('../services/services.user').user
 projectSvc = require('../services/services.user').project
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
-alertIds = require '../../common/utils/enums/util.enums.alertIds'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
@@ -21,7 +20,7 @@ internals = require './route.userSession.internals'
 userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 # handle login authentication, and do all the things needed for a new login session

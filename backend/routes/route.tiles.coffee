@@ -4,7 +4,6 @@ logger = require('../config/logger').spawn("route:tiles")
 config = require '../config/config'
 request = require('request')
 cartodbConfig = require '../config/cartodb/cartodb'
-httpStatus = require '../../common/utils/httpStatus'
 _ = require 'lodash'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
