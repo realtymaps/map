@@ -48,25 +48,10 @@ module.exports = (app, sessionMiddlewares) ->
           else
             route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          msg = [
-            "****************** add better error handling code to cover this error! ******************"
-            "uncaught route handler error in #{route.moduleId}.#{route.routeId}[#{route.method}]: #{req.originalUrl}"
-            # body contents will be inserted here
-            "#{analyzeValue.getSimpleMessage(error)}"
-            "****************** add better error handling code to cover this error! ******************"
-          ]
-          if !_.isEmpty(req.body)
-            msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
-          logger.error(msg.join('\n'))
-          logError = new PartiallyHandledError(error, "uncaught route handler error")  # this is just to provoke logging
-          throwError =
-            message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
-            logError: logError
-            quiet: logError.quiet
-            returnStatus: (logError.returnStatus ? status.INTERNAL_SERVER_ERROR)
-          throw throwError
+          error.routeInfo = route
+          throw error
         .catch (error) ->
-          next new ExpressResponse({alert: msg: error.message}, {status: error.returnStatus, quiet: error.quiet, logError: error.logError})
+          next(error)
     # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
     # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
     if route.middleware.length > 0

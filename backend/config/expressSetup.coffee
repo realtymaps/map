@@ -133,9 +133,13 @@ app.use (data, req, res, next) ->
   if !(data instanceof ExpressResponse)
     # it's probably a thrown Error of some sort -- coerce to an ExpressResponse
     if isUnhandled(data)
+      if data.routeInfo?
+        origination = " #{data.routeInfo.moduleId}.#{data.routeInfo.routeId}[#{data.routeInfo.method}]"
+      else
+        origination = ''
       msg = [
         "****************** add better error handling code to cover this error! ******************"
-        "uncaught express middleware error on: #{req.originalUrl}"
+        "uncaught express middleware error at#{origination}: #{req.originalUrl}"
         # body contents will be inserted here
         "#{analyzeValue.getSimpleMessage(data)}"
         "****************** add better error handling code to cover this error! ******************"
@@ -143,13 +147,11 @@ app.use (data, req, res, next) ->
       if !_.isEmpty(req.body)
         msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
       logger.error(msg.join('\n'))
-      logError = new PartiallyHandledError(data, "uncaught error found by express")  # this is just to provoke logging
-      data =
-        message: commonConfig.UNEXPECTED_MESSAGE("error reference: #{logError.errorRef}")
-        logError: logError
-        quiet: logError.quiet
-        returnStatus: logError.returnStatus ? status.INTERNAL_SERVER_ERROR
-    data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message)), id: "500-#{req.path}"}, {status: data.returnStatus, logError})
+      data = new PartiallyHandledError(data, "uncaught error found by express")  # this is just to provoke logging
+      message = "error reference: #{logError.errorRef}"
+    else
+      message = escape(data.message)
+    data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(message), id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
 
   logger.debug "data.status: #{data.status}"
   if !status.isWithinOK(data.status)
