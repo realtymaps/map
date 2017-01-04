@@ -5,6 +5,7 @@ tables = require("../config/tables")
 logger = require("../config/logger").spawn("route:shell")
 Promise = require 'bluebird'
 _ = require 'lodash'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 module.exports =
   shell:

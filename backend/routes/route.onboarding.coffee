@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn("route.onboarding")
+#logger = require('../config/logger').spawn("route.onboarding")
 {validateAndTransformRequest} = require '../utils/util.validation'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 {expectSingleRow} = require '../utils/util.sql.helpers'

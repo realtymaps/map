@@ -1,14 +1,11 @@
 logger = require('../config/logger').spawn('util:route:mls')
 ExpressResponse =  require './util.expressResponse'
-validation = require './util.validation'
 retsService = require '../services/service.rets'
 _ = require 'lodash'
 photoUtil = require './util.mls.photos'
 {PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 httpStatus = require '../../common/utils/httpStatus'
-photoErrors = require './errors/util.errors.photos'
 {RetsError} =  require 'rets-client'
-ourRetsErrors = require './errors/util.errors.rets'
 require '../extensions/stream'
 
 

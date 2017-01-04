@@ -7,7 +7,6 @@ express = require 'express'
 Promise = require 'bluebird'
 paths = require '../../common/config/paths'
 _ = require 'lodash'
-util = require 'util'
 
 commonConfig = require '../../common/config/commonConfig'
 dbs = require './dbs'
@@ -148,7 +147,7 @@ app.use (data, req, res, next) ->
         msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
       logger.error(msg.join('\n'))
       data = new PartiallyHandledError(data, "uncaught error found by express")  # this is just to provoke logging
-      message = "error reference: #{logError.errorRef}"
+      message = "error reference: #{data.errorRef}"
     else
       message = escape(data.message)
     data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(message), id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
