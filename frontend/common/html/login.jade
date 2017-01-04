@@ -5,13 +5,16 @@
         img(src="/assets/logo.png")
     .row
       .col-md-4.col-md-offset-4
-        form.comfy(method="POST", ng-submit="doLogin()")
+        .text-center(ng-show="!showForm")
+          h3 You are signed in as {{identity.user.email}}
+          .btn.btn-info(ng-click="showForm = true") Login Again
+        form.comfy(method="POST", ng-submit="doLogin()" ng-show="showForm")
           .form-group
             label(for="email") Email:
             input#username(type="email" name="email" ng-model="form.email")
           .form-group
             label(for="password") Password:
-            input#password(type="password" name="password" ng-model="form.password")
+            input#password(ng-show="!form.loginToken" type="password" name="password" ng-model="form.password")
           .form-group(ng-show="form.loginToken")
             label(for="loginToken") Login Token:
             input#loginToken(type="text" name="loginToken" ng-model="form.loginToken")

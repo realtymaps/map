@@ -22,6 +22,7 @@ rmapsLoginService) ->
   ($scope) ->
 
     $scope.loginInProgress = false
+    $scope.showForm = !$rootScope.identity
     $scope.form =
       email: $location.search().email || ''
       loginToken: $location.search().loginToken || ''
