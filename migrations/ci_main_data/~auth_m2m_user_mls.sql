@@ -1,3 +1,5 @@
+-- this file references other tables, so it has been prefixed with ~ so that it comes later alphabetically
+
 insert into auth_m2m_user_mls (mls_code, auth_user_id, mls_user_id, is_verified)
 values(
   'SWFLMLS',
