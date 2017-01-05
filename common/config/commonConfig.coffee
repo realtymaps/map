@@ -99,10 +99,16 @@ commonConfig =
 
     STATUS:
       NONE: 'none'
-      ACTIVE: 'active'
       DEACTIVATED: 'deactivated'
       EXPIRED: 'expired' # cancelled accounts that have passed `period_end`
-      PAST_DUE: 'past_due' # https://stripe.com/docs/api#subscription_object-status
+
+      # https://stripe.com/docs/api#subscription_object-status
+      ACTIVE: 'active'
+      TRIALING: 'trialing'
+      PAST_DUE: 'past_due'
+      UNPAID: 'unpaid'
+      CANCELED: 'canceled'
+      ACTIVE_LIST: ['active', 'trialing', 'past_due']
 
 
   mail:

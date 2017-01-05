@@ -31,7 +31,7 @@ safeUserFields = [
 # tests subscription status of the (if active) req.session
 # This is leveraged in middleware, but can be used in route code for business logic needs
 isSubscriber = (req) ->
-  return req?.session?.subscription? and req.session.subscription in config.SUBSCR.PLAN.PAID_LIST
+  return req?.session?.subscriptionStatus in config.SUBSCR.STATUS.ACTIVE_LIST and req.user?.stripe_plan_id in config.SUBSCR.PLAN.PAID_LIST
 
 # caches permission and group membership values on the user session; we could
 # get into unexpected states if those values change during a session, so we

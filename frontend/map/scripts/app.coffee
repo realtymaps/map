@@ -102,8 +102,8 @@ rmapsMainOptions
 rmapsPrincipalService) ->
 
   $log = $log.spawn('rmapsAppCtrl')
-
-  $rootScope.subscrPlans = rmapsMainOptions.plan # expose plan ids for use among jade files
+  console.log "rmapsMainOptions:\n#{JSON.stringify(rmapsMainOptions,null,2)}"
+  $rootScope.subscriptionConfig = rmapsMainOptions.subscription # expose plan ids for use among jade files
   rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity
     {user, profiles} = identity

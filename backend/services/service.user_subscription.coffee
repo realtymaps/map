@@ -60,20 +60,20 @@ _getStripeIds = (userId, trx) ->
     ids
 
 
-# requires a STRIPE subscription object with a status and plan keys in order to determine status string
-_getStatusString = (subscription) ->
-  if subscription.status == 'trialing' || subscription.status == 'active'
+# # requires a STRIPE subscription object with a status and plan keys in order to determine status string
+# _getStatusString = (subscription) ->
+#   if subscription.status == 'trialing' || subscription.status == 'active'
 
-    # note: when a subscription is canceled or in grace period, this will still
-    #   represent the plan id since this is access status, not just subscr status.
-    #   Stripe will automatically change this subscr status at end of grace period.
-    # Note: includes plan.id `deactivated`
-    return subscription.plan.id
+#     # note: when a subscription is canceled or in grace period, this will still
+#     #   represent the plan id since this is access status, not just subscr status.
+#     #   Stripe will automatically change this subscr status at end of grace period.
+#     # Note: includes plan.id `deactivated`
+#     return subscription.plan.id
 
-  # if not active, we'll just return the actual status in case we want to show or do
-  #   specific things depending on past_due, canceled, etc.
-  # NOTE: a status of 'expired' is set by us since stripe deletes inactive subscriptions
-  return subscription.status
+#   # if not active, we'll just return the actual status in case we want to show or do
+#   #   specific things depending on past_due, canceled, etc.
+#   # NOTE: a status of 'expired' is set by us since stripe deletes inactive subscriptions
+#   return subscription.status
 
 
 # update plan among paid subscription levels
@@ -87,7 +87,7 @@ updatePlan = (userId, plan) ->
     # defensive checks, just return the subscription if it's the same plan as needing set
     if res.plan?.id == plan
       return {
-        status: _getStatusString(res)
+        status: res.status
         updated: res
       }
 
@@ -101,7 +101,7 @@ updatePlan = (userId, plan) ->
       .update newPlan
       .where id: userId
       .then () ->
-        status: _getStatusString(updated)
+        status: updated.status
         updated: updated
 
 
@@ -178,7 +178,7 @@ reactivate = (userId) -> Promise.try () ->
           .update stripe_subscription_id: created.id, stripe_plan_id: created.plan.id
           .where id: userId
           .then () ->
-            status: _getStatusString(created)
+            status: created.status
             created: created
 
       .catch isUnhandled, (err) ->

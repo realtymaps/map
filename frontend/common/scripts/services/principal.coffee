@@ -47,6 +47,8 @@ rmapsMainOptions) ->
     _identity
 
   setIdentity = (identity) ->
+    console.log "setIdentity:"
+    console.log identity
     if identity != $rootScope.identity
       $log.debug 'Setting new identity on rootScope', identity
     _identity = identity
@@ -117,15 +119,16 @@ rmapsMainOptions) ->
   ##
 
   isSubscriber = () ->
-    return (_identity and _identity.subscription? and _identity.subscription in rmapsMainOptions.plan.PAID_LIST)
+    return (_identity?.user?.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST) && (_identity?.subscriptionStatus in rmapsMainOptions.subscription.STATUS.ACTIVE_LIST)
+    # return (_identity and _identity.subscription? and _identity.subscription in rmapsMainOptions.plan.PAID_LIST)
 
   # always implies an active subscription when set to 'pro' or 'standard'
   # behaves like `isSubscriber` if not passed parameter
-  hasSubscription = (subscription) ->
-    if !subscription?
+  hasSubscription = (subscriptionPlan) ->
+    if !subscriptionPlan?
       return isSubscriber()
     else
-      return _identity and _identity.subscription == subscription
+      return _identity?.user?.stripe_plan_id == subscriptionPlan
 
   isProjectEditor = () ->
     profile = getCurrentProfile()

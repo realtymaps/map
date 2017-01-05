@@ -31,7 +31,7 @@ module.exports =
 
       # need to update our current session subscription status
       .then (subscriptionInfo) ->
-        req.session.subscription = subscriptionInfo.status
+        req.session.subscriptionStatus = subscriptionInfo.status
         return subscriptionInfo.updated
 
   getSubscription:
@@ -56,7 +56,7 @@ module.exports =
 
       # need to update our current session subscription status
       .then (subscriptionInfo) ->
-        req.session.subscription = subscriptionInfo.status
+        req.session.subscriptionStatus = subscriptionInfo.status
         return subscriptionInfo.created
 
   deactivate:
