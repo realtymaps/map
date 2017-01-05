@@ -166,43 +166,44 @@ app.service 'rmapsProfilesService', (
       # Get reference to the current main map
       currentMap = rmapsCurrentMapService.get()
 
-      ###
-      TODO: This center value missing usually comes from a new account
+      map_position = null
+      try
+         # Center and zoom the map for the new profile
+        map_position = center: NgLeafletCenter profile.map_position.center
+        map_position.center.docWhere = 'rmapsProfilesService:profile.map_position.center'
+      catch
+        ###
+        TODO: This center value missing usually comes from a new account
 
-      Therefore the center should default to their MLS / Location of interest that
-      they signed up for. This should be set in route.onboarding.
+        Therefore the center should default to their MLS / Location of interest that
+        they signed up for. This should be set in route.onboarding.
 
-      NOTE: For now we hard code it to rmapsMainOptions.map.options.json.center (NAPLES)
-      fix missed center
-      ###
-      if !map_position?.center?.lng || !map_position?.center?.lat
+        NOTE: For now we hard code it to rmapsMainOptions.map.options.json.center (NAPLES)
+        ###
         profile.map_position = center: rmapsMainOptions.map.options.json.center
         profile.map_position.center.docWhere = 'rmapsProfilesService:invalid'
-
-      # Center and zoom the map for the new profile
-      map_position = center: NgLeafletCenter profile.map_position.center
-      map_position.center.docWhere = 'rmapsProfilesService:profile.map_position.center'
+        map_position = center: NgLeafletCenter profile.map_position.center
 
       #
       # Center and zoom map to profile
       #
 
       if currentMap?.scope?.map?
-        
+
         oldCenter = _.extend {}, currentMap?.scope?.map?.center
-        
+
         if map_position?.center?
           newCenter = NgLeafletCenter(map_position.center || rmapsMainOptions.map.options.json.center)
           newCenter.docWhere = 'rmapsProfilesService currentMainMap'
           if !newCenter.isEqual(currentMap.scope.map.center)
-            $log.debug "Profile changed and map factory exists, recentering map"
+            $log.debug "Profile changed and map factory exists, recentering map", JSON.stringify(map_position.center)
             $log.debug "old lat: #{oldCenter.lat}, new lat: #{map_position.center.lat}"
             $log.debug "old lon: #{oldCenter.lon}, new lon: #{map_position.center.lon}"
             $log.debug "old zoom: #{oldCenter.zoom}, new zoom: #{map_position.center.zoom}"
             rmapsMainOptions.map.options.json.center = newCenter
       else
         if map_position?
-          $log.debug "Profile set first time, recentering map"
+          $log.debug "Profile set first time, recentering map", JSON.stringify(map_position.center)
           if map_position.center? &&
           map_position.center.latitude? &&
           map_position.center.latitude != 'NaN' &&
