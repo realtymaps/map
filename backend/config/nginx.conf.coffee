@@ -3,8 +3,8 @@ if process.env.NGINX_SSL_TERMINATION?.toLowerCase() == 'on'
   SSL_CONFIG_BLOCK = """
     error_page 497 301 =307 https://$host:$server_port$request_uri;
     ssl                  on;
-    ssl_certificate      ../../certs/localhost.crt;
-    ssl_certificate_key  ../../certs/localhost.key;
+    ssl_certificate      ../../certs/dev.crt;
+    ssl_certificate_key  ../../certs/dev.key;
     ssl_session_timeout  5m;
     ssl_protocols  SSLv2 SSLv3 TLSv1;
     ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
