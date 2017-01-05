@@ -174,9 +174,11 @@ companyImage = (req, res, next) ->
 root = (req, res, next) ->
   methodExec req,
     PUT: () ->
-      validation.validateAndTransformRequest(req.body, transforms.root.PUT())
+      # WE EXPLICITY NEED NULLS to remove values, not using validateAndTransformRequest
+      validation.validateAndTransform(req.body, transforms.root.PUT(req.user.id))
       .then (validBody) ->
-        userSvc.update(req.session.userid, validBody, internals.safeRootFields)
+        validBody.id =  req.user.id
+        userSvc.update(validBody)
       .then () ->
         internals.updateCache(req, res, next)
 
@@ -268,10 +270,14 @@ module.exports =
   root:
     method: 'put'
     handle: root
+    middleware:
+      auth.requireLogin(redirectOnFail: true)
 
   companyRoot:
     method: 'post'
     handle: companyRoot
+    middleware:
+      auth.requireLogin(redirectOnFail: true)
 
   login:
     method: 'post'

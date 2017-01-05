@@ -451,6 +451,7 @@ app.factory 'rmapsMapFactory',
           )
         catch
           #fallback to saftey and save a good center
+          $log.warn "Bad center", @scope.map.center
           centerToSave = rmapsMainOptions.json.center
 
         stateObj =

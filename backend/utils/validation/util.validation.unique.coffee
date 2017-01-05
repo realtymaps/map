@@ -9,6 +9,8 @@ module.exports = (options = {}) ->
   # logger.debug "created"
   # logger.debug.cyan options, true
   _.required options, ['tableFn', 'clauseGenFn', 'id'], true
+  {tableFn, clauseGenFn, id, name} = options
+
   (param, value) -> Promise.try () ->
     # logger.debug "called"
     # logger.debug param, true
@@ -20,10 +22,10 @@ module.exports = (options = {}) ->
 
     transformedValue = value
 
-    isUnique(options.tableFn, options.clauseGenFn(transformedValue), options.id, options.name)
+    isUnique({tableFn, whereClause: clauseGenFn(transformedValue), id, name})
     .then () ->
       # logger.debug "transformed value: #{transformedValue}"
       transformedValue
     .catch () ->
       # logger.error logName
-      return Promise.reject new DataValidationError("value is not unique in the #{options.tableFn.name} table.", param, value)
+      return Promise.reject new DataValidationError("value is not unique in the #{tableFn.name} table.", param, value)
