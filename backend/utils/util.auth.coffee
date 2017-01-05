@@ -327,7 +327,7 @@ requirePermissions = (permissions, options = {}) ->
     throw new Error('Bad permissions object')
   return (req, res, next) -> Promise.try () ->
     if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
-      logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
+      logger.warn "access denied to user [#{req.user.id}] #{req.user.email} for URI: #{req.originalUrl}"
       if options.logoutOnFail
         return logout(req, res, next)
       else

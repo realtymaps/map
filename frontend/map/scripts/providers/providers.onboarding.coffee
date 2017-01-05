@@ -52,7 +52,7 @@ app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderService
   @getPlanFromState = ($state) ->
     return unless $state
     if RegExp(rmapsMainOptions.subscription.PLAN.PRO, "i").test($state.current.name)
-      rmapsMainOptions.plan.PRO
+      rmapsMainOptions.subscription.PLAN.PRO
 
   @getOrderSvc = (plan) =>
     if !_.isString plan
