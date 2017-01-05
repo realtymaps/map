@@ -59,22 +59,6 @@ _getStripeIds = (userId, trx) ->
     ids
 
 
-# # requires a STRIPE subscription object with a status and plan keys in order to determine status string
-# _getStatusString = (subscription) ->
-#   if subscription.status == 'trialing' || subscription.status == 'active'
-
-#     # note: when a subscription is canceled or in grace period, this will still
-#     #   represent the plan id since this is access status, not just subscr status.
-#     #   Stripe will automatically change this subscr status at end of grace period.
-#     # Note: includes plan.id `deactivated`
-#     return subscription.plan.id
-
-#   # if not active, we'll just return the actual status in case we want to show or do
-#   #   specific things depending on past_due, canceled, etc.
-#   # NOTE: a status of 'expired' is set by us since stripe deletes inactive subscriptions
-#   return subscription.status
-
-
 # update plan among paid subscription levels
 updatePlan = (userId, plan) ->
   if !(plan in config.SUBSCR.PLAN.PAID_LIST)
