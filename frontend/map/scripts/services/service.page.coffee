@@ -114,7 +114,7 @@ app.provider 'rmapsPageService', () ->
           $state.go 'main'
 
       goToMainOrLogin: () ->
-        if $state.current.name == 'login'
+        if $state.current.name == 'login' #TODO: consider overriding $state.go to always check $state.current.name and abort, unless there is a force flag
           $state.go 'main'
         else
           $state.go 'login'
