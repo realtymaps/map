@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 logger = require('../config/logger').spawn('util:user')
 config = require '../config/config'
+subscriptionSvc = require '../services/service.user_subscription'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
 
@@ -40,7 +41,7 @@ isSubscriber = (req) ->
 # or we'll need to log out the user and let them get refreshed when they log
 # back in.
 cacheUserValues = (req, reload = {}) ->
-
+  # ensure permissions
   if !req.session.permissions or reload?.permissions
     logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
@@ -48,6 +49,7 @@ cacheUserValues = (req, reload = {}) ->
       logger.debug 'req.session.permissions.then'
       req.session.permissions = permissionsHash
 
+  # ensure groups
   if !req.session.groups or reload?.groups
     logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
@@ -55,25 +57,38 @@ cacheUserValues = (req, reload = {}) ->
       logger.debug 'req.session.groups.then'
       req.session.groups = groupsHash
 
+  # ensure subscription
+  if !req.session.subscriptionStatus or reload?.subscriptionStatus
+    # subscription service discovers if user was manually given a plan permission (bypassed stripe), hence the assignment for `stripe_plan_id` below
+    subscriptionPromise = subscriptionSvc.getStatus req.user
+    .then ({subscriptionPlan, subscriptionStatus}) ->
+      logger.debug -> "User #{req.user.id} subscription plan is #{subscriptionPlan}"
+      logger.debug -> "User #{req.user.id} subscription status is #{subscriptionStatus}"
+      req.user.stripe_plan_id = subscriptionPlan
+      req.session.subscriptionStatus = subscriptionStatus
+  else
+    subscriptionPromise = Promise.resolve()
 
+  # ensure profiles (which depends on subscription, hence adding to the subscription promise chain)
   if !req.session.profiles or reload?.profiles
-    logger.debug "req.session.profiles: #{req.user.id}"
+    subscriptionPromise = subscriptionPromise
+    .then () ->
 
-    # if user is subscriber, use service endpoint that includes sandbox creation and display
-    if isSubscriber(req)
-      profilesPromise = profileSvc.getProfiles req.user.id
+      # if user is subscriber, use service endpoint that includes sandbox creation and display
+      if isSubscriber(req)
+        profilesPromise = profileSvc.getProfiles req.user.id
 
-    # user is a client, and unallowed to deal with sandboxes
-    else
-      profilesPromise = profileSvc.getClientProfiles req.user.id
+      # user is a client, and unallowed to deal with sandboxes
+      else
+        profilesPromise = profileSvc.getClientProfiles req.user.id
 
-    profilesPromise = profilesPromise
-    .then (profiles) ->
-      logger.debug 'profileSvc.getProfiles.then'
-      req.session.profiles = profiles
+      profilesPromise = profilesPromise
+      .then (profiles) ->
+        logger.debug 'profileSvc.getProfiles.then'
+        req.session.profiles = profiles
 
 
-  Promise.all([permissionsPromise, groupsPromise, profilesPromise])
+  Promise.all([permissionsPromise, groupsPromise, subscriptionPromise])
   .catch (err) ->
     logger.error "error caching user values for user: #{req.user.username}"
     Promise.reject(err)
@@ -82,7 +97,7 @@ getIdentityFromRequest = (req) ->
   if req.user
     # here we should probaby return some things from the user's profile as well, such as name
     user: _.pick req.user, safeUserFields
-    subscription: req.session.subscription
+    subscriptionStatus: req.session.subscriptionStatus
     permissions: req.session.permissions
     groups: req.session.groups
     environment: config.ENV

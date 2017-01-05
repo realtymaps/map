@@ -97,6 +97,9 @@ commonConfig =
       NONE: 'none' # subusers, cancelled accounts still active, anyone that can login w/o a subscription
       PAID_LIST: ['pro', 'standard']
 
+      # "deactivated" plan applicable only when communicating with stripe, not representing plan in session
+      DEACTIVATED: 'deactivated'
+
     STATUS:
       NONE: 'none'
       DEACTIVATED: 'deactivated'

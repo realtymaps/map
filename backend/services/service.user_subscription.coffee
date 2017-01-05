@@ -1,4 +1,3 @@
-_ = require 'lodash'
 config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
@@ -18,7 +17,7 @@ require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
 # Return "dummy" subscription objects that emulates a stripe subscription
 # For use when canceled subscription data is no longer available from stripe
 expiredSubscription = (planId) ->
-  status: config.SUBSCR.PLAN.EXPIRED
+  status: config.SUBSCR.STATUS.EXPIRED
   plan:
     id: planId
 
@@ -105,6 +104,21 @@ updatePlan = (userId, plan) ->
         updated: updated
 
 
+deactivatePlan = (authUser) ->
+  payload =
+    customer: authUser.stripe_customer_id
+    plan: config.SUBSCR.PLAN.DEACTIVATED
+    trial_end: 'now' # no trial period on deactivation
+
+  stripe.subscriptions.create(payload)
+  .then (deactivated) ->
+    tables.auth.user()
+    .update stripe_subscription_id: deactivated.id
+    .where id: authUser.id
+    .then () ->
+      deactivated
+
+
 # determine plan and return a status to use on user & session for part of subscription level access
 getStatus = (user) -> Promise.try () ->
   obj =
@@ -132,8 +146,15 @@ getStatus = (user) -> Promise.try () ->
   else if user.stripe_plan_id? # a stripe subscription exists, retrieve status
     _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
     .then (subscription) ->
-      obj.subscriptionPlan = subscription.plan.id
-      obj.subscriptionStatus = subscription.status
+      obj.subscriptionPlan = user.stripe_plan_id
+
+      # To make it easier to represent plan and status even when deactivated, we translate the stripe deactivated plan id into
+      #   a status of the users own paid account
+      #   i.e. we want it to be like {plan: 'pro', status: 'deactivated'} instead of {plan: 'deactivated', status: 'active'}
+      if subscription.plan.id == config.SUBSCR.PLAN.DEACTIVATED
+        obj.subscriptionStatus = config.SUBSCR.STATUS.DEACTIVATED
+      else
+        obj.subscriptionStatus = subscription.status
       return obj
 
   # last-ditch return NONE subscr/status, in an `else` so we dont prematurely return NONE during promises processing above
@@ -201,6 +222,7 @@ deactivate = (userId, reason) ->
 
 module.exports = {
   updatePlan
+  deactivatePlan
   getSubscription
   reactivate
   deactivate

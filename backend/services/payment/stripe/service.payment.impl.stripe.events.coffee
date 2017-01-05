@@ -4,6 +4,7 @@ stripeErrors = require '../../../utils/errors/util.errors.stripe'
 emailSvc = require '../../services.email'
 tables = require '../../../config/tables'
 dbs = require '../../../config/dbs'
+subscriptionSvc = require '../../service.user_subscription'
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted
@@ -29,7 +30,7 @@ StripeEvents = (stripe) ->
     logger.debug "stripe handling #{customerSubscriptionDeleted}"
 
     # Check status of deleted / canceled subscription.
-    # NOTE: this status that stripe sets for an failed payment subscr is controled in the stripe dashboard
+    # NOTE: this status that stripe sets for an failed payment subscr is controlled in the stripe dashboard
     #   (it should be configured to set a failed subscription status to "unpaid", which means an expired subscr for us)
     Promise.try () ->
       if eventObj.data.object.status == 'unpaid'
@@ -39,7 +40,10 @@ StripeEvents = (stripe) ->
             stripe.customers.deleteCard(customer.id, customer.default_source)
 
       else
-        emailPlatform.events.subscriptionDeactivated(authUser)
+        subscriptionSvc.deactivatePlan(authUser)
+        .then (res) ->
+          logger.debug "User #{authUser.id} set on deactivated subscription in stripe."
+          emailPlatform.events.subscriptionDeactivated(authUser)
 
     # deactivate any projects this user owned
     # promise
@@ -71,14 +75,14 @@ StripeEvents = (stripe) ->
     emailPlatform.events.subscriptionTrialEnding(authUser)
 
 
-  _getAuthUser = (eventObj, trx) ->
+  _getAuthUser = (eventObj, transaction) ->
     customer = eventObj.data.object.customer
     logger.debug "Attempting to get auth_user that has a stipe customer id of #{customer}"
 
     if !customer
       logger.warn -> "Customer reference not found in event object:\n#{JSON.stringify(eventObj)}"
 
-    tables.auth.user(transaction: trx).where(stripe_customer_id: customer)
+    tables.auth.user({transaction}).where(stripe_customer_id: customer)
     .then (results) ->
       expectSingleRow(results)
 
@@ -91,20 +95,19 @@ StripeEvents = (stripe) ->
 
 
   handle = (eventObj) -> Promise.try () ->
-    dbs.transaction 'main', (trx) ->
+    dbs.transaction 'main', (transaction) ->
       _verify(eventObj)
       .then (validEvent) ->
         if !validEvent?
           throw new PartiallyHandledError("Stripe webhook event invalid -  id:#{eventObj.id}, type:#{eventObj.type}")
-
-        _getAuthUser(validEvent, trx)
+        _getAuthUser(validEvent, transaction)
         .then (authUser) ->
           if authUser?
 
             callEvent = _eventHandles[validEvent.type] or _eventHandles['default']
 
             # log the event in event history
-            tables.history.event(transaction: trx)
+            tables.history.event({transaction})
             .insert(
               auth_user_id: authUser.id
               event_type: validEvent.type

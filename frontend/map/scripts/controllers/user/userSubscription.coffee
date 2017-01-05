@@ -75,7 +75,6 @@ rmapsMainOptions
         $rootScope.identity.subscriptionStatus = res.status
         $scope.subscription = res
       .finally () ->
-        console.log "upgraded, check stripe_plan_id on identity.user:\n#{JSON.stringify($rootScope.identity.user,null,2)}"
         $scope.processing--
 
 
@@ -173,7 +172,6 @@ rmapsMainOptions
   rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
     $scope.subscription = subscription
-    console.log "$scope.subscription:\n#{JSON.stringify($scope.subscription,null,2)}"
   .finally () ->
     $scope.processing--
 

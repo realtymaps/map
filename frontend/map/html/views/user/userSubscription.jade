@@ -6,12 +6,14 @@ div(ng-hide="processing > 0")
   .row.collapse-header.subscription-details(ng-show="!subscription")
     h3 Contact RealtyMaps to enroll, today!
 
-
-  .row.collapse-header.subscription-details(ng-show="isDeactivated()")
-    .row(ng-hide="subscription.error")
-      .col-md-6
+  .row.collapse-header.subscription-details(ng-show="!showSubscription() && !subscription.error")
+    .row
+      .col-md-6(ng-if="isDeactivated()")
         label Status
         p Deactivated
+      .col-md-6(ng-if="isExpired()")
+        label Status
+        p Expired
 
   .row.collapse-header.subscription-details(ng-show="showSubscription()")
     .row(ng-hide="subscription.error")

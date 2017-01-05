@@ -7,7 +7,6 @@ keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 tables = require '../config/tables'
-subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 planSvc = require './service.plans'
 
@@ -102,17 +101,10 @@ getSecuritiesForSession = (sessionId) ->
 
 
 sessionLoginProcess = (req, res, user, opts={}) ->
-  subscriptionSvc.getStatus user
-  .then ({subscriptionPlan, subscriptionStatus}) ->
-    logger.debug -> "User #{user.id} subscription plan is #{subscriptionPlan}"
-    logger.debug -> "User #{user.id} subscription status is #{subscriptionStatus}"
-    logger.debug -> _.omit user, "password"
+  req.user = user
+  logger.debug -> _.omit user, "password"
 
-    # subscription service discovers if user was manually given a plan permission (bypassed stripe), hence the assignment below
-    req.user = user
-    req.user.stripe_plan_id = subscriptionPlan
-    req.session.subscriptionStatus = subscriptionStatus
-    userUtils.cacheUserValues(req)
+  userUtils.cacheUserValues(req)
   .then () ->
     ensureSessionCount(req)
   .then () ->
