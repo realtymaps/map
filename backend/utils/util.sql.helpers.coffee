@@ -185,7 +185,7 @@ expectSingleRow = (rows, opts={}) ->
     throw new ExpectedSingleRowError({quiet: opts.quiet}, "Expected a single result and row is #{rows[0]}")  # undefined or null
   return rows[0]
 
-isUnique = (tableFn, whereClause, id, name = 'Entity') ->
+isUnique = ({tableFn, whereClause, id, name = 'Entity'}) ->
   query = tableFn().where(whereClause).count()
 
   query = query.whereNot(id:id) if id?

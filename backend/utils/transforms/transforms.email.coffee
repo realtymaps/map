@@ -26,7 +26,7 @@ _regex = ({regex} = {}) ->
 ###
 valid = ({id, regex, doUnique = false} = {}) ->
 
-  logger.debug -> {id, regex}
+  logger.debug -> {id, regex, doUnique}
 
   transforms = [
     _regex({regex})
@@ -40,6 +40,9 @@ valid = ({id, regex, doUnique = false} = {}) ->
       clauseGenFn: (value) ->
         email: value
     })
+
+  logger.debug -> "transforms"
+  logger.debug -> transforms
 
   transforms
 

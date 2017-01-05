@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
-logger = require('../config/logger').spawn("session:userSession:service")
+logger = require('../config/logger').spawn("service:session")
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 tables = require '../config/tables'

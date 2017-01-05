@@ -3,30 +3,31 @@ config =  require '../../config/config'
 emailTransforms = require './transforms.email'
 
 root =
-  PUT: () ->
+  PUT: (userId) ->
     # Needs to be a function so that the email (validation) is invoked each time
-    first_name: validators.string(minLength: 2)
-    last_name: validators.string(minLength: 2)
+    first_name:
+      transforms: validators.string(minLength: 2)
+      required: true
+    last_name:
+      transforms: validators.string(minLength: 2)
+      required: true
     address_1: validators.string(regex: config.VALIDATION.address)
     address_2: validators.string(minLength: 2)
     city: validators.string(minLength: 2)
-    us_state_id: required:true
-    zip: required:true
-    cell_phone:
-      transform: [
-        validators.string
-          regex: config.VALIDATION.phone
-          replace: [config.VALIDATION.phoneNonNumeric, '']
-      ]
-      required: true
+    us_state_id: {}
+    zip: {}
+    cell_phone: validators.string {
+      regex: config.VALIDATION.phone
+      replace: [config.VALIDATION.phoneNonNumeric, '']
+    }
     work_phone: validators.string
       regex: config.VALIDATION.phone
       replace: [config.VALIDATION.phoneNonNumeric, '']
     website_url: validators.string(regex: config.VALIDATION.url)
-    email: emailTransforms.email()
-    account_use_type_id:
-      transform: validators.integer()
-      required:true
+    email:
+      transforms: emailTransforms.valid(id:userId)
+      required: true
+    account_use_type_id: validators.integer()
 
 profiles =
   PUT:
