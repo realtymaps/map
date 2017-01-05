@@ -10,10 +10,12 @@ _ = require 'lodash'
 
 commonConfig = require '../../common/config/commonConfig'
 dbs = require './dbs'
+tables = require './tables'
 logger = require('./logger').spawn('express')
 auth = require '../utils/util.auth'
 uuid = require '../utils/util.uuid'
 ExpressResponse = require '../utils/util.expressResponse'
+{isUnhandled, PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 shutdown = require './shutdown'
 escape = require('escape-html')
@@ -120,30 +122,70 @@ sessionMiddlewares.push(connectFlash())
 # bootstrap routes
 require('../routes')(app, sessionMiddlewares)
 
+# coffeelint: disable=check_scope
+# `next` is required here!  without that, this isn't interpreted as an error-handling function, which totally changes
+# how and whether it gets called
 app.use (data, req, res, next) ->
-  logger.debug 'ExpressResponse Middleware'
-  if data instanceof ExpressResponse
-    # this response is intentional
-    logger.debug "data.status: #{data.status}"
-    if !status.isWithinOK(data.status) && !data.quiet
-      # this is not strictly an error handler now, it is also used for routine final handling of a response,
-      # something not easily done with the standard way of using express -- so only log as an error if the
-      # status indicates that it is
+# coffeelint: enable=check_scope
+
+  logger.debug 'main ExpressResponse Middleware'
+  if !(data instanceof ExpressResponse)
+    # it's probably a thrown Error of some sort -- coerce to an ExpressResponse
+    if isUnhandled(data)
+      if data.routeInfo?
+        origination = " #{data.routeInfo.moduleId}.#{data.routeInfo.routeId}[#{data.routeInfo.method}]"
+      else
+        origination = ''
+      msg = [
+        "****************** add better error handling code to cover this error! ******************"
+        "uncaught express middleware error at#{origination}: #{req.originalUrl}"
+        # body contents will be inserted here
+        "#{analyzeValue.getSimpleMessage(data)}"
+        "****************** add better error handling code to cover this error! ******************"
+      ]
+      if !_.isEmpty(req.body)
+        msg.splice(2, 0, "BODY: "+JSON.stringify(req.body,null,2))
+      logger.error(msg.join('\n'))
+      data = new PartiallyHandledError(data, "uncaught error found by express")  # this is just to provoke logging
+      message = "error reference: #{data.errorRef}"
+    else
+      message = escape(data.message)
+    data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(message), id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
+
+  logger.debug "data.status: #{data.status}"
+  if !status.isWithinOK(data.status)
+    # this is not strictly an error handler now, it is also used for routine final handling of a response,
+    # something not easily done with the standard way of using express -- so only log as an error if the
+    # status indicates that it is
+    if !data.quiet
       logger.error(data.toString())
 
-    return data.send(res)
+    logEntity =
+      reference: data.logError?.errorRef
+      type: if data.logError? then analyzeValue.getType(data.logError) else null
+      details: if data.logError? then analyzeValue.getFullDetails(data.logError) else null
+      quiet: data.quiet,
+      url: req.originalUrl,
+      method: req.method,
+      headers: req.headers,
+      body: if _.isEmpty(req.body) then null else req.body,
+      userid: req.user?.id,
+      session: _.omit(req.session, (val) -> if typeof(val) == 'function' then return true),
+      response_status: data.status
+      # `unexpected` is always true for now, but we can add logic later to sometimes set this to false; this would
+      # allow for easier db scanning, and rows with `expected: true` also get cleaned out earlier
+      # right now, it is set up so we could set expected: true on either the ExpressResponse or on an error (or even
+      # all of a given type of error, via the error's constructor), but nothing is actually ever setting that field
+      unexpected: !data.expected && !data.logError?.expected
 
-  # otherwise, it's probably a thrown Error
-  logger.error('uncaught error found by express:')
-  analysis = analyzeValue(data)
-  logger.error(analysis.toString())
+    tables.history.requestError()
+    .insert(logEntity)
+    .catch (err) ->
+      logger.warn("Problem while logging request error: #{err}\nOriginal error: #{logEntity}")
 
   if !res.headersSent
-    res.status(status.INTERNAL_SERVER_ERROR).json alert:
-      msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
-      id: "500-#{req.path}"
+    data.send(res)
 
-  next()
 
 if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }

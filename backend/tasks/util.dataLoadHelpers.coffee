@@ -51,7 +51,7 @@ _countInvalidRows = (subid, assignedFalse) ->
 
 _updateDataLoadHistory = (deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid, subtask) ->
   logger.spawn(subtask.task_name).debug () -> JSON.stringify({deletedCount, invalidCount, unvalidatedCount, insertedCount, updatedCount, subid})
-  tables.jobQueue.dataLoadHistory()
+  tables.history.dataLoad()
   .where(raw_table_name: tables.temp.buildTableName(subid))
   .update
     invalid_rows: invalidCount ? 0
@@ -74,13 +74,13 @@ recordChangeCounts = (subtask, opts={}) -> Promise.try () ->
       if subtask.data.deletes == DELETE.UNTOUCHED
         # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
         # first such row rather than return all or count them all
-        tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
+        q = tables.normalized[subtask.data.dataType](subid: opts.normalSubid, transaction: transaction)
         .select('rm_raw_id')
         .where(batch_id: subtask.batch_id)
         .where(subset)
         .whereNull('deleted')
         .limit(1)
-        .then (row) ->
+        q.then (row) ->
           if !row?.length
             throw new HardFail("operation would delete all active rows for #{subtask.task_name}: #{subid}")
         .then () ->
@@ -588,7 +588,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
       .then () ->
         startedTransaction = false
       .then () ->
-        tables.jobQueue.dataLoadHistory()
+        tables.history.dataLoad()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
 
@@ -647,7 +647,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
               for fieldName in event.payload
                 columns.push fieldName.replace(/\./g, '')
               sqlHelpers.upsert
-                dbFn: tables.jobQueue.dataLoadHistory
+                dbFn: tables.history.dataLoad
                 idObj: {raw_table_name: dataLoadHistory.raw_table_name}
                 entityObj: dataLoadHistory
               .then () ->

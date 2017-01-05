@@ -2,6 +2,16 @@ VError = require 'verror'
 uuid = require 'node-uuid'
 logger = require('../../config/logger').spawn('util:error:partiallyHandledError')
 analyzeValue = require '../../../common/utils/util.analyzeValue'
+status = require '../../../common/utils/httpStatus'
+_ = require 'lodash'
+
+
+# it's an options object if it only contains allowed keys
+_isOptions = (opts) ->
+  for key of opts
+    if !(key in ['quiet', 'returnStatus'])
+      return false
+  return true
 
 
 # If the first argument passed is an Error object, a uuid reference will be logged along with the stack trace
@@ -11,11 +21,12 @@ class PartiallyHandledError extends VError
     name = 'PartiallyHandledError'
     if typeof(args[0]) == 'string' && args.length > 1
       name = args.shift()
-    if typeof(args[0]) == 'object' && Object.keys(args[0]).length == 1 && ('quiet' of args[0])
-      @quiet = args[0].quiet
+    if typeof(args[0]) == 'object' && _isOptions(args[0])
+      _.extend(@, args[0])
       args.shift()
     super(args...)
     @name = name
+    @returnStatus ?= (@jse_cause?.returnStatus ? status.INTERNAL_SERVER_ERROR)
     if @jse_cause?.quiet
       @quiet ?= true
     if @jse_cause instanceof PartiallyHandledError

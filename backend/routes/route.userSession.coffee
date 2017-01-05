@@ -8,7 +8,6 @@ userSvc = require('../services/services.user').user
 projectSvc = require('../services/services.user').project
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
-alertIds = require '../../common/utils/enums/util.enums.alertIds'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
@@ -52,29 +51,14 @@ login = (req, res, next) -> Promise.try () ->
     userSessionService.verifyValidAccount(user)
   .then (user) ->
     if !user
-      return next new ExpressResponse(alert: {
-        msg: 'Email and/or password does not match our records.'
-        id: alertIds.loginFailure
-      }, {
-        status: httpStatus.UNAUTHORIZED
-        quiet: true
-      })
-    else
-      req.session.userid = user.id
-      sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
-      .then () ->
-        internals.getIdentity(req, res, next)
-  .catch errorHandlingUtils.isUnhandled, (err) ->
-    throw new errorHandlingUtils.PartiallyHandledError(err, 'Unexpected error during login')
+      throw new PartiallyHandledError('Email and/or password does not match our records.')
+    req.session.userid = user.id
+    sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
+  .then () ->
+    internals.getIdentity(req, res, next)
   .catch (err) ->
-    logger.error('Error during login: '+err.msg)
-    return next new ExpressResponse(alert: {
-      msg: err.msg
-      id: alertIds.loginFailure
-    }, {
-      status: httpStatus.UNAUTHORIZED
-      quiet: true
-    })
+    err.returnStatus = httpStatus.UNAUTHORIZED
+    err.quiet = true
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->

@@ -26,11 +26,11 @@ describe "service.payment.impl.stripe.events", ->
 
   beforeEach ->
 
-    mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
-    mockHistoryTable = new SqlMock 'event', 'history'
-    mockProjectTable = new SqlMock 'user', 'project'
-    mockSessionTable = new SqlMock 'auth', 'session'
-    mockSessionSecurityTable = new SqlMock 'auth', 'sessionSecurity'
+    mockUserTable = new SqlMock('auth', 'user', result: [mockAuthUser])
+    mockHistoryTable = new SqlMock('history', 'event')
+    mockProjectTable = new SqlMock('user', 'project')
+    mockSessionTable = new SqlMock('auth', 'session')
+    mockSessionSecurityTable = new SqlMock('auth', 'sessionSecurity')
 
     @tables =
       auth:
@@ -40,8 +40,8 @@ describe "service.payment.impl.stripe.events", ->
           mockSessionTable
         sessionSecurity: () ->
           mockSessionSecurityTable
-      event:
-        history: () ->
+      history:
+        event: () ->
           mockHistoryTable
       user:
         project: () ->
@@ -81,7 +81,7 @@ describe "service.payment.impl.stripe.events", ->
 
     it "calls vero handler appropriately", ->
       @emailEvents.subscriptionVerified.args[0][0].should.be.eql(mockAuthUser)
-      
+
 
   describe paymentEvents.customerSubscriptionDeleted + ".expired", ->
 

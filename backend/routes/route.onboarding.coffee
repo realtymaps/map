@@ -1,13 +1,9 @@
-logger = require('../config/logger').spawn("route.onboarding")
+#logger = require('../config/logger').spawn("route.onboarding")
 {validateAndTransformRequest} = require '../utils/util.validation'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 {expectSingleRow} = require '../utils/util.sql.helpers'
 dbs = require '../config/dbs'
 internals = require './route.onboarding.internals'
-httpStatus = require '../../common/utils/httpStatus'
-{isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-{MlsAgentNotVierified, UserExists} = require '../utils/errors/util.errors.onboarding'
-ExpressResponse = require '../utils/util.expressResponse'
 
 module.exports =
   createUser:
@@ -28,10 +24,3 @@ module.exports =
             internals.submitPaymentPlan {plan, token, authUser, transaction}
           .then ({authUser, customer}) ->
             internals.submitEmail {authUser, plan, customer}
-
-        .catch isCausedBy(MlsAgentNotVierified), isCausedBy(UserExists), (err) ->
-          next new ExpressResponse(alert: {msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: err.quiet})
-
-        .catch (err) ->
-          logger.error(err)
-          next new ExpressResponse(alert: {msg: "Oops, something went wrong. Please try again later"}, {status: httpStatus.INTERNAL_SERVER_ERROR, quiet: err.quiet})

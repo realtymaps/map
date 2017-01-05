@@ -104,7 +104,7 @@ StripeEvents = (stripe) ->
             callEvent = _eventHandles[validEvent.type] or _eventHandles['default']
 
             # log the event in event history
-            tables.event.history(transaction: trx)
+            tables.history.event(transaction: trx)
             .insert(
               auth_user_id: authUser.id
               event_type: validEvent.type

@@ -148,6 +148,9 @@ mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsEventConstants, 
     if !alert.msg
       $log.warn "alert received with no message: #{JSON.stringify(alert,null,2)}\n from event: #{JSON.stringify(event,null,2)}"
       return
+    # getting these errors to console could help if a user calls and didn't record the error reference -- support can
+    # direct them to open the js console and get the error reference there
+    $log.warn('Alert message: '+(if alert.id? then "[#{alert.id}] ")+alert.msg)
     alert.trustedMsg = $sce.trustAsHtml(alert.msg)
     if !alert.id? || !alertsMap[alert.id]
       handleNewAlert(alert)

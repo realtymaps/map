@@ -126,7 +126,7 @@ jobStatGetters =
     db = dbs.get('main')
     db.select('*')
     .from(
-      tables.jobQueue.dataLoadHistory().select(
+      tables.history.dataLoad().select(
         db.raw('data_source_id as load_id'),
         db.raw('count(*) as load_count'),
         db.raw('COALESCE(SUM(inserted_rows), 0) AS inserted'),

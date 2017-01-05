@@ -26,6 +26,7 @@ getFunctionName = (funcString) ->
   if results && results.length > 1 then results[1] else ''
 
 
+# TODO: this original function might be unused by now
 analyzeValue = (value, fullJson=false) ->
   result = {toString: analysisToString}
   result.type = typeof(value)
@@ -57,6 +58,18 @@ analyzeValue = (value, fullJson=false) ->
     result.json = util.inspect(value, depth: null)
 
   return result
+
+
+getType = (value) ->
+  type = typeof(value)
+  if value == null
+    type = 'null'
+  else if type == 'object'
+    if (value instanceof Error) && isKnexError(value)
+      type = 'KnexError'
+    else
+      type = value?.constructor?.name || getFunctionName(value?.constructor?.toString()) || 'object'
+  return type
 
 
 isKnexError = (err) -> (err.hasOwnProperty('internalQuery') && err.name == 'error')
@@ -133,3 +146,4 @@ module.exports.getSimpleDetails = getSimpleDetails
 module.exports.getSimpleMessage = getSimpleMessage
 module.exports.isKnexError = isKnexError
 module.exports.getFullDetails = getFullDetails
+module.exports.getType = getType

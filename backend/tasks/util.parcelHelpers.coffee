@@ -147,15 +147,15 @@ handleOveralNormalizeError = ({error, dataLoadHistory, numRawRows, fileName}) ->
     rm_error_msg: fileName + " : " + error.message
     raw_rows: 0
 
-  tables.jobQueue.dataLoadHistory()
+  tables.history.dataLoad()
   .where dataLoadHistory
   .then (results) ->
     if results?.length
-      tables.jobQueue.dataLoadHistory()
+      tables.history.dataLoad()
       .where dataLoadHistory
       .update updateEntity
     else
-      tables.jobQueue.dataLoadHistory()
+      tables.history.dataLoad()
       .insert _.extend {}, dataLoadHistory, updateEntity
   .then () ->
     if numRawRows?

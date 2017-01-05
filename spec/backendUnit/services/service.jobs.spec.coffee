@@ -91,7 +91,7 @@ describe 'service.jobs.spec.coffee', ->
   describe 'health service', ->
     beforeEach ->
       @jobQueue_taskHistory = new SqlMock('jobQueue', 'taskHistory')
-      @jobQueue_dataLoadHistory = new SqlMock('jobQueue', 'dataLoadHistory')
+      @history_dataLoad = new SqlMock('history', 'dataLoad')
       @property_combined = new SqlMock('finalized', 'combined')
       @dbs_main = new SqlMock('dbs', 'main')
 
@@ -99,8 +99,9 @@ describe 'service.jobs.spec.coffee', ->
         jobQueue:
           taskHistory: () =>
             @jobQueue_taskHistory
-          dataLoadHistory: () =>
-            @jobQueue_dataLoadHistory
+        history:
+          dataLoad: () =>
+            @history_dataLoad
 
         finalized:
           combined: () =>
@@ -119,19 +120,19 @@ describe 'service.jobs.spec.coffee', ->
       svc.jobStatGetters.health()
 
       # subquery #1
-      @jobQueue_dataLoadHistory.selectSpy.calledOnce.should.be.true
-      expect(@jobQueue_dataLoadHistory.selectSpy.args[0][0]).to.deep.equal @dbs_main # raw's via dbs_main
+      @history_dataLoad.selectSpy.calledOnce.should.be.true
+      expect(@history_dataLoad.selectSpy.args[0][0]).to.deep.equal @dbs_main # raw's via dbs_main
 
-      @jobQueue_dataLoadHistory.groupByRawSpy.calledOnce.should.be.true
-      expect(@jobQueue_dataLoadHistory.groupByRawSpy.args[0][0]).to.equal 'load_id'
+      @history_dataLoad.groupByRawSpy.calledOnce.should.be.true
+      expect(@history_dataLoad.groupByRawSpy.args[0][0]).to.equal 'load_id'
 
       # no query param yields interval '30 days'
-      @jobQueue_dataLoadHistory.whereRawSpy.calledOnce.should.be.true
-      expect(@jobQueue_dataLoadHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - rm_inserted_time <= interval '30 days'"
+      @history_dataLoad.whereRawSpy.calledOnce.should.be.true
+      expect(@history_dataLoad.whereRawSpy.args[0][0]).to.equal "now_utc() - rm_inserted_time <= interval '30 days'"
 
-      @jobQueue_dataLoadHistory.whereSpy.calledOnce.should.be.true
-      expect(@jobQueue_dataLoadHistory.whereSpy.args[0][0]).to.be.empty
-      @jobQueue_dataLoadHistory.asSpy.calledOnce.should.be.true
+      @history_dataLoad.whereSpy.calledOnce.should.be.true
+      expect(@history_dataLoad.whereSpy.args[0][0]).to.be.empty
+      @history_dataLoad.asSpy.calledOnce.should.be.true
 
 
       # subquery #2
@@ -151,7 +152,7 @@ describe 'service.jobs.spec.coffee', ->
       expect(@dbs_main.selectSpy.args[0][0]).to.deep.equal '*'
 
       @dbs_main.fromSpy.calledOnce.should.be.true
-      expect(@dbs_main.fromSpy.args[0][0]).to.deep.equal @jobQueue_dataLoadHistory
+      expect(@dbs_main.fromSpy.args[0][0]).to.deep.equal @history_dataLoad
 
       @dbs_main.leftJoinSpy.calledOnce.should.be.true
       expect(@dbs_main.leftJoinSpy.args[0][0]).to.deep.equal @property_combined
@@ -164,9 +165,9 @@ describe 'service.jobs.spec.coffee', ->
     it 'should query history with correct query values', (done) ->
       timerangeTest = '1 day'
       svc.jobStatGetters.health(timerange: timerangeTest)
-      expect(@jobQueue_dataLoadHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - rm_inserted_time <= interval '#{timerangeTest}'"
+      expect(@history_dataLoad.whereRawSpy.args[0][0]).to.equal "now_utc() - rm_inserted_time <= interval '#{timerangeTest}'"
 
-      @jobQueue_dataLoadHistory.whereSpy.calledOnce.should.be.true
-      expect(@jobQueue_dataLoadHistory.whereSpy.args[0][0]).to.be.empty
+      @history_dataLoad.whereSpy.calledOnce.should.be.true
+      expect(@history_dataLoad.whereSpy.args[0][0]).to.be.empty
 
       done()

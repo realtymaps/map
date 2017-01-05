@@ -15,11 +15,16 @@ rawTables = () ->
   logger.debug -> 'Begin cleaning and dropping raw tables'
 
   internals.cleanRawTables()
-  .then () ->
+  .then (counts) ->
     logger.debug () -> 'done cleaning raw tables'
+    logger.info("Cleaned #{counts.cleans} raw temp tables")
+    logger.info("Dropped #{counts.drops} empty raw temp tables")
+    logger.info("Skipped #{counts.skips} missing raw temp tables (during cleaning phase)")
     internals.dropRawTables()
-  .then () ->
+  .then (counts) ->
     logger.debug () -> 'done dropping raw tables'
+    logger.info("Dropped #{counts.drops} old raw temp tables")
+    logger.info("Skipped #{counts.skips} missing raw temp tables (during drop phase)")
 
 
 subtaskErrors = () ->
@@ -27,7 +32,7 @@ subtaskErrors = () ->
   .whereRaw("finished < now_utc() - '#{config.CLEANUP.SUBTASK_ERROR_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from subtask error history"
+    logger.info("Deleted #{count} rows from subtask error history")
 
 
 taskHistory = () ->
@@ -36,7 +41,7 @@ taskHistory = () ->
   .whereRaw("started < now_utc() - '#{config.CLEANUP.TASK_HISTORY_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from task history"
+    logger.info("Deleted #{count} rows from task history")
 
 
 currentSubtasks = () ->
@@ -50,7 +55,7 @@ currentSubtasks = () ->
       .whereIn("task_name", oldTasks)
       .delete()
   .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from current subtasks"
+    logger.info("Deleted #{count} rows from current subtasks")
 
 
 deleteMarkers = () ->
@@ -58,7 +63,7 @@ deleteMarkers = () ->
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from delete marker table"
+    logger.info("Deleted #{count} rows from delete marker table")
 
 
 deleteParcels = () ->
@@ -66,7 +71,7 @@ deleteParcels = () ->
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_PARCEL_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
-    logger.debug () -> "Deleted #{count} rows from delete parcels table"
+    logger.info("Deleted #{count} rows from delete parcels table")
 
 
 deletePhotosPrep = (subtask) ->
@@ -85,6 +90,7 @@ deletePhotosPrep = (subtask) ->
 
 deletePhotos = (subtask) ->
   logger.debug -> subtask
+  count = 0
 
   Promise.map subtask.data.values, (key) -> Promise.try () ->
     logger.spawn(subtask.name).debug () -> "deleting: photo with key: #{key}"
@@ -94,7 +100,7 @@ deletePhotos = (subtask) ->
       Key: key
     .then () ->
       logger.spawn(subtask.name).debug () -> 'successful deletion of aws photo ' + key
-
+      count++
       tables.deletes.photos()
       .where {key}
       .del()
@@ -102,6 +108,8 @@ deletePhotos = (subtask) ->
         throw new jobQueueErrors.SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
     .catch (error) ->
       throw new jobQueueErrors.SoftFail(error, "Transient AWS Photo Deletion error; try again later")
+  .then () ->
+    logger.info("Deleted #{count} photos from AWS")
 
 deleteSessionSecurities = (subtask) ->
   tables.auth.sessionSecurity()
@@ -111,7 +119,28 @@ deleteSessionSecurities = (subtask) ->
   .returning('session_id')
   .delete()
   .then (sessionIds) ->
-    logger.spawn(subtask.name).debug () -> "session securities deleted due to missing session: #{JSON.stringify(sessionIds, null, 2)}"
+    logger.info("session securities deleted due to missing session: #{sessionIds.length}")
+    logger.spawn(subtask.name).debug () -> "sessionIds of session securities deleted: #{JSON.stringify(sessionIds, null, 2)}"
+
+deleteRequestErrors = (subtask) ->
+  tables.history.requestError()
+  .where(unexpected: false)
+  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.REQUEST_ERROR_EXPECTED_DAYS} days'::INTERVAL")
+  .delete()
+  .then (count) ->
+    logger.info("Deleted #{count} expected error entries from request error history")
+    tables.history.requestError()
+    .where(handled: true)
+    .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.REQUEST_ERROR_HANDLED_DAYS} days'::INTERVAL")
+    .delete()
+  .then (count) ->
+    logger.info("Deleted #{count} handled error entries from request error history")
+    tables.history.requestError()
+    .where(unexpected: true)
+    .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.REQUEST_ERROR_UNEXPECTED_DAYS} days'::INTERVAL")
+    .delete()
+  .then (count) ->
+    logger.info("Deleted #{count} unexpected error entries from request error history")
 
 
 
@@ -125,4 +154,5 @@ module.exports = new TaskImplementation 'cleanup', {
   deletePhotosPrep
   deletePhotos
   deleteSessionSecurities
+  deleteRequestErrors
 }

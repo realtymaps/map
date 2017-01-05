@@ -9,6 +9,7 @@ auth = require '../utils/util.auth'
 internals = require './route.mls.internals'
 transforms = require '../utils/transforms/transforms.mls'
 httpStatus = require '../../common/utils/httpStatus'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 module.exports =
   root:
@@ -58,7 +59,7 @@ module.exports =
             if found
               return found
 
-            next new ExpressResponse(alert: {msg: "mls agent not found or active"}, {status: httpStatus.NOT_FOUND, quiet: true})
+            throw new PartiallyHandledError({returnStatus: httpStatus.NOT_FOUND, quiet: true}, "mls agent not found or not active")
 
 
 
