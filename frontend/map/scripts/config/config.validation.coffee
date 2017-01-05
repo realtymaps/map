@@ -1,5 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
+
 
 app.config(($provide, $validationProvider) ->
   _removeError = (element) ->
@@ -31,6 +33,11 @@ app.config(($provide, $validationProvider) ->
     realtymapsEmail: validation.realtymapsEmail
     address: validation.address
     zipcode: validation.zipcode.US
+
+    nullify: (value, scope, element, attrs, param) ->
+      if !value
+        _.set(scope, attrs.ngModel, null)
+      return true
 
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
@@ -132,5 +139,7 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid US zipcode'
     optZipcode:
       error: 'Invalid US zipcode'
+    nullify:
+      error: 'unable to nullify'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)

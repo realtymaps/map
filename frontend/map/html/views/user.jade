@@ -92,7 +92,7 @@
                               name="address_1"
                               ng-model="user.address_1"
                               type='text'
-                              validator="required,address")
+                              validator="optAddress,nullify")
                         .form-group
                           label.col-lg-3.control-label
                           .col-lg-8
@@ -101,7 +101,7 @@
                               ng-model="user.address_2"
                               type='text'
                               initial-validity="true"
-                              validator="optMinlength=2")
+                              validator="optMinlength=2,nullify")
                         .form-group
                           label.col-lg-3.control-label City:
                           .col-lg-8
@@ -109,13 +109,13 @@
                               name="city"
                               ng-model="user.city"
                               type='text'
-                              validator="required,minlength=2")
+                              validator="optMinlength=2,nullify")
                         .form-group
                           label.col-lg-3.control-label State:
                           .col-lg-8
                             select.form-control(
                               ng-model="user.us_state_id"
-                              validator="required"
+                              validator="nullify"
                               name="us_state_id"
                               ng-options="s.id as (s.code+' - '+s.name) for s in us_states"
                             )
@@ -124,21 +124,21 @@
                           .col-lg-8
                             input.form-control(ng-model="user.zip"
                               name="zip"
-                              type='text' validator="required,zipcode")
+                              type='text' validator="optZipcode,nullify")
                         .form-group
                           label.col-lg-3.control-label Phone (Mobile/Home):
                           .col-lg-8
                             input.form-control(ng-model="user.cell_phone"
                               type='text'
                               name="cell_phone"
-                              validator="required,phone")
+                              validator="optPhone,nullify")
                         .form-group
                           label.col-lg-3.control-label Work Phone:
                           .col-lg-8
                             input.form-control(ng-model="user.work_phone"
                             type='text'
                             name="work_phone"
-                            validator="optPhone")
+                            validator="optPhone,nullify")
                         .form-group
                           label.col-lg-3.control-label Email:
                           .col-lg-8
@@ -150,7 +150,12 @@
                         .form-group
                           label.col-md-3.control-label(title="Not for login.") username / alias:
                           .col-md-8
-                            input.form-control(name="username" ng-model="user.username", type='text' validator="required,minlength=3")
+                            input.form-control(
+                              name="username"
+                              ng-model="user.username"
+                              type='text'
+                              validator="optMinlength=3,nullify"
+                            )
                         .form-group
                           label.col-lg-3.control-label Website Url:
                           .col-lg-8
@@ -159,7 +164,7 @@
                               ng-model="user.website_url"
                               type='text'
                               initial-validity="true"
-                              validator="optUrl")
+                              validator="optUrl,nullify")
                         .form-group
                           label.col-lg-3.control-label Account Usage:
                           .col-lg-8
