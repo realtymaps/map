@@ -22,11 +22,6 @@ root =
     work_phone: validators.string
       regex: config.VALIDATION.phone
       replace: [config.VALIDATION.phoneNonNumeric, '']
-    username:
-      transform: [
-        validators.string(minLength: 3)
-      ]
-      required: true
     website_url: validators.string(regex: config.VALIDATION.url)
     email: emailTransforms.email()
     account_use_type_id:

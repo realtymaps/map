@@ -66,7 +66,7 @@ rmapsLoginService) ->
         # setting user to $rootScope since this is where a reference to user is used in other parts of the app
         user = data.identity.user
         user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
-        user.name = user.full_name or user.username
+        user.name = user.full_name or user.email
         $rootScope.user = user
         $rootScope.profiles = data.identity.profiles
 

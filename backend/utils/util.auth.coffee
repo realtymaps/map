@@ -43,7 +43,7 @@ getSessionUser = (req) -> Promise.try () ->
 # (nem) moved here to avoid circular dependency on userSession route
 logout = (req, res, next) -> Promise.try () ->
   if req.user
-    logger.debug () -> "attempting to log user out: #{req.user.username} (#{req.sessionID})"
+    logger.debug () -> "attempting to log user out: #{req.user.email} (#{req.sessionID})"
     delete req.session.current_profile_id
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
@@ -84,19 +84,19 @@ checkSessionSecurity = (req, res) ->
     cookie = req.signedCookies[config.SESSION_SECURITY.name]
     if not cookie
       if req.user
-        throw new SessionSecurityError('user', "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", 'warn')
+        throw new SessionSecurityError('user', "no session security cookie found for user #{req.user.email} on session: #{req.sessionID}", 'warn')
       throw new SessionSecurityError('nothing', 'no session security cookie found for anonymous user', false)
     values = cookie.split('.')
     if values.length != 3
       if req.user
-        throw new SessionSecurityError('user', "invalid session security cookie found for user #{req.user.username} on session: #{req.sessionID} / #{cookie}")
+        throw new SessionSecurityError('user', "invalid session security cookie found for user #{req.user.email} on session: #{req.sessionID} / #{cookie}")
       else
         throw new SessionSecurityError()
     context.cookieValues = {userId: parseInt(values[0]), sessionId: values[1], token: values[2]}
 
     if (req.user)
       if req.user.id != context.cookieValues.userId
-        throw new SessionSecurityError('user', "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}")
+        throw new SessionSecurityError('user', "cookie vs session userId mismatch for user #{req.user.email} on session: #{req.sessionID}")
       context.sessionId = req.sessionID
     else
       context.sessionId = context.cookieValues.sessionId
@@ -108,20 +108,20 @@ checkSessionSecurity = (req, res) ->
       # this is the happy path
       return securities[0]
     if securities.length > 1
-      throw new SessionSecurityError('user', "multiple session security objects found for user #{req.user?.username} on session: #{context.sessionId}")
+      throw new SessionSecurityError('user', "multiple session security objects found for user #{req.user?.email} on session: #{context.sessionId}")
     if req.user
-      throw new SessionSecurityError('session', "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", 'warn')
+      throw new SessionSecurityError('session', "no session security objects found for user #{req.user.email} on session: #{context.sessionId}", 'warn')
     else
       throw new SessionSecurityError('nothing', 'anonymous user with no session security', false)
   .then (security) ->
     if context.cookieValues.userId != security.user_id
-      throw new SessionSecurityError('session', "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}")
+      throw new SessionSecurityError('session', "cookie vs security userId mismatch for user #{req.user?.email} on session: #{context.sessionId}")
     sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
     .then (tokenHash) ->
       if req.user
         # this is a logged-in user, so validate
         if tokenHash != security.token
-          throw new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", 'warn')
+          throw new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.email} on active session: #{context.sessionId}", 'warn')
         return
 
       # this isn't a logged-in user, so validate only if remember_me was set; if
@@ -327,7 +327,7 @@ requirePermissions = (permissions, options = {}) ->
     throw new Error('Bad permissions object')
   return (req, res, next) -> Promise.try () ->
     if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
-      logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
+      logger.warn "access denied to user #{req.user.email} for URI: #{req.originalUrl}"
       if options.logoutOnFail
         return logout(req, res, next)
       else
