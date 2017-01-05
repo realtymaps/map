@@ -115,7 +115,7 @@ deleteSessionSecurities = (subtask) ->
   tables.auth.sessionSecurity()
   .whereNotExists () ->
     @select(1).from(tables.auth.session.tableName)
-    .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
+    .whereRaw('sid = ??', "#{tables.auth.sessionSecurity.tableName}.session_id")
   .returning('session_id')
   .delete()
   .then (sessionIds) ->
