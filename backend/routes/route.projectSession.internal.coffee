@@ -65,7 +65,6 @@ class ClientsCrud extends RouteCrud
         date_invited: new Date()
         first_name: req.body.first_name
         last_name: req.body.last_name
-        username: req.body.username || req.body.email #same varchar size (dont use first_last)
         email: req.body.email
       parent:
         id: req.user.id

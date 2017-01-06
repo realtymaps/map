@@ -137,7 +137,7 @@ requestResetPassword = (email, host) ->
   if !email
     throw new Error('Email required')
 
-  tables.auth.user().select('id', 'email', 'first_name', 'last_name', 'username')
+  tables.auth.user().select('id', 'email', 'first_name', 'last_name')
   .where('email', email)
   .then ([user]) ->
     if !user
@@ -177,7 +177,6 @@ getResetPassword = (key) ->
     email: entry.user.email
     first_name: entry.user.first_name
     last_name: entry.user.last_name
-    username: entry.user.username
   .catch (err) ->
     logger.debug err
     throw err

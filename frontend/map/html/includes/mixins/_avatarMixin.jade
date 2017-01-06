@@ -1,6 +1,6 @@
 mixin avatarMixin()
   div()&attributes(attributes)
     span(ng-cloak ng-if="!!user.account_image_id")
-        img(rmaps-cdn-image ng-src="{{backendRoutes.userSession.image}}" title="{{user.username}}")
+        img(rmaps-cdn-image ng-src="{{backendRoutes.userSession.image}}" title="{{user.email}}")
     span(ng-cloak ng-if="!!!user.account_image_id")
-        img(rmaps-cdn-image ng-src="{{frontendRoutes.avatar}}" title="{{user.username}}")
+        img(rmaps-cdn-image ng-src="{{frontendRoutes.avatar}}" title="{{user.email}}")

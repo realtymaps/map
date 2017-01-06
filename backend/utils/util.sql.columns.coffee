@@ -85,7 +85,7 @@ basicColumns = do ->
 
   ret
 
-basicColumns.userSafe = ['id','username', 'first_name', 'last_name', 'email', 'cell_phone',
+basicColumns.userSafe = ['id', 'first_name', 'last_name', 'email', 'cell_phone',
   'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash',
   'email_validation_hash_update_time', 'email_validation_attempt',
   'email_validation_hash', 'email_is_valid', 'is_staff', 'is_superuser',
@@ -151,7 +151,6 @@ joinColumns = do ->
     "#{tables.auth.user.tableName}.email as email"
     "#{tables.auth.user.tableName}.first_name as first_name"
     "#{tables.auth.user.tableName}.last_name as last_name"
-    "#{tables.auth.user.tableName}.username as username"
     "#{tables.auth.user.tableName}.address_1 as address_1"
     "#{tables.auth.user.tableName}.address_2 as address_2"
     "#{tables.auth.user.tableName}.city as city"
