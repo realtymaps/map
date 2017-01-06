@@ -7,9 +7,20 @@ app.factory "rmapsMapDrawHandlesFactory", ($q, $log, rmapsDrawnUtilsService, rma
   $log = $log.spawn("map:rmapsMapDrawHandlesFactory")
 
   _makeDrawKeys = (handles) ->
+
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
-  return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise, mapId, deleteAction}) ->
+  return (options) ->
+    {
+      mapId
+      drawnShapesSvc
+      drawnItems
+      endDrawAction
+      commonPostDrawActions
+      announceCb
+      createPromise
+      deleteAction
+    } = options
     endDrawAction ?= ->
     commonPostDrawActions ?= ->
     deleteAction ?= ->
@@ -51,34 +62,24 @@ app.factory "rmapsMapDrawHandlesFactory", ($q, $log, rmapsDrawnUtilsService, rma
 
       ### eslint-disable ###
       drawstart: ({layerType}) ->
-        ### eslint-enable ###
-        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
-        announceCb('Draw on the map to query polygons and shapes','Draw')
 
       ### eslint-disable ###
       drawstop: ({layerType}) ->
-        ### eslint-enable ###
-        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
-        endDrawAction()
 
       ### eslint-disable ###
       editstart: ({handler}) ->
-        ### eslint-enable ###
-        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
-        announceCb('Edit Drawing on the map to query polygons and shapes','Edit Drawing')
 
       ### eslint-disable ###
       editstop: ({handler}) ->
-        ### eslint-enable ###
-        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
-        endDrawAction()
 
       ### eslint-disable ###
       deletestart: ({handler}) ->
         ### eslint-enable ###
         announceCb('Delete Drawing','Delete Drawing')
+        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
       ### eslint-disable ###
       deletestop: ({handler}) ->
         ### eslint-enable ###
+        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
         endDrawAction()
