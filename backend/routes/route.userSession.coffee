@@ -57,7 +57,9 @@ login = (req, res, next) -> Promise.try () ->
   .then () ->
     internals.getIdentity(req, res, next)
   .catch (err) ->
-    next new ExpressResponse(alert: { msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: true})
+    err.returnStatus = httpStatus.UNAUTHORIZED
+    err.quiet = true
+    throw err
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
