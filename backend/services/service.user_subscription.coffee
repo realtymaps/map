@@ -118,11 +118,11 @@ getStatus = (user) -> Promise.try () ->
       # return subscription level for the staff if granted a perm for it
       if results.access_premium
         obj.subscriptionPlan = config.SUBSCR.PLAN.PRO
-        obj.subscriptionStatus = config.SUBSCR.PLAN.ACTIVE
+        obj.subscriptionStatus = config.SUBSCR.STATUS.ACTIVE
 
       else if results.access_standard
         obj.subscriptionPlan = config.SUBSCR.PLAN.STANDARD
-        obj.subscriptionStatus = config.SUBSCR.PLAN.ACTIVE
+        obj.subscriptionStatus = config.SUBSCR.STATUS.ACTIVE
 
       return obj
 
