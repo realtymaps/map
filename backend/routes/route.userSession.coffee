@@ -21,6 +21,7 @@ userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+DataValidationError = require '../utils/errors/util.error.dataValidation'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -63,8 +64,8 @@ login = (req, res, next) -> Promise.try () ->
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
-  unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
+  if !req.body.currentProfileId
+    throw new DataValidationError('currentProfileId undefined')
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug () -> "set req.session.current_profile_id: #{req.session.current_profile_id}"
