@@ -52,7 +52,6 @@ describe 'transforms.userSession', ->
             zip: 24501
             cell_phone: '5555556622'
             work_phone: '555-555-6622'
-            username: 'bootsraped'
             website_url: "http://crap.com"
             email: "crap@gmail.com"
             account_use_type_id: 1
