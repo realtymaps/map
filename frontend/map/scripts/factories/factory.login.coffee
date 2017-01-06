@@ -33,7 +33,7 @@ rmapsLoginService) ->
       $log.error "Could not log in", response
       $scope.loginInProgress = false
       $scope.loginFailed = true
-      $state.go 'login'
+      # $state.go 'login' #should already be in login state
 
     $scope.forgotPassword = () ->
       modalInstance = $uibModal.open
