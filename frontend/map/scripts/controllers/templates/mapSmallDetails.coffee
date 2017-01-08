@@ -26,8 +26,6 @@ app.controller 'rmapsSmallDetailsCtrl', (
     if _.uniq(_.pluck($scope.property.grouped.properties, 'address.street')).length > 1
       $scope.showAllAddresses = true
 
-  $scope.closeInfo = () ->
-    rmapsPopupLoaderService.close()
 
   $scope.addressComparator = (p) ->
     unit = p.address.unit

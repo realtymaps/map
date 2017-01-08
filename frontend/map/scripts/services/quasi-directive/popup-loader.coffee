@@ -101,29 +101,37 @@ app.factory 'rmapsPopupFactory', (
       return
 
 app.service 'rmapsPopupLoaderService',(
-  $log,
-  rmapsPopupFactory,
-  $timeout
-) ->
+$log
+rmapsPopupFactory
+$timeout
+$rootScope) ->
+
   _popup = null
   _timeoutPromiseQueue = []
   $log = $log.spawn("map:rmapsPopupLoaderService")
 
-  load: (opts) ->
-    $log.debug "popup type #{opts.model.markerType} loading in #{_delay}ms..."
 
-    if _timeoutPromiseQueue.length
-      promise = _timeoutPromiseQueue.shift()
-      $timeout.cancel(promise) if promise?
+  service =
+    load: (opts) ->
+      $log.debug "popup type #{opts.model.markerType} loading in #{_delay}ms..."
 
-    _timeoutPromiseQueue.push $timeout () ->
-      _popup = new rmapsPopupFactory opts
-    , _delay
+      if _timeoutPromiseQueue.length
+        promise = _timeoutPromiseQueue.shift()
+        $timeout.cancel(promise) if promise?
 
-  close: () ->
-    popupExists = _popup?
-    if popupExists
-      $log.debug "popup closing"
-      _popup?.close()
-      _popup = null
-    return popupExists
+      _timeoutPromiseQueue.push $timeout () ->
+        _popup = new rmapsPopupFactory opts
+      , _delay
+
+    close: () ->
+      popupExists = _popup?
+      if popupExists
+        $log.debug "popup closing"
+        _popup?.close()
+        _popup = null
+      return popupExists
+
+  $rootScope.closeInfo = () ->
+    service.close()
+
+  return service
