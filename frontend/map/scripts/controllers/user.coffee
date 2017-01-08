@@ -113,7 +113,7 @@ $log
         delete @blob
 
   $scope.pass =
-    username: '' + $scope.user.username
+    email: '' + $scope.user.email
 
     change: () ->
       if @password != @confirmPassword

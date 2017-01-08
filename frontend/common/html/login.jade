@@ -1,4 +1,4 @@
-.container.login-page(ng-show="!loginInProgress")
+.container.login-page
   .centered
     .row
       .logo.center-block(ng-click="page.goToMainOrLogin()")
@@ -11,7 +11,7 @@
         form.comfy(method="POST", ng-submit="doLogin()" ng-show="showForm")
           .form-group
             label(for="email") Email:
-            input#username(type="email" name="email" ng-model="form.email")
+            input#email(type="email" name="email" ng-model="form.email")
           .form-group
             label(for="password") Password:
             input#password(ng-show="!form.loginToken" type="password" name="password" ng-model="form.password")

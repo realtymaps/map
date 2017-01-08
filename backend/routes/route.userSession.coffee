@@ -27,7 +27,7 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 login = (req, res, next) -> Promise.try () ->
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.username} (#{req.sessionID})"
+    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.email} (#{req.sessionID})"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
@@ -57,8 +57,7 @@ login = (req, res, next) -> Promise.try () ->
   .then () ->
     internals.getIdentity(req, res, next)
   .catch (err) ->
-    err.returnStatus = httpStatus.UNAUTHORIZED
-    err.quiet = true
+    next new ExpressResponse(alert: { msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: true})
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->

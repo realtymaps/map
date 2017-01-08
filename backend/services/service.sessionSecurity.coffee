@@ -62,7 +62,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     logger.debug () -> "ensureSessionCount: anonymous users don't get session-counted"
     return Promise.resolve()
   if req.session.permissions['unlimited_logins']
-    logger.debug () -> "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
+    logger.debug () -> "ensureSessionCount for #{req.user.email}: unlimited logins allowed"
     return Promise.resolve()
 
   maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plan data via stripe api, and memoized
@@ -76,7 +76,7 @@ ensureSessionCount = (req) -> Promise.try () ->
 
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     if maxLogins <= sessionSecurities.length
-      logger.debug () -> "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing sessions"
+      logger.debug () -> "ensureSessionCount for #{req.user.email}: invalidating #{sessionSecurities.length-maxLogins+1} existing sessions"
       sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'rm_modified_time').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
       logger.debug () -> "session securities deleted: #{JSON.stringify(sessionIdsToDelete, null, 2)}"
       tables.auth.sessionSecurity()

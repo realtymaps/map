@@ -12,7 +12,6 @@ safeUserFields = [
   'first_name'
   'id'
   'last_name'
-  'username'
   'work_phone'
   'account_image_id'
   'address_1'
@@ -90,7 +89,7 @@ cacheUserValues = (req, reload = {}) ->
 
   Promise.all([permissionsPromise, groupsPromise, subscriptionPromise])
   .catch (err) ->
-    logger.error "error caching user values for user: #{req.user.username}"
+    logger.error "error caching user values for user: #{req.user.email}"
     Promise.reject(err)
 
 getIdentityFromRequest = (req) ->

@@ -16,8 +16,7 @@ makeFakeUser = (first_name, last_name, email = '@gmail.com') ->
     last_name
     email: unique + email
     is_active: false
-    password: uuid.v4()
-    username: testKey
+    password: testKey
   }
 
 
@@ -31,7 +30,7 @@ describe 'service.notifications.internals', ->
   describe 'distribute', ->
     after ->
       tables.auth.user()
-      .where username: testKey
+      .where(password: testKey)
       .delete()
       .then () =>
         getCounts undefined, (@userCntEnd, @profileCntEnd, @projectCntEnd) =>
@@ -45,7 +44,7 @@ describe 'service.notifications.internals', ->
       dbs.transaction (transaction) =>
 
         tables.auth.user({transaction}) #only need to delete users as foreign keys clean the rest yay
-        .where username: testKey
+        .where(password: testKey)
         .delete()
         .then () =>
           getCounts transaction, (@userCnt, @profileCnt, @projectCnt) =>

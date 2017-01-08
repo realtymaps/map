@@ -152,7 +152,6 @@ class ProjectCrud extends ThenableCrud
         "#{tables.auth.user.tableName}.id as id",
         "#{tables.user.profile.tableName}.id as profile_id",
         'email',
-        'username',
         'first_name',
         'last_name',
         "#{tables.auth.user.tableName}.parent_id as parent_id"
