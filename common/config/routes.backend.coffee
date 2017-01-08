@@ -40,6 +40,12 @@ apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
 apiBaseMonitor = "#{apiBase}/monitor"
+apiBaseNotifications = "#{apiBase}/notifications"
+apiBaseNotificationFrequencies = "#{apiBaseNotifications}/frequencies"
+apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
+apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
+apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
+apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 
 module.exports =
   views:
@@ -276,5 +282,14 @@ module.exports =
   monitor:
     apiBase: apiBaseMonitor
     error: "#{apiBaseMonitor}/error"
+  notificationsConfigSession:
+    apiBase: apiBaseNotificationsConfigSession
+    root: apiBaseNotificationsConfigSession
+  notificationFrequencies:
+    apiBase: apiBaseNotificationFrequencies
+    root: apiBaseNotificationFrequencies
+  notificationMethods:
+    apiBase: apiBaseNotificationMethods
+    root: apiBaseNotificationMethods
 
   # hirefire secret value set from within backend/config/config.coffee

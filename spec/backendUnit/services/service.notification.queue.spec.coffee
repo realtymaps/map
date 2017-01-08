@@ -11,6 +11,8 @@ describe "service.notification.queue", ->
   before () ->
     userNotify = new SqlMock 'user', 'notificationQueue'
     userConfig = new SqlMock 'user', 'notificationConfig'
+    userNotifyFrequencies = new SqlMock 'user', 'notificationFrequencies'
+    userNotifyMethods = new SqlMock 'user', 'notificationMethods'
     authUser = new SqlMock 'auth', 'user'
 
     makeTable = (thing) ->
@@ -22,7 +24,8 @@ describe "service.notification.queue", ->
     tables =
       user:
         notificationQueue: makeTable userNotify
-
+        notificationFrequencies: makeTable userNotifyFrequencies
+        notificationMethods: makeTable userNotifyMethods
         notificationConfig: makeTable userConfig
       auth:
         user: makeTable authUser

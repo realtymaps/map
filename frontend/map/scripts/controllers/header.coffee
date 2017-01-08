@@ -11,6 +11,8 @@ module.exports = app.controller 'rmapsHeaderCtrl', (
   rmapsProfilesService
 ) ->
 
+  $log = $log.spawn("rmapsHeaderCtrl")
+
   $scope.getProfile = () ->
     rmapsProfilesService.currentProfile
 
@@ -41,7 +43,10 @@ module.exports = app.controller 'rmapsHeaderCtrl', (
     return $scope.getProfile()?.parent_name?.trim().length > 0
 
   $scope.hasParentImage = () ->
-    return $scope.getProfile()?.parent_auth_user_id && $scope.getProfile().parent_image_id
+    {parent_image_id, parent_auth_user_id} = $scope.getProfile()
+    $log.debug -> {parent_image_id, parent_auth_user_id}
+
+    return parent_auth_user_id? && parent_image_id?
 
   $scope.parentImageUrl = () ->
     if $scope.getProfile()?.parent_auth_user_id && $scope.getProfile().parent_image_id

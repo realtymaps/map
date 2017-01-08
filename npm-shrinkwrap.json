@@ -187,16 +187,9 @@
       "resolved": "git://github.com/realtymaps/bootstrap.git#b1d20583ded5a9f8693edd8ea1a069e6e6c9dcd9"
     },
     "angular-ui-grid": {
-      "version": "4.0.2",
-      "from": "https://registry.npmjs.org/angular-ui-grid/-/angular-ui-grid-4.0.2.tgz",
-      "resolved": "https://registry.npmjs.org/angular-ui-grid/-/angular-ui-grid-4.0.2.tgz",
-      "dependencies": {
-        "angular": {
-          "version": "1.5.10",
-          "from": "https://registry.npmjs.org/angular/-/angular-1.5.10.tgz",
-          "resolved": "https://registry.npmjs.org/angular/-/angular-1.5.10.tgz"
-        }
-      }
+      "version": "3.2.9",
+      "from": "angular-ui-grid@3.2.9",
+      "resolved": "https://registry.npmjs.org/angular-ui-grid/-/angular-ui-grid-3.2.9.tgz"
     },
     "angular-ui-router": {
       "version": "0.3.2",
@@ -4822,15 +4815,15 @@
                       "from": "json-stringify-safe@>=5.0.1 <5.1.0",
                       "resolved": "https://registry.npmjs.org/json-stringify-safe/-/json-stringify-safe-5.0.1.tgz"
                     },
-                    "jsonpointer": {
-                      "version": "2.0.0",
-                      "from": "jsonpointer@2.0.0",
-                      "resolved": "https://registry.npmjs.org/jsonpointer/-/jsonpointer-2.0.0.tgz"
-                    },
                     "jsprim": {
                       "version": "1.3.0",
                       "from": "jsprim@>=1.2.2 <2.0.0",
                       "resolved": "https://registry.npmjs.org/jsprim/-/jsprim-1.3.0.tgz"
+                    },
+                    "jsonpointer": {
+                      "version": "2.0.0",
+                      "from": "jsonpointer@2.0.0",
+                      "resolved": "https://registry.npmjs.org/jsonpointer/-/jsonpointer-2.0.0.tgz"
                     },
                     "mime-db": {
                       "version": "1.23.0",
@@ -7627,7 +7620,7 @@
                   "dependencies": {
                     "ansi-regex": {
                       "version": "0.2.1",
-                      "from": "ansi-regex@>=0.2.1 <0.3.0",
+                      "from": "ansi-regex@>=0.2.0 <0.3.0",
                       "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-0.2.1.tgz"
                     }
                   }
@@ -7639,7 +7632,7 @@
                   "dependencies": {
                     "ansi-regex": {
                       "version": "0.2.1",
-                      "from": "ansi-regex@>=0.2.1 <0.3.0",
+                      "from": "ansi-regex@>=0.2.0 <0.3.0",
                       "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-0.2.1.tgz"
                     }
                   }
@@ -26863,15 +26856,15 @@
                       "from": "block-stream@*",
                       "resolved": "https://registry.npmjs.org/block-stream/-/block-stream-0.0.9.tgz"
                     },
-                    "boom": {
-                      "version": "2.10.1",
-                      "from": "boom@>=2.0.0 <3.0.0",
-                      "resolved": "https://registry.npmjs.org/boom/-/boom-2.10.1.tgz"
-                    },
                     "brace-expansion": {
                       "version": "1.1.5",
                       "from": "brace-expansion@>=1.0.0 <2.0.0",
                       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.5.tgz"
+                    },
+                    "boom": {
+                      "version": "2.10.1",
+                      "from": "boom@>=2.0.0 <3.0.0",
+                      "resolved": "https://registry.npmjs.org/boom/-/boom-2.10.1.tgz"
                     },
                     "buffer-shims": {
                       "version": "1.0.0",
