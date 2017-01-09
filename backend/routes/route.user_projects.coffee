@@ -1,9 +1,11 @@
 auth = require '../utils/util.auth'
 {project} = require '../services/services.user'
-{routeCrud} = require '../utils/crud/util.crud.route.helpers'
+RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 
-module.exports = mergeHandles routeCrud(project),
+projectCrud = new RouteCrud(project)
+
+module.exports = mergeHandles projectCrud,
   root:
     methods: ['get', 'post']
     middleware: [
