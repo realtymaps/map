@@ -22,6 +22,8 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 DataValidationError = require '../utils/errors/util.error.dataValidation'
+userSessionErrors = require '../utils/errors/util.errors.userSession'
+
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -46,20 +48,15 @@ login = (req, res, next) -> Promise.try () ->
       })
     else
       return false
-  .catch (err) ->
-    return false
   .then (user) -> Promise.try ->
-    userSessionService.verifyValidAccount(user)
-  .then (user) ->
-    if !user
-      throw new PartiallyHandledError('Email and/or password does not match our records.')
+    if !user || !user.is_active
+      throw new userSessionErrors.LoginError('Email and/or password does not match our records.')
     req.session.userid = user.id
     sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
   .then () ->
     internals.getIdentity(req, res, next)
   .catch (err) ->
     err.returnStatus = httpStatus.UNAUTHORIZED
-    err.quiet = true
     throw err
 
 

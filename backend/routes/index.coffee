@@ -5,6 +5,7 @@ path = require 'path'
 Promise = require 'bluebird'
 {isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 routeHelpers = require '../utils/util.route.helpers'
+require '../config/promisify'
 
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
@@ -48,7 +49,9 @@ module.exports = (app, sessionMiddlewares) ->
     # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
     # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
     if route.middleware.length > 0
-      middlewares = [].concat(sessionMiddlewares, route.middleware)
+      middlewares = _.map route.middleware, (middeware) ->
+        Promise.nodeifyWrapper(middeware)
+      middlewares = [].concat(sessionMiddlewares, middlewares)
     else
       middlewares = []
     app[route.method](route.path, middlewares..., wrappedHandle)

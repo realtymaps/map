@@ -14,14 +14,14 @@ promisedVeroService = require '../services/email/vero'
 notifyConfigInternals = require '../services/service.notification.config.internals'
 utilEvents = null
 
-twilioClientPromise = Promise.try () ->
+_getTwilioClient = () -> Promise.try () ->
   externalAccounts.getAccountInfo('twilio')
   .then (accountInfo) ->
     client: twilio(accountInfo.username, accountInfo.api_key)
     smsNumber: accountInfo.other.number
   .catch errorHelpers.isUnhandled, (err) ->
     throw new errorHelpers.PartiallyHandledError(err, 'Twilio login not found in environment. No client')
-twilioClientPromise = memoize.promise(twilioClientPromise, maxAge: 15*60*1000)
+_getTwilioClient = memoize.promise(_getTwilioClient, maxAge: 15*60*1000)
 
 
 getSmsOptions = (to, subject, number) ->
@@ -91,7 +91,7 @@ sendSms = (row, options) -> Promise.try () ->
 
   cellPhone = options.cell_phone || row.cell_phone
 
-  twilioClientPromise
+  _getTwilioClient()
   .then (twilioInfo) ->
     sendSmsAsync = Promise.promisify twilioInfo.client.sendSms
     sendSmsAsync(getSmsOptions(cellPhone, options.subject, twilioInfo.smsNumber))
@@ -295,7 +295,6 @@ sendHandles =
   default: sendEmailVero
 
 module.exports = {
-  twilioClientPromise
   getSmsOptions
   getEmailOptions
   buildBasicEmail

@@ -129,9 +129,13 @@ app.use (data, req, res, next) ->
 # coffeelint: enable=check_scope
 
   logger.debug 'main ExpressResponse Middleware'
+
+  if req.body.password?
+    req.body.password = '***REMOVED***'
+
   if !(data instanceof ExpressResponse)
     # it's probably a thrown Error of some sort -- coerce to an ExpressResponse
-    if isUnhandled(data)
+    if isUnhandled(data) && !data.expected
       if data.routeInfo?
         origination = " #{data.routeInfo.moduleId}.#{data.routeInfo.routeId}[#{data.routeInfo.method}]"
       else
@@ -150,7 +154,9 @@ app.use (data, req, res, next) ->
       message = "error reference: #{data.errorRef}"
     else
       message = escape(data.message)
-    data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(message), id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
+    if !data.expected
+      message = commonConfig.UNEXPECTED_MESSAGE(message)
+    data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
 
   logger.debug "data.status: #{data.status}"
   if !status.isWithinOK(data.status)
@@ -170,6 +176,8 @@ app.use (data, req, res, next) ->
       headers: req.headers,
       body: if _.isEmpty(req.body) then null else req.body,
       userid: req.user?.id,
+      email: req.user?.email || req.body.email
+      ip: req.ip
       session: _.omit(req.session, (val) -> if typeof(val) == 'function' then return true),
       response_status: data.status
       # `unexpected` is always true for now, but we can add logic later to sometimes set this to false; this would
@@ -181,7 +189,7 @@ app.use (data, req, res, next) ->
     tables.history.requestError()
     .insert(logEntity)
     .catch (err) ->
-      logger.warn("Problem while logging request error: #{err}\nOriginal error: #{logEntity}")
+      logger.error("Problem while logging request error!!!\nProblem: #{analyzeValue.getFullDetails(err)}\nOriginal request error log: #{JSON.stringify(logEntity,null,2)}")
 
   if !res.headersSent
     data.send(res)

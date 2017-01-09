@@ -140,6 +140,11 @@ getSimpleMessage = (err, opts={}) ->
     return err.toString()
 
 
+simpleInspect = (obj, {skipOuterBraces=true}={}) ->
+  result = util.inspect(obj).replace(/\s*\n\s*/g, ' ')
+  if skipOuterBraces
+    result = result[2..result.length-3]
+
 module.exports = analyzeValue
 module.exports.INDENT = "    "
 module.exports.getSimpleDetails = getSimpleDetails
@@ -147,3 +152,4 @@ module.exports.getSimpleMessage = getSimpleMessage
 module.exports.isKnexError = isKnexError
 module.exports.getFullDetails = getFullDetails
 module.exports.getType = getType
+module.exports.simpleInspect = simpleInspect
