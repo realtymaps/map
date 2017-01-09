@@ -138,7 +138,6 @@ app.use (data, req, res, next) ->
     # it's probably a thrown Error of some sort -- coerce to an ExpressResponse
     if isUnhandled(data) && !data.expected
       if data.routeInfo?
-        route_info =
         origination = " #{data.routeInfo.moduleId}.#{data.routeInfo.routeId}[#{data.routeInfo.method}]"
       else
         origination = ''
