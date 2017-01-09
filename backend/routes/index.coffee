@@ -42,7 +42,7 @@ module.exports = (app, sessionMiddlewares) ->
           else
             route.handle(req, res, next)
         .catch isUnhandled, (error) ->
-          error.routeInfo = route
+          error.routeInfo = _.omit(route, 'handle')
           throw error
         .catch (error) ->
           next(error)
