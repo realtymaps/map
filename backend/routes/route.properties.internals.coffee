@@ -10,13 +10,18 @@ userUtils = require '../utils/util.user'
 tables = require '../config/tables'
 keystoreSvc = require '../services/service.keystore'
 profileSvc = require '../services/service.profiles'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 appendProjectId = (req, obj) ->
   obj.project_id = profileService.getCurrentSessionProfile(req.session).project_id
   obj
 
-captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransforms.body} = {}) ->
-  (req, res, next) -> Promise.try () ->
+captureMapFilterState =  (options = {}) ->
+  options = _.extend({}, options)
+  options.saveState ?= true
+  options.transforms ?= ourTransforms.body
+  {handleStr, saveState, transforms} = options
+  result = (req, res) -> Promise.try () ->
     if handleStr
       logger.debug () -> "handle: #{handleStr}"
 
@@ -36,10 +41,11 @@ captureMapFilterState =  ({handleStr, saveState = true, transforms = ourTransfor
     .then (body) ->
       req.validBody = body
       logger.debug "MapState saved"
-      next()
+  result.inspect = () -> "captureMapFilterState(#{analyzeValue.simpleInspect(options)})"
+  result
 
 refreshPins = () ->
-  (req, res, next) ->
+  result = (req, res) ->
     # If cached profile is older than profile_refresh_seconds, load fresh pins
     Promise.join keystoreSvc.cache.getValue('profile_refresh_seconds', namespace: 'time_limits'),
       profileSvc.getCurrentSessionProfile(req.session),
@@ -59,12 +65,10 @@ refreshPins = () ->
             profile.pins = project.pins
             profile.favorites = project.favorites
             profile.rm_modified_time = moment.utc()
-            next()
         else
           logger.debug "Profile is still fresh"
-          next()
-    .catch (err) ->
-      next(err)
+  result.inspect = () -> "refreshPins()"
+  result
 
 handleRoute = (res, next, serviceCall) ->
   Promise.try () ->

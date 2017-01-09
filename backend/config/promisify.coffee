@@ -1,5 +1,6 @@
 Promise = require 'bluebird'
 module.exports = {}
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 # Usually, something like the following will work:
@@ -44,6 +45,8 @@ module.exports.sessionMiddleware = promisifySession
 # are multiple values to pass to the nodeback, pass {spread: true} to the
 # wrapper call.
 Promise.nodeifyWrapper = (func, options) ->
+  if typeof(func) != 'function'
+    throw new Error("can only call nodeifyWrapper on a function, got: "+analyzeValue.getType(func))
   return (args..., callback) ->
     func(args...).nodeify(callback, options)
 

@@ -7,7 +7,6 @@ keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 tables = require '../config/tables'
-subscriptionSvc = require './service.user_subscription.coffee'
 userUtils = require '../utils/util.user'
 planSvc = require './service.plans'
 
@@ -102,14 +101,10 @@ getSecuritiesForSession = (sessionId) ->
 
 
 sessionLoginProcess = (req, res, user, opts={}) ->
-  subscriptionSvc.getStatus user
-  .then (subscription_status) ->
-    logger.debug -> "User #{user.id} subscription status is #{subscription_status}"
-    logger.debug -> _.omit user, "password"
+  req.user = user
+  logger.debug -> _.omit user, "password"
 
-    req.user = user
-    req.session.subscription = subscription_status
-    userUtils.cacheUserValues(req)
+  userUtils.cacheUserValues(req)
   .then () ->
     ensureSessionCount(req)
   .then () ->

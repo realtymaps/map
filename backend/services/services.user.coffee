@@ -108,9 +108,10 @@ class UserCrud extends EzCrud
         .then () =>
           super(idEntity, options)
 
+
 module.exports = {
   user: new UserCrud(tables.auth.user).init(false)
-  accountUseTypes: new oldCrud.Crud(tables.lookup.accountUseTypes)
+  accountUseTypes: new EzCrud(tables.lookup.accountUseTypes)
   project: new EzCrud(tables.user.project)
   company: new oldCrud.Crud(tables.user.company)
   drawnShapes: new oldCrud.Crud(tables.user.drawnShapes)

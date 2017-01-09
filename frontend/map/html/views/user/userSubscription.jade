@@ -6,12 +6,14 @@ div(ng-hide="processing > 0")
   .row.collapse-header.subscription-details(ng-show="!subscription")
     h3 Contact RealtyMaps to enroll, today!
 
-
-  .row.collapse-header.subscription-details(ng-show="subscription.plan.id == 'deactivated'")
-    .row(ng-hide="subscription.error")
-      .col-md-6
+  .row.collapse-header.subscription-details(ng-show="!showSubscription() && !subscription.error")
+    .row
+      .col-md-6(ng-if="isDeactivated()")
         label Status
         p Deactivated
+      .col-md-6(ng-if="isExpired()")
+        label Status
+        p Expired
 
   .row.collapse-header.subscription-details(ng-show="showSubscription()")
     .row(ng-hide="subscription.error")
@@ -47,7 +49,7 @@ div(ng-hide="processing > 0")
     .col-md-6(ng-show="!subscription.canceled_at && showSubscription()")
       .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
 
-    .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscrPlans.STANDARD")
+    .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscriptionConfig.PLAN.STANDARD")
       .btn.btn-default(ng-click="upgrade()") Upgrade
 
     .col-md-6(ng-show="isDeactivated() || isExpired() || isInGracePeriod()")

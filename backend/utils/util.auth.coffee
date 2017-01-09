@@ -6,10 +6,9 @@ config = require '../config/config'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require './util.user'
-httpStatus = require '../../common/utils/httpStatus'
-ExpressResponse = require './util.expressResponse'
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+{NeedsLoginError, PermissionsError} = require './errors/util.errors.userSession'
 
 
 class SessionSecurityError extends Error
@@ -41,7 +40,7 @@ getSessionUser = (req) -> Promise.try () ->
 # JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
 # I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
 # (nem) moved here to avoid circular dependency on userSession route
-logout = (req, res, next) -> Promise.try () ->
+logout = (req, res) -> Promise.try () ->
   if req.user
     logger.debug () -> "attempting to log user out: #{req.user.email} (#{req.sessionID})"
     delete req.session.current_profile_id
@@ -54,7 +53,7 @@ logout = (req, res, next) -> Promise.try () ->
     return res.json(identity: null)
   .catch (err) ->
     logger.error "error logging out user: #{err}"
-    next(err)
+    throw err
 
 ignoreThisMethod = (thisMethod, methods) ->
   return !(_.some methods, (item) -> item.toUpperCase() == thisMethod)
@@ -66,7 +65,7 @@ ignoreThisMethod = (thisMethod, methods) ->
 
 # this function gets used as app-wide middleware, so assume it will have run
 # before any route gets called
-setSessionCredentials = (req, res) ->
+setSessionCredentials = (req) ->
   getSessionUser(req).then (user) ->
     # set the user on the request
     req.user = user
@@ -74,7 +73,7 @@ setSessionCredentials = (req, res) ->
       return userUtils.cacheUserValues(req)
   .catch (err) ->
     logger.error 'error while setting session data on request'
-    Promise.reject(err)
+    throw err
 
 # app-wide middleware to implement remember_me functionality
 checkSessionSecurity = (req, res) ->
@@ -166,32 +165,41 @@ checkSessionSecurity = (req, res) ->
 requireLogin = (options = {}) ->
   defaultOptions =
     redirectOnFail: false
-  options = _.merge(defaultOptions, options)
-  return (req, res, next) -> Promise.try () ->
+  options = _.extend({}, defaultOptions, options)
+  result = (req, res) -> Promise.try () ->
     if !req.user
       if options.redirectOnFail
         return res.json(doLogin: true)
       else
-        return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
-    return process.nextTick(next)
+        throw new NeedsLoginError("Please login to access #{req.path}.")
+  result.inspect = () -> "requireLogin(#{analyzeValue.simpleInspect(options)})"
+  result
+
 
 # route-specific middleware that requires profile and project for the user
 # optional: methods
 # optional: projectIdParam (needs to match the id of the endpoint, such as `id` or `project_id`)
 #           Can use format like `body.project_id` or `params.id` to force where on `req` to get the id.
-requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
-  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+requireProject = (options = {}) ->
+  defaultOptions =
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+    getProjectFromSession: false
+  options = _.extend({}, defaultOptions, options)
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  if projectIdParam == undefined
-    projectIdParam = 'id'
+  if options.projectIdParam == undefined
+    options.projectIdParam = 'id'
 
   # list-ize to defensively accept strings
-  methods = [methods] if _.isString methods
-  return (req, res, next) -> Promise.try () ->
+  options.methods = [options.methods] if _.isString options.methods
+
+  {methods, projectIdParam, getProjectFromSession} = options
+
+  result = (req) -> Promise.try () ->
 
     # middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
+    if ignoreThisMethod(req.method, methods)
+      return
 
     # get project id based on the `projectIdParam` argument in either `req.params` or
     #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
@@ -209,100 +217,118 @@ requireProject = ({methods, projectIdParam, getProjectFromSession = false} = {})
 
     # auth-ing
     if !profile?
-      return next new ExpressResponse(alert: {msg: "You are unauthorized to access this project."}, {status: httpStatus.UNAUTHORIZED})
+      throw new PermissionsError("You are unauthorized to access this project.")
     if !req.user?
-      return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
+      throw new NeedsLoginError("Please login to access #{req.path}.")
     if !req.session?.profiles? or Object.keys(req.session.profiles).length == 0
-      return next new ExpressResponse(alert: {msg: "You need to create or be invited to a project to do that."}, {status: httpStatus.UNAUTHORIZED})
+      throw new PermissionsError("You need to create or be invited to a project to do that.")
 
     # attach to req for other project-oriented middlewares to use
     req.rmapsProfile = profile
 
-    return process.nextTick(next)
+  result.inspect = () -> "requireProject(#{analyzeValue.simpleInspect(options)})"
+  result
 
 # route-specific middleware that requires a user to be the editor (which would logically include
 # parent but not always) of the given project being acted upon.  implies `requireProject` automatically
 # optional: methods
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireProjectEditor = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
-  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+requireProjectEditor = (options = {}) ->
+  defaultOptions =
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+    getProjectFromSession: false
+  options = _.extend({}, defaultOptions, options)
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  if projectIdParam == undefined
-    projectIdParam = 'id'
+  if options.projectIdParam == undefined
+    options.projectIdParam = 'id'
 
   # list-ize to defensively accept strings
-  methods = [methods] if _.isString methods
-  return (req, res, next) -> Promise.try () ->
+  options.methods = [options.methods] if _.isString options.methods
+  {methods, projectIdParam, getProjectFromSession} = options
+
+  result = (req, res) -> Promise.try () ->
 
     # if middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
+    if ignoreThisMethod(req.method, methods)
+      return
 
     # ensure project
-    proj = requireProject({methods, projectIdParam, getProjectFromSession})
-    proj(req, res, () ->
+    requireProject({methods, projectIdParam, getProjectFromSession})(req, res)
+    .then () ->
 
       # profile is on req courtesy of `requireProject`
       profile = req.rmapsProfile
 
       # auth-ing
       if !profile?.can_edit
-        return next new ExpressResponse(alert: {msg: "You are not authorized to edit this project."}, {status: httpStatus.UNAUTHORIZED})
+        throw new PermissionsError("You are not authorized to edit this project.")
 
-      return process.nextTick(next)
-    )
+  result.inspect = () -> "requireProjectEditor(#{analyzeValue.simpleInspect(options)})"
+  result
 
 # route-specific middleware that requires a user to be the parent of the given project
 # being acted upon.  implies `requireProject` automatically
 # optional: methods
 # optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireProjectParent = ({methods, projectIdParam, getProjectFromSession = false} = {}) ->
-  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+requireProjectParent = (options = {}) ->
+  defaultOptions =
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+    getProjectFromSession: false
+  options = _.extend({}, defaultOptions, options)
 
   # use default projectIdParam only for undefined; null is a valid option that can force use of session params
-  if projectIdParam == undefined
-    projectIdParam = 'id'
+  if options.projectIdParam == undefined
+    options.projectIdParam = 'id'
 
   # list-ize to defensively accept strings
-  methods = [methods] if _.isString methods
-  return (req, res, next) -> Promise.try () ->
+  options.methods = [options.methods] if _.isString options.methods
+  {methods, projectIdParam, getProjectFromSession} = options
+
+  result = (req, res) -> Promise.try () ->
 
     # if middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
+    if ignoreThisMethod(req.method, methods)
+      return
 
     # ensure project
-    proj = requireProject({methods, projectIdParam, getProjectFromSession})
-    proj(req, res, () ->
+    requireProject({methods, projectIdParam, getProjectFromSession})(req, res)
+    .then () ->
 
       # profile is on req courtesy of `requireProject`
       profile = req.rmapsProfile
 
       # auth-ing
       if !profile? or (profile.parent_auth_user_id? && profile.parent_auth_user_id != req.user.id)
-        return next new ExpressResponse(alert: {msg: "You must be the creator of this project."}, {status: httpStatus.UNAUTHORIZED})
+        throw new PermissionsError("You must be the creator of this project.")
 
-      return process.nextTick(next)
-    )
+  result.inspect = () -> "requireProjectParent(#{analyzeValue.simpleInspect(options)})"
+  result
 
 # route-specific middleware that requires a user to have an active, paid subscription
 # optional: methods
-# optional: projectIdParam (needs to match the url param of the endpoint, though)
-requireSubscriber = ({methods} = {}) ->
-  methods ?= ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+requireSubscriber = (options = {}) ->
+  defaultOptions =
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+  options = _.extend({}, defaultOptions, options)
 
   # list-ize to defensively accept strings
-  methods = [methods] if _.isString methods
-  return (req, res, next) -> Promise.try () ->
+  options.methods = [options.methods] if _.isString options.methods
+  {methods} = options
+
+  result = (req) -> Promise.try () ->
 
     # if middleware is not applicable for this req.method, move along
-    return process.nextTick(next) if ignoreThisMethod(req.method, methods)
+    if ignoreThisMethod(req.method, methods)
+      return
 
     # there are a variety of statuses that imply grace periods,
     # trial, type of plan, etc so we just test for the inactive statuses.
     if !userUtils.isSubscriber(req)
-      return next new ExpressResponse(alert: {msg: "A subscription is required to do this."}, {status: httpStatus.UNAUTHORIZED})
+      throw new PermissionsError("A subscription is required to do this.")
 
-    return process.nextTick(next)
+  result.inspect = () -> "requireSubscriber(#{analyzeValue.simpleInspect(options)})"
+  result
 
 # route-specific middleware that requires permissions set on the session,
 # and either responds with a 401 or a logout redirect on failure, based on
@@ -325,21 +351,22 @@ requirePermissions = (permissions, options = {}) ->
       throw new Error('No permissions specified.')
   else if typeof(permissions) != 'string'
     throw new Error('Bad permissions object')
-  return (req, res, next) -> Promise.try () ->
+  result = (req, res) -> Promise.try () ->
     if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
       logger.warn "access denied to user #{req.user.email} for URI: #{req.originalUrl}"
       if options.logoutOnFail
-        return logout(req, res, next)
+        return logout(req, res)
       else
-        return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, {quiet: true, status: httpStatus.UNAUTHORIZED})
-    return process.nextTick(next)
+        throw new PermissionsError("You do not have permission to access #{req.path}.")
+  result.inspect = () -> "requirePermissions(#{analyzeValue.simpleInspect(options)})"
+  result
 
 
 # for now this is a no-op, because session stuff gets automatically added when any route-specific middleware is
 # configured -- this is a placeholder to be used when we just need to trigger session middleware inclusion
 # Essentially a noop function to get the session possibly set
-sessionSetup = (req, res, next) ->
-  process.nextTick(next)
+sessionSetup = () -> Promise.try () ->  # no-op
+sessionSetup.inspect = () -> "sessionSetup()"
 
 
 module.exports = {

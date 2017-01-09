@@ -74,7 +74,7 @@ module.exports =
         .then (property) -> Promise.try () ->
           if req.validBody.rm_property_id? && !property
             if req.validBody.no_alert
-              return next(new ExpressResponse({status: httpStatus.NOT_FOUND, quiet: true}))
+              return next(new ExpressResponse({}, {status: httpStatus.NOT_FOUND, quiet: true}))
             throw new PartiallyHandledError({returnStatus: httpStatus.NOT_FOUND, quiet: true}, "property with id #{req.validBody.rm_property_id} not found")
 
           property
