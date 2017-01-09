@@ -17,7 +17,6 @@ rmapsPropertiesService
 rmapsMapEventEnums
 rmapsHoverQueue
 rmapsZoomLevelService
-rmapsPopupLoaderService
 rmapsEventsHandlerInternalsService
 $log
 $uibModal,
@@ -153,7 +152,7 @@ $state) ->
                   scope: modalScope
                   template: require('../../html/views/templates/modals/modal-mailHistory.jade')()
 
-              else if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+              else if model.markerType != 'note' && !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
 
                 if $scope.mobileView
                   # Open the modal
@@ -166,7 +165,7 @@ $state) ->
                     modal = $uibModal.open {
                       scope: modalScope
                       controller: 'OpenAsModalWindowCtrl'
-                      template: require('../../html/includes/map/_priceGroupPopup.jade')()
+                      template: require('../../html/includes/map/popups/_priceGroupPopup.jade')()
                       windowClass: 'open-as-modal'
                     }
                     rmapsOpenAsModalWindowContextFactory.modal = modal
@@ -208,7 +207,7 @@ $state) ->
     rmapsEventsLinkerService.hookMap mapCtrl.mapId, do ->
       ### eslint-disable ###
       doubleClick = (event) ->
-        
+
         mapLogger.debug "doubleClick"
 
       singleClick = (event) ->
@@ -253,9 +252,9 @@ $state) ->
 
         return
 
-      
+
       moveend: (event) ->
-        
+
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
         closeWindow()
 
