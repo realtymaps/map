@@ -123,5 +123,12 @@ rmapsPrincipalService) ->
 
         active
 
+app.run (rmapsErrorHandler) ->
+  rmapsErrorHandler.captureGlobalErrors()
+
+app.factory '$exceptionHandler', (rmapsErrorHandler, $injector) ->
+  return (exception, cause) ->
+    $rootScope = $injector.get('$rootScope') # necessary to avoid circular dependency
+    rmapsErrorHandler.captureAngularException {exception, cause, user: $rootScope.identity.user}
 
 module.exports = app

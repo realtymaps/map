@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 
 app.constant 'rmapsMainOptions', do () ->
-  isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
+  isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1' || window.location.hostname == 'dev.realtymaps.com')
   res = _.merge common,
     # logoutDelayMillis is how long to pause on the logout view before redirecting
     logoutDelayMillis: 1500
