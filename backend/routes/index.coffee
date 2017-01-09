@@ -3,7 +3,6 @@ loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
 Promise = require 'bluebird'
-{isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 routeHelpers = require '../utils/util.route.helpers'
 require '../config/promisify'
 
@@ -41,10 +40,8 @@ module.exports = (app, sessionMiddlewares) ->
             routeHelpers.handleQuery result, res
           else
             route.handle(req, res, next)
-        .catch isUnhandled, (error) ->
-          error.routeInfo = _.omit(route, 'handle')
-          throw error
         .catch (error) ->
+          error.routeInfo = route
           next(error)
     # we only add per-route middleware to handle login and permissions checking -- that means only the routes with such
     # middleware actually need to use the session stuff, and we can avoid setting session cookies on other routes
