@@ -21,6 +21,9 @@ userInternals = require './route.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+DataValidationError = require '../utils/errors/util.error.dataValidation'
+userSessionErrors = require '../utils/errors/util.errors.userSession'
+
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -45,24 +48,21 @@ login = (req, res, next) -> Promise.try () ->
       })
     else
       return false
-  .catch (err) ->
-    return false
   .then (user) -> Promise.try ->
-    userSessionService.verifyValidAccount(user)
-  .then (user) ->
-    if !user
-      throw new PartiallyHandledError('Email and/or password does not match our records.')
+    if !user || !user.is_active
+      throw new userSessionErrors.LoginError('Email and/or password does not match our records.')
     req.session.userid = user.id
     sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
   .then () ->
     internals.getIdentity(req, res, next)
   .catch (err) ->
-    next new ExpressResponse(alert: { msg: err.message}, {status: httpStatus.UNAUTHORIZED, quiet: true})
+    err.returnStatus = httpStatus.UNAUTHORIZED
+    throw err
 
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
-  unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, {status: httpStatus.BAD_REQUEST})
+  if !req.body.currentProfileId
+    throw new DataValidationError('currentProfileId undefined')
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug () -> "set req.session.current_profile_id: #{req.session.current_profile_id}"

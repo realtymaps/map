@@ -3,6 +3,8 @@ Promise = require 'bluebird'
 sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
 config = require "#{basePath}/config/config"
 require("chai").should()
+{expectReject, expectResolve} = require '../../specUtils/promiseUtils'
+{NeedsLoginError, PermissionsError} = require "#{basePath}/utils/errors/util.errors.userSession"
 
 rewire = require 'rewire'
 auth = rewire "#{basePath}/utils/util.auth"
@@ -20,56 +22,47 @@ describe 'util.auth', ->
   sessionSecurityService.deleteSecurities = () -> Promise.resolve()
 
   describe 'requireLogin', ->
-    resultBase = (done, expected, call) ->
-      call.should.equal(expected)
-      done()
-    resultcb = null
+    resJson = false
     res =
       json: () ->
-        resultcb("json")
-    next = (err) ->
-      if err and err.status
-        resultcb("error: #{err.status}")
-      else
-        resultcb("next")
+        resJson = true
 
-    it 'should call next() if req.user is set', (done) ->
+    beforeEach () ->
+      resJson = false
+
+    it 'should resolve if req.user is set', () ->
       requireLogin = auth.requireLogin()
       req = {user:true}
-      resultcb = resultBase.bind(null, done, "next")
-      requireLogin req, res, next
+      expectResolve(requireLogin(req, res))
+      .then () ->
+        resJson.should.be.falsy
 
-    it 'should call res.json() if req.user is not set and redirectOnFail is set truthy', (done) ->
+    it 'should call res.json() if req.user is not set and redirectOnFail is set truthy', () ->
       requireLogin = auth.requireLogin(redirectOnFail: true)
       req = {}
-      resultcb = resultBase.bind(null, done, "json")
-      requireLogin req, res, next
+      expectResolve(requireLogin(req, res))
+      .then () ->
+        resJson.should.be.truthy
 
-    it 'should call next() with an error object if req.user is not set and redirectOnFail is not set', (done) ->
+    it 'should reject with a NeedsLoginError object if req.user is not set and redirectOnFail is not set', () ->
       requireLogin = auth.requireLogin()
       req = {}
-      resultcb = resultBase.bind(null, done, "error: 401")
-      requireLogin req, res, next
+      expectReject(requireLogin(req, res), NeedsLoginError)
 
-    it 'should call next() with an error object if req.user is not set and redirectOnFail is set falsy', (done) ->
+
+    it 'should reject with a NeedsLoginError if req.user is not set and redirectOnFail is set falsy', () ->
       requireLogin = auth.requireLogin(redirectOnFail: false)
       req = {}
-      resultcb = resultBase.bind(null, done, "error: 401")
-      requireLogin req, res, next
+      expectReject(requireLogin(req, res), NeedsLoginError)
 
   describe 'requirePermissions', ->
-    resultBase = (done, expected, call) ->
-      call.should.equal(expected)
-      done()
-    resultcb = null
+    resJson = false
     res =
       json: () ->
-        resultcb("json")
-    next = (err) ->
-      if err and err.status
-        resultcb("error: #{err.status}")
-      else
-        resultcb("next")
+        resJson = true
+
+    beforeEach () ->
+      resJson = false
 
     it 'should throw an error if permissions.any and permissions.all are both truthy', ->
       caught = false
@@ -98,81 +91,74 @@ describe 'util.auth', ->
       finally
         caught.should.be.true
 
-    it 'should call next() if req.session.permissions contains any key from permissions.any', (done) ->
+    it 'should resolve if req.session.permissions contains any key from permissions.any', () ->
       requirePermissions = auth.requirePermissions(any: ["perm1", "perm2"])
       req = {session: {permissions: {perm2: true}}, user: {}}
-      resultcb = resultBase.bind(null, done, "next")
-      requirePermissions req, res, next
+      expectResolve(requirePermissions(req, res))
+      .then () ->
+        resJson.should.be.false
 
-    it 'should call next() with an error object if req.session.permissions does not contain any key from permissions.any', (done) ->
+    it 'should reject with a PermissionsError if req.session.permissions does not contain any key from permissions.any', () ->
       requirePermissions = auth.requirePermissions(any: ["perm1", "perm2"])
       req = {session: {permissions: {perm3: true}}, user: {}}
-      resultcb = resultBase.bind(null, done, "error: 401")
-      requirePermissions req, res, next
+      expectReject(requirePermissions(req, res), PermissionsError)
 
-    it 'should call next() with an error object if req.session.permissions does not contain all keys from permissions.all', (done) ->
+    it 'should reject with a PermissionsError if req.session.permissions does not contain all keys from permissions.all', () ->
       requirePermissions = auth.requirePermissions(all: ["perm1", "perm2"])
       req = {session: {permissions: {perm1: true}}, user: {}}
-      resultcb = resultBase.bind(null, done, "error: 401")
-      requirePermissions req, res, next
+      expectReject(requirePermissions(req, res), PermissionsError)
 
-    it 'should call next() if req.session.permissions contains all keys from permissions.all', (done) ->
+    it 'should resolve if req.session.permissions contains all keys from permissions.all', () ->
       requirePermissions = auth.requirePermissions(all: ["perm1", "perm2"])
       req = {session: {permissions: {perm1: true, perm2: true}}, user: {}}
-      resultcb = resultBase.bind(null, done, "next")
-      requirePermissions req, res, next
+      expectResolve(requirePermissions(req, res))
+      .then () ->
+        resJson.should.be.false
 
-    it 'should call next() if req.session.permissions contains the permission passed as a singleton', (done) ->
+    it 'should resolve if req.session.permissions contains the permission passed as a singleton', () ->
       requirePermissions = auth.requirePermissions("perm1")
       req = {session: {permissions: {perm1: true, perm2: true}}, user: {}}
-      resultcb = resultBase.bind(null, done, "next")
-      requirePermissions req, res, next
+      expectResolve(requirePermissions(req, res))
+      .then () ->
+        resJson.should.be.false
 
-    it 'should call res.json() instead of next(err) if would fail and logoutOnFail is set truthy', (done) ->
+    it 'should call res.json() if would fail and logoutOnFail is set truthy', () ->
       requirePermissions = auth.requirePermissions({all: ["perm1", "perm2"]}, {logoutOnFail: true})
       req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
-      resultcb = resultBase.bind(null, done, "json")
-      requirePermissions req, res, next
+      expectResolve(requirePermissions(req, res))
+      .then () ->
+        resJson.should.be.truthy
 
   describe 'requireProject', ->
-    beforeEach ->
-      @resultBase = (done, expected, call) ->
-        call.should.equal(expected)
-        done()
-      @resultcb = null
-      @res =
-        json: () =>
-          @resultcb("json")
+    resJson = false
+    res =
+      json: () ->
+        resJson = true
 
-      @next = (err) =>
-        if err and err.status
-          @resultcb("error: #{err.status}")
-        else
-          @resultcb("next")
+    beforeEach () ->
+      resJson = false
 
-    it "should return 401 when no project id or session profiles", (done) ->
+    it "should reject with a PermissionsError when no project id or session profiles", () ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
         user: id: 1
         params: {}
         session: profiles: {}
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProject req, @res, @next
+      expectReject(requireProject(req, @res, @next), PermissionsError)
 
 
-    it "should return 401 when no user", (done) ->
+    it "should reject with a PermissionsError when no user", () ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
         user: null
         params: id: 1
         session: profiles: {}
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProject req, @res, @next
+      expectReject(requireProject(req, @res, @next), PermissionsError)
 
 
-    it "should return 401 if no profiles", (done) ->
+    it "should reject with a PermissionsError if no profiles", () ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
@@ -182,10 +168,9 @@ describe 'util.auth', ->
           current_profile_id: 1
           profiles: {}
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProject req, @res, @next
+      expectReject(requireProject(req, @res, @next), PermissionsError)
 
-    it "should return 401 if project_id does not match a profile", (done) ->
+    it "should reject with a PermissionsError if project_id does not match a profile", () ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
@@ -199,10 +184,9 @@ describe 'util.auth', ->
               project_id: 2  # project id, diff from above
               parent_auth_user_id: null
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProject req, @res, @next
+      expectReject(requireProject(req, @res, @next), PermissionsError)
 
-    it "should pass with user, profile, and project as expected", (done) ->
+    it "should pass with user, profile, and project as expected", () ->
       requireProject = auth.requireProject(methods: 'get')
       req =
         method: 'GET'
@@ -216,26 +200,20 @@ describe 'util.auth', ->
               project_id: 1  # project id, same as above
               parent_auth_user_id: null
 
-      @resultcb = @resultBase.bind(null, done, "next")
-      requireProject req, @res, @next
+      expectResolve(requireProject(req, res))
+      .then () ->
+        resJson.should.be.falsy
 
   describe 'requireProjectParent', ->
-    beforeEach ->
-      @resultBase = (done, expected, call) ->
-        call.should.equal(expected)
-        done()
-      @resultcb = null
-      @res =
-        json: () =>
-          @resultcb("json")
+    resJson = false
+    res =
+      json: () ->
+        resJson = true
 
-      @next = (err) =>
-        if err and err.status
-          @resultcb("error: #{err.status}")
-        else
-          @resultcb("next")
+    beforeEach () ->
+      resJson = false
 
-    it "should return 401 when not parent of project", (done) ->
+    it "should reject with a PermissionsError when not parent of project", () ->
       requireProjectParent = auth.requireProjectParent(methods: 'get')
       req =
         method: 'GET'
@@ -249,10 +227,9 @@ describe 'util.auth', ->
               project_id: 1
               parent_auth_user_id: 1
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProjectParent req, @res, @next
+      expectReject(requireProjectParent(req, @res, @next), PermissionsError)
 
-    it "should pass when parent_auth_user_id matches user", (done) ->
+    it "should pass when parent_auth_user_id matches user", () ->
       requireProjectParent = auth.requireProjectParent(methods: 'get')
       req =
         method: 'GET'
@@ -266,27 +243,21 @@ describe 'util.auth', ->
               project_id: 1
               parent_auth_user_id: 7
 
-      @resultcb = @resultBase.bind(null, done, "next")
-      requireProjectParent req, @res, @next
+      expectResolve(requireProjectParent(req, res))
+      .then () ->
+        resJson.should.be.falsy
 
 
   describe 'requireProjectEditor', ->
-    beforeEach ->
-      @resultBase = (done, expected, call) ->
-        call.should.equal(expected)
-        done()
-      @resultcb = null
-      @res =
-        json: () =>
-          @resultcb("json")
+    resJson = false
+    res =
+      json: () ->
+        resJson = true
 
-      @next = (err) =>
-        if err and err.status
-          @resultcb("error: #{err.status}")
-        else
-          @resultcb("next")
+    beforeEach () ->
+      resJson = false
 
-    it "should return 401 when not editor of project", (done) ->
+    it "should reject with a PermissionsError when not editor of project", () ->
       requireProjectEditor = auth.requireProjectEditor(methods: 'get')
       req =
         method: 'GET'
@@ -301,10 +272,9 @@ describe 'util.auth', ->
               project_id: 1
               parent_auth_user_id: 1
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireProjectEditor req, @res, @next
+      expectReject(requireProjectEditor(req, @res, @next), PermissionsError)
 
-    it "should pass when user can_edit (even if not parent)", (done) ->
+    it "should pass when user can_edit (even if not parent)", () ->
       requireProjectEditor = auth.requireProjectEditor(methods: 'get')
       req =
         method: 'GET'
@@ -319,27 +289,21 @@ describe 'util.auth', ->
               project_id: 1
               parent_auth_user_id: 1
 
-      @resultcb = @resultBase.bind(null, done, "next")
-      requireProjectEditor req, @res, @next
+      expectResolve(requireProjectEditor(req, res))
+      .then () ->
+        resJson.should.be.falsy
 
 
   describe 'requireSubscriber', ->
-    beforeEach ->
-      @resultBase = (done, expected, call) ->
-        call.should.equal(expected)
-        done()
-      @resultcb = null
-      @res =
-        json: () =>
-          @resultcb("json")
+    resJson = false
+    res =
+      json: () ->
+        resJson = true
 
-      @next = (err) =>
-        if err and err.status
-          @resultcb("error: #{err.status}")
-        else
-          @resultcb("next")
+    beforeEach () ->
+      resJson = false
 
-    it "should return 401 when not a subscriber", (done) ->
+    it "should reject with a PermissionsError when not a subscriber", () ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
@@ -349,11 +313,10 @@ describe 'util.auth', ->
         session:
           subscriptionStatus: config.SUBSCR.STATUS.NONE
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireSubscriber req, @res, @next
+      expectReject(requireSubscriber(req, @res, @next), PermissionsError)
 
 
-    it "should return 401 when subscription expired", (done) ->
+    it "should reject with a PermissionsError when subscription expired", () ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
@@ -363,10 +326,9 @@ describe 'util.auth', ->
         session:
           subscriptionStatus: config.SUBSCR.PLAN.EXPIRED
 
-      @resultcb = @resultBase.bind(null, done, "error: 401")
-      requireSubscriber req, @res, @next
+      expectReject(requireSubscriber(req, @res, @next), PermissionsError)
 
-    it "should pass when user has a paid subscription", (done) ->
+    it "should pass when user has a paid subscription", () ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
@@ -376,5 +338,6 @@ describe 'util.auth', ->
         session:
           subscriptionStatus: config.SUBSCR.STATUS.ACTIVE
 
-      @resultcb = @resultBase.bind(null, done, "next")
-      requireSubscriber req, @res, @next
+      expectResolve(requireSubscriber(req, res))
+      .then () ->
+        resJson.should.be.falsy

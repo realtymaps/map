@@ -4,9 +4,10 @@ logger = require('../config/logger').spawn("service:session")
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 tables = require '../config/tables'
-userSessionErrors = require '../utils/errors/util.errors.userSession'
 frontendRoutes = require '../../common/config/routes.frontend'
 dbs = require '../config/dbs'
+{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 _updateUser = (id, attributes) ->
   tables.auth.user()
@@ -39,30 +40,31 @@ verifyPassword = (email, password) ->
   tables.auth.user()
   .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
   .then (user=[]) ->
-    user[0] ? {}
+    user[0]
   .then (user) ->
-    if not user or not user?.password
+    if !user?.password
       # best practice is to go ahead and hash the password before returning,
       # to prevent timing attacks from determining validity of email
       return createPasswordHash(password).then () -> return false
     preprocessHash(user.password)
     .catch (err) ->
-      logger.error "error while preprocessing password hash for email #{email}: #{err}"
-      Promise.reject(err)
+      throw new PartiallyHandledError(err, "error while preprocessing password hash for email #{email}")
     .then (hashData) ->
-      compare = Promise.resolve(false)
-      switch hashData.algo
-        when 'bcrypt'
-          compare = bcrypt.compareAsync(password, hashData.hash)
-      compare.then (match) ->
-        if not match
-          return Promise.reject("given password doesn't match hash for email: #{email}")
+      Promise.try () ->
+        switch hashData.algo
+          when 'bcrypt'
+            bcrypt.compareAsync(password, hashData.hash)
+          else
+            false
+      .then (match) ->
+        if !match
+          return false
         if hashData.needsUpdate
           # in the background, update this user's hash
-          logger.info "updating password hash for email: #{email}"
+          logger.debug () -> "updating password hash for email: #{email}"
           createPasswordHash(password)
           .then (hash) -> _updateUser(user.id, password: hash)
-          .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
+          .catch (err) -> logger.error "failed to update password hash for user #{email}: #{analyzeValue.getFullDetails(err)}"
         return user
 
 requestLoginToken = ({superuser, email}) ->
@@ -97,7 +99,7 @@ verifyLoginToken = ({email, loginToken}) ->
   tables.auth.user()
   .whereRaw("LOWER(email) = ?", "#{email}".toLowerCase())
   .then (user=[]) ->
-    user[0] ? {}
+    user[0]
   .then (user) ->
     dbs.transaction 'main', (trx) ->
       keystore.getValue email, namespace: 'login-token', transaction: trx
@@ -109,18 +111,17 @@ verifyLoginToken = ({email, loginToken}) ->
 
         preprocessHash(entry.login_token_hash)
         .catch (err) ->
-          logger.error "error while preprocessing login token hash for email #{email}: #{err}"
-          Promise.reject(err)
+          throw new PartiallyHandledError(err, "error while preprocessing login token hash for email #{email}")
         .then (hashData) ->
-          compare = Promise.resolve(false)
-          switch hashData.algo
-            when 'bcrypt'
-              compare = bcrypt.compareAsync(loginToken, hashData.hash)
-          compare.then (match) ->
+          Promise.try () ->
+            switch hashData.algo
+              when 'bcrypt'
+                bcrypt.compareAsync(loginToken, hashData.hash)
+              else
+                false
+          .then (match) ->
             if !match
-              return Promise.reject("given token doesn't match hash for email: #{email}")
-            else if hashData.needsUpdate
-              return Promise.reject("given token is outdated for email: #{email}")
+              return false
 
             keystore.deleteValue('login-token', email, trx)
             .then () ->
@@ -193,20 +194,12 @@ doResetPassword = ({key, password}) ->
     logger.debug err
     throw err
 
-verifyValidAccount = (user) ->
-  return unless user
-  return user if user.is_superuser
-
-  if !user.is_active
-    throw new userSessionErrors.InActiveUserError("User is not valid due to inactive account.")
-  user
 
 module.exports = {
   createPasswordHash
   verifyPassword
   requestLoginToken
   verifyLoginToken
-  verifyValidAccount
   updatePassword
   requestResetPassword
   getResetPassword

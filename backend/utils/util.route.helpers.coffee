@@ -8,8 +8,6 @@ clsFactory = require './util.cls'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
-class NotFoundError extends Error
-
 methodExec = (req, methods, next) ->
   if !methods[req.method]
     #TODO: should quiet come from params, query or body?
@@ -71,7 +69,6 @@ clsFullUrl = (pathname) ->
 module.exports =
   methodExec: methodExec
   mergeHandles: mergeHandles
-  NotFoundError: NotFoundError
   handleQuery: handleQuery
   handleRoute: handleRoute
   fullUrl: fullUrl

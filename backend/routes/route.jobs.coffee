@@ -26,13 +26,13 @@ class JobStatGetters extends RouteCrud
   runTask: (req, res, next) ->
     jobQueue.queueManualTask(req.params.name, req.user.email)
     .then () ->
-      next new ExpressResponse alert: msg: "Started #{req.params.name}"
+      next new ExpressResponse alert: {msg: "Started #{req.params.name}", type: 'rm-success'}
 
   cancelTask: (req, res, next) ->
     logger.info("Cancelling task via admin: #{req.params.name} (requested by #{req.user.email})")
     jobQueue.cancelTask(req.params.name)
     .then () ->
-      next new ExpressResponse alert: msg: "Canceled #{req.params.name}"
+      next new ExpressResponse alert: {msg: "Canceled #{req.params.name}", type: 'rm-success'}
 
 
 getterConfig =
