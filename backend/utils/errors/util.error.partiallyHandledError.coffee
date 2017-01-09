@@ -8,6 +8,8 @@ _ = require 'lodash'
 
 # it's an options object if it only contains allowed keys
 _isOptions = (opts) ->
+  if Object.keys(opts).length == 0
+    return false
   for key of opts
     if !(key in ['quiet', 'returnStatus'])
       return false

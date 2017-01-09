@@ -37,6 +37,7 @@ errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 promisify = require './promisify'
 status = require '../../common/utils/httpStatus'
+uaParser = require 'ua-parser-js'
 
 app = express()
 
@@ -129,9 +130,13 @@ app.use (data, req, res, next) ->
 # coffeelint: enable=check_scope
 
   logger.debug 'main ExpressResponse Middleware'
+
+  if req.body.password?
+    req.body.password = '***REMOVED***'
+
   if !(data instanceof ExpressResponse)
     # it's probably a thrown Error of some sort -- coerce to an ExpressResponse
-    if isUnhandled(data)
+    if isUnhandled(data) && !data.expected
       if data.routeInfo?
         origination = " #{data.routeInfo.moduleId}.#{data.routeInfo.routeId}[#{data.routeInfo.method}]"
       else
@@ -150,7 +155,9 @@ app.use (data, req, res, next) ->
       message = "error reference: #{data.errorRef}"
     else
       message = escape(data.message)
-    data = new ExpressResponse(alert: {msg: commonConfig.UNEXPECTED_MESSAGE(message), id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
+    if !data.expected
+      message = commonConfig.UNEXPECTED_MESSAGE(message)
+    data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
 
   logger.debug "data.status: #{data.status}"
   if !status.isWithinOK(data.status)
@@ -160,6 +167,15 @@ app.use (data, req, res, next) ->
     if !data.quiet
       logger.error(data.toString())
 
+    routeInfo = if data.logError?.routeInfo? then _.omit(data.logError?.routeInfo, 'handle') else null
+    session = _.omit(req.session, (val) -> if typeof(val) == 'function' then return true)
+    if _.isEmpty(session)
+      session = null
+    if req.headers?['user-agent']?
+      uaInfo = uaParser(req.headers['user-agent'])
+    else
+      uaInfo = {}
+
     logEntity =
       reference: data.logError?.errorRef
       type: if data.logError? then analyzeValue.getType(data.logError) else null
@@ -167,11 +183,21 @@ app.use (data, req, res, next) ->
       quiet: data.quiet,
       url: req.originalUrl,
       method: req.method,
-      headers: req.headers,
+      headers: _.omit(req.headers, ['user-agent', 'referer', 'referrer'])
       body: if _.isEmpty(req.body) then null else req.body,
       userid: req.user?.id,
-      session: _.omit(req.session, (val) -> if typeof(val) == 'function' then return true),
+      email: req.user?.email || req.body.email
+      ip: req.ip
+      session: session,
       response_status: data.status
+      referrer: req.headers?.referer || req.headers?.referrer || null
+      route_info: routeInfo
+      ua: uaInfo.ua
+      ua_browser: uaInfo.browser
+      ua_engine: uaInfo.engine
+      ua_os: uaInfo.os
+      ua_device: uaInfo.device
+      ua_cpu: uaInfo.cpu
       # `unexpected` is always true for now, but we can add logic later to sometimes set this to false; this would
       # allow for easier db scanning, and rows with `expected: true` also get cleaned out earlier
       # right now, it is set up so we could set expected: true on either the ExpressResponse or on an error (or even
@@ -181,7 +207,7 @@ app.use (data, req, res, next) ->
     tables.history.requestError()
     .insert(logEntity)
     .catch (err) ->
-      logger.warn("Problem while logging request error: #{err}\nOriginal error: #{logEntity}")
+      logger.error("Problem while logging request error!!!\nProblem: #{analyzeValue.getFullDetails(err)}\nOriginal request error log: #{JSON.stringify(logEntity,null,2)}")
 
   if !res.headersSent
     data.send(res)

@@ -46,18 +46,18 @@ app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvi
     'onboardingPayment'
     'onboardingLocation'
     'onboardingFinishYay'
-  ], rmapsMainOptions.plan.PRO, 'onboardingLocation'
+  ], rmapsMainOptions.subscription.PLAN.PRO, 'onboardingLocation'
 
 app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider, rmapsMainOptions) ->
   @getPlanFromState = ($state) ->
     return unless $state
-    if RegExp(rmapsMainOptions.plan.PRO, "i").test($state.current.name)
-      rmapsMainOptions.plan.PRO
+    if RegExp(rmapsMainOptions.subscription.PLAN.PRO, "i").test($state.current.name)
+      rmapsMainOptions.subscription.PLAN.PRO
 
   @getOrderSvc = (plan) =>
     if !_.isString plan
       plan = @getPlanFromState(plan)# then plan should be $state
-    if plan == rmapsMainOptions.plan.PRO
+    if plan == rmapsMainOptions.subscription.PLAN.PRO
       return rmapsOnboardingProOrderServiceProvider
     rmapsOnboardingOrderServiceProvider
 

@@ -18,6 +18,7 @@ mockAuthUser =
   email: "boknows@gmail.com"
   email_validation_hash: "radarIsJammed"
   cancel_email_hash: "terminated"
+  stripe_customer_id: "cus_7jBEgA5lJ6721E"
 
 
 jsonString = "../../../../fixtures/backend/services/stripe/:file.json"
@@ -59,6 +60,10 @@ describe "service.payment.impl.stripe.events", ->
       customers:
         retrieve: sinon.stub()
         deleteCard: sinon.stub()
+
+    @subscriptionSvc =
+      deactivatePlan: sinon.stub().returns(Promise.resolve())
+    subject.__set__ 'subscriptionSvc', @subscriptionSvc
 
     # override the vero event handlers to noop
     @emailEvents = _.mapValues emailEvents(), () ->

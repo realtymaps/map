@@ -34,22 +34,13 @@ leafletDrawEvents
 
   ({$scope, mapId, handles, drawnItems, name, itemsOptions, drawOptions}) ->
 
-    hasBeenDisabled = false
-
     hookItemsOptions({handles, itemsOptions, drawnItems})
 
-    $scope.$watch 'draw.enabled', (newVal, oldVal) ->
-      return if !newVal?
-      return if newVal == oldVal
+    if !handles?
+      rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
+    else
+      rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
-      if newVal
-        return if hasBeenDisabled
-        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
-        hasBeenDisabled = true
-      else
-        return if !hasBeenDisabled
-        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
-        hasBeenDisabled = false
 
     $scope.draw =
       ready: false

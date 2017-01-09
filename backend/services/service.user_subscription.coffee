@@ -17,7 +17,7 @@ require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
 # Return "dummy" subscription objects that emulates a stripe subscription
 # For use when canceled subscription data is no longer available from stripe
 expiredSubscription = (planId) ->
-  status: config.SUBSCR.PLAN.EXPIRED
+  status: config.SUBSCR.STATUS.EXPIRED
   plan:
     id: planId
 
@@ -59,22 +59,6 @@ _getStripeIds = (userId, trx) ->
     ids
 
 
-# requires a STRIPE subscription object with a status and plan keys in order to determine status string
-_getStatusString = (subscription) ->
-  if subscription.status == 'trialing' || subscription.status == 'active'
-
-    # note: when a subscription is canceled or in grace period, this will still
-    #   represent the plan id since this is access status, not just subscr status.
-    #   Stripe will automatically change this subscr status at end of grace period.
-    # Note: includes plan.id `deactivated`
-    return subscription.plan.id
-
-  # if not active, we'll just return the actual status in case we want to show or do
-  #   specific things depending on past_due, canceled, etc.
-  # NOTE: a status of 'expired' is set by us since stripe deletes inactive subscriptions
-  return subscription.status
-
-
 # update plan among paid subscription levels
 updatePlan = (userId, plan) ->
   if !(plan in config.SUBSCR.PLAN.PAID_LIST)
@@ -86,7 +70,7 @@ updatePlan = (userId, plan) ->
     # defensive checks, just return the subscription if it's the same plan as needing set
     if res.plan?.id == plan
       return {
-        status: _getStatusString(res)
+        status: res.status
         updated: res
       }
 
@@ -100,12 +84,30 @@ updatePlan = (userId, plan) ->
       .update newPlan
       .where id: userId
       .then () ->
-        status: _getStatusString(updated)
+        status: updated.status
         updated: updated
 
 
-# returns a status for `session.subscription` to use for subscription level access
+deactivatePlan = (authUser) ->
+  payload =
+    customer: authUser.stripe_customer_id
+    plan: config.SUBSCR.PLAN.DEACTIVATED
+    trial_end: 'now' # no trial period on deactivation
+
+  stripe.subscriptions.create(payload)
+  .then (deactivated) ->
+    tables.auth.user()
+    .update stripe_subscription_id: deactivated.id
+    .where id: authUser.id
+    .then () ->
+      deactivated
+
+
+# determine plan and return a status to use on user & session for part of subscription level access
 getStatus = (user) -> Promise.try () ->
+  obj =
+    subscriptionPlan: config.SUBSCR.PLAN.NONE
+    subscriptionStatus: config.SUBSCR.STATUS.NONE
 
   # stripe_customer or stripe_subscr may not exist for staff, client subusers, etc...
   if !user.stripe_customer_id? && !user.stripe_subscription_id? # if no customer or subscription exists...
@@ -114,18 +116,33 @@ getStatus = (user) -> Promise.try () ->
     permSvc.getPermissionsForUserId user.id
     .then (results) ->
       # return subscription level for the staff if granted a perm for it
-      return config.SUBSCR.PLAN.PRO if results.access_premium
-      return config.SUBSCR.PLAN.STANDARD if results.access_standard
+      if results.access_premium
+        obj.subscriptionPlan = config.SUBSCR.PLAN.PRO
+        obj.subscriptionStatus = config.SUBSCR.STATUS.ACTIVE
 
-      return config.SUBSCR.PLAN.NONE
+      else if results.access_standard
+        obj.subscriptionPlan = config.SUBSCR.PLAN.STANDARD
+        obj.subscriptionStatus = config.SUBSCR.STATUS.ACTIVE
+
+      return obj
 
   # a customer with a stripe_plan_id implies we either have or had a subscription, so try to get it...
   else if user.stripe_plan_id? # a stripe subscription exists, retrieve status
     _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
     .then (subscription) ->
-      return _getStatusString(subscription)
+      obj.subscriptionPlan = user.stripe_plan_id
 
-  else return config.SUBSCR.PLAN.NONE
+      # To make it easier to represent plan and status even when deactivated, we translate the stripe deactivated plan id into
+      #   a status of the users own paid account
+      #   i.e. we want it to be like {plan: 'pro', status: 'deactivated'} instead of {plan: 'deactivated', status: 'active'}
+      if subscription.plan.id == config.SUBSCR.PLAN.DEACTIVATED
+        obj.subscriptionStatus = config.SUBSCR.STATUS.DEACTIVATED
+      else
+        obj.subscriptionStatus = subscription.status
+      return obj
+
+  # last-ditch return NONE subscr/status, in an `else` so we dont prematurely return NONE during promises processing above
+  else return obj
 
 
 getSubscription = (userId) ->
@@ -166,7 +183,7 @@ reactivate = (userId) -> Promise.try () ->
           .update stripe_subscription_id: created.id, stripe_plan_id: created.plan.id
           .where id: userId
           .then () ->
-            status: _getStatusString(created)
+            status: created.status
             created: created
 
       .catch isUnhandled, (err) ->
@@ -189,6 +206,7 @@ deactivate = (userId, reason) ->
 
 module.exports = {
   updatePlan
+  deactivatePlan
   getSubscription
   reactivate
   deactivate

@@ -252,6 +252,7 @@
     "touch": "0.0.3",
     "traceur": "0.0.X",
     "twilio": "2.X",
+    "ua-parser-js": "^0.7.12",
     "ui-leaflet": "1.0.2",
     "ui-router-extras": "0.1.X",
     "ui-select": "0.19.6",

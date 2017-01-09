@@ -1,19 +1,38 @@
 auth = require '../utils/util.auth'
 {accountUseTypes} = require '../services/services.user'
-{routeCrud} = require '../utils/crud/util.crud.route.helpers'
-{mergeHandles} = require '../utils/util.route.helpers'
+EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 
-module.exports = mergeHandles routeCrud(accountUseTypes),
-  #STRICTLY FOR ADMIN, otherwise profiles are used by session
+accountUseTypesCrud = new EzRouteCrud(accountUseTypes)
+
+handles =
   root:
-    methods: ['get', 'post']
+    method: 'get'
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
     ]
+    handle: accountUseTypesCrud.root
+
   byId:
-    methods: ['get', 'post', 'put', 'delete']
+    method: 'get'
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: accountUseTypesCrud.byId
+
+  create:
+    method: 'post'
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
     ]
+    handle: accountUseTypesCrud.root
+
+  edit:
+    methods: ['post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
+    ]
+    handle: accountUseTypesCrud.byId
+
+module.exports = handles

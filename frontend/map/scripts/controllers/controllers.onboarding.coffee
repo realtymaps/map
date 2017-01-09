@@ -76,7 +76,7 @@ rmapsMainOptions
         else
           delete @errorMsg
       plan:
-        name: rmapsMainOptions.plan.STANDARD
+        name: rmapsMainOptions.subscription.PLAN.STANDARD
 
         getSelected: (planStr) ->
           if $scope.user.plan.name == planStr then 'selected' else 'select'
@@ -127,7 +127,7 @@ rmapsMainOptions
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
         aPlan = $scope.orderSvc.name or $scope.user.plan.name
-        currentPlan = aPlan or rmapsMainOptions.plan.STANDARD
+        currentPlan = aPlan or rmapsMainOptions.subscription.PLAN.STANDARD
         $scope.user.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
 
