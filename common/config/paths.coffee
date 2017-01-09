@@ -1,3 +1,5 @@
+require '../extensions/strings'
+
 appMap = 'map'
 appAdmin = 'admin'
 libFront = appMap + 'lib'

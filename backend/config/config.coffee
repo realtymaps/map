@@ -15,7 +15,7 @@ base =
     BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
-  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true #can be a string as well 'noCoffee'
+  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
