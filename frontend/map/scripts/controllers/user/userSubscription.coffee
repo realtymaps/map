@@ -24,13 +24,13 @@ rmapsMainOptions
   # tests / flags
   #
   $scope.showSubscription = () ->
-    return ($scope.subscription? && $scope.subscription.status != 'expired' && $scope.subscription.plan.id != 'deactivated')
+    return ($scope.subscription? && !($rootScope.identity.subscriptionStatus in ['expired', 'deactivated']))
 
   $scope.isDeactivated = () ->
-    return $scope.subscription?.plan?.id == rmapsMainOptions.plan.DEACTIVATED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.plan.PAID_LIST)
+    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.DEACTIVATED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
 
   $scope.isExpired = () ->
-    return $scope.subscription?.status == rmapsMainOptions.plan.EXPIRED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.plan.PAID_LIST)
+    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.EXPIRED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
 
   $scope.isInGracePeriod = () ->
     # did user cancel, but we're still active
@@ -70,9 +70,9 @@ rmapsMainOptions
     $scope.modalOk = () ->
       $scope.processing++
       modalInstance.close()
-      rmapsSubscriptionService.updatePlan(rmapsMainOptions.plan.PRO)
+      rmapsSubscriptionService.updatePlan(rmapsMainOptions.subscription.PLAN.PRO)
       .then (res) ->
-        $rootScope.identity.subscription = res.plan.id
+        $rootScope.identity.subscriptionStatus = res.status
         $scope.subscription = res
       .finally () ->
         $scope.processing--
@@ -128,7 +128,7 @@ rmapsMainOptions
           rmapsSubscriptionService.reactivate()
           .then (res) ->
             # update subscription, and modal context with success content
-            $rootScope.identity.subscription = res.plan.id
+            $rootScope.identity.subscriptionStatus = res.status
             $scope.subscription = res
             $scope.modalBody = "Your #{res.plan.id} subscription has been renewed."
             $scope.modalDisable = false

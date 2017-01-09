@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 {basePath} = require '../globalSetup'
 sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
+config = require "#{basePath}/config/config"
 require("chai").should()
 
 rewire = require 'rewire'
@@ -342,9 +343,11 @@ describe 'util.auth', ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
-        user: id: 7
+        user:
+          id: 7
+          stripe_plan_id: config.SUBSCR.PLAN.NONE
         session:
-          subscription: null
+          subscriptionStatus: config.SUBSCR.STATUS.NONE
 
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireSubscriber req, @res, @next
@@ -354,9 +357,11 @@ describe 'util.auth', ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
-        user: id: 7
+        user:
+          id: 7
+          stripe_plan_id: config.SUBSCR.PLAN.PRO
         session:
-          subscription: 'unpaid'
+          subscriptionStatus: config.SUBSCR.PLAN.EXPIRED
 
       @resultcb = @resultBase.bind(null, done, "error: 401")
       requireSubscriber req, @res, @next
@@ -365,9 +370,11 @@ describe 'util.auth', ->
       requireSubscriber = auth.requireSubscriber(methods: 'get')
       req =
         method: 'GET'
-        user: id: 7
+        user:
+          id: 7
+          stripe_plan_id: config.SUBSCR.PLAN.PRO
         session:
-          subscription: 'pro'
+          subscriptionStatus: config.SUBSCR.STATUS.ACTIVE
 
       @resultcb = @resultBase.bind(null, done, "next")
       requireSubscriber req, @res, @next
