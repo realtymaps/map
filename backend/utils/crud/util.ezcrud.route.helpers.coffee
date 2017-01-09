@@ -32,7 +32,7 @@ class RouteCrud
 
     @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
     @initializeTransforms 'root', ['GET', 'POST']
-    @initializeTransforms 'byId',
+    @initializeTransforms 'byId'
 
     @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
 
