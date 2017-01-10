@@ -10,11 +10,12 @@ stripeErrors = require '../utils/errors/util.errors.stripe'
 
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("service.user_subscription")
+# coffeelint: enable=check_scope
+
 stripe = null
 veroSvc = null
 require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
 require('./email/vero').then (svc) -> veroSvc = svc
-# coffeelint: enable=check_scope
 
 
 # Return "dummy" subscription objects that emulates a stripe subscription
