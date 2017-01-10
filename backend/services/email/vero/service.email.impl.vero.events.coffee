@@ -16,7 +16,7 @@ If this was not initiated by you or feel this is in error please contact [contac
 """
 
 VeroEvents = (vero) ->
-  _send = (authUser, eventName, override = {}) ->
+  send = (authUser, eventName, override = {}) ->
     p = _.defaultsDeep override,
       id: veroUserSvc.getUniqueUserId(authUser)
       email: authUser.email
@@ -35,7 +35,7 @@ VeroEvents = (vero) ->
     logger.debug "VERIFY URL"
     logger.debug.yellow verify_url
 
-    _send(authUser, "customer.subscription.created", {eventData: {verify_url}})
+    send(authUser, "customer.subscription.created", {eventData: {verify_url}})
     .catch (err) ->
       throw new veroErrors.SubscriptionSignUpError(err, analyzeValue.getFullDetails(err))
 
@@ -46,34 +46,34 @@ VeroEvents = (vero) ->
     logger.debug "CANCEL PLAN URL"
     logger.debug.yellow cancel_plan_url
 
-    _send(authUser, "customer.subscription.trial_will_end", {eventData: {cancel_plan_url}})
+    send(authUser, "customer.subscription.trial_will_end", {eventData: {cancel_plan_url}})
     .catch (err) ->
       throw new veroErrors.SubscriptionTrialEndedError(err, analyzeValue.getFullDetails(err))
 
   # Purpose To send a Welcome Email stating that the account validation was successful
   subscriptionVerified = (authUser) ->
     logger.debug "subscriptionVerified()"
-    _send(authUser, "customer.subscription.verified")
+    send(authUser, "customer.subscription.verified")
     .catch (err) ->
       throw new veroErrors.SubscriptionVerifiedError(err, analyzeValue.getFullDetails(err))
 
   subscriptionUpdated = (authUser) ->
     logger.debug "subscriptionUpdated()"
-    _send(authUser, "customer.subscription.updated")
+    send(authUser, "customer.subscription.updated")
     .catch (err) ->
       throw new veroErrors.SubscriptionUpdatedError(err, analyzeValue.getFullDetails(err))
 
 
   subscriptionDeactivated = (authUser) ->
     logger.debug "subscriptionDeactivated()"
-    _send(authUser, "subscription_deactivated")
+    send(authUser, "subscription_deactivated")
     .catch (err) ->
       throw new veroErrors.SubscriptionDeactivatedError(err, analyzeValue.getFullDetails(err))
 
 
   subscriptionExpired = (authUser) ->
     logger.debug "subscriptionExpired()"
-    _send(authUser, "subscription_expired")
+    send(authUser, "subscription_expired")
     .catch (err) ->
       throw new veroErrors.SubscriptionExpiredError(err, analyzeValue.getFullDetails(err))
 
@@ -100,7 +100,7 @@ VeroEvents = (vero) ->
       in_error_support_phrase: inErrorSupportPhrase
     }
 
-    _send(authUser, "notification_properties_saved", {eventData})
+    send(authUser, "notification_properties_saved", {eventData})
     .catch (err) ->
       throw new veroErrors.NotificationPropertiesSavedError(err, analyzeValue.getFullDetails(err))
 
@@ -117,6 +117,7 @@ VeroEvents = (vero) ->
     subscriptionExpired
     notificationPropertiesSaved
     inErrorSupportPhrase
+    send
   }
 
 module.exports = VeroEvents

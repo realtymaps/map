@@ -199,16 +199,15 @@ deactivate = (authUser, reason) ->
   dbs.transaction 'main', (transaction) ->
     stripe.customers.cancelSubscription authUser.stripe_customer_id, authUser.stripe_subscription_id, {at_period_end: true}
     .then (canceledSubscription) ->
+      console.log "canceledSubscription:\n#{JSON.stringify(canceledSubscription, null, 2)}"
       tables.history.user({transaction})
       .insert(auth_user_id: authUser.id, description: reason, category: 'account', subcategory: 'deactivation')
       .then () ->
-        veroSvc.vero.createUserAndTrackEvent(
-          veroSvc.user.getUniqueUserId(authUser)
-          authUser.email
-          authUser
-          'subscription_canceled' # event name
-          {} # event data
-        )
+        override =
+          eventData:
+            endDate: new Date(canceledSubscription.current_period_end*1000).toLocaleDateString()
+        veroSvc.events.send(authUser, 'subscription_canceled', override)
+      .then () ->
         canceledSubscription
 
     .catch isUnhandled, (err) ->
