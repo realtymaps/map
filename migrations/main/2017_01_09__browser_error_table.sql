@@ -22,6 +22,5 @@ CREATE TABLE history_browser_error (
   rm_inserted_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc()
 );
 
-CREATE INDEX ON history_browser_error (unexpected, rm_inserted_time);
 CREATE INDEX ON history_browser_error (handled, rm_inserted_time);
 CREATE INDEX ON history_browser_error (reference);
