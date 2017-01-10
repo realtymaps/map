@@ -84,6 +84,7 @@ module.exports =
     user: 'history_user'
     shell: 'history_shell'
     requestError: 'history_request_error'
+    browserError: 'history_browser_error'
   cartodb:
     syncQueue: 'cartodb_sync_queue'
 

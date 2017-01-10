@@ -125,10 +125,12 @@ rmapsPrincipalService) ->
 app.run (rmapsErrorHandler) ->
   rmapsErrorHandler.captureGlobalErrors()
 
-app.factory '$exceptionHandler', (rmapsErrorHandler, $injector) ->
-  return (exception, cause) ->
-    console.error exception
-    $rootScope = $injector.get('$rootScope') # necessary to avoid circular dependency
-    rmapsErrorHandler.captureAngularException {exception, cause, user: $rootScope.identity.user}
+app.factory '$exceptionHandler', (rmapsErrorHandler) ->
+  return (error, cause) ->
+    rmapsErrorHandler.captureAngularException error
+
+window['shootTheJ'] = ->
+  window.setTimeout ->
+    throw new Error("Boom goes the dynamite")
 
 module.exports = app
