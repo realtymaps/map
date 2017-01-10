@@ -2,12 +2,13 @@
 logger = require('../config/logger').spawn("route:monitor")
 # coffeelint: enable=check_scope
 tables = require '../config/tables'
-analyzeValue = require '../../common/utils/util.analyzeValue'
+Promise = require 'bluebird'
 _ = require 'lodash'
 session = require 'express-session'
 uaParser = require 'ua-parser-js'
 sqlHelpers = require '../utils/util.sql.helpers'
 auth = require '../utils/util.auth'
+errors = require '../utils/errors/util.error.partiallyHandledError'
 
 module.exports =
 
@@ -16,8 +17,8 @@ module.exports =
     method: 'post'
     handleQuery: true
     middleware: auth.sessionSetup
-    handle: (req, res, next) ->
-      data = req.body
+    handle: (req, res) -> Promise.try ->
+      data = req.body.stack # stacktrace-js sends everything inside the stack object
 
       uaInfo = {}
       if req.headers?['user-agent']?
@@ -51,6 +52,5 @@ module.exports =
       .insert(logEntity)
       .then () ->
         true
-      .catch (err) ->
-        logger.error("Problem while logging browser error!!!\nProblem: #{analyzeValue.getFullDetails(err)}\nOriginal request error log: #{JSON.stringify(logEntity,null,2)}")
-        false
+    .catch (err) ->
+      throw new errors.PartiallyHandledError(err, "Problem logging browser error: #{JSON.stringify(req.body,null,2)}")

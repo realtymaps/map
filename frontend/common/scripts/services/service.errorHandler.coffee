@@ -4,6 +4,8 @@ mod = require '../module.coffee'
 _ = require 'lodash'
 uuid = require 'node-uuid'
 
+MINIMUM_WAIT = 1 # seconds between reports
+
 mod.service 'rmapsErrorHandler', ($log, $injector) ->
   $log = $log.spawn 'rmapsErrorHandler'
 
@@ -27,26 +29,24 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
         # Will create duplicate console error, but with a reference the user can give support
         $log.error "RealtyMaps error reference", errorRef, msg
 
-        $http = $injector.get('$http') # necessary to avoid circular dependency
-        $rootScope = $injector.get('$rootScope')
-        user = $rootScope?.identity?.user
-
         file ?= stack?[0]?.fileName
         line ?= stack?[0]?.lineNumber
         col  ?= stack?[0]?.columnNumber
 
-        $http.post backendRoutes.monitor.error, {
+        postData = {
           errorRef
           msg
           file
           line
           col
-          email: user?.email
-          userid: user?.id
           stack
           count
           url: location.href
-        }, { alerts: false }
+        }
+
+        StackTrace.report postData, backendRoutes.monitor.error, null, { headers: {} }
+        .then (response) ->
+          $log.debug response
 
         count += 1
 
@@ -67,4 +67,4 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
       return
     _ignoreNextDigest = true
     report({error, msg: error.message})
-  , 1000 # prevents $digest error spam
+  , MINIMUM_WAIT*1000 # prevents $digest error spam
