@@ -122,5 +122,11 @@ rmapsPrincipalService) ->
 
         active
 
+app.run (rmapsErrorHandler) ->
+  rmapsErrorHandler.captureGlobalErrors()
+
+app.factory '$exceptionHandler', (rmapsErrorHandler) ->
+  return (error, cause) ->
+    rmapsErrorHandler.captureAngularException error
 
 module.exports = app

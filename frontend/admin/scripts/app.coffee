@@ -59,6 +59,13 @@ app = window.angular.module appName, [
 
 require '../../../tmp/admin.templates.js' #requries rmapsAdminApp to be initialized
 
+app.run (rmapsErrorHandler) ->
+  rmapsErrorHandler.captureGlobalErrors()
+
+app.factory '$exceptionHandler', (rmapsErrorHandler) ->
+  return (error, cause) ->
+    rmapsErrorHandler.captureAngularException error
+
 module.exports = app
 
 require './runners/template-cache-hack.coffee'
