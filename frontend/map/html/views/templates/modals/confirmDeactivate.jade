@@ -5,10 +5,17 @@ include ../../../../../common/html/includes/mixins/_spinnerMixin.jade
   +spinnerMixin()(ng-if="processing")
 .modal-body
   p Please tell us your reason for deactivation:
+  select.form-control(ng-model="deactivation.reasonSelect")
+    option(value="Price") Price
+    option(value="Features") Features
+    option(value="User-Friendliness") User-Friendliness
+    option(value="Data Integrity") Data Integrity
+    option(value="County / MLS Support") County / MLS Support
+  br
   textarea.form-control(
     cols=25
     rows=4
-    ng-model="deactivation.reason"
+    ng-model="deactivation.reasonText"
   )
 .modal-footer
   button.btn.btn-default(type='button', ng-show="showCancelButton" ng-click='(modalCancel || $dismiss)(); $event.stopPropagation()') Cancel
