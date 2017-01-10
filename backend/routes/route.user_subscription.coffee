@@ -1,6 +1,7 @@
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route.user_subscription")
 # coffeelint: enable=check_scope
+_ = require 'lodash'
 auth = require '../utils/util.auth'
 subscriptionTransforms = require('../utils/transforms/transforms.subscription')
 {validateAndTransformRequest} = require '../utils/util.validation'
@@ -69,4 +70,4 @@ module.exports =
     handle: (req) ->
       validateAndTransformRequest(req, subscriptionTransforms.deactivation)
       .then (validReq) ->
-        userSubscriptionService.deactivate req.session.userid, validReq.body.reason
+        userSubscriptionService.deactivate _.omit(req.user, 'password'), validReq.body.reason
