@@ -119,11 +119,13 @@ newProject = (req, res, next) ->
     # COPY
     if validBody.copyCurrent is true
       # If copying while on sandbox, we simply un-sandbox the profile.
-      #   Creation of new sandbox if needed is handled in `service.profiles::getProfiles()`
       if profile.sandbox is true
         toSave.sandbox = false
         toSave.id = profile.project_id
         return projectSvc.update _.pick(toSave, safeColumns.project)
+        .then () ->
+          # sandbox was transformed to named project, recreate sandbox
+          profileService.createSandbox(req.user.id)
         .then () ->
           profile # leave the current profile selected
 
