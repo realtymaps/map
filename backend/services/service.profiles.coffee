@@ -26,6 +26,9 @@ create = (newProfile) ->
   .then (inserted) ->
     inserted?[0]
 
+createSandbox = (auth_user_id) ->
+  create(auth_user_id: auth_user_id, sandbox: true, can_edit: true)
+
 # if we already know project, we can use this routine
 createForProject = (newProfile, transaction = null) ->
   if !newProfile.project_id? then throw new Error '`project_id` is required to create profile.'
@@ -83,7 +86,7 @@ getProfiles = (auth_user_id) -> Promise.try () ->
       profiles
     else
       logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
-      create auth_user_id: auth_user_id, sandbox: true, can_edit: true
+      createSandbox(auth_user_id)
       .then () ->
         # re-fetch for full list w/ ids
         getProfileWhere
@@ -167,6 +170,7 @@ module.exports = {
   updateCurrent
   update
   create
+  createSandbox
   createForProject
   getProfileWhere
 }

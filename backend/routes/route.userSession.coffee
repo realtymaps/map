@@ -108,34 +108,39 @@ profiles = (req, res, next) ->
           delete req.session.profiles  # to force profiles refresh in cache
           internals.updateCache(req, res, next)
 
+
 newProject = (req, res, next) ->
-  # this route needs propper vsalidation via validation.validateAndTransformRequest
-  Promise.try () ->
-    if !req.body.name
-      throw new Error 'Error creating new project, name is required'
+  validation.validateAndTransformRequest(req.body, transforms.newProject)
+  .then (validBody) ->
+    profile = profileService.getCurrentSessionProfile req.session
+    toSave = _.extend({auth_user_id: req.user.id, can_edit: true}, validBody)
 
-    profileService.getCurrentSessionProfile req.session
 
-  .then (profile) ->
-    toSave = _.extend({auth_user_id: req.user.id, can_edit: true}, req.body)
+    # COPY
+    if validBody.copyCurrent is true
+      # If copying while on sandbox, we simply un-sandbox the profile.
+      if profile.sandbox is true
+        toSave.sandbox = false
+        toSave.id = profile.project_id
+        return projectSvc.update _.pick(toSave, safeColumns.project)
+        .then () ->
+          # sandbox was transformed to named project, recreate sandbox
+          profileService.createSandbox(req.user.id)
+        .then () ->
+          profile # leave the current profile selected
 
-    # If current profile is sandbox, convert it to a regular project
-    if profile.sandbox is true
-      toSave.sandbox = false
-      projectSvc.update profile.project_id, toSave, safeColumns.project
-      .then () ->
-        profile # leave the current profile selected
-
-    # Otherwise create a new profile
-    else
-      if req.body.copyCurrent is true
-        _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
+      # If copying while not on sandbox, set toSave fields for new project & profile
       else
-        # we need a position to start with on the frontend, so copy the other profile's position
-        _.extend toSave, _.pick(profile, ['map_position'])
-        toSave = _.omit toSave, ['filters']
+        _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
 
-      profileService.create toSave
+
+    # SAVE AS / CREATE
+    else
+      # we need a position to start with on the frontend, so copy the other profile's position
+      _.extend toSave, _.pick(profile, ['map_position'])
+      toSave = _.omit toSave, ['filters']
+
+    profileService.create toSave
 
   .then (newProfile) ->
     req.session.current_profile_id = newProfile.id

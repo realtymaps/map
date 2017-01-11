@@ -21,7 +21,6 @@ mixin projectsDropdown()
         // This was necessary for us to leverage the `pointer-events:none` rule on `New Blank Project` that removes event handlers from element
         div(ng-controller="rmapsAddProjectController" ng-class="{'not-allowed': identity.currentProfile.sandbox}")
           span.results-btn(
-            ng-class="{'disabledNoEvents': identity.currentProfile.sandbox}"
             rmaps-require-subscriber="disable"
             popover-placement="bottom"
             popover-trigger="'click mouseenter touchend'"
