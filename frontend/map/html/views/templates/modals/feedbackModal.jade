@@ -1,0 +1,18 @@
+form.note(name="createEditFeedbackForm")
+  .modal-header
+    h3.modal-title(ng-if="!model.content") Rename Feedback
+    h3.modal-title(ng-if="model.content") Edit Feedback
+  .modal-body
+    .form-group
+      label(for="content") Content
+      input.form-control(
+        placeholder="Give us your feedback!"
+        type="text"
+        name="title"
+        ng-model="model.content"
+        validator="optMinlength=2")
+
+
+  .modal-footer
+    button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditAreaForm") Cancel
+    button.btn.btn-primary(type="submit" ng-click="save()" validation-submit="createEditAreaForm") Save
