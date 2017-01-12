@@ -59,6 +59,7 @@ styles = ({app, doSourceMaps, cdn}) ->
 
     stream
     .pipe($.if(doSourceMaps,$.sourcemaps.write('.', {
+      mapSourcesAbsolute: true
       sourceRoot: '../src', #debugging might set sourceRoot to '../src/gulp' it will clearly show u what is from gulp
     })))
     .pipe gulp.dest paths.destFull.styles
