@@ -7,7 +7,7 @@ config = require '../../config/config'
 
 # PRIVATE: do not make public use the the PUBLIC: valid  as id (uniqueness) is optional
 # checks email regex only
-_regex = ({regex} = {}) ->
+regex = ({regex} = {}) ->
   regex ?= [VALIDATION.email]
 
   if config.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN
@@ -29,7 +29,7 @@ valid = ({id, regex, doUnique = false} = {}) ->
   logger.debug -> {id, regex, doUnique}
 
   transforms = [
-    _regex({regex})
+    regex({regex})
   ]
 
   if doUnique
@@ -82,6 +82,7 @@ verifyRequest =
 
 
 module.exports = {
+  regex
   valid
   validateRequest
   verifyRequest
