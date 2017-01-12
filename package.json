@@ -141,7 +141,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-rework": "1.0.X",
     "gulp-size": "1.2.X",
-    "gulp-sourcemaps": "2.3.0",
+    "gulp-sourcemaps": "2.4.X",
     "gulp-stylus": "2.X.X",
     "gulp-uglify": "1.X.X",
     "gulp-util": "3.0.X",
