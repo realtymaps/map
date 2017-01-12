@@ -4,7 +4,14 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmapsSpinnerService, rmapsEventConstants, rmapsPageService, $window) ->
+app.run (
+$rootScope, $state, $stateParams, $timeout, $window, $uibModal,
+rmapsPrincipalService
+rmapsSpinnerService
+rmapsEventConstants
+rmapsPageService
+rmapsMainOptions) ->
+
   $rootScope.alerts = []
   $rootScope.adminRoutes = adminRoutes
   $rootScope.frontendRoutes = frontendRoutes
@@ -24,3 +31,19 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmap
   angular.element($window).bind 'resize', ->
     $rootScope.windowWidth = $window.innerWidth
     $rootScope.windowHeight = $window.innerHeight
+
+  createFeedbackModal = (feedback = {}) ->
+    modalScope = $rootScope.$new false
+
+    modalInstance = $uibModal.open
+      animation: rmapsMainOptions.modals.animationsEnabled
+      template: require("../../html/views/templates/modals/feedbackModal.jade")
+      scope: modalScope
+      controller: 'rmapsModalInstanceCtrl'
+      resolve: model: -> feedback
+
+    modalInstance.result
+
+  $rootScope.giveFeedback = () ->
+    createFeedbackModal()
+    .then (feedback) ->
