@@ -15,7 +15,7 @@ mod.filter 'humanize', () ->
       input = input.replace(/(\-\w)/g, (m) -> m[1].toUpperCase())
     # or convert to camelCase from `snake_case`
     else if input.indexOf('_') >= 0
-      input = input.replace(/(\_\w)/gi, (m) -> m[1].toUpperCase())
+      input = input.replace(/(\_\w)/g, (m) -> m[1].toUpperCase())
 
     # humanize camelCase
     input
