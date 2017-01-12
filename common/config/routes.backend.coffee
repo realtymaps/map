@@ -40,6 +40,8 @@ apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
 apiBaseMonitor = "#{apiBase}/monitor"
+apiBaseHistory = "#{apiBase}/history"
+apiBaseHistoryUser = "#{apiBaseHistory}/history/user"
 
 module.exports =
   views:
@@ -68,6 +70,7 @@ module.exports =
     getResetPassword: "#{apiBaseSession}/getResetPassword"
     doResetPassword: "#{apiBaseSession}/doResetPassword"
     requestLoginToken: "#{apiBaseSession}/requestLoginToken"
+    feedback: "#{apiBaseSession}/feedback"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes
@@ -93,6 +96,10 @@ module.exports =
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     image: "#{apiBaseUsers}/:id/image"
+  historyUser:
+    apiBase: apiBaseHistoryUser
+    root: apiBaseHistoryUser
+    byId: "#{apiBaseHistoryUser}/:id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"

@@ -1,3 +1,4 @@
+_ = require 'lodash'
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
@@ -10,7 +11,8 @@ rmapsPrincipalService
 rmapsSpinnerService
 rmapsEventConstants
 rmapsPageService
-rmapsMainOptions) ->
+rmapsMainOptions
+rmapsUserSessionHistoryService) ->
 
   $rootScope.alerts = []
   $rootScope.adminRoutes = adminRoutes
@@ -35,15 +37,17 @@ rmapsMainOptions) ->
   createFeedbackModal = (feedback = {}) ->
     modalScope = $rootScope.$new false
 
-    modalInstance = $uibModal.open
+    feedback.isEdit = !!feedback.description
+
+    $uibModal.open
       animation: rmapsMainOptions.modals.animationsEnabled
-      template: require("../../html/views/templates/modals/feedbackModal.jade")
+      template: require("../../html/views/templates/modals/feedbackModal.jade")()
       scope: modalScope
       controller: 'rmapsModalInstanceCtrl'
       resolve: model: -> feedback
 
-    modalInstance.result
+    .result.then (model) ->
+      rmapsUserSessionHistoryService.save(_.omit(model, 'isEdit'))
 
   $rootScope.giveFeedback = () ->
     createFeedbackModal()
-    .then (feedback) ->

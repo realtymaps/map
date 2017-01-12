@@ -42,6 +42,8 @@ class RouteCrud
       transformName = "#{transformType}#{meth}Transforms"
       @[transformName] = @options[transformName] ? defaultRequestTransforms()
 
+  validateAndTransform: validateAndTransform
+
   # Public: validRequest a request via transforms
   #
   # * `req`           request as {object}.
@@ -55,7 +57,7 @@ class RouteCrud
 
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
-    validateAndTransform req, @reqTransforms
+    @validateAndTransform req, @reqTransforms
     .then (tReq) =>
       @logger.debug -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
