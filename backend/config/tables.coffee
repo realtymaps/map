@@ -82,6 +82,8 @@ module.exports =
     event: 'history_event'
     dataLoad: 'history_data_load'
     user: 'history_user'
+    userCategory: 'history_user_category'
+    userSubCategory: 'history_user_subcategory'
     shell: 'history_shell'
     requestError: 'history_request_error'
     browserError: 'history_browser_error'

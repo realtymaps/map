@@ -40,8 +40,12 @@ apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
 apiBaseMonitor = "#{apiBase}/monitor"
+
 apiBaseHistory = "#{apiBase}/history"
-apiBaseHistoryUser = "#{apiBaseHistory}/history/user"
+apiBaseHistoryUser = "#{apiBaseHistory}/user"
+apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swaped with apiBaseHistoryUser to not conflict with :id
+apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+
 
 module.exports =
   views:
@@ -100,6 +104,18 @@ module.exports =
     apiBase: apiBaseHistoryUser
     root: apiBaseHistoryUser
     byId: "#{apiBaseHistoryUser}/:id"
+  historyUserCategory:
+    apiBase: apiBaseHistoryUserCategory
+    root: apiBaseHistoryUserCategory
+    rootPOST: apiBaseHistoryUserCategory
+    byIdGET: "#{apiBaseHistoryUserCategory}/:id"
+    byId: "#{apiBaseHistoryUserCategory}/:id"
+  historyUserSubCategory:
+    apiBase: apiBaseHistoryUserSubCategory
+    root: apiBaseHistoryUserSubCategory
+    rootPOST: apiBaseHistoryUserSubCategory
+    byIdGET: "#{apiBaseHistoryUserSubCategory}/:id"
+    byId: "#{apiBaseHistoryUserSubCategory}/:id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"
