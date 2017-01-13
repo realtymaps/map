@@ -281,13 +281,16 @@ feedback = (req, res, next) ->
     POST: () ->
       l.debug -> "req"
       l.debug -> _.pick(req, ['body', 'params','query'])
-      validation.validateAndTransformRequest(req.body, transforms.feedback.POST)
+      validation.validateAndTransformRequest(req, transforms.feedback.POST)
       .then (validReq) ->
         l.debug -> "validReq"
         l.debug -> validReq
         validReq.body.auth_user_id = req.user.id
+        if !validReq.body.id?
+          validReq.body.id = null
         historyUserSvc.upsert(validReq.body)
-
+        .then (result) ->
+          res.json(result)
 
 module.exports =
   root:
