@@ -224,7 +224,7 @@ processEvent = (subtask) -> Promise.try () ->
         sqlHelpers.whereAndWhereIn tables.user.eventsQueue({transaction}), id: ids
         .update "#{frequency.toLowerCase()}_processed": true
       .then () ->
-        tables.user.notificationFrequencies('code_name')
+        tables.user.notificationFrequencies().select('code_name')
         .where('code_name', '!=', 'off')
         .then (rows) ->
           clause = {}

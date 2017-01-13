@@ -15,7 +15,7 @@ subtasks = {
   cleanupNotifications: internalsNotifications.cleanupNotifications
 }
 
-promisedTask = tables.user.notificationFrequencies('code_name', 'target_hour', 'name')
+promisedTask = tables.user.notificationFrequencies().select('code_name', 'target_hour', 'name')
 .where('code_name', '!=', 'off')
 .then (rows) ->
   logger.debug -> "setting up events"
