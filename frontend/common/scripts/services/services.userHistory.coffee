@@ -1,5 +1,6 @@
 mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+require '../../../../common/extensions/strings.coffee'
 
 mod.service 'rmapsUserSessionHistoryService',
 ($http, $log, $rootScope) ->
@@ -22,21 +23,30 @@ mod.service 'rmapsUserSessionHistoryService',
   }
 
 
-mod.service 'rmapsUserHistoryService', (Restangular, $log) ->
-  $log = $log.spawn("rmapsUserHistoryService")
+[
+  'historyUser'
+  'historyUserCategory'
+  'historyUserSubCategory'
+].forEach (route) ->
 
-  {apiBase} = backendRoutes.historyUser
+  svcName = "rmaps#{route.toInitCaps(false)}Service"
 
-  if !apiBase
-    $log.error "rmapsUserHistoryService apiBase is undefined!"
+  mod.service svcName, [ "Restangular", "$log", (Restangular, $log) ->
+    $log = $log.spawn(svcName)
 
-  _init = () ->
-    Restangular.all(apiBase)
+    {apiBase} = backendRoutes[route]
 
-  get = (filters = {}) ->
-    _init().getList(filters)
+    if !apiBase
+      $log.error "#{svcName} apiBase is undefined!"
+
+    _init = () ->
+      Restangular.all(apiBase)
+
+    get = (filters = {}) ->
+      _init().getList(filters)
 
 
-  {
-    get
-  }
+    {
+      get
+    }
+]
