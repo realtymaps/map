@@ -15,7 +15,6 @@ module.exports =
     dataSourceDatabases: 'config_data_source_databases'
     dataSourceObjects: 'config_data_source_objects'
     dataSourceTables: 'config_data_source_tables'
-    handlersEventMap: 'config_handlers_event_map'
     pva: 'config_pva'
   lookup:
     accountUseTypes: 'lookup_account_use_types'
@@ -72,6 +71,9 @@ module.exports =
     notificationQueue: 'user_notification_queue'
     notificationExpired: 'user_notification_expired'
     notificationConfig: 'user_notification_config'
+    notificationFrequencies: 'user_notification_frequencies'
+    notificationMethods: 'user_notification_methods'
+    notificationEventHandle: 'user_notification_event_handle'
     eventsQueue: 'user_events_queue'
   mail:
     campaign: 'user_mail_campaigns'
@@ -84,6 +86,7 @@ module.exports =
     user: 'history_user'
     shell: 'history_shell'
     requestError: 'history_request_error'
+    browserError: 'history_browser_error'
   cartodb:
     syncQueue: 'cartodb_sync_queue'
 

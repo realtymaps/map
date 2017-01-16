@@ -29,7 +29,7 @@ naming = do -> # for things we can't make up our minds on for naming context
 
 
 mainOptions = do () ->
-  isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
+  isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1' || window.location.hostname == 'dev.realtymaps.com')
   res = _.merge common,
     map: {
       naming

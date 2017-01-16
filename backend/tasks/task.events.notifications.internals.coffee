@@ -25,6 +25,8 @@ _deleteNotifications = () ->
   what notifications to send out
 ###
 loadNotifications = ({subtask, frequency}) -> Promise.try () ->
+  l = logger.spawn("loadNotifications")
+
   if !frequency
     throw new HardFail 'frequency must be defined'
 
@@ -33,30 +35,26 @@ loadNotifications = ({subtask, frequency}) -> Promise.try () ->
 
   subtask.data.frequency ?= frequency
 
-  logger.debug "Starting #{frequency} Notifications."
+  logger.debug -> "Starting #{frequency} Notifications."
   numRowsToPageSendNotifications = subtask?.data?.numRowsToPageSendNotifications || NUM_ROWS_TO_PAGINATE
-
-  loadSubtaskOptions = [
-    'frequency'
-    'method'
-  ]
 
   queryEntity =
     status: null
 
-  for name in loadSubtaskOptions
-    if subtask?.data?[name]?
-      queryEntity["#{tables.user.notificationConfig.tableName}.#{name}"] = subtask.data[name]
+  if subtask?.data?.frequency?
+    queryEntity.frequency = subtask.data.frequency
+  if subtask?.data?.method?
+    queryEntity.method = subtask.data.method
 
   _deleteNotifications()
   .then () ->
 
-    notifyQueueSvc.getAllWithConfigUser queryEntity
-    .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS
+    l.debugQuery(notifyQueueSvc.getAllWithConfigUser queryEntity
+    .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS)
     .then (rows) ->
-      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-      logger.debug "loadNotifications to sendNotifications row.length: #{rows.length}"
-      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+      l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+      l.debug -> " to sendNotifications row.length: #{rows.length}"
+      l.debug ->"@@@@@@@@@@@@@@@@@@@@@@"
 
       Promise.all [
         jobQueue.queueSubsequentPaginatedSubtask {
@@ -76,12 +74,13 @@ loadNotifications = ({subtask, frequency}) -> Promise.try () ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
 sendNotifications = (subtask) ->
+  l = logger.spawn("sendNotifications")
   rows = subtask?.data?.values
   if !rows?.length
     return
-  logger.debug "@@@@@@@@@ sendNotifications rows @@@@@@@@@@@@@"
-  logger.debug rows
-  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+  l.debug -> "@@@@@@@@@ rows @@@@@@@@@@@@@"
+  l.debug -> rows
+  l.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
   Promise.all Promise.map rows, (row) ->
     ###TODO: we need mark column as having a webhook
@@ -105,12 +104,12 @@ sendNotifications = (subtask) ->
         last_attempt_time: tables.user.notificationQueue().raw 'now_utc()'
         attempts: row.attempts + 1
       }
-      logger.debug "@@@@@@ PENDING UPDATE @@@@@@"
-      logger.debug q.toString()
+      l.debug -> "@@@@@@ PENDING UPDATE @@@@@@"
+      l.debug -> q.toString()
       q.then () ->
         notificationsSvc.sendNotificationNow {row, options: row.options, transaction}
         .then () ->
-          logger.debug '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
+          l.debug -> '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
 
           if !config.NOTIFICATIONS.USE_WEBHOOKS
             logger.debug '@@@@ NO WEBHOOKS DELETING @@@@'
@@ -123,7 +122,7 @@ sendNotifications = (subtask) ->
 
     .catch (err) ->
       details = analyzeValue.getFullDetails(err)
-      logger.error "notification error: #{details}"
+      l.error "notification error: #{details}"
 
       tables.user.notificationQueue()
       .update {
@@ -140,6 +139,8 @@ sendNotifications = (subtask) ->
     throw new HardFail(analyzeValue.getSimpleMessage(error))
 
 cleanupNotifications = (subtask) ->
+  l = logger.spawn("cleanupNotifications")
+
   _deleteNotifications()
   .then () ->
   Promise.map utilEvents.notificationTypes, (type) ->
@@ -153,9 +154,9 @@ cleanupNotifications = (subtask) ->
     .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS
 
 
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug query.toString()
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+    l.debug -> query.toString()
+    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
 
     handle = utilEvents.cleanupHandlers[type] || utilEvents.cleanupHandlers.default
     handle(query)
@@ -167,9 +168,9 @@ cleanupNotifications = (subtask) ->
       .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
       .where 'attempts', '>=', config.NOTIFICATIONS.MAX_ATTEMPTS
 
-      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-      logger.debug maxQuery.toString()
-      logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+      l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+      l.debug -> maxQuery.toString()
+      l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
 
 
       maxQuery.then (maxedOutRows) ->
@@ -182,15 +183,15 @@ cleanupNotifications = (subtask) ->
           exists
 
         if !maxedOutRows.length
-          logger.debug -> "@@@@ MAXXED OUT ROWS: GTFO @@@@"
+          l.debug -> "@@@@ MAXXED OUT ROWS: GTFO @@@@"
           return
 
-        logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
+        l.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
 
         if badRows.length
-          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-          logger.debug -> "@@@@ BAD ROWS LENGTH: #{badRows.length}"
-          logger.debug -> badRows
+          l.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
+          l.debug -> "@@@@ BAD ROWS LENGTH: #{badRows.length}"
+          l.debug -> badRows
           # what should I do with the badRows if I have no id to update them with?
 
         tables.user.notificationExpired({transaction})
@@ -202,11 +203,11 @@ cleanupNotifications = (subtask) ->
           logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
 
           logIfError = (logQuery = false) ->
-            logger.debug -> query.toString() if logQuery
-            logger.debug "@@@@ maxedOutRows @@@@"
-            logger.debug -> maxedOutRows
-            logger.debug "@@@@ clauseArg @@@@"
-            logger.debug -> clauseArg
+            l.debug -> query.toString() if logQuery
+            l.debug -> "@@@@ maxedOutRows @@@@"
+            l.debug -> maxedOutRows
+            l.debug -> "@@@@ clauseArg @@@@"
+            l.debug -> clauseArg
 
           query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', clauseArg)
           .delete()

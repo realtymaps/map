@@ -112,7 +112,7 @@ class UserCrud extends EzCrud
 module.exports = {
   user: new UserCrud(tables.auth.user).init(false)
   accountUseTypes: new EzCrud(tables.lookup.accountUseTypes)
-  project: new oldCrud.Crud(tables.user.project)
+  project: new EzCrud(tables.user.project)
   company: new oldCrud.Crud(tables.user.company)
   drawnShapes: new oldCrud.Crud(tables.user.drawnShapes)
   notes: new oldCrud.Crud(tables.user.notes)
