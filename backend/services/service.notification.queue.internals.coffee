@@ -16,9 +16,13 @@ getColumns = [
 explicitGetColumns = getColumns.map (col) ->
   "#{tables.user.notificationQueue.tableName}.#{col}"
 
-explicitGetColumnsWithUserConfig = explicitGetColumns.concat(
-  _.without notificationConfigInternals.allColumns, "#{tables.user.notificationConfig.tableName}.id"
-)
+explicitGetColumnsWithUserConfig = _.flatten explicitGetColumns.concat [
+  _.without(notificationConfigInternals.allColumns,[
+    "#{tables.user.notificationConfig.tableName}.id"
+    "#{tables.user.notificationFrequencies.tableName}.id"
+    "#{tables.user.notificationMethods.tableName}.id"
+  ])
+]
 
 module.exports = {
   getColumns

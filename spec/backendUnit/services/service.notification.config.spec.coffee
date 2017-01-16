@@ -1,5 +1,4 @@
-sinon = require 'sinon'
-{expect, should} = require("chai")
+{should} = require("chai")
 should()
 rewire = require 'rewire'
 subject = rewire '../../../backend/services/service.notification.config'
@@ -23,6 +22,8 @@ describe "service.notification.config", ->
 
   beforeEach ->
     userNotifyConfig = new SqlMock 'user', 'notificationConfig'
+    userNotifyFrequencies = new SqlMock 'user', 'notificationFrequencies'
+    userNotifyMethods = new SqlMock 'user', 'notificationMethods'
     authUser = new SqlMock 'auth', 'user'
 
     tables =
@@ -30,6 +31,8 @@ describe "service.notification.config", ->
         user: makeTable authUser
       user:
         notificationConfig: makeTable userNotifyConfig
+        notificationFrequencies: makeTable userNotifyFrequencies
+        notificationMethods: makeTable userNotifyMethods
 
     subject.__set__ 'tables', tables
 

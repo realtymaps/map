@@ -19,8 +19,8 @@ div(ng-hide="processing > 0")
     .row(ng-hide="subscription.error")
       .col-md-6
         label Status
-        p(ng-show="subscription.canceled_at") Canceled
-        p(ng-show="!subscription.canceled_at") {{ subscription.status | humanize }}
+        p(ng-show="subscription.canceled_at" class="subscription-status-alert") Canceled
+        p(ng-show="!subscription.canceled_at" ng-class="{'subscription-status-alert': isWarningStatus(subscription.status)}") {{ subscription.status | humanize }}
       .col-md-6
         label Plan
         p {{ subscription.plan.metadata.alias | humanize }}

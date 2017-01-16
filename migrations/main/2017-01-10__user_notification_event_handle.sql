@@ -1,0 +1,1 @@
+ALTER TABLE config_handlers_event_map RENAME TO user_notification_event_handle;

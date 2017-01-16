@@ -27,7 +27,11 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourc
 
   stream = bStream.bundle()
 
-  l.debug -> 'Bundling ' + gutil.colors.bgCyan.black(config.outputName) + ' ' + entries?.length + ' files ...'
+  l.debug ->
+    str = 'Bundling ' + gutil.colors.bgCyan.black(config.outputName)
+    if entries?.length
+      str += + ' ' + entries.length + ' files ...'
+    str
 
   if doSourceMaps
     if prod

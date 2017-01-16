@@ -19,6 +19,7 @@ _ = require 'lodash'
 safeProject = basicColumns.project
 
 _inviteClient = (clientEntryValue) ->
+  l = logger.spawn('_inviteClient')
   # save important information for client login later in keystore
   # `clientEntryValue` also has data for vero template, so we send it there too
   clientEntryKey = uuid.genUUID()
@@ -29,6 +30,9 @@ _inviteClient = (clientEntryValue) ->
   else
     # url to the project dashboard (client will need to login if not logged)
     verify_url = "http://#{clientEntryValue.evtdata.verify_host}/project/#{clientEntryValue.project.id}"
+
+  l.debug -> "clientEntryValue"
+  l.debug -> clientEntryValue
 
   clientEntryValue.evtdata.verify_url = verify_url
   logger.debug -> "_inviteClient(), clientEntryValue:\n#{JSON.stringify(clientEntryValue)}"

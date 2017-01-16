@@ -1,2 +1,36 @@
-.collapse-header
-  h2 Notifications
+.user-notifications
+  .collapse-header
+    h2 Notifications
+
+  table(class="table table-hover")
+    thead
+      tr
+        th
+          span(ng-click="sortField = 'created'; sortReverse = !sortReverse") Type
+          span.fa.fa-caret-down(ng-show="sortField == 'created' && !sortReverse")
+          span.fa.fa-caret-up(ng-show="sortField == 'created' && sortReverse")
+        th
+          span(ng-click="sortField = 'created'; sortReverse = !sortReverse") Detail
+          span.fa.fa-caret-down(ng-show="sortField == 'created' && !sortReverse")
+          span.fa.fa-caret-up(ng-show="sortField == 'created' && sortReverse")
+        th
+          span(ng-click="sortField = 'description'; sortReverse = !sortReverse") Frequency
+          span.fa.fa-caret-down(ng-show="sortField == 'description' && !sortReverse")
+          span.fa.fa-caret-up(ng-show="sortField == 'description' && sortReverse")
+
+        th.col-md-1
+          span(ng-click="sortField = 'type'; sortReverse = !sortReverse") Method
+          span.fa.fa-caret-down(ng-show="sortField == 'type' && !sortReverse")
+          span.fa.fa-caret-up(ng-show="sortField == 'type' && sortReverse")
+
+    tbody
+      tr(ng-show="notifications.length == 0")
+        td No Results
+      tr(ng-repeat="n in notifications | filter:{name:searchName} | orderBy:sortField:sortReverse")
+        td {{ typesMap[n.type].type }}
+        td
+          div(ng-if="typesMap[n.type].detail") {{ typesMap[n.type].detail }}
+        td
+          select(ng-change='update(n)' ng-model="n.frequency_id" ng-options="s.id as s.name for s in frequencies")
+        td
+          select(ng-change='update(n)' ng-model="n.method_id" ng-options="s.id as s.name for s in methods")
