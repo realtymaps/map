@@ -65,6 +65,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     logger.debug () -> "ensureSessionCount for #{req.user.email}: unlimited logins allowed"
     return Promise.resolve()
 
+  logger.spawn("ensureSessionCount").debug -> _.omit(req.user, 'password')
   maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plan data via stripe api, and memoized
   .then (plan) ->
     plan.metadata.maxLogins

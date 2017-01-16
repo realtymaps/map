@@ -59,7 +59,8 @@ cacheUserValues = (req, reload = {}) ->
   # ensure subscription
   if !req.session.subscriptionStatus or reload?.subscriptionStatus
     # subscription service discovers if user was manually given a plan permission (bypassed stripe), hence the assignment for `stripe_plan_id` below
-    subscriptionPromise = subscriptionSvc.getStatus req.user
+    logger.debug -> "PRIOR user.stripe_plan_id: #{req.user.stripe_plan_id}"
+    subscriptionPromise = subscriptionSvc.getStatus(req.user)
     .then ({subscriptionPlan, subscriptionStatus}) ->
       logger.debug -> "User #{req.user.id} subscription plan is #{subscriptionPlan}"
       logger.debug -> "User #{req.user.id} subscription status is #{subscriptionStatus}"
