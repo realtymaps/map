@@ -1,3 +1,4 @@
+auth = require '../utils/util.auth'
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:tiles")
 # coffeelint: enable=check_scope

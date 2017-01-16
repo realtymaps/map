@@ -1,3 +1,4 @@
+auth = require '../utils/util.auth'
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:cartodb")
 # coffeelint: enable=check_scope
