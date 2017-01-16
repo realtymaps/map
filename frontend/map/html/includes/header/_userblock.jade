@@ -12,6 +12,9 @@ include ../mixins/_avatarMixin.jade
       li(ng-show="::principal.isStaff()", ng-cloak)
         a(href="{{adminRoutes.index}}" target="_self") Admin
 
+      li()
+        a(href="JavaScript:void(0)" ng-click="giveFeedback()") Contact Us
+
       li(ng-show="::principal.isAuthenticated()", ng-cloak)
         a.logout(ui-sref="logout") Sign Out
 

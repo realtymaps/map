@@ -1,0 +1,52 @@
+form.feedback.row(role="form" name="createEditFeedbackForm")
+  .modal-header
+    h3.modal-title(ng-if="!model.isEdit") Feedback
+    h3.modal-title(ng-if="model.isEdit") Edit Feedback
+  .modal-body
+    .container-fluid
+        .row
+          .col-md-12
+            .form-group
+              .row
+                .form-group
+                  .row
+                    .col-md-12
+                      label(for="category") Category
+                      ui-select(
+                        multiple
+                        ng-model="model.category_id"
+                        theme="bootstrap"
+                        ng-disabled="disabled"
+                        append-to-body=appendToBody)
+
+                        ui-select-match(placeholder=placeholder) {{ categorySearch }})
+                        ui-select-choices(repeat="item in categories | filter: categorySearch")
+                          span() {{ item.name }}
+                  .row
+                    .col-md-12
+                      label(for="subcategory") Sub Category
+                      ui-select(
+                        multiple
+                        ng-model="model.subcategory_id"
+                        theme="bootstrap"
+                        ng-disabled="disabled"
+                        append-to-body=appendToBody)
+
+                        ui-select-match(placeholder=placeholder) {{ subCategorySearch }})
+                        ui-select-choices(repeat="item in subCategories | filter: subCategorySearch")
+                          span() {{ item.name }}
+
+                  .row
+                    .col-md-12
+                      label(for="description") Description
+                      textarea.form-control(
+                        placeholder="Give us your feedback!"
+                        name="description"
+                        ng-model="model.description"
+                        validator="optMinlength=50")
+
+
+
+  .modal-footer
+    button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditFeedbackForm") Cancel
+    button.btn.btn-primary(type="submit" ng-click="save()" validation-submit="createEditFeedbackForm") Save

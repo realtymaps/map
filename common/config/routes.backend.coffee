@@ -47,6 +47,12 @@ apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 
+apiBaseHistory = "#{apiBase}/history"
+apiBaseHistoryUser = "#{apiBaseHistory}/user"
+apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swaped with apiBaseHistoryUser to not conflict with :id
+apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+
+
 module.exports =
   views:
     rmap: '/rmap.html'
@@ -74,6 +80,7 @@ module.exports =
     getResetPassword: "#{apiBaseSession}/getResetPassword"
     doResetPassword: "#{apiBaseSession}/doResetPassword"
     requestLoginToken: "#{apiBaseSession}/requestLoginToken"
+    feedback: "#{apiBaseSession}/feedback"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes
@@ -99,6 +106,22 @@ module.exports =
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     image: "#{apiBaseUsers}/:id/image"
+  historyUser:
+    apiBase: apiBaseHistoryUser
+    root: apiBaseHistoryUser
+    byId: "#{apiBaseHistoryUser}/:id"
+  historyUserCategory:
+    apiBase: apiBaseHistoryUserCategory
+    root: apiBaseHistoryUserCategory
+    rootPOST: apiBaseHistoryUserCategory
+    byIdGET: "#{apiBaseHistoryUserCategory}/:id"
+    byId: "#{apiBaseHistoryUserCategory}/:id"
+  historyUserSubCategory:
+    apiBase: apiBaseHistoryUserSubCategory
+    root: apiBaseHistoryUserSubCategory
+    rootPOST: apiBaseHistoryUserSubCategory
+    byIdGET: "#{apiBaseHistoryUserSubCategory}/:id"
+    byId: "#{apiBaseHistoryUserSubCategory}/:id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"
