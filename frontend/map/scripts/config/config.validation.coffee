@@ -33,11 +33,19 @@ app.config(($provide, $validationProvider) ->
     realtymapsEmail: validation.realtymapsEmail
     address: validation.address
     zipcode: validation.zipcode.US
+    year: validation.year
 
     nullify: (value, scope, element, attrs, param) ->
       if !value
         _.set(scope, attrs.ngModel, null)
       return true
+
+    numberify: (value, scope, element, attrs, param) ->
+      return true if !value?
+      if validation.number.test(value)
+        _.set(scope, attrs.ngModel, parseInt(value))
+        return true
+      return false
 
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
@@ -48,7 +56,7 @@ app.config(($provide, $validationProvider) ->
       validation.url.test(value)
 
     optNumber: (value, scope, element, attrs, param) ->
-      return true unless value
+      return true if !value?
       validation.number.test(value)
 
     optMinlength: (value, scope, element, attrs, param) ->
@@ -66,6 +74,10 @@ app.config(($provide, $validationProvider) ->
     optZipcode: (value, scope, element, attrs, param) ->
       return true unless value
       validation.zipcode.US.test(value)
+
+    optYear: (value, scope, element, attrs, param) ->
+      return true if !value?
+      validation.year.test(value)
 
     #NOTE: all your doing here is validating the email regex on the backend
     # You could just use angular validation or validate the email regex above (email: validation.email).
@@ -141,5 +153,11 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid US zipcode'
     nullify:
       error: 'unable to nullify'
+    numberify:
+      error: 'Invalid Number'
+    year:
+      error: 'Invalid Year'
+    optYear:
+      error: 'Invalid Year'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)

@@ -2,7 +2,10 @@ _ = require 'lodash'
 #TODO This should probably become a controller
 app = require '../app.coffee'
 
-app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rmapsRenderingService, rmapsEventConstants, rmapsMainOptions) ->
+app.service 'rmapsFilterManagerService', (
+$rootScope, $log,
+rmapsParcelEnums, rmapsRenderingService, rmapsEventConstants, rmapsMainOptions) ->
+
   _promiseObject =
     filterDrawPromise: false
 
@@ -30,12 +33,11 @@ app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rm
 
       selectedFilters
 
-  _updateFilters = (newFilters, oldFilters) ->
+  $rootScope.updateFilters = (newFilters, oldFilters) ->
+
     return if (not newFilters and not oldFilters) or newFilters == oldFilters
     rmapsRenderingService.debounce _promiseObject, 'filterDrawPromise', ->
       $rootScope.$broadcast rmapsEventConstants.map.filters.updated, getFilters()
     , rmapsMainOptions.filterDrawDelay
-
-  $rootScope.$watchCollection 'selectedFilters', _updateFilters
 
   getFilters: getFilters
