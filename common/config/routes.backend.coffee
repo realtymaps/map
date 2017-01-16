@@ -39,17 +39,13 @@ apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
-<<<<<<< HEAD
 apiBaseErrors = "#{apiBase}/error"
-=======
-apiBaseMonitor = "#{apiBase}/monitor"
 apiBaseNotifications = "#{apiBase}/notifications"
 apiBaseNotificationFrequencies = "#{apiBaseNotifications}/frequencies"
 apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
 apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
->>>>>>> master
 
 module.exports =
   views:
