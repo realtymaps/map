@@ -18,7 +18,7 @@ exorcist = require 'exorcist'
 mkdirp = require 'mkdirp'
 
 #always return a gulp ready stream
-bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}) ->
+bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourceMaps}) ->
   l = logger.spawn('bundle')
 
   times.startTime = process.hrtime()
@@ -27,11 +27,15 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}
 
   stream = bStream.bundle()
 
-  l.debug -> 'Bundling ' + gutil.colors.bgCyan.black(config.outputName) + ' ' + entries.length + ' files ...'
+  l.debug -> 'Bundling ' + gutil.colors.bgCyan.black(config.outputName) + ' ' + entries?.length + ' files ...'
 
   if doSourceMaps
+    if prod
+      mapPath = "/tmp/#{outputName}.map"
+    else
+      mapPath = "#{paths.destFull.scripts}/#{outputName}.map"
     stream = stream.pipe(
-      exorcist("#{paths.destFull.scripts}/#{outputName}.map", null, '../src', './'))
+      exorcist(mapPath, null, '../src', './'))
 
   stream
   .once 'error', (err) ->
@@ -45,14 +49,14 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}
   .pipe(fs.createWriteStream("#{paths.destFull.scripts}/#{outputName}", 'utf8'))
 
 
-createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
+createBStream = ({config, lintIgnore, watch, prod, doSourceMaps}) ->
   cssOpts = require('./browserify.css')
   if !doSourceMaps
     cssOpts.debug = false
     cssOpts.minify = true
 
   b = browserify config
-  .transform(coffeelint({lintIgnore, watch, doSourceMaps}))
+  .transform(coffeelint({lintIgnore, watch, prod}))
   .on 'error', (error) ->
     logger.error error.stack
     logger.error error

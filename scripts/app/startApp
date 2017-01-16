@@ -11,6 +11,7 @@ cd $SCRIPT_DIR/..
 
 $SCRIPT_DIR/database/syncDb main
 $SCRIPT_DIR/database/syncDb normalized
+coffee $SCRIPT_DIR/app/cacheScripts.coffee
 
 coffee $SCRIPT_DIR/misc/syncEncryptionKey.coffee
 

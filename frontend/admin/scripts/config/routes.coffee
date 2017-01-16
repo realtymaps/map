@@ -19,6 +19,7 @@ app.run ($rootScope) ->
     {state: 'dataSource', name: 'Data Source'}
     {state: 'users', name: 'Users'}
     {state: 'utils', name: 'Utils'}
+    {state: 'errors', name: 'Errors'}
   ]
   return
 
@@ -69,6 +70,10 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'utils'
   buildState 'utilsFipsCodes', parent: 'utils'
   buildState 'utilsMail', parent: 'utils'
+
+  buildState 'errors'
+  buildState 'errorsBrowser', parent: 'errors'
+  buildState 'errorsAPI', parent: 'errors'
 
   buildState 'users'
   buildState 'usersCustomers', parent: 'users', template: usersEditTemplate

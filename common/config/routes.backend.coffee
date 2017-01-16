@@ -39,7 +39,7 @@ apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
-apiBaseMonitor = "#{apiBase}/monitor"
+apiBaseErrors = "#{apiBase}/error"
 
 module.exports =
   views:
@@ -273,8 +273,10 @@ module.exports =
     apiBase: apiBaseTiles
     parcels: "#{apiBaseTiles}/parcels/:z/:x/:y"
     parcelsAddresses: "#{apiBaseTiles}/parcelsAddresses/:z/:x/:y"
-  monitor:
-    apiBase: apiBaseMonitor
-    error: "#{apiBaseMonitor}/error"
+  errors:
+    apiBase: apiBaseErrors
+    browser: "#{apiBaseErrors}/browser"
+    capture: "#{apiBaseErrors}/browser"
+    byId: "#{apiBaseErrors}/browser/:reference"
 
   # hirefire secret value set from within backend/config/config.coffee

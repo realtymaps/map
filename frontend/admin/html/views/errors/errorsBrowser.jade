@@ -1,0 +1,46 @@
+.browser
+  h3 Last {{opts.limit}} front-end errors
+  .container
+    .row
+      .col-md-2(ng-if="!opts.distinct")
+        a(ng-click="opts.distinct = !opts.distinct") Hide dupes
+      .col-md-2(ng-if="opts.distinct")
+        a(ng-click="opts.distinct = !opts.distinct") Show dupes
+      .col-md-2(ng-if="!opts.unhandled")
+        a(ng-click="opts.unhandled = !opts.unhandled") Hide handled
+      .col-md-2(ng-if="opts.unhandled")
+        a(ng-click="opts.unhandled = !opts.unhandled") Show handled
+      .col-md-2(ng-if="opts.sourcemap=='local'")
+        a(ng-click="opts.sourcemap = 's3'") Sourcemaps: local
+      .col-md-2(ng-if="opts.sourcemap=='s3'")
+        a(ng-click="opts.sourcemap = 'network'") Sourcemaps: S3
+      .col-md-2(ng-if="opts.sourcemap=='network'")
+        a(ng-click="opts.sourcemap = 'local'") Sourcemaps: Network (url)
+
+  .container
+    .row.error.heading
+      .col-md-3 Message
+      .col-md-3 File
+      .col-md-1 Line
+      .col-md-3 Url
+      .col-md-1 Time
+      .col-md-1 Handled
+    .row.error(ng-repeat="error in errors" ng-if="!error.parent || error.parent.expanded" ng-click="expand(error)")
+      .col-md-3.parent(ng-if="!error.parent") {{error.message}}
+      .col-md-3.parent(ng-if="!error.parent") {{getFilePath(error.file)}}
+      .col-md-1.parent(ng-if="!error.parent") {{error.line}}
+      .col-md-3.parent(ng-if="!error.parent") {{error.url}}
+      .col-md-1.parent(ng-if="!error.parent") {{getTime(error)}}
+      .col-md-1.parent.text-center(ng-if="!error.parent")
+        .btn.btn-sm(ng-class="{'btn-warning':!error.handled, 'btn-success':error.handled}" ng-click="handle(error); $event.stopPropagation()")
+          .fa.fa-heart(ng-show="error.handled")
+          .fa.fa-close(ng-show="!error.handled")
+
+      .col-md-3.stack(ng-if="error.parent") {{getFilePath(error.fileName)}}
+      .col-md-3.stack(ng-if="error.parent") {{error.functionName}}
+      .col-md-1.stack(ng-if="error.parent") {{error.lineNumber}}
+      .col-md-3.stack(ng-if="error.parent")
+        a(target="_blank" ng-if="error.fileName.indexOf('http') != 0 && getFilePath(error.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision}}/{{getFilePath(error.fileName)}}\#L{{error.lineNumber}}") source
+        a(target="_blank" ng-if="error.fileName.indexOf('http') == 0" href="{{error.fileName}}") source
+      .col-md-1.stack(ng-if="error.parent") -
+      .col-md-1.stack(ng-if="error.parent") -
