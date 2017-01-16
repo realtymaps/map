@@ -10,9 +10,9 @@ exec = Promise.promisify(require('child_process').exec)
 
 S3_BUCKET = process.env.S3_BUCKET ? 'rmaps-dropbox'
 
-# if process.env.NODE_ENV != "production"
-#   console.log "Environment is #{process.env.NODE_ENV}, skipping script upload"
-#   process.exit(0)
+if process.env.NODE_ENV != "production"
+  console.log "Environment is #{process.env.NODE_ENV}, skipping script upload"
+  process.exit(0)
 
 if !process.env.SCRIPTS_CACHE_SECRET_KEY
   console.error "ERROR: SCRIPTS_CACHE_SECRET_KEY missing"
