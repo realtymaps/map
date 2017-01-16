@@ -18,10 +18,10 @@ module.exports = routeHelpers.mergeHandles new DataSourceCrud(dataSourceService)
   getColumnList:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   getLookupTypes:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]

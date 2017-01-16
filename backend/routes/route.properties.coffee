@@ -172,6 +172,8 @@ module.exports =
       internals.save({req, res, next, type: 'unFavorite'})
 
   pva:
+    middleware:
+      auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       res.set 'Access-Control-Allow-Origin', "*"
       internals.getPva({req, res, next})

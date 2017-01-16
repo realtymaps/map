@@ -6,6 +6,7 @@ internals = require './route.cartodb.internals'
 module.exports =
   getByFipsCodeAsFile:
     method: 'get'
+    middleware: auth.requirePermissions('access_staff')
     handle: (req, res, next) ->
       internals.getByFipsCode req, res, next, (validParams,res) ->
         dispistion = "attachment; filename=#{req.params.fips_code}"
@@ -20,6 +21,7 @@ module.exports =
 
   getByFipsCodeAsStream:
     method: 'get'
+    middleware: auth.requirePermissions('access_staff')
     handle: (req, res, next) ->
       #limiting the size since this endppoint is for testing
       # req.query.limit = 100
