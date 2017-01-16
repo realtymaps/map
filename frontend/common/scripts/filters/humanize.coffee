@@ -11,11 +11,11 @@ mod.filter 'humanize', () ->
       return input
 
     # convert to camelCase from `snake-case`
-    if input.indexOf '-' >= 0
-      input = input.replace /(\-\w)/g, (m) -> m[1].toUpperCase()
+    if input.indexOf('-') >= 0
+      input = input.replace(/(\-\w)/g, (m) -> m[1].toUpperCase())
     # or convert to camelCase from `snake_case`
-    else if input.indexOf '_' >= 0
-      input = input.replace /(\_\w)/g, (m) -> m[1].toUpperCase()
+    else if input.indexOf('_') >= 0
+      input = input.replace(/(\_\w)/g, (m) -> m[1].toUpperCase())
 
     # humanize camelCase
     input
