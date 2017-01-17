@@ -5,6 +5,8 @@ config = require '../config/config'
 subscriptionSvc = require '../services/service.user_subscription'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
+# errors = require './errors/util.error.profile'
+
 
 safeUserFields = [
   'cell_phone'
@@ -31,7 +33,17 @@ safeUserFields = [
 # tests subscription status of the (if active) req.session
 # This is leveraged in middleware, but can be used in route code for business logic needs
 isSubscriber = (req) ->
-  return req?.session?.subscriptionStatus in config.SUBSCR.STATUS.ACTIVE_LIST and req.user?.stripe_plan_id in config.SUBSCR.PLAN.PAID_LIST
+  l = logger.spawn("isSubscriber")
+  l.debug -> "req.session.subscriptionStatus: #{req?.session?.subscriptionStatus}"
+  l.debug -> "req.user.stripe_plan_id: #{req.user?.stripe_plan_id}"
+
+  isActive = req?.session?.subscriptionStatus in config.SUBSCR.STATUS.ACTIVE_LIST
+  isPaid = req.user?.stripe_plan_id in config.SUBSCR.PLAN.PAID_LIST
+
+  l.debug -> "isActive: #{isActive}, isPaid: #{isPaid}"
+
+  return isActive && isPaid
+
 
 # caches permission and group membership values on the user session; we could
 # get into unexpected states if those values change during a session, so we
@@ -76,11 +88,18 @@ cacheUserValues = (req, reload = {}) ->
 
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if isSubscriber(req)
-        profilesPromise = profileSvc.getProfiles req.user.id
-
+        logger.debug -> 'user is subscriber'
+        profilesPromise = profileSvc.getProfiles(req.user.id)
       # user is a client, and unallowed to deal with sandboxes
       else
-        profilesPromise = profileSvc.getClientProfiles req.user.id
+        logger.debug -> 'user should have client profiles'
+        profilesPromise = profileSvc.getClientProfiles(req.user.id)
+        .then (profiles) ->
+          if !Object.keys(profiles).length
+            logger.warn("No Profile Found!")
+            #TODO: throw new errors.NoProfileFoundError()
+            # if this blows up we need ot make sure the existing session is logged out
+          profiles
 
       profilesPromise = profilesPromise
       .then (profiles) ->

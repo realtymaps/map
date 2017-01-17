@@ -18,7 +18,7 @@ form.feedback.row(role="form" name="createEditFeedbackForm")
                         theme="bootstrap"
                         ng-disabled="disabled"
                         append-to-body=appendToBody
-                        validation="required")
+                        validator="required")
 
                         ui-select-match(placeholder="Enter a Category...") {{$select.selected.name}}
                         ui-select-choices(repeat="item in categories | filter:{name:$select.search}")

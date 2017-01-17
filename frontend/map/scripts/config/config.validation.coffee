@@ -47,6 +47,16 @@ app.config(($provide, $validationProvider) ->
         return true
       return false
 
+    confirmPassword: (value, scope, element, attrs, param) ->
+      return false if !value?
+
+      if validation.password.test(value)
+        pass = _.get(scope,param)
+        if pass?
+          return value == pass
+
+      return false
+
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
       validation.phone.test(value)
@@ -159,5 +169,7 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid Year'
     optYear:
       error: 'Invalid Year'
+    confirmPassword:
+      error: 'Passwords do not match.'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)
