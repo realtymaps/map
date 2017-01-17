@@ -94,7 +94,6 @@ filterSummary =
             ]
             hasImages: validators.boolean(truthy: true, falsy: false)
             soldRange: validators.string()
-            yearBuilt: validators.integer()
           validators.defaults(defaultValue: {})
       ]
   bounds:
