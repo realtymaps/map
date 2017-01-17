@@ -1,7 +1,7 @@
 ###globals angular,inject###
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
-_ = require 'lodash'
+
 
 describe "rmapsFilterManagerService", ->
   beforeEach ->
@@ -55,9 +55,11 @@ describe "rmapsFilterManagerService", ->
         # console.log "filterManager spec set selectedFilters"
         @$rootScope.selectedFilters =
           forSale: true
+        @$rootScope.updateFilters(@$rootScope.selectedFilters, {})
         @digestor.digest()
 
         spyCb.called.should.be.ok
+        # done()
 
     describe 'getFilters', ->
 
