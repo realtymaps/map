@@ -35,7 +35,6 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
 
   userSessionService.createPasswordHash(entity.password)
   .then (password) ->
-    # console.log.magenta "password"
     entity.password = password
 
     # INSERT THE NEW USER
@@ -50,6 +49,21 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
       if err.code == '23505'  # unique constraint
         throw new errors.UserExists("This account already exists.  Try resetting your password.")
       throw new Error(err)
+
+addNotifications = ({authUser, transaction}) ->
+  # Setup Default notifications for a new user
+  frequency_id = tables.user.notificationConfig.raw("(#{tables.user.notificationFrequencies().select('id').where(code_name:'onDemand').toString()})")
+  method_id = tables.user.notificationConfig.raw("(#{tables.user.notificationMethods().select('id').where(code_name:'emailVero').toString()})")
+
+  logger.debugQuery(
+    tables.user.notificationConfig({transaction})
+    .insert({
+      auth_user_id: authUser.id
+      type:"propertySaved"
+      method_id
+      frequency_id
+  })).then ->
+    authUser
 
 
 submitPaymentPlan = ({plan, token, authUser, transaction}) ->
@@ -136,6 +150,7 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
 
 module.exports = {
   createNewUser
+  addNotifications
   submitPaymentPlan
   submitEmail
   setNewUserMapPosition

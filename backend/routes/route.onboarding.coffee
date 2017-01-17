@@ -19,6 +19,8 @@ module.exports =
           .then (authUser) ->
             expectSingleRow(authUser)
           .then (authUser) ->
+            internals.addNotifications({authUser,transaction})
+          .then (authUser) ->
             internals.setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
           .then (authUser) ->
             internals.submitPaymentPlan {plan, token, authUser, transaction}

@@ -52,6 +52,7 @@ login = (req, res, next) -> Promise.try () ->
     if !user || !user.is_active
       throw new userSessionErrors.LoginError('Email and/or password does not match our records.')
     req.session.userid = user.id
+    logger.spawn("login").debug -> _.omit(user, 'password')
     sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
   .then () ->
     internals.getIdentity(req, res, next)

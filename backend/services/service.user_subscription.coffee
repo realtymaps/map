@@ -124,7 +124,7 @@ getStatus = (user) -> Promise.try () ->
 
   .then () ->
     # retrieve subscription status if plan not forced from perms above
-    if user.stripe_plan_id? && subscriptionPlan != config.SUBSCR.PLAN.NONE
+    if user.stripe_plan_id? && subscriptionPlan == config.SUBSCR.PLAN.NONE
 
       _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
       .then (subscription) ->
