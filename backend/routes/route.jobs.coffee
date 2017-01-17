@@ -39,32 +39,32 @@ getterConfig =
   taskHistory:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   subtaskErrorHistory:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   summary:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   health:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   runTask:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   cancelTask:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
 
 
@@ -90,32 +90,32 @@ crudConfig =
   queues:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   queuesById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   tasks:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   tasksById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   subtasks:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   subtasksById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
 
 #

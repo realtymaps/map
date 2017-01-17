@@ -1,3 +1,4 @@
+auth = require '../utils/util.auth'
 # coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:tiles")
 # coffeelint: enable=check_scope
@@ -50,8 +51,10 @@ getTiles = (mapName) ->
 module.exports =
   parcels:
     method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
     handle: getTiles('parcels')
 
   parcelsAddresses:
     method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
     handle: getTiles('parcelsAddresses')
