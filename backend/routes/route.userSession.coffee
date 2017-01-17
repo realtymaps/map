@@ -23,6 +23,7 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 DataValidationError = require '../utils/errors/util.error.dataValidation'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
+historyUserSvc = require('../services/service.historyUser').instance
 
 
 
@@ -271,6 +272,27 @@ requestLoginToken = (req, res, next) ->
       next new ExpressResponse({message: "Could not get login token, is email valid?"},
         {status: httpStatus.BAD_REQUEST, quiet: true})
 
+feedback = (req, res, next) ->
+  l = logger.spawn('feedback')
+  methodExec req,
+    GET: () ->
+      l.debug -> "req.user"
+      l.debug -> req.user
+      historyUserSvc.getAll({auth_user_id: req.user.id})
+    POST: () ->
+      l.debug -> "req"
+      l.debug -> _.pick(req, ['body', 'params','query'])
+      validation.validateAndTransformRequest(req, transforms.feedback.POST)
+      .then (validReq) ->
+        l.debug -> "validReq"
+        l.debug -> validReq
+        validReq.body.auth_user_id = req.user.id
+        if !validReq.body.id?
+          validReq.body.id = null
+        historyUserSvc.upsert(validReq.body)
+        .then (result) ->
+          res.json(result)
+
 module.exports =
   root:
     method: 'put'
@@ -353,3 +375,9 @@ module.exports =
      auth.requirePermissions('spoof_user', logoutOnFail:true)
     ]
     handle: requestLoginToken
+
+  feedback:
+    methods: ['get', 'post']
+    handle: feedback
+    middleware:
+      auth.requireLogin(redirectOnFail: true)
