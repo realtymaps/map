@@ -51,10 +51,10 @@ getTiles = (mapName) ->
 module.exports =
   parcels:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    # middleware: auth.requireLogin(redirectOnFail: true)
     handle: getTiles('parcels')
 
   parcelsAddresses:
     method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    # middleware: auth.requireLogin(redirectOnFail: true)
     handle: getTiles('parcelsAddresses')
