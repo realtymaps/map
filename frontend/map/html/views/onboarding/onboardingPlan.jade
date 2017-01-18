@@ -3,21 +3,22 @@ section.white-page.onboarding.onboarding-user.plan.ng-cloak
       h1.page-header Welcome!
 
       h2 Select your plan
-      p Proin ornare ligula eu tellus tempus elementum. Aenean bibendum iaculis mi, nec blandit lacus interdum vitae.
+      br
+      br
 
       .row
         .col-md-6.col-sm-6.col-xs-12
-          p Standard
-          p Eum admodum conceptam sententiae ea. Sea sint nibh impedit ex, sea ea elitr possim vulputate. Dicat oratio qualisque ei nec, vix erat constituam in. Probatus imperdiet ullamcorper in quo, eos impetus voluptua assentior no. Ius te delenit gubergren, pro ne alia feugiat salutatus.
-          p Price: {{view.user.plan.standard.priceFormatted}}
+          h3.plan-name Standard
+          p This plan allows you to see tax and deed data for properties in your county and adjacent counties.
+          p.price Price: {{view.plans.standard.metadata.priceFormatted}} per {{view.plans.standard.metadata.interval}}
           button.btn.btn-primary(
             ng-click="user.plan.set(subscriptionConfig.PLAN.STANDARD)"
             ng-bind="user.plan.getSelected(subscriptionConfig.PLAN.STANDARD)"
           )
         .col-md-6.col-sm-6.col-xs-12
-          p Pro
-          p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          p Price: {{view.user.plan.pro.priceFormatted}}
+          h3.plan-name Pro
+          p This plan allows you to view all tax, deed and mls data. MLS data is dependent on what MLS'es are valid from your NRS Id.
+          p.price Price: {{view.plans.pro.metadata.priceFormatted}} per {{view.plans.standard.metadata.interval}}
           button.btn.btn-primary(
             ng-click="user.plan.set(subscriptionConfig.PLAN.PRO)"
             ng-bind="user.plan.getSelected(subscriptionConfig.PLAN.PRO)"
