@@ -9,6 +9,7 @@ config = require '../config/config'
 tables = require '../config/tables'
 userUtils = require '../utils/util.user'
 planSvc = require './service.plans'
+profileErrors = require '../utils/errors/util.error.profile'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -110,7 +111,7 @@ sessionLoginProcess = (req, res, user, opts={}) ->
     ensureSessionCount(req)
   .then () ->
     createNewSeries(req, res, !!opts.rememberMe)
-
+  .catch profileErrors.NoProfileFoundError, profileErrors.NoProfileFoundError.handle(req)
 
 module.exports = {
   createNewSeries

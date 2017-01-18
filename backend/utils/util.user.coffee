@@ -5,7 +5,7 @@ config = require '../config/config'
 subscriptionSvc = require '../services/service.user_subscription'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
-# errors = require './errors/util.error.profile'
+profileErrors = require './errors/util.error.profile'
 
 
 safeUserFields = [
@@ -85,7 +85,6 @@ cacheUserValues = (req, reload = {}) ->
   if !req.session.profiles or reload?.profiles
     subscriptionPromise = subscriptionPromise
     .then () ->
-
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if isSubscriber(req)
         logger.debug -> 'user is subscriber'
@@ -97,7 +96,7 @@ cacheUserValues = (req, reload = {}) ->
         .then (profiles) ->
           if !Object.keys(profiles).length
             logger.warn("No Profile Found!")
-            ###TODO: nmccready
+            ###nmccready
               I am making the assumption that we should possibly throw an error here.
 
               Why?
@@ -121,8 +120,9 @@ cacheUserValues = (req, reload = {}) ->
               When does this Happen?
               Usually on an account that still exists in the database but is no longer in stripe.
 
-            `throw new errors.NoProfileFoundError()`
+
             ###
+            throw new profileErrors.NoProfileFoundError()
           profiles
 
       profilesPromise = profilesPromise

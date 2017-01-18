@@ -136,10 +136,10 @@ getStatus = (user) -> Promise.try () ->
         # To make it easier to represent plan and status even when deactivated, we translate the stripe deactivated plan id into
         #   a status of the users own paid account
         #   i.e. we want it to be like {plan: 'pro', status: 'deactivated'} instead of {plan: 'deactivated', status: 'active'}
-        if subscription.plan.id == config.SUBSCR.PLAN.DEACTIVATED
+        if subscription?.plan?.id == config.SUBSCR.PLAN.DEACTIVATED
           subscriptionStatus = config.SUBSCR.STATUS.DEACTIVATED
         else
-          subscriptionStatus = subscription.status
+          subscriptionStatus = subscription?.status
 
         logger.debug -> "User #{user.email} received #{subscriptionPlan} membership via stripe subscription processing."
 
