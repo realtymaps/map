@@ -12,7 +12,6 @@ userInternals = require '../services/service.user.internals'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 transforms = require '../utils/transforms/transforms.user'
 
-
 getImage = (req, res, next) ->
   validation.validateAndTransformRequest(req, transforms.imageByUser)
   .then (validReq) ->
@@ -26,6 +25,10 @@ getImage = (req, res, next) ->
       throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to PUT company image')
 
 class UserCrud extends EzRouteCrud
+  # validateAndTransform: () ->
+  #   console.log("validateAndTransformRequest")
+  #   validation.validateAndTransformRequest(arguments...)
+
   constructor:() ->
     super(arguments...)
     @permissionsCrud = new EzRouteCrud @svc.permissions, {
@@ -45,6 +48,14 @@ class UserCrud extends EzRouteCrud
     }
     @groups = @groupsCrud.root
     @groupsById = @groupsCrud.byId
+
+    @rootPOSTTransforms = transforms.root.POST
+    @rootGETTransforms = transforms.root.GET
+
+    @byIdPUTTransforms = transforms.byId.PUT
+    @byIdDELETETransforms = transforms.byId.DELETE
+    @byIdPOSTTransforms = transforms.byId.POST
+    @byIdGETTransforms = transforms.byId.GET
 
 
 module.exports = mergeHandles new UserCrud(user),

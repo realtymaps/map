@@ -9,6 +9,7 @@ config = require '../config/config'
 tables = require '../config/tables'
 userUtils = require '../utils/util.user'
 planSvc = require './service.plans'
+profileErrors = require '../utils/errors/util.error.profile'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -65,6 +66,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     logger.debug () -> "ensureSessionCount for #{req.user.email}: unlimited logins allowed"
     return Promise.resolve()
 
+  logger.spawn("ensureSessionCount").debug -> _.omit(req.user, 'password')
   maxLoginsPromise = planSvc.getPlanById(req.user.stripe_plan_id) # plan data via stripe api, and memoized
   .then (plan) ->
     plan.metadata.maxLogins
@@ -109,7 +111,7 @@ sessionLoginProcess = (req, res, user, opts={}) ->
     ensureSessionCount(req)
   .then () ->
     createNewSeries(req, res, !!opts.rememberMe)
-
+  .catch profileErrors.NoProfileFoundError, profileErrors.NoProfileFoundError.handle(req)
 
 module.exports = {
   createNewSeries

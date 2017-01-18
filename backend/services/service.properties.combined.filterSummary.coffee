@@ -140,6 +140,7 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       sqlHelpers.between(@, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
       sqlHelpers.between(@, "#{dbFn.tableName}.sqft_finished", filters.sqftMin, filters.sqftMax)
       sqlHelpers.between(@, "#{dbFn.tableName}.acres", filters.acresMin, filters.acresMax)
+      sqlHelpers.between(@, "(#{dbFn.tableName}.year_built->>'value')::int", filters.yearBuiltMin, filters.yearBuiltMax, true)
 
       if filters.bedsMin
         @where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
@@ -180,9 +181,6 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
       if filters.hasImages
         @whereNotNull("photos")
         @where("photos", "!=", "{}")
-
-      if filters.yearBuilt
-        @whereRaw("year_built->>'value' = ?", [filters.yearBuilt])
 
       if queryParams.pins?.length
         sqlHelpers.orWhereIn(@, 'rm_property_id', queryParams.pins)

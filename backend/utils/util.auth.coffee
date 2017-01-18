@@ -9,6 +9,7 @@ userUtils = require './util.user'
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {NeedsLoginError, PermissionsError} = require './errors/util.errors.userSession'
+profileErrors = require './errors/util.error.profile'
 
 
 class SessionSecurityError extends Error
@@ -40,7 +41,7 @@ getSessionUser = (req) -> Promise.try () ->
 # JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
 # I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
 # (nem) moved here to avoid circular dependency on userSession route
-logout = (req, res) -> Promise.try () ->
+logout = (req, res, doRespond = true) -> Promise.try () ->
   if req.user
     logger.debug () -> "attempting to log user out: #{req.user.email} (#{req.sessionID})"
     delete req.session.current_profile_id
@@ -50,7 +51,9 @@ logout = (req, res) -> Promise.try () ->
   else
     promise = Promise.resolve()
   promise.then () ->
-    return res.json(identity: null)
+    if !doRespond
+      return
+    return res?.json(identity: null)
   .catch (err) ->
     logger.error "error logging out user: #{err}"
     throw err
@@ -71,6 +74,7 @@ setSessionCredentials = (req) ->
     req.user = user
     if req.user
       return userUtils.cacheUserValues(req)
+  .catch profileErrors.NoProfileFoundError, profileErrors.NoProfileFoundError.handle(req)
   .catch (err) ->
     logger.error 'error while setting session data on request'
     throw err

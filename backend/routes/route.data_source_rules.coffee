@@ -118,56 +118,56 @@ module.exports = routeHelpers.mergeHandles new RuleCrud(rulesService),
   getRules:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   createRules:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   putRules:
     methods: ['put']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   deleteRules:
     methods: ['delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   getListRules:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   createListRules:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   putListRules:
     methods: ['put']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   deleteListRules:
     methods: ['delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
 
   getRule:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   updateRule:
     methods: ['patch']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]
   deleteRule:
     methods: ['delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions('access_staff')
     ]

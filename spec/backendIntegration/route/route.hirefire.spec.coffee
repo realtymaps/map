@@ -2,7 +2,7 @@
 hirefireRoute = require "#{basePath}/routes/route.hirefire"
 hirefireService = require "#{basePath}/services/service.hirefire"
 ExpressResponse = require "#{basePath}/utils/util.expressResponse"
-tables = require "#{basePath}/config/tables"
+notificationConfigSvc = require "#{basePath}/services/service.notification.config"
 require("chai").should()
 
 
@@ -29,7 +29,7 @@ describe "route.hirefire", () ->
       if !emailConfig.getMailer.called
         return
 
-      tables.user.notificationConfig()
+      notificationConfigSvc.getAllWithUser()
       .where {type: 'jobQueue', method: 'email'}
       .count()
       .then ([{count}]) ->

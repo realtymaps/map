@@ -62,8 +62,10 @@ createBStream = ({config, lintIgnore, watch, prod, doSourceMaps}) ->
   b = browserify config
   .transform(coffeelint({lintIgnore, watch, prod}))
   .on 'error', (error) ->
+    logger.error "@@@@@@@@@@@ Browserify has just exploded. @@@@@@@@@@@@@"
     logger.error error.stack
-    logger.error error
+    logger.error _.omit(error, 'stream')
+    #TODO: do we really want to exit?
     shutdown.exit(error: true)
 
   #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
