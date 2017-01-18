@@ -62,9 +62,8 @@ rmapsMainOptions
     "#{entity.code} - #{entity.name}"
 
   rmapsPlansService.getList().then (plans) ->
-    _.merge $scope,
-      view:
-        plans: plans
+    plans = _.indexBy(plans, 'name')
+    _.merge($scope, {view: {plans}})
 
   step = $state.current.name
 
