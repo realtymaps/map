@@ -1,4 +1,3 @@
-_ = require 'lodash'
 require('chai').should()
 sinon = require 'sinon'
 rewire = require 'rewire'
@@ -18,7 +17,9 @@ setInternal = (obj) ->
   createPasswordHashStub = sinon.stub().returns(Promise.resolve('password'))
 
   internals.__set__ 'emailServices', {}
-  internals.__set__ 'addNotifications', {}
+  onboardingRoute.__set__ 'notificationConfigService',
+    setNewUserDefaults: ({authUser, transaction}) ->
+      Promise.resolve(authUser)
   internals.__set__ 'mlsAgentService',
     exists: () ->
       Promise.resolve(true)
@@ -131,9 +132,6 @@ describe "route.onboarding", ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
 
-          addNotifications: ({authUser, transaction}) ->
-            Promise.resolve(authUser)
-
         subject.createUser.handle(@mockReq, @res, @next)
         .then =>
           @transactionCatchStub.called.should.be.true
@@ -151,9 +149,6 @@ describe "route.onboarding", ->
           setNewUserMapPosition: () ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
-
-          addNotifications: ({authUser, transaction}) ->
-            Promise.resolve(authUser)
 
         subject.createUser.handle(@mockReq, @res, @next)
         .then =>
@@ -174,8 +169,6 @@ describe "route.onboarding", ->
           setNewUserMapPosition: () ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
-          addNotifications: ({authUser, transaction}) ->
-            Promise.resolve(authUser)
 
         subject.createUser.handle(@mockReq, @res, @next)
         .then =>
@@ -194,8 +187,6 @@ describe "route.onboarding", ->
           setNewUserMapPosition: () ->
             logger.debug "setNewUserMapPosition CALLED"
             Promise.resolve()
-          addNotifications: ({authUser, transaction}) ->
-            Promise.resolve(authUser)
 
         subject.createUser.handle(@mockReq, @res, @next)
         .then =>

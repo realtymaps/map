@@ -1,9 +1,7 @@
 _ = require 'lodash'
 tables = require '../config/tables'
 internals =  require './service.notification.config.internals'
-# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("service:notification")
-# coffeelint: enable=check_scope
 sqlHelpers = require '../utils/util.sql.helpers'
 NotifcationBaseService = require './service.notification.base'
 
@@ -48,6 +46,22 @@ class NotifcationConfigService extends NotifcationBaseService
 
       q.where _.pick entity, internals.allColumns
     q
+
+  setNewUserDefaults: ({authUser, transaction}) ->
+    # Setup Default notifications for a new user
+    frequency_id = tables.user.notificationConfig.raw("(#{tables.user.notificationFrequencies().select('id').where(code_name:'onDemand').toString()})")
+    method_id = tables.user.notificationConfig.raw("(#{tables.user.notificationMethods().select('id').where(code_name:'emailVero').toString()})")
+
+    logger.debugQuery(
+      @dbFn({transaction})
+      .insert({
+        auth_user_id: authUser.id
+        type:"propertySaved"
+        method_id
+        frequency_id
+      })
+    ).then ->
+      authUser
 
 NotifcationConfigService.instance = new NotifcationConfigService(tables.user.notificationConfig)
 

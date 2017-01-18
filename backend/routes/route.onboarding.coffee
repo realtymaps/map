@@ -4,6 +4,7 @@ onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 {expectSingleRow} = require '../utils/util.sql.helpers'
 dbs = require '../config/dbs'
 internals = require './route.onboarding.internals'
+notificationConfigService = require('../services/service.notification.config').instance
 
 module.exports =
   createUser:
@@ -19,7 +20,7 @@ module.exports =
           .then (authUser) ->
             expectSingleRow(authUser)
           .then (authUser) ->
-            internals.addNotifications({authUser,transaction})
+            notificationConfigService.setNewUserDefaults({authUser, transaction})
           .then (authUser) ->
             internals.setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
           .then (authUser) ->

@@ -13,6 +13,7 @@ sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
+
 emailServices = null
 paymentServices = null
 
@@ -50,20 +51,6 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
         throw new errors.UserExists("This account already exists.  Try resetting your password.")
       throw new Error(err)
 
-addNotifications = ({authUser, transaction}) ->
-  # Setup Default notifications for a new user
-  frequency_id = tables.user.notificationConfig.raw("(#{tables.user.notificationFrequencies().select('id').where(code_name:'onDemand').toString()})")
-  method_id = tables.user.notificationConfig.raw("(#{tables.user.notificationMethods().select('id').where(code_name:'emailVero').toString()})")
-
-  logger.debugQuery(
-    tables.user.notificationConfig({transaction})
-    .insert({
-      auth_user_id: authUser.id
-      type:"propertySaved"
-      method_id
-      frequency_id
-  })).then ->
-    authUser
 
 
 submitPaymentPlan = ({plan, token, authUser, transaction}) ->
@@ -150,7 +137,6 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
 
 module.exports = {
   createNewUser
-  addNotifications
   submitPaymentPlan
   submitEmail
   setNewUserMapPosition
