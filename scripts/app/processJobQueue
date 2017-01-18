@@ -9,7 +9,7 @@ source $SCRIPT_DIR/app/syncVars
 
 if [[ "$IS_HEROKU" != "" ]]
 then
-    bin/start-pgbouncer-stunnel $SCRIPT_DIR/app/processJobQueueImpl wait
+    bin/start-pgbouncer-stunnel $SCRIPT_DIR/app/processJobQueueImpl wait "$@"
 else
-    $SCRIPT_DIR/app/processJobQueueImpl go
+    $SCRIPT_DIR/app/processJobQueueImpl go "$@"
 fi
