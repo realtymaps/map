@@ -6,19 +6,18 @@ shutdown = require('../../backend/config/shutdown')
 dbsyncLock = require('../../backend/utils/util.dbsyncLock')
 analyzeValue = require('../../common/utils/util.analyzeValue')
 
-actionPromise = switch process.argv[2]
-  when 'wait'
-    dbsyncLock.waitForUnlock
-      waitMessage: "SYNC: Waiting for dbsync to finish (HEROKU_SLUG_COMMIT: #{process.env.HEROKU_SLUG_COMMIT})..."
-      unlockMessage: "SYNC: dbsync complete, continuing."
-  when 'release'
-    dbsyncLock.releaseLock()
-  else
-    console.log('USAGE: dbsyncLock [wait|release]')
-    Promise.resolve()
-
-actionPromise
+Promise.try () ->
+  switch process.argv[2]
+    when 'wait'
+      dbsyncLock.waitForUnlock
+        waitMessage: "SYNC: Waiting for dbsync to finish (HEROKU_SLUG_COMMIT: #{process.env.HEROKU_SLUG_COMMIT})..."
+        unlockMessage: "SYNC: dbsync complete, continuing."
+    when 'release'
+      dbsyncLock.releaseLock()
+    else
+      console.log('USAGE: dbsyncLock [wait|release]')
+.then () ->
+  shutdown.exit()
 .catch (err) ->
   console.log('dbsyncLock ERROR: '+analyzeValue.getSimpleMessage(err))
-.finally () ->
-  shutdown.exit()
+  shutdown.exit(error: true)
