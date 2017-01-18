@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+DBSYNC_LOCK="$1"
+shift
+
+if [[ "$DBSYNC_LOCK" == "wait" ]]
+then
+    $SCRIPT_DIR/misc/dbsyncLock wait
+fi
+
+coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
