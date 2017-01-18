@@ -1,6 +1,6 @@
 # _ = require 'lodash'
 {validators} = require '../util.validation'
-# emailTransformRegex = require('./transforms.email').regex
+# emailTransformRegex = require('./transforms.email').email
 # {regexes} = require '../../../common/config/commonConfig'
 
 image =
