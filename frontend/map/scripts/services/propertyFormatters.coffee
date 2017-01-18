@@ -142,7 +142,7 @@ app.service 'rmapsPropertyFormatterService',
 
       processDisclaimerTextMacros: (result) ->
         # disclaimer text macros can be any keys that exist on the property result
-        result.disclaimer_text.replace /\{\{(\w+)\}\}/g, (test, match) ->
+        result?.disclaimer_text?.replace /\{\{(\w+)\}\}/g, (test, match) ->
           if match of result
             if match in ["up_to_date", "created_date", "discontinued_date"] # format dates
               return new Date(result[match]).toLocaleDateString()

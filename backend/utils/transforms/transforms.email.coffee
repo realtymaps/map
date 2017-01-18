@@ -24,13 +24,11 @@ email = (regexes) ->
   Checks regex email always. If
 
 ###
-valid = ({id, regex, doUnique = false} = {}) ->
+valid = ({id, doUnique = false} = {}) ->
 
-  logger.debug -> {id, regex, doUnique}
+  logger.debug -> {id, doUnique}
 
-  transforms = [
-    email({regex})
-  ]
+  transforms = [email()]
 
   if doUnique
     transforms.push validators.unique({
