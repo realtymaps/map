@@ -2,15 +2,13 @@ config = require '../config/config'
 Promise = require 'bluebird'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("service:user_subscription")
+# coffeelint: enable=check_scope
 permSvc = require './service.permissions'
 {expectSingleRow} = require '../utils/util.sql.helpers'
-# sqlColumns = require '../utils/util.sql.columns'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 stripeErrors = require '../utils/errors/util.errors.stripe'
-
-# coffeelint: disable=check_scope
-logger = require('../config/logger').spawn("service.user_subscription")
-# coffeelint: enable=check_scope
 
 stripe = null
 veroSvc = null
@@ -27,12 +25,14 @@ expiredSubscription = (planId) ->
 
 
 _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_plan_id) -> Promise.try () ->
+  logger.debug -> {stripe_customer_id, stripe_subscription_id, stripe_plan_id}
   if !stripe_subscription_id?
-    if stripe_plan_id?
+    if stripe_subscription_id?
+      logger.debug -> "No stripe_subscription_id and stripe_subscription_id marking as expired."
       return expiredSubscription(stripe_plan_id)
     return null
 
-  stripe.customers.retrieveSubscription stripe_customer_id, stripe_subscription_id
+  stripe.customers.retrieveSubscription(stripe_customer_id, stripe_subscription_id)
   .then (subscription) ->
     return subscription
 
@@ -40,7 +40,7 @@ _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_pla
   # In this scenario, we want to relay the subscription has EXPIRED and remove the id.
   # Ideally, we will have gotten a webhook event to let us know to remove it.
   .catch stripeErrors.StripeInvalidRequestError, (err) ->
-
+    logger.debug -> "Unable to retrieve subscription"
     # nullify subscription_id so we know its expired
     tables.auth.user()
     .update stripe_subscription_id: null
@@ -48,6 +48,7 @@ _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_pla
     .then () ->
 
       if stripe_plan_id? # defensive; we would expect a plan_id if there existed a subscription_id
+        logger.debug -> "Marking subscription as expired."
         return expiredSubscription(stripe_plan_id)
       else
         throw new PartiallyHandledError("No subscription or plan is associated with user #{stripe_customer_id}.")
@@ -129,19 +130,19 @@ getStatus = (user) -> Promise.try () ->
 
   .then () ->
     # retrieve subscription status if plan not forced from perms above
-    if user.stripe_plan_id? && subscriptionPlan != config.SUBSCR.PLAN.NONE
+    if user.stripe_plan_id? && subscriptionPlan == config.SUBSCR.PLAN.NONE
 
-      _getStripeSubscription user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id
+      _getStripeSubscription(user.stripe_customer_id, user.stripe_subscription_id, user.stripe_plan_id)
       .then (subscription) ->
         subscriptionPlan = user.stripe_plan_id
 
         # To make it easier to represent plan and status even when deactivated, we translate the stripe deactivated plan id into
         #   a status of the users own paid account
         #   i.e. we want it to be like {plan: 'pro', status: 'deactivated'} instead of {plan: 'deactivated', status: 'active'}
-        if subscription.plan.id == config.SUBSCR.PLAN.DEACTIVATED
+        if subscription?.plan?.id == config.SUBSCR.PLAN.DEACTIVATED
           subscriptionStatus = config.SUBSCR.STATUS.DEACTIVATED
         else
-          subscriptionStatus = subscription.status
+          subscriptionStatus = subscription?.status
 
         logger.debug -> "User #{user.email} received #{subscriptionPlan} membership via stripe subscription processing."
 

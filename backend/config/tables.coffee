@@ -3,7 +3,7 @@ config = require '../config/config'
 _ = require 'lodash'
 
 
-# setting on module.exports before processing to help with IDE autocomplete
+# setting these on module.exports before processing to help with IDE autocomplete
 module.exports =
   config:
     dataNormalization: 'config_data_normalization'

@@ -21,7 +21,7 @@ INSERT INTO history_user_subcategory (code, name, category_id)
 VALUES
 ('expensive', 'Too Expensive', (select id from history_user_category where code = 'cost')),
 ('bulk', 'Bulk Discount', (select id from history_user_category where code = 'cost')),
-('promotion', 'Possible Promitions', (select id from history_user_category where code = 'cost'));
+('promotion', 'Possible Promotions', (select id from history_user_category where code = 'cost'));
 
 
 INSERT INTO history_user_subcategory (code, name, category_id)

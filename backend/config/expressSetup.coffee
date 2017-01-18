@@ -157,9 +157,10 @@ app.use (data, req, res, next) ->
       message = escape(data.message)
     if !data.expected
       message = commonConfig.UNEXPECTED_MESSAGE(message)
+    logger.debug -> 'data converted to ExpressResponse'
     data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
 
-  logger.debug "data.status: #{data.status}"
+  logger.debug -> "data.status: #{data.status}"
   if !status.isWithinOK(data.status)
     # this is not strictly an error handler now, it is also used for routine final handling of a response,
     # something not easily done with the standard way of using express -- so only log as an error if the

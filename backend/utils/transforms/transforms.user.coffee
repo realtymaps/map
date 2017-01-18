@@ -1,6 +1,6 @@
 # _ = require 'lodash'
 {validators} = require '../util.validation'
-# emailTransformRegex = require('./transforms.email').regex
+# emailTransformRegex = require('./transforms.email').email
 # {regexes} = require '../../../common/config/commonConfig'
 
 image =
@@ -109,6 +109,8 @@ groups = do ->
     query: validators.object isEmptyProtect: true
     body: validators.object isEmptyProtect: true
 
+
+#TODO: allow validateAndRequest to only pass through original object keys
 # _rootQueryAndBody =
 #   first_name: validators.string(minLength:2)
 #   last_name: validators.string(minLength:2)

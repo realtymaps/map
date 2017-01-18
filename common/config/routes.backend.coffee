@@ -46,6 +46,11 @@ apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
 apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
+apiBaseHistory = "#{apiBase}/history"
+apiBaseHistoryUser = "#{apiBaseHistory}/user"
+apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swaped with apiBaseHistoryUser to not conflict with :id
+apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+
 
 apiBaseHistory = "#{apiBase}/history"
 apiBaseHistoryUser = "#{apiBaseHistory}/user"

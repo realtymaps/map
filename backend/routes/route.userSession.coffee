@@ -26,12 +26,12 @@ userSessionErrors = require '../utils/errors/util.errors.userSession'
 historyUserSvc = require('../services/service.historyUser').instance
 
 
-
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
+  l = logger.spawn("login")
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.email} (#{req.sessionID})"
+    l.debug () -> "attempting to log user out (someone is logging in): #{req.user.email} (#{req.sessionID})"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
@@ -53,6 +53,7 @@ login = (req, res, next) -> Promise.try () ->
     if !user || !user.is_active
       throw new userSessionErrors.LoginError('Email and/or password does not match our records.')
     req.session.userid = user.id
+    l.debug -> _.omit(user, 'password')
     sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
   .then () ->
     internals.getIdentity(req, res, next)

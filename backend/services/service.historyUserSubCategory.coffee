@@ -3,6 +3,6 @@ tables =  require '../config/tables'
 
 class HistoryUserSubCrudCategory extends EzCrud
 
-HistoryUserSubCrudCategory.instance = new HistoryUserSubCrudCategory(tables.history.userCategory)
+HistoryUserSubCrudCategory.instance = new HistoryUserSubCrudCategory(tables.history.userSubCategory)
 
 module.exports = HistoryUserSubCrudCategory

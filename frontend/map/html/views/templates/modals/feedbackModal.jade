@@ -13,27 +13,28 @@ form.feedback.row(role="form" name="createEditFeedbackForm")
                     .col-md-12
                       label(for="category") Category
                       ui-select(
-                        multiple
-                        ng-model="model.category_id"
+                        ng-model="model.category"
+                        ng-change="categoryChange(model.category)"
                         theme="bootstrap"
                         ng-disabled="disabled"
-                        append-to-body=appendToBody)
+                        append-to-body=appendToBody
+                        validator="required")
 
-                        ui-select-match(placeholder=placeholder) {{ categorySearch }})
-                        ui-select-choices(repeat="item in categories | filter: categorySearch")
+                        ui-select-match(placeholder="Enter a Category...") {{$select.selected.name}}
+                        ui-select-choices(repeat="item in categories | filter:{name:$select.search}")
                           span() {{ item.name }}
-                  .row
+                  .row(ng-if="hasSubCat")
                     .col-md-12
                       label(for="subcategory") Sub Category
                       ui-select(
-                        multiple
-                        ng-model="model.subcategory_id"
+                        ng-model="model.subcategory"
                         theme="bootstrap"
                         ng-disabled="disabled"
                         append-to-body=appendToBody)
 
-                        ui-select-match(placeholder=placeholder) {{ subCategorySearch }})
-                        ui-select-choices(repeat="item in subCategories | filter: subCategorySearch")
+                        ui-select-match(placeholder="Enter a subcategory...") {{$select.selected.name}}
+                        ui-select-choices(
+                          repeat="item in subCategories | filter:{name:$select.search} | filter:{category_id:model.category.id}:true")
                           span() {{ item.name }}
 
                   .row
@@ -43,10 +44,11 @@ form.feedback.row(role="form" name="createEditFeedbackForm")
                         placeholder="Give us your feedback!"
                         name="description"
                         ng-model="model.description"
-                        validator="optMinlength=50")
+                        validator="minlength=50")
 
 
 
   .modal-footer
+    input.btn.btn-default(value="Reset" type="reset"  validation-reset="createEditFeedbackForm")
     button.btn.btn-default(type="reset" ng-click="cancel()" validation-reset="createEditFeedbackForm") Cancel
-    button.btn.btn-primary(type="submit" ng-click="save()" validation-submit="createEditFeedbackForm") Save
+    input.btn.btn-primary(value="Save" type="submit" ng-click="save()" validation-submit="createEditFeedbackForm")
