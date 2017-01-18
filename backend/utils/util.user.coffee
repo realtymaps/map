@@ -97,8 +97,32 @@ cacheUserValues = (req, reload = {}) ->
         .then (profiles) ->
           if !Object.keys(profiles).length
             logger.warn("No Profile Found!")
-            #TODO: throw new errors.NoProfileFoundError()
-            # if this blows up we need ot make sure the existing session is logged out
+            ###TODO: nmccready
+              I am making the assumption that we should possibly throw an error here.
+
+              Why?
+                If there is no profile on the frontend the app is basically unusable.
+                This is because the fronend code assumes you will have a profile and
+                it gets mixed up in a state of partial loggin.
+
+                I believe it is easier to just invalidate the login and thus not deal with the
+                complication on the frontend.
+
+
+              Why Holdoff:
+                Regressions:
+                - cacheUserValues is used in many places and will require more changes than desired.
+
+                Complication:
+                Throwing should eventually log the user out on the stack. However, currently without handling it the
+                same session sticks for the same browser (even for a different account).
+
+
+              When does this Happen?
+              Usually on an account that still exists in the database but is no longer in stripe.
+
+            `throw new errors.NoProfileFoundError()`
+            ###
           profiles
 
       profilesPromise = profilesPromise
