@@ -6,8 +6,9 @@ _ = require 'lodash'
 logger = (require '../../util/logger').spawn('browserify')
 paths = require '../../../common/config/paths'
 internals = require './browserify.internals'
+require '../../../backend/extensions/stream'
 
-module.exports = ({inputGlob, outputName, doSourceMaps, watch}) ->
+module.exports = ({inputGlob, outputName, doSourceMaps, watch, done}) ->
   times = startTime: ''
 
   logger.spawn('browserify:verbose').debug -> "@@@@ inputGlob @@@@"
@@ -45,3 +46,10 @@ module.exports = ({inputGlob, outputName, doSourceMaps, watch}) ->
 
     # finally push the files through
     internals.bundle({config, entries, bStream, times, outputName, doSourceMaps})
+  .then (stream) ->
+    stream.toPromise()
+  .then () ->
+    done()
+  .catch (error) ->
+    logger.error("Browserify failed")
+    done(error)
