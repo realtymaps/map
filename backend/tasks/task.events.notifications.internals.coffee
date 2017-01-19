@@ -1,4 +1,3 @@
-_ = require 'lodash'
 Promise = require 'bluebird'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
@@ -9,9 +8,10 @@ errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 {HardFail} = require '../utils/errors/util.error.jobQueue'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 notifyQueueSvc = require('../services/service.notification.queue').instance
+notifyQueueCleanup = require('../services/service.notification.queue').cleanup
 notificationsSvc = require '../services/service.notifications'
 utilEvents = require './util.events.coffee'
-sqlHelpers = require '../utils/util.sql.helpers'
+
 
 
 NUM_ROWS_TO_PAGINATE = 100
@@ -80,20 +80,11 @@ sendNotifications = (subtask) ->
     return
   l.debug -> "@@@@@@@@@ rows @@@@@@@@@@@@@"
   l.debug -> rows
-  l.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+  l.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
   Promise.all Promise.map rows, (row) ->
-    ###TODO: we need mark column as having a webhook
-     Send notification out mark as sent/pending, and send out specific user_notificaiton_id to know which to remove/update
-
-     handle webhook later to handlesuccess and removal
-     where:
-      - success removes user_notification_queue item where pending and specific id
-      - fail, remove pending column so it is retried by job task
-
-    Use webhook for emailVero, sms but not on email (node mailer).
-
-    ###
+    # Deliveries should normally be confirmed in webhooks to mark the user_notification_queue status as delivered or not
+    # see route.webhooks
     row.options.notification_id = row.id
 
     dbs.get("main").transaction (transaction) ->
@@ -110,12 +101,10 @@ sendNotifications = (subtask) ->
         notificationsSvc.sendNotificationNow {row, options: row.options, transaction}
         .then () ->
           l.debug -> '!!!!!!!!!!!!!! notification send success !!!!!!!!!!!!!!'
-
+          l.debug -> "config.NOTIFICATIONS.USE_WEBHOOKS: #{config.NOTIFICATIONS.USE_WEBHOOKS}"
           if !config.NOTIFICATIONS.USE_WEBHOOKS
-            logger.debug '@@@@ NO WEBHOOKS DELETING @@@@'
-            tables.user.notificationQueue({transaction})
-            .where id: row.id
-            .delete()
+            l.debug -> '@@@@ NO WEBHOOKS DELETING @@@@'
+            l.debugQuery( tables.user.notificationQueue({transaction}).where(id: row.id).delete())
 
         .catch (err) ->
           throw err
@@ -144,80 +133,19 @@ cleanupNotifications = (subtask) ->
   _deleteNotifications()
   .then () ->
   Promise.map utilEvents.notificationTypes, (type) ->
-    query = tables.user.notificationQueue()
-    .where () ->
-      @where status: 'pending'
-      @orWhere status: null
-    .whereNotNull 'last_attempt_time'
-    .whereRaw "options->>'type' = ?", [type]
-    .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
-    .where 'attempts', '<', config.NOTIFICATIONS.MAX_ATTEMPTS
-
-
-    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
-    l.debug -> query.toString()
-    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
-
     handle = utilEvents.cleanupHandlers[type] || utilEvents.cleanupHandlers.default
-    handle(query)
+    l.debug -> "handle: #{handle}"
+
+    handle(notifyQueueCleanup.getTimedOut(type))#usually deletes timedout here if handle is propertySaved
+    .then () ->
+      notifyQueueCleanup.getDisabled(type)
+      .then (deletes) ->
+        notifyQueueCleanup.handleDisabled(deletes)
   .then () ->
     dbs.transaction (transaction) ->
-      #get maxed out rows and move them out
-      maxQuery = tables.user.notificationQueue({transaction})
-      .whereNotNull 'last_attempt_time'
-      .whereRaw "now_utc() - last_attempt_time  > interval '#{config.NOTIFICATIONS.DELIVERY_THRESH_MIN} minutes'"
-      .where 'attempts', '>=', config.NOTIFICATIONS.MAX_ATTEMPTS
-
-      l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
-      l.debug -> maxQuery.toString()
-      l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
-
-
-      maxQuery.then (maxedOutRows) ->
-        badRows = []
-
-        maxedOutRows = _.filter maxedOutRows, (r) ->
-          exists = !!r.id
-          if !exists
-            badRows.push r
-          exists
-
-        if !maxedOutRows.length
-          l.debug -> "@@@@ MAXXED OUT ROWS: GTFO @@@@"
-          return
-
-        l.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-
-        if badRows.length
-          l.debug -> "@@@@ MAXXED OUT ROWS LENGTH: #{maxedOutRows.length}"
-          l.debug -> "@@@@ BAD ROWS LENGTH: #{badRows.length}"
-          l.debug -> badRows
-          # what should I do with the badRows if I have no id to update them with?
-
-        tables.user.notificationExpired({transaction})
-        .insert(maxedOutRows.map (r) -> _.omit r, 'id')
-        .then () ->
-          query = null
-          clauseArg = _.pluck(maxedOutRows, 'id')
-
-          logger.debug -> "@@@@ MAXXED OUT ROWS LENGTH (POST INSERT): #{maxedOutRows.length}"
-
-          logIfError = (logQuery = false) ->
-            l.debug -> query.toString() if logQuery
-            l.debug -> "@@@@ maxedOutRows @@@@"
-            l.debug -> maxedOutRows
-            l.debug -> "@@@@ clauseArg @@@@"
-            l.debug -> clauseArg
-
-          query = sqlHelpers.whereIn(tables.user.notificationQueue({transaction}), 'id', clauseArg)
-          .delete()
-
-          .catch errorHandlingUtils.isKnexUndefined, (error) ->
-            logIfError()
-            throw new errorHandlingUtils.PartiallyHandledError(error, "isKnexUndefined: failed to clean maxedOutRows")
-          .catch errorHandlingUtils.isUnhandled, (error) ->
-            logIfError(true)
-            throw new errorHandlingUtils.PartiallyHandledError(error, "isUnhandled: failed to clean maxedOutRows")
+      notifyQueueCleanup.getMaxxedOut(transaction)
+      .then (maxedOutRows) ->
+        notifyQueueCleanup.handleMaxxed(transaction)
 
 
 module.exports = {

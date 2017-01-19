@@ -36,12 +36,12 @@ module.exports =
       .then (validReq) ->
 
         if !veroWebhookEvents.delivered == validReq.body.type
-          logger.debug 'VERO WEBHOOK IGNORING'
-          logger.debug validReq.body
+          logger.debug -> 'VERO WEBHOOK IGNORING'
+          logger.debug -> validReq.body
           return
 
-        logger.debug 'VERO WEBHOOK DELIVERED'
-        logger.debug validReq.body
+        logger.debug -> 'VERO WEBHOOK DELIVERED'
+        logger.debug -> validReq.body
 
         if /notification/.test validReq.body.campaign["trigger-event"] && validReq.body.event?.data?
           notificationQueueSvc.update {
