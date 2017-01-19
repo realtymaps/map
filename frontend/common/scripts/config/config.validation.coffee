@@ -1,5 +1,6 @@
 mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+common = require '../../../../common/config/commonConfig.coffee'
 _ = require 'lodash'
 
 
@@ -23,8 +24,8 @@ mod.config(($provide, $validationProvider) ->
     $delegate
 
 )
-.run ($validation, rmapsMainOptions, $http) ->
-  {validation} = rmapsMainOptions
+.run ($validation, $http) ->
+  {validation} = common
 
   expression =
     email: validation.email
