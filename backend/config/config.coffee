@@ -10,6 +10,7 @@ if scriptName not in ['server','jobQueueWorker','masterWorker']
 
 
 base =
+  SIGNUP_ENABLED: toBool(process.env.SIGNUP_ENABLED, defaultValue: true)
   KARMA:
     LOG_LEVEL: process.env.KARMA_LOG_LEVEL ? 'info'
     BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']
