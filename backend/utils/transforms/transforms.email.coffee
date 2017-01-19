@@ -1,8 +1,10 @@
 tables = require '../../config/tables'
 {VALIDATION, EMAIL_VERIFY} = require '../../config/config'
-{validators, validateAndTransformRequest} = require '../util.validation'
+{validators, validateAndTransformRequest, DataValidationError} = require '../util.validation'
 logger = require('../../config/logger').spawn("transforms:emails")
 config = require '../../config/config'
+errorHandlingUtils = require '../errors/util.error.partiallyHandledError'
+emailErrors = require '../errors/util.errors.email'
 
 
 # PRIVATE: do not make public use the the PUBLIC: valid  as id (uniqueness) is optional
@@ -68,6 +70,10 @@ validateRequest = (req) ->
           transform: valid({id, doUnique})
           required: true
     })
+    .catch DataValidationError, (err) ->
+      throw new emailErrors.ValidateEmailError(err, 'problem validating email string')
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
 
 
 verifyRequest =
