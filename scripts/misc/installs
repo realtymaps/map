@@ -24,7 +24,8 @@ if [[ "$unamestr" == 'Linux' ]]; then
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
-  # NOTE these libraries are a pain in the ass with brew, as upgrade will blindly update vips and poppler c libs
+  # NOTE these libraries are a pain in the ass with brew, as upgrade will blindly update vips and poppler c libs (UNLESS YOU LOCK THEM DOWN)
+  # to lock down do `brew pin vips poppler`
   # the node libs dependend on specific versions
   # TO drop to an old version do
   # brew uninstall poppler --ignore-dependencies
