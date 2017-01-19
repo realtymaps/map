@@ -97,6 +97,30 @@ mod.config(($provide, $validationProvider) ->
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isValid, email: value, config)
 
+    checkValidCoupon: (value, scope, element, attrs, param) ->
+      query = {
+        stripe_coupon_id: value
+      }
+      if param?
+        params = param.split(";")
+
+        if params.length && params[0] == 'isSpecial'
+          query.isSpecial = true
+
+      promise = $http.get(backendRoutes.coupons.isValid, {params: query, alerts: false})
+
+      if !query.isSpecial
+        return promise
+
+      handleSpecial = ({data}) ->
+        if !(params?.length > 1)
+          return promise
+        field = params[1] + ".isSpecial"
+        _.set(scope, field, data == true)
+        data
+
+      promise.then(handleSpecial).catch(handleSpecial)
+
     ###
     Do not be mistaken; this also checks if the email is valid!
 
@@ -138,6 +162,8 @@ mod.config(($provide, $validationProvider) ->
       error: 'Email must be unique'
     checkValidMlsAgent:
       error: 'MLS ID not found or active.'
+    checkValidCoupon:
+      error: 'That doesn\'t seem right'
     number:
       error: 'Invalid Number'
     optNumber:

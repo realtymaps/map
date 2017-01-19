@@ -12,6 +12,9 @@ userSessionService =  require '../services/service.userSession'
 sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+dbs = require '../config/dbs'
+{expectSingleRow} = require '../utils/util.sql.helpers'
+notificationConfigService = require('../services/service.notification.config').instance
 
 
 emailServices = null
@@ -53,17 +56,26 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
 
 
 
-submitPaymentPlan = ({plan, token, authUser, transaction}) ->
-  logger.debug -> "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  paymentServices.customers.create
-    authUser: authUser
-    plan: plan
-    token: token
-    trx: transaction
-  .then (result) ->
-    logger.debug -> "@@@@ Customer Creation Success @@@@"
-    logger.debug -> result.customer
-    result
+submitPaymentPlan = ({plan, token, authUser, transaction, stripe_coupon_id}) -> Promise.try () ->
+  logger.debug -> {plan, token, stripe_coupon_id}
+
+  needsCreditCardPromise = if stripe_coupon_id?
+    paymentServices.coupons.isNoCreditCard(stripe_coupon_id)
+  else
+    Promise.resolve()
+
+  needsCreditCardPromise
+  .then ->
+    paymentServices.customers.create({authUser, plan, token, trx: transaction, coupon: stripe_coupon_id})
+    .then (result) ->
+      logger.debug -> "@@@@ Customer Creation Success @@@@"
+      logger.debug -> result.customer
+      result
+    .catch (error) ->
+      throw new errors.SubmitPaymentPlanCreateCustomerError(error,
+        "Stripe customer creation failed with token:#{token} or coupon:#{stripe_coupon_id}")
+
+
 
 submitEmail = ({authUser, plan}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -135,10 +147,28 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
     logger.debug -> authUser
     authUser
 
+#Main Function that pipelines everything together
+onboard = (body = {}) ->
+  {plan, token, fips_code, mls_code, mls_id, stripe_coupon_id} = body
+  plan = plan.name
+  dbs.transaction 'main', (transaction) ->
+    createNewUser({body, transaction, plan})
+    .then (authUser) ->
+      expectSingleRow(authUser)
+    .then (authUser) ->
+      notificationConfigService.setNewUserDefaults({authUser, transaction})
+    .then (authUser) ->
+      setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
+    .then (authUser) ->
+      submitPaymentPlan {plan, token, authUser, transaction, stripe_coupon_id}
+    .then ({authUser}) ->
+      submitEmail {authUser, plan}
+
 module.exports = {
   createNewUser
   submitPaymentPlan
   submitEmail
   setNewUserMapPosition
   setMlsPermissions
+  onboard
 }

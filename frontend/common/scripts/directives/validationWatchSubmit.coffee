@@ -17,7 +17,6 @@ $parse) ->
     scope[watchType] watch, (newVal, oldVal) ->
       return if newVal == oldVal
 
-      $validation.validate(form)
-      .success ->
+      $validation.validate(form).success ->
         cb(newVal, oldVal)
     , isDeep

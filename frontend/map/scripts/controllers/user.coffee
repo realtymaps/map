@@ -79,7 +79,7 @@ $log
         return
 
       $http.put backendRoutes.userSession.image, blob: @cropBlob
-      .success =>
+      .then =>
         if $scope.user.account_image_id?
           delete @cropBlob
         delete @blob
@@ -107,7 +107,7 @@ $log
         return
 
       $http.put backendRoutes.userSession.companyImage.replace(':account_image_id',''), _.extend(blob: @cropBlob, $scope.company)
-      .success =>
+      .then =>
         if $scope.company.account_image_id?
           delete @cropBlob
         delete @blob

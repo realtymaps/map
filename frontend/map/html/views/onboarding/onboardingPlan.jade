@@ -38,6 +38,7 @@ section.white-page.onboarding.onboarding-user.plan.ng-cloak(ng-if="safeConfig.SI
                       ng-if="!safeConfig.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN"
                       name="email"
                       ng-model="user.email"
+                      ng-model-options="{ debounce: 250 }"
                       type='text'
                       validator="email,required,checkUniqueEmail=disableAlert")
                     input.form-control(
