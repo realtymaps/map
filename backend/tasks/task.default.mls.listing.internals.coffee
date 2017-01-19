@@ -186,14 +186,14 @@ ensureNormalizedTable = (subid) ->
       table.timestamp('creation_date', true)
       table.integer('days_on_market_cumulative')
       table.integer('days_on_market_filter')
-    .raw("CREATE UNIQUE INDEX ON \"#{tableName}\" (data_source_uuid)")
-    .raw("CREATE TRIGGER \"update_rm_modified_time_#{tableName}\" BEFORE UPDATE ON \"#{tableName}\" FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
-    .raw("CREATE INDEX ON \"#{tableName}\" (inserted)")
-    .raw("CREATE INDEX ON \"#{tableName}\" (deleted)")
-    .raw("CREATE INDEX ON \"#{tableName}\" (deleted, data_source_uuid)")
-    .raw("CREATE INDEX ON \"#{tableName}\" (updated)")
-    .raw("CREATE INDEX ON \"#{tableName}\" (batch_id)")
-    .raw("CREATE INDEX ON \"#{tableName}\" (rm_property_id, hide_listing, deleted, close_date DESC)")
+    .raw("CREATE UNIQUE INDEX ON ?? (data_source_uuid)", [tableName])
+    .raw("CREATE TRIGGER ?? BEFORE UPDATE ON  FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()", ["update_rm_modified_time_#{tableName}",tableName])
+    .raw("CREATE INDEX ON ?? (inserted)", [tableName])
+    .raw("CREATE INDEX ON ?? (deleted)", [tableName])
+    .raw("CREATE INDEX ON ?? (deleted, data_source_uuid)", [tableName])
+    .raw("CREATE INDEX ON ?? (updated)", [tableName])
+    .raw("CREATE INDEX ON ?? (batch_id)", [tableName])
+    .raw("CREATE INDEX ON ?? (rm_property_id, hide_listing, deleted, close_date DESC)", [tableName])
 
 
 module.exports = {
