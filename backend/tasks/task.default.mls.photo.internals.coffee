@@ -336,7 +336,7 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
       }
       .then (obj) -> new Promise (resolve, reject) ->
 
-        photoStream = mlsPhotoUtil.toPhotoStream(obj)
+        photoStream = mlsPhotoUtil.toPhotoStream(obj, {requirePhotos: false})
         photoStream.once('error', reject)
         photoStream.pipe(storeStream({
           photoRowClause
