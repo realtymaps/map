@@ -5,6 +5,8 @@ config = require '../config/config'
 subscriptionSvc = require '../services/service.user_subscription'
 profileSvc = require '../services/service.profiles'
 permissionsService = require '../services/service.permissions'
+profileErrors = require './errors/util.error.profile'
+
 
 safeUserFields = [
   'cell_phone'
@@ -31,7 +33,17 @@ safeUserFields = [
 # tests subscription status of the (if active) req.session
 # This is leveraged in middleware, but can be used in route code for business logic needs
 isSubscriber = (req) ->
-  return req?.session?.subscriptionStatus in config.SUBSCR.STATUS.ACTIVE_LIST and req.user?.stripe_plan_id in config.SUBSCR.PLAN.PAID_LIST
+  l = logger.spawn("isSubscriber")
+  l.debug -> "req.session.subscriptionStatus: #{req?.session?.subscriptionStatus}"
+  l.debug -> "req.user.stripe_plan_id: #{req.user?.stripe_plan_id}"
+
+  isActive = req?.session?.subscriptionStatus in config.SUBSCR.STATUS.ACTIVE_LIST
+  isPaid = req.user?.stripe_plan_id in config.SUBSCR.PLAN.PAID_LIST
+
+  l.debug -> "isActive: #{isActive}, isPaid: #{isPaid}"
+
+  return isActive && isPaid
+
 
 # caches permission and group membership values on the user session; we could
 # get into unexpected states if those values change during a session, so we
@@ -59,7 +71,8 @@ cacheUserValues = (req, reload = {}) ->
   # ensure subscription
   if !req.session.subscriptionStatus or reload?.subscriptionStatus
     # subscription service discovers if user was manually given a plan permission (bypassed stripe), hence the assignment for `stripe_plan_id` below
-    subscriptionPromise = subscriptionSvc.getStatus req.user
+    logger.debug -> "PRIOR user.stripe_plan_id: #{req.user.stripe_plan_id}"
+    subscriptionPromise = subscriptionSvc.getStatus(req.user)
     .then ({subscriptionPlan, subscriptionStatus}) ->
       logger.debug -> "User #{req.user.id} subscription plan is #{subscriptionPlan}"
       logger.debug -> "User #{req.user.id} subscription status is #{subscriptionStatus}"
@@ -72,14 +85,45 @@ cacheUserValues = (req, reload = {}) ->
   if !req.session.profiles or reload?.profiles
     subscriptionPromise = subscriptionPromise
     .then () ->
-
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if isSubscriber(req)
-        profilesPromise = profileSvc.getProfiles req.user.id
-
+        logger.debug -> 'user is subscriber'
+        profilesPromise = profileSvc.getProfiles(req.user.id)
       # user is a client, and unallowed to deal with sandboxes
       else
-        profilesPromise = profileSvc.getClientProfiles req.user.id
+        logger.debug -> 'user should have client profiles'
+        profilesPromise = profileSvc.getClientProfiles(req.user.id)
+        .then (profiles) ->
+          if !Object.keys(profiles).length
+            logger.warn("No Profile Found!")
+            ###nmccready
+              I am making the assumption that we should possibly throw an error here.
+
+              Why?
+                If there is no profile on the frontend the app is basically unusable.
+                This is because the fronend code assumes you will have a profile and
+                it gets mixed up in a state of partial loggin.
+
+                I believe it is easier to just invalidate the login and thus not deal with the
+                complication on the frontend.
+
+
+              Why Holdoff:
+                Regressions:
+                - cacheUserValues is used in many places and will require more changes than desired.
+
+                Complication:
+                Throwing should eventually log the user out on the stack. However, currently without handling it the
+                same session sticks for the same browser (even for a different account).
+
+
+              When does this Happen?
+              Usually on an account that still exists in the database but is no longer in stripe.
+
+
+            ###
+            throw new profileErrors.NoProfileFoundError()
+          profiles
 
       profilesPromise = profilesPromise
       .then (profiles) ->

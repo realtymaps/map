@@ -62,19 +62,13 @@ rmapsMainOptions
     "#{entity.code} - #{entity.name}"
 
   rmapsPlansService.getList().then (plans) ->
-    _.merge $scope,
-      view:
-        plans: plans
+    plans = _.indexBy(plans, 'name')
+    _.merge($scope, {view: {plans}})
 
   step = $state.current.name
 
   _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
-      passwordChange: ->
-        if @password != @confirmPassword
-          @errorMsg = 'passwords do not match!'
-        else
-          delete @errorMsg
       plan:
         name: rmapsMainOptions.subscription.PLAN.STANDARD
 

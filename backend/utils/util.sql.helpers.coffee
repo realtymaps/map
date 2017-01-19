@@ -135,13 +135,21 @@ whereAndWhereIn = (query, entity, isOr = false) ->
 orWhereAndWhereIn = (query, entity) -> whereAndWhereIn(query, entity, true)
 
 
-between = (query, column, min, max) ->
+between = (query, column, min, max, isRaw = false) ->
+  if !isRaw
+    return if min and max
+      query.whereBetween(column, [min, max])
+    else if min
+      query.where(column, '>=', min)
+    else if max
+      query.where(column, '<=', max)
+
   if min and max
-    query.whereBetween(column, [min, max])
+    query.whereRaw("#{column} BETWEEN ? AND ?", [min, max])
   else if min
-    query.where(column, '>=', min)
+    query.whereRaw("#{column}  >= ?", [min])
   else if max
-    query.where(column, '<=', max)
+    query.whereRaw("#{column} <= ?", [max])
 
 ageOrDaysFromStartToNow = (query, listingAge, beginDate, operator, val) ->
   _whereRawSafe query,

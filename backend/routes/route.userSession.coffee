@@ -23,14 +23,15 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 DataValidationError = require '../utils/errors/util.error.dataValidation'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
-
+historyUserSvc = require('../services/service.historyUser').instance
 
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
+  l = logger.spawn("login")
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug () -> "attempting to log user out (someone is logging in): #{req.user.email} (#{req.sessionID})"
+    l.debug () -> "attempting to log user out (someone is logging in): #{req.user.email} (#{req.sessionID})"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
@@ -52,6 +53,7 @@ login = (req, res, next) -> Promise.try () ->
     if !user || !user.is_active
       throw new userSessionErrors.LoginError('Email and/or password does not match our records.')
     req.session.userid = user.id
+    l.debug -> _.omit(user, 'password')
     sessionSecurityService.sessionLoginProcess(req, res, user, rememberMe: req.body.remember_me)
   .then () ->
     internals.getIdentity(req, res, next)
@@ -270,6 +272,27 @@ requestLoginToken = (req, res, next) ->
       next new ExpressResponse({message: "Could not get login token, is email valid?"},
         {status: httpStatus.BAD_REQUEST, quiet: true})
 
+feedback = (req, res, next) ->
+  l = logger.spawn('feedback')
+  methodExec req,
+    GET: () ->
+      l.debug -> "req.user"
+      l.debug -> req.user
+      historyUserSvc.getAll({auth_user_id: req.user.id})
+    POST: () ->
+      l.debug -> "req"
+      l.debug -> _.pick(req, ['body', 'params','query'])
+      validation.validateAndTransformRequest(req, transforms.feedback.POST)
+      .then (validReq) ->
+        l.debug -> "validReq"
+        l.debug -> validReq
+        validReq.body.auth_user_id = req.user.id
+        if !validReq.body.id?
+          validReq.body.id = null
+        historyUserSvc.upsert(validReq.body)
+        .then (result) ->
+          res.json(result)
+
 module.exports =
   root:
     method: 'put'
@@ -352,3 +375,9 @@ module.exports =
      auth.requirePermissions('spoof_user', logoutOnFail:true)
     ]
     handle: requestLoginToken
+
+  feedback:
+    methods: ['get', 'post']
+    handle: feedback
+    middleware:
+      auth.requireLogin(redirectOnFail: true)

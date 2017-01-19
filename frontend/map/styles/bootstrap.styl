@@ -742,3 +742,16 @@ for num in 75 80 85 90 95 100
 
 .modal-fullscreen
   @extends .modal-100
+
+
+.ui-select-bootstrap
+  .ui-select-choices-row
+    span
+      color $white
+
+.ui-select-choices-row, .ui-select-choices-row-inner
+  &:hover
+    background-color $gray_darkest !important
+
+.ui-select-choices
+  overflow-y auto

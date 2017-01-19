@@ -46,6 +46,8 @@ validation =
 
   alphanumeric: /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]$/
 
+  year: /^[12][0-9]{3}$/ # 1000 to 2999
+
 
 commonConfig =
   SUPPORT_EMAIL: 'support@realtymaps.com'
