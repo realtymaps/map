@@ -105,14 +105,13 @@ class ProjectCrud extends ThenableCrud
       sqlHelpers.singleRow(data)
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
-      toRemove =
-        auth_user_id: idObj.auth_user_id
-        project_id: profile.project_id
 
       promises = []
 
       # Remove notes in all cases
-      promises.push @notes.delete(project_id: profile.project_id)
+      promises.push @notes.delete
+        auth_user_id: idObj.auth_user_id
+        project_id: profile.project_id
 
       # Remove shapes in all cases
       promises.push @drawnShapes.delete(project_id: profile.project_id) # signature is different for EZCRUD!
@@ -136,10 +135,9 @@ class ProjectCrud extends ThenableCrud
 
       else
         # Delete client profiles (not the users themselves)
-        ids =
+        promises.push @clients.delete
           project_id: profile.project_id,
           parent_auth_user_id: idObj.auth_user_id
-        promises.push @clients.delete(ids)
 
         # Delete the project itself
         promises.push super id: profile.project_id, doLogQuery
