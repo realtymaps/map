@@ -1,15 +1,28 @@
 NamedError = require './util.error.named'
 status = require '../../../common/utils/httpStatus'
 
-class ValidateEmailError extends NamedError
+class EmailError extends NamedError
   constructor: (args...) ->
-    super('ValidateEmail', args...)
-
-class ValidateEmailHashTimedOutError extends NamedError
-  constructor: (args...) ->
-    super('ValidateEmailHashTimedOut', args...)
+    super('EmailError', args...)
     @returnStatus = status.BAD_REQUEST
 
-module.exports =
-  ValidateEmailError:ValidateEmailError
-  ValidateEmailHashTimedOutError: ValidateEmailHashTimedOutError
+class ValidateEmailError extends EmailError
+  constructor: (args...) ->
+    super('ValidateEmailError', args...)
+    @quiet = true
+    @expected = true
+
+class VerifyEmailError extends EmailError
+  constructor: (args...) ->
+    super('VerifyEmailError', args...)
+
+class ValidateEmailHashTimedOutError extends EmailError
+  constructor: (args...) ->
+    super('ValidateEmailHashTimedOutError', args...)
+
+
+module.exports = {
+  EmailError
+  ValidateEmailError
+  ValidateEmailHashTimedOutError
+}
