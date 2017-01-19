@@ -1,9 +1,9 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
 
-app.config(($provide, $validationProvider) ->
+mod.config(($provide, $validationProvider) ->
   _removeError = (element) ->
     element.className = element.className.replace(/has\-error/g, '') if element?
 
