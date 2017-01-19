@@ -34,10 +34,7 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourc
     str
 
   if doSourceMaps
-    if prod
-      mapPath = "/tmp/#{outputName}.map"
-    else
-      mapPath = "#{paths.destFull.scripts}/#{outputName}.map"
+    mapPath = "#{paths.destFull.scripts}/#{outputName}.map"
     stream = stream.pipe(
       exorcist(mapPath, null, '../src', './'))
 

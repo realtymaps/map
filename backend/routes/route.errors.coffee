@@ -1,5 +1,5 @@
 # coffeelint: disable=check_scope
-logger = require('../config/logger').spawn("route:monitor")
+logger = require('../config/logger').spawn("route:errors")
 # coffeelint: enable=check_scope
 tables = require '../config/tables'
 dbs = require '../config/dbs'
@@ -61,7 +61,7 @@ module.exports =
 
       q.then (errorLogs) ->
         Promise.map errorLogs, (errorLog) ->
-          if errorLog.mapped
+          if errorLog.mapped # browser already sourcemapped it, gtfo
             errorLog
           else
             sourceMapConfig = Promise.resolve() # default will use whatever url is in the errorLog
@@ -74,8 +74,7 @@ module.exports =
             sourceMapConfig.then (config) ->
               sourcemapSvc.pinpoint(errorLog.stack, config)
               .then (betterStack) ->
-                errorLog.originalStack = errorLog.stack
-                errorLog.stack = betterStack
+                errorLog.betterStack = betterStack
                 errorLog
             .catch (err) ->
               logger.debug err

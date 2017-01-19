@@ -19,7 +19,7 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
       $scope.errors = []
       for error in data
         $scope.errors.push(error)
-        for frame in (error.stack ? error.originalStack ? [])
+        for frame in (error.betterStack ? error.stack ? [])
           frame.parent = error
           $scope.errors.push(frame)
 

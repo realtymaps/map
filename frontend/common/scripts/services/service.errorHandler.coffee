@@ -19,7 +19,7 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
 
     # If error is not available, stacktrace-js claims to be able to
     # artificially generate a trace. This part is untested
-    StackTrace[if error then 'fromError' else 'generateArtificially'](error)
+    StackTrace[if error then 'fromError' else 'generateArtificially'](error, offline: true)
     .then (stack) ->
 
       if msg || stack?.length

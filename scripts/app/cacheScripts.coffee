@@ -10,7 +10,7 @@ exec = Promise.promisify(require('child_process').exec)
 
 S3_BUCKET = process.env.S3_BUCKET ? 'rmaps-dropbox'
 
-if process.env.NODE_ENV != "production"
+if process.env.NODE_ENV != "production" && !process.env.FORCE_CACHE_SCRIPTS
   console.log "Environment is #{process.env.NODE_ENV}, skipping script upload"
   process.exit(0)
 
@@ -40,10 +40,13 @@ exec 'git rev-parse HEAD'
     sourcemap: aws.putObject(
       extAcctName: S3_BUCKET
       Key: "#{process.env.SCRIPTS_CACHE_SECRET_KEY}/#{rev}/map.bundle.js.map"
-      Body: fs.createReadStream("/tmp/map.bundle.js.map")
+      Body: fs.createReadStream("#{__dirname}/../../_public/scripts/map.bundle.js.map")
     )
   .then () ->
-    console.log("Uploaded success")
+    console.log("Upload script+sourcemap successful")
+    Promise.promisify(fs.rename)("#{__dirname}/../../_public/scripts/map.bundle.js.map","/tmp/map.bundle.js.map")
+  .then () ->
+    console.log("Moved soucemap to /tmp")
     process.exit(0)
 .catch (err) ->
   console.error err
