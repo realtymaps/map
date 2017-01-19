@@ -1,4 +1,4 @@
-section.white-page.onboarding.onboarding-plan(ng-cloak)
+section.white-page.onboarding.onboarding-plan(ng-cloak ng-if="safeConfig.SIGNUP_ENABLED")
   .container
     div(ng-if="user.plan.name === subscriptionConfig.PLAN.PRO")
       h2 Select your MLS
