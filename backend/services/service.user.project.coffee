@@ -12,6 +12,8 @@ profileSvc = require './service.profiles'
 keystoreSvc = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 errorUtils = require '../utils/errors/util.error.partiallyHandledError'
+notificationConfigService = require('./service.notification.config').instance
+
 
 Promise = require 'bluebird'
 _ = require 'lodash'
@@ -188,6 +190,8 @@ class ProjectCrud extends ThenableCrud
             evtdata.name = 'client_created'
 
         userPromise
+        .then () ->
+          notificationConfigService.setNewUserDefaults({authUser: user, transaction})
         # invite the client (whether created or existing)
         .then () ->
           _inviteClient clientEntryValue
