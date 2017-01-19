@@ -112,10 +112,10 @@ class ProjectCrud extends ThenableCrud
       promises = []
 
       # Remove notes in all cases
-      promises.push @notes.delete {}, doLogQuery, toRemove # signature is different from CRUD!
+      promises.push @notes.delete(project_id: profile.project_id)
 
       # Remove shapes in all cases
-      promises.push @drawnShapes.delete project_id: profile.project_id # signature is different for EZCRUD!
+      promises.push @drawnShapes.delete(project_id: profile.project_id) # signature is different for EZCRUD!
 
       # Reset if sandbox (profile and project)
       if profile.sandbox is true
@@ -136,9 +136,10 @@ class ProjectCrud extends ThenableCrud
 
       else
         # Delete client profiles (not the users themselves)
-        promises.push @clients.delete {}, doLogQuery,
+        ids =
           project_id: profile.project_id,
           parent_auth_user_id: idObj.auth_user_id
+        promises.push @clients.delete(ids)
 
         # Delete the project itself
         promises.push super id: profile.project_id, doLogQuery

@@ -186,7 +186,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
       @init()
 
     clone: () ->
-      new @constructor(@conArgs...)#this ensures the derrived classes are called correctly
+      new @constructor(@conArgs...)#this ensures the derived classes are called correctly
 
     init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) => #TODO: should @doWrapSingleThen default to 'singleRaw'?
       @
