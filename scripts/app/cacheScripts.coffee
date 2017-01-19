@@ -27,7 +27,8 @@ exec 'git rev-parse HEAD'
 .then ([rev]) ->
   if !rev
     console.error "No git revision!"
-    process.exit(1)
+    return
+
   rev = rev.trim()
 
   console.log("Uploading scripts and sourcemap (rev #{rev}) to S3")
@@ -42,12 +43,13 @@ exec 'git rev-parse HEAD'
       Key: "#{process.env.SCRIPTS_CACHE_SECRET_KEY}/#{rev}/map.bundle.js.map"
       Body: fs.createReadStream("#{__dirname}/../../_public/scripts/map.bundle.js.map")
     )
-  .then () ->
+  .then (result) ->
     console.log("Upload script+sourcemap successful")
-    Promise.promisify(fs.rename)("#{__dirname}/../../_public/scripts/map.bundle.js.map","/tmp/map.bundle.js.map")
-  .then () ->
-    console.log("Moved soucemap to /tmp")
-    process.exit(0)
+.then () ->
+  Promise.promisify(fs.rename)("#{__dirname}/../../_public/scripts/map.bundle.js.map","/tmp/map.bundle.js.map")
+.then () ->
+  console.log("Moved soucemap to /tmp")
+  process.exit(0)
 .catch (err) ->
   console.error err
   process.exit(1)
