@@ -9,7 +9,7 @@ coffeelint.configfinder = require('coffeelint/lib/configfinder')
 ###
 custom coffeelint transform for browserify
 ###
-module.exports = ({lintIgnore, watch, doSourceMaps}) ->
+module.exports = ({lintIgnore, watch, prod}) ->
   (file, overrideOptions = {}) ->
     if (lintIgnore.filter [file]).length == 0
       file += '.ignore'
@@ -38,7 +38,7 @@ module.exports = ({lintIgnore, watch, doSourceMaps}) ->
     # If coffeelint found errors, append console.warns/errors to the end of the file
     # Additionally add a javascript alert (if this is the first file with errors), to draw attention to the console
     flush = (next) ->
-      if errors?.length && doSourceMaps
+      if errors?.length && !prod
         _.each errors, (error) =>
           {level, lineNumber, message} = error
           log = if level is 'error' then 'error' else 'warn'

@@ -1,0 +1,29 @@
+.errors
+  a
+    color #aaa
+
+  .container
+    margin 0
+    width 96%
+
+  .row
+    >*
+      padding 10px
+      height 100%
+      overflow hidden
+      text-overflow ellipsis
+      &:hover
+        overflow visible
+
+  .error
+    height 50px
+    &:not(.heading)
+      cursor pointer
+      &:hover
+        background-color #444
+
+  .parent
+    font-weight bold
+
+  .stack
+    background-color #444

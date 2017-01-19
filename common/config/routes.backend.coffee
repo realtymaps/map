@@ -39,7 +39,7 @@ apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
-apiBaseMonitor = "#{apiBase}/monitor"
+apiBaseErrors = "#{apiBase}/error"
 apiBaseNotifications = "#{apiBase}/notifications"
 apiBaseNotificationFrequencies = "#{apiBaseNotifications}/frequencies"
 apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
@@ -301,9 +301,11 @@ module.exports =
     apiBase: apiBaseTiles
     parcels: "#{apiBaseTiles}/parcels/:z/:x/:y"
     parcelsAddresses: "#{apiBaseTiles}/parcelsAddresses/:z/:x/:y"
-  monitor:
-    apiBase: apiBaseMonitor
-    error: "#{apiBaseMonitor}/error"
+  errors:
+    apiBase: apiBaseErrors
+    browser: "#{apiBaseErrors}/browser"
+    capture: "#{apiBaseErrors}/browser"
+    byId: "#{apiBaseErrors}/browser/:reference"
   notificationsConfigSession:
     apiBase: apiBaseNotificationsConfigSession
     root: apiBaseNotificationsConfigSession

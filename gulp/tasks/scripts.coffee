@@ -9,7 +9,7 @@ browserify = require('../util/browserify')
 browserifyTask = ({app, watch, prod, doSourceMaps}) -> (done) ->
   prod ?= false
   watch ?= false
-  doSourceMaps ?= if prod == true then false else true
+  doSourceMaps ?= true
 
   logger.debug -> {app, watch, prod, doSourceMaps}
 
@@ -32,7 +32,7 @@ browserifyTask = ({app, watch, prod, doSourceMaps}) -> (done) ->
 
   outputName = app + '.bundle.js'
 
-  browserify({inputGlob, outputName, doSourceMaps, watch, done})
+  browserify({inputGlob, outputName, doSourceMaps, watch, prod, done})
 
 # Markup tasks must run prior to browserify tasks so that templates can be bundled
 # This could be changed if templates are individually required via jade

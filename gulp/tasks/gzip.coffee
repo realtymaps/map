@@ -5,7 +5,7 @@ $ = require('gulp-load-plugins')()
 verbose = !!process.env.VERBOSE_BUILD
 
 gulp.task 'gzip', ->
-  gulp.src(paths.dest.root + '**/*')
+  gulp.src([paths.dest.root + '**/*', '!' + paths.dest.root + '**/*.gz'])
   .pipe $.gzip
     gzipOptions: level: 9
     threshold: 1024
