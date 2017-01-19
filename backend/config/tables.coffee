@@ -122,7 +122,7 @@ _setup = (baseObject) ->
         else
           fullTableName = tableName
         if opts.as
-          ret = client.from(db.raw("#{fullTableName} AS #{opts.as}"))
+          ret = client.from(db.raw("?? AS ??", [fullTableName, opts.as]))
         else
           ret = client.from(fullTableName)
         ret.raw = db.raw.bind(db)
