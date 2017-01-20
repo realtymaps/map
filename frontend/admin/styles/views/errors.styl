@@ -1,19 +1,28 @@
 .errors
   a
     color #aaa
+    cursor pointer
+    &:hover
+      color #fff
 
   .container
     margin 0
     width 96%
+    display table
 
   .row
+    height 100%
+    width 100%
+    display table-row
     >*
       padding 10px
       height 100%
       overflow hidden
       text-overflow ellipsis
-      &:hover
-        overflow visible
+
+  .details
+    background-color #777
+    display table
 
   .error
     height 50px
@@ -24,6 +33,3 @@
 
   .parent
     font-weight bold
-
-  .stack
-    background-color #444

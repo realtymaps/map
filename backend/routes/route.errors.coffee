@@ -60,25 +60,32 @@ module.exports =
       q.orderBy('rm_inserted_time', 'desc')
 
       q.then (errorLogs) ->
-        Promise.map errorLogs, (errorLog) ->
-          if errorLog.mapped # browser already sourcemapped it, gtfo
-            errorLog
-          else
-            sourceMapConfig = Promise.resolve() # default will use whatever url is in the errorLog
-            if req.query.sourcemap == 's3'
-              sourceMapConfig = sourcemapSvc.fromS3Config(errorLog)
-            else if req.query.sourcemap == 'network'
-              sourceMapConfig = sourcemapSvc.fromNetworkConfig(errorLog)
-            else if req.query.sourcemap == 'local'
-              sourceMapConfig = sourcemapSvc.fromLocalConfig(errorLog)
-            sourceMapConfig.then (config) ->
-              sourcemapSvc.pinpoint(errorLog.stack, config)
-              .then (betterStack) ->
-                errorLog.betterStack = betterStack
-                errorLog
-            .catch (err) ->
-              logger.debug err
+        if !req.query.sourcemap
+          return errorLogs
+        else
+          Promise.map errorLogs, (errorLog) ->
+            if errorLog.mapped # browser already sourcemapped it, gtfo
               errorLog
+            else
+              sourceMapConfig = Promise.resolve() # default will use whatever url is in the errorLog
+              if req.query.sourcemap == 's3'
+                if !errorLog.git_revision
+                  return errorLog
+                sourceMapConfig = sourcemapSvc.fromS3Config(errorLog)
+              else if req.query.sourcemap == 'network'
+                if !errorLog.git_revision
+                  return errorLog
+                sourceMapConfig = sourcemapSvc.fromNetworkConfig(errorLog)
+              else if req.query.sourcemap == 'local'
+                sourceMapConfig = sourcemapSvc.fromLocalConfig(errorLog)
+              sourceMapConfig.then (config) ->
+                sourcemapSvc.pinpoint(errorLog.stack, config)
+                .then (betterStack) ->
+                  errorLog.betterStack = betterStack
+                  errorLog
+              .catch (err) ->
+                logger.debug err
+                errorLog
 
     .catch (err) ->
       throw new errors.PartiallyHandledError(err, "Problem loading stacks and/or sourcemap")
@@ -89,7 +96,10 @@ module.exports =
     handleQuery: true
     middleware: auth.sessionSetup
     handle: (req, res) -> Promise.try ->
-      gitRevision()
+      if process.env.IS_HEROKU == '1'
+        return process.env.HEROKU_SLUG_COMMIT
+      else
+        return gitRevision()
     .then (gitRev) ->
       data = req.body.stack # stacktrace-js sends everything inside the stack object
 

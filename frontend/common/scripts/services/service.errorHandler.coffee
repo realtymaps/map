@@ -4,7 +4,7 @@ mod = require '../module.coffee'
 _ = require 'lodash'
 uuid = require 'node-uuid'
 
-MINIMUM_WAIT = 1 # seconds between reports
+MINIMUM_WAIT = 10 # seconds between reports
 
 mod.service 'rmapsErrorHandler', ($log, $injector) ->
   $log = $log.spawn 'rmapsErrorHandler'

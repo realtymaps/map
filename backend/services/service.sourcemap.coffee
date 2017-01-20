@@ -27,8 +27,8 @@ pinpoint = (stack, gpsConfig = {ajax, atob}) ->
     gps.pinpoint(frame)
 
 fromS3Config = (errorLog) ->
-  cacheKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/map.bundle.js"
-  sourceMapKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/map.bundle.js.map"
+  cacheKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}"
+  sourceMapKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}.map"
   Promise.props(
     cacheFile: aws.getObject(extAcctName: S3_BUCKET, Key: cacheKey)
     sourceMap: aws.getObject(extAcctName: S3_BUCKET, Key: sourceMapKey)
@@ -48,8 +48,8 @@ fromS3Config = (errorLog) ->
     {offline: true, sourceCache, sourceMapConsumerCache, atob}
 
 fromNetworkConfig = (errorLog) ->
-  cacheUrl = "https://s3.amazonaws.com/rmaps-dropbox/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/map.bundle.js"
-  sourceMapUrl = "https://s3.amazonaws.com/rmaps-dropbox/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/map.bundle.js.map"
+  cacheUrl = "https://s3.amazonaws.com/#{S3_BUCKET}/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}"
+  sourceMapUrl = "https://s3.amazonaws.com/#{S3_BUCKET}/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}.map"
   Promise.props(
     cacheFile: ajax(cacheUrl)
     sourceMap: ajax(sourceMapUrl)
@@ -78,8 +78,8 @@ fromLocalConfig = (originalCacheUrl) ->
     {offline: true, sourceCache, sourceMapConsumerCache, atob}
 
 module.exports = {
-  fromS3Config: memoize(fromS3Config, maxAge: 5*60*1000, normalizer: (errorLog) -> "#{errorLog}.git_revision/#{errorLog.file}")
-  fromNetworkConfig: memoize(fromNetworkConfig, maxAge: 5*60*1000, normalizer: (errorLog) -> "#{errorLog}.git_revision/#{errorLog.file}")
+  fromS3Config: memoize(fromS3Config, maxAge: 5*60*1000, normalizer: (errorLog) -> errorLog.git_revision)
+  fromNetworkConfig: memoize(fromNetworkConfig, maxAge: 5*60*1000, normalizer: (errorLog) -> errorLog.git_revision)
   fromLocalConfig: memoize(fromLocalConfig, maxAge: 5*60*1000)
   pinpoint
 }
