@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 moment = require 'moment'
+_ = require 'lodash'
 
 app.controller 'rmapsErrorsCtrl', () ->
 
@@ -14,14 +15,11 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
     sourcemap: 's3'
 
   loadErrors = ->
-    $http.get(backendRoutes.errors.browser, params: $scope.opts)
+    $http.get(backendRoutes.errors.browser, params: _.omit($scope.opts, 'sourcemap'))
     .then ({data}) ->
       $scope.errors = []
       for error in data
-        $scope.errors.push(error)
-        for frame in (error.betterStack ? error.stack ? [])
-          frame.parent = error
-          $scope.errors.push(frame)
+        $scope.errors.push(error, {parent: error})
 
   $scope.$watchCollection 'opts', ->
     loadErrors()
@@ -32,6 +30,13 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
   $scope.expand = (error) ->
     if !error.parent
       error.expanded = !error.expanded
+      if !error.betterStack?
+        $http.get(backendRoutes.errors.browser, params: {reference: error.reference, sourcemap: $scope.opts.sourcemap})
+        .then ({data}) ->
+          if data?[0]?.betterStack
+            error.betterStack = data?[0]?.betterStack
+          else
+            error.betterStack = false
 
   $scope.getTime = (error) ->
     moment(error.rm_inserted_time).fromNow()
@@ -43,4 +48,3 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
       error.handled = handled
 
 app.controller 'rmapsErrorsAPICtrl', () ->
-

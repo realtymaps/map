@@ -40,11 +40,19 @@
           .fa.fa-heart(ng-show="error.handled")
           .fa.fa-close(ng-show="!error.handled")
 
-      .col-md-3.stack(ng-if="error.parent") {{getFilePath(error.fileName)}}
-      .col-md-2.stack(ng-if="error.parent") {{error.functionName}}
-      .col-md-1.stack(ng-if="error.parent") {{error.lineNumber}}
-      .col-md-3.stack(ng-if="error.parent")
-        a(target="_blank" ng-if="error.fileName.indexOf('http') != 0 && getFilePath(error.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision}}/{{getFilePath(error.fileName)}}\#L{{error.lineNumber}}") source
-      .col-md-1.stack(ng-if="error.parent") &nbsp;
-      .col-md-1.stack(ng-if="error.parent") &nbsp;
-      .col-md-1.stack(ng-if="error.parent") &nbsp;
+      .col-md-12.details(ng-if="error.parent")
+        .row
+          .col-md-12 {{error.parent.message}}
+        .row
+          .col-md-5.stack File
+          .col-md-3.stack Function
+          .col-md-1.stack Line
+          .col-md-1.stack Col
+          .col-md-2.stack github
+        .row(ng-repeat="frame in (error.parent.betterStack || error.parent.stack)")
+          .col-md-5.stack {{getFilePath(frame.fileName)}}
+          .col-md-3.stack {{frame.functionName}}
+          .col-md-1.stack {{frame.lineNumber}}
+          .col-md-1.stack {{frame.columnNumber}}
+          .col-md-2.stack
+            a(target="_blank" ng-if="frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}") source
