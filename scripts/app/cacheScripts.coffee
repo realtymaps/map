@@ -25,12 +25,12 @@ if !S3_BUCKET
 console.log("Checking git rev...")
 Promise.try () ->
   if process.env.IS_HEROKU == '1'
-    return process.env.HEROKU_SLUG_COMMIT
+    return [process.env.HEROKU_SLUG_COMMIT]
   else
     return exec 'git rev-parse HEAD'
 .then ([rev]) ->
   if !rev
-    console.error "No git revision!"
+    console.error "No git revision, skipping upload!"
     return
 
   rev = rev.trim()
@@ -48,11 +48,14 @@ Promise.try () ->
       Body: fs.createReadStream("#{__dirname}/../../_public/scripts/map.bundle.js.map")
     )
   .then (result) ->
-    console.log("Upload script+sourcemap successful")
+    console.log("Upload script+sourcemap to S3 successful")
+  .catch (err) ->
+    console.log("Failure uploading sourcemaps to S3: #{err}")
 .then () ->
-  Promise.promisify(fs.rename)("#{__dirname}/../../_public/scripts/map.bundle.js.map","/tmp/map.bundle.js.map")
+  exec("mv -v #{__dirname}/../../_public/scripts/*.map #{__dirname}/../../_public/scripts/*.map.gz /tmp")
+  .then () ->
+    console.log("Moved soucemaps to /tmp")
 .then () ->
-  console.log("Moved soucemap to /tmp")
   process.exit(0)
 .catch (err) ->
   console.error "Failure preparing sourcemaps: #{err}"
