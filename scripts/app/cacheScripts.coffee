@@ -23,7 +23,11 @@ if !S3_BUCKET
   process.exit(1)
 
 console.log("Checking git rev...")
-exec 'git rev-parse HEAD'
+Promise.try () ->
+  if process.env.IS_HEROKU == '1'
+    return process.env.HEROKU_SLUG_COMMIT
+  else
+    return exec 'git rev-parse HEAD'
 .then ([rev]) ->
   if !rev
     console.error "No git revision!"
