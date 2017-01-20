@@ -55,5 +55,6 @@ Promise.try () ->
   console.log("Moved soucemap to /tmp")
   process.exit(0)
 .catch (err) ->
-  console.error err
-  process.exit(1)
+  console.error "Failure preparing sourcemaps: #{err}"
+  #process.exit(1)
+  process.exit(0)
