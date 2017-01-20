@@ -35,6 +35,9 @@ Promise.try () ->
 
   rev = rev.trim()
 
+  if process.env.NODE_ENV != "production"
+    rev += "-dev" # if this script is tested locally uploads won't collide
+
   console.log("Uploading scripts and sourcemap (rev #{rev}) to S3")
   Promise.props
     scripts: aws.putObject(
