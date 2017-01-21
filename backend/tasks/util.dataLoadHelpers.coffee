@@ -395,37 +395,27 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
 updateRecord = (opts) -> Promise.try () ->
-  debugLogger = logger.spawn('troubleshoot')
-  _doDebug = (str, q) ->
-    if opts.subid != 'RAPB'
-      return
-    if opts.index %100 != 1
-      return
-    debugLogger.debug(''+Date.now()+': '+str)
-    if q
-      debugLogger.debug q.toString()
-    q
-  _doDebug("@@@@@@@@@@@@@@@@@ START: #{opts.index}")
   {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
   delay ?= 100
 
-  _doDebug("================= delay")
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
-    q = tables.normalized[dataType](subid: subid)
+    tables.normalized[dataType](subid: subid)
     .select('*')
     .where(data_source_uuid: updateRow.data_source_uuid)
-    _doDebug("================= existing row check", q)
   .then (result) ->
-    _doDebug("----------------- row found")
     if !result?.length
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
-      q = tables.normalized[dataType](subid: subid)
-      .insert(updateRow)
+      sqlHelpers.upsert {
+        dbFn: tables.normalized[dataType]
+        idObj: {data_source_uuid: updateRow.data_source_uuid}
+        entityObj: updateRow
+        subid
+      }
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
           if retried
@@ -438,12 +428,9 @@ updateRecord = (opts) -> Promise.try () ->
           updateRecord(newOpts)
         else
           throw err
-      _doDebug("================= insert", q)
     else
-      _doDebug("----------------- row NOT found")
       # found an existing row, so need to update, but include change log
       oldRow = result[0]
-      _doDebug("================= diff")
       changes = _getRowChanges({updateRow, oldRow, dataSourceType, dataType, diffExcludeKeys, diffBooleanKeys, flattenRows})
 
       change_history = oldRow.change_history ? []
@@ -461,9 +448,7 @@ updateRecord = (opts) -> Promise.try () ->
       q = tables.normalized[dataType](subid: subid)
       .where(data_source_uuid: updateRow.data_source_uuid)
       .update(updateRow)
-      _doDebug("================= update", q)
   .then () ->
-    _doDebug("################# FINISHED")
     updateRow[opts.idField]
 
 
