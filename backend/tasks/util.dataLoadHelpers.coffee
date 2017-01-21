@@ -328,36 +328,17 @@ getRawRows = (subtask, rawSubid, criteria) ->
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
-  debugLogger = logger.spawn('troubleshoot')
-  _doDebug = (str) ->
-    if subtask.name != 'RAPB_listing_normalizeData'
-      return
-    if subtask.data.i %100 != 1
-      return
-    debugLogger.debug(''+Date.now()+': '+str)
-  _doDebug("@@@@@@@@@@@@@@@@@ START")
   successes = []
   rawSubid = buildUniqueSubtaskName(subtask)
 
   # get validations rules (does not do the validating)
-  validationPromise = Promise.try () ->
-    _doDebug("================= getting validation info")
-    getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
-  .finally () ->
-    _doDebug("----------------- got validation info")
+  validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
 
-  rawRowsPromise = Promise.try () ->
-    _doDebug("================= getting raw rows")
-    getRawRows(subtask, rawSubid)
-  .finally () ->
-    _doDebug("----------------- got raw rows")
-
+  rawRowsPromise = getRawRows(subtask, rawSubid)
 
   # applies `validationInfo` (via `validationPromise`) to `rows`
   doNormalization = (rows, validationInfo) ->
-    _doDebug("================= doNormalization start")
     processRow = (row, index, length) ->
-      _doDebug("~~~~~~~~~~~~~~~~~ processing row: #{index}")
       stats =
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
@@ -367,15 +348,12 @@ normalizeData = (subtask, options) -> Promise.try () ->
       validateSingleField = (definitions) ->
         validation.validateAndTransform(row, definitions)
 
-      _doDebug("----------------- validating row")
       Promise.props(_.mapValues(validationInfo.validationMap, validateSingleField))
       .cancellable()
       .then (normalizedData) ->
-        _doDebug("----------------- building row")
         # builds record, which includes categorizing non-base fields into `shared_groups` and `subscriber_groups`
         options.buildRecord(stats, validationInfo.usedKeys, row, subtask.data.dataType, normalizedData, subtask.data)
       .then (updateRow) ->
-        _doDebug("----------------- updating row")
         updateRecord({
           updateRow
           stats
@@ -384,9 +362,9 @@ normalizeData = (subtask, options) -> Promise.try () ->
           subid: options.normalSubid
           dataSourceType: options.dataSourceType
           idField: options.idField || 'rm_property_id'
+          index
         })
         .then (id) ->
-          _doDebug("----------------- finished row")
           successes.push(id)
         .catch analyzeValue.isKnexError, (err) ->
           jsonData = util.inspect(updateRow, depth: null)
@@ -402,7 +380,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
       rows.length
   Promise.join(rawRowsPromise, validationPromise, doNormalization)
   .then (total) ->
-    _doDebug("################# finished all rows")
     logger.spawn(subtask.task_name).debug () -> "Finished normalize: #{JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix)} (#{successes.length} successes out of #{total})"
     if successes.length == 0 || options.skipFinalize
       return
@@ -418,39 +395,55 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 # this function mutates the updateRow parameter, and that is by design -- please don't "fix" that without care
 updateRecord = (opts) -> Promise.try () ->
+  debugLogger = logger.spawn('troubleshoot')
+  _doDebug = (str, q) ->
+    if opts.subid != 'RAPB'
+      return
+    if opts.index %100 != 1
+      return
+    debugLogger.debug(''+Date.now()+': '+str)
+    if q
+      debugLogger.debug q.toString()
+    q
+  _doDebug("@@@@@@@@@@@@@@@@@ START: #{opts.index}")
   {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
   delay ?= 100
 
-  q = null
+  _doDebug("================= delay")
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
-    tables.normalized[dataType](subid: subid)
+    q = tables.normalized[dataType](subid: subid)
     .select('*')
     .where(data_source_uuid: updateRow.data_source_uuid)
+    _doDebug("================= existing row check", q)
   .then (result) ->
+    _doDebug("----------------- row found")
     if !result?.length
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
-      tables.normalized[dataType](subid: subid)
+      q = tables.normalized[dataType](subid: subid)
       .insert(updateRow)
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
           if retried
-            err.rm_query = "Failed to detect existing row: #{q}"
+            err.rm_query = "Failed to detect existing row"
             throw err
-          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row: #{q}"
+          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row"
           delete updateRow.inserted
           newOpts = _.clone(opts)
           newOpts.retried = true
           updateRecord(newOpts)
         else
           throw err
+      _doDebug("================= insert", q)
     else
+      _doDebug("----------------- row NOT found")
       # found an existing row, so need to update, but include change log
       oldRow = result[0]
+      _doDebug("================= diff")
       changes = _getRowChanges({updateRow, oldRow, dataSourceType, dataType, diffExcludeKeys, diffBooleanKeys, flattenRows})
 
       change_history = oldRow.change_history ? []
@@ -465,10 +458,12 @@ updateRecord = (opts) -> Promise.try () ->
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
 
-      tables.normalized[dataType](subid: subid)
+      q = tables.normalized[dataType](subid: subid)
       .where(data_source_uuid: updateRow.data_source_uuid)
       .update(updateRow)
+      _doDebug("================= update", q)
   .then () ->
+    _doDebug("################# FINISHED")
     updateRow[opts.idField]
 
 
