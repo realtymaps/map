@@ -11,7 +11,6 @@ TaskImplementation = require '../tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 internals = require './service.jobQueue.internals'
-errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 moment = require 'moment'
 tz = require '../config/tz'
 

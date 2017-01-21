@@ -445,7 +445,7 @@ updateRecord = (opts) -> Promise.try () ->
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
 
-      q = tables.normalized[dataType](subid: subid)
+      tables.normalized[dataType](subid: subid)
       .where(data_source_uuid: updateRow.data_source_uuid)
       .update(updateRow)
   .then () ->
