@@ -12,9 +12,7 @@ userSessionService =  require '../services/service.userSession'
 sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
-dbs = require '../config/dbs'
-{expectSingleRow} = require '../utils/util.sql.helpers'
-notificationConfigService = require('../services/service.notification.config').instance
+
 
 
 emailServices = null
@@ -147,22 +145,6 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
     logger.debug -> authUser
     authUser
 
-#Main Function that pipelines everything together
-onboard = (body = {}) ->
-  {plan, token, fips_code, mls_code, mls_id, stripe_coupon_id} = body
-  plan = plan.name
-  dbs.transaction 'main', (transaction) ->
-    createNewUser({body, transaction, plan})
-    .then (authUser) ->
-      expectSingleRow(authUser)
-    .then (authUser) ->
-      notificationConfigService.setNewUserDefaults({authUser, transaction})
-    .then (authUser) ->
-      setMlsPermissions({authUser, fips_code, mls_code, mls_id, plan, transaction})
-    .then (authUser) ->
-      submitPaymentPlan {plan, token, authUser, transaction, stripe_coupon_id}
-    .then ({authUser}) ->
-      submitEmail {authUser, plan}
 
 module.exports = {
   createNewUser
@@ -170,5 +152,4 @@ module.exports = {
   submitEmail
   setNewUserMapPosition
   setMlsPermissions
-  onboard
 }
