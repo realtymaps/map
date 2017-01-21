@@ -15,6 +15,12 @@ class TaskNotImplemented extends NamedError
     @quiet = true
     super('TaskNotImplemented', args...)
 
+class TaskStartError extends NamedError
+  constructor: (args...) ->
+    @quiet = true
+    @expected = true
+    super('TaskStartError', args...)
+
 class LockError extends NamedError
   constructor: (args...) ->
     @quiet = true
@@ -25,4 +31,5 @@ module.exports = {
   HardFail
   TaskNotImplemented
   LockError
+  TaskStartError
 }
