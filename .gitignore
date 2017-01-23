@@ -35,3 +35,5 @@ sqlImports/
 
 .vscode/
 scripts/local/?*.*
+
+frontend/common/scripts/buildInfo.coffee

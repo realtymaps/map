@@ -131,7 +131,7 @@ module.exports =
         ua_device: uaInfo.device
         ua_cpu: uaInfo.cpu
         mapped: !!data.mapped
-        git_revision: gitRev
+        git_revision: data.git_revision
 
       tables.history.browserError()
       .insert(logEntity)
