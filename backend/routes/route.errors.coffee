@@ -11,13 +11,6 @@ sqlHelpers = require '../utils/util.sql.helpers'
 auth = require '../utils/util.auth'
 errors = require '../utils/errors/util.error.partiallyHandledError'
 sourcemapSvc = require '../services/service.sourcemap'
-memoize = require 'memoizee'
-exec = Promise.promisify(require('child_process').exec)
-
-gitRevision = memoize ->
-  exec 'git rev-parse HEAD'
-  .then ([rev]) ->
-    rev.trim()
 
 module.exports =
 
@@ -96,11 +89,6 @@ module.exports =
     handleQuery: true
     middleware: auth.sessionSetup
     handle: (req, res) -> Promise.try ->
-      if process.env.IS_HEROKU == '1'
-        return process.env.HEROKU_SLUG_COMMIT
-      else
-        return gitRevision()
-    .then (gitRev) ->
       data = req.body.stack # stacktrace-js sends everything inside the stack object
 
       uaInfo = {}
