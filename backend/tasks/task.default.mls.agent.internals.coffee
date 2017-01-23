@@ -84,11 +84,11 @@ ensureNormalizedTable = (subid) ->
       table.text('email')
       table.text('full_name').notNullable()
       table.text('work_phone')
-    .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_uuid)")
-    .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
-    .raw("CREATE INDEX ON #{tableName} (inserted)")
-    .raw("CREATE INDEX ON #{tableName} (deleted)")
-    .raw("CREATE INDEX ON #{tableName} (updated)")
+    .raw("CREATE UNIQUE INDEX ON ?? (data_source_uuid)", [tableName])
+    .raw("CREATE TRIGGER ?? BEFORE UPDATE ON ?? FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()", ["update_rm_modified_time_#{tableName}", tableName])
+    .raw("CREATE INDEX ON ?? (inserted)", [tableName])
+    .raw("CREATE INDEX ON ?? (deleted)", [tableName])
+    .raw("CREATE INDEX ON ?? (updated)", [tableName])
 
 
 module.exports = {
