@@ -574,6 +574,8 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
+  [batch_id, data_source_id, data_type] = dataLoadHistory.raw_table_name.split('_')
+  commitLogger = logger.spawn('commits').spawn(data_source_id).spawn(data_type)
 
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
@@ -597,6 +599,8 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         tables.history.dataLoad()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
+      .then () ->
+        commitLogger.debug("committed #{linesCount} to #{dataLoadHistory.raw_table_name}")
 
     startStreamChunk = ({createTable}) ->
       promiseQuery('BEGIN TRANSACTION')
