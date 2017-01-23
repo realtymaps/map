@@ -25,7 +25,7 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
     loadErrors()
 
   $scope.getFilePath = (path) ->
-    path.replace("../src/", "")
+    path?.replace("../src/", "")
 
   $scope.expand = (error) ->
     if !error.parent

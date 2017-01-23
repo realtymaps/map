@@ -1,4 +1,5 @@
 .errors
+  margin 0
   a
     color #aaa
     cursor pointer
@@ -8,28 +9,60 @@
   .container
     margin 0
     width 96%
+
+  .opts
     display table
 
   .row
     height 100%
     width 100%
-    display table-row
     >*
       padding 10px
       height 100%
       overflow hidden
       text-overflow ellipsis
+      line-height 2em
+    .vert-scroll
+      overflow-y auto
+      height 3em
+
+  .parent
+    font-size 115%
 
   .details
-    background-color #777
     display table
+    table-layout fixed
+    .row
+      display table-row
+      >*
+        padding 5px
 
   .error
     height 50px
-    &:not(.heading)
-      cursor pointer
-      &:hover
-        background-color #444
 
   .parent
+    cursor pointer
+
+  .badge
+    border-radius 3px
+    background-color $gray_lightest !important
+    color $gray_darkest
+
+  .heading
+  .parent:hover
     font-weight bold
+
+  .table-striped-pair
+    > :nth-child(4n+0)
+    > :nth-child(4n+1)
+      background-color $gray_darker
+      *:not(.btn):not(.fa)
+        background-color $gray_darker
+    > :nth-child(4n+2)
+    > :nth-child(4n+3)
+      background-color $gray_darkest
+      *:not(.btn):not(.fa)
+        background-color $gray_darkest
+
+  *[disabled]
+    text-decoration line-through
