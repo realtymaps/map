@@ -328,7 +328,7 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
     transaction: the transaction to use for the upsert
 ###
 upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction, subid}) ->
-  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
+  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.buildTableName(subid)})
   dbFn({transaction, subid}).raw(upsertBindings.sql, upsertBindings.bindings)
 
 
