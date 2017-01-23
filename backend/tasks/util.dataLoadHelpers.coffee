@@ -664,6 +664,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 idObj: {raw_table_name: dataLoadHistory.raw_table_name}
                 entityObj: dataLoadHistory
               .then () ->
+                commitLogger.debug("Starting chunk streaming to #{dataLoadHistory.raw_table_name} (existing rows: #{opts.initialCount ? 0})")
                 startStreamChunk(createTable: !opts.initialCount?)
               .then () ->
                 callback()
