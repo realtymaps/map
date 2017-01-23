@@ -89,7 +89,7 @@ app.factory 'rmapsMapAccess', (
   #
   # Handle Logout
   #
-  $rootScope.$on rmapsEventConstants.principal.logout.success, () ->
+  $rootScope.$on rmapsEventConstants.principal.logout.then, () ->
     clear()
 
   #

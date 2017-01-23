@@ -10,6 +10,7 @@ module.exports = () -> Promise.try () ->
     customers: require('./service.payment.impl.stripe.customers')(bootstrapped)
     events: require('./service.payment.impl.stripe.events')(bootstrapped)
     charges: require('./service.payment.impl.stripe.charges')(bootstrapped)
+    coupons: require('./service.payment.impl.stripe.coupons')(bootstrapped)
     stripe: bootstrapped
   .catch (err) ->
     logger.error 'backend stripe is bootsraped failed'

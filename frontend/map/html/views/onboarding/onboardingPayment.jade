@@ -39,7 +39,9 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         cc-number
                         cc-type="user.card.type"
                         cc-eager-type
-                        placeholder="XXXX-XXXX-XXXX-XXXX")
+                        placeholder="XXXX-XXXX-XXXX-XXXX"
+                        ng-disabled="user.isSpecial"
+                        validator-drop validator-drop-if="user.isSpecial")
                       span.card(
                         ng-show="chargeForm.card_number.$ccEagerType && chargeForm.card_number.$viewValue"
                         ng-class="view.getCardClass(chargeForm.card_number.$ccEagerType)")
@@ -57,7 +59,9 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         tabindex=5
                         placeholder="MM"
                         ng-model="user.card.exp_month"
-                        cc-exp-month)
+                        cc-exp-month
+                        ng-disabled="user.isSpecial"
+                        validator-drop validator-drop-if="user.isSpecial")
                       span(ng-show="view.doShowRequired(chargeForm.card_exp_month, chargeForm)")
                         label.control-label.has-error() Required!!
                       span(ng-show="chargeForm.card_exp_month.$invalid && chargeForm.card_exp_month.$viewValue")
@@ -72,7 +76,9 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         name="zip"
                         type='text'
                         placeholder="XXXXX"
-                        validator="required,zipcode")
+                        validator="required,zipcode"
+                        ng-disabled="user.isSpecial"
+                        validator-drop validator-drop-if="user.isSpecial")
 
                 .col-md-3.col-sm-3.col-xs-12
                   .form-group.form-field
@@ -93,10 +99,12 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         cc-cvc
                         cc-type="chargeForm.card_number.$ccType"
                         placeholder="CVC"
-                        name="card_cvc")
+                        name="card_cvc"
+                        ng-disabled="user.isSpecial"
+                        validator-drop validator-drop-if="user.isSpecial")
                       span(ng-show="view.doShowRequired(chargeForm.card_cvc, chargeForm)")
                         label.control-label.has-error() Required!!
-                      span(ng-show="chargeForm.card_cvc.$invalid && chargeForm.card_cvc.$viewValue")
+                      span(ng-show="chargeForm.card_cvc.$invalid && chargeForm.card_cvc.$viewValue ")
                         label.control-label.has-error() Invalid CVC
 
                   .form-group.form-field(ng-class="view.submittalClass")
@@ -108,11 +116,31 @@ section.white-page.onboarding.onboarding-payment(ng-cloak)
                         placeholder="YYYY"
                         ng-model="user.card.exp_year"
                         cc-exp-year
-                        full-year)
+                        full-year
+                        ng-disabled="user.isSpecial"
+                        validator-drop validator-drop-if="user.isSpecial")
                       span(ng-show="chargeForm.card_exp_month.$touched && chargeForm.card_exp_year.$invalid && !chargeForm.card_exp_year.$viewValue")
                         label.control-label.has-error() Required!!
                       span(ng-show="chargeForm.card_exp_year.$invalid && chargeForm.card_exp_year.$viewValue")
                         label.control-label.has-error() Invalid Credit Card Year
+              .row
+                .col-md-6.col-sm-6.col-xs-12
+                  .form-group.form-field(ng-class="view.submittalClass")
+                    .label.col-md-12(for="promo_code") Promo Code:
+                      input.form-control(
+                        tabindex=7
+                        name="promo_code"
+                        type='text'
+                        placeholder="Enter Promo Code"
+                        ng-model="user.stripe_coupon_id"
+                        ng-model-options="{ debounce: 250 }"
+                        validator="optMinlength=2,checkValidCoupon=isSpecial;user")
+              .row(ng-if="user.isSpecial")
+                .col-md-6.col-sm-6.col-xs-12
+                  .form-group.form-field(ng-class="view.submittalClass")
+                    .label.col-md-12()
+                      h3 Look at You!
+              .row
               .row
                 .form-group
                   .col-md-3.col-sm-3.col-xs-12

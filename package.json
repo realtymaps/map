@@ -55,7 +55,7 @@
     "angular-ui-bootstrap": "git://github.com/realtymaps/bootstrap.git#b1d20583ded5a9f8693edd8ea1a069e6e6c9dcd9",
     "angular-ui-grid": "3.2.9",
     "angular-ui-router": "0.3.X",
-    "angular-validation": "git://github.com/nmccready/angular-validation#b3302ee8acf878d22c5da8f48bbdc4ed7256e8a3",
+    "angular-validation": "git://github.com/nmccready/angular-validation#d0b1d2d7a444a4789836b1c590ba5476ab1bcef6",
     "angularjs-slider": "~2.4.0",
     "archiver": "1.X",
     "async": "^0.9.0",

@@ -50,6 +50,7 @@ apiBaseHistory = "#{apiBase}/history"
 apiBaseHistoryUser = "#{apiBaseHistory}/user"
 apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swaped with apiBaseHistoryUser to not conflict with :id
 apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+apiBaseCoupons = "#{apiBase}/coupons"
 
 
 module.exports =
@@ -315,5 +316,8 @@ module.exports =
   notificationMethods:
     apiBase: apiBaseNotificationMethods
     root: apiBaseNotificationMethods
+  coupons:
+    apiBase: apiBaseCoupons
+    isValid: "#{apiBaseCoupons}/isValid"
 
   # hirefire secret value set from within backend/config/config.coffee
