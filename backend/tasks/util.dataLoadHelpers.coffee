@@ -574,7 +574,10 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
+  # WOW, super annoying that the line below breaks the build without adding in these comments
+  # coffeelint: disable=check_scope
   [batch_id, data_source_id, data_type] = dataLoadHistory.raw_table_name.split('_')
+  # coffeelint: enable=check_scope
   commitLogger = logger.spawn('commits').spawn(data_source_id).spawn(data_type)
 
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
