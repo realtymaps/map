@@ -187,7 +187,7 @@ ensureNormalizedTable = (subid) ->
       table.integer('days_on_market_cumulative')
       table.integer('days_on_market_filter')
     .raw("CREATE UNIQUE INDEX ON ?? (data_source_uuid)", [tableName])
-    .raw("CREATE TRIGGER ?? BEFORE UPDATE ON  FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()", ["update_rm_modified_time_#{tableName}",tableName])
+    .raw("CREATE TRIGGER ?? BEFORE UPDATE ON ?? FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()", ["update_rm_modified_time_#{tableName}",tableName])
     .raw("CREATE INDEX ON ?? (inserted)", [tableName])
     .raw("CREATE INDEX ON ?? (deleted)", [tableName])
     .raw("CREATE INDEX ON ?? (deleted, data_source_uuid)", [tableName])
