@@ -1,3 +1,6 @@
+#NOTE Some of the comment grammar below is not correct (missing apostrophes) as it is causing problems with
+# chromes debugger.
+
 ###
 # alerts!
 # -------
