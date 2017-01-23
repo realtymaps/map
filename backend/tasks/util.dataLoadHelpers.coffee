@@ -603,7 +603,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         .where(raw_table_name: dataLoadHistory.raw_table_name)
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
       .then () ->
-        commitLogger.debug("committed #{linesCount} to #{dataLoadHistory.raw_table_name}")
+        commitLogger.debug("#{linesCount + (opts.initialCount ? 0)} total rows committed to #{dataLoadHistory.raw_table_name}")
 
     startStreamChunk = ({createTable}) ->
       promiseQuery('BEGIN TRANSACTION')
@@ -664,6 +664,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 idObj: {raw_table_name: dataLoadHistory.raw_table_name}
                 entityObj: dataLoadHistory
               .then () ->
+                commitLogger.debug("Starting chunk streaming to #{dataLoadHistory.raw_table_name} (existing rows: #{opts.initialCount ? 0})")
                 startStreamChunk(createTable: !opts.initialCount?)
               .then () ->
                 callback()
