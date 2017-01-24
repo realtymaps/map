@@ -1,5 +1,5 @@
 app = require '../../app.coffee'
-replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
+creditCardTemplate = require('../../../html/views/templates/modals/creditCard.jade')()
 module.exports = app
 
 app.controller 'rmapsUserSubscriptionCtrl', (
@@ -12,6 +12,7 @@ rmapsSubscriptionService
 rmapsFipsCodesService
 rmapsPaymentMethodService
 rmapsMainOptions
+rmapsCreditCardService
 ) ->
   $log = $log.spawn("map:userSubscription")
 
@@ -150,24 +151,49 @@ rmapsMainOptions
       .finally () ->
         $scope.processing--
 
+  _createCardModal = ({title, modalAction, modalActionMsg} = {}) ->
+    $uibModal.open
+      animation: true
+      template: creditCardTemplate
+      controller: 'rmapsCreditCardModalCtrl'
+      resolve: {
+        modalTitle: () -> title
+        showCancelButton: () -> false
+        modalAction
+        modalActionMsg
+      }
+
   # self-service modal for replacing CC
   $scope.replaceCC = () ->
-    modalInstance = $uibModal.open
-      animation: true
-      template: replaceCCModalTemplate
-      controller: 'rmapsReplaceCCModalCtrl'
-      resolve:
-        modalTitle: () ->
-          return "Replace Credit Card"
-
-        showCancelButton: () ->
-          return false
-
-    modalInstance.result.then (result) ->
+    _createCardModal({
+      title:"Replace Credit Card"
+      modalActionMsg: "New default credit card successfully set."
+      modalAction: () -> rmapsCreditCardService.replace
+    })
+    .result.then (result) ->
       if !result then return null
 
       # update payment with returned credit card
       return $scope.data.payment = result
+
+  $scope.addCC = () ->
+    res = _createCardModal({
+      title:"Add Credit Card"
+      modalActionMsg: "New default credit card created."
+      modalAction: () -> rmapsCreditCardService.add
+    })
+
+    res.result.then (result) ->
+      if !result then return null
+
+      return $scope.data.payments.push(result)
+
+  $scope.defaultCC = (source) ->
+    rmapsPaymentMethodService.setDefault(source.id)
+
+  $scope.removeCC = (source) ->
+    rmapsPaymentMethodService.remove(source.id)
+
 
   process = (promise) ->
     $scope.processing++

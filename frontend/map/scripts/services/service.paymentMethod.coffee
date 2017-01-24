@@ -19,3 +19,12 @@ app.service 'rmapsPaymentMethodService', ($http, $log) ->
   #   may be required.
   replace: (source) ->
     $http.putData(apiBase.replaceDefault.replace(':source', source))
+
+  add: (source) ->
+    $http.postData(apiBase.add.replace(':source', source))
+
+  setDefault: (source) ->
+    $http.putData(apiBase.setDefault.replace(':source', source))
+
+  remove: (source) ->
+    $http.deleteData(apiBase.remove.replace(':source', source))

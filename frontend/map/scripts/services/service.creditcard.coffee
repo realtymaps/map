@@ -32,6 +32,12 @@ rmapsPaymentMethodService) ->
     .then (token) ->
       rmapsPaymentMethodService.replace(token.id)
 
+  add: (card) ->
+    stripe.card.createToken card
+    .then (token) ->
+      rmapsPaymentMethodService.add(token.id)
+
+
   # css class helper
   getCardClass: (typeStr) ->
     if !typeStr then return ''

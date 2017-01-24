@@ -34,6 +34,41 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
-      validateAndTransformRequest(req, paymentTransforms.replaceDefaultSource)
+      validateAndTransformRequest(req, paymentTransforms.source)
       .then (validReq) ->
         paymentSourcesSvc.replaceDefault(req.session.userid, validReq.params.source)
+
+  #all routes below are byId / :source same route, using different Http verbs
+  add:
+    method: "post"
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req) ->
+      validateAndTransformRequest(req, paymentTransforms.source)
+      .then (validReq) ->
+        paymentSourcesSvc.add(req.session.userid, validReq.params.source)
+
+  remove:
+    method: "delete"
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req) ->
+      validateAndTransformRequest(req, paymentTransforms.source)
+      .then (validReq) ->
+        paymentSourcesSvc.remove(req.session.userid, validReq.params.source)
+
+
+  setDefault:
+    method: "put"
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req) ->
+      validateAndTransformRequest(req, paymentTransforms.source)
+      .then (validReq) ->
+        paymentSourcesSvc.setDefault(req.session.userid, validReq.params.source)

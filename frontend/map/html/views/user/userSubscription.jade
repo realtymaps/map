@@ -74,15 +74,15 @@ div(ng-hide="processing > 0")
             label Year:
           .col-md-6.col-sm-6.col-xs-6
             div {{ payment.exp_year }}
-        .col-md-4.col-sm-3.col-xs-2
-          .col-md-6.col-sm-6.col-xs-6
-            label Name:
-          .col-md-6.col-sm-6.col-xs-6
-            div {{ payment.name}}
-        .col-md-2.col-sm-3.col-xs-2.ignore-padding
-          .btn.btn-default(ng-click="defaultCC(payment)" ng-if="!payment.isDefault") Default
-          .btn.btn-default(ng-click="removeCC()") Remove
-
+        .col-md-2.col-sm-2.col-xs-1
+          div {{ payment.name}}
+        .col-md-4.col-sm-4.col-xs-6.ignore-padding.btn-collection
+          .col-md-4.col-sm-4.col-xs-4(ng-if="!payment.isDefault")
+            .btn.btn-default(ng-click="defaultCC(payment)") Default
+          .col-md-4.col-sm-4.col-xs-4(ng-if="payment.isDefault")
+            .btn.btn-default(ng-click="replaceCC(payment)") Replace
+          .col-md-4.col-sm-4.col-xs-4
+            .btn.btn-default(ng-click="removeCC(payment)") Remove
 
 
   div(ng-show="showSubscription()")

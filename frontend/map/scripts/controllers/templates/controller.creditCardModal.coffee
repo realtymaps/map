@@ -2,8 +2,8 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 
 
-app.controller 'rmapsReplaceCCModalCtrl',
-  ($scope, $sce, modalTitle, showCancelButton, rmapsCreditCardService) ->
+app.controller 'rmapsCreditCardModalCtrl',
+  ($scope, $sce, modalTitle, showCancelButton, modalAction, modalActionMsg, rmapsCreditCardService) ->
     # $scope.modalBody = modalBody
     $scope.card = rmapsCreditCardService.newCard()
     $scope.modalTitle = modalTitle
@@ -21,13 +21,13 @@ app.controller 'rmapsReplaceCCModalCtrl',
       $scope.$close(result)
 
     $scope.submitCC = () ->
-      rmapsCreditCardService.replace $scope.card
+      modalAction($scope.card)
       .then (savedCard) ->
 
         # expose success "ok" button
         $scope.successButton = true
         $scope.hasError = false
-        $scope.message = "New default credit card successfully set."
+        $scope.message = modalActionMsg
 
         # set $scope.card to the new card; it gets passed back through modal close to keep parent update
         $scope.card = savedCard

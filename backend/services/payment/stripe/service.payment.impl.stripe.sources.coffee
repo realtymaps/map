@@ -21,21 +21,52 @@ module.exports = (stripe) ->
 
   ### servicing, and db / stripe API for payment method operations ###
   getDefault = (user_id) ->
+    l = logger.spawn('getDefault')
     _verifyUser(user_id).then (authUser) ->
       customerService.getDefaultSource(authUser)
       .then (source) ->
-        logger.debug -> "default payment method:\n#{JSON.stringify(source,null,2)}"
+        l.debug -> "default payment method:\n#{JSON.stringify(source,null,2)}"
         source
 
   replaceDefault = (user_id, source) ->
+    l = logger.spawn('replaceDefault')
     _verifyUser(user_id).then (authUser) ->
       customerService.replaceDefaultSource(authUser, source)
       .then (res) ->
-        logger.debug -> "new default payment method:\n#{JSON.stringify(source,null,2)}"
+        l.debug -> "new default payment method:\n#{JSON.stringify(source,null,2)}"
+        res
+
+  add = (user_id, source) ->
+    l = logger.spawn('add')
+    _verifyUser(user_id).then (authUser) ->
+      customerService.replaceDefaultSource(authUser, source)
+      .then (res) ->
+        l.debug -> "new payment method:\n#{JSON.stringify(source,null,2)}"
+        res
+
+  #note there is no stripe.sources.delete/remove, only deleteCard
+  #so there may be a conflict in context, but for now this is fine
+  remove = (user_id, source) ->
+    l = logger.spawn('remove')
+    _verifyUser(user_id).then (authUser) ->
+      stripe.customers.deleteCard(authUser.stripe_customer_id, source)
+      .then (res) ->
+        l.debug -> "payment method removed:\n#{JSON.stringify(source,null,2)}"
+        res
+
+  setDefault = (user_id, source) ->
+    l = logger.spawn('makeDefaultSource')
+    _verifyUser(user_id).then (authUser) ->
+      customerService.setDefaultSource(authUser, source)
+      .then (res) ->
+        l.debug -> "new payment method:\n#{JSON.stringify(source,null,2)}"
         res
 
   {
     getDefault
     replaceDefault
     getAll
+    add
+    setDefault
+    remove
   }

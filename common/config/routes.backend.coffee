@@ -289,7 +289,11 @@ module.exports =
     apiBase: apiBasePaymentMethod
     root: apiBasePaymentMethod
     getDefault: "#{apiBasePaymentMethod}/defaultsource"
-    replaceDefault: "#{apiBasePaymentMethod}/defaultsource/:source"
+    replaceDefault: "#{apiBasePaymentMethod}/:source/replaceDefault"
+    setDefault: "#{apiBasePaymentMethod}/:source"
+    add: "#{apiBasePaymentMethod}/:source"
+    remove: "#{apiBasePaymentMethod}/:source"
+
   shell:
     apiBase: apiBaseShell
     shell: apiBaseShell
