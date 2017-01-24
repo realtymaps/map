@@ -56,20 +56,33 @@ div(ng-hide="processing > 0")
       .btn.btn-default(ng-click="reactivate()") Reactivate
 
   .collapse-header
-    h2 Payment Method
-  .row.collapse-header.cc-details(ng-show="data.payment")
-    h4 Card Info
-    .row
-      .col-md-1
-        img(rmaps-cdn-image ng-src="assets/cc/{{data.payment.brand}}Icon.png")
-      .col-md-5
-        p {{ data.payment.brand }} ending in {{ data.payment.last4 }}
-        p {{ ('00'+data.payment.exp_month).slice(-2) }}/{{ data.payment.exp_year }}
-      .col-md-6
-        label Name on Card
-        p {{ data.payment.name }}
-    .row.cc-buttons
-      .btn.btn-default(ng-click="replaceCC()") Replace
+    h2.inline Payment Methods
+    // button is in h2 to easily keep same margins and padding of h2
+    h2.inline.pull-right
+      button.btn.btn-default(ng-click="addCC()") Add Payment
+  .row.collapse-header.cc-details
+    .row.credit-card(ng-repeat="payment in data.payments" ng-class="payment.isDefault ? 'default': ''")
+      .row.inner-card(ng-attr-title="payment.isDefault ? 'Default Card': payment.last4")
+        .col-md-1.col-sm-1.col-xs-0
+          div.bold(ng-if="payment.isDefault") Default
+        .col-md-1.col-sm-1.col-xs-1
+          img(rmaps-cdn-image ng-src="assets/cc/{{payment.brand}}Icon.png")
+        .col-md-2.col-sm-4.col-xs-2
+          div **** {{ payment.last4 }}
+        .col-md-2.col-sm-4.col-xs-2
+          .col-md-6.col-sm-6.col-xs-6
+            label Year:
+          .col-md-6.col-sm-6.col-xs-6
+            div {{ payment.exp_year }}
+        .col-md-4.col-sm-3.col-xs-2
+          .col-md-6.col-sm-6.col-xs-6
+            label Name:
+          .col-md-6.col-sm-6.col-xs-6
+            div {{ payment.name}}
+        .col-md-2.col-sm-3.col-xs-2.ignore-padding
+          .btn.btn-default(ng-click="defaultCC(payment)" ng-if="!payment.isDefault") Default
+          .btn.btn-default(ng-click="removeCC()") Remove
+
 
 
   div(ng-show="showSubscription()")

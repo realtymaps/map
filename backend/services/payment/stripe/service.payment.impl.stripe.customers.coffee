@@ -200,7 +200,10 @@ StripeCustomers = (stripe) ->
   getSources = (authUser) ->
     get(authUser)
     .then (customer) ->
-      customer?.sources?.data
+      Promise.map customer?.sources?.data, (d) ->
+        if d.id == customer?.default_source
+          d.isDefault = true
+        d
 
   getDefaultSource = (authUser) ->
     get(authUser)
@@ -208,7 +211,7 @@ StripeCustomers = (stripe) ->
       _.find customer?.sources?.data, 'id', customer?.default_source
 
   replaceDefaultSource = (authUser, source) ->
-    stripe.customers.update authUser.stripe_customer_id, {source: source}
+    stripe.customers.update authUser.stripe_customer_id, {source: _.omit(source, 'isDefault')}
     .then (customer) ->
       _.find customer?.sources?.data, 'id', customer?.default_source
 

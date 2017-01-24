@@ -82,6 +82,21 @@ all-details()
   // This is some inheritance to help keep styles consistent and organized,
   //   while still being able to single-out special-case things per page
   .cc-details
+    .row.credit-card
+      .inner-card
+        > div
+          padding-top 16px
+          padding-bottom 8px
+
+        .ignore-padding
+          padding-top 8px
+
+      border-radius 5px
+      &.default
+        background-color: $rm-map-btn-icon
+        color $white
+      // .col-xs-0
+      //   display none
     all-details()
 
     .cc-buttons

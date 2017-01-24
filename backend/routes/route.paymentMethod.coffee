@@ -4,25 +4,36 @@ logger = require('../config/logger').spawn("route:paymentMethod")
 auth = require '../utils/util.auth'
 paymentTransforms = require('../utils/transforms/transforms.payment')
 {validateAndTransformRequest} = require '../utils/util.validation'
-paymentMethodService = require '../services/service.paymentMethod'
+
+paymentSourcesSvc = require('../services/payment/stripe')().then ({sources}) ->
+  paymentSourcesSvc = sources
 
 module.exports =
-  getDefaultSource:
+  root:
     method: "get"
     handleQuery: true
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
-      paymentMethodService.getDefaultSource req.session.userid
+      paymentSourcesSvc.getAll(req.session.userid)
 
-  replaceDefaultSource:
+  getDefault:
+    method: "get"
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req) ->
+      paymentSourcesSvc.getDefault(req.session.userid)
+
+  replaceDefault:
     method: "put"
     handleQuery: true
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
-      validateAndTransformRequest req, paymentTransforms.replaceDefaultSource
+      validateAndTransformRequest(req, paymentTransforms.replaceDefaultSource)
       .then (validReq) ->
-        paymentMethodService.replaceDefaultSource req.session.userid, validReq.params.source
+        paymentSourcesSvc.replaceDefault(req.session.userid, validReq.params.source)

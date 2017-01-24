@@ -5,7 +5,11 @@ app = require '../app.coffee'
 # This service centralizes credit-card operators, leveraging the angular-stripe (stripe.js) service that
 #   translates sensitive data into tokens and performs the operations, coordinating w/ paymentmethod service and
 #   backend as needed.
-app.service 'rmapsCreditCardService', ($log, $q, $http, stripe, rmapsCreditCardConstants, rmapsFaCreditCardsService, rmapsPaymentMethodService) ->
+app.service 'rmapsCreditCardService', (
+$log, $q, $http, stripe,
+rmapsCreditCardConstants
+rmapsFaCreditCardsService
+rmapsPaymentMethodService) ->
   $log = $log.spawn("payment:rmapsCreditCardFactory")
 
   submittalClass: ''
@@ -26,7 +30,7 @@ app.service 'rmapsCreditCardService', ($log, $q, $http, stripe, rmapsCreditCardC
   replace: (card) ->
     stripe.card.createToken card
     .then (token) ->
-      rmapsPaymentMethodService.replace token.id
+      rmapsPaymentMethodService.replace(token.id)
 
   # css class helper
   getCardClass: (typeStr) ->

@@ -169,26 +169,23 @@ rmapsMainOptions
       # update payment with returned credit card
       return $scope.data.payment = result
 
-  #
-  # Data 
-  #
-  $scope.processing++
-  rmapsSubscriptionService.getSubscription()
+  process = (promise) ->
+    $scope.processing++
+    promise.finally () ->
+      $scope.processing--
+
+  process rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
     $scope.subscription = subscription
-  .finally () ->
-    $scope.processing--
 
-  $scope.processing++
-  rmapsFipsCodesService.getForUser()
-  .then (fipsData) ->
-    $scope.data.fips = fipsData
-  .finally () ->
-    $scope.processing--
+  process rmapsFipsCodesService.getForUser()
+  .then (fips) ->
+    $scope.data.fips = fips
 
-  $scope.processing++
-  rmapsPaymentMethodService.getDefaultSource()
+  process rmapsPaymentMethodService.getDefault()
   .then (source) ->
     $scope.data.payment = source
-  .finally () ->
-    $scope.processing--
+
+  process rmapsPaymentMethodService.getAll()
+  .then (sources) ->
+    $scope.data.payments = sources
