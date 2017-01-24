@@ -1,6 +1,6 @@
 .browser
   h3 Last {{opts.limit}} front-end errors
-  .container
+  .container.opts
     .row
       .col-md-2(ng-if="!opts.distinct")
         a(ng-click="opts.distinct = !opts.distinct") Hide dupes
@@ -17,42 +17,70 @@
       .col-md-2(ng-if="opts.sourcemap=='network'")
         a(ng-click="opts.sourcemap = 'local'") Sourcemaps: Network (url)
 
-  .container
+  .container.table-striped-pair
     .row.error.heading
-      .col-md-3 Message
-      .col-md-2 File
-      .col-md-1 Line
-      .col-md-3 Url
-      .col-md-1 Time
-      .col-md-1 Source
+      .col-md-5 Message
+      .col-md-4 Url
+      .col-md-1 When
+      .col-md-1.text-center Source
       .col-md-1.text-center Handled
 
-    .row.error(ng-repeat="error in errors" ng-if="!error.parent || error.parent.expanded" ng-click="expand(error)")
-      .col-md-3.parent(ng-if="!error.parent") {{error.message}}
-      .col-md-2.parent(ng-if="!error.parent") {{getFilePath(error.file)}}
-      .col-md-1.parent(ng-if="!error.parent") {{error.line}}
-      .col-md-3.parent(ng-if="!error.parent") {{error.url}}
-      .col-md-1.parent(ng-if="!error.parent") {{getTime(error)}}
-      .col-md-1.parent(ng-if="!error.parent")
+    .row.error(ng-class="{'parent':!error.parent}" ng-repeat="error in errors" ng-show="!error.parent || error.parent.expanded" ng-click="expand(error)")
+      .col-md-5(ng-if="!error.parent") {{error.message}}
+      .col-md-4(ng-if="!error.parent") {{error.url}}
+      .col-md-1(ng-if="!error.parent") {{getTime(error)}}
+      .col-md-1(ng-if="!error.parent").text-center
+        span(ng-if="error.betterStack === undefined") Click
         span(ng-if="error.betterStack") Yes
-      .col-md-1.parent.text-center(ng-if="!error.parent")
+        span(ng-if="error.betterStack === false") No
+      .col-md-1.text-center(ng-if="!error.parent")
         .btn.btn-sm(ng-class="{'btn-warning':!error.handled, 'btn-success':error.handled}" ng-click="handle(error); $event.stopPropagation()")
           .fa.fa-heart(ng-show="error.handled")
           .fa.fa-close(ng-show="!error.handled")
 
       .col-md-12.details(ng-if="error.parent")
+        .row.heading
+          .col-md-3
+            .badge Reference
+          .col-md-9
+            .badge URL
         .row
-          .col-md-12 {{error.parent.message}}
+          .col-md-3 {{error.parent.reference}}
+          .col-md-9 {{error.parent.url}}
+        .row.heading
+          .col-md-12
+            .badge Message
         .row
-          .col-md-5.stack File
-          .col-md-3.stack Function
-          .col-md-1.stack Line
-          .col-md-1.stack Col
-          .col-md-2.stack github
+          .col-md-12.vert-scroll {{error.parent.message}}
+        .row.heading
+          .col-md-3
+            .badge User
+          .col-md-3
+            .badge Browser
+          .col-md-3
+            .badge OS
+          .col-md-3
+            .badge Device
+        .row
+          .col-md-3 {{error.parent.email}}
+          .col-md-3 {{error.parent.ua_browser.name}} {{error.parent.ua_browser.major}}
+          .col-md-3 {{error.parent.ua_os.name}} {{error.parent.ua_os.version}}
+          .col-md-3 {{error.parent.ua_device.vendor}} {{error.parent.ua_device.model}}
+        .row.heading(ng-if="error.parent.stack.length || error.parent.betterStack.length")
+          .col-md-5
+            .badge File
+          .col-md-1
+            .badge Line
+          .col-md-1
+            .badge Col
+          .col-md-3
+            .badge Function
+          .col-md-1.text-center
+            .badge(ng-disabled="!error.parent.betterStack") github
         .row(ng-repeat="frame in (error.parent.betterStack || error.parent.stack)")
           .col-md-5.stack {{getFilePath(frame.fileName)}}
-          .col-md-3.stack {{frame.functionName}}
           .col-md-1.stack {{frame.lineNumber}}
           .col-md-1.stack {{frame.columnNumber}}
-          .col-md-2.stack
-            a(target="_blank" ng-if="frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}") source
+          .col-md-3.stack {{frame.functionName}}
+          .col-md-1.stack.text-center
+            a(target="_blank" ng-if="error.parent.betterStack && frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}") source

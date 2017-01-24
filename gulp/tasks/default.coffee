@@ -10,6 +10,7 @@ require './otherAssets'
 require './watch'
 require './angular'
 require './mocha'
+require './buildInfo'
 
 
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used

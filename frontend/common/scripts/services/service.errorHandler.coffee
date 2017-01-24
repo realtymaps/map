@@ -13,7 +13,9 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
   count = 0
 
   report = (details = {}) ->
-    # $log.debug arguments...
+    if !window.rmaps_build?.git_revision || window.rmaps_build.git_revision.indexOf('-dev') != -1
+      return
+
     # https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
     {error, msg, file, line, col} = details
 
@@ -42,6 +44,7 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
           count
           url: location.href
           mapped: stack?[0]?.fileName?.indexOf("http") != 0
+          git_revision: window.rmaps_build.git_revision
         }
 
         StackTrace.report postData, backendRoutes.errors.browser, null, { headers: {} }
