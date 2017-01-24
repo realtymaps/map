@@ -106,30 +106,34 @@ finalizeData = (subtask) ->
 markUpToDate = (subtask) ->
   mlsId = subtask.task_name.split('_')[0]
   taskLogger = logger.spawn(mlsId)
-  mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
+
+  Promise.try () ->
+    if subtask.retry_num == 0
+      return
+    tables.jobQueue.currentSubtasks()
+    .where(name: "#{subtask.task_name}_finalizeData")
+    .delete()
+  .then () ->
+    mlsHelpers.getMlsField(mlsId, 'data_source_uuid', 'listing')
   .then (uuidField) ->
     dataOptions = {uuidField, minDate: 0, subLimit: (subtask.data.subLimit||2500), searchOptions: {Select: uuidField, offset: 1}}
     chunkNum = 0
-    taskLogger.debug () -> "==================== getDataChunks (#{mlsId}): starting"
     retsService.getDataChunks mlsId, 'listing', dataOptions, (chunk) -> Promise.try () ->
-      taskLogger.debug () -> "-------------------- getDataChunks (#{mlsId}): new chunk: #{chunk.length} results"
       if !chunk?.length
         return
       chunkNum++
       thisChunkNum = chunkNum
       ids = _.pluck(chunk, uuidField)
-      taskLogger.debug () -> "-------------------- getDataChunks (#{mlsId}): extracted #{ids.length} ids"
       q = tables.normalized.listing({subid: mlsId})
       .whereIn('data_source_uuid', ids)
       .update(up_to_date: new Date(subtask.data.startTime), batch_id: subtask.batch_id, deleted: null)
       .returning('rm_property_id')
-      taskLogger.debug () -> "-------------------- getDataChunks (#{mlsId}): query: #{q}"
       q.then (finalizeIds) ->
         if finalizeIds.length == 0
           return
         jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeData", manualData: {values: finalizeIds, chunk: thisChunkNum, count: finalizeIds.length}})
-    .then (count) ->
-      taskLogger.debug () -> "@@@@@@@@@@@@@@@@@@@@ getDataChunks (#{mlsId}): total results: #{count}"
+        .then () ->
+          taskLogger.debug () -> "queued finalizeData ##{thisChunkNum} (#{finalizeIds.length} rows)"
   .catch retsService.isMaybeTransientRetsError, (error) ->
     throw new SoftFail(error, "Transient RETS error; try again later")
   .catch errorHandlingUtils.isUnhandled, (error) ->
