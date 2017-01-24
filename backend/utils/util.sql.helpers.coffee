@@ -327,9 +327,9 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
         that column from being set on update
     transaction: the transaction to use for the upsert
 ###
-upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction}) ->
-  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
-  dbFn({transaction}).raw(upsertBindings.sql, upsertBindings.bindings)
+upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction, subid}) ->
+  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.buildTableName(subid)})
+  dbFn({transaction, subid}).raw(upsertBindings.sql, upsertBindings.bindings)
 
 
 # http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema

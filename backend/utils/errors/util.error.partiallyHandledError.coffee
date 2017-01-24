@@ -48,7 +48,8 @@ class QuietlyHandledError extends PartiallyHandledError
     name = 'QuietlyHandledError'
     if typeof(args[0]) == 'string' && args.length > 1
       name = args.shift()
-    if typeof(args[0]) == 'object' && Object.keys(args[0]).length == 1 && ('quiet' of args[0])
+    if typeof(args[0]) == 'object' && _isOptions(args[0])
+      _.extend(@, args[0])
       args.shift()
     super(name, args...)
 

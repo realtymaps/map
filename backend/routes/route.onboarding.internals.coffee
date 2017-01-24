@@ -13,6 +13,8 @@ sqlColumns = require '../utils/util.sql.columns'
 config = require '../config/config'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
+
+
 emailServices = null
 paymentServices = null
 
@@ -50,33 +52,28 @@ createNewUser = ({body, transaction, plan}) -> Promise.try ->
         throw new errors.UserExists("This account already exists.  Try resetting your password.")
       throw new Error(err)
 
-addNotifications = ({authUser, transaction}) ->
-  # Setup Default notifications for a new user
-  frequency_id = tables.user.notificationConfig.raw("(#{tables.user.notificationFrequencies().select('id').where(code_name:'onDemand').toString()})")
-  method_id = tables.user.notificationConfig.raw("(#{tables.user.notificationMethods().select('id').where(code_name:'emailVero').toString()})")
-
-  logger.debugQuery(
-    tables.user.notificationConfig({transaction})
-    .insert({
-      auth_user_id: authUser.id
-      type:"propertySaved"
-      method_id
-      frequency_id
-  })).then ->
-    authUser
 
 
-submitPaymentPlan = ({plan, token, authUser, transaction}) ->
-  logger.debug -> "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-  paymentServices.customers.create
-    authUser: authUser
-    plan: plan
-    token: token
-    trx: transaction
-  .then (result) ->
-    logger.debug -> "@@@@ Customer Creation Success @@@@"
-    logger.debug -> result.customer
-    result
+submitPaymentPlan = ({plan, token, authUser, transaction, stripe_coupon_id}) -> Promise.try () ->
+  logger.debug -> {plan, token, stripe_coupon_id}
+
+  needsCreditCardPromise = if stripe_coupon_id?
+    paymentServices.coupons.isNoCreditCard(stripe_coupon_id)
+  else
+    Promise.resolve()
+
+  needsCreditCardPromise
+  .then ->
+    paymentServices.customers.create({authUser, plan, token, trx: transaction, coupon: stripe_coupon_id})
+    .then (result) ->
+      logger.debug -> "@@@@ Customer Creation Success @@@@"
+      logger.debug -> result.customer
+      result
+    .catch (error) ->
+      throw new errors.SubmitPaymentPlanCreateCustomerError(error,
+        "Stripe customer creation failed with token:#{token} or coupon:#{stripe_coupon_id}")
+
+
 
 submitEmail = ({authUser, plan}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -148,9 +145,9 @@ setMlsPermissions = ({authUser, fips_code, mls_code, mls_id, plan, transaction})
     logger.debug -> authUser
     authUser
 
+
 module.exports = {
   createNewUser
-  addNotifications
   submitPaymentPlan
   submitEmail
   setNewUserMapPosition

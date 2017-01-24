@@ -4,23 +4,24 @@ mod = require '../module.coffee'
 _ = require 'lodash'
 uuid = require 'node-uuid'
 
-MINIMUM_WAIT = 1 # seconds between reports
+MINIMUM_WAIT = 10 # seconds between reports
 
 mod.service 'rmapsErrorHandler', ($log, $injector) ->
   $log = $log.spawn 'rmapsErrorHandler'
 
   _onerror = null
-  _ignoreNextDigest = false
   count = 0
 
   report = (details = {}) ->
-    # $log.debug arguments...
+    if !window.rmaps_build?.git_revision || window.rmaps_build.git_revision.indexOf('-dev') != -1
+      return
+
     # https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
     {error, msg, file, line, col} = details
 
     # If error is not available, stacktrace-js claims to be able to
     # artificially generate a trace. This part is untested
-    StackTrace[if error then 'fromError' else 'generateArtificially'](error)
+    StackTrace[if error then 'fromError' else 'generateArtificially'](error, offline: true)
     .then (stack) ->
 
       if msg || stack?.length
@@ -42,9 +43,11 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
           stack
           count
           url: location.href
+          mapped: stack?[0]?.fileName?.indexOf("http") != 0
+          git_revision: window.rmaps_build.git_revision
         }
 
-        StackTrace.report postData, backendRoutes.monitor.error, null, { headers: {} }
+        StackTrace.report postData, backendRoutes.errors.browser, null, { headers: {} }
         .then (response) ->
           $log.debug response
 
@@ -62,9 +65,5 @@ mod.service 'rmapsErrorHandler', ($log, $injector) ->
 
   captureAngularException: _.debounce (error) ->
     $log.error error # Will not be logged as usual, so make sure we can see the error in console
-    if _ignoreNextDigest # $http calls trigger a $digest, prevent looping
-      _ignoreNextDigest = false
-      return
-    _ignoreNextDigest = true
     report({error, msg: error.message})
   , MINIMUM_WAIT*1000 # prevents $digest error spam

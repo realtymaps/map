@@ -8,7 +8,7 @@ photoErrors = require '../utils/errors/util.errors.photos'
 request = require 'request'
 
 
-imageEventTransform = () ->
+imageEventTransform = (opts={}) ->
   everSentData = false
   imageId = 0
 
@@ -37,7 +37,7 @@ imageEventTransform = () ->
       return cb(new photoErrors.ObjectsStreamError(error))
 
   flush = (cb) ->
-    if !everSentData
+    if !everSentData && opts.requirePhotos
       eventLogger.debug -> "Error: Finished Events Transform with no object events"
       return cb(new photoErrors.NoPhotoObjectsError 'No object events')
     eventLogger.debug -> "Finished Events Transform"
@@ -46,9 +46,9 @@ imageEventTransform = () ->
   through.obj(transform, flush)
 
 
-toPhotoStream = (retsPhotoObject) ->
+toPhotoStream = (retsPhotoObject, opts) ->
   retsPhotoObject.objectStream
-  .pipe(imageEventTransform())
+  .pipe(imageEventTransform(opts))
 
 
 ###

@@ -334,10 +334,11 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
         objectsOpts:
           Location: mlsConfig.listing_data.Location || 0
       }
-      .then (obj) ->
+      .then (obj) -> new Promise (resolve, reject) ->
 
-        mlsPhotoUtil.toPhotoStream(obj)
-        .pipe(storeStream({
+        photoStream = mlsPhotoUtil.toPhotoStream(obj, {requirePhotos: false})
+        photoStream.once('error', reject)
+        photoStream.pipe(storeStream({
           photoRowClause
           row
           transaction
@@ -348,6 +349,8 @@ storePhotos = (subtask, idObj) -> Promise.try () ->
           photo_id
         }))
         .toCounterPromise()
+        .then(resolve)
+        .catch(reject)
 
   .catch errorHandlingUtils.isUnhandled, (error) ->
     rootError = errorHandlingUtils.getRootCause(error)

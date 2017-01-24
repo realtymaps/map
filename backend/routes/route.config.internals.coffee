@@ -9,6 +9,7 @@ safeConfigPromise = () ->
   safeConfig =
     debugLevels: config.LOGGING.ENABLE
     EMAIL_VERIFY: config.EMAIL_VERIFY
+    SIGNUP_ENABLED: config.SIGNUP_ENABLED
 
   # dependencies are here to keep karma happy
   # this prevents having to have a requires of *.coffee down through

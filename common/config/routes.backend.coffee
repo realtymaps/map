@@ -39,7 +39,7 @@ apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
-apiBaseMonitor = "#{apiBase}/monitor"
+apiBaseErrors = "#{apiBase}/error"
 apiBaseNotifications = "#{apiBase}/notifications"
 apiBaseNotificationFrequencies = "#{apiBaseNotifications}/frequencies"
 apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
@@ -50,6 +50,7 @@ apiBaseHistory = "#{apiBase}/history"
 apiBaseHistoryUser = "#{apiBaseHistory}/user"
 apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swapped with apiBaseHistoryUser to not conflict with :id
 apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+apiBaseCoupons = "#{apiBase}/coupons"
 
 
 module.exports =
@@ -301,9 +302,11 @@ module.exports =
     apiBase: apiBaseTiles
     parcels: "#{apiBaseTiles}/parcels/:z/:x/:y"
     parcelsAddresses: "#{apiBaseTiles}/parcelsAddresses/:z/:x/:y"
-  monitor:
-    apiBase: apiBaseMonitor
-    error: "#{apiBaseMonitor}/error"
+  errors:
+    apiBase: apiBaseErrors
+    browser: "#{apiBaseErrors}/browser"
+    capture: "#{apiBaseErrors}/browser"
+    byId: "#{apiBaseErrors}/browser/:reference"
   notificationsConfigSession:
     apiBase: apiBaseNotificationsConfigSession
     root: apiBaseNotificationsConfigSession
@@ -313,5 +316,8 @@ module.exports =
   notificationMethods:
     apiBase: apiBaseNotificationMethods
     root: apiBaseNotificationMethods
+  coupons:
+    apiBase: apiBaseCoupons
+    isValid: "#{apiBaseCoupons}/isValid"
 
   # hirefire secret value set from within backend/config/config.coffee

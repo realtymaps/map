@@ -156,7 +156,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
   _cleanReSubmit = () ->
     #we might be resending the card info with user info changes
     #NOTE payment amount must be handled on backend. This is where actual charging occurs.
-    $scope.user.zip = $scope.user.card.address_zip
+    $scope.user.zip = $scope.user.card?.address_zip
     $scope.user.card = _.omit($scope.user.card, _reSubmitOmitFields)
     delete $scope.user.card.token
     $scope.user.card
@@ -168,11 +168,13 @@ app.controller 'rmapsOnboardingPaymentCtrl',
   behaveLikeAngularValidation = (formField, rootForm) ->
     fieldIsRequired = formField.$touched && formField.$invalid && !formField.$viewValue
     attemptedSubmital = !rootForm.$pending && !formField.$touched
-    $scope.view.submittalClass = if attemptedSubmital then 'has-error' else ''
-    fieldIsRequired or attemptedSubmital
+    $scope.view.submittalClass = if attemptedSubmital && !$scope.user.isSpecial then 'has-error' else ''
+    (fieldIsRequired or attemptedSubmital) && !$scope.user.isSpecial
 
   _.merge $scope,
     charge: ->
+      if !$scope.user?.card
+        return $scope.user.submit()
       stripe.card.createToken(_cleanReSubmit())
       .then (token) ->
         $log.debug 'token created for card ending in ', token.card.last4

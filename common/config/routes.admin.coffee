@@ -22,6 +22,10 @@ module.exports =
   utilsFipsCodes: '/fips'
   utilsMail: '/mail'
 
+  errors: 'errors'
+  errorsBrowser: '/browser'
+  errorsAPI: '/api'
+
   users: 'users'
   usersCustomers: '/customers'
 

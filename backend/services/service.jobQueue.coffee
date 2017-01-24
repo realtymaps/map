@@ -11,7 +11,6 @@ TaskImplementation = require '../tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 jobQueueErrors = require '../utils/errors/util.error.jobQueue'
 internals = require './service.jobQueue.internals'
-errorUtils = require '../utils/errors/util.error.partiallyHandledError'
 moment = require 'moment'
 tz = require '../config/tz'
 
@@ -55,7 +54,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
 
 queueManualTask = (taskName, initiator) ->
   if !taskName
-    throw new Error('Task name required!')
+    throw new jobQueueErrors.TaskStartError('Task name required!')
   internals.withDbLock {lockId: config.JOB_QUEUE.SCHEDULING_LOCK_ID, maxWaitSeconds: 20, retryIntervalSeconds: 5}, (transaction) ->
     # need to be sure it's not already running
     tables.jobQueue.taskHistory({transaction})
@@ -66,14 +65,14 @@ queueManualTask = (taskName, initiator) ->
     .then (task) ->
       if task?.length && !task[0].finished
         started = moment.utc(task[0].started).utcOffset(tz.MOMENT_UTC_OFFSET).format('ddd, MMM DD, YYYY [at] hh:mma')
-        throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{started} by #{task[0].initiator}")
+        throw new jobQueueErrors.TaskStartError("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{started} by #{task[0].initiator}")
     .then () ->
       tables.jobQueue.taskConfig({transaction})
       .select()
       .where(name: taskName)
       .then (result) ->
         if result.length == 0
-          throw new Error("Task not found: #{taskName}")
+          throw new jobQueueErrors.TaskStartError("Task not found: #{taskName}")
 
         taskConfig = result[0]
         if taskConfig.blocked_by_tasks.length
@@ -85,7 +84,7 @@ queueManualTask = (taskName, initiator) ->
           .whereIn('name', taskConfig.blocked_by_tasks)
           .then (blockingTasks) ->
             if blockingTasks.length
-              throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingTasks.length} blocking tasks: #{_.pluck(blockingTasks, 'name').join(', ')}")
+              throw new jobQueueErrors.TaskStartError("Refusing to queue task #{taskName} due to #{blockingTasks.length} blocking tasks: #{_.pluck(blockingTasks, 'name').join(', ')}")
         else
           taskBlockPromise = Promise.resolve()
 
@@ -98,7 +97,7 @@ queueManualTask = (taskName, initiator) ->
           .whereRaw("value::TEXT = 'true'")
           .then (blockingLocks) ->
             if blockingLocks.length
-              throw new errorUtils.QuietlyHandledError("Refusing to queue task #{taskName} due to #{blockingLocks.length} blocking locks: #{_.pluck(blockingLocks, 'key').join(', ')}")
+              throw new jobQueueErrors.TaskStartError("Refusing to queue task #{taskName} due to #{blockingLocks.length} blocking locks: #{_.pluck(blockingLocks, 'key').join(', ')}")
         else
           lockBlockPromise = Promise.resolve()
 

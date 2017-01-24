@@ -108,7 +108,9 @@ raw = (dbName, args...) ->
 
 buildTableName = (tableName) ->
   (subid) ->
-    if !tableName
+    if !subid
+      tableName
+    else if !tableName
       subid
     else if Array.isArray(subid)
       "#{tableName}_#{subid.join('_')}"

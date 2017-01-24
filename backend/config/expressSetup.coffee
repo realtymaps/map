@@ -155,10 +155,13 @@ app.use (data, req, res, next) ->
       message = "error reference: #{data.errorRef}"
     else
       message = escape(data.message)
+
     if !data.expected
       message = commonConfig.UNEXPECTED_MESSAGE(message)
     logger.debug -> 'data converted to ExpressResponse'
     data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
+    logger.debug -> "ExpressResponse"
+    logger.debug -> {status: data.status, quiet:data.quiet}
 
   logger.debug -> "data.status: #{data.status}"
   if !status.isWithinOK(data.status)

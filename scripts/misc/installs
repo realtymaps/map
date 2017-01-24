@@ -24,6 +24,14 @@ if [[ "$unamestr" == 'Linux' ]]; then
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
   #http://sharp.dimens.io/en/stable/install/
+  # NOTE these libraries are a pain in the ass with brew, as upgrade will blindly update vips and poppler c libs (UNLESS YOU LOCK THEM DOWN)
+  # to lock down do `brew pin vips poppler`
+  # the node libs dependend on specific versions
+  # TO drop to an old version do
+  # brew uninstall poppler --ignore-dependencies
+  # brew uninstall vips
+  # rm all versions of vips except one of the old ones you want
+  # then `brew link vips poppler`
   if ! hash vips &> /dev/null || [[ $IS_HEROKU = 1 ]];then
     brew install homebrew/science/vips --with-imagemagick --with-webp
   fi

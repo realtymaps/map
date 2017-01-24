@@ -23,8 +23,6 @@ require 'leaflet-plugins/layer/tile/Google.js'
 
 require 'angularjs-slider' #rzModule
 require 'angular-stripe'
-require 'angular-validation/dist/angular-validation.js'
-require 'angular-validation/dist/angular-validation-rule.js'
 require 'angular-toastr'
 require 'angular-touch'
 require 'ui-router-extras'
@@ -85,8 +83,6 @@ app = window.angular.module 'rmapsMapApp', [
   'ui-leaflet'
   'ui.bootstrap'
   'ui.router'
-  'validation'
-  'validation.rule'
   'ngFileUpload'
   'rmaps-utils'
 ]

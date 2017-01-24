@@ -63,6 +63,7 @@ then
     if [[ "$CI_DB_SECRET_KEY" == "" ]]
     then
         echo "ERROR: CI_DB_SECRET_KEY missing"
+        exit 1
     fi
     if [[ "$migrationsResult" != "" ]]
     then

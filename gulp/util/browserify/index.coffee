@@ -8,7 +8,7 @@ paths = require '../../../common/config/paths'
 internals = require './browserify.internals'
 require '../../../backend/extensions/stream'
 
-module.exports = ({inputGlob, outputName, doSourceMaps, watch, done}) ->
+module.exports = ({inputGlob, outputName, doSourceMaps, watch, prod, done}) ->
   times = startTime: ''
 
   logger.spawn('browserify:verbose').debug -> "@@@@ inputGlob @@@@"
@@ -33,7 +33,7 @@ module.exports = ({inputGlob, outputName, doSourceMaps, watch, done}) ->
     # This file acts like a .gitignore for excluding files from linter
     lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
 
-    bStream = internals.createBStream({config, lintIgnore, watch, doSourceMaps})
+    bStream = internals.createBStream({config, lintIgnore, watch, prod, doSourceMaps})
 
     if watch
       internals.handleWatch({bStream, inputGlob, times, outputName, config, entries, doSourceMaps})
@@ -45,7 +45,7 @@ module.exports = ({inputGlob, outputName, doSourceMaps, watch, done}) ->
         bStream.external config.external
 
     # finally push the files through
-    internals.bundle({config, entries, bStream, times, outputName, doSourceMaps})
+    internals.bundle({config, entries, bStream, times, outputName, prod, doSourceMaps})
   .then (stream) ->
     stream.toPromise()
   .then () ->

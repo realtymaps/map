@@ -1,9 +1,10 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+common = require '../../../../common/config/commonConfig.coffee'
 _ = require 'lodash'
 
 
-app.config(($provide, $validationProvider) ->
+mod.config(($provide, $validationProvider) ->
   _removeError = (element) ->
     element.className = element.className.replace(/has\-error/g, '') if element?
 
@@ -23,8 +24,8 @@ app.config(($provide, $validationProvider) ->
     $delegate
 
 )
-.run ($validation, rmapsMainOptions, $http) ->
-  {validation} = rmapsMainOptions
+.run ($validation, $http) ->
+  {validation} = common
 
   expression =
     email: validation.email
@@ -96,6 +97,30 @@ app.config(($provide, $validationProvider) ->
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isValid, email: value, config)
 
+    checkValidCoupon: (value, scope, element, attrs, param) ->
+      query = {
+        stripe_coupon_id: value
+      }
+      if param?
+        params = param.split(";")
+
+        if params.length && params[0] == 'isSpecial'
+          query.isSpecial = true
+
+      promise = $http.get(backendRoutes.coupons.isValid, {params: query, alerts: false})
+
+      if !query.isSpecial
+        return promise
+
+      handleSpecial = ({data}) ->
+        if !(params?.length > 1)
+          return promise
+        field = params[1] + ".isSpecial"
+        _.set(scope, field, data == true)
+        data
+
+      promise.then(handleSpecial).catch(handleSpecial)
+
     ###
     Do not be mistaken; this also checks if the email is valid!
 
@@ -137,6 +162,8 @@ app.config(($provide, $validationProvider) ->
       error: 'Email must be unique'
     checkValidMlsAgent:
       error: 'MLS ID not found or active.'
+    checkValidCoupon:
+      error: 'That doesn\'t seem right'
     number:
       error: 'Invalid Number'
     optNumber:

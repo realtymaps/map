@@ -4,6 +4,8 @@ logger = require('../config/logger').spawn('route:email')
 {DataValidationError, validateAndTransformRequest} = require '../utils/util.validation'
 emailTransforms = require('../utils/transforms/transforms.email')
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
+emailErrors = require '../utils/errors/util.errors.email'
+
 
 _isValid = (isLoggedIn) ->
   route =
@@ -15,10 +17,7 @@ _isValid = (isLoggedIn) ->
         logger.debug -> "isValid: true"
         logger.debug -> validReq
         true
-      .catch DataValidationError, (err) ->
-        throw new errorHandlingUtils.PartiallyHandledError(err, 'error interpreting query string parameters')
-      .catch errorHandlingUtils.isUnhandled, (error) ->
-        throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
+
 
   if isLoggedIn
     route.middleware =
@@ -40,7 +39,7 @@ module.exports =
         if bool
           "account validated via email"
       .catch DataValidationError, (err) ->
-        throw new errorHandlingUtils.PartiallyHandledError(err, 'error interpreting query string parameters')
+        throw new emailErrors.VerifyEmailError(err)
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
 

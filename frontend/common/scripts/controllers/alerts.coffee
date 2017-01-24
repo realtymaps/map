@@ -1,3 +1,6 @@
+#NOTE Some of the comment grammar below is not correct (missing apostrophes) as it is causing problems with
+# chromes debugger.
+
 ###
 # alerts!
 # -------
@@ -12,7 +15,7 @@
 # overriden on a particular event; the special value 0 means not to auto-dismiss), or can be hidden before this by
 # clicking the X in the upper-right of the alert.  New alerts that have the same id as an existing alert replace that
 # alert, resetting its dismissal timer, moving it to the end of the list, and incrementing its repetition counter,
-# similar to how Chrome's js console handles repeated console messages.  Once an alert has been hidden by a user, it
+# similar to how Chromes js console handles repeated console messages.  Once an alert has been hidden by a user, it
 # (and any alerts with the same id) will remain hidden; the alert will be dismissed once it has been hidden for a quiet
 # period without its repetition counter getting incremented (default value in MainOptions, but can be overriden
 # per-event, and 0 is not handled specially unlike TTL).

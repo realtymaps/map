@@ -33,7 +33,7 @@ rmapsProfilesService
       delayedUrl()
     else
       $http.get backendRoutes.userSession.logout
-      .success (data, status) ->
+      .then ({data, status}) ->
         delayedUrl()
       .finally ->
         $rootScope.user = null
