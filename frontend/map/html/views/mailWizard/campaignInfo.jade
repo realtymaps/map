@@ -1,24 +1,29 @@
-.mail-wizard-steps
-  header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()" ng-disabled="!form.checkValid(campaignForm)") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!form.checkValid(campaignForm)") Next
-    div.pathway
-      ul
-        li
-          span Recipients
-        li.active
-          span Campaign Info
-        li
-          span Select Template
-        li
-          span Edit Template
-        li
-          span Review
+form(name="campaignForm" role="form")
+  .mail-wizard-steps
+    header.send-progress(ng-hide="hideProgress()")
+      button.btn.btn-default.pull-left(
+        ng-click="prevStep()"
+        ng-hide="hideBackButton()") Back
+      button.btn.btn-primary.pull-right(
+        ng-click="nextStep()"
+        ng-hide="hideNextButton()"
+        validation-submit="campaignForm") Next
+      div.pathway
+        ul
+          li
+            span Recipients
+          li.active
+            span Campaign Info
+          li
+            span Select Template
+          li
+            span Edit Template
+          li
+            span Review
 
-.sender-info
-  .inner
-    .container
-      form(name="campaignForm" role="form")
+  .sender-info
+    .inner
+      .container
         .row
           .col-sm-8
             .row
@@ -26,45 +31,66 @@
               .col-sm-12
                 .form-group
                   label Campaign Name
-                  input.form-control(type="text" ng-model="wizard.mail.campaign.name" validator="required,minlength=3")
+                  input.form-control(
+                    name="campaign_name"
+                    type="text"
+                    ng-model="wizard.mail.campaign.name"
+                    validator="required,minlength=3")
             .row
               h1.pageTitle Sender Info
               .col-sm-6
 
                 .form-group
                   label First Name
-                  input.form-control(type="text" ng-model="senderData.first_name" validator="required")
+                  input.form-control(
+                    name="first_name"
+                    type="text"
+                    ng-model="senderData.first_name"
+                    validator="required")
                 .form-group
                   label Last Name
-                  input.form-control(type="text" ng-model="senderData.last_name" validator="required")
+                  input.form-control(
+                    name="last_name"
+                    type="text"
+                    ng-model="senderData.last_name"
+                    validator="required")
                 .form-group
                   label Email
-                  input.form-control(type="email" ng-model="senderData.email" placeholder="name@email.com" validator="required,email")
+                  input.form-control(
+                    name="email"
+                    type="email"
+                    ng-model="senderData.email"
+                    placeholder="name@email.com"
+                    validator="required,email")
                 .form-group
                   label Phone Number
-                  input.form-control(type="tel" ng-model="senderData.phone")
+                  input.form-control(name="phone" type="tel" ng-model="senderData.phone" validator="optPhone")
               .col-sm-6
                 .form-group
                   label Company
                   input.form-control(type="text" ng-model="senderData.company")
                 .form-group
                   label Address 1
-                  input.form-control(type="text" ng-model="senderData.address_line1" validator="required,address")
+                  input.form-control(name="address1" type="text" ng-model="senderData.address_line1" validator="required,address")
                 .form-group
                   label Address 2
-                  input.form-control(type="text" ng-model="senderData.address_line2" placeholder="Apartment, suite, unit, building, floor")
+                  input.form-control(name="address2" type="text" ng-model="senderData.address_line2" placeholder="Apartment, suite, unit, building, floor")
                 .form-group
                   label City
-                  input.form-control(type="text" ng-model="senderData.address_city" validator="required,minlength=2")
+                  input.form-control(name="city" type="text" ng-model="senderData.address_city" validator="required,minlength=2")
 
                 .row
                   .col-sm-6
                     .form-group
                       label State
                       .select
-                        select.form-control(ng-model="senderData.address_state" ng-options="value.code as value.name for value in us_states" validator="required")
+                        select.form-control(
+                          name="state"
+                          ng-model="senderData.address_state"
+                          ng-options="value.code as value.name for value in us_states"
+                          validator="required")
                           option(selected disabled) - Select State -
                   .col-sm-6
                     .form-group
                       label Zip
-                      input.form-control(type="text" ng-model="senderData.address_zip" validator="required,zipcode")
+                      input.form-control(name="zip" type="text" ng-model="senderData.address_zip" validator="required,zipcode")

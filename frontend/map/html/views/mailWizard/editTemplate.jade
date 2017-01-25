@@ -1,108 +1,56 @@
-.mail-wizard-steps
-  header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
-    div.pathway
-      ul
-        li
-          span Recipients
-        li
-          span Campaign Info
-        li
-          span Select Template
-        li.active
-          span Edit Template
-        li
-          span Review
+form(role="form" name="editTemplate")
+  .mail-wizard-steps
+    header.send-progress(ng-hide="hideProgress()")
+      button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+      button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
+      div.pathway
+        ul
+          li
+            span Recipients
+          li
+            span Campaign Info
+          li
+            span Select Template
+          li.active
+            span Edit Template
+          li
+            span Review
 
-.edit-template
-  .inner
-    .container
-      form
-        div.row.equal-height
-          div.col-md-9
-            .row
-              .toolGroup
-                input.form-control.name-input(ng-disabled="saveStatus != 'saved'" ng-model="wizard.mail.campaign.name" ng-change="saveContent()")
-                .btns
-                  button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
-                  button.btn.btn-default.miscTool(ng-click="saveContent()" ng-class="{'btn-inactive': saveStatus == 'saved', 'btn-error': saveStatus == 'error'}") {{saveButtonText[saveStatus]}}
-                  //- text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
-                    ta-toolbar="[['redo','undo']]")
-            .row
-              .template-stage-container
-                .template-stage
-                  .letter-editor
-                    .return-address-window
-                      .return-address-text
-                        .address-line {{wizard.mail.campaign.sender_info.first_name}} {{wizard.mail.campaign.sender_info.last_name}}
-                        .address-line {{wizard.mail.campaign.sender_info.address_line1}}
-                        .address-line {{wizard.mail.campaign.sender_info.address_city}}, {{wizard.mail.campaign.sender_info.address_state}} {{wizard.mail.campaign.sender_info.address_zip}}
-                    .recipient-address-window
-                      .recipient-address-text
-                        .address-line {{wizard.mail.campaign.recipients[0].name}}
-                        .address-line {{wizard.mail.campaign.recipients[0].street}} {{wizard.mail.campaign.recipients[0].unit}}
-                        .address-line {{wizard.mail.campaign.recipients[0].citystate}} {{wizard.mail.campaign.recipients[0].zip}}
-                    div(text-angular
-                      rmaps-macro-helper
-                      rmaps-macro-event-helper
-                      rmaps-page-break-helper
-                      name="wysiwyg"
-                      ta-default-wrap="p"
-                      ta-text-editor-class="letter-body"
-                      ta-html-editor-setup="htmlEditorSetup()"
-                      ta-text-editor-setup="textEditorSetup()"
-                      ng-model="wizard.mail.campaign.content"
-                      ta-target-toolbars="fontSizeToolbar")
-                      //- ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
-
-          //- div.col-md-3
-          //-   tabset(justified="true")
-          //-     tab(heading="Text Options" active="true")
-          //-       div.edit-template-design
-          //-         div.form-section
-          //-           h4
-          //-             | Font Family
-          //-           text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools"
-          //-             ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
-
-          //-         div.form-section
-          //-           h4
-          //-             | Font Size
-          //-           text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group"
-          //-             ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
-
-          //-         div.form-section
-          //-           h4
-          //-             | Macros
-          //-           div(ng-repeat="macro in macros" rmaps-draggable="macro")
-          //-             label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
-
-
-          //-         div.form-section
-          //-           h4
-          //-             | Font Color
-          //-           text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools"
-          //-             ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
-
-          //-         div.form-section
-          //-           h4
-          //-             | Text Features
-          //-           text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group"
-          //-             ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
-
-          //-     tab(heading="Macros")
-          //-       div.edit-template-design
-          //-         div.form-section
-          //-           h4
-          //-             | Drag &amp; Drop Macro
-          //-           div(ng-repeat="macro in macros" rmaps-draggable="macro")
-          //-             label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
-
-          //-     tab(heading="Images")
-          //-       div.edit-template-design
-          //-         div.form-section
-          //-           h4
-          //-             | Insert Image
-          //-           div
-          //-             label Insert Image
+  .edit-template
+    .inner
+      .container
+          div.row.equal-height
+            div.col-md-9
+              .row
+                .toolGroup
+                  input.form-control.name-input(ng-disabled="saveStatus != 'saved'" ng-model="wizard.mail.campaign.name" ng-change="saveContent()")
+                  .btns
+                    button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
+                    button.btn.btn-default.miscTool(ng-click="saveContent()" ng-class="{'btn-inactive': saveStatus == 'saved', 'btn-error': saveStatus == 'error'}") {{saveButtonText[saveStatus]}}
+                    //- text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
+                      ta-toolbar="[['redo','undo']]")
+              .row
+                .template-stage-container
+                  .template-stage
+                    .letter-editor
+                      .return-address-window
+                        .return-address-text
+                          .address-line {{wizard.mail.campaign.sender_info.first_name}} {{wizard.mail.campaign.sender_info.last_name}}
+                          .address-line {{wizard.mail.campaign.sender_info.address_line1}}
+                          .address-line {{wizard.mail.campaign.sender_info.address_city}}, {{wizard.mail.campaign.sender_info.address_state}} {{wizard.mail.campaign.sender_info.address_zip}}
+                      .recipient-address-window
+                        .recipient-address-text
+                          .address-line {{wizard.mail.campaign.recipients[0].name}}
+                          .address-line {{wizard.mail.campaign.recipients[0].street}} {{wizard.mail.campaign.recipients[0].unit}}
+                          .address-line {{wizard.mail.campaign.recipients[0].citystate}} {{wizard.mail.campaign.recipients[0].zip}}
+                      div(text-angular
+                        rmaps-macro-helper
+                        rmaps-macro-event-helper
+                        rmaps-page-break-helper
+                        name="wysiwyg"
+                        ta-default-wrap="p"
+                        ta-text-editor-class="letter-body"
+                        ta-html-editor-setup="htmlEditorSetup()"
+                        ta-text-editor-setup="textEditorSetup()"
+                        ng-model="wizard.mail.campaign.content"
+                        ta-target-toolbars="fontSizeToolbar")

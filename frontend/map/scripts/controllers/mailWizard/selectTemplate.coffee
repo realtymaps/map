@@ -122,7 +122,7 @@ app.controller 'rmapsSelectTemplateCtrl', (
               last_used_mail_campaign_id: $scope.wizard.mail.campaign.id
 
             # add to category
-            rmapsMailTemplateTypeService.appendCategoryList 'pdf', [newPdfItem]
+            rmapsMailTemplateTypeService.appendCategoryList('pdf', [newPdfItem])
 
             # select the item and update our campaign
             $scope.wizard.mail.setTemplateType(key)
@@ -130,7 +130,7 @@ app.controller 'rmapsSelectTemplateCtrl', (
             $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
 
             # open preview
-            $scope.previewTemplate newPdfItem
+            $scope.previewTemplate(newPdfItem)
 
             $scope.sentFile = true
             $timeout () ->
