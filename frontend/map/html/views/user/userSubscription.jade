@@ -56,20 +56,32 @@ div(ng-hide="processing > 0")
       .btn.btn-default(ng-click="reactivate()") Reactivate
 
   .collapse-header
-    h2 Payment Method
-  .row.collapse-header.cc-details(ng-show="data.payment")
-    h4 Card Info
-    .row
-      .col-md-1
-        img(rmaps-cdn-image ng-src="assets/cc/{{data.payment.brand}}Icon.png")
-      .col-md-5
-        p {{ data.payment.brand }} ending in {{ data.payment.last4 }}
-        p {{ ('00'+data.payment.exp_month).slice(-2) }}/{{ data.payment.exp_year }}
-      .col-md-6
-        label Name on Card
-        p {{ data.payment.name }}
-    .row.cc-buttons
-      .btn.btn-default(ng-click="replaceCC()") Replace
+    h2.inline Payment Methods
+    // button is in h2 to easily keep same margins and padding of h2
+    h2.inline.pull-right
+      button.btn.btn-default(ng-click="addCC()") Add Payment
+  .row.collapse-header.cc-details
+    .row.credit-card(ng-repeat="payment in data.payments" ng-class="payment.isDefault ? 'default': ''")
+      .row.inner-card(ng-attr-title="payment.isDefault ? 'Default Card': payment.last4")
+        .col-md-1.col-sm-1.col-xs-0
+          div.bold.large(ng-if="payment.isDefault") Default
+        .col-md-1.col-sm-1.col-xs-3
+          img(rmaps-cdn-image ng-src="assets/cc/{{payment.brand}}Icon.png")
+        .col-md-1.col-sm-4.col-xs-6
+          div **** {{ payment.last4 }}
+        .col-md-3.col-sm-12.col-xs-12
+          label.inline Year:
+          .inline.pad-left-5 {{ payment.exp_year }}
+        .col-md-3.col-sm-12.col-xs-12
+          label.inline Name:
+          div.inline.pad-left-5 {{ payment.name}}
+        .col-md-3.col-sm-12.col-xs-12.ignore-padding.btn-collection
+          .inline.btn.btn-default.margin-left-5.pull-right(
+            ng-click="defaultCC(payment)" ng-if="!payment.isDefault") Default
+          .inline.margin-left-5.btn.btn-default.pull-right(
+            ng-click="replaceCC(payment)"
+            ng-if="payment.isDefault") Replace
+          .inline.margin-left-5.btn.btn-default.pull-right(ng-click="removeCC(payment)") Remove
 
 
   div(ng-show="showSubscription()")

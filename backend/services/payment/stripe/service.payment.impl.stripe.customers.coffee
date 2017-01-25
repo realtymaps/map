@@ -200,17 +200,28 @@ StripeCustomers = (stripe) ->
   getSources = (authUser) ->
     get(authUser)
     .then (customer) ->
-      customer?.sources?.data
+      Promise.map customer?.sources?.data, (d) ->
+        if d.id == customer?.default_source
+          d.isDefault = true
+        d
 
   getDefaultSource = (authUser) ->
     get(authUser)
     .then (customer) ->
       _.find customer?.sources?.data, 'id', customer?.default_source
 
+  #https://stripe.com/docs/api/node#update_customer-source
+  #deletes old card and inserts new card as the default_source
   replaceDefaultSource = (authUser, source) ->
-    stripe.customers.update authUser.stripe_customer_id, {source: source}
+    stripe.customers.update(authUser.stripe_customer_id, {source})
     .then (customer) ->
-      _.find customer?.sources?.data, 'id', customer?.default_source
+      _.find(customer?.sources?.data, 'id', customer?.default_source)
+
+  setDefaultSource = (authUser, source) ->
+    stripe.customers.update(authUser.stripe_customer_id, {default_source: source})
+
+  addSource = (authUser, source) ->
+    stripe.customers.createSource(authUser.stripe_customer_id, {source})
 
   charge = (opts, idempotency_key) ->
     _.defaults opts,
@@ -250,6 +261,8 @@ StripeCustomers = (stripe) ->
     getSources
     getDefaultSource
     replaceDefaultSource
+    setDefaultSource
+    addSource
     charge
     capture
     handleCreationError

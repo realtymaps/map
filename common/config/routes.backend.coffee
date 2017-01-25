@@ -287,8 +287,13 @@ module.exports =
     getHistory: "#{apiBaseCharges}/history"
   paymentMethod:
     apiBase: apiBasePaymentMethod
-    getDefaultSource: "#{apiBasePaymentMethod}/defaultsource"
-    replaceDefaultSource: "#{apiBasePaymentMethod}/defaultsource/:source"
+    root: apiBasePaymentMethod
+    getDefault: "#{apiBasePaymentMethod}/defaultsource"
+    replaceDefault: "#{apiBasePaymentMethod}/:source/replaceDefault"
+    setDefault: "#{apiBasePaymentMethod}/:source"
+    add: "#{apiBasePaymentMethod}/:source"
+    remove: "#{apiBasePaymentMethod}/:source"
+
   shell:
     apiBase: apiBaseShell
     shell: apiBaseShell

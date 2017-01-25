@@ -1,3 +1,41 @@
+.pad-left
+  padding-left: 1em
+
+.pad-right
+  padding-right: 1em
+
+for num in (5 10 15 20 25 30)
+  .pad-{num}
+    padding: unit(num,'px');
+
+  .pad-top-{num}
+    padding-top: unit(num,'px');
+
+  .pad-bottom-{num}
+    padding-bottom: unit(num,'px');
+
+  .pad-left-{num}
+    padding-left: unit(num,'px');
+
+  .pad-right-{num}
+    padding-right: unit(num,'px');
+
+  .margin-{num}
+    margin: unit(num,'px');
+
+  .margin-top-{num}
+    margin-top: unit(num,'px');
+
+  .margin-bottom-{num}
+    margin-bottom: unit(num,'px');
+
+  .margin-left-{num}
+    margin-left: unit(num,'px');
+
+  .margin-right-{num}
+    margin-right: unit(num,'px');
+
+
 .page-header
   color $textColor
 
@@ -21,6 +59,28 @@ main
 .container-fluid
   @media (max-width: xs-1)
     padding 0 10px
+    .col-xs-0
+      display none
+
+  @media (max-width: sm-1)
+    .col-sm-0
+      display none
+
+  @media (max-width: md-1)
+    .col-md-0
+      display none
+
+.container
+  @media (max-width: xs-1)
+    .col-xs-0
+      display none
+  @media (max-width: sm-1)
+    .col-sm-0
+      display none
+
+  @media (max-width: md-1)
+    .col-md-0
+      display none
 
 /*dropdowns*/
 
