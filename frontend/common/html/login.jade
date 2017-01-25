@@ -8,13 +8,13 @@
         .text-center(ng-show="!showForm")
           h3 You are signed in as {{identity.user.email}}
           .btn.btn-info(ng-click="showForm = true") Login Again
-        form.comfy(method="POST", ng-submit="doLogin()" ng-show="showForm")
+        form.comfy(ng-show="showForm" name="loginForm" role="form")
           .form-group
             label(for="email") Email:
-            input#email(type="email" name="email" ng-model="form.email")
+            input#email(type="email" name="email" ng-model="form.email" validator="required")
           .form-group
             label(for="password") Password:
-            input#password(ng-show="!form.loginToken" type="password" name="password" ng-model="form.password")
+            input#password(ng-show="!form.loginToken" type="password" name="password" ng-model="form.password" validator="required")
           .form-group(ng-show="form.loginToken")
             label(for="loginToken") Login Token:
             input#loginToken(type="text" name="loginToken" ng-model="form.loginToken")
@@ -23,7 +23,7 @@
             .btn.btn-sm.btn-warning.pull-right(ng-click="forgotPassword()") Forgot password?
           .row.form-group
             .col-md-6
-              input(type="submit",value="Log In")
+              input(type="submit",value="Log In" ng-click="doLogin()" validation-submit="loginForm")
             .col-md-6.checkbox-replace
               input#remember_me(type="checkbox" name="remember_me" ng-model="form.remember_me")
               label(for="remember_me") Keep me logged in

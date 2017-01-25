@@ -12,6 +12,8 @@ profileSvc = require './service.profiles'
 keystoreSvc = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 errorUtils = require '../utils/errors/util.error.partiallyHandledError'
+notificationConfigService = require('./service.notification.config').instance
+
 
 Promise = require 'bluebird'
 _ = require 'lodash'
@@ -19,6 +21,7 @@ _ = require 'lodash'
 safeProject = basicColumns.project
 
 _inviteClient = (clientEntryValue) ->
+  l = logger.spawn('_inviteClient')
   # save important information for client login later in keystore
   # `clientEntryValue` also has data for vero template, so we send it there too
   clientEntryKey = uuid.genUUID()
@@ -29,6 +32,9 @@ _inviteClient = (clientEntryValue) ->
   else
     # url to the project dashboard (client will need to login if not logged)
     verify_url = "http://#{clientEntryValue.evtdata.verify_host}/project/#{clientEntryValue.project.id}"
+
+  l.debug -> "clientEntryValue"
+  l.debug -> clientEntryValue
 
   clientEntryValue.evtdata.verify_url = verify_url
   logger.debug -> "_inviteClient(), clientEntryValue:\n#{JSON.stringify(clientEntryValue)}"
@@ -99,17 +105,16 @@ class ProjectCrud extends ThenableCrud
       sqlHelpers.singleRow(data)
     .then (profile) =>
       throw new Error 'Project not found' unless profile?
-      toRemove =
-        auth_user_id: idObj.auth_user_id
-        project_id: profile.project_id
 
       promises = []
 
       # Remove notes in all cases
-      promises.push @notes.delete {}, doLogQuery, toRemove # signature is different from CRUD!
+      promises.push @notes.delete
+        auth_user_id: idObj.auth_user_id
+        project_id: profile.project_id
 
       # Remove shapes in all cases
-      promises.push @drawnShapes.delete project_id: profile.project_id # signature is different for EZCRUD!
+      promises.push @drawnShapes.delete(project_id: profile.project_id) # signature is different for EZCRUD!
 
       # Reset if sandbox (profile and project)
       if profile.sandbox is true
@@ -130,7 +135,7 @@ class ProjectCrud extends ThenableCrud
 
       else
         # Delete client profiles (not the users themselves)
-        promises.push @clients.delete {}, doLogQuery,
+        promises.push @clients.delete
           project_id: profile.project_id,
           parent_auth_user_id: idObj.auth_user_id
 
@@ -184,6 +189,8 @@ class ProjectCrud extends ThenableCrud
             evtdata.name = 'client_created'
 
         userPromise
+        .then () ->
+          notificationConfigService.setNewUserDefaults({authUser: user, transaction})
         # invite the client (whether created or existing)
         .then () ->
           _inviteClient clientEntryValue

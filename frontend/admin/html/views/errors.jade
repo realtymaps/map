@@ -1,0 +1,9 @@
+.errors.row
+  .col-md-1.menu
+    ul.nav.nav-pills.nav-stacked
+      li
+        a(ui-sref="errorsBrowser" ui-sref-opts="{reload: false}") Browser
+      li
+        a(ui-sref="errorsAPI" ui-sref-opts="{reload: false}") API
+  .col-md-11
+    div(ng-repeat="state in $state.get() | filter:{parent: 'errors'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)

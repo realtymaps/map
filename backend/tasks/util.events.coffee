@@ -35,7 +35,7 @@ _propertiesReduce = (rows) ->
     else
       'un' + row.sub_type.toInitCaps()
 
-    logger.debug "oppositeType: #{oppositeType}"
+    logger.debug -> "oppositeType: #{oppositeType}"
     if properties?[oppositeType]?[row.options.rm_property_id]?
       delete properties[oppositeType][row.options.rm_property_id]
       continue

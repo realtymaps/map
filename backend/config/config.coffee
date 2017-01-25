@@ -10,12 +10,13 @@ if scriptName not in ['server','jobQueueWorker','masterWorker']
 
 
 base =
+  SIGNUP_ENABLED: toBool(process.env.SIGNUP_ENABLED, defaultValue: true)
   KARMA:
     LOG_LEVEL: process.env.KARMA_LOG_LEVEL ? 'info'
     BROWSERS: if process.env.KARMA_BROWSERS? then process.env.KARMA_BROWSERS.split(',') ? ['PhantomJS']
   S3_URL: 'https://s3.amazonaws.com'
   EXT_AWS_PHOTO_ACCOUNT: process.env.EXT_AWS_PHOTO_ACCOUNT || 'aws-listing-photos'
-  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true #can be a string as well 'noCoffee'
+  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP ? true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
@@ -111,7 +112,7 @@ base =
     REQUEST_ERROR_HANDLED_DAYS: 60
   EMAIL_VERIFY:
     HASH_MIN_LENGTH: 20
-    RESTRICT_TO_OUR_DOMAIN: true
+    RESTRICT_TO_OUR_DOMAIN: toBool(process.env.EMAIL_VERIFY_RESTRICT_TO_OUR_DOMAIN, defaultValue: true)
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
     LIVE_MODE: toBool(process.env.PAYMENT_IS_LIVE, defaultValue: false)
@@ -162,9 +163,6 @@ environmentConfig =
       RAW_TABLE_CLEAN_DAYS: 1
       SUBTASK_ERROR_DAYS: 7
       OLD_DELETE_MARKER_DAYS: 1
-
-    EMAIL_VERIFY:
-      RESTRICT_TO_OUR_DOMAIN: false
 
   test: # test inherits from development below
     LOGGING:

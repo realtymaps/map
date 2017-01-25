@@ -30,7 +30,7 @@
   },
   "check_scope": {
     "module": "coffeescope2",
-    "level": "error",
+    "level": "warn",
     "environments": ["es5", "node", "commonjs", "mocha", "browser"],
     "globals": {
       "angular": true,

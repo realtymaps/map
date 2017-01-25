@@ -24,7 +24,8 @@ rmapsMainOptions
   # tests / flags
   #
   $scope.showSubscription = () ->
-    return ($scope.subscription? && !($rootScope.identity.subscriptionStatus in ['expired', 'deactivated']))
+    # subscription status of `expired` or `deactivated` isn't represented by stripe subscr object, so forego using the stripe subscription
+    return ($scope.subscription? && !($rootScope.identity.subscriptionStatus in [rmapsMainOptions.subscription.STATUS.EXPIRED, rmapsMainOptions.subscription.STATUS.DEACTIVATED]))
 
   $scope.isDeactivated = () ->
     return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.DEACTIVATED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
@@ -35,6 +36,9 @@ rmapsMainOptions
   $scope.isInGracePeriod = () ->
     # did user cancel, but we're still active
     return $scope.subscription?.canceled_at? && !$scope.subscription?.ended_at?
+
+  $scope.isWarningStatus = (status) ->
+    return !(status in [rmapsMainOptions.subscription.STATUS.ACTIVE, rmapsMainOptions.subscription.STATUS.TRIALING])
 
   #
   # Account actions

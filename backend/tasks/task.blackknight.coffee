@@ -400,7 +400,7 @@ recordChangeCounts = (subtask) ->
       return !deletedFips
   indicatePromise
   .then (indicateDeletes) ->
-    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes, normalSubid: ['blackknight', subtask.data.fips_code]})
+    dataLoadHelpers.recordChangeCounts(subtask, {deletesTable: 'combined', indicateDeletes, normalSubid: ['blackknight', subtask.data.fips_code], data_source_id: 'blackknight'})
 
 
 activateNewData = (subtask) ->

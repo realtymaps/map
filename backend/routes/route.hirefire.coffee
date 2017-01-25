@@ -16,5 +16,6 @@ info = (req, res, next) ->
     next(result)
 
 
+# no permissions middleware as hirefire needs to hit this API endpoint
 module.exports =
   info: info

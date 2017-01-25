@@ -135,13 +135,21 @@ whereAndWhereIn = (query, entity, isOr = false) ->
 orWhereAndWhereIn = (query, entity) -> whereAndWhereIn(query, entity, true)
 
 
-between = (query, column, min, max) ->
+between = (query, column, min, max, isRaw = false) ->
+  if !isRaw
+    return if min and max
+      query.whereBetween(column, [min, max])
+    else if min
+      query.where(column, '>=', min)
+    else if max
+      query.where(column, '<=', max)
+
   if min and max
-    query.whereBetween(column, [min, max])
+    query.whereRaw("#{column} BETWEEN ? AND ?", [min, max])
   else if min
-    query.where(column, '>=', min)
+    query.whereRaw("#{column}  >= ?", [min])
   else if max
-    query.where(column, '<=', max)
+    query.whereRaw("#{column} <= ?", [max])
 
 ageOrDaysFromStartToNow = (query, listingAge, beginDate, operator, val) ->
   _whereRawSafe query,
@@ -319,9 +327,9 @@ buildUpsertBindings = ({idObj, entityObj, conflictOverrideObj, tableName}) ->
         that column from being set on update
     transaction: the transaction to use for the upsert
 ###
-upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction}) ->
-  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.tableName})
-  dbFn({transaction}).raw(upsertBindings.sql, upsertBindings.bindings)
+upsert = ({dbFn, idObj, entityObj, conflictOverrideObj, transaction, subid}) ->
+  upsertBindings = buildUpsertBindings({idObj, entityObj, conflictOverrideObj, tableName: dbFn.buildTableName(subid)})
+  dbFn({transaction, subid}).raw(upsertBindings.sql, upsertBindings.bindings)
 
 
 # http://stackoverflow.com/questions/20582500/how-to-check-if-a-table-exists-in-a-given-schema

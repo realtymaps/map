@@ -25,7 +25,7 @@ _debug = (thing, thingName) ->
 
 
 _handler = (handlerOpts, opts) -> Promise.try () ->
-
+  logger.debug opts
   _debug handlerOpts, 'handlerOpts'
 
   {required, s3FnName, extraArgs} = onMissingArgsFail
@@ -39,6 +39,8 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
   _debug extraArgs, 'extraArgs'
 
   {extAcctName, nodeStyle} = opts
+  _debug opts, 'opts'
+  _debug extAcctName, 'extAcctName'
   opts = onMissingArgsFail
     args: opts
     required: required
@@ -88,6 +90,7 @@ getTimedDownloadUrl = (opts) ->
   https://github.com/aws/aws-sdk-js/issues/94 , stream.length must be set for AWS (SUCKY) for putObject
 ###
 putObject = (opts) ->
+  logger.debug opts
   _handler
     s3FnName: 'putObject'
     required: ['extAcctName','Key','Body']

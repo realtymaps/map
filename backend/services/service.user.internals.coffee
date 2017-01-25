@@ -49,11 +49,8 @@ upsertImage = ({entity, blob, context}) ->
     if image
       #update
       logger.debug "updating image for account_image_id: #{entity.account_image_id}"
-      return tables.user.blobs().update {
-        id: entity.account_image_id
-        blob:blob
-        "#{linkIdField}": entity.id
-      }
+      return tables.user.blobs().update({blob:blob,"#{linkIdField}": entity.id}).where(id: entity.account_image_id)
+
     #create
     logger.debug 'creating image'
     tables.user.blobs().insert(blob:blob, "#{linkIdField}": entity.id)

@@ -1,14 +1,11 @@
 _ = require 'lodash'
-gulp = require 'gulp'
 watch = require 'gulp-watch'
 gutil = require 'gulp-util'
 globby = require 'globby'
-$ = require('gulp-load-plugins')()
 browserify = require 'browserify'
 watchify = require 'watchify'
-source = require 'vinyl-source-stream'
-buffer = require 'vinyl-buffer'
 prettyHrtime = require 'pretty-hrtime'
+fs = require 'fs'
 
 conf = require '../../tasks/conf'
 mainConfig = require '../../../backend/config/config'
@@ -17,15 +14,30 @@ shutdown = require '../../../backend/config/shutdown'
 paths = require '../../../common/config/paths'
 coffeelint = require './coffeelint'
 verifyNgInject = require '../tansform.ng-strict-di'
+exorcist = require 'exorcist'
+mkdirp = require 'mkdirp'
 
-#for reference see http://gulpjs.org/recipes/fast-browserify-builds-with-watchify.html
+#always return a gulp ready stream
+bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourceMaps}) ->
+  l = logger.spawn('bundle')
 
-_gulpify = ({stream, times, outputName, doSourceMaps}) ->
-  l = logger.spawn('gulpify')
+  times.startTime = process.hrtime()
 
-  # l.debug -> {times, outputName, doSourceMaps}
+  mkdirp.sync(paths.destFull.scripts)
 
-  # fileCount = 0
+  stream = bStream.bundle()
+
+  l.debug ->
+    str = 'Bundling ' + gutil.colors.bgCyan.black(config.outputName)
+    if entries?.length
+      str += + ' ' + entries.length + ' files ...'
+    str
+
+  if doSourceMaps
+    mapPath = "#{paths.destFull.scripts}/#{outputName}.map"
+    stream = stream.pipe(
+      exorcist(mapPath, null, '../src', './'))
+
   stream
   .once 'error', (err) ->
     l.error err.toString().slice(0,500)
@@ -35,55 +47,22 @@ _gulpify = ({stream, times, outputName, doSourceMaps}) ->
   .once 'end', ->
     timestamp = prettyHrtime process.hrtime times.startTime
     l.debug 'Bundled', gutil.colors.bgCyan.black(outputName), 'in', gutil.colors.magenta.black(timestamp)
-
-  #http://stackoverflow.com/questions/32571362/browserify-fails-to-create-bundle-with-babelify-transform-typeerror-path-must
-  .pipe source outputName
-  .pipe buffer()
-  .pipe($.if( do ->
-    if doSourceMaps
-      l.debug -> 'doing sourcemaps'
-    doSourceMaps
-  , $.sourcemaps.init {loadMaps: true, largeFile: true}))
-  .pipe($.if(doSourceMaps, $.sourcemaps.write()))
-  .pipe gulp.dest paths.destFull.scripts
+  .pipe(fs.createWriteStream("#{paths.destFull.scripts}/#{outputName}", 'utf8'))
 
 
-#always return a gulp ready stream
-bundle = ({config, entries, inputGlob, bStream, times, outputName, doSourceMaps}) ->
-  l = logger.spawn('bundle')
-  times.startTime = process.hrtime()
-  stream = bStream.bundle()
-
-  _bundle2Gulp = () ->
-    l.debug -> 'Bundling ' + gutil.colors.bgCyan.black(config.outputName) + ' ' + entries.length + ' files ...'
-    _gulpify({stream, times, outputName, doSourceMaps, entries})
-
-  if entries?
-    l.debug -> 'early entries'
-    #return a stream so gulp knows when this is done
-    return _bundle2Gulp()
-
-  globby(inputGlob)
-  .then (newEntries) ->
-    l.spawn('newEntries').debug -> newEntries
-
-    entries = newEntries
-    _bundle2Gulp()
-
-  return #returning null later is ok as gulp is done
-
-
-createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
+createBStream = ({config, lintIgnore, watch, prod, doSourceMaps}) ->
   cssOpts = require('./browserify.css')
   if !doSourceMaps
     cssOpts.debug = false
     cssOpts.minify = true
 
   b = browserify config
-  .transform(coffeelint({lintIgnore, watch, doSourceMaps}))
+  .transform(coffeelint({lintIgnore, watch, prod}))
   .on 'error', (error) ->
+    logger.error "@@@@@@@@@@@ Browserify has just exploded. @@@@@@@@@@@@@"
     logger.error error.stack
-    logger.error error
+    logger.error _.omit(error, 'stream')
+    #TODO: do we really want to exit?
     shutdown.exit(error: true)
 
   #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
@@ -93,21 +72,21 @@ createBStream = ({config, lintIgnore, watch, doSourceMaps}) ->
   if doSourceMaps
     b.transform(verifyNgInject, skips: [/\/tmp\/map\.templates\.js/, /\/tmp\/admin\.templates\.js/])
 
-  b.transform('coffeeify', sourceMap: if doSourceMaps then mainConfig.COFFEE_SOURCE_MAP else false)
+    doCoffeeSourceMap = if mainConfig.COFFEE_SOURCE_MAP
+      mainConfig.COFFEE_SOURCE_MAP == 'true' || mainConfig.COFFEE_SOURCE_MAP == true
+    else
+      false
+
+    logger.debug -> "doCoffeeSourceMap: #{doCoffeeSourceMap}"
+
+  b.transform('coffeeify', sourceMap: doCoffeeSourceMap)
   .transform('browserify-ngannotate', { "ext": ".coffee" })
   .transform('jadeify')
-  # note gulp is currently doing most styles
+  # note gulp is currently doing most styles and the sourcemapping sucks for browserify-css
+  #TODO: switch to cssy, supports sourcemaps https://github.com/nodys/cssy
   .transform('browserify-css', cssOpts)
   .transform('stylusify')
   .transform('brfs')
-
-  # Todo: uglifyify + uglify can be used for additional optimization https://github.com/hughsk/uglifyify
-  # .transform({
-  #   global: true
-  #   ignore: [ ]
-  #   output: {beautify: false}
-  #   mangle: true
-  # }, 'uglifyify')
 
 
 handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSourceMaps}) ->
@@ -117,7 +96,6 @@ handleWatch = ({bStream, inputGlob, times, outputName, config, entries, doSource
   , 1000)
 
   #look for new files
-  #TODO: I don't believe this is working currently
   watch inputGlob, conf.chokidarOpts, _.debounce () ->
     # Re-evaluate input pattern so new files are picked up
     globby(inputGlob)

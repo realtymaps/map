@@ -66,7 +66,7 @@ module.config(($httpProvider) ->
         promise.cancel = angular.noop
         canceler = promise = null
 
-      promise
+      return promise
 
     getCache = (config) ->
       if angular.isObject(config?.cache)

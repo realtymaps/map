@@ -27,11 +27,8 @@ styles = ({app, doSourceMaps, cdn}) ->
     gutil.log "Building styles:", gutil.colors.bgMagenta.black(sourcePaths)
 
     stream = gulp.src sourcePaths
-
-    if doSourceMaps
-      stream = stream.pipe $.sourcemaps.init(largeFile:true)
-
-    stream = stream.pipe lessFilter = $.filter '**/*.less', restore: true
+    .pipe($.if(doSourceMaps, $.sourcemaps.init(largeFile:true)))
+    .pipe lessFilter = $.filter '**/*.less', restore: true
     .pipe $.less()
     .on   'error', conf.errorHandler 'Less'
     .pipe lessFilter.restore
@@ -45,7 +42,7 @@ styles = ({app, doSourceMaps, cdn}) ->
     .pipe $.concat app + '.css'
 
     # Running rework even when cdn = false serves as a sanity check for CSS errors
-    stream = stream.pipe rework rework_url  (url) ->
+    .pipe rework rework_url  (url) ->
       # We only want use CDN urls for these filetypes, and only for paths like "/assets/blah.jpg" NOT "//example.com/blah.jpg"
       if cdn && url.match(/[.](jpg|jpeg|gif|png|svg|ico)([?].*)?(#.*)?$/i) and url.indexOf('/') == 0 && url[1] != '/'
         shard = (url.charCodeAt(url.lastIndexOf('/') + 1) || 0) % 2 # randomization
@@ -60,10 +57,12 @@ styles = ({app, doSourceMaps, cdn}) ->
       gutil.log gutil.colors.red('[rework]'), err.toString().slice(0,500)
       @emit 'end'
 
-    if doSourceMaps
-      stream = stream.pipe $.sourcemaps.write()
-
-    stream.pipe gulp.dest paths.destFull.styles
+    stream
+    .pipe($.if(doSourceMaps,$.sourcemaps.write('.', {
+      mapSourcesAbsolute: true
+      sourceRoot: '../src', #debugging might set sourceRoot to '../src/gulp' it will clearly show u what is from gulp
+    })))
+    .pipe gulp.dest paths.destFull.styles
     .pipe $.size
       title: paths.dest.root
       showFiles: true

@@ -4,7 +4,7 @@ memoize = require 'memoizee'
 util = require 'util'
 require '../config/promisify.coffee'
 require '../../common/extensions/strings'
-logger = require('../config/logger.coffee').spawn('task:events')
+logger = require('../config/logger.coffee').spawn('task:events:dequeue')
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 jobQueue = require '../services/service.jobQueue'
 tables = require '../config/tables'
@@ -14,11 +14,23 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 utilEvents = require './util.events.coffee'
+eventMapPromise = null
 
 
 NUM_ROWS_TO_PAGINATE = 250
 MINUTE_SLOT = 5
-eventMapPromise = null
+
+eventMapPromise ?= memoize.promise () ->
+  l = logger.spawn("eventMapPromise")
+
+  eventHandleTable = tables.user.notificationEventHandle
+  methodsTable = tables.user.notificationMethods
+
+  l.debugQuery(eventHandleTable().select("*", "code_name as method")
+  .join(methodsTable.tableName, "#{methodsTable.tableName}.id", "#{eventHandleTable.tableName}.method_id"))
+  .then (rows) ->
+    _.indexBy rows, 'event_type'
+, maxAge: 60*60*1000 #1 HOUR
 
 ###
 user_events_queue rows should only live as long as our
@@ -41,6 +53,9 @@ should be dequeued / removed.
   Returns a Promise.
 ###
 loadEvents = ({subtask, frequency, minuteSlot, doDequeue}) -> Promise.try () ->
+  l = logger.spawn('loadEvents')
+  l.debug -> {subtask, frequency, minuteSlot, doDequeue}
+
   maxPage = subtask?.data?.numRowsToPageProcessEvents || NUM_ROWS_TO_PAGINATE
 
   # notifications subtasks only begin once all event subtasks are complete
@@ -57,10 +72,17 @@ loadEvents = ({subtask, frequency, minuteSlot, doDequeue}) -> Promise.try () ->
       startTime: Date.now()
   }
 
+  milliSecDay = 3600 * 24
   dateSlot = switch frequency
     when 'daily'
-      minuteSlot = 3600 * 24
+      minuteSlot = milliSecDay
       'day'
+    when 'week'
+      minuteSlot = 7 * milliSecDay
+      'week'
+    when 'month'
+      minuteSlot = 4 * 7 * milliSecDay # ~ loose estimate
+      'month'
     else 'hour'
 
   minuteSlot ?= subtask.data?.minuteSlot || MINUTE_SLOT
@@ -80,11 +102,11 @@ loadEvents = ({subtask, frequency, minuteSlot, doDequeue}) -> Promise.try () ->
   , [dateSlot, minuteSlot, tables.user.eventsQueue.tableName, "#{frequency.toLowerCase()}_processed"]
   .then ({rows}) ->
 
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-    logger.debug "compactEvents rows.length to enqueue"
-    # logger.debug rows, true
-    logger.debug rows.length
-    logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
+    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+    l.debug -> "compactEvents rows.length to enqueue"
+    # l.debug -> rows, true
+    l.debug -> rows.length
+    l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
 
     jobQueue.queueSubsequentPaginatedSubtask {
       subtask
@@ -95,9 +117,14 @@ loadEvents = ({subtask, frequency, minuteSlot, doDequeue}) -> Promise.try () ->
     }
 
 compactEvents = (subtask) -> Promise.try () ->
+  l = logger.spawn('compactEvents')
+
   if !subtask.data?.values?.length
     return
+
+  l.debug -> subtask.data
   {doDequeue, frequency} = subtask.data
+
 
   Promise.map subtask.data.values, (row) ->
     sqlHelpers.whereAndWhereIn tables.user.eventsQueue(),
@@ -136,28 +163,29 @@ compactEvents = (subtask) -> Promise.try () ->
   Returns Promise.
 ###
 processEvent = (subtask) -> Promise.try () ->
+  l = logger.spawn('processEvent')
+
   {compacted, doDequeue, frequency, ids} = subtask.data
+  l.debug -> {compacted, doDequeue, frequency, ids}
+
   {type} = compacted
   doDequeue ?= false
-
-  eventMapPromise ?= memoize.promise () ->
-    tables.config.handlersEventMap()
-    .then (rows) ->
-      _.indexBy rows, 'event_type'
-  , maxAge: 15*60*1000 #15 min
 
   eventMapPromise()
   .then (eventMap) ->
     # handle event type and do whatever with it accordingly
-    logger.debug eventMap, true
-    logger.debug "Attempting to find handle for compacted.type: #{compacted.type}"
+    l.debug -> eventMap
+    l.debug -> "Attempting to find handle for compacted.type: #{compacted.type}"
 
     {handler_name, handler_method, method, to_direction} = eventMap[type]
 
-    logger.debug "Destructured eventMap via type"
-    logger.debug {handler_name, handler_method, method, to_direction}
+    l.debug -> "Destructured eventMap via type"
+    l.debug -> {handler_name, handler_method, method, to_direction}
 
     handlerObject = utilEvents.processHandlers[handler_name]
+
+    if !method?
+      throw new HardFail "Method must be defined."
 
     if !frequency?
       throw new HardFail "Frequency must be defined."
@@ -171,7 +199,7 @@ processEvent = (subtask) -> Promise.try () ->
       throw new HardFail "Unable to find matching handle handler_method: #{handler_method}"
 
 
-    logger.debug () -> "processEvent: handling, composit: #{util.inspect compacted, depth: null}"
+    l.debug -> "processEvent: handling, composit: #{util.inspect compacted, depth: null}"
 
     options = {
       opts: {
@@ -186,40 +214,46 @@ processEvent = (subtask) -> Promise.try () ->
       payload: compacted.options
     }
 
-    logger.debug "processEvent: handle options: #{util.inspect options, depth: null}"
+    l.debug -> "processEvent: handle options: #{util.inspect options, depth: null}"
 
     dbs.get("main").transaction (transaction) ->
-      #TODO: add transaction to revert dequeuing when any error ocurrs
-      handle options
+      handle(options)
       .then () ->
         #TODO: might want to explore using a transaction here
         # Mark as processed
         sqlHelpers.whereAndWhereIn tables.user.eventsQueue({transaction}), id: ids
         .update "#{frequency.toLowerCase()}_processed": true
       .then () ->
-        if doDequeue
-          logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-          logger.debug "dequeuing with frequency: #{frequency}"
-          logger.debug "@@@@@@@@@@@@@@@@@@@@@@"
-          sqlHelpers.whereAndWhereIn tables.user.eventsQueue({transaction}), id: ids
-          .where {ondemand_processed: true, daily_processed: true}
-          .delete()
+        tables.user.notificationFrequencies().select('code_name')
+        .where('code_name', '!=', 'off')
+        .then (rows) ->
+          clause = {}
+          rows.forEach (r) ->
+            clause["#{r.code_name.toLowerCase()}_processed"] = true
+
+          if doDequeue
+            l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+            l.debug -> "dequeuing with frequency: #{frequency}"
+            l.debug -> "@@@@@@@@@@@@@@@@@@@@@@"
+            sqlHelpers.whereAndWhereIn tables.user.eventsQueue({transaction}), id: ids
+            .where clause
+            .delete()
 
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError error, """
         failed to processEvent:
          handler_name: #{handler_name},
          handler_method: #{handler_method},
-         compacted: #{}
-        """.replace(/\n/g)
+         compacted: #{compacted}
+        """
       .catch (error) ->
         throw new SoftFail(analyzeValue.getSimpleMessage(error))
 
 doneEvents = (subtask) ->
-  logger.debug "@@@@@@@@@@ doneEvents @@@@@@@@@@@@"
-  logger.debug "marking lastRefreshTimestamp"
+  l = logger.spawn('doneEvents')
+  l.debug -> "marking lastRefreshTimestamp"
   dataLoadHelpers.setLastRefreshTimestamp(subtask)
-  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+  l.debug -> "done"
 
 module.exports = {
   loadEvents

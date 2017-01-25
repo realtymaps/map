@@ -110,11 +110,15 @@ sendSms = (row, options) -> Promise.try () ->
     }
 
 sendEmailVero = (row, options) -> Promise.try () ->
+  l = logger.spawn("sendEmailVero")
   if !options?.type?
     throw new VeroEmailError row.config_notification_id, 'notfication.type required for vero email notification!'
 
-  logger.debug "@@@@@@@@@@@@@@@ options @@@@@@@@@@@@@@@"
-  logger.debug options
+  l.debug -> "@@@@@@@@@@@@@@@ options @@@@@@@@@@@@@@@"
+  l.debug -> options
+
+  l.debug -> "@@@@@@@@@@@@@@@ row @@@@@@@@@@@@@@@"
+  l.debug -> row
 
   promisedVeroService
   .then (vero) -> Promise.try () ->
@@ -122,6 +126,7 @@ sendEmailVero = (row, options) -> Promise.try () ->
         first_name: row.first_name
         last_name: row.last_name
         email: row.email
+        id: row.auth_user_id
 
     options.notificationType = switch options.type
       when 'propertySaved'
@@ -131,6 +136,10 @@ sendEmailVero = (row, options) -> Promise.try () ->
 
     if !vero.events[options.notificationType]?
       throw new VeroEmailError row.config_notification_id, 'notification.type invalid for vero email notification!'
+
+    l.debug -> "@@@@@@@@@@@@@@@ derrived options @@@@@@@@@@@@@@@"
+    l.debug -> options
+
     vero.events[options.notificationType](options)
 
 getFromUser = (id) ->
@@ -206,30 +215,31 @@ getSiblingUsers = ({id, project_id}) ->
 # * `project_id` - project relevant to this notification
 # Returns the [Description] as `undefined`.
 getUsers = ({to, id, project_id}) ->
-  logger.debug "@@@@ getUsers opts @@@@"
-  logger.debug {to, id, project_id}
-  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@"
+  l = logger.spawn("getUsers")
+  l.debug -> "@@@@ opts @@@@"
+  l.debug -> {to, id, project_id}
+  l.debug -> "@@@@@@@@@@@@@@@@@@@@@@@"
 
   if !to?
     return Promise.resolve([])
 
   if _.includes(to, 'children')
-    logger.debug 'going to children'
+    l.debug -> 'going to children'
     childrenPromise = getChildUsers({id, project_id})
   if _.includes(to, 'siblings')
-    logger.debug 'going to siblings'
+    l.debug -> 'going to siblings'
     siblingPromise = getSiblingUsers({id, project_id})
   if _.includes(to, 'parents')
-    logger.debug 'going to parents'
+    l.debug -> 'going to parents'
     parentsPromise = getParentUsers({id, project_id})
   if _.includes(to, 'all')
-    logger.debug 'going to all'
+    l.debug -> 'going to all'
     childrenPromise = getChildUsers({id, project_id})
     parentsPromise = getParentUsers({id, project_id})
     siblingPromise = getSiblingUsers({id, project_id})
 
   if _.includes(to, 'self')
-    logger.debug 'going to self'
+    l.debug -> 'going to self'
     selfPromise = tables.auth.user()
     .select(notifyConfigInternals.userColumns)
     .where {id}
@@ -244,13 +254,14 @@ getUsers = ({to, id, project_id}) ->
 
 
 enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows, project_id, type}) ->
+  l = logger.spawn("enqueue")
   utilEvents ?= require '../tasks/util.events'
-  logger.debug () -> "@@@@@@ #{from}: enqueue opts @@@@@@"
-  logger.debug {verify, options, verbose}
-  logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@@@"
+  l.debug -> "@@@@@@ #{from}: enqueue opts @@@@@@"
+  l.debug -> {verify, options, verbose}
+  l.debug -> "@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
   if verbose
-    logger.debug configRowsQuery.toString()
+    l.debug -> configRowsQuery.toString()
 
   configRowsQuery
   .returning('id')
@@ -261,10 +272,10 @@ enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows, p
         throw new Error('Nothing enqueued.')
       else
         if verbose
-          logger.warn "@@@@ Nothing enqueued into #{tables.user.notificationQueue.tableName} @@@@"
+          l.warn "@@@@ Nothing enqueued into #{tables.user.notificationQueue.tableName} @@@@"
       return
 
-    logger.debug () -> "@@@@ #{from}: mapping #{configRows.length} configRows @@@@"
+    l.debug -> "@@@@ #{from}: mapping #{configRows.length} configRows @@@@"
     Promise.all Promise.map configRows, (row) ->
       #maybe get different options relative to type, the user and project
       utilEvents.userDataExtensionHandlers[type]({
@@ -275,7 +286,7 @@ enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows, p
         config_notification_id: row.id
         options: permittedOptions
     .then (userRows) ->
-      logger.debug () -> "@@@@ #{from}: enqueuing to #{tables.user.notificationQueue.tableName} @@@@"
+      l.debug -> "@@@@ #{from}: enqueuing to #{tables.user.notificationQueue.tableName} @@@@"
       tables.user.notificationQueue()
       .insert(userRows)
       .returning('id')
@@ -283,7 +294,7 @@ enqueue = ({verify, configRowsQuery, options, verbose, from, verifyConfigRows, p
         if verify and !rows?.length
           throw new Error('Nothing enqueued.')
 
-        logger.debug () -> "@@@@ #{from}: SUCCESS!!!! #{rows.length} rows enqueued. @@@@"
+        l.debug -> "@@@@ #{from}: SUCCESS!!!! #{rows.length} rows enqueued. @@@@"
         rows
 
 

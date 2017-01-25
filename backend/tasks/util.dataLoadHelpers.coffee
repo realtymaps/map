@@ -334,6 +334,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
   # get validations rules (does not do the validating)
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
 
+  rawRowsPromise = getRawRows(subtask, rawSubid)
+
   # applies `validationInfo` (via `validationPromise`) to `rows`
   doNormalization = (rows, validationInfo) ->
     processRow = (row, index, length) ->
@@ -360,6 +362,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
           subid: options.normalSubid
           dataSourceType: options.dataSourceType
           idField: options.idField || 'rm_property_id'
+          index
         })
         .then (id) ->
           successes.push(id)
@@ -375,7 +378,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
     Promise.each(rows, processRow)
     .then () ->
       rows.length
-  Promise.join(getRawRows(subtask, rawSubid), validationPromise, doNormalization)
+  Promise.join(rawRowsPromise, validationPromise, doNormalization)
   .then (total) ->
     logger.spawn(subtask.task_name).debug () -> "Finished normalize: #{JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix)} (#{successes.length} successes out of #{total})"
     if successes.length == 0 || options.skipFinalize
@@ -395,7 +398,6 @@ updateRecord = (opts) -> Promise.try () ->
   {stats, diffExcludeKeys, diffBooleanKeys, dataType, dataSourceType, subid, updateRow, delay, flattenRows, retried} = opts
   delay ?= 100
 
-  q = null
   Promise.delay(delay)  #throttle for heroku's sake
   .then () ->
     # check for an existing row
@@ -408,14 +410,18 @@ updateRecord = (opts) -> Promise.try () ->
       updateRow.inserted = stats.batch_id
       if dataType == 'parcel'
         parcelUtils.prepRowForRawGeom(updateRow)
-      tables.normalized[dataType](subid: subid)
-      .insert(updateRow)
+      sqlHelpers.upsert {
+        dbFn: tables.normalized[dataType]
+        idObj: {data_source_uuid: updateRow.data_source_uuid}
+        entityObj: updateRow
+        subid
+      }
       .catch analyzeValue.isKnexError, (err) ->
         if err.code == '23505'  # unique constraint
           if retried
-            err.rm_query = "Failed to detect existing row: #{q}"
+            err.rm_query = "Failed to detect existing row"
             throw err
-          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row: #{q}"
+          logger.spawn('uniqueConstraint').debug () -> "Failed to detect existing row"
           delete updateRow.inserted
           newOpts = _.clone(opts)
           newOpts.retried = true
@@ -568,6 +574,11 @@ manageRawJSONStream = ({dataLoadHistory, jsonStream, column}) -> Promise.try ->
 
 
 manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
+  # WOW, super annoying that the line below breaks the build without adding in these comments
+  # coffeelint: disable=check_scope
+  [batch_id, data_source_id, data_type] = dataLoadHistory.raw_table_name.split('_')
+  # coffeelint: enable=check_scope
+  commitLogger = logger.spawn('commits').spawn(data_source_id).spawn(data_type)
 
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     startedTransaction = false
@@ -591,6 +602,8 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
         tables.history.dataLoad()
         .where(raw_table_name: dataLoadHistory.raw_table_name)
         .update(raw_rows: linesCount + (opts.initialCount ? 0))
+      .then () ->
+        commitLogger.debug("#{linesCount + (opts.initialCount ? 0)} total rows committed to #{dataLoadHistory.raw_table_name}")
 
     startStreamChunk = ({createTable}) ->
       promiseQuery('BEGIN TRANSACTION')
@@ -651,6 +664,7 @@ manageRawDataStream = (dataLoadHistory, objectStream, opts={}) ->
                 idObj: {raw_table_name: dataLoadHistory.raw_table_name}
                 entityObj: dataLoadHistory
               .then () ->
+                commitLogger.debug("Starting chunk streaming to #{dataLoadHistory.raw_table_name} (existing rows: #{opts.initialCount ? 0})")
                 startStreamChunk(createTable: !opts.initialCount?)
               .then () ->
                 callback()

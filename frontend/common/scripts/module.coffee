@@ -5,6 +5,8 @@ require 'spinkit/css/spinkit.css'
 require 'font-awesome/css/font-awesome.css'
 require 'ui-select'
 require 'ui-select/dist/select.css'
+require 'angular-validation/dist/angular-validation.js'
+require 'angular-validation/dist/angular-validation-rule.js'
 
 
 # maybe later on angular-extend-promises
@@ -24,6 +26,8 @@ mod = window.angular.module 'rmapsCommon', [
   'nemLogging'
   'ui.router'
   'ui.select'
+  'validation'
+  'validation.rule'
   # 'angular-extend-promises'
 ]
 

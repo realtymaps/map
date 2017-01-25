@@ -10,6 +10,7 @@ require './otherAssets'
 require './watch'
 require './angular'
 require './mocha'
+require './buildInfo'
 
 
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used
@@ -36,8 +37,7 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series('otherAssets',
-  'angularProd', 'angularAdminProd', 'minify', 'gzip')
+gulp.task 'prod', gulp.series('otherAssets', 'angularProd', 'angularAdminProd', 'minify', 'gzip')
 
 gulp.task 'default', gulp.parallel 'develop'
 

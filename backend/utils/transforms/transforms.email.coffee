@@ -1,19 +1,21 @@
 tables = require '../../config/tables'
 {VALIDATION, EMAIL_VERIFY} = require '../../config/config'
-{validators, validateAndTransformRequest} = require '../util.validation'
+{validators, validateAndTransformRequest, DataValidationError} = require '../util.validation'
 logger = require('../../config/logger').spawn("transforms:emails")
 config = require '../../config/config'
+errorHandlingUtils = require '../errors/util.error.partiallyHandledError'
+emailErrors = require '../errors/util.errors.email'
 
 
 # PRIVATE: do not make public use the the PUBLIC: valid  as id (uniqueness) is optional
 # checks email regex only
-_regex = ({regex} = {}) ->
-  regex ?= [VALIDATION.email]
+email = (regexes) ->
+  regexes ?= [VALIDATION.email]
 
   if config.EMAIL_VERIFY.RESTRICT_TO_OUR_DOMAIN
-    regex.push(VALIDATION.realtymapsEmail)
+    regexes.push(VALIDATION.realtymapsEmail)
 
-  validators.string({regex})
+  validators.string({regex:regexes})
 
 ###
   Public: [Description]
@@ -24,13 +26,11 @@ _regex = ({regex} = {}) ->
   Checks regex email always. If
 
 ###
-valid = ({id, regex, doUnique = false} = {}) ->
+valid = ({id, doUnique = false} = {}) ->
 
-  logger.debug -> {id, regex, doUnique}
+  logger.debug -> {id, doUnique}
 
-  transforms = [
-    _regex({regex})
-  ]
+  transforms = [email()]
 
   if doUnique
     transforms.push validators.unique({
@@ -70,6 +70,10 @@ validateRequest = (req) ->
           transform: valid({id, doUnique})
           required: true
     })
+    .catch DataValidationError, (err) ->
+      throw new emailErrors.ValidateEmailError(err, 'problem validating email string')
+    .catch errorHandlingUtils.isUnhandled, (error) ->
+      throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to validate email')
 
 
 verifyRequest =
@@ -82,6 +86,7 @@ verifyRequest =
 
 
 module.exports = {
+  email
   valid
   validateRequest
   verifyRequest

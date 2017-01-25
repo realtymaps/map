@@ -78,11 +78,11 @@ rmapsMainOptions) ->
       defer = $q.defer()
 
       $http.get(backendRoutes.userSession.identity)
-      .success (data) ->
+      .then ({data}) ->
         setIdentity data.identity
         _identityPromise = null
         defer.resolve data.identity
-      .error (err) ->
+      .catch (err) ->
         unsetIdentity()
         defer.reject null
 

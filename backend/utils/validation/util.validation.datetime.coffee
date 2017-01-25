@@ -34,6 +34,9 @@ module.exports = (options = {}) ->
     if !value? or value == ''
       return null
     fixedValue = value
+    if typeof fixedValue != 'string'
+      fixedValue = fixedValue.toString()
+
     if fixedValue.substr(monthStart, 2) == '00'
       fixedValue = fixedValue.slice(0, monthStart) + '01' + fixedValue.slice(monthStart+monthLength)
     if fixedValue.substr(dayStart, 2) == '00'

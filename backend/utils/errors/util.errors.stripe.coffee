@@ -3,6 +3,7 @@ NamedError = require './util.error.named'
 StripeErrors = require 'stripe/lib/Error'
 handler = require '../util.handler'
 logger = require('../../config/logger').spawn('util:errors:stripe')
+httpStatus = require '../../../common/utils/httpStatus'
 
 CustomerCreateFailedError = StripeErrors.StripeError.extend(type: 'CustomerCreateFailedError')
 
@@ -32,10 +33,26 @@ class CustomerDoesNotExistError extends NamedError
   constructor: (args...) ->
     super('CustomerDoesNotExist', args...)
 
+class InValidCouponError extends NamedError
+  constructor: (args...) ->
+    super('InValidCouponError', args...)
+    @returnStatus = httpStatus.BAD_REQUEST
+    @quiet = true
+    @expected = true
+
+class InValidCustomerError extends NamedError
+  constructor: (args...) ->
+    super('InValidCustomerError', args...)
+    @returnStatus = httpStatus.BAD_REQUEST
+    @quiet = true
+    @expected = true
+
 module.exports = _.extend {}, StripeErrors, {
   handler: ourHandler
   CustomerCreateFailedError
   StripeEventHandlingError
   GetAllStreamError
   CustomerDoesNotExistError
+  InValidCouponError
+  InValidCustomerError
 }

@@ -21,12 +21,12 @@ app.controller 'rmapsModalSendMailCtrl', (
   $scope.send = () ->
     if $scope.sentinel
       $scope.sendingFlag = true
-      rmapsMailCampaignService.send($scope.wizard.mail.campaign.id).success (response) ->
+      rmapsMailCampaignService.send($scope.wizard.mail.campaign.id).then () ->
         $scope.bodyMessage = "Mail campaign \"#{$scope.wizard.mail.campaign.name}\" submitted!"
         $scope.statusMessage = ''
         $scope.sendingFlag = false
         $scope.successFlag = true
-      .error (data, status) ->
+      .catch ({data, status}) ->
         $scope.failedFlag = true
         if data?.errmsg
           $scope.bodyMessage = data.errmsg.text
@@ -47,4 +47,3 @@ app.controller 'rmapsModalSendMailCtrl', (
 
   $scope.cancel = () ->
     $scope.$close($scope.successFlag)
-

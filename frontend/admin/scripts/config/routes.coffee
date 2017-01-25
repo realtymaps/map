@@ -3,6 +3,7 @@ adminRoutes = require '../../../../common/config/routes.admin.coffee'
 jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
 loginTemplate = require '../../../common/html/login.jade'
 usersEditTemplate = require '../../html/views/users/usersEdit.jade'
+usersHistoryTemplate = require '../../html/views/users/usersHistory.jade'
 _ =  require 'lodash'
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
@@ -19,6 +20,7 @@ app.run ($rootScope) ->
     {state: 'dataSource', name: 'Data Source'}
     {state: 'users', name: 'Users'}
     {state: 'utils', name: 'Utils'}
+    {state: 'errors', name: 'Errors'}
   ]
   return
 
@@ -70,9 +72,14 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'utilsFipsCodes', parent: 'utils'
   buildState 'utilsMail', parent: 'utils'
 
+  buildState 'errors'
+  buildState 'errorsBrowser', parent: 'errors'
+  buildState 'errorsAPI', parent: 'errors'
+
   buildState 'users'
   buildState 'usersCustomers', parent: 'users', template: usersEditTemplate
   buildState 'usersStaff', parent: 'users', template: usersEditTemplate
+  buildState 'usersHistory', parent: 'users', template: usersHistoryTemplate
 
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false

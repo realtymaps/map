@@ -9,7 +9,14 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
         popover-trigger="'mouseenter touchend'"
       ) Clear Map
 
-span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw() || !identity.currentProfile")
+form.settings-tool.pull-right(
+  name="mapFiltersForm"
+  role="form"
+  ng-hide="Toggles.getHideAnyDraw() || !identity.currentProfile"
+  validation-submit-watch="selectedFilters"
+  validation-submit-form="mapFiltersForm"
+  validation-submit-notify="updateFilters"
+  )
   span.desktop-only
     span.dropdown.btn-group.settings-list(
 
@@ -100,8 +107,23 @@ span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw() || !identity.cur
 
         li.row
           span.label.col-md-3 Year Built
-          .col-md-9
-            input.form-control(type="text" numeral ng-model="selectedFilters.yearBuilt" placeholder="All")
+          .col-md-4.range-input.range-start
+            input.form-control.years(
+              type="text"
+              name="yearBuiltMin"
+              ng-model="selectedFilters.yearBuiltMin"
+              placeholder="No minimum"
+              validator="optYear,optNumber,numberify")
+
+
+          span.col-md-1.label.range-to to
+          .col-md-4.range-input.range-end
+            input.form-control.years(
+              type="text"
+              name="yearBuiltMax"
+              ng-model="selectedFilters.yearBuiltMax"
+              placeholder="No maximum"
+              validator="optYear,optNumber,numberify")
 
         li.row
           span.label.col-md-5 In Shapes / Areas

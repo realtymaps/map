@@ -83,6 +83,6 @@ app.service 'rmapsMailCampaignService', (
     send: (id) ->
       url = backendRoutes.mail.sendCampaign.replace(':id', id)
       $http.post(url, {}, alerts: false)
-      .success (data) ->
+      .then ({data}) ->
         $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"
         data

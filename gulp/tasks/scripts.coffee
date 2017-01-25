@@ -1,15 +1,16 @@
 require '../../common/extensions/strings'
 require './markup'
+require './buildInfo'
 paths = require '../../common/config/paths'
 gulp = require 'gulp'
 _ = require 'lodash'
 logger = (require '../util/logger').spawn('scripts')
 browserify = require('../util/browserify')
 
-browserifyTask = ({app, watch, prod, doSourceMaps}) ->
+browserifyTask = ({app, watch, prod, doSourceMaps}) -> (done) ->
   prod ?= false
   watch ?= false
-  doSourceMaps ?= if prod == true then false else true
+  doSourceMaps ?= true
 
   logger.debug -> {app, watch, prod, doSourceMaps}
 
@@ -32,15 +33,15 @@ browserifyTask = ({app, watch, prod, doSourceMaps}) ->
 
   outputName = app + '.bundle.js'
 
-  browserify({inputGlob, outputName, doSourceMaps, watch})
+  browserify({inputGlob, outputName, doSourceMaps, watch, prod, done})
 
 # Markup tasks must run prior to browserify tasks so that templates can be bundled
 # This could be changed if templates are individually required via jade
-gulp.task 'browserify', gulp.series 'markup', -> browserifyTask app: 'map'
-gulp.task 'browserifyAdmin', gulp.series 'markupAdmin', -> browserifyTask app:'admin'
+gulp.task 'browserify', gulp.series 'markup', 'writeBuildInfo', browserifyTask(app: 'map')
+gulp.task 'browserifyAdmin', gulp.series 'markupAdmin', 'writeBuildInfo', browserifyTask(app:'admin')
 
-gulp.task 'browserifyProd', gulp.series 'markup', -> browserifyTask app: 'map', prod: true
-gulp.task 'browserifyAdminProd', gulp.series 'markupAdmin', -> browserifyTask app:'admin', prod: true
+gulp.task 'browserifyProd', gulp.series 'markup', 'writeBuildInfo', browserifyTask(app: 'map', prod: true)
+gulp.task 'browserifyAdminProd', gulp.series 'markupAdmin', 'writeBuildInfo', browserifyTask(app:'admin', prod: true)
 
 gulp.task 'browserifyAll', gulp.parallel 'browserify', 'browserifyAdmin'
 gulp.task 'browserifyAllProd', gulp.parallel 'browserifyProd', 'browserifyAdminProd'
@@ -59,5 +60,5 @@ now depends on watch.
 
 Therefore in most conditions a watch should only watch period.
 ###
-gulp.task 'browserifyWatch', gulp.series 'markup', 'markupWatch', -> browserifyTask app: 'map', watch: true
-gulp.task 'browserifyWatchAdmin', gulp.series 'markupAdmin', 'markupWatchAdmin', -> browserifyTask app: 'admin', watch: true
+gulp.task 'browserifyWatch', gulp.series 'markup', 'markupWatch', 'writeBuildInfo', browserifyTask(app: 'map', watch: true)
+gulp.task 'browserifyWatchAdmin', gulp.series 'markupAdmin', 'markupWatchAdmin', 'writeBuildInfo', browserifyTask(app: 'admin', watch: true)

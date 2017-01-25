@@ -6,11 +6,12 @@
   GetAllStreamError
 } = require '../../../utils/errors/util.errors.stripe'
 tables = require '../../../config/tables'
-logger = require('../../../config/logger').spawn('stripe')
+logger = require('../../../config/logger').spawn('stripe:customers')
 stripeErrorEnums = require '../../../enums/enum.stripe.errors'
 _ = require 'lodash'
 Promise = require 'bluebird'
 through = require 'through2'
+errors = require '../../../utils/errors/util.errors.stripe'
 
 
 StripeCustomers = (stripe) ->
@@ -69,40 +70,59 @@ StripeCustomers = (stripe) ->
       throw error
 
   # at this point a user should already be in auth_user
-  create = (opts, extraDescription = '') ->
+  create = (opts, extraDescription = '') -> Promise.try ->
+    couponSvc = require('./service.payment.impl.stripe.coupons')(stripe)
+
     onMissingArgsFail
       args: opts
-      required: ['authUser','plan','token', 'trx']
+      required: ['authUser','plan', 'trx']
 
-    token = opts.token.id
-    {authUser, plan, trx} = opts
+    {authUser, plan, trx, token, coupon} = opts
+    token = token?.id
 
-    stripe.customers.create
-      source: token
-      plan: plan
+    if !token? && !coupon?
+      throw new errors.InValidCustomerError("A customer requires at least coupon or a token!")
+
+    entity = {
+      plan
       description: authUser.email + ' ' + extraDescription
       email: authUser.email
+    }
 
-    .then (customer) ->
-      logger.debug -> "@@@@ Customer Creation Success @@@@"
-      logger.debug -> customer
+    if token?
+      entity.source =  token
 
-      [subscription] = _.filter customer.subscriptions.data, (el) -> el.plan.id == plan
-      _.extend authUser,
-        stripe_customer_id: customer.id
-        stripe_subscription_id: subscription.id
+    if coupon?
+      entity.coupon = coupon
 
-      tables.auth.user(transaction: trx)
-      .update
-        stripe_customer_id: customer.id
-        stripe_subscription_id: subscription.id
-      .where id: authUser.id
-      .then () ->
-        authUser: authUser
-        customer: customer
-      .catch (error) ->
-        handleCreationError error, authUser
-        throw new CustomerCreateFailedError(error) #rethrow so any db stuff is also reverted
+    couponPromise = if !token?
+      couponSvc.isNoCreditCard(coupon)
+    else
+      if coupon? then couponSvc.isValid(coupon) else Promise.resolve()
+
+    couponPromise
+    .then () ->
+      stripe.customers.create(entity)
+      .then (customer) ->
+        logger.debug -> "@@@@ Customer Creation Success @@@@"
+        logger.debug -> customer
+
+        [subscription] = _.filter customer.subscriptions.data, (el) -> el.plan.id == plan
+        _.extend authUser,
+          stripe_customer_id: customer.id
+          stripe_subscription_id: subscription.id
+
+        tables.auth.user(transaction: trx)
+        .update
+          stripe_customer_id: customer.id
+          stripe_subscription_id: subscription.id
+        .where id: authUser.id
+        .then () ->
+          authUser: authUser
+          customer: customer
+        .catch (error) ->
+          handleCreationError error, authUser
+          throw new CustomerCreateFailedError(error) #rethrow so any db stuff is also reverted
 
   get = (authUser) ->
     logger.debug "stripe.customers.retrieve #{authUser.stripe_customer_id}"

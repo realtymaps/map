@@ -1,9 +1,10 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+common = require '../../../../common/config/commonConfig.coffee'
 _ = require 'lodash'
 
 
-app.config(($provide, $validationProvider) ->
+mod.config(($provide, $validationProvider) ->
   _removeError = (element) ->
     element.className = element.className.replace(/has\-error/g, '') if element?
 
@@ -23,8 +24,8 @@ app.config(($provide, $validationProvider) ->
     $delegate
 
 )
-.run ($validation, rmapsMainOptions, $http) ->
-  {validation} = rmapsMainOptions
+.run ($validation, $http) ->
+  {validation} = common
 
   expression =
     email: validation.email
@@ -33,11 +34,29 @@ app.config(($provide, $validationProvider) ->
     realtymapsEmail: validation.realtymapsEmail
     address: validation.address
     zipcode: validation.zipcode.US
+    year: validation.year
 
     nullify: (value, scope, element, attrs, param) ->
       if !value
         _.set(scope, attrs.ngModel, null)
       return true
+
+    numberify: (value, scope, element, attrs, param) ->
+      return true if !value?
+      if validation.number.test(value)
+        _.set(scope, attrs.ngModel, parseInt(value))
+        return true
+      return false
+
+    confirmPassword: (value, scope, element, attrs, param) ->
+      return false if !value?
+
+      if validation.password.test(value)
+        pass = _.get(scope,param)
+        if pass?
+          return value == pass
+
+      return false
 
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
@@ -48,7 +67,7 @@ app.config(($provide, $validationProvider) ->
       validation.url.test(value)
 
     optNumber: (value, scope, element, attrs, param) ->
-      return true unless value
+      return true if !value?
       validation.number.test(value)
 
     optMinlength: (value, scope, element, attrs, param) ->
@@ -67,12 +86,40 @@ app.config(($provide, $validationProvider) ->
       return true unless value
       validation.zipcode.US.test(value)
 
+    optYear: (value, scope, element, attrs, param) ->
+      return true if !value?
+      validation.year.test(value)
+
     #NOTE: all your doing here is validating the email regex on the backend
     # You could just use angular validation or validate the email regex above (email: validation.email).
     checkValidEmail: (value, scope, element, attrs, param) ->
       config =
         alerts: param != 'disableAlert'
       $http.post(backendRoutes.email.isValid, email: value, config)
+
+    checkValidCoupon: (value, scope, element, attrs, param) ->
+      query = {
+        stripe_coupon_id: value
+      }
+      if param?
+        params = param.split(";")
+
+        if params.length && params[0] == 'isSpecial'
+          query.isSpecial = true
+
+      promise = $http.get(backendRoutes.coupons.isValid, {params: query, alerts: false})
+
+      if !query.isSpecial
+        return promise
+
+      handleSpecial = ({data}) ->
+        if !(params?.length > 1)
+          return promise
+        field = params[1] + ".isSpecial"
+        _.set(scope, field, data == true)
+        data
+
+      promise.then(handleSpecial).catch(handleSpecial)
 
     ###
     Do not be mistaken; this also checks if the email is valid!
@@ -115,6 +162,8 @@ app.config(($provide, $validationProvider) ->
       error: 'Email must be unique'
     checkValidMlsAgent:
       error: 'MLS ID not found or active.'
+    checkValidCoupon:
+      error: 'That doesn\'t seem right'
     number:
       error: 'Invalid Number'
     optNumber:
@@ -141,5 +190,13 @@ app.config(($provide, $validationProvider) ->
       error: 'Invalid US zipcode'
     nullify:
       error: 'unable to nullify'
+    numberify:
+      error: 'Invalid Number'
+    year:
+      error: 'Invalid Year'
+    optYear:
+      error: 'Invalid Year'
+    confirmPassword:
+      error: 'Passwords do not match.'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)

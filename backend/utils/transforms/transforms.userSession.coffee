@@ -84,6 +84,21 @@ doResetPassword =
 requestLoginToken =
   email: validators.string(regex: config.VALIDATION.email)
 
+newProject = # API using this validation supports containing both profile and project fields
+  name: validators.string(minLength: 2)
+  copyCurrent: validators.boolean(truthy: true, falsy: false)
+
+feedback =
+  POST:
+    params: validators.object isEmptyProtect: true
+    query: validators.object isEmptyProtect: true
+    body: validators.object subValidateSeparate:
+      description:
+        transform: validators.string(minLength: 50)
+        required: true
+      category_id: validators.integer()
+      subcategory_id: validators.integer()
+
 module.exports = {
   root
   profiles
@@ -93,4 +108,6 @@ module.exports = {
   requestResetPassword
   doResetPassword
   requestLoginToken
+  newProject
+  feedback
 }

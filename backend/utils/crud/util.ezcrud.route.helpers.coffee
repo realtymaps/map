@@ -34,13 +34,15 @@ class RouteCrud
     @initializeTransforms 'root', ['GET', 'POST']
     @initializeTransforms 'byId'
 
-    @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
+    @logger.debug -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
 
 
   initializeTransforms: (transformType, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
     methods.forEach (meth) =>
       transformName = "#{transformType}#{meth}Transforms"
       @[transformName] = @options[transformName] ? defaultRequestTransforms()
+
+  validateAndTransform: validateAndTransform
 
   # Public: validRequest a request via transforms
   #
@@ -55,7 +57,7 @@ class RouteCrud
 
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
-    validateAndTransform req, @reqTransforms
+    @validateAndTransform req, @reqTransforms
     .then (tReq) =>
       @logger.debug -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
@@ -66,10 +68,10 @@ class RouteCrud
   logRequest: (req, addMsg, type = 'req') ->
     if addMsg
       @logger.debug.cyan(addMsg)
-    @logger.debug () -> "#{type}.params=#{JSON.stringify(req.params)}"
-    @logger.debug () -> "#{type}.query=#{JSON.stringify(req.query)}"
-    @logger.debug () -> "#{type}.body=#{JSON.stringify(req.body)}"
-    @logger.debug () -> "#{type}.method=#{req.method}"
+    @logger.debug -> "#{type}.params=#{JSON.stringify(req.params)}"
+    @logger.debug -> "#{type}.query=#{JSON.stringify(req.query)}"
+    @logger.debug -> "#{type}.body=#{JSON.stringify(req.body)}"
+    @logger.debug -> "#{type}.method=#{req.method}"
     return
 
   exec: (req, crudMethodStr) ->
@@ -80,12 +82,12 @@ class RouteCrud
 
   # allows leveraging centralized route handling if desired
   custom: (data, res) ->
-    @logger.debug "Using custom route"
+    @logger.debug -> "Using custom route"
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
   _wrapRoute: (query, res, lHandleQuery) ->
-    @logger.debug "Handling query"
+    @logger.debug -> "Handling query"
     handleQuery query, res, lHandleQuery
 
   getEntity: (req, crudMethodStr) ->
@@ -106,12 +108,12 @@ class RouteCrud
       entity
 
   rootGET: ({req, res, next, lHandleQuery}) ->
-    @logger.debug "XXXXXX SUPER rootGET"
+    @logger.debug -> "XXXXXX SUPER rootGET"
     @getEntity(req, 'rootGET').then (entity) =>
       @_wrapRoute @svc.getAll(entity), res, lHandleQuery
 
   rootPOST: ({req, res, next, lHandleQuery}) ->
-    @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
+    @logger.debug -> "POST, @enableUpsert:#{@enableUpsert}"
     @getEntity(req, 'rootPOST').then (entity) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
       return @_wrapRoute @svc.create(entity), res, lHandleQuery
@@ -125,7 +127,7 @@ class RouteCrud
       @_wrapRoute @svc.update(entity), res, lHandleQuery
 
   byIdPOST: ({req, res, next, lHandleQuery}) ->
-    @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
+    @logger.debug -> "POST, @enableUpsert:#{@enableUpsert}"
     @getEntity(req, 'byIdPOST').then (entity) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
       return @_wrapRoute @svc.create(entity), res, lHandleQuery

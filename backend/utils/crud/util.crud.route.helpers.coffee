@@ -118,7 +118,6 @@ class Crud extends BaseObject
 
 class HasManyCrud extends Crud
   constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud', doLogRequest) ->
-    # console.log name
     super(svc, paramIdKey, name, doLogRequest)
     if !@rootGETKey?
       throw new NamedError(@name, '@rootGETKey must be defined')

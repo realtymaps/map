@@ -39,6 +39,19 @@ apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
 apiBasePrices = "#{apiBase}/prices"
 apiBaseTiles = "#{apiBase}/tiles"
+apiBaseErrors = "#{apiBase}/error"
+apiBaseNotifications = "#{apiBase}/notifications"
+apiBaseNotificationFrequencies = "#{apiBaseNotifications}/frequencies"
+apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
+apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
+apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
+apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
+apiBaseHistory = "#{apiBase}/history"
+apiBaseHistoryUser = "#{apiBaseHistory}/user"
+apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swaped with apiBaseHistoryUser to not conflict with :id
+apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+apiBaseCoupons = "#{apiBase}/coupons"
+
 
 module.exports =
   views:
@@ -67,6 +80,7 @@ module.exports =
     getResetPassword: "#{apiBaseSession}/getResetPassword"
     doResetPassword: "#{apiBaseSession}/doResetPassword"
     requestLoginToken: "#{apiBaseSession}/requestLoginToken"
+    feedback: "#{apiBaseSession}/feedback"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes
@@ -92,6 +106,22 @@ module.exports =
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     image: "#{apiBaseUsers}/:id/image"
+  historyUser:
+    apiBase: apiBaseHistoryUser
+    root: apiBaseHistoryUser
+    byId: "#{apiBaseHistoryUser}/:id"
+  historyUserCategory:
+    apiBase: apiBaseHistoryUserCategory
+    root: apiBaseHistoryUserCategory
+    rootPOST: apiBaseHistoryUserCategory
+    byIdGET: "#{apiBaseHistoryUserCategory}/:id"
+    byId: "#{apiBaseHistoryUserCategory}/:id"
+  historyUserSubCategory:
+    apiBase: apiBaseHistoryUserSubCategory
+    root: apiBaseHistoryUserSubCategory
+    rootPOST: apiBaseHistoryUserSubCategory
+    byIdGET: "#{apiBaseHistoryUserSubCategory}/:id"
+    byId: "#{apiBaseHistoryUserSubCategory}/:id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"
@@ -269,8 +299,25 @@ module.exports =
     apiBase: apiBasePrices
     mail: "#{apiBasePrices}/mail"
   tiles:
-    apiBase: "#{apiBaseTiles}"
+    apiBase: apiBaseTiles
     parcels: "#{apiBaseTiles}/parcels/:z/:x/:y"
     parcelsAddresses: "#{apiBaseTiles}/parcelsAddresses/:z/:x/:y"
+  errors:
+    apiBase: apiBaseErrors
+    browser: "#{apiBaseErrors}/browser"
+    capture: "#{apiBaseErrors}/browser"
+    byId: "#{apiBaseErrors}/browser/:reference"
+  notificationsConfigSession:
+    apiBase: apiBaseNotificationsConfigSession
+    root: apiBaseNotificationsConfigSession
+  notificationFrequencies:
+    apiBase: apiBaseNotificationFrequencies
+    root: apiBaseNotificationFrequencies
+  notificationMethods:
+    apiBase: apiBaseNotificationMethods
+    root: apiBaseNotificationMethods
+  coupons:
+    apiBase: apiBaseCoupons
+    isValid: "#{apiBaseCoupons}/isValid"
 
   # hirefire secret value set from within backend/config/config.coffee
