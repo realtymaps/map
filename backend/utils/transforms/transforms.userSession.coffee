@@ -94,10 +94,10 @@ feedback =
     query: validators.object isEmptyProtect: true
     body: validators.object subValidateSeparate:
       description:
-        transform: validators.string(minLength: 50)
+        transform: validators.string(minLength: 5)
         required: true
-      category_id: validators.integer()
-      subcategory_id: validators.integer()
+      category: validators.string()
+      subcategory: validators.string()
 
 module.exports = {
   root

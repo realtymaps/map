@@ -6,7 +6,7 @@
       li
         a(ui-sref="usersStaff" ui-sref-opts="{reload: true}") Staff
       li
-        a(ui-sref="usersHistory" ui-sref-opts="{reload: true}") History
+        a(ui-sref="usersFeedback" ui-sref-opts="{reload: true}") Feedback
 
   .col-md-11
     div(ng-repeat="state in $state.get() | filter:{parent: 'users'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)

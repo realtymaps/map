@@ -2,11 +2,15 @@ _ = require 'lodash'
 app = require '../app.coffee'
 
 app.run (
-$rootScope, $uibModal, $q, $log,
-rmapsMainOptions
-rmapsUserSessionHistoryService
-rmapsHistoryUserCategoryService
-rmapsHistoryUserSubCategoryService) ->
+  $rootScope
+  $uibModal
+  $q
+  $log
+  rmapsMainOptions
+  rmapsUserSessionHistoryService
+  rmapsUserFeedbackCategoryService
+  rmapsUserFeedbackSubcategoryService
+) ->
   $log = $log.spawn('run-feedback')
 
   createFeedbackModal = (feedback = {}) ->
@@ -14,19 +18,20 @@ rmapsHistoryUserSubCategoryService) ->
 
     #BEGIN FEEDBACK
     $q.all(
-      categories: rmapsHistoryUserCategoryService.get()
-      subCategories: rmapsHistoryUserSubCategoryService.get())
+      categories: rmapsUserFeedbackCategoryService.get()
+      subcategories: rmapsUserFeedbackSubcategoryService.get())
     .then (results) ->
+      results.categories = _.reject(results.categories, {id: 'deactivation'})
       _.extend(modalScope, results)
 
     modalScope.categoryChange = (cat) ->
       if !cat?
         return false
 
-      modalScope.hasSubCat = _.some modalScope.subCategories, (sub) ->
-        sub.category_id == cat.id
+      modalScope.hasSubcat = _.some modalScope.subcategories, (sub) ->
+        sub.category == cat.id
 
-    modalScope.hasSubCat = false
+    modalScope.hasSubcat = false
 
 
     feedback.isEdit = !!feedback.description
@@ -40,8 +45,8 @@ rmapsHistoryUserSubCategoryService) ->
 
     .result.then (model) ->
       toSave = {
-        category_id: model.category.id
-        subcategory_id: model.subcategory.id
+        category: model.category.id
+        subcategory: model.subcategory.id
         description: model.description
       }
 

@@ -1,50 +1,53 @@
-form.feedback.row(role="form" name="createEditFeedbackForm")
+form.feedback(role="form" name="createEditFeedbackForm")
   .modal-header
     h3.modal-title(ng-if="!model.isEdit") Feedback
     h3.modal-title(ng-if="model.isEdit") Edit Feedback
   .modal-body
     .container-fluid
+      .form-group
         .row
           .col-md-12
-            .form-group
-              .row
-                .form-group
-                  .row
-                    .col-md-12
-                      label(for="category") Category
-                      ui-select(
-                        ng-model="model.category"
-                        ng-change="categoryChange(model.category)"
-                        theme="bootstrap"
-                        ng-disabled="disabled"
-                        append-to-body=appendToBody
-                        validator="required")
+            p Thanks for reaching out to contact us. Remember:
+            ul
+              li we need to hear what we've done wrong
+              li we like to hear what we've done right
+              li we love to hear how we could do better!
+        .row
+          .col-md-12
+            label(for="category") Category
+            ui-select(
+              ng-model="model.category"
+              ng-change="categoryChange(model.category)"
+              theme="bootstrap"
+              ng-disabled="disabled"
+              append-to-body=appendToBody
+              validator="required")
 
-                        ui-select-match(placeholder="Enter a Category...") {{$select.selected.name}}
-                        ui-select-choices(repeat="item in categories | filter:{name:$select.search}")
-                          span() {{ item.name }}
-                  .row(ng-if="hasSubCat")
-                    .col-md-12
-                      label(for="subcategory") Sub Category
-                      ui-select(
-                        ng-model="model.subcategory"
-                        theme="bootstrap"
-                        ng-disabled="disabled"
-                        append-to-body=appendToBody)
+              ui-select-match(placeholder="Choose a Category...") {{$select.selected.name}}
+              ui-select-choices(repeat="item in categories | filter:{name:$select.search}")
+                span() {{ item.name }}
+        .row(ng-if="hasSubcat")
+          .col-md-12
+            label(for="subcategory") Subcategory
+            ui-select(
+              ng-model="model.subcategory"
+              theme="bootstrap"
+              ng-disabled="disabled"
+              append-to-body=appendToBody)
 
-                        ui-select-match(placeholder="Enter a subcategory...") {{$select.selected.name}}
-                        ui-select-choices(
-                          repeat="item in subCategories | filter:{name:$select.search} | filter:{category_id:model.category.id}:true")
-                          span() {{ item.name }}
+              ui-select-match(placeholder="Choose a subcategory...") {{$select.selected.name}}
+              ui-select-choices(
+                repeat="item in subcategories | filter:{name:$select.search} | filter:{category:model.category.id}:true")
+                span() {{ item.name }}
 
-                  .row
-                    .col-md-12
-                      label(for="description") Description
-                      textarea.form-control(
-                        placeholder="Give us your feedback!"
-                        name="description"
-                        ng-model="model.description"
-                        validator="minlength=50")
+        .row
+          .col-md-12
+            label(for="description") Description
+            textarea.form-control(
+              placeholder="Give us your feedback!"
+              name="description"
+              ng-model="model.description"
+              validator="minlength=5")
 
 
 

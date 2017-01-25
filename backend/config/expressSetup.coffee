@@ -154,12 +154,14 @@ app.use (data, req, res, next) ->
       data = new PartiallyHandledError(data, "uncaught error found by express")  # this is just to provoke logging
       message = "error reference: #{data.errorRef}"
     else
-      message = escape(data.message)
+      message = data.message
 
+    allowHtml = false
     if !data.expected
       message = commonConfig.UNEXPECTED_MESSAGE(message)
+      allowHtml = true
     logger.debug -> 'data converted to ExpressResponse'
-    data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet})
+    data = new ExpressResponse(alert: {msg: message, id: "#{data.returnStatus}-#{req.path}"}, {status: data.returnStatus, logError: data, quiet: data.quiet, allowHtml})
     logger.debug -> "ExpressResponse"
     logger.debug -> {status: data.status, quiet:data.quiet}
 

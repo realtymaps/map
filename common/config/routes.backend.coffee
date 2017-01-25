@@ -46,10 +46,9 @@ apiBaseNotificationMethods = "#{apiBaseNotifications}/methods"
 apiBaseNotificationsConfig = "#{apiBaseNotifications}/config"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
 apiBaseNotificationsConfigSession = "#{apiBaseNotificationsConfig}/config/session"
-apiBaseHistory = "#{apiBase}/history"
-apiBaseHistoryUser = "#{apiBaseHistory}/user"
-apiBaseHistoryUserCategory = "#{apiBaseHistory}/category/user" #user swapped with apiBaseHistoryUser to not conflict with :id
-apiBaseHistoryUserSubCategory = "#{apiBaseHistory}/subcategory/user"
+apiBaseUserFeedback = "#{apiBase}/userFeedback"
+apiBaseUserFeedbackCategory = "#{apiBaseUserFeedback}Category"
+apiBaseUserFeedbackSubcategory = "#{apiBaseUserFeedback}Subcategory"
 apiBaseCoupons = "#{apiBase}/coupons"
 
 
@@ -106,22 +105,18 @@ module.exports =
     groups: "#{apiBaseUsers}/:id/groups"
     groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     image: "#{apiBaseUsers}/:id/image"
-  historyUser:
-    apiBase: apiBaseHistoryUser
-    root: apiBaseHistoryUser
-    byId: "#{apiBaseHistoryUser}/:id"
-  historyUserCategory:
-    apiBase: apiBaseHistoryUserCategory
-    root: apiBaseHistoryUserCategory
-    rootPOST: apiBaseHistoryUserCategory
-    byIdGET: "#{apiBaseHistoryUserCategory}/:id"
-    byId: "#{apiBaseHistoryUserCategory}/:id"
-  historyUserSubCategory:
-    apiBase: apiBaseHistoryUserSubCategory
-    root: apiBaseHistoryUserSubCategory
-    rootPOST: apiBaseHistoryUserSubCategory
-    byIdGET: "#{apiBaseHistoryUserSubCategory}/:id"
-    byId: "#{apiBaseHistoryUserSubCategory}/:id"
+  userFeedback:
+    apiBase: apiBaseUserFeedback
+    root: apiBaseUserFeedback
+    byId: "#{apiBaseUserFeedback}/:id"
+  userFeedbackCategory:
+    apiBase: apiBaseUserFeedbackCategory
+    root: apiBaseUserFeedbackCategory
+    byId: "#{apiBaseUserFeedbackCategory}/:id"
+  userFeedbackSubcategory:
+    apiBase: apiBaseUserFeedbackSubcategory
+    root: apiBaseUserFeedbackSubcategory
+    byId: "#{apiBaseUserFeedbackSubcategory}/:id"
   clientEntry:
     getClientEntry: "#{apiBaseClientEntry}"
     setPasswordAndBounce: "#{apiBaseClientEntry}/login"

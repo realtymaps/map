@@ -1,17 +1,20 @@
+_ = require 'lodash'
 app = require '../../app.coffee'
 replaceCCModalTemplate = require('../../../html/views/templates/modals/replaceCC.jade')()
 module.exports = app
 
 app.controller 'rmapsUserSubscriptionCtrl', (
-$rootScope
-$scope
-$log
-$uibModal
-$q
-rmapsSubscriptionService
-rmapsFipsCodesService
-rmapsPaymentMethodService
-rmapsMainOptions
+  $rootScope
+  $scope
+  $log
+  $uibModal
+  $q
+  rmapsSubscriptionService
+  rmapsFipsCodesService
+  rmapsPaymentMethodService
+  rmapsMainOptions
+  rmapsUserFeedbackCategoryService
+  rmapsUserFeedbackSubcategoryService
 ) ->
   $log = $log.spawn("map:userSubscription")
 
@@ -40,6 +43,11 @@ rmapsMainOptions
   $scope.isWarningStatus = (status) ->
     return !(status in [rmapsMainOptions.subscription.STATUS.ACTIVE, rmapsMainOptions.subscription.STATUS.TRIALING])
 
+  $q.all(
+    subcategories: rmapsUserFeedbackSubcategoryService.get())
+  .then (results) ->
+    $scope.subcategories = _.filter(results.subcategories, {category: 'deactivation'})
+
   #
   # Account actions
   #
@@ -49,14 +57,14 @@ rmapsMainOptions
       template: require('../../../html/views/templates/modals/confirmDeactivate.jade')()
 
     $scope.deactivation =
-      reasonSelect: null
-      reasonText: null
+      subcategory: null
+      details: null
 
     $scope.showCancelButton = true
     $scope.modalCancel = modalInstance.dismiss
     $scope.modalOk = () ->
       $scope.processing++
-      rmapsSubscriptionService.deactivate("#{$scope.deactivation.reasonSelect} - #{$scope.deactivation.reasonText}")
+      rmapsSubscriptionService.deactivate($scope.deactivation)
       .then (subscription) ->
         if subscription? then $scope.subscription = subscription
       .finally () ->
@@ -171,7 +179,7 @@ rmapsMainOptions
       return $scope.data.payment = result
 
   #
-  # Data 
+  # Data
   #
   $scope.processing++
   rmapsSubscriptionService.getSubscription()

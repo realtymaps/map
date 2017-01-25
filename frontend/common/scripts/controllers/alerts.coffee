@@ -153,7 +153,7 @@ mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsEventConstants, 
       return
     # getting these errors to console could help if a user calls and didn't record the error reference -- support can
     # direct them to open the js console and get the error reference there
-    $log.warn('Alert message: '+(if alert.id? then "[#{alert.id}] ")+alert.msg)
+    $log.warn('Alert message: '+(if alert.id? then "[#{alert.id}] " else '')+alert.msg)
     alert.trustedMsg = $sce.trustAsHtml(alert.msg)
     if !alert.id? || !alertsMap[alert.id]
       handleNewAlert(alert)

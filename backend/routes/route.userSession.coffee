@@ -23,7 +23,7 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 {PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 DataValidationError = require '../utils/errors/util.error.dataValidation'
 userSessionErrors = require '../utils/errors/util.errors.userSession'
-historyUserSvc = require('../services/service.historyUser').instance
+userFeedbackSvc = require('../services/service.userFeedback').instance
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -278,7 +278,7 @@ feedback = (req, res, next) ->
     GET: () ->
       l.debug -> "req.user"
       l.debug -> req.user
-      historyUserSvc.getAll({auth_user_id: req.user.id})
+      userFeedbackSvc.getAll({auth_user_id: req.user.id})
     POST: () ->
       l.debug -> "req"
       l.debug -> _.pick(req, ['body', 'params','query'])
@@ -287,9 +287,10 @@ feedback = (req, res, next) ->
         l.debug -> "validReq"
         l.debug -> validReq
         validReq.body.auth_user_id = req.user.id
+        validReq.body.auth_user_email = req.user.email
         if !validReq.body.id?
           validReq.body.id = null
-        historyUserSvc.upsert(validReq.body)
+        userFeedbackSvc.upsert(validReq.body)
         .then (result) ->
           res.json(result)
 

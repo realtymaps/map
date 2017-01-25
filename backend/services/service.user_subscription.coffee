@@ -195,13 +195,13 @@ reactivate = (userId) -> Promise.try () ->
         throw new PartiallyHandledError(err, "Encountered an issue reactivating the account, please contact customer service.")
 
 # Called when user cancels subscription, going into grace period.
-deactivate = (authUser, reason) ->
+deactivate = (authUser, subcategory, details) ->
   dbs.transaction 'main', (transaction) ->
     stripe.customers.cancelSubscription authUser.stripe_customer_id, authUser.stripe_subscription_id, {at_period_end: true}
     .then (canceledSubscription) ->
       console.log "canceledSubscription:\n#{JSON.stringify(canceledSubscription, null, 2)}"
-      tables.history.user({transaction})
-      .insert(auth_user_id: authUser.id, description: reason, category: 'account', subcategory: 'deactivation')
+      tables.history.userFeedback({transaction})
+      .insert(auth_user_id: authUser.id, description: details, category: 'deactivation', subcategory: subcategory)
       .then () ->
         override =
           eventData:
