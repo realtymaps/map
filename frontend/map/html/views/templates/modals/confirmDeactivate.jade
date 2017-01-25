@@ -6,6 +6,7 @@ include ../../../../../common/html/includes/mixins/_spinnerMixin.jade
 .modal-body
   p Please tell us your general reason for deactivation:
   select.form-control(ng-model="deactivation.subcategory" ng-options="subcategory as subcategory.name for subcategory in subcategories track by subcategory.id")
+    option(value="" disabled="disabled") --- Select a reason ---
   br
   p Please tell us more &ndash; how we could improve RealtyMaps?
   textarea.form-control(
