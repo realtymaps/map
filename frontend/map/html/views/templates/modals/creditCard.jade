@@ -1,5 +1,5 @@
 .modal-header
-  h3.modal-title Replace Credit Card
+  h3.modal-title {{ modalTitle }}
 .modal-body.help-block(ng-show="message" ng-class="{'alert-danger': hasError}") {{message}}
 .modal-body.cc-modal-body(ng-hide="successButton")
   include ../cc-form.tpl.jade

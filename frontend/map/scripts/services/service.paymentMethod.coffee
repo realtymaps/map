@@ -9,14 +9,22 @@ apiBase = backendRoutes.paymentMethod
 app.service 'rmapsPaymentMethodService', ($http, $log) ->
   $log = $log.spawn("payment:rmapsPaymentMethodService")
 
-  getDefaultSource: () ->
-    $http.get apiBase.getDefaultSource
-    .then ({data}) ->
-      data
+  getAll: (config) ->
+    $http.getData(apiBase.root, config)
+
+  getDefault: (config) ->
+    $http.getData(apiBase.getDefault, config)
 
   # If appending sources is desired, a new operator (like 'append' or 'add') and flow through backend
   #   may be required.
-  replace: (source) ->
-    $http.put apiBase.replaceDefaultSource.replace ':source', source
-    .then ({data}) ->
-      data
+  replace: (source, config) ->
+    $http.putData(apiBase.replaceDefault.replace(':source', source), {}, config)
+
+  add: (source, config) ->
+    $http.postData(apiBase.add.replace(':source', source),{}, config)
+
+  setDefault: (source, config) ->
+    $http.putData(apiBase.setDefault.replace(':source', source),{}, config)
+
+  remove: (source, config) ->
+    $http.deleteData(apiBase.remove.replace(':source', source),{}, config)
