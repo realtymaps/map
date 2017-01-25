@@ -157,43 +157,45 @@ rmapsCreditCardService
       template: creditCardTemplate
       controller: 'rmapsCreditCardModalCtrl'
       resolve: {
+        # everything has to be wrapped in callbacks otherwise the injector
+        # tries to use strings to find and inject a provider
         modalTitle: () -> title
         showCancelButton: () -> false
-        modalAction
-        modalActionMsg
+        modalAction: () -> modalAction
+        modalActionMsg : () -> modalActionMsg
       }
 
-  # self-service modal for replacing CC
   $scope.replaceCC = () ->
     _createCardModal({
-      title:"Replace Credit Card"
+      title: "Replace Credit Card"
       modalActionMsg: "New default credit card successfully set."
-      modalAction: () -> rmapsCreditCardService.replace
+      modalAction: rmapsCreditCardService.replace
     })
     .result.then (result) ->
       if !result then return null
 
-      # update payment with returned credit card
       return $scope.data.payment = result
 
   $scope.addCC = () ->
-    res = _createCardModal({
+    _createCardModal({
       title:"Add Credit Card"
-      modalActionMsg: "New default credit card created."
-      modalAction: () -> rmapsCreditCardService.add
+      modalActionMsg: "New credit card added."
+      modalAction: rmapsCreditCardService.add
     })
-
-    res.result.then (result) ->
+    .result.then (result) ->
       if !result then return null
 
       return $scope.data.payments.push(result)
 
   $scope.defaultCC = (source) ->
-    rmapsPaymentMethodService.setDefault(source.id)
+    rmapsPaymentMethodService.setDefault(source.id, cache:false)
+    .then () ->
+      getAllPayments()
 
   $scope.removeCC = (source) ->
     rmapsPaymentMethodService.remove(source.id)
-
+    .then () ->
+      getAllPayments()
 
   process = (promise) ->
     $scope.processing++
@@ -208,10 +210,13 @@ rmapsCreditCardService
   .then (fips) ->
     $scope.data.fips = fips
 
-  process rmapsPaymentMethodService.getDefault()
+  process rmapsPaymentMethodService.getDefault(cache:false)
   .then (source) ->
     $scope.data.payment = source
 
-  process rmapsPaymentMethodService.getAll()
-  .then (sources) ->
-    $scope.data.payments = sources
+  getAllPayments = () ->
+    process rmapsPaymentMethodService.getAll(cache:false)
+    .then (sources) ->
+      $scope.data.payments = sources
+
+  getAllPayments()

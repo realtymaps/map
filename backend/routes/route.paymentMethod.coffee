@@ -1,6 +1,4 @@
-# coffeelint: disable=check_scope
 logger = require('../config/logger').spawn("route:paymentMethod")
-# coffeelint: enable=check_scope
 auth = require '../utils/util.auth'
 paymentTransforms = require('../utils/transforms/transforms.payment')
 {validateAndTransformRequest} = require '../utils/util.validation'
@@ -16,6 +14,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("root")
+      l.debug -> "hit"
       paymentSourcesSvc.getAll(req.session.userid)
 
   getDefault:
@@ -25,6 +25,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("getDefault")
+      l.debug -> "hit"
       paymentSourcesSvc.getDefault(req.session.userid)
 
   replaceDefault:
@@ -34,6 +36,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("replaceDefault")
+      l.debug -> "hit"
       validateAndTransformRequest(req, paymentTransforms.source)
       .then (validReq) ->
         paymentSourcesSvc.replaceDefault(req.session.userid, validReq.params.source)
@@ -46,6 +50,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("add")
+      l.debug -> "hit"
       validateAndTransformRequest(req, paymentTransforms.source)
       .then (validReq) ->
         paymentSourcesSvc.add(req.session.userid, validReq.params.source)
@@ -57,6 +63,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("remove")
+      l.debug -> "hit"
       validateAndTransformRequest(req, paymentTransforms.source)
       .then (validReq) ->
         paymentSourcesSvc.remove(req.session.userid, validReq.params.source)
@@ -69,6 +77,8 @@ module.exports =
       auth.requireLogin(redirectOnFail: true)
     ]
     handle: (req) ->
+      l = logger.spawn("setDefault")
+      l.debug -> "hit"
       validateAndTransformRequest(req, paymentTransforms.source)
       .then (validReq) ->
         paymentSourcesSvc.setDefault(req.session.userid, validReq.params.source)

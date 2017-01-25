@@ -83,6 +83,11 @@ all-details()
   //   while still being able to single-out special-case things per page
   .cc-details
     .row.credit-card
+      border 1px solid $black
+      border-radius 5px
+      .btn
+        width 80px
+
       .inner-card
         > div
           padding-top 16px
@@ -91,7 +96,7 @@ all-details()
         .ignore-padding
           padding-top 8px
 
-      border-radius 5px
+
       &.default
         background-color: $rm-map-btn-icon
         color $white

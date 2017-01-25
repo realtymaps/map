@@ -1,5 +1,5 @@
 tables = require '../../../config/tables'
-logger = require('../../../config/logger').spawn("service.paymentMethod")
+logger = require('../../../config/logger').spawn("service:paymentMethod")
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 
 
@@ -39,7 +39,7 @@ module.exports = (stripe) ->
   add = (user_id, source) ->
     l = logger.spawn('add')
     _verifyUser(user_id).then (authUser) ->
-      customerService.replaceDefaultSource(authUser, source)
+      customerService.addSource(authUser, source)
       .then (res) ->
         l.debug -> "new payment method:\n#{JSON.stringify(source,null,2)}"
         res

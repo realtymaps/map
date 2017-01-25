@@ -28,14 +28,14 @@ rmapsPaymentMethodService) ->
   # If appending sources is desired, a new operator (and flow through backend)
   #   may be required.
   replace: (card) ->
-    stripe.card.createToken card
+    stripe.card.createToken(card)
     .then (token) ->
-      rmapsPaymentMethodService.replace(token.id)
+      rmapsPaymentMethodService.replace(token.id, cache:false)
 
   add: (card) ->
-    stripe.card.createToken card
+    stripe.card.createToken(card)
     .then (token) ->
-      rmapsPaymentMethodService.add(token.id)
+      rmapsPaymentMethodService.add(token.id, cache:false)
 
 
   # css class helper
