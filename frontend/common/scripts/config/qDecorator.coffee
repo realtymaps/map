@@ -95,6 +95,14 @@ mod.config ($provide) ->
 
         return $delegate.all(promises)
 
+
+    if !$delegate.try?
+      $delegate.try = (cb) ->
+        try
+          cb()
+        catch error
+          $delegate.reject(error)
+
     # $log.debug -> '$q'
     # $log.debug -> $delegate
     $delegate

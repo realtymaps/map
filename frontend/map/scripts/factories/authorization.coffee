@@ -50,20 +50,23 @@ app.factory 'rmapsMapAuthorizationFactory', (
       # when redirecting to login, if our attempted state is NOT `login`, set it as prior so that we know to redirect later
       if $state.current.name != 'login'
         rmapsPriorStateService.setPrior $state.current, $stateParams
-      $state.go 'login'
+      $state.go('login')
 
     # After a successful login, either go to the prior state or the map
     goToPostLoginState: () ->
       prior = rmapsPriorStateService.getPrior()
 
+      if !$rootScope.identity?.subscriptionStatus?
+        $state.go('userSubscription')
+
       if prior
-        $state.go prior.state, prior.params, reload: true
+        $state.go(prior.state, prior.params, reload: true)
 
         # Clear the prior state
         rmapsPriorStateService.clearPrior()
         return
 
-      $state.go 'map', {id: rmapsProfilesService.currentProfile?.project_id}, {reload: true}
+      $state.go('map', {id: rmapsProfilesService.currentProfile?.project_id}, {reload: true})
 
     # Ensure that this state change is correctly authenticated and authorized, or redirect to login
     # If the state requires a profile or a profile is specified on the URL, load it now
@@ -87,10 +90,10 @@ app.factory 'rmapsMapAuthorizationFactory', (
         .then () ->
           redirectState = doPermsCheck(toState, toParams)
           if redirectState
-            return redirect {state: redirectState}
+            return redirect({state: redirectState})
           else
             # authentication and permissions are ok, return to your regularly scheduled program
-            return redirect {state: toState, params: toParams}
+            return redirect({state: toState, params: toParams})
 
         event?.preventDefault()
         return
@@ -110,5 +113,5 @@ app.run ($rootScope, rmapsMapAuthorizationFactory, rmapsEventConstants, $state, 
 
   $rootScope.$on rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $log.debug -> "profile.addremove: identity"
-    rmapsMapAuthorizationFactory.authorize {event, toState: $state.current}
+    rmapsMapAuthorizationFactory.authorize({event, toState: $state.current})
     return

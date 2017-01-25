@@ -77,20 +77,25 @@ getAllBulk = (entity) ->
 
 # this gives us profiles for a subscribing user, getting and/or creation a sandbox if applicable
 # Note: this differs from a usual "getAll" endpoint in that we bundle some project fields with profile results
-getProfiles = (auth_user_id) -> Promise.try () ->
-  getProfileWhere
-    "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+getProfiles = ({auth_user_id, parent_auth_user_id} = {}) -> Promise.try () ->
+  l = logger.spawn('getProfiles')
+  l.debug -> {auth_user_id, parent_auth_user_id}
+  entity = "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+
+  if typeof(parent_auth_user_id) != 'undefined' #allow for nulls
+    entity["#{tables.user.profile.tableName}.parent_auth_user_id"] = parent_auth_user_id
+
+  l.debugQuery(getProfileWhere(entity))
   .then (profiles) ->
     sandbox = _.find profiles, (p) -> p.sandbox is true
     if sandbox?
       profiles
     else
-      logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
+      logger.debug -> "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
       createSandbox(auth_user_id)
       .then () ->
         # re-fetch for full list w/ ids
-        getProfileWhere
-          "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
+        l.debugQuery(getProfileWhere("#{tables.user.profile.tableName}.auth_user_id": auth_user_id))
 
   .then (profiles) ->
     _.indexBy profiles, 'id'

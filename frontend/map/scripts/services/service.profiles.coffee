@@ -62,9 +62,9 @@ app.service 'rmapsProfilesService', (
       $log.debug 'updating old profile'
       _update(oldProfile)
       .then () ->
-        _current newProfile
+        _current(newProfile)
     else
-      _current newProfile
+      _current(newProfile)
 
     _settingCurrentPromise.then () ->
       _isSettingProfile = false
@@ -111,8 +111,6 @@ app.service 'rmapsProfilesService', (
         return @setCurrentProfile(_.sortByOrder(_.values(identity.profiles), 'rm_modified_time','desc')[0])
 
 
-
-
     ###
       Public: This function gets hammered by watchers and or page resolves at boot.
         Therefore we have a few GTFOS
@@ -128,7 +126,7 @@ app.service 'rmapsProfilesService', (
       # if this does not exist
       if _isSettingProfile
         $log.debug "detected `_isSettingProfile`, returning `_settingCurrentPromise`"
-        return _settingCurrentPromise
+        return if _settingCurrentPromise? then _settingCurrentPromise else $q.reject('No Profile')
 
       # Get reference to the current main map
       currentMap = rmapsCurrentMapService.get()

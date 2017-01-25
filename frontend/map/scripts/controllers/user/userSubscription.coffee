@@ -24,6 +24,7 @@ app.controller 'rmapsUserSubscriptionCtrl', (
     fips: null
     payment: null
 
+  # TODO: possibly move to run-root-scopt-init , one issue making this tougehr is $scope.subscription
   #
   # tests / flags
   #
@@ -32,10 +33,12 @@ app.controller 'rmapsUserSubscriptionCtrl', (
     return ($scope.subscription? && !($rootScope.identity.subscriptionStatus in [rmapsMainOptions.subscription.STATUS.EXPIRED, rmapsMainOptions.subscription.STATUS.DEACTIVATED]))
 
   $scope.isDeactivated = () ->
-    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.DEACTIVATED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
+    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.DEACTIVATED &&
+      ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
 
   $scope.isExpired = () ->
-    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.EXPIRED && ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
+    return $rootScope.identity.subscriptionStatus == rmapsMainOptions.subscription.STATUS.EXPIRED &&
+      ($rootScope.identity.user.stripe_plan_id in rmapsMainOptions.subscription.PLAN.PAID_LIST)
 
   $scope.isInGracePeriod = () ->
     # did user cancel, but we're still active
@@ -92,9 +95,9 @@ app.controller 'rmapsUserSubscriptionCtrl', (
         $scope.processing--
 
 
-  $scope.reactivate = (opts = {needCard: false}) ->
+  $scope.reactivate = ({needCard} = {}) ->
     # flag that lets us know if expired or not (expired means we need CC)
-    needCard = $scope.isExpired()
+    needCard ?= $scope.isExpired()
 
     # reactivate modal context
     modalInstance = $uibModal.open
@@ -102,8 +105,10 @@ app.controller 'rmapsUserSubscriptionCtrl', (
       template: require('../../../html/views/templates/modals/confirm.jade')()
     $scope.showCancelButton = true
     $scope.modalTitle = "Reactivating subscription..."
+
     if needCard
       $scope.modalBody = "You will be prompted to enter credit card information."
+
     $scope.modalCancel = modalInstance.dismiss
 
     # confirmed reactivate...
@@ -159,6 +164,8 @@ app.controller 'rmapsUserSubscriptionCtrl', (
 
       .finally () ->
         $scope.processing--
+      .then ->
+        getAllPayments()
 
   _createCardModal = ({title, modalAction, modalActionMsg} = {}) ->
     $uibModal.open
