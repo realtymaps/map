@@ -1,4 +1,5 @@
 subscription = require '../utils/enums/util.enums.subscription.status.coffee'
+escapeHtml = require 'escape-html'
 
 validation =
   url: /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
@@ -54,7 +55,7 @@ commonConfig =
   UNEXPECTED_MESSAGE: (troubleshooting) ->
     return "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues,
             please let us know by emailing #{commonConfig.SUPPORT_EMAIL}, and giving us the following error
-            message: "+(if troubleshooting then "<br/><code>#{troubleshooting}</code>" else '')
+            message: "+(if troubleshooting then "<br/><code>#{escapeHtml(troubleshooting)}</code>" else '')
 
   modals:
     animationsEnabled: true

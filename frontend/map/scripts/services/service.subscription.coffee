@@ -25,7 +25,7 @@ app.service 'rmapsSubscriptionService', ($http, $sce) ->
     .catch (err) ->
       return error: $sce.trustAsHtml(err.data.alert.msg)
 
-  deactivate: (reason) ->
-    $http.put subscriptionAPI.deactivate, {reason: reason}
+  deactivate: (info) ->
+    $http.put subscriptionAPI.deactivate, info
     .then ({data}) ->
       data

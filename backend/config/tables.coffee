@@ -21,6 +21,8 @@ module.exports =
     fipsCodes: 'lookup_fips_codes'
     mls: 'lookup_mls'
     mls_m2m_fips_code_county: 'lookup_mls_m2m_fips_code_county'
+    userFeedbackCategory: 'lookup_user_feedback_category'
+    userFeedbackSubcategory: 'lookup_user_feedback_subcategory'
   normalized:
     listing: 'normalized.listing'
     tax: 'normalized.tax'
@@ -83,9 +85,7 @@ module.exports =
   history:
     event: 'history_event'
     dataLoad: 'history_data_load'
-    user: 'history_user'
-    userCategory: 'history_user_category'
-    userSubCategory: 'history_user_subcategory'
+    userFeedback: 'history_user_feedback'
     shell: 'history_shell'
     requestError: 'history_request_error'
     browserError: 'history_browser_error'

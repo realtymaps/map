@@ -24,9 +24,9 @@ mod.service 'rmapsUserSessionHistoryService',
 
 
 [
-  'historyUser'
-  'historyUserCategory'
-  'historyUserSubCategory'
+  'userFeedback'
+  'userFeedbackCategory'
+  'userFeedbackSubcategory'
 ].forEach (route) ->
 
   svcName = "rmaps#{route.toInitCaps(false)}Service"

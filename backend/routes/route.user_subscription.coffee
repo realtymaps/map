@@ -70,4 +70,4 @@ module.exports =
     handle: (req) ->
       validateAndTransformRequest(req, subscriptionTransforms.deactivation)
       .then (validReq) ->
-        userSubscriptionService.deactivate _.omit(req.user, 'password'), validReq.body.reason
+        userSubscriptionService.deactivate _.omit(req.user, 'password'), validReq.body.subcategory, validReq.body.details
