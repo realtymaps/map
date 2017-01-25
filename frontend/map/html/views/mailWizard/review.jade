@@ -1,104 +1,105 @@
-.mail-wizard-steps
-  header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep(wizard.mail.getCategory()=='pdf'?-2:-1)" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
-    div.pathway
-      ul
-        li
-          span Recipients
-        li
-          span Campaign Info
-        li
-          span Select Template
-        li
-          span Edit Template
-        li.active
-          span Review
+form
+  .mail-wizard-steps
+    header.send-progress(ng-hide="hideProgress()")
+      button.btn.btn-default.pull-left(ng-click="prevStep(wizard.mail.getCategory()=='pdf'?-2:-1)" ng-hide="hideBackButton()") Back
+      button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
+      div.pathway
+        ul
+          li
+            span Recipients
+          li
+            span Campaign Info
+          li
+            span Select Template
+          li
+            span Edit Template
+          li.active
+            span Review
 
-.review
-  .inner
-    .container
-      .row
-        h1.pageTitle
-          span(style="text-transform: capitalize;") Campaign Review
+  .review
+    .inner
+      .container
+        .row
+          h1.pageTitle
+            span(style="text-transform: capitalize;") Campaign Review
 
-        button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()" ng-disabled="!review.pdf") View Letter
+          button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()" ng-disabled="!review.pdf") View Letter
 
-      .row.review-items
-        div
-          .row.separator
-            .col-md-12
-              .row
-                h2 Campaign Name
-              .row
-                .col-md-3
-                  p Name:
-                .col-md-9
-                  p {{wizard.mail.campaign.name}}
-              .row
-                .col-md-3
-                  p Status:
-                .col-md-9
-                  span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
-              .row(ng-show="wizard.mail.isSubmitted()")
-                .col-md-3
-                  p Letters Shipped:
-                .col-md-9
-                  p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
-              .row(ng-show="wizard.mail.isSubmitted()")
-                .col-md-3
-                  p Estimated Delivery:
-                .col-md-9
-                  p(ng-show="review.single_lob_response.expected_delivery_date") {{review.single_lob_response.expected_delivery_date | date:'MM/dd/yyyy'}}
-                  p(ng-hide="review.single_lob_response.expected_delivery_date") N/A
+        .row.review-items
+          div
+            .row.separator
+              .col-md-12
+                .row
+                  h2 Campaign Name
+                .row
+                  .col-md-3
+                    p Name:
+                  .col-md-9
+                    p {{wizard.mail.campaign.name}}
+                .row
+                  .col-md-3
+                    p Status:
+                  .col-md-9
+                    span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
+                .row(ng-show="wizard.mail.isSubmitted()")
+                  .col-md-3
+                    p Letters Shipped:
+                  .col-md-9
+                    p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
+                .row(ng-show="wizard.mail.isSubmitted()")
+                  .col-md-3
+                    p Estimated Delivery:
+                  .col-md-9
+                    p(ng-show="review.single_lob_response.expected_delivery_date") {{review.single_lob_response.expected_delivery_date | date:'MM/dd/yyyy'}}
+                    p(ng-hide="review.single_lob_response.expected_delivery_date") N/A
 
-          .row.separator.recipients
-            .col-md-12
-              .row
-                h2 Recipients
-              .row
-                .col-md-12
-                  p.recipient-link(
-                    ng-click="showAddresses(wizard.mail.campaign.recipients)"
-                    ng-pluralize
-                    count="wizard.mail.campaign.recipients.length"
-                    when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
+            .row.separator.recipients
+              .col-md-12
+                .row
+                  h2 Recipients
+                .row
+                  .col-md-12
+                    p.recipient-link(
+                      ng-click="showAddresses(wizard.mail.campaign.recipients)"
+                      ng-pluralize
+                      count="wizard.mail.campaign.recipients.length"
+                      when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
 
-          .row.separator.errors(ng-show="review.data.alert.msg")
-            .col-md-12
-              .row
-                h2 Issues
-              .row
-                p {{review.data.alert.msg}}
+            .row.separator.errors(ng-show="review.data.alert.msg")
+              .col-md-12
+                .row
+                  h2 Issues
+                .row
+                  p {{review.data.alert.msg}}
 
-          .row.separator(ng-show="wizard.mail.isSubmitted()")
-            .col-md-12
-              .row
-                h2 Paid Amount
-              .row
-                .col-md-10
-                  p Mailing submitted for {{(wizard.mail.campaign.stripe_charge.amount/100) | currency}}
-                .col-md-2
-                  button.btn.btn-primary.pull-right(ng-click="viewMap()" ng-show="wizard.mail.isSubmitted()") View Map
-
-          .row.separator(ng-hide="wizard.mail.isSubmitted()")
-            .col-md-12
-              .row
-                h2 Price Quote
-              .row
-                .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" uib-tooltip="Only uploaded PDF content can be printed in color." tooltip-placement="left")
-                  .col-md-2
-                    label Print in Color?
+            .row.separator(ng-show="wizard.mail.isSubmitted()")
+              .col-md-12
+                .row
+                  h2 Paid Amount
+                .row
                   .col-md-10
-                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="wizard.mail.campaign.custom_content" ng-change="refreshColorPrice()")
-                .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
-                .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
-                .btn.btn-success(
-                  ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
-                  tooltip-trigger="'mousehover'"
-                  uib-tooltip="Click to submit this mailing!"
-                  tooltip-enable="true"
-                  ng-disabled="review.data.alert.msg"
-                  ng-click="sendMail()")
-                    span(ng-show="review.data.alert.msg") Issues Exist
-                    span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}
+                    p Mailing submitted for {{(wizard.mail.campaign.stripe_charge.amount/100) | currency}}
+                  .col-md-2
+                    button.btn.btn-primary.pull-right(ng-click="viewMap()" ng-show="wizard.mail.isSubmitted()") View Map
+
+            .row.separator(ng-hide="wizard.mail.isSubmitted()")
+              .col-md-12
+                .row
+                  h2 Price Quote
+                .row
+                  .row.color-toggle(ng-class="{'disabled': wizard.mail.campaign.custom_content}" uib-tooltip="Only uploaded PDF content can be printed in color." tooltip-placement="left")
+                    .col-md-2
+                      label Print in Color?
+                    .col-md-10
+                      input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="wizard.mail.campaign.custom_content" ng-change="refreshColorPrice()")
+                  .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
+                  .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
+                  .btn.btn-success(
+                    ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
+                    tooltip-trigger="'mousehover'"
+                    uib-tooltip="Click to submit this mailing!"
+                    tooltip-enable="true"
+                    ng-disabled="review.data.alert.msg"
+                    ng-click="sendMail()")
+                      span(ng-show="review.data.alert.msg") Issues Exist
+                      span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}

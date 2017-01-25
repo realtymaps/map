@@ -1,24 +1,29 @@
-.mail-wizard-steps
-  header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep(wizard.mail.getCategory()=='pdf'?2:1)" ng-hide="hideNextButton()" ng-disabled="!(wizard.mail.campaign.template_type || wizard.mail.campaign.aws_key)") Next
-    div.pathway
-      ul
-        li
-          span Recipients
-        li
-          span Campaign Info
-        li.active
-          span Select Template
-        li
-          span Edit Template
-        li
-          span Review
+form(role="form" name="selectTemplateForm")
+  .mail-wizard-steps
+    header.send-progress(ng-hide="hideProgress()")
+      button.btn.btn-default.pull-left(
+        ng-click="prevStep()"
+        ng-hide="hideBackButton()") Back
+      button.btn.btn-primary.pull-right(
+        ng-click="nextStep(wizard.mail.getCategory()=='pdf'?2:1)"
+        ng-hide="hideNextButton()"
+        ng-disabled="!(wizard.mail.campaign.template_type || wizard.mail.campaign.aws_key)") Next
+      div.pathway
+        ul
+          li
+            span Recipients
+          li
+            span Campaign Info
+          li.active
+            span Select Template
+          li
+            span Edit Template
+          li
+            span Review
 
-.select-template
-  .inner
-    .container
-      form
+  .select-template
+    .inner
+      .container
         .pdf-upload
           .file-select.btn.btn-primary
             span Upload A PDF

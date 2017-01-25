@@ -1,50 +1,53 @@
-.mail-wizard-steps
-  header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!wizard.mail.campaign.recipients.length") Next
-    div.pathway
-      ul
-        li.active
-          span Recipients
-        li
-          span Campaign Info
-        li
-          span Select Template
-        li
-          span Edit Template
-        li
-          span Review
+form(role="form" name="recipientInfo")
+  .mail-wizard-steps
+    header.send-progress(ng-hide="hideProgress()")
+      button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+      button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!wizard.mail.campaign.recipients.length") Next
+      div.pathway
+        ul
+          li.active
+            span Recipients
+          li
+            span Campaign Info
+          li
+            span Select Template
+          li
+            span Edit Template
+          li
+            span Review
 
-.recipient-info
-  .inner
-    .container
-      h1.pageTitle Recipients
-      form(ng-show="property_ids.length > 0")
-        .send-to
-          label
-            input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="property" ng-change="changeRecipients()")
-            i.fa.fa-check
-            span
-              div Send to property addresses
-              .total(ng-click="showAddresses(property)") {{property.length}} total
-          label
-            input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="owner" ng-change="changeRecipients()")
-            i.fa.fa-check
-            span
-              div Send to owner addresses
-              .total(ng-click="showAddresses(owner)") {{owner.length}} total
-          label
-            input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="propertyAndOwner" ng-change="changeRecipients()")
-            i.fa.fa-check
-            span
-              div Send to both addresses
-              .total(ng-click="showAddresses(propertyAndOwner)") {{propertyAndOwner.length}} total
+  .recipient-info
+    .inner
+      .container
+        h1.pageTitle Recipients
+        p(ng-if="!wizard.mail.campaign.recipients.length") You must select one of the following!
+        br()
+        div(ng-show="property_ids.length > 0")
+          .send-to
+            label
+              input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="property" ng-change="changeRecipients()")
+              i.fa.fa-check
+              span
+                div Send to property addresses
+                .total(ng-click="showAddresses(property)") {{property.length}} total
+            label
+              input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="owner" ng-change="changeRecipients()")
+              i.fa.fa-check
+              span
+                div Send to owner addresses
+                .total(ng-click="showAddresses(owner)") {{owner.length}} total
+            label
+              input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="propertyAndOwner" ng-change="changeRecipients()")
+              i.fa.fa-check
+              span
+                div Send to both addresses
+                .total(ng-click="showAddresses(propertyAndOwner)") {{propertyAndOwner.length}} total
 
-      form(ng-show="!property_ids.length")
-        .send-to
-          label
-            input(disabled type="radio" checked)
-            i.fa.fa-check
-            span
-              div Send to previously selected addresses
-              .total(ng-click="showAddresses(wizard.mail.campaign.recipients)") {{wizard.mail.campaign.recipients.length}} total
+        form(ng-show="!property_ids.length")
+          .send-to
+            label
+              input(disabled type="radio" checked)
+              i.fa.fa-check
+              span
+                div Send to previously selected addresses
+                .total(ng-click="showAddresses(wizard.mail.campaign.recipients)") {{wizard.mail.campaign.recipients.length}} total
