@@ -7,11 +7,18 @@ logger = require('../config/logger').spawn("service:user_subscription")
 # coffeelint: enable=check_scope
 permSvc = require './service.permissions'
 {expectSingleRow} = require '../utils/util.sql.helpers'
+# sqlColumns = require '../utils/util.sql.columns'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 stripeErrors = require '../utils/errors/util.errors.stripe'
 
+# coffeelint: disable=check_scope
+logger = require('../config/logger').spawn("service.user_subscription")
+# coffeelint: enable=check_scope
+
 stripe = null
+veroSvc = null
 require('../services/payment/stripe')().then (svc) -> stripe = svc.stripe
+require('./email/vero').then (svc) -> veroSvc = svc
 
 
 # Return "dummy" subscription objects that emulates a stripe subscription
@@ -52,8 +59,8 @@ _getStripeSubscription = (stripe_customer_id, stripe_subscription_id, stripe_pla
         throw new PartiallyHandledError("No subscription or plan is associated with user #{stripe_customer_id}.")
 
 
-_getStripeIds = (userId, trx) ->
-  tables.auth.user(transaction: trx)
+_getStripeIds = (userId, transaction) ->
+  tables.auth.user({transaction})
   .select 'stripe_customer_id', 'stripe_subscription_id', 'stripe_plan_id'
   .where id: userId
   .then (result) ->
@@ -91,6 +98,7 @@ updatePlan = (userId, plan) ->
         updated: updated
 
 
+# When a subscription reaches the end date, Stripe sends webhook request that triggers this routine
 deactivatePlan = (authUser) ->
   payload =
     customer: authUser.stripe_customer_id
@@ -157,8 +165,8 @@ getSubscription = (userId) ->
 
 
 reactivate = (userId) -> Promise.try () ->
-  dbs.transaction 'main', (trx) ->
-    _getStripeIds(userId, trx)
+  dbs.transaction 'main', (transaction) ->
+    _getStripeIds(userId, transaction)
     .then ({stripe_customer_id, stripe_subscription_id, stripe_plan_id}) ->
       if !stripe_plan_id?
         return {
@@ -181,7 +189,7 @@ reactivate = (userId) -> Promise.try () ->
 
         stripe.subscriptions.create(payload)
         .then (created) ->
-          tables.auth.user(transaction: trx)
+          tables.auth.user({transaction})
           .update stripe_subscription_id: created.id, stripe_plan_id: created.plan.id
           .where id: userId
           .then () ->
@@ -191,17 +199,21 @@ reactivate = (userId) -> Promise.try () ->
       .catch isUnhandled, (err) ->
         throw new PartiallyHandledError(err, "Encountered an issue reactivating the account, please contact customer service.")
 
-
-deactivate = (userId, reason) ->
-  dbs.transaction 'main', (trx) ->
-    _getStripeIds(userId, trx)
-    .then ({stripe_customer_id, stripe_subscription_id}) ->
-      stripe.customers.cancelSubscription stripe_customer_id, stripe_subscription_id, {at_period_end: true}
-      .then (canceledSubscription) ->
-        tables.history.user(transaction: trx)
-        .insert(auth_user_id: userId, description: reason, category: 'account', subcategory: 'deactivation')
-        .then () ->
-          canceledSubscription
+# Called when user cancels subscription, going into grace period.
+deactivate = (authUser, reason) ->
+  dbs.transaction 'main', (transaction) ->
+    stripe.customers.cancelSubscription authUser.stripe_customer_id, authUser.stripe_subscription_id, {at_period_end: true}
+    .then (canceledSubscription) ->
+      console.log "canceledSubscription:\n#{JSON.stringify(canceledSubscription, null, 2)}"
+      tables.history.user({transaction})
+      .insert(auth_user_id: authUser.id, description: reason, category: 'account', subcategory: 'deactivation')
+      .then () ->
+        override =
+          eventData:
+            endDate: new Date(canceledSubscription.current_period_end*1000).toLocaleDateString()
+        veroSvc.events.send(authUser, 'subscription_canceled', override)
+      .then () ->
+        canceledSubscription
 
     .catch isUnhandled, (err) ->
       throw new PartiallyHandledError(err, "Encountered an issue deactivating the account, please contact customer service.")

@@ -49,13 +49,14 @@ rmapsMainOptions
       template: require('../../../html/views/templates/modals/confirmDeactivate.jade')()
 
     $scope.deactivation =
-      reason: null
+      reasonSelect: null
+      reasonText: null
 
     $scope.showCancelButton = true
     $scope.modalCancel = modalInstance.dismiss
     $scope.modalOk = () ->
       $scope.processing++
-      rmapsSubscriptionService.deactivate($scope.deactivation.reason)
+      rmapsSubscriptionService.deactivate("#{$scope.deactivation.reasonSelect} - #{$scope.deactivation.reasonText}")
       .then (subscription) ->
         if subscription? then $scope.subscription = subscription
       .finally () ->
