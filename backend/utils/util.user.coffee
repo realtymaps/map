@@ -96,15 +96,21 @@ cacheUserValues = (req, reload = {}) ->
         profilesPromise = profileSvc.getClientProfiles(req.user.id)
 
       #Ok, we "SHOULD" have some profile, double check!
-      profilesPromise.then (profilesFirstAttempt) ->
+      profilesPromise = profilesPromise.then (profilesFirstAttempt) ->
         if Object.keys(profilesFirstAttempt).length
           l.debug -> 'ok we got a profile'
           return profilesFirstAttempt
         #ok, we're probably not a client attempt to get a profile period but only one that should have a subscription
         l.debug -> 'Still no profile, try without a parent.'
+
         profileSvc.getProfiles({auth_user_id: req.user.id, parent_auth_user_id: null})
-        .then (profilesLastAttempt) ->
-          if !Object.keys(profilesLastAttempt).length
+        .then (profilesLastAttempt) -> Promise.try ->
+          l.debug -> "@@@@@@ profilesLastAttempt @@@@@@"
+          l.debug -> profilesLastAttempt
+          profileKeys = Object.keys(profilesLastAttempt)
+          l.debug -> "Profiles last attempt length: #{profileKeys.length}"
+
+          if !profileKeys.length
             l.warn("No Profile Found!")
             ###nmccready
               I am making the assumption that we should possibly throw an error here.
@@ -130,12 +136,11 @@ cacheUserValues = (req, reload = {}) ->
               Usually on an account that still exists in the database but is no longer in stripe.
             ###
             throw new profileErrors.NoProfileFoundError()
-          l.debug -> profilesLastAttempt
+          l.debug -> "returning profilesLastAttempt"
           profilesLastAttempt
 
-      profilesPromise = profilesPromise
-      .then (profiles) ->
-        logger.debug 'profileSvc.getProfiles.then'
+      profilesPromise.then (profiles) ->
+        l.debug -> "Pofiles length: #{Object.keys(profiles).length}"
         req.session.profiles = profiles
 
 
