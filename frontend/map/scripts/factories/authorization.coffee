@@ -56,7 +56,7 @@ app.factory 'rmapsMapAuthorizationFactory', (
     goToPostLoginState: () ->
       prior = rmapsPriorStateService.getPrior()
 
-      if !$rootScope.principal?.isSubscriber()
+      if !$rootScope.principal?.isSubscriber() && !$rootScope.principal?.isProjectViewer()
         return $state.go('userSubscription')
 
       if prior

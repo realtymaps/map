@@ -115,9 +115,9 @@ module.exports = app.config (
     $stateProvider.state(state)
     state
 
-  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false, permissionsRequired: false
+  buildState('main', parent: null, url: frontendRoutes.index, loginRequired: false, permissionsRequired: false)
 
-  buildMapState
+  buildMapState(
     sticky: true
     reloadOnSearch: false
     projectParam: 'project_id'
@@ -131,6 +131,7 @@ module.exports = app.config (
       area_id:
         value: null
         squash: false
+  )
 
   buildState 'onboarding',
     abstract: true
@@ -194,7 +195,7 @@ module.exports = app.config (
     projectParam: 'id',
     abstract: true
     controller: 'rmapsProjectCtrl',
-    template: "<div id='project-base-state' ui-view></div>"
+    template: "<div id='project-base-state' ui-view rmaps-require-subscriber-or-viewer='omit,modalNow'></div>"
     page: { title: 'Project', dynamicTitle: true },
     mobile: { modal: true },
     resolve:
