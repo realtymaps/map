@@ -52,6 +52,7 @@ isSubscriber = (req) ->
 # or we'll need to log out the user and let them get refreshed when they log
 # back in.
 cacheUserValues = (req, reload = {}) ->
+  l = logger.spawn('cacheUserValues')
   # ensure permissions
   if !req.session.permissions or reload?.permissions
     logger.debug 'req.session.permissions'
@@ -87,21 +88,36 @@ cacheUserValues = (req, reload = {}) ->
     .then () ->
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if isSubscriber(req)
-        logger.debug -> 'user is subscriber'
-        profilesPromise = profileSvc.getProfiles(req.user.id)
+        l.debug -> 'user is subscriber'
+        profilesPromise = profileSvc.getProfiles({auth_user_id: req.user.id})
       # user is a client, and unallowed to deal with sandboxes
       else
-        logger.debug -> 'user should have client profiles'
+        l.debug -> 'user should have client profiles'
         profilesPromise = profileSvc.getClientProfiles(req.user.id)
-        .then (profiles) ->
-          if !Object.keys(profiles).length
-            logger.warn("No Profile Found!")
+
+      #Ok, we "SHOULD" have some profile, double check!
+      profilesPromise = profilesPromise.then (profilesFirstAttempt) ->
+        if Object.keys(profilesFirstAttempt).length
+          l.debug -> 'ok we got a profile'
+          return profilesFirstAttempt
+        #ok, we're probably not a client attempt to get a profile period but only one that should have a subscription
+        l.debug -> 'Still no profile, try without a parent.'
+
+        profileSvc.getProfiles({auth_user_id: req.user.id, parent_auth_user_id: null})
+        .then (profilesLastAttempt) -> Promise.try ->
+          l.debug -> "@@@@@@ profilesLastAttempt @@@@@@"
+          l.debug -> profilesLastAttempt
+          profileKeys = Object.keys(profilesLastAttempt)
+          l.debug -> "Profiles last attempt length: #{profileKeys.length}"
+
+          if !profileKeys.length
+            l.warn("No Profile Found!")
             ###nmccready
               I am making the assumption that we should possibly throw an error here.
 
               Why?
                 If there is no profile on the frontend the app is basically unusable.
-                This is because the fronend code assumes you will have a profile and
+                This is because the frontend code assumes you will have a profile and
                 it gets mixed up in a state of partial loggin.
 
                 I believe it is easier to just invalidate the login and thus not deal with the
@@ -116,18 +132,15 @@ cacheUserValues = (req, reload = {}) ->
                 Throwing should eventually log the user out on the stack. However, currently without handling it the
                 same session sticks for the same browser (even for a different account).
 
-
               When does this Happen?
               Usually on an account that still exists in the database but is no longer in stripe.
-
-
             ###
             throw new profileErrors.NoProfileFoundError()
-          profiles
+          l.debug -> "returning profilesLastAttempt"
+          profilesLastAttempt
 
-      profilesPromise = profilesPromise
-      .then (profiles) ->
-        logger.debug 'profileSvc.getProfiles.then'
+      profilesPromise.then (profiles) ->
+        l.debug -> "Pofiles length: #{Object.keys(profiles).length}"
         req.session.profiles = profiles
 
 

@@ -15,7 +15,8 @@ rmapsProfilesService
 rmapsEventConstants
 rmapsLoginHack
 rmapsMapAuthorizationFactory
-rmapsLoginService) ->
+rmapsLoginService
+rmapsLogoutFactory) ->
 
   $log = $log.spawn('rmapsLoginFactory')
 
@@ -30,6 +31,8 @@ rmapsLoginService) ->
       remember_me: false
 
     loginFailed = (response) ->
+      rmapsLogoutFactory().logout()
+
       $log.error "Could not log in", response
       $scope.loginInProgress = false
       $scope.loginFailed = true
@@ -72,7 +75,7 @@ rmapsLoginService) ->
 
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
-        rmapsProfilesService.setCurrentProfileByIdentity data.identity
+        rmapsProfilesService.setCurrentProfileByIdentity(data.identity)
         .then () ->
           cb = () ->
             rmapsMapAuthorizationFactory.goToPostLoginState()

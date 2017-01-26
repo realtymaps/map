@@ -35,6 +35,16 @@ restrictElement = (scope, element, attrs, options) ->
   scope.authNotShown = () -> false    # ng-show="authNotShown()"
   scope.authRemoved = () -> false  # ng-if="authRemoved()"
 
+  scope.authModal = (message = options.message) ->
+    scope.modalTitle = "Restricted"
+    scope.modalBody = message
+    options.$uibModal.open
+      scope: scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+
+  if options.modalNow
+    scope.authModal()
+
   # disable option
   if options.disable
 
@@ -42,15 +52,8 @@ restrictElement = (scope, element, attrs, options) ->
     # Dont disable it b/c then we cant click it for modal (can still apply disabled class though, below)
     if !options.noModal
       # define auth modal
-      scope.authModal = (message) ->
-        scope.modalTitle = "Restricted"
-        scope.modalBody = message
-        options.$uibModal.open
-          scope: scope
-          template: require('../../html/views/templates/modals/confirm.jade')()
-
       # hijack ng-click to give us a modal and auth message
-      attrs.ngClick = "authModal('#{options.message}'); $event.stopPropagation();"
+      attrs.ngClick = "authModal(); $event.stopPropagation();"
       element.attr('ng-click', attrs.ngClick)
 
     # if we don't want modal, disable the button
@@ -112,6 +115,7 @@ getOptions = (flags = "") ->
   #TODO: allow message for message override
   disable: /disable/.test flags
   noModal: /^(?=.*disable)(?=.*noModal).*$/.test flags # noModal used with `disable` option (any order)
+  modalNow: /modalNow/.test flags
   hide: /hide/.test flags
   omit: !flags || /omit/.test(flags)# default, expect something on element like `ng-if="false"`
 
@@ -159,6 +163,19 @@ app.directive 'rmapsRequireSubscriber', ($rootScope, $log, $compile, $uibModal, 
     name: 'rmapsRequireSubscriber'
     message: "You must have a paid subscription to do that."
     runPerms: () -> rmapsPrincipalService.isSubscriber()
+    $compile
+    $uibModal
+  })
+
+
+app.directive 'rmapsRequireSubscriberOrViewer', ($rootScope, $log, $compile, $uibModal, rmapsPrincipalService) ->
+  restrict: 'A'
+  terminal: true
+  priority: 1000
+  link: link({
+    name: 'rmapsRequireSubscriberOrViewer'
+    message: "You must have a paid subscription or be a client to a subscriber."
+    runPerms: () -> rmapsPrincipalService.isSubscriber() || rmapsPrincipalService.isProjectViewer()
     $compile
     $uibModal
   })
