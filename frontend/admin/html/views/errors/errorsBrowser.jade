@@ -1,11 +1,11 @@
-.browser
+.browser-errors
   h3 Last {{opts.limit}} front-end errors
   .container.opts
     .row
       .col-md-2(ng-if="!opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Hide dupes
+        a(ng-click="opts.distinct = !opts.distinct") Hide dupe messages
       .col-md-2(ng-if="opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Show dupes
+        a(ng-click="opts.distinct = !opts.distinct") Show dupe messages
       .col-md-2(ng-if="!opts.unhandled")
         a(ng-click="opts.unhandled = !opts.unhandled") Hide handled
       .col-md-2(ng-if="opts.unhandled")
@@ -27,7 +27,7 @@
 
     .row.error(ng-class="{'parent':!error.parent}" ng-repeat="error in errors" ng-show="!error.parent || error.parent.expanded" ng-click="expand(error)")
       .col-md-5(ng-if="!error.parent") {{error.message}}
-      .col-md-4(ng-if="!error.parent") {{error.url}}
+      .col-md-4.break-all(ng-if="!error.parent") {{error.url}}
       .col-md-1(ng-if="!error.parent") {{getTime(error)}}
       .col-md-1(ng-if="!error.parent").text-center
         span(ng-if="error.betterStack === undefined") Click

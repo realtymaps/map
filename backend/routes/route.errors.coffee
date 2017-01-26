@@ -14,7 +14,7 @@ sourcemapSvc = require '../services/service.sourcemap'
 
 module.exports =
 
-  byId:
+  browserById:
     method: 'post'
     handleQuery: true
     middleware: [
@@ -127,3 +127,49 @@ module.exports =
         true
     .catch (err) ->
       throw new errors.PartiallyHandledError(err, "Problem logging browser error: #{JSON.stringify(req.body,null,2)}")
+
+  requestById:
+    method: 'post'
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
+    handle: (req, res) -> Promise.try ->
+      if req.body.handled? && req.params.reference
+        tables.history.requestError()
+        .update('handled', req.body.handled)
+        .where('reference', req.params.reference)
+        .then -> true
+      else
+        false
+
+  request:
+    handleQuery: true
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+    ]
+    handle: (req, res) -> Promise.try ->
+      q = tables.history.requestError()
+      if req.query.distinct == 'true'
+        q.select(dbs.get('main').raw('DISTINCT ON (url,method) *'))
+        q.orderBy('url')
+        q.orderBy('method')
+      else
+        q.select()
+      if req.query.reference
+        q.where('reference', req.query.reference)
+      if req.query.unhandled == 'true'
+        q.where('handled', false)
+      if req.query.unexpected == 'true'
+        q.where('unexpected', true)
+      if req.query['404'] == 'false'
+        q.whereNot('response_status', 404)
+      if req.query.limit
+        q.limit(req.query.limit)
+
+      q.orderBy('rm_inserted_time', 'desc')
+
+    .catch (err) ->
+      throw new errors.PartiallyHandledError(err, "Problem loading request errors")

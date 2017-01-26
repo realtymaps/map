@@ -9,7 +9,7 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
   $log = $log.spawn 'rmapsErrorsBrowserCtrl'
 
   $scope.opts =
-    limit: 100
+    limit: 50
     distinct: true
     unhandled: true
     sourcemap: 's3'
@@ -47,4 +47,35 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
     .then () ->
       error.handled = handled
 
-app.controller 'rmapsErrorsAPICtrl', () ->
+app.controller 'rmapsErrorsAPICtrl', ($scope, $http, $log, $location) ->
+  $log = $log.spawn 'rmapsErrormapsErrorsAPICtrlrsBrowserCtrl'
+
+  $scope.opts =
+    limit: 50
+    distinct: true
+    unhandled: true
+    unexpected: true
+    '404': false
+
+  loadErrors = ->
+    $http.get(backendRoutes.errors.request, params: $scope.opts)
+    .then ({data}) ->
+      $scope.errors = []
+      for error in data
+        $scope.errors.push(error, {parent: error})
+
+  $scope.$watchCollection 'opts', ->
+    loadErrors()
+
+  $scope.expand = (error) ->
+    if !error.parent
+      error.expanded = !error.expanded
+
+  $scope.getTime = (error) ->
+    moment(error.rm_inserted_time).fromNow()
+
+  $scope.handle = (error) ->
+    handled = !error.handled
+    $http.post(backendRoutes.errors.request + "/#{error.reference}", {handled})
+    .then () ->
+      error.handled = handled
