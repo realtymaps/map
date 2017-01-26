@@ -1,0 +1,75 @@
+.request-errors
+  h3
+    span Last {{opts.limit}} API errors
+  .container.opts
+    .row
+      .col-md-2(ng-if="!opts.distinct")
+        a(ng-click="opts.distinct = !opts.distinct") Hide dupe URLs
+      .col-md-2(ng-if="opts.distinct")
+        a(ng-click="opts.distinct = !opts.distinct") Show dupe URLs
+      .col-md-2(ng-if="!opts.unhandled")
+        a(ng-click="opts.unhandled = !opts.unhandled") Hide handled
+      .col-md-2(ng-if="opts.unhandled")
+        a(ng-click="opts.unhandled = !opts.unhandled") Show handled
+      .col-md-2(ng-if="opts['404']")
+        a(ng-click="opts['404'] = !opts['404']") Hide 404s
+      .col-md-2(ng-if="!opts['404']")
+        a(ng-click="opts['404'] = !opts['404']") Show 404s
+
+  .container.table-striped-pair
+    .row.error.heading
+      .col-md-3 Type
+      .col-md-1 Method
+      .col-md-5 Url
+      .col-md-1 Status
+      .col-md-1 When
+      .col-md-1.text-center Handled
+
+    .row.error(ng-class="{'parent':!error.parent}" ng-repeat="error in errors" ng-show="!error.parent || error.parent.expanded" ng-click="expand(error)")
+      .col-md-3(ng-if="!error.parent") {{error.type}}
+      .col-md-1(ng-if="!error.parent") {{error.method}}
+      .col-md-5.break-all(ng-if="!error.parent") {{error.url}}
+      .col-md-1(ng-if="!error.parent") {{error.response_status}}
+      .col-md-1(ng-if="!error.parent") {{getTime(error)}}
+      .col-md-1.text-center(ng-if="!error.parent")
+        .btn.btn-sm(ng-class="{'btn-warning':!error.handled, 'btn-success':error.handled}" ng-click="handle(error); $event.stopPropagation()")
+          .fa.fa-heart(ng-show="error.handled")
+          .fa.fa-close(ng-show="!error.handled")
+
+      .col-md-12.details(ng-if="error.parent")
+        .row.heading
+          .col-md-3
+            .badge Reference
+          .col-md-1
+            .badge Method
+          .col-md-8
+            .badge URL
+        .row
+          .col-md-3 {{error.parent.reference}}
+          .col-md-1 {{error.parent.method}}
+          .col-md-8 {{error.parent.url}}
+        .row.heading
+          .col-md-3
+            .badge User
+          .col-md-3
+            .badge Browser
+          .col-md-3
+            .badge OS
+          .col-md-3
+            .badge Device
+        .row
+          .col-md-3 {{error.parent.email}}
+          .col-md-3 {{error.parent.ua_browser.name}} {{error.parent.ua_browser.major}}
+          .col-md-3 {{error.parent.ua_os.name}} {{error.parent.ua_os.version}}
+          .col-md-3 {{error.parent.ua_device.vendor}} {{error.parent.ua_device.model}}
+        .row.heading
+          .col-md-11
+            .badge Details
+          .col-md-1
+            .badge github
+        .row(ng-repeat="frame in (error.parent.details.split('\\n')) track by $index")
+          .col-md-11.stack
+            pre {{frame}}
+          .col-md-1.stack
+            pre
+              a(target="_blank" ng-if="frame.indexOf('/backend')!=-1" href="https://github.com/realtymaps/map/tree/{{error.parent.git_revision || 'master'}}/{{frame.slice(frame.indexOf('backend')).split(':')[0]}}\#L{{frame.split(':')[1]}}") source

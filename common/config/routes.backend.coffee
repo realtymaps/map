@@ -306,7 +306,9 @@ module.exports =
     apiBase: apiBaseErrors
     browser: "#{apiBaseErrors}/browser"
     capture: "#{apiBaseErrors}/browser"
-    byId: "#{apiBaseErrors}/browser/:reference"
+    browserById: "#{apiBaseErrors}/browser/:reference"
+    request: "#{apiBaseErrors}/request"
+    requestById: "#{apiBaseErrors}/request/:reference"
   notificationsConfigSession:
     apiBase: apiBaseNotificationsConfigSession
     root: apiBaseNotificationsConfigSession
