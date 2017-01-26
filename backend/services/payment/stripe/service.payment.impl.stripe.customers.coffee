@@ -124,11 +124,13 @@ StripeCustomers = (stripe) ->
           handleCreationError error, authUser
           throw new CustomerCreateFailedError(error) #rethrow so any db stuff is also reverted
 
-  get = (authUser) ->
-    logger.debug "stripe.customers.retrieve #{authUser.stripe_customer_id}"
+  get = (authUser) -> Promise.try ->
+    l = logger.spawn('get')
+    l.debug -> authUser.stripe_customer_id
     if !authUser.stripe_customer_id?
       throw new Error("`stripe_customer_id` is null for user #{authUser.id}.  Ensure session is updated, frontend refreshed, and stripe account made.")
-    stripe.customers.retrieve authUser.stripe_customer_id
+    stripe.customers.retrieve(authUser.stripe_customer_id)
+
 
   #used to do paging in admin or some frontend app
   getAll = ({limit = 50} = {}) ->
@@ -197,10 +199,11 @@ StripeCustomers = (stripe) ->
     return retStream
 
 
-  getSources = (authUser) ->
+  getSources = (authUser) -> Promise.try ->
     get(authUser)
     .then (customer) ->
-      Promise.map customer?.sources?.data, (d) ->
+      sources = customer?.sources?.data || []
+      Promise.map sources, (d) ->
         if d.id == customer?.default_source
           d.isDefault = true
         d
