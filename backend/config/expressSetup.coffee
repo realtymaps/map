@@ -18,8 +18,6 @@ ExpressResponse = require '../utils/util.expressResponse'
 {isUnhandled, PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 shutdown = require './shutdown'
-escape = require('escape-html')
-
 # express midlewares
 helmet = require 'helmet'
 multipart = require 'connect-multiparty'
@@ -209,6 +207,7 @@ app.use (data, req, res, next) ->
       # right now, it is set up so we could set expected: true on either the ExpressResponse or on an error (or even
       # all of a given type of error, via the error's constructor), but nothing is actually ever setting that field
       unexpected: !data.expected && !data.logError?.expected
+      git_revision: process.env.HEROKU_SLUG_COMMIT
 
     tables.history.requestError()
     .insert(logEntity)
