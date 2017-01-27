@@ -21,9 +21,6 @@ node_modules/rework-plugin-url
 node_modules/source-map
 node_modules/ui-*
 
-#gulp since it is only used to build frontend
-node_modules/gulp*
-
 # misc build and script related deps
 node_modules/less
 node_modules/istanbul
