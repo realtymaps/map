@@ -37,18 +37,28 @@ module.exports =
       auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
     ]
     handle: (req, res) -> Promise.try ->
-      q = tables.history.browserError()
+      filter = (q) ->
+        if req.query.reference
+          q.where('reference', req.query.reference)
+        if req.query.unhandled == 'true'
+          q.where('handled', false)
+        q
+
       if req.query.distinct == 'true'
-        q.select(dbs.get('main').raw('DISTINCT ON (message) *'))
-        q.orderBy('message')
+        q = tables.history.browserError().from ->
+          @select(dbs.get('main').raw('DISTINCT ON (message) *'))
+          @from(tables.history.browserError().tableName)
+          @orderBy('message')
+          filter(@).as('sub')
       else
-        q.select()
-      if req.query.reference
-        q.where('reference', req.query.reference)
-      if req.query.unhandled == 'true'
-        q.where('handled', false)
+        q = tables.history.browserError().select()
+        filter(q)
+
       if req.query.limit
         q.limit(req.query.limit)
+
+      if req.query.offset
+        q.offset(req.query.offset)
 
       q.orderBy('rm_inserted_time', 'desc')
 
@@ -151,23 +161,33 @@ module.exports =
       auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
     ]
     handle: (req, res) -> Promise.try ->
-      q = tables.history.requestError()
+      filter = (q) ->
+        if req.query.reference
+          q.where('reference', req.query.reference)
+        if req.query.unhandled == 'true'
+          q.where('handled', false)
+        if req.query.unexpected == 'true'
+          q.where('unexpected', true)
+        if req.query['404'] == 'false'
+          q.whereNot('response_status', 404)
+        q
+
       if req.query.distinct == 'true'
-        q.select(dbs.get('main').raw('DISTINCT ON (url,method) *'))
-        q.orderBy('url')
-        q.orderBy('method')
+        q = tables.history.requestError().from ->
+          @select(dbs.get('main').raw('DISTINCT ON (url,method) *'))
+          @from(tables.history.requestError().tableName)
+          @orderBy('url')
+          @orderBy('method')
+          filter(@).as('sub')
       else
-        q.select()
-      if req.query.reference
-        q.where('reference', req.query.reference)
-      if req.query.unhandled == 'true'
-        q.where('handled', false)
-      if req.query.unexpected == 'true'
-        q.where('unexpected', true)
-      if req.query['404'] == 'false'
-        q.whereNot('response_status', 404)
+        q = tables.history.requestError().select()
+        filter(q)
+
       if req.query.limit
         q.limit(req.query.limit)
+
+      if req.query.offset
+        q.offset(req.query.offset)
 
       q.orderBy('rm_inserted_time', 'desc')
 

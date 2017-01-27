@@ -1,20 +1,24 @@
 .request-errors
   h3
-    span Last {{opts.limit}} API errors
+    span Last {{opts.offset}} - {{opts.offset + opts.limit}} {{opts.distinct ? 'unique' : ''}} API errors
   .container.opts
     .row
       .col-md-2(ng-if="!opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Hide dupe URLs
+        a(ng-click="opts.distinct = !opts.distinct; opts.offset = 0") Hide dupe URLs
       .col-md-2(ng-if="opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Show dupe URLs
+        a(ng-click="opts.distinct = !opts.distinct; opts.offset = 0") Show dupe URLs
       .col-md-2(ng-if="!opts.unhandled")
-        a(ng-click="opts.unhandled = !opts.unhandled") Hide handled
+        a(ng-click="opts.unhandled = !opts.unhandled; opts.offset = 0") Hide handled
       .col-md-2(ng-if="opts.unhandled")
-        a(ng-click="opts.unhandled = !opts.unhandled") Show handled
+        a(ng-click="opts.unhandled = !opts.unhandled; opts.offset = 0") Show handled
       .col-md-2(ng-if="opts['404']")
-        a(ng-click="opts['404'] = !opts['404']") Hide 404s
+        a(ng-click="opts['404'] = !opts['404']; opts.offset = 0") Hide 404s
       .col-md-2(ng-if="!opts['404']")
-        a(ng-click="opts['404'] = !opts['404']") Show 404s
+        a(ng-click="opts['404'] = !opts['404']; opts.offset = 0") Show 404s
+      .col-md-2.pull-right.text-right(ng-disabled="errors.length < opts.limit")
+        a(ng-click="opts.offset = opts.offset + opts.limit") Next {{opts.limit}}
+      .col-md-2.pull-right.text-right(ng-disabled="!opts.offset")
+        a(ng-click="opts.offset = opts.offset - opts.limit") Prev {{opts.limit}}
 
   .container.table-striped-pair
     .row.error.heading
