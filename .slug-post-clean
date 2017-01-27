@@ -35,3 +35,6 @@ node_modules/watchify
 
 # gulp deps
 node_modules/gulp-*
+
+#tmp - template scripts etc
+tmp
