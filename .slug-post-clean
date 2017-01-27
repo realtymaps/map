@@ -11,6 +11,19 @@ frontend
 # spec-related files
 spec
 
+#client side libs
+node_modules/angular*
+node_modules/d3
+node_modules/flickity*
+node_modules/leaflet*
+node_modules/rangy
+node_modules/rework-plugin-url
+node_modules/source-map
+node_modules/ui-*
+
+#gulp since it is only used to build frontend
+node_modules/gulp*
+
 # misc build and script related deps
 node_modules/less
 node_modules/istanbul
@@ -21,6 +34,7 @@ node_modules/globby
 node_modules/jasmine-core
 node_modules/rewire
 node_modules/stylus
+node_modules/less
 node_modules/vinyl-*
 
 # karma deps
