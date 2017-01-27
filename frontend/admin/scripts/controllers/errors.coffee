@@ -13,6 +13,7 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
     distinct: true
     unhandled: true
     sourcemap: 's3'
+    offset: 0
 
   loadErrors = ->
     $http.get(backendRoutes.errors.browser, params: _.omit($scope.opts, 'sourcemap'))
@@ -30,6 +31,9 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
   $scope.expand = (error) ->
     if !error.parent
       error.expanded = !error.expanded
+      if error.url.indexOf('realtymaps.com/admin') != -1
+        error.betterStack = false
+        return
       if !error.betterStack?
         $http.get(backendRoutes.errors.browser, params: {reference: error.reference, sourcemap: $scope.opts.sourcemap})
         .then ({data}) ->
@@ -56,6 +60,7 @@ app.controller 'rmapsErrorsAPICtrl', ($scope, $http, $log, $location) ->
     unhandled: true
     unexpected: true
     '404': false
+    offset: 0
 
   loadErrors = ->
     $http.get(backendRoutes.errors.request, params: $scope.opts)

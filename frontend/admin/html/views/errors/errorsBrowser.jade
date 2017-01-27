@@ -1,21 +1,25 @@
 .browser-errors
-  h3 Last {{opts.limit}} front-end errors
+  h3 Last {{opts.offset}} - {{opts.offset + opts.limit}} {{opts.distinct ? 'unique' : ''}} front-end errors
   .container.opts
     .row
       .col-md-2(ng-if="!opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Hide dupe messages
+        a(ng-click="opts.distinct = !opts.distinct; opts.offset = 0") Hide dupe messages
       .col-md-2(ng-if="opts.distinct")
-        a(ng-click="opts.distinct = !opts.distinct") Show dupe messages
+        a(ng-click="opts.distinct = !opts.distinct; opts.offset = 0") Show dupe messages
       .col-md-2(ng-if="!opts.unhandled")
-        a(ng-click="opts.unhandled = !opts.unhandled") Hide handled
+        a(ng-click="opts.unhandled = !opts.unhandled; opts.offset = 0") Hide handled
       .col-md-2(ng-if="opts.unhandled")
-        a(ng-click="opts.unhandled = !opts.unhandled") Show handled
+        a(ng-click="opts.unhandled = !opts.unhandled; opts.offset = 0") Show handled
       .col-md-2(ng-if="opts.sourcemap=='local'")
         a(ng-click="opts.sourcemap = 's3'") Sourcemaps: local
       .col-md-2(ng-if="opts.sourcemap=='s3'")
         a(ng-click="opts.sourcemap = 'network'") Sourcemaps: S3
       .col-md-2(ng-if="opts.sourcemap=='network'")
         a(ng-click="opts.sourcemap = 'local'") Sourcemaps: Network (url)
+      .col-md-2.pull-right.text-right(ng-disabled="errors.length < opts.limit")
+        a(ng-click="opts.offset = opts.offset + opts.limit") Next {{opts.limit}}
+      .col-md-2.pull-right.text-right(ng-disabled="!opts.offset")
+        a(ng-click="opts.offset = opts.offset - opts.limit") Prev {{opts.limit}}
 
   .container.table-striped-pair
     .row.error.heading
