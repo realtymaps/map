@@ -44,3 +44,4 @@ app.controller 'rmapsCreditCardModalCtrl',
         $scope.ccForm.$setPristine()
         $scope.ccForm.$setValidity()
         $scope.ccForm.$setUntouched()
+        throw err

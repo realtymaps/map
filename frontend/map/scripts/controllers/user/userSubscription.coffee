@@ -1,6 +1,6 @@
 _ = require 'lodash'
 app = require '../../app.coffee'
-creditCardTemplate = require('../../../html/views/templates/modals/creditCard.jade')()
+
 module.exports = app
 
 app.controller 'rmapsUserSubscriptionCtrl', (
@@ -16,13 +16,13 @@ app.controller 'rmapsUserSubscriptionCtrl', (
   rmapsUserFeedbackCategoryService
   rmapsUserFeedbackSubcategoryService
   rmapsCreditCardService
+  rmapsCreditCardFactory
 ) ->
   $log = $log.spawn("map:userSubscription")
 
-  $scope.processing = 0
-  $scope.data =
-    fips: null
-    payment: null
+  creditCardFact = rmapsCreditCardFactory($scope)
+
+  $scope.data.fips = null
 
   # TODO: possibly move to run-root-scopt-init , one issue making this tougehr is $scope.subscription
   #
@@ -96,6 +96,7 @@ app.controller 'rmapsUserSubscriptionCtrl', (
 
 
   $scope.reactivate = ({needCard} = {}) ->
+    $scope.modalDisable = false
     # flag that lets us know if expired or not (expired means we need CC)
     needCard ?= $scope.isExpired()
 
@@ -117,14 +118,8 @@ app.controller 'rmapsUserSubscriptionCtrl', (
 
       # credit-card modal context
       if needCard
-
         # all credit-card updating is handled within this modal/template, so no need to pass cc source around.
         ccPromise = $scope.replaceCC()
-        .then (result) ->
-          if !result then return null
-          return result
-        .catch () ->
-          return "error"
       else
         ccPromise = $q.when(null)
 
@@ -165,74 +160,18 @@ app.controller 'rmapsUserSubscriptionCtrl', (
       .finally () ->
         $scope.processing--
       .then ->
-        getAllPayments()
+        creditCardFact.getAllPayments()
 
-  _createCardModal = ({title, modalAction, modalActionMsg} = {}) ->
-    $uibModal.open
-      animation: true
-      template: creditCardTemplate
-      controller: 'rmapsCreditCardModalCtrl'
-      resolve: {
-        # everything has to be wrapped in callbacks otherwise the injector
-        # tries to use strings to find and inject a provider
-        modalTitle: () -> title
-        showCancelButton: () -> false
-        modalAction: () -> modalAction
-        modalActionMsg : () -> modalActionMsg
-      }
 
-  $scope.replaceCC = () ->
-    _createCardModal({
-      title: "Replace Credit Card"
-      modalActionMsg: "New default credit card successfully set."
-      modalAction: rmapsCreditCardService.replace
-    })
-    .result.then (result) ->
-      if !result then return null
 
-      return $scope.data.payment = result
-
-  $scope.addCC = () ->
-    _createCardModal({
-      title:"Add Credit Card"
-      modalActionMsg: "New credit card added."
-      modalAction: rmapsCreditCardService.add
-    })
-    .result.then (result) ->
-      if !result then return null
-
-      return $scope.data.payments.push(result)
-
-  $scope.defaultCC = (source) ->
-    rmapsPaymentMethodService.setDefault(source.id, cache:false)
-    .then () ->
-      getAllPayments()
-
-  $scope.removeCC = (source) ->
-    rmapsPaymentMethodService.remove(source.id)
-    .then () ->
-      getAllPayments()
-
-  process = (promise) ->
-    $scope.processing++
-    promise.finally () ->
-      $scope.processing--
-
-  process rmapsSubscriptionService.getSubscription()
+  creditCardFact.process rmapsSubscriptionService.getSubscription()
   .then (subscription) ->
     $scope.subscription = subscription
 
-  process rmapsFipsCodesService.getForUser()
+  creditCardFact.process rmapsFipsCodesService.getForUser()
   .then (fips) ->
     $scope.data.fips = fips
 
-  process rmapsPaymentMethodService.getDefault(cache:false)
+  creditCardFact.process rmapsPaymentMethodService.getDefault(cache:false)
   .then (source) ->
     $scope.data.payment = source
-
-  getAllPayments = () ->
-    process rmapsPaymentMethodService.getAll(cache:false)
-    .then (sources) ->
-      $scope.data.payments = sources
-
-  getAllPayments()

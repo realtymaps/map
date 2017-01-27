@@ -9,30 +9,39 @@ app.controller 'rmapsReviewCtrl', (
   $log,
   $state,
   $uibModal,
+  $q,
   rmapsMailCampaignService,
   rmapsMailTemplateTypeService,
   rmapsMainOptions,
   rmapsMapTogglesFactory
+  rmapsCreditCardFactory
 ) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
+  creditCardFact = rmapsCreditCardFactory($scope)
+
   $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   $scope.sendMail = () ->
-    modalInstance = $uibModal.open
-      template: require('../../../html/views/templates/modal-confirmMailSend.tpl.jade')()
-      controller: 'rmapsModalSendMailCtrl'
-      keyboard: false
-      backdrop: 'static'
-      windowClass: 'confirm-mail-modal'
-      resolve:
-        wizard: -> $scope.wizard
+    cardsPromise = $q.resolve()
+    if !creditCardFact.hasCards()
+      cardsPromise = creditCardFact.addCC()
 
-    modalInstance.result.then (result) ->
-      $log.debug "modal result: #{result}"
-      if result
-        $state.go('review', { id: $scope.wizard.mail.campaign.id }, { reload: true })
+    cardsPromise.then (result) ->
+      $uibModal.open(
+        template: require('../../../html/views/templates/modal-confirmMailSend.tpl.jade')()
+        controller: 'rmapsModalSendMailCtrl'
+        keyboard: false
+        backdrop: 'static'
+        windowClass: 'confirm-mail-modal'
+        resolve:
+          wizard: -> $scope.wizard
+      )
+      .result.then (result) ->
+        $log.debug "modal result: #{result}"
+        if result
+          $state.go('review', { id: $scope.wizard.mail.campaign.id }, { reload: true })
 
   $scope.showAddresses = (addresses) ->
     $scope.addressList = addresses
