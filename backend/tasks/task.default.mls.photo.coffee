@@ -54,7 +54,15 @@ storePrep = (subtask) ->
         stepNumOffset++
         _getRetriesIteratively(lastId)
 
-  _getRetriesIteratively()
+
+  now = Date.now()
+  jobQueue.queueSubsequentSubtask({
+    subtask
+    laterSubtaskName: "setLastUpdateTimestamp"
+    manualData: {startTime: now}
+  })
+  .then () ->
+    _getRetriesIteratively()
   .then () ->
     updatePromise = dataLoadHelpers.getLastUpdateTimestamp(subtask)
     lastModPromise = mlsHelpers.getMlsField(mlsId, 'photo_last_mod_time', 'listing').catch (err) ->
@@ -138,7 +146,7 @@ clearRetries = (subtask) ->
   .delete()
 
 setLastUpdateTimestamp = (subtask) ->
-  dataLoadHelpers.setLastUpdateTimestamp(subtask, Date.now())
+  dataLoadHelpers.setLastUpdateTimestamp(subtask, subtask.data.startTime)
 
 subtasks = {
   storePrep

@@ -1,19 +1,25 @@
 div(ng-hide="processing > 0")
   .collapse-header
-    h2 Subscription
+    h2.inline Subscription
     .row.help-block(ng-show="subscription.error")
       p {{ subscription.error }}
-  .row.collapse-header.subscription-details(ng-show="!subscription")
-    h3 Contact RealtyMaps to enroll, today!
+
+    h2.inline.pull-right
+      .btn.btn-default.margin-left-5(ng-click="unsubscribe()" ng-show="::showSubscription()") Unsubscribe
+      .btn.btn-default.margin-left-5(ng-click="upgrade()"
+        ng-show="!subscription.canceled_at && subscription.plan.id == subscriptionConfig.PLAN.STANDARD") Upgrade
+      .btn.btn-default.margin-left-5(ng-click="reactivate()"
+        ng-show="isDeactivated() || isExpired() || isInGracePeriod()") Reactivate
+      .btn.btn-default.margin-left-5(ng-click="reactivate({needCard:true})"
+        ng-show="!subscription") Add
 
   .row.collapse-header.subscription-details(ng-show="!showSubscription() && !subscription.error")
     .row
-      .col-md-6(ng-if="isDeactivated()")
+      .col-md-6
         label Status
-        p Deactivated
-      .col-md-6(ng-if="isExpired()")
-        label Status
-        p Expired
+        p(ng-if="!subscription") Oh No! Please add a subscription in order to interact with the map and other tools!
+        p(ng-if="isDeactivated()") Deactivated
+        p(ng-if="isExpired()") Expired
 
   .row.collapse-header.subscription-details(ng-show="showSubscription()")
     .row(ng-hide="subscription.error")
@@ -45,21 +51,12 @@ div(ng-hide="processing > 0")
         label Canceled On
         p {{ subscription.canceled_at * 1000 | date:'MM/dd/yyyy' }}
 
-  .row.subscription-buttons(ng-hide="subscription.error")
-    .col-md-6(ng-show="!subscription.canceled_at && showSubscription()")
-      .btn.btn-default(ng-click="unsubscribe()") Unsubscribe
-
-    .col-md-6(ng-show="!subscription.canceled_at && subscription.plan.id == subscriptionConfig.PLAN.STANDARD")
-      .btn.btn-default(ng-click="upgrade()") Upgrade
-
-    .col-md-6(ng-show="isDeactivated() || isExpired() || isInGracePeriod()")
-      .btn.btn-default(ng-click="reactivate()") Reactivate
 
   .collapse-header
     h2.inline Payment Methods
     // button is in h2 to easily keep same margins and padding of h2
     h2.inline.pull-right
-      button.btn.btn-default(ng-click="addCC()") Add Payment
+      button.btn.btn-default(ng-click="addCC()") Add
   .row.collapse-header.cc-details
     .row.credit-card(ng-repeat="payment in data.payments" ng-class="payment.isDefault ? 'default': ''")
       .row.inner-card(ng-attr-title="payment.isDefault ? 'Default Card': payment.last4")

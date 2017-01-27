@@ -26,7 +26,8 @@ module.exports = (config) ->
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
       transform: [
-        'coffeeify'
+
+        ['coffeeify',{sourceMap: false}]
         'jadeify'
         'stylusify'
         ["browserify-css", require('./gulp/util/browserify/browserify.css')]

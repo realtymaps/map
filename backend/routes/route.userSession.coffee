@@ -93,11 +93,11 @@ profiles = (req, res, next) ->
     GET: () ->
       # if user is subscriber, use service endpoint that includes sandbox creation and display
       if userUtils.isSubscriber(req)
-        promise = profileService.getProfiles req.user.id
+        promise = profileService.getProfiles({auth_user_id: req.user.id})
 
       # user is a client, and unallowed to deal with sandboxes
       else
-        promise = profileService.getClientProfiles req.user.id
+        promise = profileService.getClientProfiles(req.user.id)
 
       promise.then (result) ->
         res.json result

@@ -132,6 +132,7 @@ base =
     USE_WEBHOOKS: toBool(process.env.NOTIFICATIONS_USE_WEBHOOKS, defaultValue: true)
     DELIVERY_THRESH_MIN: 12
     MAX_ATTEMPTS: 10
+    ALLOW_PUSH: toBool(process.env.NOTIFICATIONS_ALLOW_PUSH, defaultValue: true)
   ALLOW_LIVE_APIS: toBool(process.env.ALLOW_LIVE_APIS, defaultValue: false)
   RMAPS_MAP_INSTANCE_NAME: process.env.RMAPS_MAP_INSTANCE_NAME
   SUBSCR: common.subscription

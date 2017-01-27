@@ -1,4 +1,4 @@
-section.map(ng-cloak ng-init="init('page-map')" ng-if="::principal.getCurrentProfile()")
+section.map(ng-cloak ng-init="init('page-map')" ng-if="::principal.getCurrentProfile()" rmaps-require-subscriber-or-viewer="modalNow,omit")
   include ../includes/mixins/_leafletMixin.jade
   include ../includes/map/_sketchDraw.jade
   include ../includes/map/_areaDraw

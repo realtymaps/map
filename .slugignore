@@ -7,4 +7,5 @@
 
 migrations/ci_main_data
 migrations/ci_normalized_data
+migrations/old
 frontend/map/original_assets
