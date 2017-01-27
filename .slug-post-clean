@@ -11,6 +11,22 @@ frontend
 # spec-related files
 spec
 
+#client side libs
+node_modules/angular*
+node_modules/d3
+node_modules/flickity*
+node_modules/leaflet*
+node_modules/jsonformatter
+node_modules/ng-img-crop-full-extended
+node_modules/rangy
+node_modules/rework-plugin-url
+node_modules/source-map
+node_modules/ui-*
+node_modules/restangular
+node_modules/rmaps-angular-utils
+node_modules/textangular
+node_modules/ng-infinite-scroll
+
 # misc build and script related deps
 node_modules/less
 node_modules/istanbul
@@ -21,6 +37,7 @@ node_modules/globby
 node_modules/jasmine-core
 node_modules/rewire
 node_modules/stylus
+node_modules/less
 node_modules/vinyl-*
 
 # karma deps
@@ -35,3 +52,6 @@ node_modules/watchify
 
 # gulp deps
 node_modules/gulp-*
+
+#tmp - template scripts etc
+tmp
