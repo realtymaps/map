@@ -170,7 +170,7 @@ requireLogin = (options = {}) ->
     logger.debug "MIDDLEWARE: requireLogin"
     if !req.user
       if options.redirectOnFail
-        throw new ExpressResponse({doLogin: true}, {quiet: true, status: httpStatus.UNAUTHORIZED})
+        throw new ExpressResponse({doLogin: true}, {quiet: true})
       else
         throw new NeedsLoginError("Please login to access #{req.path}.")
   result.inspect = () -> "requireLogin(#{analyzeValue.simpleInspect(options)})"
@@ -359,7 +359,7 @@ requirePermissions = (permissions, options = {}) ->
       if options.logoutOnFail
         logout(req)
         .finally ->
-          throw new ExpressResponse({identity: null}, {quiet: true, status: httpStatus.UNAUTHORIZED})
+          throw new ExpressResponse({identity: null}, {quiet: true})
       else
         throw new PermissionsError("You do not have permission to access #{req.path}.")
   result.inspect = () -> "requirePermissions(#{analyzeValue.simpleInspect(options)})"
