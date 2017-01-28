@@ -10,7 +10,8 @@ tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 {NeedsLoginError, PermissionsError} = require './errors/util.errors.userSession'
 profileErrors = require './errors/util.error.profile'
-
+ExpressResponse = require './util.expressResponse'
+httpStatus = require '../../common/utils/httpStatus'
 
 class SessionSecurityError extends Error
   constructor: (@invalidate='nothing', @message, loglevel='error') ->
@@ -41,19 +42,14 @@ getSessionUser = (req) -> Promise.try () ->
 # JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
 # I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
 # (nem) moved here to avoid circular dependency on userSession route
-logout = (req, res, doRespond = true) -> Promise.try () ->
-  if req.user
-    logger.debug () -> "attempting to log user out: #{req.user.email} (#{req.sessionID})"
-    delete req.session.current_profile_id
-    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
-    .then () ->
-      req.session.destroyAsync()
-  else
-    promise = Promise.resolve()
-  promise.then () ->
-    if !doRespond
-      return
-    return res?.json(identity: null)
+logout = (req) ->
+  Promise.try () ->
+    if req.user
+      logger.debug () -> "attempting to log user out: #{req.user.email} (#{req.sessionID})"
+      delete req.session.current_profile_id
+      sessionSecurityService.deleteSecurities(session_id: req.sessionID)
+      .then () ->
+        req.session.destroyAsync()
   .catch (err) ->
     logger.error "error logging out user: #{err}"
     throw err
@@ -168,12 +164,13 @@ checkSessionSecurity = (req, res) ->
 #     redirectOnFail: whether to redirect to the login page, default false
 requireLogin = (options = {}) ->
   defaultOptions =
-    redirectOnFail: false
+    redirectOnFail: true
   options = _.extend({}, defaultOptions, options)
-  result = (req, res) -> Promise.try () ->
+  result = (req) -> Promise.try () ->
+    logger.debug "MIDDLEWARE: requireLogin"
     if !req.user
       if options.redirectOnFail
-        return res.json(doLogin: true)
+        throw new ExpressResponse({doLogin: true}, {quiet: true, status: httpStatus.UNAUTHORIZED})
       else
         throw new NeedsLoginError("Please login to access #{req.path}.")
   result.inspect = () -> "requireLogin(#{analyzeValue.simpleInspect(options)})"
@@ -356,10 +353,13 @@ requirePermissions = (permissions, options = {}) ->
   else if typeof(permissions) != 'string'
     throw new Error('Bad permissions object')
   result = (req, res) -> Promise.try () ->
+    logger.debug "MIDDLEWARE: requirePermissions"
     if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
       logger.warn "access denied to user #{req.user.email} for URI: #{req.originalUrl}"
       if options.logoutOnFail
-        return logout(req, res)
+        logout(req)
+        .finally ->
+          throw new ExpressResponse({identity: null}, {quiet: true, status: httpStatus.UNAUTHORIZED})
       else
         throw new PermissionsError("You do not have permission to access #{req.path}.")
   result.inspect = () -> "requirePermissions(#{analyzeValue.simpleInspect(options)})"
