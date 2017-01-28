@@ -5,6 +5,7 @@ config = require "#{basePath}/config/config"
 require("chai").should()
 {expectReject, expectResolve} = require '../../specUtils/promiseUtils'
 {NeedsLoginError, PermissionsError} = require "#{basePath}/utils/errors/util.errors.userSession"
+ExpressResponse = require "#{basePath}/utils/util.expressResponse"
 
 rewire = require 'rewire'
 auth = rewire "#{basePath}/utils/util.auth"
@@ -37,18 +38,10 @@ describe 'util.auth', ->
       .then () ->
         resJson.should.be.falsy
 
-    it 'should call res.json() if req.user is not set and redirectOnFail is set truthy', () ->
-      requireLogin = auth.requireLogin(redirectOnFail: true)
-      req = {}
-      expectResolve(requireLogin(req, res))
-      .then () ->
-        resJson.should.be.truthy
-
     it 'should reject with a NeedsLoginError object if req.user is not set and redirectOnFail is not set', () ->
       requireLogin = auth.requireLogin()
       req = {}
-      expectReject(requireLogin(req, res), NeedsLoginError)
-
+      expectReject(requireLogin(req, res))
 
     it 'should reject with a NeedsLoginError if req.user is not set and redirectOnFail is set falsy', () ->
       requireLogin = auth.requireLogin(redirectOnFail: false)
@@ -99,12 +92,12 @@ describe 'util.auth', ->
         resJson.should.be.false
 
     it 'should reject with a PermissionsError if req.session.permissions does not contain any key from permissions.any', () ->
-      requirePermissions = auth.requirePermissions(any: ["perm1", "perm2"])
+      requirePermissions = auth.requirePermissions({any: ["perm1", "perm2"]}, {logoutOnFail: false})
       req = {session: {permissions: {perm3: true}}, user: {}}
       expectReject(requirePermissions(req, res), PermissionsError)
 
     it 'should reject with a PermissionsError if req.session.permissions does not contain all keys from permissions.all', () ->
-      requirePermissions = auth.requirePermissions(all: ["perm1", "perm2"])
+      requirePermissions = auth.requirePermissions({all: ["perm1", "perm2"]}, {logoutOnFail: false})
       req = {session: {permissions: {perm1: true}}, user: {}}
       expectReject(requirePermissions(req, res), PermissionsError)
 
@@ -121,13 +114,6 @@ describe 'util.auth', ->
       expectResolve(requirePermissions(req, res))
       .then () ->
         resJson.should.be.false
-
-    it 'should call res.json() if would fail and logoutOnFail is set truthy', () ->
-      requirePermissions = auth.requirePermissions({all: ["perm1", "perm2"]}, {logoutOnFail: true})
-      req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
-      expectResolve(requirePermissions(req, res))
-      .then () ->
-        resJson.should.be.truthy
 
   describe 'requireProject', ->
     resJson = false
