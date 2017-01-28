@@ -20,7 +20,7 @@ module.exports =
   mapState:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr:'mapState', transforms: ourTransforms.state)
     ]
     handle: (req, res) -> res.json req.validBody
@@ -28,7 +28,7 @@ module.exports =
   filterSummary:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr: "filterSummary")
       internals.refreshPins()
     ]
@@ -42,7 +42,7 @@ module.exports =
   parcelBase:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr: "parcelBase")
     ]
     handle: (req, res, next) ->
@@ -52,7 +52,7 @@ module.exports =
   addresses:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr:"address")
     ]
     handle: (req, res, next) ->
@@ -62,7 +62,7 @@ module.exports =
   detail:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr:"detail", transforms: ourTransforms.detail.property)
     ]
     handle: (req, res, next) ->
@@ -82,7 +82,7 @@ module.exports =
   details:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr:"details", saveState: false)
     ]
     handle: (req, res, next) ->
@@ -96,7 +96,7 @@ module.exports =
   drawnShapes:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr:"drawnShapes")
       internals.refreshPins()
     ]
@@ -112,7 +112,7 @@ module.exports =
   inArea:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req, res, next) ->
       internals.handleRoute res, next, () ->
@@ -124,7 +124,7 @@ module.exports =
   inGeometry:
     method: "post"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       internals.captureMapFilterState(handleStr: "filterSummary")
     ]
     handle: (req, res, next) ->
@@ -137,14 +137,14 @@ module.exports =
 
   saves:
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     handle: (req, res, next) ->
       internals.saves({res, next})
 
   pin:
     method: "post"
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     handle: (req, res, next) ->
       logger.debug 'pin !!!!!!!!!!!!!!!!!!!!!!!!!!'
       internals.save({req, res, next, type: 'pin'})
@@ -152,7 +152,7 @@ module.exports =
   unPin:
     method: "post"
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     handle: (req, res, next) ->
       logger.debug 'unPin !!!!!!!!!!!!!!!!!!!!!!!!!!'
       internals.save({req, res, next, type: 'unPin'})
@@ -160,14 +160,14 @@ module.exports =
   favorite:
     method: "post"
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     handle: (req, res, next) ->
       internals.save({req, res, next, type: 'favorite'})
 
   unFavorite:
     method: "post"
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     handle: (req, res, next) ->
       internals.save({req, res, next, type: 'unFavorite'})
 

@@ -10,8 +10,8 @@ _ = require 'lodash'
 module.exports =
   shell:
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['execute_shell']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['execute_shell']})
     ]
     handle: (req, res, next) ->
       if !req.query.cmd

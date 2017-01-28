@@ -18,8 +18,8 @@ module.exports =
     method: 'post'
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res) -> Promise.try ->
       if req.body.handled? && req.params.reference
@@ -33,8 +33,8 @@ module.exports =
   browser:
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res) -> Promise.try ->
       filter = (q) ->
@@ -142,8 +142,8 @@ module.exports =
     method: 'post'
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res) -> Promise.try ->
       if req.body.handled? && req.params.reference
@@ -157,8 +157,8 @@ module.exports =
   request:
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res) -> Promise.try ->
       filter = (q) ->

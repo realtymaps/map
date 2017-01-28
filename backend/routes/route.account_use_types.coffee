@@ -8,30 +8,30 @@ handles =
   root:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: accountUseTypesCrud.root
 
   byId:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: accountUseTypesCrud.byId
 
   create:
     method: 'post'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['change_user']})
     ]
     handle: accountUseTypesCrud.root
 
   edit:
     methods: ['post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['change_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['change_user']})
     ]
     handle: accountUseTypesCrud.byId
 

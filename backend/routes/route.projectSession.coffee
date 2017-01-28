@@ -17,51 +17,51 @@ merged = mergeHandles routeCrud,
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireSubscriber(methods: 'post')
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProjectEditor(methods: ['put', 'post', 'delete'])
     ]
   clients:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProjectEditor(methods: 'post')
     ]
   clientsById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   notes:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   notesById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   drawnShapes:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   drawnShapesById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
 
 
 merged.areas =
   middleware: [
-    auth.requireLogin(redirectOnFail: true)
+    auth.requireLogin()
   ]
   handle: routeCrud.drawnShapesCrud.areas
 

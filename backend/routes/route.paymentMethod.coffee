@@ -11,7 +11,7 @@ module.exports =
     method: "get"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("root")
@@ -22,7 +22,7 @@ module.exports =
     method: "get"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("getDefault")
@@ -33,7 +33,7 @@ module.exports =
     method: "put"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("replaceDefault")
@@ -47,7 +47,7 @@ module.exports =
     method: "post"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("add")
@@ -60,7 +60,7 @@ module.exports =
     method: "delete"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("remove")
@@ -74,7 +74,7 @@ module.exports =
     method: "put"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       l = logger.spawn("setDefault")

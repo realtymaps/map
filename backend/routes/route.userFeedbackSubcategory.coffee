@@ -15,13 +15,13 @@ module.exports =
   root:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: instance.root
 
   byId:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: instance.byId

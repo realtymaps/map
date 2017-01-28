@@ -342,7 +342,7 @@ requireSubscriber = (options = {}) ->
 #     logoutOnFail: whether force a logout on failure, default false
 requirePermissions = (permissions, options = {}) ->
   defaultOptions =
-    logoutOnFail: false
+    logoutOnFail: true
   options = _.merge(defaultOptions, options)
   # don't allow strange inputs
   if typeof(permissions) == 'object'

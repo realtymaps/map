@@ -30,22 +30,22 @@ module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      # auth.requirePermissions({all:['add_','change_']}, logoutOnFail:true)
+      auth.requireLogin()
+      # auth.requirePermissions({all:['add_','change_']})
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
+      auth.requireLogin()
+      # auth.requirePermissions({all:['add_','change_', 'delete_']})
     ]
   getSignedUrl:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   validatePdf:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]

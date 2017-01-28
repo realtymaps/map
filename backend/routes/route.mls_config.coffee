@@ -16,24 +16,24 @@ module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig']})
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig', 'delete_mlsconfig']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig', 'delete_mlsconfig']})
     ]
   updatePropertyData:
     methods: ['patch', 'put']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requirePermissions({all:['change_mlsconfig_mainpropertydata']}, logoutOnFail:false)
     ]
   updateServerInfo:
     methods: ['patch', 'put']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requirePermissions({all:['change_mlsconfig_serverdata']}, logoutOnFail:false)
     ]

@@ -17,12 +17,12 @@ module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requirePermissions('access_staff')
     ]
   byId:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requirePermissions('access_staff')
     ]
