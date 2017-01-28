@@ -21,10 +21,12 @@ ajax = (url) ->
 
 pinpoint = (stack, gpsConfig = {ajax, atob}) ->
   gps = new StackTraceGPS(gpsConfig)
-  for frame in stack
-    frame.fileName = cacheFileName
   Promise.map stack, (frame) ->
-    gps.pinpoint(frame)
+    if frame.fileName?.indexOf(cacheFileName) != -1
+      frame.fileName = cacheFileName
+      gps.pinpoint(frame)
+    else
+      frame
 
 fromS3Config = (errorLog) ->
   cacheKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}"
