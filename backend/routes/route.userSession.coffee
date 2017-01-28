@@ -61,6 +61,9 @@ login = (req, res, next) -> Promise.try () ->
     err.returnStatus = httpStatus.UNAUTHORIZED
     throw err
 
+logout = (req, res, next) -> Promise.try () ->
+  auth.logout(req).finally ->
+    res.json identity: null
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   if !req.body.currentProfileId
@@ -314,7 +317,7 @@ module.exports =
 
   logout:
     method: 'get'
-    handle: auth.logout
+    handle: logout
     middleware: auth.sessionSetup
 
   identity:
