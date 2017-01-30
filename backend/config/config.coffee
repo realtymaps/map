@@ -26,6 +26,7 @@ base =
   FRONTEND_ASSETS:
     PATH: path.join(__dirname, '../../_public')
     MAX_AGE_SEC: 60 * 60 * 24 * 365
+  HOST_PORT: if process.env.PORT? then parseInt(process.env.PORT) else 8085
   PORT: process.env.PORT_GOD || (if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else false) || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'rmaps.log'
@@ -147,6 +148,7 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
+    HOST: APP_NAME: "dev.realtymaps.com:#{base.HOST_PORT}"
     TRUST_PROXY: 1  # indicates there is 1 trusted hop after SSL termination: nginx -> express
     DBS:
       MAIN:
@@ -172,12 +174,14 @@ environmentConfig =
       IS_ON: true
 
   staging:
+    HOST: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-realtymaps-map.herokuapp.com" else null
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
+    HOST: "realtymaps.com"
     MEM_WATCH:
       IS_ON: true
     NEW_RELIC:
