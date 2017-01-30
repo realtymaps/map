@@ -1,11 +1,13 @@
 _ = require 'lodash'
 logger = require('../config/logger').spawn('service:notifications')
+config = require '../config/config'
 # tables = require '../config/tables'
 # analyzeValue = require '../../common/utils/util.analyzeValue'
 errorHelpers = require '../utils/errors/util.error.partiallyHandledError'
 internals = require './service.notifications.internals'
 notificationConfigService = require('./service.notification.config').instance
 internalsNotificationConfig = require './service.notification.config.internals'
+
 
 ###
   Intended to be the workflow service which combines business logic of
@@ -46,6 +48,7 @@ sendNotificationNow = ({row, options}) ->
 ###
 notifyByUser = ({opts, payload}) ->
   l = logger.spawn('notifyByUser')
+  payload ?= {}
 
   l.debug -> "@@@@@@ opts @@@@@@"
   l.debug -> opts
@@ -59,6 +62,7 @@ notifyByUser = ({opts, payload}) ->
     [fromUser] = rows
 
     payload.from = fromUser
+    payload.host = config.HOST
 
     internals.distribute.getUsers(to: opts.to, id: opts.id, project_id: opts.project_id)
     .then (users) ->
@@ -102,6 +106,9 @@ notifyFlat = ({type, method, verify, verbose}) ->
   ###
   ({payload, queryOptions}) ->
     l.debug -> {payload, queryOptions}
+    payload ?= {}
+
+    payload.host = config.HOST
 
     safeFields = _.pick queryOptions, internalsNotificationConfig.getColumns
     entity = _.extend safeFields, {type, method}
