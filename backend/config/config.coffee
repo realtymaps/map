@@ -174,7 +174,7 @@ environmentConfig =
       IS_ON: true
 
   staging:
-    HOST: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-realtymaps-map.herokuapp.com" else null
+    HOST: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}.staging.realtymaps.com" else null
     NEW_RELIC:
       RUN: toBool(process.env.NEW_RELIC_RUN, defaultValue: true)
       LOGLEVEL: 'info'
