@@ -1,21 +1,22 @@
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
-div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
   .collapse.navbar-collapse
     ul.nav.navbar-nav
       li
         .navbar-header
-          a(href="{{adminRoutes.index}}").navbar-brand.navbar-hide
+          a.navbar-brand.navbar-hide(href="{{adminRoutes.index}}")
             img(src="/assets/logo.png")
+
       li(ng-repeat="nav in navbarPages")
         a(ui-sref="{{nav.state}}") {{nav.name}}
 
       li(ng-hide="$state.is('main')")
         +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
     ul.nav.navbar-nav.navbar-right
-      li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-float-right
+      li.navbar-float-right(ng-hide="principal.isAuthenticated()", ng-cloak)
         a.login(ui-sref="{{adminRoutes.login}}") Sign In
-      li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
+      li.navbar-float-right(ng-show="principal.isAuthenticated()", ng-cloak)
         a.logout(ui-sref="{{adminRoutes.logout}}") Sign Out
       li.navbar-float-right
         a(href="{{frontendRoutes.index}}" target="_self") Map

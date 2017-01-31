@@ -50,6 +50,7 @@ apiBaseUserFeedback = "#{apiBase}/userFeedback"
 apiBaseUserFeedbackCategory = "#{apiBaseUserFeedback}Category"
 apiBaseUserFeedbackSubcategory = "#{apiBaseUserFeedback}Subcategory"
 apiBaseCoupons = "#{apiBase}/coupons"
+apiBaseStats = "#{apiBase}/stats"
 
 
 module.exports =
@@ -321,5 +322,9 @@ module.exports =
   coupons:
     apiBase: apiBaseCoupons
     isValid: "#{apiBaseCoupons}/isValid"
+  stats:
+    apiBase: apiBaseStats
+    signUps: "#{apiBaseStats}/signups"
+    mailings: "#{apiBaseStats}/mailings"
 
   # hirefire secret value set from within backend/config/config.coffee

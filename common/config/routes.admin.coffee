@@ -1,3 +1,4 @@
+#TODO: this look up is PITA to remember when adding routes. This should get created dynamically somehow.
 module.exports =
   index: '/admin/'
 
@@ -28,6 +29,10 @@ module.exports =
 
   users: 'users'
   usersCustomers: '/customers'
+
+  stats: 'stats'
+  statsSignups: '/signups'
+  statsMailings: '/mailings'
 
   authenticating: 'authenticating'
   accessDenied: 'accessDenied'

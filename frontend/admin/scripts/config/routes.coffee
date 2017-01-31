@@ -1,9 +1,7 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
-loginTemplate = require '../../../common/html/login.jade'
 usersEditTemplate = require '../../html/views/users/usersEdit.jade'
-usersFeedbackTemplate = require '../../html/views/users/usersFeedback.jade'
 _ =  require 'lodash'
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
@@ -19,6 +17,7 @@ app.run ($rootScope) ->
     {state: 'jobs', name: 'Jobs'}
     {state: 'dataSource', name: 'Data Source'}
     {state: 'users', name: 'Users'}
+    {state: 'stats', name: 'Stats'}
     {state: 'utils', name: 'Utils'}
     {state: 'errors', name: 'Errors'}
   ]
@@ -78,11 +77,15 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'users'
   buildState 'usersCustomers', parent: 'users', template: usersEditTemplate
   buildState 'usersStaff', parent: 'users', template: usersEditTemplate
-  buildState 'usersFeedback', parent: 'users', template: usersFeedbackTemplate
+  buildState 'usersFeedback', parent: 'users', template: require '../../html/views/users/usersFeedback.jade'
+
+  buildState 'stats'
+  buildState 'statsSignups', parent: 'stats', template: require '../../html/views/stats/statsSignups.jade'
+  buildState 'statsMailings', parent: 'stats', template: require '../../html/views/stats/statsMailings.jade'
 
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
-  buildState 'login', template: loginTemplate, sticky: false, loginRequired: false
+  buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false
 
   # this one has to be last, since it is a catch-all

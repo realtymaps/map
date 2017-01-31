@@ -1,0 +1,12 @@
+.stats.grid-container.row
+  .col-md-1.menu
+    ul.nav.nav-pills.nav-stacked
+      li(ng-repeat="state in $state.get() | filter:{parent: 'stats'}")
+        a(ui-sref="{{state.name}}" ui-sref-opts="{reload: true}") {{state.name.replace('stats','')}}
+
+  .col-md-11
+    div(
+      ng-repeat="state in $state.get() | filter:{parent: 'stats'}"
+      ui-view="{{state.name}}"
+      ng-show="$state.includes(state.name)"
+      ng-cloak)
