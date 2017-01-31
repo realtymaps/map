@@ -18,9 +18,7 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
   loadErrors = ->
     $http.get(backendRoutes.errors.browser, params: _.omit($scope.opts, 'sourcemap'))
     .then ({data}) ->
-      $scope.errors = []
-      for error in data
-        $scope.errors.push(error, {parent: error})
+      $scope.errors = data
 
   $scope.$watchCollection 'opts', ->
     loadErrors()
@@ -29,18 +27,17 @@ app.controller 'rmapsErrorsBrowserCtrl', ($scope, $http, $log, $location) ->
     path?.replace("../src/", "")
 
   $scope.expand = (error) ->
-    if !error.parent
-      error.expanded = !error.expanded
-      if error.url.indexOf('realtymaps.com/admin') != -1
-        error.betterStack = false
-        return
-      if !error.betterStack?
-        $http.get(backendRoutes.errors.browser, params: {reference: error.reference, sourcemap: $scope.opts.sourcemap})
-        .then ({data}) ->
-          if data?[0]?.betterStack
-            error.betterStack = data?[0]?.betterStack
-          else
-            error.betterStack = false
+    error.expanded = !error.expanded
+    if error.url.indexOf('realtymaps.com/admin') != -1
+      error.betterStack = false
+      return
+    if !error.betterStack?
+      $http.get(backendRoutes.errors.browser, params: {reference: error.reference, sourcemap: $scope.opts.sourcemap})
+      .then ({data}) ->
+        if data?[0]?.betterStack
+          error.betterStack = data?[0]?.betterStack
+        else
+          error.betterStack = false
 
   $scope.getTime = (error) ->
     moment(error.rm_inserted_time).fromNow()
@@ -65,16 +62,13 @@ app.controller 'rmapsErrorsAPICtrl', ($scope, $http, $log, $location) ->
   loadErrors = ->
     $http.get(backendRoutes.errors.request, params: $scope.opts)
     .then ({data}) ->
-      $scope.errors = []
-      for error in data
-        $scope.errors.push(error, {parent: error})
+      $scope.errors = data
 
   $scope.$watchCollection 'opts', ->
     loadErrors()
 
   $scope.expand = (error) ->
-    if !error.parent
-      error.expanded = !error.expanded
+    error.expanded = !error.expanded
 
   $scope.getTime = (error) ->
     moment(error.rm_inserted_time).fromNow()
