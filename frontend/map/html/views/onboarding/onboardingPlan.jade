@@ -1,29 +1,39 @@
 section.white-page.onboarding.onboarding-user.plan.ng-cloak(ng-if="safeConfig.SIGNUP_ENABLED")
   .container
-      h1.page-header Welcome!
-
       h2 Select your plan
-      br
-      br
-
       .row
-        .col-md-6.col-sm-6.col-xs-12
+        .plan-box.col-md-offset-1.col-md-4.col-sm-offset-1.col-sm-4.col-xs-12
           h3.plan-name Standard
-          p This plan allows you to see tax and deed data for properties in your county and adjacent counties.
-          p.price Price: {{view.plans.standard.metadata.priceFormatted}} per {{view.plans.standard.metadata.interval}}
+          p.price {{view.plans.pro.metadata.priceFormatted}}/{{view.plans.standard.metadata.interval}}
+          .plan-features
+            ul
+              li Click-to-Mail *patent pending
+              li Map Based Tax & Deed Records Search
+              li Search Your Adjacent Counties
+              li Unlimited Projects & Collaborators
+
+        
           button.btn.btn-primary(
             ng-click="user.plan.set(subscriptionConfig.PLAN.STANDARD)"
             ng-bind="user.plan.getSelected(subscriptionConfig.PLAN.STANDARD)"
           )
-        .col-md-6.col-sm-6.col-xs-12
-          h3.plan-name Pro
-          p This plan allows you to view all tax, deed and mls data. MLS data is dependent on what MLS'es are valid from your NRS Id.
-          p.price Price: {{view.plans.pro.metadata.priceFormatted}} per {{view.plans.standard.metadata.interval}}
+        .plan-box.col-md-offset-1.col-md-4.col-sm-offset-1.col-sm-4.col-xs-12
+          h3.plan-name Pro | for Realtors
+          p.price {{view.plans.pro.metadata.priceFormatted}}/{{view.plans.standard.metadata.interval}}
+          
+          .plan-features
+            ul
+              li MLS Data Layer
+              li Click-to-Mail *patent pending
+              li Map Based Tax & Deed Records Search
+              li Search Your Adjacent Counties
+              li Unlimited Projects & Collaborators
+         
           button.btn.btn-primary(
             ng-click="user.plan.set(subscriptionConfig.PLAN.PRO)"
             ng-bind="user.plan.getSelected(subscriptionConfig.PLAN.PRO)"
           )
-      .row
+      div
         h2 Sign up to start your free month
         p Create your account
 

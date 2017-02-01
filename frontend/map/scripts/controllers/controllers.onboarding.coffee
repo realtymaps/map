@@ -73,7 +73,7 @@ rmapsMainOptions
         name: rmapsMainOptions.subscription.PLAN.STANDARD
 
         getSelected: (planStr) ->
-          if $scope.user.plan.name == planStr then 'selected' else 'select'
+          if $scope.user.plan.name == planStr then 'Selected' else 'Select plan'
 
         set: (newPlan) ->
           $scope.user.plan.name = newPlan
