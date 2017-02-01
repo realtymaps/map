@@ -19,27 +19,25 @@ _chatlio.configure({
   "offlineTitle": "Contact Us"
 });
 
-app.run(function($rootScope, rmapsEventConstants){
-  $rootScope.$on(rmapsEventConstants.principal.login.success, function() {
+if (app && app.run)
+  app.run(function($rootScope, rmapsEventConstants){
+    $rootScope.$on(rmapsEventConstants.principal.login.success, function() {
 
-    var watcher = $rootScope.$watch('user', function(user){
-      if(!user)
-        return;
+      var watcher = $rootScope.$watch('user', function(user){
+        if(!user)
+          return;
 
-      watcher();
-      window._chatlio.identify(user.email, {
-        'name': user.full_name,
-        'email': user.email,
-        'plan': user.stripe_plan_id
+        watcher();
+        window._chatlio.identify(user.email, {
+          'name': user.full_name,
+          'email': user.email,
+          'plan': user.stripe_plan_id
+        });
       });
+
+
+
     });
-
-
-
   });
-});
-
-
-
 
 module.exports = _chatlio;
