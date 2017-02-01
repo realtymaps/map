@@ -6,22 +6,22 @@ auth = require '../utils/util.auth'
 module.exports = mergeHandles routeCrud(company),
   #STRICTLY FOR ADMIN, otherwise profiles are used by session
   root:
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
   rootPost:
     method: 'post'
     handle: 'root'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_company','change_company']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_company','change_company']})
     ]
   byId:
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   byIdWPerms:
     methods: ['post', 'put', 'delete']
     handle: 'byId'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_company','change_company','delete_company']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_company','change_company','delete_company']})
     ]

@@ -62,46 +62,46 @@ module.exports = mergeHandles new UserCrud(user),
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user']})
     ]
 
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user','delete_user']})
     ]
 
   permissions:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user','delete_user']})
     ]
 
   permissionsById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user','delete_user']})
     ]
 
   groups:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user','delete_user']})
     ]
 
   groupsById:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_user','change_user','delete_user']})
     ]
 
 module.exports.image =
   method: 'get'
-  middleware: [auth.requireLogin(redirectOnFail: true)]
+  middleware: [auth.requireLogin()]
   handle: getImage

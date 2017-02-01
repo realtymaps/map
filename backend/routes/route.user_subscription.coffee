@@ -13,7 +13,7 @@ module.exports =
     method: "get"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       userSubscriptionService.getPlan(req.session.userid)
@@ -22,7 +22,7 @@ module.exports =
     method: "put"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireSubscriber() # avoid bouncing around on plans with this endpoint unless they're active/paid
     ]
     handle: (req) ->
@@ -39,7 +39,7 @@ module.exports =
     method: "get"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req) ->
       userSubscriptionService.getSubscription req.session.userid
@@ -47,7 +47,7 @@ module.exports =
   reactivate:
     method: "put"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handleQuery: true
     handle: (req) ->
@@ -64,7 +64,7 @@ module.exports =
     method: "put"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireSubscriber()
     ]
     handle: (req) ->

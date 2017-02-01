@@ -41,13 +41,13 @@ module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProject({ methods:['get'], projectIdParam: 'project_id'})
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProject({ methods:['get'], projectIdParam: 'project_id'})
       auth.requireProject({ methods:['put'], projectIdParam: 'body.project_id'})
       auth.requireProjectEditor({ methods: ['delete'], getProjectFromSession: true })

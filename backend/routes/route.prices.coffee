@@ -6,7 +6,7 @@ module.exports =
     method: "get"
     handleQuery: true
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req, res, next) ->
       priceSvc.getMailPrices()

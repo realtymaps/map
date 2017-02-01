@@ -61,6 +61,9 @@ login = (req, res, next) -> Promise.try () ->
     err.returnStatus = httpStatus.UNAUTHORIZED
     throw err
 
+logout = (req, res, next) -> Promise.try () ->
+  auth.logout(req).finally ->
+    res.json identity: null
 
 setCurrentProfile = (req, res, next) -> Promise.try () ->
   if !req.body.currentProfileId
@@ -299,13 +302,13 @@ module.exports =
     method: 'put'
     handle: root
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
 
   companyRoot:
     method: 'post'
     handle: companyRoot
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
 
   login:
     method: 'post'
@@ -314,7 +317,7 @@ module.exports =
 
   logout:
     method: 'get'
-    handle: auth.logout
+    handle: logout
     middleware: auth.sessionSetup
 
   identity:
@@ -324,37 +327,37 @@ module.exports =
 
   updateState:
     method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: updateState
 
   profiles:
     methods: ['get', 'put']
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: profiles
 
   currentProfile:
     method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: setCurrentProfile
 
   newProject:
     method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: newProject
 
   image:
     methods: ['get', 'put']
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: image
 
   companyImage:
     methods: ['get', 'put']
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: companyImage
 
   updatePassword:
     method: 'put'
-    middleware: auth.requireLogin(redirectOnFail: true)
+    middleware: auth.requireLogin()
     handle: updatePassword
 
   requestResetPassword:
@@ -372,8 +375,8 @@ module.exports =
   requestLoginToken:
     method: 'post'
     middleware: [
-     auth.requireLogin(redirectOnFail: true)
-     auth.requirePermissions('spoof_user', logoutOnFail:true)
+     auth.requireLogin()
+     auth.requirePermissions('spoof_user')
     ]
     handle: requestLoginToken
 
@@ -381,4 +384,4 @@ module.exports =
     methods: ['get', 'post']
     handle: feedback
     middleware:
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()

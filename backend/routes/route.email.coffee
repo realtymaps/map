@@ -21,7 +21,7 @@ _isValid = (isLoggedIn) ->
 
   if isLoggedIn
     route.middleware =
-      auth.requireLogin() #do not redirect or you will cause validations to pass!
+      auth.requireLogin(redirectOnFail: false) #do not redirect or you will cause validations to pass!
 
   route
 

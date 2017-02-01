@@ -7,7 +7,7 @@ module.exports =
   getHistory:
     method: "get"
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handleQuery: true
     handle: (req) ->

@@ -35,37 +35,37 @@ module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProjectEditor(methods: ['get', 'post'], projectIdParam: null)
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
       auth.requireProjectEditor(methods: ['post', 'put', 'delete'], projectIdParam: null)
     ]
   getReviewDetails:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   getProperties:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   getLetters:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   testLetter:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
   sendCampaign:
     methods: ['post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]

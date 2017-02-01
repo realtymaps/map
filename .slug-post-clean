@@ -13,7 +13,7 @@ spec
 
 #client side libs
 node_modules/angular*
-node_modules/d3
+node_modules/d3*
 node_modules/flickity*
 node_modules/leaflet*
 node_modules/jsonformatter

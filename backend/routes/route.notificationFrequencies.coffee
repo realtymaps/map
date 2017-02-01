@@ -7,7 +7,7 @@ _ = require 'lodash'
 module.exports =
   root:
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req, res, next) ->
       l = logger.spawn("root")

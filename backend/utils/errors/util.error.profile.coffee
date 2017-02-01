@@ -12,7 +12,7 @@ class NoProfileFoundError extends partial.PartiallyHandledError
     auth = require '../util.auth'
     logger.debug -> 'Logging out due to zero profiles.'
 
-    auth.logout(req, null, false).then ->
+    auth.logout(req).finally ->
       error.expected = true
       error.quiet = true
       throw error #rethow to send bad http status

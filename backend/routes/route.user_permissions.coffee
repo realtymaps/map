@@ -7,12 +7,12 @@ module.exports = mergeHandles routeCrud(permission),
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_permission','change_permission']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_permission','change_permission']})
     ]
   byId:
     methods: ['get', 'post', 'put', 'delete']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_permission','change_permission','delete_permission']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_permission','change_permission','delete_permission']})
     ]
