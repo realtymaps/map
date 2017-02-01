@@ -75,8 +75,8 @@
           .col-md-12
             .badge Trace
         pre.details-scroll
-          .stack-row.padding(ng-class="{'linked': getFilePath(frame.fileName).indexOf('node_modules') != 0}" ng-repeat="frame in (error.betterStack || error.stack)")
-            a.stack(ng-if="getFilePath(frame.fileName).indexOf('node_modules') != 0" target="_blank" href="https://github.com/realtymaps/map/tree/{{error.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}")
+          .stack-row.padding(ng-class="{'linked': error.betterStack && frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0}" ng-repeat="frame in (error.betterStack || error.stack)")
+            a.stack(ng-if="error.betterStack && frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0" target="_blank" href="https://github.com/realtymaps/map/tree/{{error.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}")
               span.source-text at {{frame.functionName}} ({{getFilePath(frame.fileName)}}:{{frame.lineNumber}}:{{frame.columnNumber}})
-            span.stack.unimportant(ng-if="getFilePath(frame.fileName).indexOf('node_modules') == 0")
+            span.stack.unimportant(ng-if="!error.betterStack || frame.fileName.indexOf('http') == 0 || getFilePath(frame.fileName).indexOf('node_modules') == 0")
               | at {{frame.functionName}} ({{getFilePath(frame.fileName)}}:{{frame.lineNumber}}:{{frame.columnNumber}})
