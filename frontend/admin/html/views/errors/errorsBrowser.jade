@@ -29,8 +29,8 @@
       .col-md-1.text-center Source
       .col-md-1.text-center Handled
 
-    .row.error(ng-class="{'expanded': error.expanded}" ng-repeat="error in errors" ng-click="expand(error)")
-      .parent
+    .row.error(ng-class="{'expanded': error.expanded}" ng-repeat="error in errors")
+      .parent(ng-click="expand(error)")
         .col-md-5 {{error.message}}
         .col-md-4.break-all {{error.url}}
         .col-md-1.text-nowrap {{getTime(error)}}
@@ -72,20 +72,11 @@
           .col-md-3 {{error.ua_os.name}} {{error.ua_os.version}}
           .col-md-3 {{error.ua_device.vendor}} {{error.ua_device.model}}
         .row.heading(ng-if="error.stack.length || error.betterStack.length")
-          .col-md-5
-            .badge File
-          .col-md-1
-            .badge Line
-          .col-md-1
-            .badge Col
-          .col-md-3
-            .badge Function
-          .col-md-1.text-center
-            .badge(ng-disabled="!error.betterStack") github
-        .row(ng-repeat="frame in (error.betterStack || error.stack)")
-          .col-md-5.stack {{getFilePath(frame.fileName)}}
-          .col-md-1.stack {{frame.lineNumber}}
-          .col-md-1.stack {{frame.columnNumber}}
-          .col-md-3.stack {{frame.functionName}}
-          .col-md-1.stack.text-center
-            a(target="_blank" ng-if="error.betterStack && frame.fileName.indexOf('http') != 0 && getFilePath(frame.fileName).indexOf('node_modules') != 0" href="https://github.com/realtymaps/map/tree/{{error.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}") source
+          .col-md-12
+            .badge Trace
+        pre.details-scroll
+          .stack-row.padding(ng-class="{'linked': getFilePath(frame.fileName).indexOf('node_modules') != 0}" ng-repeat="frame in (error.betterStack || error.stack)")
+            a.stack(ng-if="getFilePath(frame.fileName).indexOf('node_modules') != 0" target="_blank" href="https://github.com/realtymaps/map/tree/{{error.git_revision}}/{{getFilePath(frame.fileName)}}\#L{{frame.lineNumber}}")
+              span.source-text at {{frame.functionName}} ({{getFilePath(frame.fileName)}}:{{frame.lineNumber}}:{{frame.columnNumber}})
+            span.stack.unimportant(ng-if="getFilePath(frame.fileName).indexOf('node_modules') == 0")
+              | at {{frame.functionName}} ({{getFilePath(frame.fileName)}}:{{frame.lineNumber}}:{{frame.columnNumber}})
