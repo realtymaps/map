@@ -7,12 +7,12 @@ module.exports = mergeHandles routeCrud(group),
   root:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_group','change_group']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_group','change_group']})
     ]
   byId:
     methods: ['get']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['add_group','change_group','delete_group']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['add_group','change_group','delete_group']})
     ]

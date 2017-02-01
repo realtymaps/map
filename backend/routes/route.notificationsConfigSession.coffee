@@ -43,5 +43,5 @@ module.exports = mergeHandles new NotificationConfigSessionRouteCrud(notifcation
   root:
     methods: ['get', 'post']
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]

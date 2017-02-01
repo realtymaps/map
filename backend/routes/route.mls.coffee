@@ -33,7 +33,7 @@ module.exports =
   getForUser:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
+      auth.requireLogin()
     ]
     handle: (req, res, next) ->
       handleRoute req, res, next, ->
@@ -73,8 +73,8 @@ module.exports =
   getDatabaseList:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       retsCache.getDatabaseList(req.params)
@@ -84,8 +84,8 @@ module.exports =
   getObjectList:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       retsCache.getObjectList(req.params)
@@ -95,8 +95,8 @@ module.exports =
   getTableList:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       retsCache.getTableList(req.params)
@@ -115,8 +115,8 @@ module.exports =
   getPhotoIds:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       internals.getPhotoIds(req, res, next)
@@ -124,8 +124,8 @@ module.exports =
   getPhotos:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       internals.getQueryPhoto({req, res, next})
@@ -133,8 +133,8 @@ module.exports =
   getParamsPhotos:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       internals.getParamPhoto({req, res, next})
@@ -142,8 +142,8 @@ module.exports =
   getColumnList:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       retsCache.getColumnList(req.params)
@@ -153,8 +153,8 @@ module.exports =
   getDataDump:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       internals.getDataDump(req.params.mlsId, req.params.dataType, req.query)
@@ -167,8 +167,8 @@ module.exports =
   getLookupTypes:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       retsCache.getLookupTypes(req.params)
@@ -178,8 +178,8 @@ module.exports =
   testOverlapSettings:
     method: 'get'
     middleware: [
-      auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['access_staff']}, logoutOnFail:true)
+      auth.requireLogin()
+      auth.requirePermissions({all:['access_staff']})
     ]
     handle: (req, res, next) ->
       internals.testOverlapSettings(req.params.mlsId)
