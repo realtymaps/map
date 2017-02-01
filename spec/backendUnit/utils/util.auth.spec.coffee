@@ -38,10 +38,10 @@ describe 'util.auth', ->
       .then () ->
         resJson.should.be.falsy
 
-    it 'should reject with a NeedsLoginError object if req.user is not set and redirectOnFail is not set', () ->
+    it 'should reject with an ExpressResponse if req.user is not set and redirectOnFail is not set', () ->
       requireLogin = auth.requireLogin()
       req = {}
-      expectReject(requireLogin(req, res))
+      expectReject(requireLogin(req, res), (err) -> err instanceof ExpressResponse)
 
     it 'should reject with a NeedsLoginError if req.user is not set and redirectOnFail is set falsy', () ->
       requireLogin = auth.requireLogin(redirectOnFail: false)
