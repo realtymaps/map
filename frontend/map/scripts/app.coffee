@@ -55,6 +55,7 @@ require 'angularjs-slider/dist/rzslider.css'
 require 'angular-busy/dist/angular-busy.css'
 require 'textangular/dist/textAngular.css'
 require 'angular-toastr/dist/angular-toastr.css'
+require './config/config.chat.js'
 
 
 app = window.angular.module 'rmapsMapApp', [
