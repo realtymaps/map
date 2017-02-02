@@ -13,3 +13,5 @@ for key,value of colorScheme
 
 app.constant 'rmapsStylusConstants',
   variables
+
+module.exports = variables

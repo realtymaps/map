@@ -1,0 +1,16 @@
+#chatlio-widget
+.chatlio-widget
+  right 15px //flush with scroll
+
+@media (min-width: 800px)
+  .chatlio-widget
+    &.closed
+      right 15px
+
+  #chatlio-widget
+    .chatlio-title-bar-chip-container
+      &.closed
+        .chatlio-title-text
+          margin-right 0px !important
+        .chatlio-title-bar-chip
+          background: none
