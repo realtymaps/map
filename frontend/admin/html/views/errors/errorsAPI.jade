@@ -29,8 +29,8 @@
       .col-md-1 When
       .col-md-1.text-center Handled
 
-    .row.error(ng-class="{'expanded': error.expanded}" ng-repeat="error in errors" ng-click="expand(error)")
-      .parent
+    .row.error(ng-class="{'expanded': error.expanded}" ng-repeat="error in errors")
+      .parent(ng-click="expand(error)")
         .col-md-2 {{error.type}}
         .col-md-1 {{error.method}}
         .col-md-6.break-all {{error.url}}
@@ -68,13 +68,12 @@
           .col-md-3 {{error.ua_os.name}} {{error.ua_os.version}}
           .col-md-3 {{error.ua_device.vendor}} {{error.ua_device.model}}
         .row.heading
-          .col-md-11
+          .col-md-12
             .badge Details
-          .col-md-1
-            .badge github
-        .row(ng-repeat="frame in (error.details.split('\\n')) track by $index")
-          .col-md-11.stack
-            pre {{frame}}
-          .col-md-1.stack
-            pre
-              a(target="_blank" ng-if="frame.indexOf('/backend')!=-1" href="https://github.com/realtymaps/map/tree/{{error.git_revision || 'master'}}/{{frame.slice(frame.indexOf('backend')).split(':')[0]}}\#L{{frame.split(':')[1]}}") source
+        pre.details-scroll
+          .stack-row(ng-class="{'linked': frame.indexOf('/backend')!=-1, 'unimportant': getIndent(frame).length}" ng-repeat="frame in (error.details.split('\\n')) track by $index")
+            a.stack(ng-if="frame.indexOf('/backend')!=-1" target="_blank" href="https://github.com/realtymaps/map/tree/{{error.git_revision || 'master'}}/{{frame.slice(frame.indexOf('backend')).split(':')[0]}}\#L{{frame.split(':')[1]}}")
+              | {{getIndent(frame)}}
+              span.source-text {{frame.trim()}}
+            span.stack(ng-if="frame.indexOf('/backend')==-1")
+              | {{frame}}

@@ -59,6 +59,9 @@ app.controller 'rmapsErrorsAPICtrl', ($scope, $http, $log, $location) ->
     '404': false
     offset: 0
 
+  $scope.getIndent = (str) ->
+    str?.match(/^ */)[0] ? ''
+
   loadErrors = ->
     $http.get(backendRoutes.errors.request, params: $scope.opts)
     .then ({data}) ->
