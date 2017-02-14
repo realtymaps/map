@@ -11,17 +11,11 @@ createuser -d -E -P dev
 echo creating superdev user:
 createuser -d -E -l -P -r -s superdev
 
-# create our dbs (use "devpass" as the password for each command)
-createdb -U dev realtymaps_property_dev
-createdb -U dev realtymaps_users_dev
-createdb -U dev realtymaps_test_dev
+# create our dbs (use "devpass" as the password each time prompted)
+./scripts/database/createDbs dev
 
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_topology;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION fuzzystrmatch;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_tiger_geocoder;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION pg_trgm;"
-psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION tablefunc;"
+./scripts/database/createExtensions main superdev
+./scripts/database/createExtensions normalized superdev
 
-psql -d postgres://superdev@localhost:5432/realtymaps_property_dev -f /tmp/main_dump.db
-cp /tmp/pg_hba.conf ~/Library/Application\ Support/Postgres/var-9.5/pg_hba.conf
+psql -d postgres://superdev@localhost:5432/realtymaps_main -f /tmp/main_dump.db
+cp /tmp/pg_hba.conf ~/Library/Application\ Support/Postgres/var-9.6/pg_hba.conf
