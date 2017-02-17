@@ -209,9 +209,10 @@ getFilterSummaryAsQuery = ({queryParams, limit, query, permissions, doJoinPhotos
   doJoinPhotos ?= true
 
   if doJoinPhotos
-    query.leftOuterJoin(tables.finalized.photo.tableName,
-      "#{tables.finalized.combined.tableName}.data_source_uuid",
-      "#{tables.finalized.photo.tableName}.data_source_uuid")
+    query.leftOuterJoin tables.finalized.photo.tableName, () ->
+      # forcing this join to use the real primary key which is two cols!!
+      @on("#{tables.finalized.combined.tableName}.data_source_uuid","#{tables.finalized.photo.tableName}.data_source_uuid")
+      @andOn("#{tables.finalized.combined.tableName}.data_source_id","#{tables.finalized.photo.tableName}.data_source_id")
 
   {bounds, state} = queryParams
   {filters} = state || {}

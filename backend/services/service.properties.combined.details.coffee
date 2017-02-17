@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn('map:details:combined')
+logger = require('../config/logger').spawn('service:details:combined')
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
