@@ -45,7 +45,7 @@ module.exports =
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
 
           # does not need limit as clusterQuery will only return 1 row
-          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, query: clusterQuery, permissions})
+          query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, query: clusterQuery, permissions, doJoinPhotos: false})
 
           logger.debug () -> query.toString()
 
@@ -57,9 +57,10 @@ module.exports =
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           logger.debug -> query.toString()
           query.then (properties) ->
-            if properties.length > config.backendClustering.resultThreshold
-              logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
-              return cluster()
+            # TODO: Disabling the cluster query untill the indexing / performance of the query improves. Currenty it is tacking around 80-90 seconds
+            # if properties.length > config.backendClustering.resultThreshold
+            #   logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
+            #   return cluster()
 
             combined.scrubPermissions(properties, permissions)
 
