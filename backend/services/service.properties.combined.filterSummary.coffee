@@ -204,9 +204,14 @@ queryFilters = ({query, filters, bounds, queryParams}) ->
 
 
 
-getFilterSummaryAsQuery = ({queryParams, limit, query, permissions}) ->
+getFilterSummaryAsQuery = ({queryParams, limit, query, permissions, doJoinPhotos}) ->
   query ?= getDefaultQuery()
-  query.leftOuterJoin(tables.finalized.photo.tableName, "#{tables.finalized.combined.tableName}.data_source_uuid", "#{tables.finalized.photo.tableName}.data_source_uuid")
+  doJoinPhotos ?= true
+
+  if doJoinPhotos
+    query.leftOuterJoin(tables.finalized.photo.tableName,
+      "#{tables.finalized.combined.tableName}.data_source_uuid",
+      "#{tables.finalized.photo.tableName}.data_source_uuid")
 
   {bounds, state} = queryParams
   {filters} = state || {}
