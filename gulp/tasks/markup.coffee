@@ -15,33 +15,31 @@ markup = (app) ->
 
     gutil.log "Building markup:", gutil.colors.bgYellow.black(paths[app].jade)
 
-    gulp.src paths[app].jade.concat './node_modules/angular-busy/angular-busy.html'
-
-    .pipe $.if('*.jade', $.consolidate('jade',
+    gulp.src(paths[app].jade.concat('./node_modules/angular-busy/angular-busy.html'))
+    .pipe($.if('*.jade', $.consolidate('jade',
       doctype: 'html'
-      pretty: '  '))
-    .on   'error', conf.errorHandler 'Jade'
-
-    .pipe $.minifyHtml
+      pretty: '  ')))
+    .on('error', conf.errorHandler 'Jade')
+    .pipe($.minifyHtml
       empty: true
       spare: true
       quotes: true
-      conditionals: true
-    .on   'error', conf.errorHandler 'Minify HTML'
+      conditionals: true)
+    .on('error', conf.errorHandler 'Minify HTML')
 
-    .pipe $.angularTemplatecache "#{app}.templates.js",
+    .pipe($.angularTemplatecache "#{app}.templates.js",
       module: paths[app].appName
       root: '.'
       templateHeader: """
       require('angular/angular');
       angular.module("<%= module %>"<%= standalone %>).run(["$templateCache", function($templateCache) {
       """
-    .on   'error', conf.errorHandler 'Angular template cache'
-
-    .pipe gulp.dest paths.temp
-    .pipe $.size
+    )
+    .on('error', conf.errorHandler 'Angular template cache')
+    .pipe(gulp.dest paths.temp)
+    .pipe($.size
       title: paths.temp
-      showFiles: true
+      showFiles: true)
 
   markupFn.displayName = 'markup'
   markupFn
