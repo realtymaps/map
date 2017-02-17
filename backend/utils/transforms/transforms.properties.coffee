@@ -114,7 +114,6 @@ filterSummary =
 drawnShapes = _.merge {}, filterSummary,
   isArea: validators.boolean(truthy: true, falsy: false)
   areaId: validators.integer()
-  bounds: validators.string(null:true)
   project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl
 
 module.exports = {
