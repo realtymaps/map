@@ -1,8 +1,11 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
+moment = require 'moment'
+memoize = require 'memoizee'
 
 logger = require('../config/logger').spawn('session')
 config = require '../config/config'
+tz = require '../config/tz'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require './util.user'
@@ -373,6 +376,24 @@ sessionSetup = () -> Promise.try () ->  # no-op
 sessionSetup.inspect = () -> "sessionSetup()"
 
 
+_getCurrentDateString = () ->
+  moment.utc().utcOffset(tz.MOMENT_UTC_OFFSET).startOf('day').format('YYYY-MM-DD')
+_getCurrentDateString = memoize(_getCurrentDateString, maxAge: 5*60*1000)
+
+markActiveDate = (req, res) -> Promise.try () ->
+  if !req.user
+    return
+  today = _getCurrentDateString()
+  if moment.utc(req.user.last_active).format('YYYY-MM-DD') == today
+    return
+  req.user.last_active = today
+  tables.auth.user()
+  .where(id: req.user.id)
+  .update(last_active: today)
+markActiveDate.inspect = () -> "markActiveDate()"
+
+
+
 module.exports = {
   setSessionCredentials
   checkSessionSecurity
@@ -384,4 +405,5 @@ module.exports = {
   requireSubscriber
   logout
   sessionSetup
+  markActiveDate
 }

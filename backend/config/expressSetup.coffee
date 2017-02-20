@@ -102,7 +102,6 @@ config.SESSION.store = new sessionStore(config.SESSION_STORE)
 shutdown.onExit () ->
   config.SESSION.store.close()
 config.SESSION.genid = uuid.genUUID
-
 sessionMiddlewares.push(session(config.SESSION))
 
 # promisify sessions
@@ -113,6 +112,9 @@ sessionMiddlewares.push(Promise.nodeifyWrapper(auth.setSessionCredentials))
 
 # do session security checks
 sessionMiddlewares.push(Promise.nodeifyWrapper(auth.checkSessionSecurity))
+
+# update active date for user
+sessionMiddlewares.push(Promise.nodeifyWrapper(auth.markActiveDate))
 
 # enable flash messages
 sessionMiddlewares.push(connectFlash())
