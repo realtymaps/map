@@ -106,7 +106,11 @@ sessionLoginProcess = (req, res, user, opts={}) ->
   req.user = user
   logger.debug -> _.omit user, "password"
 
-  userUtils.cacheUserValues(req)
+  tables.auth.user()
+  .where(id: user.id)
+  .update(last_login: new Date())
+  .then () ->
+    userUtils.cacheUserValues(req)
   .then () ->
     ensureSessionCount(req)
   .then () ->
