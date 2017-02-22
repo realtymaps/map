@@ -14,7 +14,6 @@ $q
 $rootScope
 rmapsEventConstants
 rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory
 rmapsDrawCtrlFactory
 rmapsMapTogglesFactory
 rmapsFeatureGroupUtil
@@ -40,7 +39,7 @@ rmapsLeafletHelpers
   .then (drawnItems) ->
 
     $scope.drawn.items = drawnItems
-    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawAreaCtrl'})
+    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawAreaCtrl', className: 'rmaps-area'})
 
     $rootScope.$on rmapsEventConstants.areas.mouseOver, (event, model) ->
       $log.debug 'list mouseover'
@@ -58,11 +57,7 @@ rmapsLeafletHelpers
       $scope.Toggles.propertiesInShapes = false
       $rootScope.propertiesInShapes = false
 
-    _handles = rmapsMapDrawHandlesFactory {
-      mapId
-      drawnShapesSvc
-      drawnItems
-
+    handleOptions = {
       createPromise: (layer) ->
         #requires rmapsAreasModalCtrl to be in scope (parent)
         geoJson = layer.toGeoJSON()
@@ -92,37 +87,38 @@ rmapsLeafletHelpers
 
     }
 
-    _drawCtrlFactory = (handles) ->
-      rmapsDrawCtrlFactory {
-        mapId
-        $scope
-        handles
-        drawnItems
-        name: "area"
-        itemsOptions
-        drawOptions:
-          control: (promisedControl) ->
-            promisedControl.then (control) ->
-              isReadyPromise.resolve(control)
-          draw:
-            polyline:
-              shapeOptions: {color}
-            polygon:
-              shapeOptions: {color}
-            rectangle:
-              shapeOptions: {color}
-            circle:
-              shapeOptions: {color}
-      }
+    drawCtrl = rmapsDrawCtrlFactory {
+      drawnShapesSvc
+      featureGroupUtil
+      handleOptions
+      mapId
+      $scope
+      handleOptions
+      drawnItems
+      name: "area"
+      itemsOptions
+      drawOptions:
+        control: (promisedControl) ->
+          promisedControl.then (control) ->
+            isReadyPromise.resolve(control)
+        draw:
+          polyline:
+            shapeOptions: {color}
+          polygon:
+            shapeOptions: {color}
+          rectangle:
+            shapeOptions: {color}
+          circle:
+            shapeOptions: {color}
+    }
 
     $scope.$watch 'Toggles.isAreaDraw', (newVal) ->
-      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-area'})
       if newVal
-        _drawCtrlFactory(_handles)
-        isReadyPromise.promise.then (control) ->
-          control.enableHandle(handle: 'rectangle')
+        drawCtrl.init(enable:true).then () ->
+          isReadyPromise.promise.then (control) ->
+            control.enableHandle(handle: 'rectangle')
       else
-        _drawCtrlFactory()
+        drawCtrl.init(enable:false)
 
     $rootScope.$onRootScope rmapsEventConstants.areas.removeDrawItem, (event, geojsonModel) ->
       drawnItems.removeLayer featureGroupUtil.getLayer(geojsonModel)

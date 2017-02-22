@@ -4,7 +4,7 @@ _ =  require 'lodash'
 
 app.factory 'rmapsFeatureGroupUtil', ($log) ->
 
-  ({featureGroup, ownerName, events}) ->
+  ({featureGroup, ownerName, events, @className}) ->
     @$log = $log.spawn("rmapsFeatureGroupUtil:#{ownerName}")
     @$log.debug('initializing')
 
@@ -58,7 +58,7 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
       @setDrawItemColor {entity, fillOpacity: .45, firstOpacity: true}
 
     @onOffPointerEvents = ({isOn, className}) ->
-      ele = document.getElementsByClassName(className)
+      ele = document.getElementsByClassName(@className || className)
       ele = angular.element(ele)
       if isOn
         return ele?.css('pointer-events', 'auto')

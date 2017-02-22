@@ -76,6 +76,12 @@
   &.yellow
     color rgb(242, 205, 12)
 
+
+/*
+Note this disables all click events for all shapes and polygons.
+This was done to allow properties and markers under these shapes to be selected.
+Therefore the shapes pointer events are only turned on when needed by the tool bars.
+*/
 .rmaps-area
 .rmaps-sketch
   pointer-events none

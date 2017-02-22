@@ -1,5 +1,5 @@
 L = require('leaflet');
-require('leaflet-draw/dist/leaflet.draw.js');
+require('./l.draw.js');
 
 module.exports = L.Draw.TextPrompt = function(a) {
   var b = prompt("Please enter your text", a.value);

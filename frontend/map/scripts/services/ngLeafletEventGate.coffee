@@ -19,28 +19,30 @@ app.service 'rmapsNgLeafletEventGateService', (nemSimpleLogger, rmapsMapEventEnu
       _disabledEvents[mapId] = {}
     _disabledEvents[mapId]
 
-  _getEvent = (mapId, eventName) ->
+  getEvent = (mapId, eventName) ->
     _getMap(mapId)[eventName]
 
-  _enableEvent = (mapId, eventName) ->
-    delete _getMap(mapId)[eventName]
+  enableEvent = (mapId, eventName) ->
+    _getMap(mapId)[eventName] = false
 
-  _disableEvent =  (mapId, eventName) ->
+  disableEvent =  (mapId, eventName) ->
     _getMap(mapId)[eventName] = true
 
-  disableEvent: _disableEvent
-  enableEvent: _enableEvent
-  getEvent: _getEvent
-  isDisabledEvent: _getEvent
+  {
+    disableEvent
+    enableEvent
+    getEvent
+    isDisabledEvent: getEvent
 
-  disableMapCommonEvents: (mapId) ->
-    _disableEvent(mapId, rmapsMapEventEnums.map.click)
-    _disableEvent(mapId, rmapsMapEventEnums.marker.click)
-    _disableEvent(mapId, rmapsMapEventEnums.geojson.click)
-    _disableEvent(mapId, rmapsMapEventEnums.window.mouseover)
+    disableMapCommonEvents: (mapId) ->
+      disableEvent(mapId, rmapsMapEventEnums.map.click)
+      disableEvent(mapId, rmapsMapEventEnums.marker.click)
+      disableEvent(mapId, rmapsMapEventEnums.geojson.click)
+      disableEvent(mapId, rmapsMapEventEnums.window.mouseover)
 
-  enableMapCommonEvents: (mapId) ->
-    _enableEvent(mapId, rmapsMapEventEnums.map.click)
-    _enableEvent(mapId, rmapsMapEventEnums.marker.click)
-    _enableEvent(mapId, rmapsMapEventEnums.geojson.click)
-    _enableEvent(mapId, rmapsMapEventEnums.window.mouseover)
+    enableMapCommonEvents: (mapId) ->
+      enableEvent(mapId, rmapsMapEventEnums.map.click)
+      enableEvent(mapId, rmapsMapEventEnums.marker.click)
+      enableEvent(mapId, rmapsMapEventEnums.geojson.click)
+      enableEvent(mapId, rmapsMapEventEnums.window.mouseover)
+  }
