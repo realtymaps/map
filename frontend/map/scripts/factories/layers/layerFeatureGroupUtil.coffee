@@ -57,6 +57,17 @@ app.factory 'rmapsFeatureGroupUtil', ($log) ->
     @onMouseOver = (entity) ->
       @setDrawItemColor {entity, fillOpacity: .45, firstOpacity: true}
 
+
+    ###
+     NOTE:
+     This function is one of the main reasons for this factory's existence.
+     This was done to allow properties and markers under certain layers to be selectable. There for isOn allows the turns off/on
+     the selectibility of a specific layer / drawItem.
+
+     NOTE:
+     Be sure to search css/stylus of `.rmaps-area, .rmaps-sketch` for their pointer-events settings.
+
+    ###
     @onOffPointerEvents = ({isOn, className}) ->
       ele = document.getElementsByClassName(@className || className)
       ele = angular.element(ele)
