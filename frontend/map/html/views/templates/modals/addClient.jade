@@ -4,87 +4,100 @@ form.add-project(name="clientForm")
     h3.modal-title(ng-show="!clientCopy.id") Add Client
     span.icon.icon-close(ng-click="cancelModal()")
   .modal-body
-    .add-client-info
-      .form-section
-        p.required.text-right Required
-        .form-group
-          .row
-            .col-sm-6
-              label.required(for="first_name" ) First Name
-              input.form-control(
-                name="first_name"
-                ng-model="clientCopy.first_name"
-                required
-                validator="required,minlength=2,maxlength=30")
-            .col-sm-6
-              label.required(for="last_name") Last Name
-              input.form-control(
-                name="last_name"
-                ng-model="clientCopy.last_name"
-                required
-                validator="required,minlength=2,maxlength=30")
-        .form-group
-          .row
-            .col-sm-6
-              label.required(for="email") Email
-              input.form-control(
-                name="email"
-                ng-model="clientCopy.email"
-                placeholder="name@email.com"
-                required
-                validator="email,required,checkValidEmail,maxlength=75")
-            .col-sm-3
-              label(for="cell_phone") Work #
-              input.form-control(
-                name="cell_phone"
-                ng-model="clientCopy.cell_phone"
-                validator="optPhone")
-            .col-sm-3
-              label(for="work_phone") Cell #
-              input.form-control(
-                name="work_phone"
-                ng-model="clientCopy.work_phone"
-                validator="optPhone")
-        .form-group
-          .row
-            .col-sm-6
-              label(for="address_1" ) Address 1
-              input.form-control(
-                name="address_1"
-                ng-model="clientCopy.address_1"
-                validator="optAddress")
-            .col-sm-6
-              label(for="address_2") Address 2
-              input.form-control(name="address_2"
-                ng-model="clientCopy.address_2"
-                validator="optMinlength=2")
-        .form-group
-          .row
-            .col-sm-4
-              label(for="city") City
-              input.form-control(
-                name="city"
-                ng-model="clientCopy.city"
-                validator="optMinlength=2")
-            .col-sm-4
-              label(for="us_state_id") State
-              select.form-control(
-                ng-model="clientCopy.us_state_id"
-                name="us_state_id"
-                ng-options="s.id as (s.code+' - '+s.name) for s in us_states"
-              )
-            .col-sm-4
-              label(for="zip") Zip
-              input.form-control(
-                name="zip"
-                ng-model="clientCopy.zip"
-                validator="optZipcode")
+    .add-client-info(ng-if="profile.sandbox") Oops! You can't add clients to your sandbox. Please save this project first.
+    .add-client-info(ng-if="!profile.sandbox")
+      p.required.text-right Required
+      .form-group
+        .row
+          .col-sm-6
+            label.required(for="first_name" ) First Name
+            input.form-control(
+              id="first_name"
+              name="first_name"
+              ng-model="clientCopy.first_name"
+              required
+              validator="required,minlength=2,maxlength=30")
+          .col-sm-6
+            label.required(for="last_name") Last Name
+            input.form-control(
+              id="last_name"
+              name="last_name"
+              ng-model="clientCopy.last_name"
+              required
+              validator="required,minlength=2,maxlength=30")
+      .form-group
+        .row
+          .col-sm-6
+            label.required(for="email") Email
+            input.form-control(
+              id="email"
+              name="email"
+              ng-model="clientCopy.email"
+              placeholder="name@email.com"
+              required
+              validator="email,required,checkValidEmail,maxlength=75")
+          .col-sm-3
+            label(for="cell_phone") Work #
+            input.form-control(
+              id="cell_phone"
+              name="cell_phone"
+              ng-model="clientCopy.cell_phone"
+              validator="optPhone")
+          .col-sm-3
+            label(for="work_phone") Cell #
+            input.form-control(
+              id="work_phone"
+              name="work_phone"
+              ng-model="clientCopy.work_phone"
+              validator="optPhone")
+      .form-group
+        .row
+          .col-sm-6
+            label(for="address_1" ) Address 1
+            input.form-control(
+              id="address_1"
+              name="address_1"
+              ng-model="clientCopy.address_1"
+              validator="optAddress")
+          .col-sm-6
+            label(for="address_2") Address 2
+            input.form-control(
+              id="address_2"
+              name="address_2"
+              ng-model="clientCopy.address_2"
+              validator="optMinlength=2")
+      .form-group
+        .row
+          .col-sm-4
+            label(for="city") City
+            input.form-control(
+              id="city"
+              name="city"
+              ng-model="clientCopy.city"
+              validator="optMinlength=2")
+          .col-sm-4
+            label(for="us_state_id") State
+            select.form-control(
+              id="us_state_id"
+              name="us_state_id"
+              ng-model="clientCopy.us_state_id"
+              ng-options="s.id as (s.code+' - '+s.name) for s in us_states"
+            )
+          .col-sm-4
+            label(for="zip") Zip
+            input.form-control(
+              id="zip"
+              name="zip"
+              ng-model="clientCopy.zip"
+              validator="optZipcode")
   .modal-footer
     button.btn.btn-primary(
+      ng-if="!profile.sandbox"
       type='submit'
       ng-click="saveClient(clientForm)"
       validation-submit="clientForm") Save
     button.btn.btn-default(
+      ng-if="!profile.sandbox"
       validation-reset="clientForm"
     ) Clear
     button.btn.btn-default(
