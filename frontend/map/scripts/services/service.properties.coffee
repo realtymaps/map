@@ -79,12 +79,10 @@ rmapsPromiseThrottlerFactory) ->
       , http: {route: backendRoutes.properties.filterSummary })
       .then (results) ->
         if results?.truncated
-          console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ truncated")
           if !maxPropertiesToast?.isOpened
             console.log("======= initiating toast")
             maxPropertiesToast = toastr.warning('Zoom in, or use filters to narrow your search.', "Not displaying all matches", tapToDismiss: false, timeOut: null, extendedTimeOut: 0x7FFFFFFF)
         else
-          console.log("------------------------- not truncated")
           if maxPropertiesToast?.isOpened
             console.log("~~~~~~~ clearing toast")
             toastr.clear(maxPropertiesToast)
