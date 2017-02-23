@@ -1,5 +1,5 @@
 L = require('leaflet');
-require('leaflet-draw/dist/leaflet.draw.js');
+require('./l.draw.js');
 
 
 module.exports = L.Draw.Feature = L.Draw.Feature.extend({

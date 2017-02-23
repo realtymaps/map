@@ -102,7 +102,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
         options = scope.options or {}
 
         if !L.Control.Draw?
-          $log.error "#{errorHeader} Leaflet.Draw is not loaded as a plugin."
+          $log.error("#{errorHeader} Leaflet.Draw is not loaded as a plugin.")
           return
 
         if !options?.edit? or !options?.edit?.featureGroup?
@@ -115,10 +115,10 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService
 
         map.addLayer(_featureGroup)
 
-        setUpNgShow {attrs, scope, featureGroup: _featureGroup, map}
+        setUpNgShow({attrs, scope, featureGroup: _featureGroup, map})
 
-        drawControl = new LeafletDrawApi options
-        drawControl.onAdd map
+        drawControl = new LeafletDrawApi(options)
+        drawControl.onAdd(map)
 
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)

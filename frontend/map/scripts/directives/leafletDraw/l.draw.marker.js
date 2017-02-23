@@ -1,5 +1,5 @@
 L = require('leaflet');
-require('leaflet-draw/dist/leaflet.draw.js');
+require('./l.draw.js');
 
 module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 
@@ -14,6 +14,7 @@ module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 	},
 
   addHooks: function (e, options) {
+    var _this = this
 
     if(!options)
       options = {}
@@ -37,15 +38,15 @@ module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 			}
 
       this._onClickExt = function(e){
-        this._onClick(e, options)
+        _this._onClick(e, options)
       }
 
       this._onMouseMoveExt = function(e){
-        this._onMouseMove(e, options)
+        _this._onMouseMove(e, options)
       }
 
       this._onTouchExt = function(e){
-        this._onTouch(e, options)
+        _this._onTouch(e, options)
       }
 
 			this._mouseMarker
@@ -76,6 +77,7 @@ module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 			delete this._mouseMarker;
 
 			this._map.off('mousemove', this._onMouseMoveExt, this);
+      this._map.off('click', this._onMouseMoveExt, this);
 		}
 	},
 
@@ -94,14 +96,10 @@ module.exports = L.Draw.Marker = L.Draw.Marker.extend({
 				zIndexOffset: options.zIndexOffset || this.options.zIndexOffset
 			})
 			// Bind to both marker and map to make sure we get the click event.
-			this._marker.on('click', function(e){
-        _this._onClick(e, options)
-      })
+			this._marker.on('click', this._onClickExt, this)
 
 			this._map
-			.on('click', function(e){
-        _this._onClick(e, options)
-      })
+			.on('click', this._onClickExt, this)
 			.addLayer(this._marker)
 		}
 		else {

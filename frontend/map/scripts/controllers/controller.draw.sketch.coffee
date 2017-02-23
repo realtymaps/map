@@ -7,7 +7,6 @@ app.controller "rmapsDrawSketchCtrl", (
   $rootScope,
   rmapsEventConstants,
   rmapsDrawnUtilsService
-  rmapsMapDrawHandlesFactory,
   rmapsDrawCtrlFactory
   rmapsFeatureGroupUtil
   rmapsCurrentMapService
@@ -20,50 +19,44 @@ app.controller "rmapsDrawSketchCtrl", (
   drawnShapesSvc.getDrawnItems().then (drawnItems) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
-    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawSketchCtrl'})
+    featureGroupUtil = new rmapsFeatureGroupUtil({featureGroup:drawnItems, ownerName: 'rmapsDrawSketchCtrl', className: 'rmaps-sketch'})
 
-    _handles = rmapsMapDrawHandlesFactory {
-      mapId
+    drawCtrl = rmapsDrawCtrlFactory({
       drawnShapesSvc
+      featureGroupUtil
+      mapId
+      $scope
+      handleOptions:
+        commonPostDrawActions: () ->
+          $scope.$emit rmapsEventConstants.map.mainMap.redraw
+        # If we ever turn on tacking for sketches
+        # createPromise: () ->
+        #   if !$scope.Toggles.isTacks.sketch
+        #     $scope.Toggles.isSketchMode = false
       drawnItems
-      commonPostDrawActions: () ->
-        $scope.$emit rmapsEventConstants.map.mainMap.redraw
-      # If we ever turn on tacking for sketches
-      # createPromise: () ->
-      #   if !$scope.Toggles.isTacks.sketch
-      #     $scope.Toggles.isSketchMode = false
-    }
-
-    _drawCtrlFactory = (handles) ->
-      rmapsDrawCtrlFactory({
-        mapId
-        $scope
-        handles
-        drawnItems
-        name: "sketch"
-        itemsOptions:
-          color: color
-          fillColor: color
-          className: 'rmaps-sketch'
-        drawOptions:
-          draw:
-            polyline:
-              shapeOptions: {color}
-            polygon:
-              shapeOptions: {color}
-            rectangle:
-              shapeOptions: {color}
-            circle:
-              shapeOptions: {color}
-      })
-      .then () ->
-        $scope.draw.show = true
-
-        $rootScope.$onRootScope rmapsEventConstants.areas.dropdownToggled, (event, isOpen) ->
-          $scope.draw.show = !isOpen
+      name: "sketch"
+      itemsOptions:
+        color: color
+        fillColor: color
+        className: 'rmaps-sketch'
+      drawOptions:
+        draw:
+          polyline:
+            shapeOptions: {color}
+          polygon:
+            shapeOptions: {color}
+          rectangle:
+            shapeOptions: {color}
+          circle:
+            shapeOptions: {color}
+    })
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->
-      featureGroupUtil.onOffPointerEvents({isOn:newVal, className: 'rmaps-sketch'})
       if newVal
-        return _drawCtrlFactory(_handles)
-      _drawCtrlFactory()
+        return drawCtrl.init(enable:true).then () ->
+          $scope.draw.show = true
+
+          $rootScope.$onRootScope rmapsEventConstants.areas.dropdownToggled, (event, isOpen) ->
+            $scope.draw.show = !isOpen
+
+      drawCtrl.init(enable:false)
