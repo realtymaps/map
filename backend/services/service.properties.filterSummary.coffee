@@ -56,11 +56,15 @@ module.exports =
         summary = (limit) ->
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
           logger.debug -> query.toString()
+          result =
+            truncated: false
           query.then (properties) ->
-            # TODO: Disabling the cluster query untill the indexing / performance of the query improves. Currenty it is tacking around 80-90 seconds
-            # if properties.length > config.backendClustering.resultThreshold
-            #   logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
-            #   return cluster()
+            if properties.length > config.backendClustering.resultThreshold
+              # TODO: Disabling the cluster query until the indexing / performance of the query improves. Currenty it is tacking around 80-90 seconds
+              # logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
+              # return cluster()
+              properties.length = config.backendClustering.resultThreshold  # truncates the array
+              result.truncated = true
 
             combined.scrubPermissions(properties, permissions)
 
@@ -92,28 +96,23 @@ module.exports =
                 .then (mlsConfig) ->
                   property.mls_formal_name = mlsConfig?.formal_name
             .then (resultsByPropertyId) ->
+              if !queryParams.returnType
+                resultsByPropertyId.truncated = result.truncated
+                return resultsByPropertyId
+
               resultGroupsCtr = 0
-              result = if queryParams.returnType
-                for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
-                  if _.size(rm_property_ids) > 1
-                    for rm_property_id of rm_property_ids
-                      resultGroups[encodedCenter] ?= {}
-                      resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
-                      delete resultsByPropertyId[rm_property_id]
-                      resultGroupsCtr++
+              for encodedCenter, rm_property_ids of propertyIdsByCenterPoint
+                if _.size(rm_property_ids) > 1
+                  for rm_property_id of rm_property_ids
+                    resultGroups[encodedCenter] ?= {}
+                    resultGroups[encodedCenter][rm_property_id] = resultsByPropertyId[rm_property_id]
+                    delete resultsByPropertyId[rm_property_id]
+                    resultGroupsCtr++
 
-                singletons: resultsByPropertyId
-                groups: resultGroups
-                saves: saves
-                length: properties.length + resultGroupsCtr
-              else
-                resultsByPropertyId.length = properties.length
-                resultsByPropertyId
-
-              logger.debug "Normal Query with length of #{result.length}"
-              delete result.length
-
-              result
+              result.singletons = resultsByPropertyId
+              result.groups = resultGroups
+              result.saves = saves
+              return result
 
         logger.debug () -> "queryParams.returnType: #{queryParams.returnType}"
 

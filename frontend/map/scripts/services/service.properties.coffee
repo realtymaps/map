@@ -6,6 +6,7 @@ analyzeValue = require  '../../../../common/utils/util.analyzeValue.coffee'
 
 app.service 'rmapsPropertiesService', (
 $rootScope, $http, $q, $log,
+toastr,
 rmapsPropertyFactory,
 rmapsEventConstants,
 rmapsPromiseThrottlerFactory) ->
@@ -27,6 +28,8 @@ rmapsPromiseThrottlerFactory) ->
   _filterThrottlerCluster = new rmapsPromiseThrottlerFactory('filterThrottlerCluster')
   _parcelThrottler = new rmapsPromiseThrottlerFactory('parcelThrottler')
   _addressThrottler = new rmapsPromiseThrottlerFactory('addressThrottler')
+
+  maxPropertiesToast = null
 
   #
   # Service Implementation
@@ -74,6 +77,15 @@ rmapsPromiseThrottlerFactory) ->
     throttler.invokePromise(
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
+      .then (results) ->
+        if results?.truncated
+          if !maxPropertiesToast?.isOpened
+            maxPropertiesToast = toastr.warning('Zoom in, or use filters to narrow your search.', "Not displaying all matches", tapToDismiss: false, timeOut: null, extendedTimeOut: 0x7FFFFFFF)
+        else
+          if maxPropertiesToast?.isOpened
+            toastr.clear(maxPropertiesToast)
+            maxPropertiesToast = null
+        results
 
   _pinForMap = (model, save = true) ->
     if save
@@ -157,8 +169,8 @@ rmapsPromiseThrottlerFactory) ->
   ###
    Service API Definition
 
-   will receive results from backend, which will be organzed either as
-   standard results or cluster results, determined in backend by #of results returned
+   will receive results from backend, which will be organized either as
+   standard results or cluster results, determined in backend by number of results returned
   ###
   service.getFilterResults = (hash, mapState, filters, cache = true) ->
     _getFilterSummary(hash, mapState, 'clusterOrDefault', filters, cache)
