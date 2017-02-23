@@ -80,11 +80,9 @@ rmapsPromiseThrottlerFactory) ->
       .then (results) ->
         if results?.truncated
           if !maxPropertiesToast?.isOpened
-            console.log("======= initiating toast")
             maxPropertiesToast = toastr.warning('Zoom in, or use filters to narrow your search.', "Not displaying all matches", tapToDismiss: false, timeOut: null, extendedTimeOut: 0x7FFFFFFF)
         else
           if maxPropertiesToast?.isOpened
-            console.log("~~~~~~~ clearing toast")
             toastr.clear(maxPropertiesToast)
             maxPropertiesToast = null
         results
