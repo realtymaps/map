@@ -13,8 +13,8 @@ rmapsClientsFactory
 
   $log = $log.spawn 'rmapsClientButtonCtrl'
 
-  profile = rmapsPrincipalService.getCurrentProfile()
-  clientsService = new rmapsClientsFactory profile.project_id
+  $scope.profile = rmapsPrincipalService.getCurrentProfile()
+  clientsService = new rmapsClientsFactory $scope.profile.project_id
 
   loadClients = () ->
     clientsService.getAll()
@@ -38,7 +38,7 @@ rmapsClientsFactory
     $scope.saveClient = (form) ->
       modalInstance.dismiss('save')
       method = if $scope.clientCopy.id? then 'update' else 'create'
-      $scope.clientCopy = _.merge $scope.clientCopy, project_name: profile.name
+      $scope.clientCopy = _.merge $scope.clientCopy, project_name: $scope.profile.name
       clientsService[method] $scope.clientCopy
       .then loadClients
       .then () ->
