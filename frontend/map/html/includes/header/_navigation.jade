@@ -7,7 +7,7 @@ nav.navigation(role="navigation")
   ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
     li(ng-cloak ng-show="principal.isAuthenticated()")
       +projectsDropdown()
-    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.includes('projects') || $state.includes('project') }")
+    //li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.includes('projects') || $state.includes('project') }")
       a(ng-click="page.goToDashboard()")
         span dashboard
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('map') }")
