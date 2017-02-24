@@ -11,7 +11,7 @@ _isOptions = (opts) ->
   if Object.keys(opts).length == 0
     return false
   for key of opts
-    if !(key in ['quiet', 'returnStatus'])
+    if !(key in ['quiet', 'returnStatus', 'expected'])
       return false
   return true
 
