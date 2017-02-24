@@ -4,7 +4,7 @@ app = require '../app.coffee'
 ###
 
 domainName = 'NgLeafletEventGate'
-app.service 'rmapsNgLeafletEventGateService', (nemSimpleLogger, rmapsMapEventEnums) ->
+app.service 'rmapsNgLeafletEventGateService', (nemSimpleLogger, rmapsMapEventEnums, rmapsFeatureGroupUtil) ->
   $log = nemSimpleLogger.spawn("map:#{domainName}")
   _disabledEvents = {}
 
@@ -35,12 +35,14 @@ app.service 'rmapsNgLeafletEventGateService', (nemSimpleLogger, rmapsMapEventEnu
     isDisabledEvent: getEvent
 
     disableMapCommonEvents: (mapId) ->
+      rmapsFeatureGroupUtil.onOffPointerEvents({isOn:false, className: 'rmaps-property-layer'})
       disableEvent(mapId, rmapsMapEventEnums.map.click)
       disableEvent(mapId, rmapsMapEventEnums.marker.click)
       disableEvent(mapId, rmapsMapEventEnums.geojson.click)
       disableEvent(mapId, rmapsMapEventEnums.window.mouseover)
 
     enableMapCommonEvents: (mapId) ->
+      rmapsFeatureGroupUtil.onOffPointerEvents({isOn:true, className: 'rmaps-property-layer'})
       enableEvent(mapId, rmapsMapEventEnums.map.click)
       enableEvent(mapId, rmapsMapEventEnums.marker.click)
       enableEvent(mapId, rmapsMapEventEnums.geojson.click)
