@@ -6,7 +6,7 @@ config = require '../config/config'
 request = require('request')
 cartodbConfig = require '../config/cartodb/cartodb'
 _ = require 'lodash'
-{PartiallyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+{PartiallyHandledError, QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 getTiles = (mapName) ->
@@ -14,7 +14,10 @@ getTiles = (mapName) ->
 
     _onError = (err) ->
       logger.debug err
-      next new PartiallyHandledError(err, "Could not load map tile")
+      if err.statusCode == 504
+        next new QuietlyHandledError(err, {expected: true}, "Could not load map tile")
+      else
+        next new PartiallyHandledError(err, "Could not load map tile")
 
     cartodbConfig()
     .then (carto) ->
