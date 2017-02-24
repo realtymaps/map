@@ -14,7 +14,7 @@
 
   .property-card.row.unit(ng-repeat="unit in property.grouped.properties | orderBy:addressComparator")
     .col-xs-3.unit-image(ui-sref="property({id:unit.rm_property_id})", ui-sref-opts="{reload:true}")
-      img(ng-if="unit.cdn_photo" ng-src="http://{{unit.cdn_photo}}&height=100&image_id=0")
+      img(ng-if="unit.cdn_photo" ng-src="//{{unit.cdn_photo}}&height=100&image_id=0")
       i.fa.fa-building-o(ng-if="!unit.cdn_photo")
     .col-xs-9.unit-details
       .header(ng-class="{'flex':!showAllAddresses}" ui-sref="property({id:unit.rm_property_id})", ui-sref-opts="{reload:true}")
