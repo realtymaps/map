@@ -30,6 +30,8 @@ app.service 'rmapsLayerFormattersService', (
 
   Parcels = do ->
 
+    _defaultClassName = 'rmaps-parcel'
+
     _strokeColor = '#1269D8'
     _strokeWeight = 1.5
 
@@ -38,6 +40,7 @@ app.service 'rmapsLayerFormattersService', (
       opacity: 1
       color: _strokeColor
       fillColor: 'transparent'
+      className: _defaultClassName
 
     normalColors = {}
     normalColors[rmapsParcelEnums.status.sold] = rmapsStylusConstants.$rm_sold
@@ -60,6 +63,8 @@ app.service 'rmapsLayerFormattersService', (
     getStyle : (feature, layerName) ->
       return {} unless feature
 
+      className = _defaultClassName
+
       if feature?.savedDetails?.isPinned || feature?.savedDetails?.isFavorite
         savedStatus = 'saved'
 
@@ -74,20 +79,25 @@ app.service 'rmapsLayerFormattersService', (
         $log.debug 'center!!!', feature.rm_property_id
         color = 'orange'
         fillColor = 'orange'
+        className = "rmaps-property-layer #{status} highlighted"
       else
         if layerName == '_parcelBase'
           color = _parcelBaseStyle.color
         else
+          className = "rmaps-property-layer #{status}"
           color = colors[status] || colors['default']
 
         fillColor ?= colors[savedStatus || status] || colors['default']
 
-      weight: if layerName == '_parcelBase' then _parcelBaseStyle.weight else 4
-      opacity: 1
-      color: color
-      fillColor: fillColor
-      colorOpacity: 1
-      fillOpacity: .75
+      return {
+        weight: if layerName == '_parcelBase' then _parcelBaseStyle.weight else 4
+        opacity: 1
+        color: color
+        fillColor: fillColor
+        colorOpacity: 1
+        fillOpacity: .75
+        className
+      }
 
   MLS = do ->
     markersBSLabel = {}
@@ -158,7 +168,7 @@ app.service 'rmapsLayerFormattersService', (
         icon:
           type: 'div'
           iconSize: [12, 12]
-          html: "<i class=\"mail-marker icon fa fa-envelope\"></i>"
+          html: '<i class="rmaps-property-layer mail-marker icon fa fa-envelope"></i>'
         zIndexOffset: 1000
 
     setMarkerManualClusterOptions: (model) ->
