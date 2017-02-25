@@ -24,6 +24,7 @@ body = _.extend {}, state,
   returnType: validators.string()
   columns: validators.string()
   isArea: validators.boolean(truthy: true, falsy: false)
+  isMobileView: validators.boolean(truthy: true, falsy: false)
   areaId: validators.integer()
   pins: validators.object(isEmptyProtect: true)
   favorites: validators.object(isEmptyProtect: true)
@@ -96,6 +97,7 @@ filterSummary =
             soldRange: validators.string()
           validators.defaults(defaultValue: {})
       ]
+  isMobileView: validators.boolean(truthy: true, falsy: false)
   bounds:
     transform: [
       validators.string(minLength: 1)

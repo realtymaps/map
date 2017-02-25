@@ -11,12 +11,17 @@ propertiesUtil = require  '../utils/util.properties'
 
 module.exports =
   getFilterSummary: ({validBody, profile, limit, filterSummaryImpl, ignoreSaved}) ->
-    limit ?= config.backendClustering.resultThreshold
+    logger.debug -> validBody
+    resultThreshold = if validBody.isMobileView then config.backendClustering.mobileThreshold else config.backendClustering.resultThreshold
+    limit ?= resultThreshold
+    limit += 1
+
+    logger.debug -> {limit}
     filterSummaryImpl ?= combined
 
     validation.validateAndTransform(validBody, filterSummaryImpl.transforms)
     .then (queryParams) ->
-      logger.debug queryParams
+      logger.debug -> queryParams
 
       # Calculate permissions for the current user
       combined.getPermissions(profile)
@@ -38,8 +43,9 @@ module.exports =
 
 
         cluster = () ->
+          l = logger.spawn('cluster')
           if !filterSummaryImpl.cluster
-            logger.debug -> filterSummaryImpl
+            l.debug -> filterSummaryImpl
             throw new errorHandlingUtils.PartiallyHandledError "filterSummaryImpl.cluster is undefined"
 
           clusterQuery = filterSummaryImpl.cluster.clusterQuery(profile.map_position.center.zoom)
@@ -47,23 +53,26 @@ module.exports =
           # does not need limit as clusterQuery will only return 1 row
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, query: clusterQuery, permissions, doJoinPhotos: false})
 
-          logger.debug () -> query.toString()
+          l.debug () -> query.toString()
 
           query.then (properties) ->
             combined.scrubPermissions(properties, permissions)
             filterSummaryImpl.cluster.fillOutDummyClusterIds(properties)
 
-        summary = (limit) ->
+        summary = () ->
+          l = logger.spawn('summary')
+
           query = filterSummaryImpl.getFilterSummaryAsQuery({queryParams, limit, permissions})
-          logger.debug -> query.toString()
+          l.debug -> query.toString()
+
           result =
             truncated: false
           query.then (properties) ->
-            if properties.length > config.backendClustering.resultThreshold
-              # TODO: Disabling the cluster query until the indexing / performance of the query improves. Currenty it is tacking around 80-90 seconds
-              # logger.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
+            if properties.length > resultThreshold
+              # TODO: Disabling the cluster query until the indexing / performance of the query improves. Currenty it is taking around 80-90 seconds
+              # l.debug -> "Cluster query for #{properties.length} properties - above threshold #{config.backendClustering.resultThreshold}"
               # return cluster()
-              properties.length = config.backendClustering.resultThreshold  # truncates the array
+              properties.length = resultThreshold  # truncates the array
               result.truncated = true
 
             combined.scrubPermissions(properties, permissions)
@@ -120,4 +129,4 @@ module.exports =
           when 'cluster'
             cluster()
           else
-            summary(config.backendClustering.resultThreshold + 1)
+            summary()
