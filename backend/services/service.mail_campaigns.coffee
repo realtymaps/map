@@ -47,7 +47,7 @@ class MailService extends ServiceCrud
       # sum of letters that have been sent
       db.raw("SUM(CASE WHEN (status='sent') THEN 1 ELSE 0 END) as sent"),
       () ->
-        @select(db.raw('lob_response::jsonb as lob_response'))
+        @select(db.raw('MAX(lob_response::jsonb->\'expected_delivery_date\') as expected_delivery_date'))
         .from("#{tables.mail.letters.tableName}")
         .where {'user_mail_campaign_id': campaign_id, auth_user_id: user_id}
         .whereNotNull("#{tables.mail.letters.tableName}.lob_response")
@@ -62,7 +62,7 @@ class MailService extends ServiceCrud
 
         # 'sent' and 'total' statistics
         return {
-          single_lob_response: letterResults.lob_response
+          expected_delivery_date: letterResults.expected_delivery_date
           sent: letterResults.sent
           total: letterResults.count
           pdf: response.pdf
