@@ -14,8 +14,7 @@ module.exports =
   getFilterSummary: ({validBody, profile, filterSummaryImpl, ignoreSaved}) ->
     logger.debug -> validBody
     resultThreshold = if validBody.isMobileView then config.backendClustering.mobileThreshold else config.backendClustering.resultThreshold
-    limit ?= resultThreshold
-    limit += 1
+    limit = resultThreshold + 1
 
     logger.debug -> {limit}
     filterSummaryImpl ?= combined
