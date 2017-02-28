@@ -23,10 +23,9 @@ class PartiallyHandledError extends VError
     name = 'PartiallyHandledError'
     if typeof(args[0]) == 'string' && args.length > 1
       name = args.shift()
-    for i in [0...args.length]
-      if typeof(args[i]) == 'object' && _isOptions(args[i])
-        _.extend(@, args[i])
-        args.splice(i,1)
+    if typeof(args[0]) == 'object' && _isOptions(args[0])
+      _.extend(@, args[0])
+      args.shift()
     super(args...)
     @name = name
     @returnStatus ?= (@jse_cause?.returnStatus ? status.INTERNAL_SERVER_ERROR)

@@ -15,7 +15,7 @@ getTiles = (mapName) ->
     _onError = (err) ->
       logger.debug err
       if err.statusCode == 504
-        next new QuietlyHandledError(err, {expected: true}, "Could not load map tile")
+        next new QuietlyHandledError({expected: true}, err, "Could not load map tile")
       else
         next new PartiallyHandledError(err, "Could not load map tile")
 
