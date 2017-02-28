@@ -9,7 +9,8 @@ $rootScope, $http, $q, $log,
 toastr,
 rmapsPropertyFactory,
 rmapsEventConstants,
-rmapsPromiseThrottlerFactory) ->
+rmapsPromiseThrottlerFactory,
+rmapsResponsiveViewService) ->
 
   $log = $log.spawn("map:rmapsPropertiesService")
 
@@ -60,6 +61,8 @@ rmapsPromiseThrottlerFactory) ->
     if $rootScope.propertiesInShapes and returnType  #is drawnShapes filterSummary
       pathId = 'drawnShapes'
       bodyExtensions.isArea = true
+
+    bodyExtensions.isMobileView = rmapsResponsiveViewService.isMobileView()
 
     route = backendRoutes.properties[pathId]
 

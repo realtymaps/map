@@ -1,4 +1,4 @@
-{expect, should} = require("chai")
+{should} = require("chai")
 should()
 sinon = require 'sinon'
 rewire = require 'rewire'
@@ -6,7 +6,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 subject = rewire '../../../backend/services/service.properties.filterSummary'
 combined = require '../../../backend/services/service.properties.combined.filterSummary'
-logger = require('../../specUtils/logger').spawn('service:properties:filterSummary')
+
 
 
 describe "service.properties.filterSummary", ->

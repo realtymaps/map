@@ -72,6 +72,7 @@ commonConfig =
 
   backendClustering:
     resultThreshold: 2000
+    mobileThreshold: 500
 
   images:
     dimensions:
