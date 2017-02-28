@@ -50,8 +50,8 @@ form
                   .col-md-3
                     p Estimated Delivery:
                   .col-md-9
-                    p(ng-show="review.single_lob_response.expected_delivery_date") {{review.single_lob_response.expected_delivery_date | date:'MM/dd/yyyy'}}
-                    p(ng-hide="review.single_lob_response.expected_delivery_date") N/A
+                    p(ng-show="review.expected_delivery_date") {{review.expected_delivery_date | date:'MM/dd/yyyy'}}
+                    p(ng-hide="review.expected_delivery_date") N/A
 
             .row.separator.recipients
               .col-md-12
