@@ -40,7 +40,7 @@
                   th.col-md-1
                     span
               tbody
-                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: ['-sandbox', 'name']")
+                tr(ng-repeat="project in projects | filter: searchQuery | filter:{archived:'!true'} | orderBy:[isSandbox, '-rm_modified_time']")
                   td(ui-sref="project({id: {{project.id}}})")
                     h4(ng-show="!project.sandbox") {{project.name}}
                     h4(ng-show="project.sandbox") Sandbox
