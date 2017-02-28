@@ -9,8 +9,9 @@ geohash = require 'geohash64'
 errorHandlingUtils = require '../utils/errors/util.error.partiallyHandledError'
 propertiesUtil = require  '../utils/util.properties'
 
+
 module.exports =
-  getFilterSummary: ({validBody, profile, limit, filterSummaryImpl, ignoreSaved}) ->
+  getFilterSummary: ({validBody, profile, filterSummaryImpl, ignoreSaved}) ->
     logger.debug -> validBody
     resultThreshold = if validBody.isMobileView then config.backendClustering.mobileThreshold else config.backendClustering.resultThreshold
     limit ?= resultThreshold
