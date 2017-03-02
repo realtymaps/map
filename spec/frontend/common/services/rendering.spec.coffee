@@ -15,9 +15,9 @@ describe "common.service.rendering", ->
     beforeEach ->
       @stateObj =
         tracker: false
-      for x in [0..3]
-        @ret = @subject.debounce @stateObj, 'tracker', (->)
-        , 1000
+
+      _.range(0,3).forEach () =>
+        @ret = @subject.debounce(@stateObj, 'tracker', (->) , 1000)
 
     afterEach ->
       @ret = null
