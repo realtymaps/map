@@ -1,11 +1,10 @@
-Promise = require 'bluebird'
 {basePath} = require '../../globalSetup'
-_ = require 'lodash'
 colorWrap = require 'color-wrap'
+require('chai').should()
 colorWrap(console)
 
-{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
-{expectResolve, expectReject} = require('../../../specUtils/promiseUtils')
+{validators} = require "#{basePath}/utils/util.validation"
+{expectResolve} = require('../../../specUtils/promiseUtils')
 
 subject = validators.boolean
 
@@ -18,6 +17,18 @@ describe 'utils/validation.validators.boolean()'.ns().ns('Backend'), ->
         testObj = isTrue: bool.toString()
         expectResolve(subject()(param, testObj.isTrue)).then (value) ->
           value.should.be.equal bool
+
+  describe 'numbers', ->
+    [1, 0].forEach (bool) ->
+      it "#{bool.toString()} is #{bool.toString()}", () ->
+        expectResolve(subject({truthy:1, falsy: 0})(param, bool)).then (value) ->
+          value.should.be.equal(!!bool)
+
+    describe 'as string', ->
+      ['1', '0'].forEach (bool) ->
+        it "#{bool.toString()} is #{bool.toString()}", () ->
+          expectResolve(subject({truthy:'1', falsy: '0'})(param, bool)).then (value) ->
+            value.should.be.equal(!!parseInt(bool))
 
   describe 'altered output', ->
     it "should output `yes` & `no` as configured, instead of true & false", () ->
