@@ -22,15 +22,48 @@ split = require 'split'
 through = require 'through2'
 sourcemapSvc = require '../../../backend/services/service.sourcemap'
 
+uglifyOpts = {
+  mangle: true
+  # mangleProperties: true #messes lodash up
+  compress: true
+  output:
+    beautify: false
+    indent_level: 2
+  # mangleProperties: {}
+  #   # cache: true
+  #   # ignore_quoted: true
+  # compress:
+  #   dead_code: true
+  #   unused: true
+  #   angular: true
+  # output:
+  #   beautify: false
+  #   indent_level: 2
+    # space_colon: false
+    # width: 500
+}
+
+
 #always return a gulp ready stream
 bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourceMaps}) ->
   l = logger.spawn('bundle')
   times.startTime = process.hrtime()
   mkdirp.sync(paths.destFull.scripts)
-  stream = bStream.bundle()
 
   jsFile = "#{paths.destFull.scripts}/#{outputName}"
   mapFile = jsFile + '.map'
+
+
+  if prod
+    bStream.plugin('minifyify', {
+      map: outputName + '.map'
+      output: mapFile
+      compressPath: (p) ->
+        "../src/#{p}"
+      uglify: uglifyOpts
+    })
+
+  stream = bStream.bundle()
 
   l.debug ->
     str = 'Bundling ' + gutil.colors.bgCyan.black(config.outputName)
@@ -40,7 +73,7 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourc
 
   l.debug -> "jsFile: #{jsFile}"
 
-  if doSourceMaps
+  if doSourceMaps && !prod
     stream = stream.pipe(
       exorcist(mapFile, null, '../src', './'))
 
@@ -53,8 +86,7 @@ bundle = ({config, entries, inputGlob, bStream, times, outputName, prod, doSourc
       if /# sourceMappingURL.*/.test(chunk)
         return sourcemapSvc.getGitRev().then (gitRev) =>
           l.debug -> "gitRev: #{gitRev}"
-          s3MapFileLocation = sourcemapSvc.getNetworkCachedFile(gitRev)
-          s3Loc = "//# sourceMappingURL=#{s3MapFileLocation}.map"
+          s3Loc = "//# sourceMappingURL=/api/sourcemap/#{outputName}.map"
           l.debug -> "s3 location: #{s3Loc}"
           @push(s3Loc)
           cb()
@@ -107,7 +139,7 @@ createBStream = ({config, lintIgnore, watch, prod, doSourceMaps}) ->
 
     logger.debug -> "doCoffeeSourceMap: #{doCoffeeSourceMap}"
 
-  b.transform('coffeeify', sourceMap: doCoffeeSourceMap)
+  return b.transform('coffeeify', sourceMap: doCoffeeSourceMap)
   .transform('browserify-ngannotate', { "ext": ".coffee" })
   .transform('jadeify')
   # note gulp is currently doing most styles and the sourcemapping sucks for browserify-css

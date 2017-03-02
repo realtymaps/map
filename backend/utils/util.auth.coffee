@@ -14,7 +14,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 {NeedsLoginError, PermissionsError} = require './errors/util.errors.userSession'
 profileErrors = require './errors/util.error.profile'
 ExpressResponse = require './util.expressResponse'
-httpStatus = require '../../common/utils/httpStatus'
+
 
 class SessionSecurityError extends Error
   constructor: (@invalidate='nothing', @message, loglevel='error') ->

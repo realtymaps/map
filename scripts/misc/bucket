@@ -56,7 +56,8 @@ if (fileName && !(STD_OUT_CMDS.indexOf(action) > -1)){
   }
   log("attempting to load file: " + fileName);
 
-  uploadFileName = path.parse(fileName).base;
+  uploadFileName = fileName;
+  // uploadFileName = path.parse(fileName).base;
 }
 
 params = _.extend({},{
@@ -118,7 +119,7 @@ handle(params)
     .on('end', function(){
       exit(0);
     })
-    .pipe(fs.createWriteStream(uploadFileName));
+    .pipe(fs.createWriteStream(path.parse(fileName).base));
   }
   if(STD_OUT_CMDS.indexOf(action) > -1)
     log(JSON.stringify(ret,null,2));
