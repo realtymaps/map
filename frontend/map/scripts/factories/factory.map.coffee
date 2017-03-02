@@ -32,7 +32,6 @@ app.factory 'rmapsMapFactory',
     rmapsEventsHandlerService,
     rmapsPropertiesService,
     rmapsPropertyFormatterService,
-    rmapsRenderingService,
     rmapsLayerManager
     rmapsResultsFormatterService,
     rmapsMapTogglesFactory,

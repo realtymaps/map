@@ -53,7 +53,7 @@ gulp.task 'karma', (done) ->
       shutdown.exit(error: true)  #hack this should not need to be here
   ,
     _.extend {}, opts,
-      reporters: ['dots', 'junit']
+      reporters: ['dot', 'junit']
       junitReporter:
         outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
         suite: 'realtymaps'

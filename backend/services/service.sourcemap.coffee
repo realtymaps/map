@@ -4,12 +4,13 @@ fs = require 'fs'
 Promise = require 'bluebird'
 request = require 'request'
 memoize = require 'memoizee'
-aws = require('../../backend/services/service.aws')
 
 path = "#{__dirname}/../../_public/scripts"
 cacheFileName = 'map.bundle.js'
 S3_BUCKET = process.env.S3_BUCKET ? 'rmaps-dropbox'
 SCRIPTS_CACHE_SECRET_KEY = process.env.SCRIPTS_CACHE_SECRET_KEY
+
+logger = require('../config/logger').spawn("service:sourcemap")
 
 atob = (str) ->
   new Buffer(str, 'base64').toString('binary')
@@ -28,9 +29,34 @@ pinpoint = (stack, gpsConfig = {ajax, atob}) ->
     else
       frame
 
+getGitRev = () ->
+  exec = Promise.promisify(require('child_process').exec)
+
+  Promise.try ->
+    if process.env.IS_HEROKU == '1'
+      return [process.env.HEROKU_SLUG_COMMIT]
+    else
+      return exec('git rev-parse HEAD')
+  .then ([rev]) ->
+    gitRev = rev.trim()
+    if process.env.NODE_ENV != 'production'
+      gitRev += '-dev'
+
+    logger.debug -> "git revision: #{gitRev}"
+    gitRev
+
+getCachedFile = (gitRev) ->
+  "#{SCRIPTS_CACHE_SECRET_KEY}/#{gitRev}/#{cacheFileName}"
+
+getNetworkCachedFile = (gitRev) ->
+  "https://s3.amazonaws.com/#{S3_BUCKET}/" + getCachedFile(gitRev)
+
 fromS3Config = (errorLog) ->
-  cacheKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}"
-  sourceMapKey = "#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}.map"
+  #NOTE: IMPORTANT!! lazy load aws as it messes with gulp somehow, also this speeds things up a lot
+  aws = require('../../backend/services/service.aws')
+
+  cacheKey = getCachedFile(errorLog.git_revision)
+  sourceMapKey = getCachedFile(errorLog.git_revision) + '.map'
   Promise.props(
     cacheFile: aws.getObject(extAcctName: S3_BUCKET, Key: cacheKey)
     sourceMap: aws.getObject(extAcctName: S3_BUCKET, Key: sourceMapKey)
@@ -50,8 +76,8 @@ fromS3Config = (errorLog) ->
     {offline: true, sourceCache, sourceMapConsumerCache, atob}
 
 fromNetworkConfig = (errorLog) ->
-  cacheUrl = "https://s3.amazonaws.com/#{S3_BUCKET}/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}"
-  sourceMapUrl = "https://s3.amazonaws.com/#{S3_BUCKET}/#{SCRIPTS_CACHE_SECRET_KEY}/#{errorLog.git_revision}/#{cacheFileName}.map"
+  cacheUrl = getNetworkCachedFile(errorLog.git_revision)
+  sourceMapUrl = getNetworkCachedFile(errorLog.git_revision) + '.map'
   Promise.props(
     cacheFile: ajax(cacheUrl)
     sourceMap: ajax(sourceMapUrl)
@@ -84,4 +110,7 @@ module.exports = {
   fromNetworkConfig: memoize(fromNetworkConfig, maxAge: 5*60*1000, normalizer: (errorLog) -> errorLog.git_revision)
   fromLocalConfig: memoize(fromLocalConfig, maxAge: 5*60*1000)
   pinpoint
+  getGitRev
+  getCachedFile
+  getNetworkCachedFile
 }

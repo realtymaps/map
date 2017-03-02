@@ -36,7 +36,7 @@ module.exports = ({inputGlob, outputName, doSourceMaps, watch, prod, done}) ->
     bStream = internals.createBStream({config, lintIgnore, watch, prod, doSourceMaps})
 
     if watch
-      internals.handleWatch({bStream, inputGlob, times, outputName, config, entries, doSourceMaps})
+      internals.handleWatch({bStream, inputGlob, times, outputName, config, entries, doSourceMaps, prod})
 
     else
       if config.require
