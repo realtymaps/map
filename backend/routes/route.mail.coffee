@@ -4,7 +4,9 @@ routeHelpers = require '../utils/util.route.helpers'
 mailCampaignService = require '../services/service.mail_campaigns'
 {validators} = require '../utils/util.validation'
 lobService = require '../services/service.lob'
-{QuietlyHandledError} = require '../utils/errors/util.error.partiallyHandledError'
+LobErrors = require '../utils/errors/util.errors.lob'
+{QuietlyHandledError,isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 reqTransforms =
@@ -32,8 +34,10 @@ class MailCampaignRoute extends RouteCrud
     lobService.getLetterPreviewUrls(req.lobLetterId)
     .then (urls) ->
       if !urls[type]
-        return next(new QuietlyHandledError({returnStatus: 404}, "Requested letter not found, or preview type not available."))
+        throw new QuietlyHandledError({returnStatus: 404}, "Requested letter not found, or preview type not available.")
       res.redirect(urls[type])
+    .catch isCausedBy(LobErrors.LobNotFoundError), (err) ->
+      throw new QuietlyHandledError({returnStatus: 404}, "Requested letter not found, or preview type not available.")
 
 
 instance = new MailCampaignRoute mailCampaignService,
