@@ -89,7 +89,7 @@ app.controller 'rmapsPropertyCtrl',
         windowTopClass: 'preview-mail-windowTop'
         resolve:
           template: () ->
-            pdf: mail.lob.url
+            pdf: "#{mail.lob.preview}/pdf"
             title: 'Mail Review'
 
     $scope.showDMCA = (mls) ->
