@@ -96,7 +96,14 @@ class MailService extends ServiceCrud
       propertyIndex = {}
 
       _.each letters, (letter) ->
-        letter.lob = _.pick letter.lob_response, ['id', 'date_created', 'url', 'thumbnails']
+        letter.lob = {
+          id: letter.lob_response.id
+          date_created: letter.lob_response.date_created
+          rendered: (letter.lob_response.thumbnails.length > 0)
+          preview: "//api/getLetterPreview/#{letter.letter_id}"
+        }
+
+
         delete letter.lob_response
         letter.recipientType = letter.options?.metadata?.recipientType
         delete letter.options
@@ -185,7 +192,6 @@ class MailService extends ServiceCrud
 
   sendCampaign: (auth_user_id, campaign_id) ->
     lobService.sendCampaign auth_user_id, campaign_id
-
 
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})

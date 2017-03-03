@@ -3,6 +3,10 @@ RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 mailCampaignService = require '../services/service.mail_campaigns'
 {validators} = require '../utils/util.validation'
+lobService = require '../services/service.lob'
+LobErrors = require '../utils/errors/util.errors.lob'
+{QuietlyHandledError,isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 reqTransforms =
@@ -24,6 +28,16 @@ class MailCampaignRoute extends RouteCrud
 
   sendCampaign: (req, res, next) =>
     @custom @svc.sendCampaign(req.user.id, req.params.id), res
+
+  getLetterPreview: (req, res, next) ->
+    type = req.params.type || 'medium'
+    lobService.getLetterPreviewUrls(req.lobLetterId)
+    .then (urls) ->
+      if !urls[type]
+        throw new QuietlyHandledError({returnStatus: 404}, "Requested letter not found, or preview type not available.")
+      res.redirect(urls[type])
+    .catch isCausedBy(LobErrors.LobNotFoundError), (err) ->
+      throw new QuietlyHandledError({returnStatus: 404}, "Requested letter not found, or preview type not available.")
 
 
 instance = new MailCampaignRoute mailCampaignService,
@@ -68,4 +82,9 @@ module.exports = routeHelpers.mergeHandles instance,
     methods: ['post']
     middleware: [
       auth.requireLogin()
+    ]
+  getLetterPreview:
+    methods: ['get']
+    middleware: [
+      auth.requireLetterProject()
     ]
