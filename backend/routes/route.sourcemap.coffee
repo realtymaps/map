@@ -8,6 +8,8 @@ transforms = require '../utils/transforms/transforms.sourcemap'
 aws = require '../services/service.aws'
 sourcemapSvc = require '../services/service.sourcemap'
 require '../extensions/emitter'
+{PermissionsError} = require '../utils/errors/util.errors.userSession'
+ExpressResponse = require '../utils/util.expressResponse'
 
 
 module.exports =
@@ -38,5 +40,8 @@ module.exports =
               .once('error', reject)# handle errors prior to pipe
               .pipe(res).toPromise().then () ->
                 resolve()
+
+      .catch PermissionsError, (error) ->
+        throw new ExpressResponse({identity: null}, {quiet: true})
       .catch errorHandlingUtils.isUnhandled, (error) ->
         throw new errorHandlingUtils.PartiallyHandledError(error, 'failed to get soucemap')
