@@ -100,7 +100,7 @@ class MailService extends ServiceCrud
           id: letter.lob_response.id
           date_created: letter.lob_response.date_created
           rendered: (letter.lob_response.thumbnails.length > 0)
-          preview: "//api/getLetterPreview/#{letter.letter_id}/"
+          preview: "//api/getLetterPreview/#{letter.letter_id}"
         }
 
 
