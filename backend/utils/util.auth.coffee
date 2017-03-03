@@ -201,7 +201,7 @@ requireProject = (options = {}) ->
 
   result = (req) -> Promise.try () ->
 
-    # middleware is not applicable for this req.method, move along
+# middleware is not applicable for this req.method, move along
     if ignoreThisMethod(req.method, methods)
       return
 
@@ -231,6 +231,59 @@ requireProject = (options = {}) ->
     req.rmapsProfile = profile
 
   result.inspect = () -> "requireProject(#{analyzeValue.simpleInspect(options)})"
+  result
+
+
+# route-specific middleware that requires access to the project corresponding to the mail campaign corresponding to the letter
+# optional: methods
+# optional: letterIdParam (needs to match the id of the endpoint, such as `id` or `letter_id`)
+#           Can use format like `body.letter_id` or `params.id` to force where on `req` to get the id.
+requireLetterProject = (options = {}) ->
+  defaultOptions =
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH']
+  options = _.extend({}, defaultOptions, options)
+
+  # use default projectIdParam only for undefined; null is a valid option that can force use of session params
+  if options.letterIdParam == undefined
+    options.letterIdParam = 'id'
+
+  # list-ize to defensively accept strings
+  options.methods = [options.methods] if _.isString options.methods
+
+  {methods, letterIdParam} = options
+
+  result = (req) -> Promise.try () ->
+
+    # middleware is not applicable for this req.method, move along
+    if ignoreThisMethod(req.method, methods)
+      return
+
+    # get letter id based on the `letterIdParam` argument in either `req.params` or
+    #   `req.query`, whichever, with precedence given to explicit path value by the user-defined
+    #   `letterIdParam` on the `req` obj, followed by `req.params`, since
+    #   that is where the restful resource id will often be found (in url)
+    queryParams = _.merge {}, req.query, req.params
+
+    tables.mail.campaign().select([
+      "#{tables.mail.campaign.tableName}.project_id AS project_id"
+      "#{tables.mail.letters.tableName}.lob_response as lob_response"
+    ])
+    .join("#{tables.mail.letters.tableName}", () ->
+      this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
+    )
+    .where("#{tables.mail.letters.tableName}.id": queryParams[letterIdParam])
+    .then ([target]) ->
+      profile = _.find(req.session.profiles, project_id: Number(target.project_id)) # project_id == null, undefined, or NaN makes `profile` undefined here
+
+      # auth-ing
+      if !profile?
+        throw new PermissionsError("You are unauthorized to access the project associated with this letter.")
+      if !req.user?
+        throw new NeedsLoginError("Please login to access #{req.path}.")
+
+      req.lobLetterId = target.lob_response.id
+
+  result.inspect = () -> "requireLetter(#{analyzeValue.simpleInspect(options)})"
   result
 
 # route-specific middleware that requires a user to be the editor (which would logically include
@@ -399,6 +452,7 @@ module.exports = {
   checkSessionSecurity
   requireLogin
   requireProject
+  requireLetterProject
   requireProjectParent
   requireProjectEditor
   requirePermissions

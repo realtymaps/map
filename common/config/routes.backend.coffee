@@ -255,6 +255,7 @@ module.exports =
     #TODO: Why are the rest of these routes not a base of apiBaseMailCampaigns?
     getProperties: "#{apiBase}/getProperties/:project_id"
     getLetters: "#{apiBase}/getLetters"
+    getLetterPreview: "#{apiBase}/getLetterPreview/:id/:type"
     testLetter: "#{apiBase}/testLetter/:letter_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf

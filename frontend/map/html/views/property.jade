@@ -339,12 +339,12 @@ include ../includes/mixins/_noteInputMixin.jade
                   .col-xs-3.content-body
                     span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
                   .col-xs-3.content-body
-                    button.btn.btn-sm.btn-white(mobile-modal modal-template="'MailReview'" modal-title="'Mail Review'" ng-show="mail.lob.thumbnails.length") Preview
+                    button.btn.btn-sm.btn-white(mobile-modal modal-template="'MailReview'" modal-title="'Mail Review'" ng-show="mail.lob.rendered") Preview
                       i.fa.fa-envelope
                     script(type="text/ng-template" id="MailReview")
                       .preview-mail-window
                         .modal-body
-                          img(rmaps-cdn-image ng-src="{{mail.lob.thumbnails[0].medium}}")
+                          img(ng-src="{{mail.preview}}/medium")
 
             .content-block.prop-attrs.border-bottom
               .content-heading Property Info

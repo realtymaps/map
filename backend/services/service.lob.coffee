@@ -432,9 +432,19 @@ sendCampaign = (userId, campaignId) ->
           else
             throw err
 
+getLetterPreviewUrls = (letterId) ->
+  lobPromise()
+  .then (apis) ->
+    apis.live.getLetter(letterId)
+  .then (response) ->
+    result = response.thumbnails?[0] || {}
+    result.pdf = response.url
+    result
+
 module.exports =
   getLetter: getLetter
   getPriceQuote: getPriceQuote
   listLetters: listLetters
   sendLetter: sendLetter
   sendCampaign: sendCampaign
+  getLetterPreviewUrls: getLetterPreviewUrls
