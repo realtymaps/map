@@ -19,13 +19,13 @@ buckets =
 
 
 _debug = (thing, thingName) ->
-  loggerFine.debug "begin #{thingName} !!!!!!!!!"
-  loggerFine.debug thing
-  loggerFine.debug "end #{thingName} !!!!!!!!!!!"
+  loggerFine.debug -> "begin #{thingName} !!!!!!!!!"
+  loggerFine.debug -> thing
+  loggerFine.debug -> "end #{thingName} !!!!!!!!!!!"
 
 
 _handler = (handlerOpts, opts) -> Promise.try () ->
-  logger.debug opts
+  logger.debug -> opts
   _debug handlerOpts, 'handlerOpts'
 
   {required, s3FnName, extraArgs} = onMissingArgsFail

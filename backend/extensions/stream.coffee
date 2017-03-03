@@ -1,21 +1,10 @@
 Stream = require 'stream'
 JSONStream = require 'JSONStream'
-Promise = require 'bluebird'
 logger = require('../config/logger').spawn('extensions:stream')
+require './emitter'
 
 Stream::stringify = () ->
   @pipe(JSONStream.stringify())
-
-if !Stream::toPromise?
-  Stream::toPromise = () ->
-    new Promise (resolve, reject) =>
-      @once 'finish', resolve
-      @once 'end', resolve
-      @once 'close', resolve
-      @once 'error', reject
-else
-  logger.warn "Stream::toPromise already exist! We should change the prototype naming."
-
 
 if !Stream::toCounterPromise?
   Stream::toCounterPromise = () ->

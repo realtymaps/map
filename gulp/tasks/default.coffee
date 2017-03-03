@@ -37,6 +37,8 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
+gulp.task 'mapProd', gulp.series('otherAssets', 'angularProd', 'minify', 'gzip')
+
 gulp.task 'prod', gulp.series('otherAssets', 'angularProd', 'angularAdminProd', 'minify', 'gzip')
 
 gulp.task 'default', gulp.parallel 'develop'

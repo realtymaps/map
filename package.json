@@ -192,6 +192,7 @@
     "memoizee": "^0.3.9",
     "memwatch-next": "^0.2.3",
     "method-override": "2.2.X",
+    "minifyify": "7.3.5",
     "mkdirp": "^0.5.0",
     "mocha": "2.2.X",
     "moment": "2.X",

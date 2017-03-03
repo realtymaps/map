@@ -17,18 +17,4 @@ gulp.task 'minify-css', ->
     title: paths.dest.root
     showFiles: verbose
 
-gulp.task 'minify-js', ->
-  gulp.src paths.destFull.scripts + '/*.js'
-  .pipe $.sourcemaps.init(loadMaps: true, largeFile: true)
-  .pipe $.uglify
-    mangle: true
-    output:
-      beautify: false # true for whitespace/indentation
-  .on('error', conf.errorHandler 'Uglify JS')
-  .pipe $.sourcemaps.write('.')
-  .pipe(gulp.dest paths.destFull.scripts)
-  .pipe $.size
-    title: paths.dest.root
-    showFiles: verbose
-
-gulp.task 'minify', gulp.parallel 'minify-js', 'minify-css'
+gulp.task 'minify', gulp.parallel 'minify-css'

@@ -29,15 +29,9 @@ pinpoint = (stack, gpsConfig = {ajax, atob}) ->
     else
       frame
 
-getGitRev = () ->
-  exec = Promise.promisify(require('child_process').exec)
 
-  Promise.try ->
-    if process.env.IS_HEROKU == '1'
-      return [process.env.HEROKU_SLUG_COMMIT]
-    else
-      return exec('git rev-parse HEAD')
-  .then ([rev]) ->
+getGitRev = (isAsync = true) ->
+  revFormatting = (rev) ->
     gitRev = rev.trim()
     if process.env.NODE_ENV != 'production'
       gitRev += '-dev'
@@ -45,8 +39,33 @@ getGitRev = () ->
     logger.debug -> "git revision: #{gitRev}"
     gitRev
 
+  exec = if isAsync
+    Promise.promisify(require('child_process').exec)
+  else
+    require('child_process').execSync
+
+  getRev = () ->
+    if process.env.IS_HEROKU == '1'
+      [process.env.HEROKU_SLUG_COMMIT]
+    else
+      exec('git rev-parse HEAD')
+
+  if !isAsync
+    return revFormatting(String(getRev()))
+
+  Promise.try ->
+    getRev()
+  .then ([rev]) ->
+    revFormatting(rev)
+
+getCachedPrefix = (gitRev) ->
+  "#{SCRIPTS_CACHE_SECRET_KEY}/#{gitRev}"
+
 getCachedFile = (gitRev) ->
   "#{SCRIPTS_CACHE_SECRET_KEY}/#{gitRev}/#{cacheFileName}"
+
+getNetworkCachedPrefix = (gitRev) ->
+  "https://s3.amazonaws.com/#{S3_BUCKET}/" + getCachedPrefix(gitRev)
 
 getNetworkCachedFile = (gitRev) ->
   "https://s3.amazonaws.com/#{S3_BUCKET}/" + getCachedFile(gitRev)
@@ -110,7 +129,9 @@ module.exports = {
   fromNetworkConfig: memoize(fromNetworkConfig, maxAge: 5*60*1000, normalizer: (errorLog) -> errorLog.git_revision)
   fromLocalConfig: memoize(fromLocalConfig, maxAge: 5*60*1000)
   pinpoint
+  getCachedPrefix
   getGitRev
   getCachedFile
+  getNetworkCachedPrefix
   getNetworkCachedFile
 }
