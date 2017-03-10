@@ -1,10 +1,12 @@
 .modal-header
   h3.modal-title(ng-show="failedFlag") There was a problem.
-  h3.modal-title(ng-hide="failedFlag || successFlag") Are you sure??
+  h3.modal-title(ng-hide="failedFlag || successFlag") Prepare to send
   h3.modal-title(ng-show="successFlag") Mail is on its way!
 
 .modal-body
   p {{bodyMessage}}
+  img(ng-hide="failedFlag || successFlag" title="prepare mail" class="ng-scope" src="/assets/base/mail_prepare.svg")
+  img(ng-show="successFlag" title="prepare mail" class="ng-scope" src="/assets/base/mail_sent_img.png")
   h5(ng-if="errorReference") {{errorReference}}
   p {{statusMessage}}
 
