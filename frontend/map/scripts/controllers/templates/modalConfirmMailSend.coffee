@@ -9,7 +9,7 @@ app.controller 'rmapsModalSendMailCtrl', (
   rmapsMailCampaignService
 ) ->
   $scope.sendingFlag = false
-  $scope.bodyMessage = 'There\'s no turning back!'
+  $scope.bodyMessage = 'Your mail will be printed and arrive in 4-5 days.'
   $scope.statusMessage = ''
   $scope.failedFlag = false
   $scope.successFlag = false
