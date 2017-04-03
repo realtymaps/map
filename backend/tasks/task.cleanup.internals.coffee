@@ -80,7 +80,7 @@ dropRawTables = (loadEntriesQuery = tablenamesNotDropped()) ->
   drops = 0
   skips = 0
   Promise.each loadEntriesQuery, (loadEntry) ->
-    sqlHelpers.checkTableExists(loadEntry.raw_table_name)
+    sqlHelpers.checkTableExists(tables.temp(subid: loadEntry.raw_table_name))
     .then (exists) ->
       if exists
         drops++
