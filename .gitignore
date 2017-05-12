@@ -37,3 +37,5 @@ sqlImports/
 scripts/local/?*.*
 
 frontend/common/scripts/buildInfo.coffee
+.env.local
+.foreman
